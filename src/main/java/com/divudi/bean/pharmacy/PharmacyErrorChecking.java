@@ -5,9 +5,11 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.ejb.PharmacyBean;
@@ -24,7 +26,9 @@ import com.divudi.core.entity.pharmacy.StockHistory;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -65,6 +69,8 @@ public class PharmacyErrorChecking implements Serializable {
     @Named
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public void listMismatchPreBills() {
         mismatchPreBills = getEjb().errPreBills(department);
@@ -86,7 +92,6 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-
     }
 
     public void processBinCardItems() {
@@ -97,13 +102,29 @@ public class PharmacyErrorChecking implements Serializable {
         billItems = getEjb().allBillItems(item, department);
         calculateTotals4();
 
-
     }
 
     public void processBinCard() {
         reportTimerController.trackReportExecution(() -> {
-            stockHistories  = stockHistoryController.findStockHistories(fromDate, toDate, null,department, item);
-        }, PharmacyReports.PHARMACY_BIN_CARD,sessionController.getLoggedUser());
+            stockHistories = stockHistoryController.findStockHistories(fromDate, toDate, null, department, item);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Pharmacy Bin Card - Hide Adjustment Bills in Bin Card",true)) {
+                List<BillType> bts = new ArrayList<>();
+                bts.add(BillType.PharmacyAdjustmentSaleRate);
+
+                Iterator<StockHistory> iterator = stockHistories.iterator();
+                while (iterator.hasNext()) {
+                    StockHistory sh = iterator.next();
+                    if (sh.getPbItem() != null
+                            && sh.getPbItem().getBillItem() != null
+                            && sh.getPbItem().getBillItem().getBill() != null
+                            && bts.contains(sh.getPbItem().getBillItem().getBill().getBillType())) {
+                        iterator.remove(); // modifies the original list safely
+                    }
+                }
+            }
+
+        }, PharmacyReports.PHARMACY_BIN_CARD, sessionController.getLoggedUser());
     }
 
     public void listPharmacyMovementByDateRange() {
@@ -114,7 +135,6 @@ public class PharmacyErrorChecking implements Serializable {
         Date startTime = new Date();
 
         billItems = getEjb().allBillItemsByDateOnlyStock(item, department, fromDate, toDate);
-
 
     }
 
@@ -402,7 +422,7 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate==null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfMonth();
         }
         return fromDate;
@@ -413,7 +433,7 @@ public class PharmacyErrorChecking implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate==null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay();
         }
         return toDate;
@@ -462,8 +482,6 @@ public class PharmacyErrorChecking implements Serializable {
     public void setCalculatedSaleValue(double calculatedSaleValue) {
         this.calculatedSaleValue = calculatedSaleValue;
     }
-
-
 
     public double getCalculatedPurchaseValue() {
         return calculatedPurchaseValue;

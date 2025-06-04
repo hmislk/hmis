@@ -13,6 +13,7 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemCount;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
@@ -119,6 +120,7 @@ import java.util.LinkedHashMap;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * @author Pubudu Piyankara
@@ -2186,7 +2188,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2242,10 +2244,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                    "Closing Stock", "Rate", "Closing Value"
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2527,7 +2529,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                    "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
+                "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -2589,9 +2591,12 @@ public class PharmacyReportController implements Serializable {
                 return;
             }
 
-//            StringBuilder jpql = new StringBuilder("SELECT sh FROM StockHistory sh WHERE ");
-
             calculateOpeningStock();
+            calculateStockCorrection();
+            calculateGrnCashAndCredit();
+            calculateCogsOtherComponents();
+            calculateClosingStock();
+            calculateVariance();
 
         } catch (Exception e) {
             JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
@@ -2599,50 +2604,418 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private double executeQueryAndCalculateTotal(StringBuilder query, Map<String, Object> params) {
+        try {
+            return facade.findDoubleByJpql(query.toString(), params, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in executing aggregate query");
+            return -1.0;
+        }
+    }
+
+    private void calculateCogsOtherComponents() {
+        try {
+            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.netValue) FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL "
+                    + "OR sh2.itemBatch.item.departmentType = :depty) ");
+
+            Map<String, Object> commonParams = new HashMap<>();
+            commonParams.put("depty", DepartmentType.Pharmacy);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "sh2.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
+
+            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
+            calculateClosingStockValue();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in COGS components");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    double totalCalculatedClosingStockValue = 0.0;
+    double totalClosingStockValueByDatabaseQuery = 0.0;
+
+    private void calculateClosingStockValue() {
+        try {
+            totalCalculatedClosingStockValue = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
+            cogs.put("Calculated Closing Stock Value", totalCalculatedClosingStockValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateVariance() {
+        try {
+            double variance = totalCalculatedClosingStockValue - totalClosingStockValueByDatabaseQuery;
+            cogs.put("Variance", variance);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating variance");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Cash);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCash = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Cash", totalSaleCash);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Card);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditCard = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Credit Card", totalSaleCreditCard);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            params.put("Doctype", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalBhtIssueValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("BHT Issue Value", totalBhtIssueValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+            creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod in :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", creditTypePaymentMethods);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Credit Value", totalSaleCreditValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", BillType.PharmacyTransferIssue);
+
+            double totalTransferIssueValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Transfer Issue Value", totalTransferIssueValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", BillType.PharmacyTransferReceive);
+
+            double totalTransferReceiveValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Transfer Receive Value", totalTransferReceiveValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculatePurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypeAtomics);
+
+            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Purchase Return", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :conDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("conDoctype", BillType.PharmacyIssue);
+
+            double totalConsumption = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Stock Consumption", totalConsumption);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :ipDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("ipDoctype", billTypeAtomics);
+
+            double totalReturnsIp = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Drug Return IP", totalReturnsIp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :opDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("opDoctype", billTypeAtomics);
+
+            double totalReturnsOp = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Drug Return Op", totalReturnsOp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating OP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateGrnCashAndCredit() {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :bType ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.paymentMethod IN (:cash, :credit) ")
+                    .append("GROUP BY b.paymentMethod");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", BillTypeAtomic.PHARMACY_GRN);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("cash", PaymentMethod.Cash);
+            params.put("credit", PaymentMethod.Credit);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            Map<PaymentMethod, Double> totalsByMethod = results.stream()
+                    .collect(Collectors.toMap(
+                            r -> (PaymentMethod) r[0],
+                            r -> r[1] != null ? ((Number) r[1]).doubleValue() : 0.0
+                    ));
+
+            cogs.put("GRN Cash Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
+            cogs.put("GRN Credit Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateStockCorrection() {
+        try {
+            List<BillType> billTypes = Arrays.asList(
+                    BillType.PharmacyAdjustmentSaleRate,
+                    BillType.PharmacyAdjustmentPurchaseRate,
+                    BillType.PharmacyAdjustmentWholeSaleRate
+            );
+
+            StringBuilder jpql = new StringBuilder("SELECT SUM(sh2.pbItem.qty * (sh2.pbItem.afterAdjustmentValue - sh2.pbItem.beforeAdjustmentValue)) "
+                    + "FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL OR sh2.itemBatch.item.departmentType = :depty) "
+                    + "AND sh2.pbItem.billItem.bill.billType IN :doctype");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("doctype", billTypes);
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            Double totalCorrection = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Stock Correction", totalCorrection != null ? totalCorrection : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
     private void calculateOpeningStock() {
-        StringBuilder subQuery = new StringBuilder()
-                .append("SELECT MAX(sh2.id) FROM StockHistory sh2 ")
-                .append("WHERE sh2.retired = false ")
-                .append("AND (sh2.itemBatch.item.departmentType IS NULL ")
-                .append("OR sh2.itemBatch.item.departmentType = :depty) ");
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
 
-        Map<String, Object> params = new HashMap<>();
-        params.put("depty", DepartmentType.Pharmacy);
-        params.put("et", CommonFunctions.getStartOfDay(fromDate));
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
 
-        addFilter(subQuery, params, "sh2.institution", "ins", institution);
-        addFilter(subQuery, params, "sh2.department.site", "sit", site);
-        addFilter(subQuery, params, "sh2.department", "dep", department);
-        if (amp != null) {
-            addFilter(subQuery, params, "sh2.itemBatch.item", "itm", amp);
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
+
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+
+            Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            cogs.put("ERROR", -1.0);
         }
-        addFilter(subQuery, "AND sh2.createdAt < :et");
+    }
 
-        subQuery.append("GROUP BY sh2.itemBatch.item");
+    private void calculateClosingStock() {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
 
-        List<Long> latestStockHistoryIds = facade.findLongValuesByJpql(subQuery.toString(), params);
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
 
-//        double totalQty = 0.0;
-        double totalSaleValue = 0.0;
-//        double totalPurchaseValue = 0.0;
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(toDate));
 
-        for (Long shid : latestStockHistoryIds) {
-            StockHistory sh = facade.find(shid);
-            if (sh == null || sh.getItemBatch() == null || sh.getItemBatch().getItem() == null) {
-                continue;
-            }
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
 
-            double stockQty = sh.getItemStock();
-//            double purchaseRate = sh.getItemBatch().getPurcahseRate();
-            double saleRate = sh.getItemBatch().getRetailsaleRate();
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
 
-//            totalQty += stockQty;
-            totalSaleValue += stockQty * saleRate;
-//            totalPurchaseValue += stockQty * purchaseRate;
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+
+            Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
+            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculate closing Stock");
+            cogs.put("ERROR", -1.0);
         }
-
-        cogs.put("OPENING STOCK VALUE", totalSaleValue);
-
     }
 
     public Map<String, Double> getCogs() {
@@ -2904,9 +3277,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -3010,8 +3383,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));

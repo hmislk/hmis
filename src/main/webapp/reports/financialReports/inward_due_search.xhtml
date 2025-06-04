@@ -267,8 +267,9 @@
                                 <f:event type="preRenderComponent"
                                          listener="#{creditCompanyDueController.resetCounter}"/>
 
-                                <ui:repeat value="#{creditCompanyDueController.billPatientEncounterMap.entrySet()}"
-                                           var="entry" rowIndexVar="i">
+                                <ui:repeat
+                                        value="#{creditCompanyDueController.institutionBillPatientEncounterMap.entrySet()}"
+                                        var="entry" rowIndexVar="i">
                                     <tr style="border-bottom: 1px solid #d9d9d9;">
                                         <td>#{creditCompanyDueController.nextRowCounter()}</td>
                                         <td>#{entry.key.bhtNo}</td>
@@ -289,29 +290,28 @@
                                         </td>
                                         <td>
                                             <h:outputText
-                                                    value="#{creditCompanyDueController.calculatePayableByPatient(entry.key, entry.value)}">
+                                                    value="#{entry.value.get(0).patientGopAmount}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td>
-                                            <h:outputText value="#{entry.key.finalBill.settledAmountByPatient}">
+                                            <h:outputText value="#{entry.value.get(0).paidByPatient}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td>
-                                            <h:outputText value="#{creditCompanyDueController.calculatePayableByPatient(entry.key, entry.value) -
-                                            entry.key.finalBill.settledAmountByPatient}">
+                                            <h:outputText value="#{entry.value.get(0).patientDue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td>
-                                            <h:outputText value="#{entry.key.finalBill.settledAmountBySponsor}">
+                                            <h:outputText value="#{entry.value.get(0).totalPaidByCompanies}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td>
                                             <h:outputText
-                                                    value="#{entry.key.finalBill.netTotal - entry.key.finalBill.settledAmountByPatient - entry.key.finalBill.settledAmountBySponsor}">
+                                                    value="#{entry.value.get(0).totalDue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText></td>
                                         <td>
@@ -330,21 +330,22 @@
                                                 <tbody>
                                                 <ui:repeat value="#{entry.value}" var="b">
                                                     <tr style="border-bottom: 1px solid #d9d9d9;">
-                                                        <td style="min-width: 6rem; ">#{b.creditCompany.name}</td>
-                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.creditCompany.name)}</td>
-                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.creditCompany.name)}</td>
+                                                        <td style="min-width: 6rem; ">#{b.institution.name}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
                                                         <td style="width: 6rem; text-align: right">
-                                                            <h:outputText value="#{b.netTotal}">
+                                                            <h:outputText value="#{b.gopAmount}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 6rem; text-align: right">
-                                                            <h:outputText value="#{b.paidAmount}">
+                                                            <h:outputText value="#{b.paidByCompany}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
                                                         <td style="width: 6rem; text-align: right">
-                                                            <h:outputText value="#{b.netTotal - b.paidAmount}">
+                                                            <h:outputText
+                                                                    value="#{b.companyDue ne 0 ? b.companyDue : b.companyExcess}">
                                                                 <f:convertNumber pattern="#,##0.00"/>
                                                             </h:outputText>
                                                         </td>
@@ -356,21 +357,21 @@
                                                     <td style="font-weight: bold;" colspan="3">Total</td>
                                                     <td style="text-align: right">
                                                         <h:outputText
-                                                                value="#{entry.key.transPaid}"
+                                                                value="#{creditCompanyDueController.patientEncounterGopMap.get(entry.key)}"
                                                                 style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
                                                         <h:outputText
-                                                                value="#{entry.key.transPaidByCompany}"
+                                                                value="#{creditCompanyDueController.patientEncounterPaidByCompanyMap.get(entry.key)}"
                                                                 style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: right">
                                                         <h:outputText
-                                                                value="#{entry.key.transPaid - entry.key.transPaidByCompany}"
+                                                                value="#{creditCompanyDueController.patientEncounterGopMap.get(entry.key) - creditCompanyDueController.patientEncounterPaidByCompanyMap.get(entry.key)}"
                                                                 style="font-weight: bold;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
@@ -408,7 +409,7 @@
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <h:outputText
-                                                value="#{creditCompanyDueController.payableByPatient- creditCompanyDueController.paidByPatient}"
+                                                value="#{creditCompanyDueController.payableByPatient - creditCompanyDueController.paidByPatient}"
                                                 style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -422,7 +423,7 @@
                                     </td>
                                     <td style="vertical-align: middle;">
                                         <h:outputText
-                                                value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}"
+                                                value="#{creditCompanyDueController.billed - creditCompanyDueController.paidByPatient - creditCompanyDueController.paidByCompany}"
                                                 style="font-weight: bold;">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>

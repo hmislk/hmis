@@ -53,8 +53,15 @@
                                                 action="#{searchController.navigateToBillList}"
                                                 class="w-100">
                                             </p:commandButton>
-
-
+                                            
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Count List"
+                                                action="#{searchController.navigateToBillCountList()}"
+                                                actionListener="#{searchController.resetAllFiltersExceptDateRange}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Item List" 

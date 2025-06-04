@@ -267,6 +267,24 @@ public class BookingController implements Serializable, ControllerWithPatient, C
     private double balance = 0.0;
     private double total;
     private double remainAmount;
+    private List<SessionInstance> sessionsForHolidayMark;
+    private List<SessionInstance> sessionsForCancellation;
+
+    public List<SessionInstance> getSessionsForCancellation() {
+        return sessionsForCancellation;
+    }
+
+    public void setSessionsForCancellation(List<SessionInstance> sessionsForCancellation) {
+        this.sessionsForCancellation = sessionsForCancellation;
+    }
+
+    public List<SessionInstance> getSessionsForHolidayMark() {
+        return sessionsForHolidayMark;
+    }
+
+    public void setSessionsForHolidayMark(List<SessionInstance> sessionsForHolidayMark) {
+        this.sessionsForHolidayMark = sessionsForHolidayMark;
+    }
 
     public void filterSessionInstances() {
         sessionInstancesToday = getSessionInstances();
@@ -1522,8 +1540,8 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                     continue;
                 }
                 mobile = bs.getBill().getPatient().getPerson().getSmsNumber();
-            }else if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
-                     && bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null){
+            } else if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                    && bs.getBill().getReferenceBill() != null && bs.getBill().getReferenceBill().getOnlineBooking() != null) {
                 mobile = bs.getBill().getReferenceBill().getOnlineBooking().getPhoneNo();
             }
 
@@ -1659,7 +1677,14 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
         String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
-        String patientName = b.getPatient().getPerson().getNameWithTitle();
+
+        String patientName = "";
+        if (b.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            patientName = b.getReferenceBill().getOnlineBooking().getTitle() + ". " + b.getReferenceBill().getOnlineBooking().getPatientName();
+        } else {
+            patientName = b.getPatient().getPerson().getNameWithTitle();
+        }
+
         String insName = sessionController.getLoggedUser().getInstitution().getName();
         int no = b.getSingleBillSession().getSerialNo();
 
@@ -1809,6 +1834,67 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             consultants = new ArrayList<>();
         }
         return consultants;
+    }
+
+    @Inject
+    PastBookingController pastBookingController;
+
+    public String navigateChannelBookingViewFromChannelBookingByDate(SessionInstance session, Speciality speciality, Staff staff) {
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+        Date today = cal.getTime();
+
+        if (session != null) {
+            if (session.getSessionDate().before(today)) {
+                return pastBookingController.navigatePastBookingFromChannelBookingByDate(session);
+            } else {
+                if (speciality != null) {
+                    this.speciality = speciality;
+                    listnerStaffListForRowSelect();
+                } else if (session != null) {
+                    this.speciality = session.getStaff().getSpeciality();
+                }
+
+                if (staff != null) {
+                    this.staff = staff;
+                    generateSessions();
+                } else if (session != null) {
+                    this.staff = session.getStaff();
+                }
+
+                if (session != null) {
+                    this.selectedSessionInstance = session;
+                    fillBillSessions();
+                }
+
+                return "/channel/channel_booking?faces-redirect=true";
+            }
+        }
+        return "";
+    }
+
+    public void markHolidayForSessionInstances(boolean mark) {
+        if (sessionsForHolidayMark != null && !sessionsForHolidayMark.isEmpty()) {
+            for (SessionInstance session : sessionsForHolidayMark) {
+                session.setDoctorHoliday(mark);
+                session.setAcceptOnlineBookings(!mark);
+                if (mark) {
+                    session.setDoctorHolidayMarkedBy(sessionController.getLoggedUser());
+                }
+                sessionInstanceFacade.edit(session);
+            }
+            if (mark) {
+                JsfUtil.addSuccessMessage("Holiday Mark is Successful.");
+            }else if(!mark){
+                JsfUtil.addSuccessMessage("Holiday UnMark is Successful.");
+            }
+        } else {
+            JsfUtil.addErrorMessage("No sessions are selected to mark Holiday.");
+        }
     }
 
     public List<Staff> getConsultants() {
@@ -2263,6 +2349,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+        generateSessions();
     }
 
     public void markAsNotArrived() {
@@ -2287,6 +2374,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         arrivalRecord.setApproved(false);
         fpFacade.edit(arrivalRecord);
         sendSmsOnChannelDoctorArrival();
+        generateSessions();
     }
 
     public void markToCancel() {
@@ -2931,6 +3019,10 @@ public class BookingController implements Serializable, ControllerWithPatient, C
             }
         }
 
+        if (selectedSessionInstance == null) {
+            return;
+        }
+
         // Set calculated counts to selectedSessionInstance
         selectedSessionInstance.setBookedPatientCount(bookedPatientCount);
         selectedSessionInstance.setPaidPatientCount(paidPatientCount);
@@ -2942,6 +3034,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         // Assuming remainingPatientCount is calculated as booked - completed
         selectedSessionInstance.setRemainingPatientCount(bookedPatientCount - completedPatientCount);
         sessionInstanceController.save(selectedSessionInstance);
+        selectedBillSession = null;
     }
 
     public void addReportPatient() {
@@ -4004,7 +4097,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
 
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
-        setStaff(null);
+        //setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
     }

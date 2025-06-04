@@ -5,7 +5,8 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
-                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward">
+                xmlns:phe="http://xmlns.jcp.org/jsf/composite/pharmacy/inward"
+                xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
@@ -42,9 +43,9 @@
                                     <p:autoComplete accesskey="i"    id="acStock"
                                                     value="#{pharmacySaleBhtController.tmpStock}"
                                                     completeMethod="#{stockController.completeAvailableStocks}"
-                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
+                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="10" size="100"
                                                     >
-                                        <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                        <p:column headerText="Item" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                 &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
                                                                          commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
@@ -52,34 +53,34 @@
                                             </h:outputLabel>
                                         </p:column>
 
-                                        <p:column headerText="Code" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                        <p:column headerText="Code" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                   commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Generic" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                        <p:column headerText="Generic" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Rate" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                        <p:column headerText="Rate" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                   commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                 <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                        <p:column headerText="Stocks" style="padding: 4px" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                     commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.stock}" >
                                                 <f:convertNumber pattern="#,###" ></f:convertNumber>
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                        <p:column headerText="Expiry" style="padding: 4px" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                                   commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                             <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
                                                            style="width: 100px!important;" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                             </h:outputLabel>
                                         </p:column>
-
+                                        <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
                                     </p:autoComplete>
                                 </h:panelGrid>
 
@@ -96,18 +97,21 @@
                                 </h:panelGrid>
 
                                 <h:panelGrid columns="1" class="w-100" >
-                                    <p:outputLabel value="" ></p:outputLabel>
+                                    <p:outputLabel value="&nbsp;" ></p:outputLabel>
                                     <p:commandButton  accesskey="a"
                                                       id="btnAdd"
                                                       icon="fa fa-plus"
                                                       value="Add"
-                                                      class="ui-button-success mt-2"
+                                                      class="ui-button-success mx-1"
                                                       action="#{pharmacySaleBhtController.addBillItemNew}"
                                                       ajax="false"
                                                       style="float: right;"
+                                                      update="focusItem"
                                                       ></p:commandButton>
                                 </h:panelGrid>
-
+                                
+                                <p:focus id="focusQty" for="txtQty"></p:focus>
+                                <p:focus id="focusItem" for="acStock"></p:focus>
 
                             </h:panelGrid>
                         </p:panel>
@@ -137,7 +141,10 @@
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                 <p:outputLabel value="Net Total" ></p:outputLabel>
                                 <p:outputLabel value=":" ></p:outputLabel>
-                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                <p:outputLabel value="#{pharmacySaleBhtController.billItemTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                <p:outputLabel value="Comment" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.comments}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                             </h:panelGrid>
                         </p:panel>
 
@@ -216,9 +223,15 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
-
+                    
                     <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
                         <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
+                    <p:column headerText="Matrix Value"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputLabel value="#{bItm.marginValue}" style="text-align: right;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -241,6 +254,13 @@
                             </f:facet>
                         </p:cellEditor>
                     </p:column>
+                    
+                    <p:column headerText="Net Total"  style="width:50px!important; text-align: right;" rendered="#{webUserController.hasPrivilege('Developers')}">
+                        <h:outputLabel value="#{bItm.netValue}" style="text-align: right;">
+                            <f:convertNumber pattern="#,##0.00" />
+                        </h:outputLabel>
+                    </p:column>
+                    
                     <p:column style="width:25px!important; text-align: right;">
                         <p:rowEditor/>
                         <p:commandButton icon="fas fa-trash" action="#{pharmacySaleBhtController.removeBillItemFromBhtRequest(bItm)}" class="ui-button-danger" ajax="false" >
@@ -261,7 +281,7 @@
                                 class="ui-button-secondary"
                                 icon="fas fa-arrow-left"
                                 ajax="false"
-                                action="ward_pharmacy_bht_issue_request_list_for_issue"
+                                action="ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                                 actionListener="#{pharmacySaleBhtController.makeNullWithFill()}"
                                 value="Requested List"/>
                             <p:commandButton
@@ -269,6 +289,7 @@
                                 icon="fas fa-print"
                                 value="Print"
                                 ajax="false"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                 action="#" >
                                 <p:printer target="gpBillPreview" ></p:printer>
                             </p:commandButton>
@@ -279,11 +300,9 @@
                 <h:panelGroup   id="gpBillPreview">
                     <h:panelGroup id="gpBillPreviewDouble">
 
-                        <div >
-                            <h:panelGroup >
-                                <phe:issueBill bill="#{pharmacySaleBhtController.printBill}"/>
+                       <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Request Issue Bill is PosHeaderPaper',true)}">
+                           <phi:saleBill_Header_Inward bill="#{pharmacySaleBhtController.printBill}"></phi:saleBill_Header_Inward>
                             </h:panelGroup>
-                        </div>
 
                     </h:panelGroup>
 

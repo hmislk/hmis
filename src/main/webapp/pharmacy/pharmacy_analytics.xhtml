@@ -88,6 +88,10 @@
                                                              value="Sale Summary - By Payment Method (By Bill) "
                                                              action="#{commonReport.navigateToPharmacyReportSaleByDateSummaryPaymentMethodByBill}" 
                                                              actionListener="#{pharmacySaleReportController.makeNull}"/>
+                                            <p:commandButton class="w-100" ajax="false" style="text-align: left"
+                                                             value="Stock Overview Report "
+                                                             action="#{reportsStock.navigateToPharmacyStockOverviewReport()}" 
+                                                            />
                                         </div>
                                     </p:tab>
 
@@ -175,6 +179,20 @@
                                         </div>
                                     </p:tab>
 
+
+                                    <p:tab title="Movement Reports">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                value="Movement Out by Sale, Issue, and Consumption with Current Stock Report"
+                                                icon="fa fa-file-medical"
+                                                ajax="false"
+                                                styleClass="w-100 ui-button-primary"
+                                                style="text-align: left"
+                                                action="#{pharmacySummaryReportController.navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport()}" />
+                                        </div>
+                                    </p:tab>
+
+
                                     <p:tab title="Retail Sale Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100 ui-button-warning" value="Sale Report" action="sale_report?faces-redirect=true" ajax="false" />
@@ -182,7 +200,7 @@
                                             <p:commandButton class="w-100 ui-button-warning" value="Institution Item Movement" action="pharmacy_report_institution_movement?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Fast Moving" action="pharmacy_report_department_fast_moving?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Slow Moving" action="pharmacy_report_department_slow_moving?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" />
+                                            <p:commandButton class="w-100" value="Non Moving" action="pharmacy_report_department_non_moving?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Prescription Summary" action="#{reportController.navigateToPrescriptionSummaryReport()}" actionListener="#{reportController.makeNull()}" ajax="false"/>
                                             <p:commandButton class="w-100 ui-button-warning" value="Presciption List" action="#{reportController.navigateToPrescriptionList()}" actionListener="#{reportController.makeNull()}" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="List of Pharmacy Bills" action="/pharmacy/list_of_all_sale_bills?faces-redirect=true" ajax="false" />

@@ -5,6 +5,8 @@
  */
 package com.divudi.core.data;
 
+import com.divudi.bean.lab.LaborataryReportController;
+
 public enum Privileges {
 
     //<editor-fold defaultstate="collapsed" desc="Main">
@@ -33,7 +35,6 @@ public enum Privileges {
     RefundOpdBillsFromCashier("Refund opd Bills From Cashier"),
     RefundPharmacyBillsFromCashier("Rufund Pharmacy Bills From Cashier"),
     AcceptPaymentForPharmacyBills("Accept payment For Pharmacy Bill(Cashier)"),
-    
     //<editor-fold defaultstate="collapsed" desc="OPD">
     // Submenu Privileges
     OpdBilling("OPD Billing"),
@@ -99,6 +100,7 @@ public enum Privileges {
     ShowInwardFee("Show Inward Fee"),
     InwardPharmacyMenu("Inward Pharmacy Menu"),
     InwardPharmacyIssueRequest("Inward Pharmacy Issue Request"),
+    InwardPharmacyIssueRequestCancel("Inward Pharmacy Issue Request Cancel"),
     InwardPharmacyIssueRequestSearch("Inward Pharmacy Issue Request Search"),
     InwardBillSettleWithoutCheck("Inward Bill Settle Without Check"),
     TheaterIssueBHT("Theater Issue BHT"),
@@ -132,7 +134,9 @@ public enum Privileges {
     LabBillRefunding("Lab Bill Refunding"),
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
+    LabSampleSending("Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
+    LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
     LabDataentry("Lab Data Entry"),
     LabAutherizing("Lab Authorizing"),
@@ -155,6 +159,7 @@ public enum Privileges {
     LabInvestigationFee("Lab Investigation Fee"),
     LabAddInwardServices("Lab Add Inward Services"),
     LabReportSearchByLoggedInstitution("Lab Report Search by Logged Institution"),
+    LabReportSearchByLoggedDepartment("Lab Report Search by Logged Department"),
     IncomeReport("Income Report"),
     LabReport("Lab Report"),
     DuesAndAccess("Dues and Access"),
@@ -176,6 +181,12 @@ public enum Privileges {
     LabReporting("Lab Reporting"),
     // Don't remove
     LabSearchBillLoggedInstitution("Lab Search Bill Logged Institution"),
+    DashBoardMenu("DashBoard Menu"),
+    DashBoardBillSearch("DashBoard Bill Search"),
+    DashBoardSampleSearch("DashBoard Sample Search"),
+    DashBoardInvestigationSearch("DashBoard Investigation Search"),
+    DashBoardReportSearch("DashBoard Report Search"),
+    DashBoardPatientReportSearch("DashBoard Patient Report Search"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -571,9 +582,10 @@ public enum Privileges {
     CourierViewBillReports("Courier View Bill Reports"),
     CourierViewPaymentReports("Courier View Payment Reports"),
     //</editor-fold>
-    
+
     //<editor-fold defaultstate="collapsed" desc="Collecting Centre">
     CollectingCentreManageMenu("Collecting Centre Manage Menu"),
+    CollectingCentreBilling("Collecting Centre Billing"),
     CCPaymentReceive("CC Payment Receive"),
     SearchCCPaymentReceive("Search CC Payment Receive"),
     IssueReferenceBook("CC Issue Reference Book"),
@@ -585,7 +597,6 @@ public enum Privileges {
     CollectingCentreDebitNote("CC Debit Note"),
     CollectingCentreReports("CC Reports"),
     ChangeCollectingCentre("Change Collecting Centre"),
-    
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="User">
@@ -853,6 +864,23 @@ public enum Privileges {
             case ClinicSchedule:
             case ClinicSession:
                 return "Clinics";
+
+            // Collecting Centre Privileges
+            case CollectingCentreManageMenu:
+            case CollectingCentreBilling:
+            case CCPaymentReceive:
+            case SearchCCPaymentReceive:
+            case IssueReferenceBook:
+            case SearchIssuedReferenceBook:
+            case ChangeCreditLimitInCC:
+            case PayCollectingCentre:
+            case CollectingCentreCreditDebitNoteMenu:
+            case CollectingCentreCreditNote:
+            case CollectingCentreDebitNote:
+            case CollectingCentreReports:
+            case ChangeCollectingCentre:
+                return "Collecting Centre";
+                
             default:
                 return this.toString();
         }

@@ -179,13 +179,6 @@
                                          update="tbl"
                                          />
 
-                        <script>
-                            function handleRowClick() {
-                                onBillRowClick(); // triggers AJAX to server
-                            }
-                        </script>
-
-
                         <p:dataTable 
                             id="tbl"
                             value="#{searchController.bundle.reportTemplateRows}"
@@ -221,10 +214,17 @@
                                 <f:facet name="header">
                                     <h:outputText value="Bill No" />
                                 </f:facet>
-                                <h:outputText value="#{row.bill.deptId}" />
+                                 <p:commandLink 
+                                    ajax="false" 
+                                    value="#{row.bill.deptId}"
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
+                                </p:commandLink>
+                                
                                 <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                                 <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
-                                <p:badge value="Cancel Bill" severity="info" rendered="#{row.bill.total lt 0}"/>
+                                <p:badge value="Refund Bill" severity="warning" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}"/>
+                                <p:badge value="Cancel Bill" severity="danger" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}"/>
+                                
                             </p:column>
 
                             <p:column rendered="#{webUserController.hasPrivilege('Developers')}">
@@ -485,6 +485,12 @@
                                     targetElement.innerText = totalValue.toFixed(2);
                                 }
 
+                            }
+                            
+                            function handleRowClick() {
+                                onBillRowClick(); // triggers AJAX to server
+                                setTimeout(updateTotals, 500);
+                                
                             }
 
                             function updateTotals() {

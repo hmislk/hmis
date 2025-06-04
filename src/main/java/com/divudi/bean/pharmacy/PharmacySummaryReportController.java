@@ -41,6 +41,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.PharmacyBundle;
+import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ReportViewType;
@@ -127,6 +128,8 @@ public class PharmacySummaryReportController implements Serializable {
     @Inject
     private BillBeanController billBean;
     @Inject
+    StockController stockController;
+    @Inject
     private SessionController sessionController;
     @Inject
     private TransferController transferController;
@@ -185,6 +188,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     private List<Bill> bills;
 
+    private List<ReportViewType> reportViewTypes;
     private ReportViewType reportViewType;
 
     private double total;
@@ -247,6 +251,15 @@ public class PharmacySummaryReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToPharmacyIncomeReport() {
         return "/pharmacy/reports/summary_reports/pharmacy_income_report?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_ITEM
+        );
+        reportViewType = ReportViewType.BY_ITEM;
+        return "/pharmacy/reports/movement_reports/movement_out_by_sale_issue_and_consumption_with_current_stock_report?faces-redirect=true";
     }
 
     public String navigateToPharmacyProcurementReport() {
@@ -386,10 +399,6 @@ public class PharmacySummaryReportController implements Serializable {
             }
 
             jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
-
-            // System.out.println("jpql.toString() = " + jpql.toString());
-            // System.out.println("params = " + params);
-            // Execute the query
             List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
             bundleReport.setReportTemplateRows(rows);
@@ -542,6 +551,27 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    public void processMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
+        reportTimerController.trackReportExecution(() -> {
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+            switch (reportViewType) {
+                case BY_BILL:
+                    processMovementOutWithStocksReportByBill();
+                    break;
+                case BY_ITEM:
+                    processMovementOutWithStockReportByItem();
+                    addCurrentItemStock(pharmacyBundle);
+                    break;
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                    break;
+            }
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
     public void processPharmacyProcurementReport() {
         if (reportViewType == null) {
             JsfUtil.addErrorMessage("Please select a report view type.");
@@ -567,8 +597,29 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReportByBillType");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(incomeBills);
+            bundle.fixDiscountsAndMarginsInRows();
+            for (IncomeRow r : bundle.getRows()) {
+                if (r.getBill() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(r.getBill()));
+                }
+            }
+            bundle.generatePaymentDetailsGroupedByBillType();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void processMovementOutWithStockReportByBillType() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
@@ -587,7 +638,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
-    public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
+    public List<BillTypeAtomic> getPharmacyMovementOutBillTypes() {
         return Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
@@ -595,6 +646,9 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
                 BillTypeAtomic.PHARMACY_WHOLESALE,
                 BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
                 BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
@@ -607,6 +661,43 @@ public class PharmacySummaryReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE,
+                BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE,
+                BillTypeAtomic.PHARMACY_ISSUE_CANCELLED,
+                BillTypeAtomic.PHARMACY_ISSUE_RETURN
+        );
+    }
+
+    public List<BillTypeAtomic> getPharmacyIncomeBillTypes() {
+        return Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
                 BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
                 BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
@@ -629,11 +720,11 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReportByBillType");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 if (r.getBill() == null) {
                     continue;
@@ -651,13 +742,12 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
 
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(incomeBills);
-
+            bundle.fixDiscountsAndMarginsInRows();
             for (IncomeRow r : bundle.getRows()) {
                 Bill b = r.getBill();
                 if (b == null || b.getPaymentMethod() == null) {
@@ -675,6 +765,27 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeReportByBill() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+            List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(bills);
+            bundle.fixDiscountsAndMarginsInRows();
+            for (IncomeRow r : bundle.getRows()) {
+                if (r.getBill() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod() == null) {
+                    continue;
+                }
+                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(r.getBill()));
+                }
+            }
+            bundle.generatePaymentDetailsForBills();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void processMovementOutWithStocksReportByBill() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
 
             List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(bills);
@@ -695,12 +806,10 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeAndCostReport");
             if (reportViewType == null) {
                 JsfUtil.addErrorMessage("Please select a report view type.");
                 return;
             }
-            System.out.println("reportViewType = " + reportViewType);
             switch (reportViewType) {
                 case BY_BILL_ITEM:
                     processPharmacyIncomeAndCostReportByBillItem();
@@ -720,20 +829,23 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    public void processMovementOutWithStockReportByItem() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+        List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        pharmacyBundle = new PharmacyBundle(pbis);
+        pharmacyBundle.groupSaleDetailsByItems();
+    }
+
     public void processPharmacyIncomeAndCostReportByBill() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
             List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
@@ -742,7 +854,6 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillType() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processPharmacyIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
@@ -776,7 +887,7 @@ public class PharmacySummaryReportController implements Serializable {
                 if (bi == null || bi.getPharmaceuticalBillItem() == null) {
                     continue;
                 }
-                
+
                 Double q = bi.getPharmaceuticalBillItem().getQty();
                 Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
@@ -1853,6 +1964,29 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setPharmacyBundle(PharmacyBundle pharmacyBundle) {
         this.pharmacyBundle = pharmacyBundle;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        if (reportViewTypes == null) {
+            reportViewTypes = new ArrayList<>(Arrays.asList(ReportViewType.values()));
+        }
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+    private void addCurrentItemStock(PharmacyBundle pharmacyBundle) {
+        if (pharmacyBundle == null) {
+            return;
+        }
+        for (PharmacyRow pr : pharmacyBundle.getRows()) {
+            if (pr.getItem() == null) {
+                continue;
+            }
+            pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
+        }
     }
 
 }

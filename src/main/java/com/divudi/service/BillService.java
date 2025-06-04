@@ -1,6 +1,11 @@
 package com.divudi.service;
 
 import com.divudi.core.data.BillCategory;
+import static com.divudi.core.data.BillCategory.BILL;
+import static com.divudi.core.data.BillCategory.CANCELLATION;
+import static com.divudi.core.data.BillCategory.PAYMENTS;
+import static com.divudi.core.data.BillCategory.PREBILL;
+import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.data.BillTypeAtomic;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
@@ -20,6 +25,7 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -52,6 +58,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -586,8 +593,8 @@ public class BillService {
         btas.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         return btas;
     }
-    
-    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills(){
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyOpdBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -596,8 +603,41 @@ public class BillService {
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         return btas;
     }
-    
-    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyPackageBills(){
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+
+        // OPD-related
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        btas.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        // Pharmacy Retail Sale
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_PRE);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+
+        return btas;
+    }
+
+    public List<BillTypeAtomic> fetchBillTypeAtomicsForOnlyPackageBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         btas.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -1747,6 +1787,81 @@ public class BillService {
         m.put("b", b);
         m.put("ret", false);
         return denominationTransactionFacade.findByJpql(jpql, m);
+    }
+
+    public void createBillFinancialDetailsForPharmacyBill(Bill b) {
+
+        if (b == null) {
+            return;
+        }
+
+        BillTypeAtomic bta = Optional
+                .ofNullable(b)
+                .map(Bill::getBillTypeAtomic)
+                .orElse(null);
+        if (bta == null || bta.getBillCategory() == null) {
+            return; // unable to categorise safely
+        }
+        BillCategory bc = bta.getBillCategory();
+
+        Double saleValue = 0.0;
+        Double purchaseValue = 0.0;
+        
+        List<BillItem> billItems = new ArrayList<>();
+        billItems = fetchBillItems(b);
+
+        for (BillItem bi : billItems) {
+
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            Double q = bi.getPharmaceuticalBillItem().getQty();
+            Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = bi.getNetRate();
+            }
+
+            Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    break;
+
+                default:
+                    break;
+            }
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+        }
+        if (b.getBillFinanceDetails() == null) {
+            b.setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+        b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+        billFacade.editAndCommit(b);
     }
 
 }

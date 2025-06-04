@@ -255,9 +255,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return output;
     }
 
-
-
-
     public void fillFees() {
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
@@ -608,10 +605,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
         return false;
     }
-
-
-
-
 
     public void updateSerial() {
         if (errorCheckForSerial()) {
@@ -1419,10 +1412,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 + " From BillSession bs "
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
+                + " and bs.bill.billTypeAtomic <> :bta"
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
         hh.put("ss", getSelectedSessionInstance());
@@ -1617,7 +1612,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return "/channel/channel_payment_session?faces-redirect=true";
 
     }
-
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
@@ -2117,7 +2111,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return bi;
     }
 
-
     private String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
@@ -2167,16 +2160,37 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         getServiceSessionFacade().edit(tmp);
     }
 
+    public String navigatePastBookingFromChannelBookingByDate(SessionInstance session) {
+        if (session != null) {
+            if (session.getStaff() != null) {
+                this.speciality = session.getStaff().getSpeciality();
+                listnerStaffListForRowSelect();
+            }
+            if (session.getStaff() != null) {
+                this.staff = session.getStaff(); 
+            }
+            
+            this.date = session.getSessionDate();
+            fillSessionInstance();
+            this.selectedSessionInstance = session;
+            fillBillSessions();
+        }
+
+        return "/channel/past_channel_booking?faces-redirect=true";
+    }
+
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
         setSelectedServiceSession(null);
+        billSessions = null;
         serviceSessionLeaveController.setSelectedServiceSession(null);
         serviceSessionLeaveController.setCurrentStaff(staff);
     }

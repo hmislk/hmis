@@ -89,6 +89,26 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.string}" ></h:outputLabel>                                    
                                 </p:column>
+                                
+                                <p:column headerText="Sale Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Sale Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{-i.value2}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <h:outputLabel value="#{i.value2}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{-reportsTransfer.netTotalSaleValues}" rendered="#{sessionController.loggedPreference.applicationInstitution eq 'Cooperative'}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                        <h:outputLabel value="#{reportsTransfer.netTotalSaleValues}" rendered="#{sessionController.loggedPreference.applicationInstitution ne 'Cooperative'}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
 
                                 <p:column headerText="Net Total" style="text-align: right;">
                                     <f:facet name="header">

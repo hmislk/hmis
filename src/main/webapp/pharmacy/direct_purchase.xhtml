@@ -177,13 +177,13 @@
                                     <h:outputLabel 
                                         class="w-100 m-1"
                                         style="white-space: nowrap;"
-                                        value="Retail Sale Price" />
+                                        value="Retail Rate - Unit" />
                                     <p:inputText
                                         autocomplete="off"
                                         id="txtRetailRate"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax 
                                             event="blur"
@@ -328,7 +328,7 @@
                                         id="txtRetailValue"
                                         disabled="true"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantity}" >
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit * pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.totalQuantityByUnits}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </div>
@@ -412,7 +412,7 @@
                             </p:column>
 
                             <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRate}">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRatePerUnit}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -500,84 +500,72 @@
                             </h:panelGrid>
                         </p:panel>
 
-                        <p:panel header="Bill details" class="m-1" >
+                        <p:panel id="panelBillDetails" header="Bill details" class="m-1" >
                             <f:facet name="header" >
                                 <h:outputText styleClass="fas fa-receipt"/>
                                 <h:outputText  class="mx-4" value="Bill Details" />
                             </f:facet>
-
-
                             <p:tabView id="tot">
-
                                 <!-- Legacy Summary -->
                                 <p:tab title="Bill Summary">
-                                    <p:panel header="Bill details" class="m-1">
-                                        <f:facet name="header">
-                                            <h:outputText styleClass="fas fa-receipt" />
-                                            <h:outputText class="mx-4" value="Bill Details" />
-                                        </f:facet>
+                                    <p:panelGrid columns="2" >
+                                        <p:outputLabel value="Gross Total" />
+                                        <p:outputLabel 
+                                            id="gro" 
+                                            value="#{pharmacyDirectPurchaseController.bill.total}" 
+                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                            />
 
-                                        <h:panelGrid columns="2" id="totGrid" style="min-width: 100%; font-weight: bolder">
-                                            <p:outputLabel value="Gross Total" />
-                                            <p:outputLabel id="gro" value="#{pharmacyDirectPurchaseController.bill.total}" />
+                                        <p:outputLabel value="Tax" />
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            id="tx" 
+                                            class="w-100 text-end"
+                                            value="#{pharmacyDirectPurchaseController.bill.tax}">
+                                            <p:ajax 
+                                                process="tx" 
+                                                update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                                event="blur"
+                                                listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                        </p:inputText>
 
-                                            <p:outputLabel value="Tax" />
-                                            <p:inputText autocomplete="off" id="tx" value="#{pharmacyDirectPurchaseController.bill.tax}">
-                                                <p:ajax process="tx" update="gro tx net" event="keyup"
-                                                        listener="#{pharmacyDirectPurchaseController.calNetTotal()}" />
-                                            </p:inputText>
+                                        <p:outputLabel value="Discount" />
+                                        <p:inputText 
+                                            class="w-100 text-end"
+                                            id="dis" 
+                                            autocomplete="off" 
+                                            value="#{pharmacyDirectPurchaseController.bill.discount}">
+                                            <p:ajax 
+                                                process="@this" 
+                                                update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                                event="blur"
+                                                listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
+                                        </p:inputText>
 
-                                            <p:outputLabel value="Discount" />
-                                            <p:inputText autocomplete="off" id="dis" value="#{pharmacyDirectPurchaseController.bill.discount}">
-                                                <p:ajax process="@this" update="gro tx net" event="keyup"
-                                                        listener="#{pharmacyDirectPurchaseController.calNetTotal()}" />
-                                            </p:inputText>
+                                        <p:outputLabel value="Net Total" />
+                                        <h:outputLabel 
+                                            id="net"
+                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                            value="#{pharmacyDirectPurchaseController.bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
 
-                                            <p:outputLabel value="Net Total" />
-                                            <h:outputLabel id="net" value="#{pharmacyDirectPurchaseController.bill.netTotal}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-
-                                            <p:outputLabel value="Sale Value" />
-                                            <h:outputLabel id="saleValue" value="#{pharmacyDirectPurchaseController.bill.saleValue}">
-                                                <f:convertNumber pattern="#,##0.00" />
-                                            </h:outputLabel>
-                                        </h:panelGrid>
-                                    </p:panel>
+                                        <p:outputLabel value="Sale Value" />
+                                        <h:outputLabel 
+                                            id="saleValue"
+                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                            value="#{pharmacyDirectPurchaseController.bill.saleValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </p:panelGrid>
                                 </p:tab>
 
                                 <!-- Detailed Finance Tab -->
                                 <p:tab title="Financial Summary">
-                                    <p:panelGrid columns="2" layout="tabular" styleClass="w-100">
 
-                                        <p:outputLabel value="Total Purchase Value" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalPurchaseValue}" styleClass="text-end" />
+                                    <ph:bill_finance_details id="billFinanceDetails" bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
 
-                                        <p:outputLabel value="Total Cost Value" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalCostValue}" styleClass="text-end" />
 
-                                        <p:outputLabel value="Total Retail Sale Value" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalRetailSaleValue}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Total Tax Value" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalTaxValue}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Bill Discount" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.billDiscount}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Line Discounts Total" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.lineDiscount}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Total Discount" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalDiscount}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Total Expense" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalExpense}" styleClass="text-end" />
-
-                                        <p:outputLabel value="Free Item Value" />
-                                        <p:outputLabel value="#{pharmacyDirectPurchaseController.bill.billFinanceDetails.totalOfFreeItemValues}" styleClass="text-end" />
-
-                                    </p:panelGrid>
                                 </p:tab>
 
                             </p:tabView>
@@ -733,11 +721,11 @@
                 </style>
 
                 <h:panelGroup id="gpBillPreview" >
-                    <pharmacy:purhcase
+                    <pharmacy:direct_purhcase
                         bill="#{pharmacyDirectPurchaseController.bill}"
                         ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                         ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                    </pharmacy:purhcase>
+                    </pharmacy:direct_purhcase>
                 </h:panelGroup>
 
             </p:panel>
