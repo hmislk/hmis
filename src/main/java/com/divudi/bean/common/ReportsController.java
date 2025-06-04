@@ -4132,11 +4132,11 @@ public class ReportsController implements Serializable {
 
         List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
-        for (ReportTemplateRow row: rows) {
+        for (ReportTemplateRow row : rows) {
             Bill bill = row.getBill();
 
             if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
-                bill = bill.getBilledBill();
+                bill = bill.getBilledBill() != null ? bill.getBilledBill() : bill;
             }
 
             String bookNumber = collectingCentreBillController.generateBookNumberFromReference(bill.getReferenceNumber());
