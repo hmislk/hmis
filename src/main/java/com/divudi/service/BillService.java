@@ -1391,6 +1391,7 @@ public class BillService {
             return null;
         }
         List<BillTypeAtomic> btas = new ArrayList<>();
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         switch (inputBill.getBillTypeAtomic()) {
             case PHARMACY_GRN:
                 btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
