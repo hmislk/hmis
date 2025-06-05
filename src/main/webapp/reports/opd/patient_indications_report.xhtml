@@ -1,0 +1,173 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+<h:body>
+
+    <ui:composition template="/opd/analytics/index.xhtml">
+        <ui:define name="subcontent">
+            <h:form >
+                <p:panel header="Test Counts" >
+
+                    <h:panelGrid columns="2" class="mb-2">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                            <p:outputLabel value="From" class="mx-3" />
+                        </h:panelGroup>
+                        <p:datePicker
+                                class="mt-1 w-100"
+                                inputStyleClass="w-100"
+                                showTime="true"
+                                showButtonBar="true"
+                                value="#{opdReportController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:datePicker>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                            <p:outputLabel value="To" class="mx-3" />
+                        </h:panelGroup>
+                        <p:datePicker
+                                showTime="true"
+                                showButtonBar="true"
+                                class="mt-1 w-100"
+                                inputStyleClass="w-100"
+                                value="#{opdReportController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:datePicker>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0e8;" styleClass="fa ml-5" />
+                            <p:outputLabel value="Billing Department" class="mx-3" />
+                        </h:panelGroup>
+                        <h:panelGroup id="cmbDept">
+
+                            <!-- Component 1: Without Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{opdReportController.institution eq null and opdReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 2: With Site Only -->
+                            <p:selectOneMenu
+                                    rendered="#{opdReportController.institution eq null and opdReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 3: With Institution Only -->
+                            <p:selectOneMenu
+                                    rendered="#{opdReportController.institution ne null and opdReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(opdReportController.institution)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                            <!-- Component 4: With Both Institution and Site -->
+                            <p:selectOneMenu
+                                    rendered="#{opdReportController.institution ne null and opdReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{opdReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.institution, opdReportController.site)}"
+                                        var="d"
+                                        itemLabel="#{d.name}"
+                                        itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+                        </h:panelGroup>
+
+                    </h:panelGrid>
+
+                    <p:commandButton
+                            value="Process"
+                            ajax="false"
+                            action="#{reportController.processOpdServiceCountDoctorWise()}"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            value="Download"
+                            ajax="false"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download"
+                            action="#{reportController.downloadOpdServiceCount()}">
+                    </p:commandButton>
+
+                    <p:commandButton
+                            id="btnCommentPrint"
+                            ajax="false"
+                            icon="pi pi-print"
+                            styleClass="ui-button-warning m-1"
+                            value="To Print">
+                        <p:printer target="tbl"/>
+                    </p:commandButton>
+<!--                    <p:commandButton-->
+<!--                            ajax="false"-->
+<!--                            icon="pi pi-print"-->
+<!--                            class="p-0 m-1 ui-button-info"-->
+<!--                            title="Print"-->
+<!--                            rendered="false"-->
+<!--                            styleClass="ui-button-warning m-1">-->
+<!--                        <p:printer target="tbl" />-->
+<!--                    </p:commandButton>-->
+
+
+                    <p:dataTable id="tbl"
+                                 value="#{reportController.reportOpdServiceCount}"
+                                 var="item"
+                                 paginatorPosition="bottom"
+                                 paginator="true"
+                                 class="mt-3"
+                                 rows="10"
+
+                    >
+                        <p:column headerText="Doctor Name">
+                            <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedDoctor(item.doctorId)}"
+                                            value="#{item.doctor}"/>
+                        </p:column>
+                        <p:column headerText="Test Name">
+                            <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedService(item.serviceId)}"
+                                            value="#{item.service}"/>
+                        </p:column>
+                        <p:column headerText="Test Count">
+                            <h:outputText value="#{item.serviceCount}" />
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
+</html>
