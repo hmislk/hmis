@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
+import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
@@ -4927,40 +4928,42 @@ public class ReportsController implements Serializable {
 //    }
 
     public void generateOpdAndInwardDueReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
-
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            generateOpdAndInwardDueIPBills();
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            List<BillTypeAtomic> opdBts = new ArrayList<>();
-            bundle = new ReportTemplateRowBundle();
-
-            if (visitType.equalsIgnoreCase("OP")) {
-//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
             }
 
-            bundle = generateOpdAndInwardDueBills(opdBts, null);
+            bundle = new ReportTemplateRowBundle();
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-            updateSettledAmountsForOP();
-            groupBills();
-        }
+            if (visitType.equalsIgnoreCase("IP")) {
+                generateOpdAndInwardDueIPBills();
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+                if (visitType.equalsIgnoreCase("OP")) {
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                }
+
+                bundle = generateOpdAndInwardDueBills(opdBts, null);
+
+                updateSettledAmountsForOP();
+                groupBills();
+            }
+        }, FinancialReport.OPD_AND_INWARD_DUE_REPORT, sessionController.getLoggedUser());
     }
 
     public void generateOpdAndInwardDueIPBills() {
