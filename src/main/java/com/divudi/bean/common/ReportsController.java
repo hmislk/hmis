@@ -3161,53 +3161,55 @@ public class ReportsController implements Serializable {
 //    }
 
     public void generateDebtorBalanceReport(final boolean onlyDueBills) {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
-
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        if (methodType.equalsIgnoreCase("Credit")) {
-            paymentMethods.add(PaymentMethod.Credit);
-        } else if (methodType.equalsIgnoreCase("NonCredit")) {
-            paymentMethods.add(PaymentMethod.Cash);
-        } else {
-            addAllPaymentMethods(paymentMethods);
-        }
-
-        bundle = new ReportTemplateRowBundle();
-
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            generateDebtorBalanceIPBills(onlyDueBills, paymentMethods);
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            List<BillTypeAtomic> opdBts = new ArrayList<>();
-
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-
-            bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
-            updateSettledAmountsForOP();
-
-            if (onlyDueBills) {
-                removeNonDues();
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
             }
 
-            bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
-            bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
-            bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
-            bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
-        }
+            List<PaymentMethod> paymentMethods = new ArrayList<>();
+            if (methodType.equalsIgnoreCase("Credit")) {
+                paymentMethods.add(PaymentMethod.Credit);
+            } else if (methodType.equalsIgnoreCase("NonCredit")) {
+                paymentMethods.add(PaymentMethod.Cash);
+            } else {
+                addAllPaymentMethods(paymentMethods);
+            }
+
+            bundle = new ReportTemplateRowBundle();
+
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
+
+            if (visitType.equalsIgnoreCase("IP")) {
+                generateDebtorBalanceIPBills(onlyDueBills, paymentMethods);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+                bundle = generateDebtorBalanceBills(opdBts, paymentMethods);
+                updateSettledAmountsForOP();
+
+                if (onlyDueBills) {
+                    removeNonDues();
+                }
+
+                bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
+                bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
+                bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
+                bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+            }
+        }, FinancialReport.DEBTOR_BALANCE_REPORT, sessionController.getLoggedUser());
     }
 
     public void exportDebtorBalanceReportIPToExcel() {
