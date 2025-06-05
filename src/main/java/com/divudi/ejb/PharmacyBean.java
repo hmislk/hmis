@@ -13,6 +13,7 @@ import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.IssueRateMargins;
@@ -1583,7 +1584,6 @@ public class PharmacyBean {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
-
         Map m = new HashMap();
         String sql;
         sql = "Select bi.pharmaceuticalBillItem.itemBatch from BillItem bi where "
@@ -1600,7 +1600,37 @@ public class PharmacyBean {
         } else {
             return 0.0f;
         }
+    }
+// ChatGPT contributed: Improved for type safety, null checks, and clarity
 
+    public double getLastRetailRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getRetailSaleRate() == null) {
+            return 0.0;
+        }
+
+        return f.getRetailSaleRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
