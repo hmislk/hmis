@@ -3571,10 +3571,10 @@ public class ReportsController implements Serializable {
             footerLabelColSpan.setHorizontalAlignment(Element.ALIGN_RIGHT);
             mainTable.addCell(footerLabelColSpan);
 
-            mainTable.addCell(new Phrase(decimalFormat.format(getBilled()), boldFont));
-            mainTable.addCell(new Phrase(decimalFormat.format(getPayableByPatient()), boldFont));
-            mainTable.addCell(new Phrase(decimalFormat.format(getPaidByCompany()), boldFont));
-            mainTable.addCell(new Phrase(decimalFormat.format(getBilled() - (getPaidByCompany() + getPaidByPatient())), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(bundle.getTotal()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(bundle.getSettledAmountByPatientsTotal()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(bundle.getSettledAmountBySponsorsTotal()), boldFont));
+            mainTable.addCell(new Phrase(decimalFormat.format(bundle.getTotalBalance()), boldFont));
 
             document.add(mainTable);
             document.close();
