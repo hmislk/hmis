@@ -14,34 +14,34 @@
                 <p:panel header="Collection Center Book Wise Detail">
 
                     <p:panelGrid columns="5" layout="tabular" class="w-100">
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
-<!--                            <p:outputLabel value="From Date" class="mx-3">-->
-<!--                            </p:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                        <p:calendar-->
-<!--                                class="w-100 "-->
-<!--                                inputStyleClass="w-100"-->
-<!--                                id="fromDate"-->
-<!--                                value="#{reportsController.fromDate}"-->
-<!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
-<!--                        </p:calendar>-->
+                        <!--                        <h:panelGroup>-->
+                        <!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
+                        <!--                            <p:outputLabel value="From Date" class="mx-3">-->
+                        <!--                            </p:outputLabel>-->
+                        <!--                        </h:panelGroup>-->
+                        <!--                        <p:calendar-->
+                        <!--                                class="w-100 "-->
+                        <!--                                inputStyleClass="w-100"-->
+                        <!--                                id="fromDate"-->
+                        <!--                                value="#{reportsController.fromDate}"-->
+                        <!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
+                        <!--                        </p:calendar>-->
 
-<!--                        <p:spacer width="5em"/>-->
+                        <!--                        <p:spacer width="5em"/>-->
 
-<!--                        <h:panelGroup>-->
-<!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
-<!--                            <p:outputLabel value="To Date" class="mx-3">-->
-<!--                            </p:outputLabel>-->
-<!--                        </h:panelGroup>-->
-<!--                        <p:calendar-->
-<!--                                class="w-100 "-->
-<!--                                inputStyleClass="w-100"-->
-<!--                                id="toDate"-->
-<!--                                value="#{reportsController.toDate}"-->
-<!--                                navigator="false"-->
-<!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
-<!--                        </p:calendar>-->
+                        <!--                        <h:panelGroup>-->
+                        <!--                            <h:outputText value="&#xf073;" styleClass="fa ml-5"/>-->
+                        <!--                            <p:outputLabel value="To Date" class="mx-3">-->
+                        <!--                            </p:outputLabel>-->
+                        <!--                        </h:panelGroup>-->
+                        <!--                        <p:calendar-->
+                        <!--                                class="w-100 "-->
+                        <!--                                inputStyleClass="w-100"-->
+                        <!--                                id="toDate"-->
+                        <!--                                value="#{reportsController.toDate}"-->
+                        <!--                                navigator="false"-->
+                        <!--                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">-->
+                        <!--                        </p:calendar>-->
 
                         <h:panelGroup class="col-md-2">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
@@ -169,6 +169,17 @@
                             <p:column
                                     headerText="Book No"
                                     width="5rem"
+                                    rendered="#{c.bill.billClassType eq 'CancelledBill' or c.bill.billClassType eq 'RefundBill'}"
+                                    sortBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"
+                                    filterBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"
+                                    filterMatchMode="contains">
+                                <h:outputText
+                                        value="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.billedBill.referenceNumber)}"/>
+                            </p:column>
+                            <p:column
+                                    headerText="Book No"
+                                    width="5rem"
+                                    rendered="#{c.bill.billClassType ne 'CancelledBill' and c.bill.billClassType ne 'RefundBill'}"
                                     sortBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"
                                     filterBy="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"
                                     filterMatchMode="contains">
@@ -176,11 +187,45 @@
                                         value="#{collectingCentreBillController.generateBookNumberFromReference(c.bill.referenceNumber)}"/>
                             </p:column>
                             <p:column headerText="Book Reference No" width="5rem" sortBy="#{c.bill.referenceNumber}"
-                                      filterBy="#{c.bill.referenceNumber}" filterMatchMode="contains">
+                                      filterBy="#{c.bill.referenceNumber}" filterMatchMode="contains"
+                                      rendered="#{c.bill.billClassType ne 'CancelledBill' and c.bill.billClassType ne 'RefundBill'}">
                                 <table style="border: none; border-collapse: collapse;">
                                     <tr>
                                         <td style="border: none !important; padding: 0 !important;">
                                             <h:outputText value="#{c.bill.referenceNumber}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq false and c.agentReferenceBook.retired eq false}"
+                                                    value="Deactivated" size="small" severity="warning"
+                                                    styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge
+                                                    rendered="#{c.agentReferenceBook.active eq true and c.agentReferenceBook.retired eq false}"
+                                                    value="Active" size="small" severity="success" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <p:badge rendered="#{c.agentReferenceBook.retired eq true}"
+                                                     value="Deleted" size="small" severity="danger" styleClass="ml-2"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </p:column>
+                            <p:column headerText="Book Reference No" width="5rem"
+                                      sortBy="#{c.bill.billedBill.referenceNumber}"
+                                      filterBy="#{c.bill.billedBill.referenceNumber}" filterMatchMode="contains"
+                                      rendered="#{c.bill.billClassType eq 'CancelledBill' or c.bill.billClassType eq 'RefundBill'}">
+                                <table style="border: none; border-collapse: collapse;">
+                                    <tr>
+                                        <td style="border: none !important; padding: 0 !important;">
+                                            <h:outputText value="#{c.bill.billedBill.referenceNumber}"/>
                                         </td>
                                     </tr>
                                     <tr>
@@ -251,61 +296,6 @@
                             </p:column>
                         </p:dataTable>
                     </h:panelGroup>
-                    <!--                        <div class="printingOnly">-->
-                    <!--                            <p:dataTable id="tblPrint"-->
-                    <!--                                         class="w-100 m-2"-->
-                    <!--                                         value="#{reportsController.bundle.reportTemplateRows}"-->
-                    <!--                                         var="c"-->
-                    <!--                                         rowIndexVar="b">-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Bill No" -->
-                    <!--                                    width="5rem" -->
-                    <!--                                    sortBy="#{c.bill.deptId}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.deptId}"/>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Book Reference No" -->
-                    <!--                                    width="5rem"-->
-                    <!--                                    sortBy="#{c.bill.referenceNumber}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.referenceNumber}"/>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Patient" -->
-                    <!--                                    width="5rem"-->
-                    <!--                                    sortBy="#{c.bill.patient.person.nameWithTitle}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.patient.person.nameWithTitle}"/>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Creater" -->
-                    <!--                                    width="5rem"-->
-                    <!--                                    sortBy="#{c.bill.creater.webUserPerson.name}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.creater.webUserPerson.name}"/>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Created Date" -->
-                    <!--                                    width="5rem"-->
-                    <!--                                    sortBy="#{c.bill.createdAt}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.createdAt}">-->
-                    <!--                                        <f:convertDateTime-->
-                    <!--                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
-                    <!--                                    </h:outputText>-->
-                    <!--                                </p:column>-->
-                    <!--                                <p:column -->
-                    <!--                                    headerText="Bill Value" -->
-                    <!--                                    width="5rem" -->
-                    <!--                                    style="text-align: right;"-->
-                    <!--                                    sortBy="#{c.bill.netTotal}" >-->
-                    <!--                                    <h:outputText value="#{c.bill.netTotal}">-->
-                    <!--                                        <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                    </h:outputText>-->
-                    <!--                                    <f:facet name="footer">-->
-                    <!--                                        <h:outputText value="#{reportsController.bundle.grossTotal}">-->
-                    <!--                                            <f:convertNumber pattern="#,##0.00"/>-->
-                    <!--                                        </h:outputText>-->
-                    <!--                                    </f:facet>-->
-                    <!--                                </p:column>-->
-                    <!--                            </p:dataTable>-->
-                    <!--                        </div>-->
                 </p:panel>
             </h:form>
         </ui:define>

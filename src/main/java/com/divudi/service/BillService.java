@@ -1,6 +1,11 @@
 package com.divudi.service;
 
 import com.divudi.core.data.BillCategory;
+import static com.divudi.core.data.BillCategory.BILL;
+import static com.divudi.core.data.BillCategory.CANCELLATION;
+import static com.divudi.core.data.BillCategory.PAYMENTS;
+import static com.divudi.core.data.BillCategory.PREBILL;
+import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.data.BillTypeAtomic;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
@@ -20,6 +25,7 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
@@ -52,6 +58,7 @@ import java.util.*;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -1780,6 +1787,81 @@ public class BillService {
         m.put("b", b);
         m.put("ret", false);
         return denominationTransactionFacade.findByJpql(jpql, m);
+    }
+
+    public void createBillFinancialDetailsForPharmacyBill(Bill b) {
+
+        if (b == null) {
+            return;
+        }
+
+        BillTypeAtomic bta = Optional
+                .ofNullable(b)
+                .map(Bill::getBillTypeAtomic)
+                .orElse(null);
+        if (bta == null || bta.getBillCategory() == null) {
+            return; // unable to categorise safely
+        }
+        BillCategory bc = bta.getBillCategory();
+
+        Double saleValue = 0.0;
+        Double purchaseValue = 0.0;
+        
+        List<BillItem> billItems = new ArrayList<>();
+        billItems = fetchBillItems(b);
+
+        for (BillItem bi : billItems) {
+
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            Double q = bi.getPharmaceuticalBillItem().getQty();
+            Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = bi.getNetRate();
+            }
+
+            Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    break;
+
+                default:
+                    break;
+            }
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+        }
+        if (b.getBillFinanceDetails() == null) {
+            b.setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+        b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+        billFacade.editAndCommit(b);
     }
 
 }

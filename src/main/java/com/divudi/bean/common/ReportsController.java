@@ -2,6 +2,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
+import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
@@ -3946,9 +3947,11 @@ public class ReportsController implements Serializable {
 
             for (ReportTemplateRow c : exportRows) {
                 table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
+                String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
+                        c.getBill().getBilledBill().getReferenceNumber();
                 table.addCell(new PdfPCell(new Phrase(
-                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()), cellFont)));
-                table.addCell(new PdfPCell(new Phrase(c.getBill().getReferenceNumber(), cellFont)));
+                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber), cellFont)));
+                table.addCell(new PdfPCell(new Phrase(referenceNumber, cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
                         c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
@@ -4022,9 +4025,11 @@ public class ReportsController implements Serializable {
                 Row dataRow = sheet.createRow(rowIndex++);
 
                 dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
+                String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
+                        c.getBill().getBilledBill().getReferenceNumber();
                 dataRow.createCell(1).setCellValue(
-                        collectingCentreBillController.generateBookNumberFromReference(c.getBill().getReferenceNumber()));
-                dataRow.createCell(2).setCellValue(c.getBill().getReferenceNumber());
+                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber));
+                dataRow.createCell(2).setCellValue(referenceNumber);
                 dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
                 dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
                 dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
@@ -4128,8 +4133,14 @@ public class ReportsController implements Serializable {
 
         List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
-        for (ReportTemplateRow row: rows) {
-            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(row.getBill().getReferenceNumber());
+        for (ReportTemplateRow row : rows) {
+            Bill bill = row.getBill();
+
+            if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
+                bill = bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+            }
+
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(bill.getReferenceNumber());
             AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
 
             if (agentReferenceBook == null) {
@@ -4917,40 +4928,42 @@ public class ReportsController implements Serializable {
 //    }
 
     public void generateOpdAndInwardDueReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
-
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            generateOpdAndInwardDueIPBills();
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            List<BillTypeAtomic> opdBts = new ArrayList<>();
-            bundle = new ReportTemplateRowBundle();
-
-            if (visitType.equalsIgnoreCase("OP")) {
-//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
             }
 
-            bundle = generateOpdAndInwardDueBills(opdBts, null);
+            bundle = new ReportTemplateRowBundle();
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-            updateSettledAmountsForOP();
-            groupBills();
-        }
+            if (visitType.equalsIgnoreCase("IP")) {
+                generateOpdAndInwardDueIPBills();
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                List<BillTypeAtomic> opdBts = new ArrayList<>();
+
+                if (visitType.equalsIgnoreCase("OP")) {
+//            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                }
+
+                bundle = generateOpdAndInwardDueBills(opdBts, null);
+
+                updateSettledAmountsForOP();
+                groupBills();
+            }
+        }, FinancialReport.OPD_AND_INWARD_DUE_REPORT, sessionController.getLoggedUser());
     }
 
     public void generateOpdAndInwardDueIPBills() {
