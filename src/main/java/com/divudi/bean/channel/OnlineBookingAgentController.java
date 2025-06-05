@@ -1,6 +1,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.entity.Bill;
@@ -8,6 +9,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
+import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -61,6 +63,16 @@ public class OnlineBookingAgentController implements Serializable {
     
     @EJB
     private OnlineBookingFacade onlineBookingFacade;
+    @EJB
+    private BillFacade billFacade;
+
+    public BillFacade getBillFacade() {
+        return billFacade;
+    }
+
+    public void setBillFacade(BillFacade billFacade) {
+        this.billFacade = billFacade;
+    }
 
     public OnlineBookingFacade getOnlineBookingFacade() {
         return onlineBookingFacade;
@@ -72,6 +84,16 @@ public class OnlineBookingAgentController implements Serializable {
     
     public Bill  createHospitalPaymentBill(List<OnlineBooking> bookings){
         Bill paidBill = new BilledBill();
+        paidBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+        paidBill.setCreatedAt(new Date());
+        paidBill.setCreater(getSessionController().getLoggedUser());
+        paidBill.setToInstitution(institutionForBookings);
+        paidBill.setCreditCompany(agentForBookings);
+        paidBill.setTotal(createTotalAmountToPay());
+        paidBill.setBalance(0d);
+        getBillFacade().create(paidBill);
+        return paidBill;
+        
     }
     
     public void createPaymentForHospital(){
@@ -171,6 +193,10 @@ public class OnlineBookingAgentController implements Serializable {
     }
     
     public void fetchOnlineBookingsForManagement(){
+        if(institutionForBookings == null){
+            JsfUtil.addErrorMessage("Please Select Hospital.");
+            return;
+        }
         List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
         
         if(bookingList != null){

@@ -79,9 +79,9 @@
                             </p:commandButton>
 
                             <p:commandButton  
-                                value="Process" 
-                                ajax="false"
-                                action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
+                                value="Settle Payment" 
+                                update=""
+                                oncomplete="PF('payementSettle').show()"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 
@@ -117,12 +117,74 @@
                             </p:commandButton>
 
                         </h:panelGrid>
+                        
+                        <p:dialog 
+                        widgetVar="payementSettle" 
+                        modal="true" 
+                        id="payementSettleDlg"
+                        resizable="false" 
+                        draggable="true" 
+                        height="600"
+                        width="800">
+
+                        <p:ajax event="close" update="onlineBookings"></p:ajax>
+
+                        <f:facet name="header">
+                            <h:outputText id="doctorNameCancellation" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <p:commandButton class="mx-3" value="Cancel"  onclick="PF('cancelDialog').show();"  icon="fa-solid fa-check" update="growl dialogContentForCancellation"></p:commandButton>
+                            <p:commandButton value="Re-Open" action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, false)}" update="growl dialogContentForCancellation" icon="fa-solid fa-xmark"></p:commandButton>
+
+                        </f:facet>
+
+                        <h:panelGroup id="dialogContentForPayment">
+                            <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 
+                                         var="ob" 
+                                         selection="false" 
+                                         rowKey="#{s.id}">
+                                
+                                <p:column width="10em" headerText="Name">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Ref No" ></h:outputText>
+                                    </f:facet>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText value="#{ob.referenceNo}" /> 
+                                    </div>
+                                </p:column>
+
+                                <p:column width="10em" headerText="Name">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Patient Name" ></h:outputText>
+                                    </f:facet>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <h:outputText value="#{ob.title}. #{ob.patientName}" /> 
+                                    </div>
+                                </p:column>
+                                
+                                <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                    <h:outputText value="#{ob.createdAt}">
+                                        <f:convertDateTime pattern="dd MMM"/>
+                                    </h:outputText>
+                                </p:column>
+                                
+                                 <p:column headerText="Agent" style="width: 50px!important; text-align: center;">
+                                     <h:outputText value="#{ob.agency.name}">
+                                    </h:outputText>
+                                </p:column>
+                                
+                                <p:column headerText="Appoinment Fee" style="width: 50px!important; text-align: center;">
+                                    <h:outputText value="#{ob.appoinmentTotalAmount}">
+                                    </h:outputText>
+                                </p:column>
+                                
+                            </p:dataTable>
+                        </h:panelGroup>
+                    </p:dialog>
 
 
 
                         <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" var="ob"
                                      paginator="true" rows="10"
-                                     id="printdata"
+                                     id="onlineBookings"
                                      selection="#{onlineBookingAgentController.paidToHospitalList}"
                                      rowKey="#{ob.id}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
