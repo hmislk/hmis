@@ -38,7 +38,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            
+
                             <h:outputLabel value="Booking Agent"/> 
                             <p:selectOneMenu  id="lstSelect"
                                               value="#{onlineBookingAgentController.agentForBookings}" 
@@ -77,7 +77,7 @@
                                 action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
-                            
+
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
@@ -128,27 +128,27 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
-                            
-                             <p:column selectionBox="true" width="20"></p:column>
-                             <p:ajax event="rowSelect" listener="#{onlineBookingAgentController.onRowSelect}" />
-                             
-                             <p:column headerText="OB ID">
+
+                            <p:column selectionBox="true" width="20"></p:column>
+                            <p:ajax event="rowSelect" listener="#{onlineBookingAgentController.onRowSelect}" />
+
+                            <p:column headerText="OB ID">
                                 <h:outputText value="#{ob.id}">
                                 </h:outputText>
                             </p:column>
-                             
-                             <p:column headerText="Ref No">
-                                  <h:outputText value="#{ob.referenceNo}">
-                                 </h:outputText>
-                             </p:column>
-                             
-                             <p:column headerText="Patient">
-                                 <h:outputText value="#{ob.title}. #{ob.patientName}">
+
+                            <p:column headerText="Ref No">
+                                <h:outputText value="#{ob.referenceNo}">
                                 </h:outputText>
                             </p:column>
-                             
-                             <p:column headerText="Phone">
-                                 <h:outputText value="#{ob.phoneNo}">
+
+                            <p:column headerText="Patient">
+                                <h:outputText value="#{ob.title}. #{ob.patientName}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Phone">
+                                <h:outputText value="#{ob.phoneNo}">
                                 </h:outputText>
                             </p:column>
 
@@ -157,44 +157,83 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
-                             
+
                             <p:column headerText="Foreign Status">
+                                <f:facet name="footer">
+                                    <h:outputText value="Totals"></h:outputText>
+                                </f:facet>
                                 <h:outputText rendered="#{ob.foreignStatus}" value="Foreign">
                                 </h:outputText>
                                 <h:outputText rendered="#{!ob.foreignStatus}" value="Local">
                                 </h:outputText>
                             </p:column>
-                             
-                             <p:column headerText="Appoinment Fee">
-                                 <h:outputText value="#{ob.hospitalFee+ob.doctorFee}">
-                                 </h:outputText>
-                             </p:column>
-                             
-                             <p:column headerText="Agent Fee">
-                                 <h:outputText value="#{ob.onlineBookingPayment}">
-                                 </h:outputText>
-                             </p:column>
-                             
-                             <p:column headerText="Net Total">
-                                 <h:outputText value="#{ob.netTotalForOnlineBooking}">
-                                 </h:outputText>
-                             </p:column>
-                             
-                             <p:column headerText="Agent">
-                                 <h:outputText value="#{ob.agency.name}">
-                                 </h:outputText>
-                             </p:column>
-                             
-                             <p:column headerText="Paid to Hospital">
-                                 <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
-                                 </h:outputText>
-                             </p:column>
+
+                            <p:column headerText="Appoinment Fee">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalAppoinmentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calValues" value="#{ob.hospitalFee+ob.doctorFee}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Agent Fee">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalAgentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calAgentValues" value="#{ob.onlineBookingPayment}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Net Total">
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalNetFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                </f:facet>
+                                <h:outputText styleClass="calNetValues" value="#{ob.netTotalForOnlineBooking}"><f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Agent">
+                                <h:outputText value="#{ob.agency.name}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Paid to Hospital">
+                                <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
+                                </h:outputText>
+                            </p:column>
 
                         </p:dataTable>
                     </p:panel>
 
 
                 </h:form>
+
+                <script>
+                    function calculateTotals(valuesToCalculate, totalUpdate) {
+                        let total = 0;
+                        document.querySelectorAll(valuesToCalculate).forEach(cell => {
+                            const rawText = cell.textContent.trim().replace(/,/g, '');
+                            const value = parseFloat(rawText);
+                            
+                            if (!isNaN(value)) {
+                                total += value;
+                            }
+                        });
+                        document.querySelectorAll(totalUpdate).forEach(el => {
+                            el.textContent = total.toFixed(2);
+                        });
+                    }
+
+                    function createAllTotals() {
+                        calculateTotals('.calValues', '.totalAppoinmentFee');
+                        calculateTotals('.calNetValues', '.totalNetFee');
+                        calculateTotals('.calAgentValues', '.totalAgentFee');
+
+                    }
+
+                    setTimeout(createAllTotals, 500);
+
+                </script>
 
             </ui:define>
 
