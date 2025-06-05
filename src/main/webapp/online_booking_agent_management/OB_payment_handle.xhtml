@@ -15,8 +15,7 @@
 
                     <p:panel header="Online Booking payment Handle" class="m-1">
 
-                        <h:panelGrid columns="10" class="w-100">
-                            <p:spacer></p:spacer>
+                        <h:panelGrid columns="6" class="w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar 
                                 class="w-100 " 
@@ -27,6 +26,7 @@
                             </p:calendar>
 
                             <p:spacer></p:spacer>
+                            <p:spacer ></p:spacer>
 
                             <h:outputLabel value="To"/>                                
                             <p:calendar 
@@ -38,7 +38,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
                             </p:calendar>
 
-                            <p:spacer ></p:spacer>
+                            
                             <h:outputLabel value="Booking Agent"/> 
                             <p:selectOneMenu  id="lstSelect"
                                               value="#{onlineBookingAgentController.agentForBookings}" 
@@ -76,6 +76,13 @@
                                 ajax="false"
                                 action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
+                            </p:commandButton>
+                            
+                            <p:commandButton  
+                                value="Process" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
+                                class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 
                             <p:commandButton  
@@ -116,37 +123,72 @@
                         <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" var="ob"
                                      paginator="true" rows="10"
                                      id="printdata"
+                                     selection="#{onlineBookingAgentController.paidToHospitalList}"
+                                     rowKey="#{ob.id}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
-
-
-<!--                            <p:column headerText="Institution" sortBy="#{summary.department.institution.name}" filterBy="#{summary.department.institution.name}">
-                                <h:outputText value="#{summary.department.institution.name}" />
+                            
+                             <p:column selectionBox="true" width="20"></p:column>
+                             <p:ajax event="rowSelect" listener="#{onlineBookingAgentController.onRowSelect}" />
+                             
+                             <p:column headerText="OB ID">
+                                <h:outputText value="#{ob.id}">
+                                </h:outputText>
                             </p:column>
-
-                            <p:column headerText="Site" sortBy="#{summary.department.site.name}" filterBy="#{summary.department.site.name}">
-                                <h:outputText value="#{summary.department.site.name}" />
+                             
+                             <p:column headerText="Ref No">
+                                  <h:outputText value="#{ob.referenceNo}">
+                                 </h:outputText>
+                             </p:column>
+                             
+                             <p:column headerText="Patient">
+                                 <h:outputText value="#{ob.title}. #{ob.patientName}">
+                                </h:outputText>
                             </p:column>
-
-                            <p:column headerText="Department" sortBy="#{summary.department.name}" filterBy="#{summary.department.name}">
-                                <h:outputText value="#{summary.department.name}" />
-                            </p:column>-->
+                             
+                             <p:column headerText="Phone">
+                                 <h:outputText value="#{ob.phoneNo}">
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Date" >
                                 <h:outputText value="#{ob.createdAt}">
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
-
-                            <p:column headerText="Patient">
-                                <h:outputText value="#{ob.patientName}">
-
+                             
+                            <p:column headerText="Foreign Status">
+                                <h:outputText rendered="#{ob.foreignStatus}" value="Foreign">
+                                </h:outputText>
+                                <h:outputText rendered="#{!ob.foreignStatus}" value="Local">
                                 </h:outputText>
                             </p:column>
-
-
-
+                             
+                             <p:column headerText="Appoinment Fee">
+                                 <h:outputText value="#{ob.hospitalFee+ob.doctorFee}">
+                                 </h:outputText>
+                             </p:column>
+                             
+                             <p:column headerText="Agent Fee">
+                                 <h:outputText value="#{ob.onlineBookingPayment}">
+                                 </h:outputText>
+                             </p:column>
+                             
+                             <p:column headerText="Net Total">
+                                 <h:outputText value="#{ob.netTotalForOnlineBooking}">
+                                 </h:outputText>
+                             </p:column>
+                             
+                             <p:column headerText="Agent">
+                                 <h:outputText value="#{ob.agency.name}">
+                                 </h:outputText>
+                             </p:column>
+                             
+                             <p:column headerText="Paid to Hospital">
+                                 <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
+                                 </h:outputText>
+                             </p:column>
 
                         </p:dataTable>
                     </p:panel>

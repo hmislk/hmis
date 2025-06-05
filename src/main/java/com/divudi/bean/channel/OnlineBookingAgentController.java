@@ -4,6 +4,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -17,9 +18,12 @@ import java.util.Map;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
+import javax.faces.application.FacesMessage;
+import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
+import org.primefaces.event.SelectEvent;
 
 /**
  *
@@ -40,6 +44,7 @@ public class OnlineBookingAgentController implements Serializable {
     private Institution institutionForBookings;
     private Institution agentForBookings;
     private boolean paidStatus;
+    private List<OnlineBooking> paidToHospitalList;
 
     @EJB
     private InstitutionFacade institutionFacade;
@@ -50,6 +55,45 @@ public class OnlineBookingAgentController implements Serializable {
     @EJB
     private ChannelService channelService;
     private List<OnlineBooking> onlineBookingList;
+    
+    public void createPaymentForHospital(){
+        if(paidToHospitalList == null || paidToHospitalList.isEmpty()){
+            JsfUtil.addErrorMessage("No Bookings are selected to proceed");
+        }
+    }
+    
+    public void onRowSelect(SelectEvent<OnlineBooking> event) {
+        OnlineBooking selected = event.getObject();
+    if (selected.isPaidToHospital()) {
+        FacesContext.getCurrentInstance().addMessage(null,
+            new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection not allowed", "This Booking is already paid."));
+        paidToHospitalList.remove(selected); // manually remove it
+    }
+}
+    
+    public double createTotalAmountToPay(){
+        if(paidToHospitalList == null || paidToHospitalList.isEmpty()){
+            return 0;
+        }
+        
+        double totalForPay = 0;
+        
+        for(OnlineBooking ob : paidToHospitalList){
+            if(!ob.isPaidToHospital()){
+                totalForPay += ob.getAppoinmentTotalAmount();
+            }
+        }
+        
+        return totalForPay;
+    }
+
+    public List<OnlineBooking> getPaidToHospitalList() {
+        return paidToHospitalList;
+    }
+
+    public void setPaidToHospitalList(List<OnlineBooking> paidToHospitalList) {
+        this.paidToHospitalList = paidToHospitalList;
+    }
 
     public boolean isPaidStatus() {
         return paidStatus;
@@ -98,7 +142,7 @@ public class OnlineBookingAgentController implements Serializable {
     }
     
     public void fetchOnlineBookingsForManagement(){
-        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, paidStatus, OnlineBookingStatus.COMPLETED);
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
         
         if(bookingList != null && !bookingList.isEmpty()){
             onlineBookingList = bookingList;
