@@ -4932,6 +4932,7 @@ public class ReportsController implements Serializable {
             return;
         }
 
+        bundle = new ReportTemplateRowBundle();
         bundle.setName("Bills");
         bundle.setBundleType("billList");
 
@@ -4939,7 +4940,6 @@ public class ReportsController implements Serializable {
             generateOpdAndInwardDueIPBills();
         } else if (visitType.equalsIgnoreCase("OP")) {
             List<BillTypeAtomic> opdBts = new ArrayList<>();
-            bundle = new ReportTemplateRowBundle();
 
             if (visitType.equalsIgnoreCase("OP")) {
 //            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
