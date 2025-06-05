@@ -444,7 +444,35 @@
                                 </f:facet>
                             </p:column>
                             <p:column
-                                    headerText="Stock Value"
+                                    headerText="Purchase Value"
+                                    class="text-end"
+                                    width="10em">
+                                <h:outputText
+                                        value="#{p.purchaseValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column
+                                    headerText="Cost Value"
+                                    class="text-end"
+                                    width="10em">
+                                <h:outputText
+                                        value="#{p.costValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.stockCostValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column
+                                    headerText="Sale Value"
                                     class="text-end"
                                     width="10em">
                                 <h:outputText
