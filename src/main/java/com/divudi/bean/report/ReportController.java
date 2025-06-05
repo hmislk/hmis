@@ -13,6 +13,7 @@ import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.TestWiseCountReport;
 import com.divudi.core.data.dataStructure.BillAndItemDataRow;
@@ -21,6 +22,7 @@ import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.reports.CollectionCenterReport;
 import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -71,7 +73,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Named
 @SessionScoped
-public class ReportController implements Serializable {
+public class ReportController implements Serializable, ControllerWithReportFilters {
 
     @EJB
     BillItemFacade billItemFacade;
@@ -221,6 +223,13 @@ public class ReportController implements Serializable {
     private String reportTemplateFileIndexName;
 
     private List<String> siteIds;
+
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
+
+    private PaymentScheme paymentScheme;
+
+    private AdmissionType admissionType;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1235,9 +1244,9 @@ public class ReportController implements Serializable {
 
     public void createDebtorSettlement() {
         StringBuilder jpql = new StringBuilder(
-                "SELECT bi FROM BillItem bi " +
-                        "WHERE bi.retired = :ret " +
-                        "AND bi.bill.billTypeAtomic IN :btas");
+                "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = :ret "
+                + "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -2921,6 +2930,14 @@ public class ReportController implements Serializable {
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
 
+    public String navigateToBillCountReport() {
+        reportViewTypes = new ArrayList<>();
+        reportViewTypes.add(ReportViewType.BY_BILL);
+        reportViewTypes.add(ReportViewType.BY_BILL_ITEM);
+        reportViewType = ReportViewType.BY_BILL;
+        return "/analytics/summaries/bill_counts?faces-redirect=true";
+    }
+
     public String navigateToStockTransferReport() {
 
         return "/reports/inventoryReports/stock_transfer_report?faces-redirect=true";
@@ -3017,22 +3034,27 @@ public class ReportController implements Serializable {
         this.reportIndex = reportIndex;
     }
 
+    @Override
     public Institution getInstitution() {
         return institution;
     }
 
+    @Override
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
 
+    @Override
     public Department getDepartment() {
         return department;
     }
 
+    @Override
     public void setDepartment(Department department) {
         this.department = department;
     }
 
+    @Override
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
@@ -3040,10 +3062,12 @@ public class ReportController implements Serializable {
         return fromDate;
     }
 
+    @Override
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
+    @Override
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
@@ -3051,6 +3075,7 @@ public class ReportController implements Serializable {
         return toDate;
     }
 
+    @Override
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -3794,10 +3819,12 @@ public class ReportController implements Serializable {
         this.patientInvestigationStatus = patientInvestigationStatus;
     }
 
+    @Override
     public Institution getSite() {
         return site;
     }
 
+    @Override
     public void setSite(Institution site) {
         this.site = site;
     }
@@ -4104,4 +4131,41 @@ public class ReportController implements Serializable {
         this.totalAdditionalFee = totalAdditionalFee;
     }
 
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    
 }

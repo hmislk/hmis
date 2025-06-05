@@ -33,6 +33,13 @@
                                                 class="w-100">
                                             </p:commandButton>
 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Counts" 
+                                                action="#{reportController.navigateToBillCountReport()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
 
                                         </div>
                                     </p:tab>
@@ -53,7 +60,7 @@
                                                 action="#{searchController.navigateToBillList}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Count List"
@@ -61,7 +68,7 @@
                                                 actionListener="#{searchController.resetAllFiltersExceptDateRange}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Item List" 
