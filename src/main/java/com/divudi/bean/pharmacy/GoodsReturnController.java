@@ -319,6 +319,24 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
         }
+        if (getReturnBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        switch (getReturnBill().getPaymentMethod()) {
+            case MultiplePaymentMethods:
+                JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed");
+                return;
+            case Agent:
+            case OnCall:
+            case PatientDeposit:
+            case PatientPoints:
+            case Staff:
+            case Staff_Welfare:
+            case None:
+                JsfUtil.addErrorMessage("This Payment Method is NOT allowed");
+                return;
+        }
         if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
