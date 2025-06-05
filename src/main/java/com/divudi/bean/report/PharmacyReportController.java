@@ -1,9 +1,9 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillItemStatus;
 import com.divudi.core.data.BillType;
@@ -13,7 +13,6 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemCount;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
@@ -2491,26 +2490,28 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processClosingStock() {
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        stockCostValue = 0.0;
-        stockQty = 0.0;
-        if (reportType.equals("batchWise")) {
-            processClosingStockForBatchReport();
-        } else if (reportType.equals("itemWise")) {
-            processClosingStockForItemReport();
-        } else {
-            JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
-            return;
-        }
-        if (rows != null) {
-            for (PharmacyRow pr : rows) {
-                stockPurchaseValue += pr.getPurchaseValue() != null ? pr.getPurchaseValue() : 0.0;
-                stockSaleValue += pr.getSaleValue() != null ? pr.getSaleValue() : 0.0;
-                stockCostValue += pr.getCostValue() != null ? pr.getCostValue() : 0.0;
-                stockQty += pr.getQuantity() != null ? pr.getQuantity() : 0.0;
+        reportTimerController.trackReportExecution(() -> {
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            stockCostValue = 0.0;
+            stockQty = 0.0;
+            if (reportType.equals("batchWise")) {
+                processClosingStockForBatchReport();
+            } else if (reportType.equals("itemWise")) {
+                processClosingStockForItemReport();
+            } else {
+                JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
+                return;
             }
-        }
+            if (rows != null) {
+                for (PharmacyRow pr : rows) {
+                    stockPurchaseValue += pr.getPurchaseValue() != null ? pr.getPurchaseValue() : 0.0;
+                    stockSaleValue += pr.getSaleValue() != null ? pr.getSaleValue() : 0.0;
+                    stockCostValue += pr.getCostValue() != null ? pr.getCostValue() : 0.0;
+                    stockQty += pr.getQuantity() != null ? pr.getQuantity() : 0.0;
+                }
+            }
+        }, InventoryReports.CLOSING_STOCK_REPORT, sessionController.getLoggedUser());
     }
 
     public void exportBatchWisePharmacyStockToPdf() {
