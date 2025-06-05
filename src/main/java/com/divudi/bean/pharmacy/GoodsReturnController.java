@@ -165,6 +165,17 @@ public class GoodsReturnController implements Serializable {
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
 
+        if (getReturnBill().getPaymentMethod() != PaymentMethod.Credit) {
+            getReturnBill().setBalance(0d);
+            getReturnBill().setPaid(true);
+            getReturnBill().setPaidAmount(getReturnBill().getNetTotal());
+            getReturnBill().setPaidAt(new Date());
+        } else {
+            getReturnBill().setBalance(getReturnBill().getNetTotal());
+            getReturnBill().setPaid(false);
+            getReturnBill().setPaidAmount(0d);
+        }
+
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
         } else {
