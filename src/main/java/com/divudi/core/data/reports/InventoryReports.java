@@ -1,14 +1,11 @@
 package com.divudi.core.data.reports;
 
-public enum FinancialReport implements IReportType {
-    STAFF_WELFARE_REPORT("Staff Welfare Report"),
-    DAILY_RETURN("Daily Return"),
-    OPD_AND_INWARD_DUE_REPORT("OPD and Inward Due Report"),
-    DEBTOR_BALANCE_REPORT("Debtor Balance Report");
+public enum InventoryReports implements IReportType {
+    CLOSING_STOCK_REPORT("Closing Stock Report");
 
     private final String displayName;
 
-    FinancialReport(String displayName) {
+    InventoryReports(String displayName) {
         this.displayName = displayName;
     }
 

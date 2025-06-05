@@ -72,6 +72,15 @@ public class BhtIssueReturnController implements Serializable {
     BillService billService;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    
+    public String navigateToReturnPharmacyDirectIssueToInpatients(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No Bill provided");
+            return null;
+        }
+        bill = b;
+        return navigateToReturnPharmacyDirectIssueToInpatients();
+    }
 
     public String navigateToReturnPharmacyDirectIssueToInpatients() {
         if (bill == null) {
@@ -437,6 +446,7 @@ public class BhtIssueReturnController implements Serializable {
             bi.setReferenceBill(getBill());
             bi.setReferanceBillItem(i.getBillItem());
             bi.copy(i.getBillItem());
+            bi.setMarginRate(bi.getNetRate() - bi.getRate());
             bi.setQty(0.0);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
@@ -471,7 +481,7 @@ public class BhtIssueReturnController implements Serializable {
 //            return i.getRemainingQty();
 //        }
 //
-//    }
+//    }    
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }
