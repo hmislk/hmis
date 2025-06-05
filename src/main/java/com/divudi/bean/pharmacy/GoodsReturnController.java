@@ -164,7 +164,7 @@ public class GoodsReturnController implements Serializable {
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
-
+        //Out of all the payment methods allowed, only credit payments should not have a balance. They are paid in full amount and balance is zero.
         if (getReturnBill().getPaymentMethod() != PaymentMethod.Credit) {
             getReturnBill().setBalance(0d);
             getReturnBill().setPaid(true);
