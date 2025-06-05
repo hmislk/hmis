@@ -3,10 +3,13 @@ package com.divudi.bean.channel;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.ChannelService;
@@ -56,9 +59,35 @@ public class OnlineBookingAgentController implements Serializable {
     private ChannelService channelService;
     private List<OnlineBooking> onlineBookingList;
     
+    @EJB
+    private OnlineBookingFacade onlineBookingFacade;
+
+    public OnlineBookingFacade getOnlineBookingFacade() {
+        return onlineBookingFacade;
+    }
+
+    public void setOnlineBookingFacade(OnlineBookingFacade onlineBookingFacade) {
+        this.onlineBookingFacade = onlineBookingFacade;
+    }
+    
+    public Bill  createHospitalPaymentBill(List<OnlineBooking> bookings){
+        Bill paidBill = new BilledBill();
+    }
+    
     public void createPaymentForHospital(){
         if(paidToHospitalList == null || paidToHospitalList.isEmpty()){
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
+        }
+        
+        
+        
+        for(OnlineBooking ob : paidToHospitalList){
+            if(!ob.isPaidToHospital()){
+                ob.setPaidToHospital(true);
+                ob.setPaidToHospitalDate(new Date());
+                ob.setPaidToHospitalProcessedBy(getSessionController().getLoggedUser());
+                getOnlineBookingFacade().edit(ob);
+            }
         }
     }
     
@@ -144,7 +173,7 @@ public class OnlineBookingAgentController implements Serializable {
     public void fetchOnlineBookingsForManagement(){
         List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
         
-        if(bookingList != null && !bookingList.isEmpty()){
+        if(bookingList != null){
             onlineBookingList = bookingList;
         }
     }
