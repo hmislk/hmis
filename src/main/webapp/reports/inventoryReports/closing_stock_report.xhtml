@@ -228,8 +228,8 @@
                         </p:commandButton>
                         <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'itemWise'}"
-                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF">
-                            <p:dataExporter type="pdf" target="itemWise" fileName="Item Wise Report"/>
+                                class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
+                                action="#{pharmacyReportController.exportItemWisePharmacyStockToPdf()}">
                         </p:commandButton>
                         <p:commandButton
                                 rendered="#{pharmacyReportController.reportType eq 'batchWise'}"
