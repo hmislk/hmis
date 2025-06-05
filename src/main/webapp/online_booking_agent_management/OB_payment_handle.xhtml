@@ -80,20 +80,21 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
-                                update=""
+                                update="dialogContentForPayment"
+                                process="@this"
                                 oncomplete="PF('payementSettle').show()"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 
-                            <p:commandButton  
+<!--                            <p:commandButton  
                                 value="Print" 
                                 ajax="false"
                                 class="ui-button-info mx-1" 
                                 icon="fas fa-print">
                                 <p:printer target="printdata" />
-                            </p:commandButton>
+                            </p:commandButton>-->
 
-                            <p:commandButton  
+<!--                            <p:commandButton  
                                 value="Preview" 
                                 ajax="false"
                                 icon="fas fa-eye"
@@ -114,7 +115,7 @@
                                 ajax="false"
                                 class="ui-button-danger mx-1" icon="fas fa-file-pdf">
                                 <p:dataExporter type="pdf" target="printdata" fileName="All Cashier Summury Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
-                            </p:commandButton>
+                            </p:commandButton>-->
 
                         </h:panelGrid>
                         
@@ -142,7 +143,7 @@
                                          selection="false" 
                                          rowKey="#{s.id}">
                                 
-                                <p:column width="10em" headerText="Name">
+                                <p:column width="5em" headerText="Name">
                                     <f:facet name="header" >
                                         <h:outputText value="Ref No" ></h:outputText>
                                     </f:facet>
@@ -151,7 +152,7 @@
                                     </div>
                                 </p:column>
 
-                                <p:column width="10em" headerText="Name">
+                                <p:column headerText="Name">
                                     <f:facet name="header" >
                                         <h:outputText value="Patient Name" ></h:outputText>
                                     </f:facet>
@@ -160,18 +161,18 @@
                                     </div>
                                 </p:column>
                                 
-                                <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                                <p:column headerText="Date" >
                                     <h:outputText value="#{ob.createdAt}">
                                         <f:convertDateTime pattern="dd MMM"/>
                                     </h:outputText>
                                 </p:column>
                                 
-                                 <p:column headerText="Agent" style="width: 50px!important; text-align: center;">
+                                 <p:column headerText="Agent">
                                      <h:outputText value="#{ob.agency.name}">
                                     </h:outputText>
                                 </p:column>
                                 
-                                <p:column headerText="Appoinment Fee" style="width: 50px!important; text-align: center;">
+                                <p:column headerText="Appoinment Fee" >
                                     <h:outputText value="#{ob.appoinmentTotalAmount}">
                                     </h:outputText>
                                 </p:column>
@@ -187,6 +188,7 @@
                                      id="onlineBookings"
                                      selection="#{onlineBookingAgentController.paidToHospitalList}"
                                      rowKey="#{ob.id}"
+                                     scrollable="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
