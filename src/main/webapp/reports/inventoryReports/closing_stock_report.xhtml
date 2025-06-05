@@ -170,9 +170,8 @@
                                 filter="true"
                                 class="w-100 ">
                             <f:selectItem itemLabel="All Categories"/>
-<!--                            <f:selectItems value="#{pharmaceuticalItemCategoryController.items}" var="category"-->
-<!--                                           itemLabel="#{category.name}" itemValue="#{category}"/>-->
-                            <f:selectItems value="#{categoryController.pharmaceuticalAndConsumableItemCategories}" var="category"
+                            <f:selectItems value="#{categoryController.pharmaceuticalAndConsumableItemCategories}"
+                                           var="category"
                                            itemLabel="#{category.name}" itemValue="#{category}"/>
                         </p:selectOneMenu>
 
@@ -183,17 +182,6 @@
                             <p:outputLabel value="Item Name" for="phmItem" class="m-3">
                             </p:outputLabel>
                         </h:panelGroup>
-<!--                        <p:autoComplete-->
-<!--                                id="phmItem"-->
-<!--                                value="#{pharmacyReportController.amp}"-->
-<!--                                completeMethod="#{ampController.completeAmp}"-->
-<!--                                var="item"-->
-<!--                                class="w-100"-->
-<!--                                minQueryLength="3"-->
-<!--                                maxResults="20"-->
-<!--                                inputStyleClass="w-100"-->
-<!--                                itemLabel="#{item.name}"-->
-<!--                                itemValue="#{item}"/>-->
                         <p:autoComplete
                                 id="phmItem"
                                 value="#{pharmacyReportController.amp}"
@@ -284,15 +272,12 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
-
                             <p:column headerText="S.No" width="3rem">
                                 <h:outputText value="#{n+1}"/>
                                 <f:facet name="footer">
                                     <h:outputText value="Total"/>
                                 </f:facet>
                             </p:column>
-
                             <p:column headerText="Item Category">
                                 <h:outputText value="#{f.item.category.name}"/>
                             </p:column>
@@ -344,8 +329,26 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+                            <p:column headerText="Cost Rate">
+                                <h:outputText
+                                        value="#{f.costRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
                             <p:column
-                                    headerText="Retail Rate">
+                                    headerText="Cost Value">
+                                <h:outputText
+                                        value="#{f.costValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.stockPurchaseValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                            <p:column
+                                    headerText="Sale Rate">
                                 <h:outputText
                                         value="#{f.retailRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
@@ -407,14 +410,12 @@
                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}"
                                 rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
-
                             <p:column headerText="S.No" width="3rem">
                                 <h:outputText value="#{n+1}"/>
                                 <f:facet name="footer">
                                     <h:outputText value="Total"/>
                                 </f:facet>
                             </p:column>
-
                             <p:column headerText="Item Category">
                                 <h:outputText value="#{p.item.category.name}"/>
                             </p:column>
