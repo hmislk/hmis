@@ -26,7 +26,7 @@ import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.table.String1Value3;
 import com.divudi.core.data.table.String1Value6;
 import com.divudi.core.data.table.String2Value4;
-import com.divudi.ejb.BillReportBean;
+import com.divudi.service.BillService;
 
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -253,7 +253,7 @@ public class PharmacySaleReportController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    BillReportBean billReportBean;
+    BillService billService;
     @EJB
     InstitutionFacade institutionFacade;
     @EJB
@@ -4870,7 +4870,7 @@ public class PharmacySaleReportController implements Serializable {
             proTot = calBillFee(nowDate, FeeType.Staff, btps);
             regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
 
-            count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
+            count = billService.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
                     CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
