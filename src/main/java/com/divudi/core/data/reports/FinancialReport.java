@@ -8,7 +8,8 @@ public enum FinancialReport implements IReportType {
     INCOME_CATEGORY_WISE_REPORT("Income Category Wise Report"),
     PETTY_CASH_REPORT("Petty Cash Report"),
     BILL_WISE_ITEM_MOVEMENT_REPORT("Bill wise item Movement Report"),
-    WITHHOLDING_TAX_REPORT("withholding tax Report"),;
+    WITHHOLDING_TAX_REPORT("Withholding tax Report"),
+    DEBTOR_SETTLEMENT_REPORT("Debtor settlement Report"),;
 
 
     private final String displayName;
