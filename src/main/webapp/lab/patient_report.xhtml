@@ -74,7 +74,7 @@
                                                 class="mx-1 ui-button-secondary"
                                                 id="btnSms"  
                                                 disabled="#{!(webUserController.hasPrivilege('LabDataentry')) and !(webUserController.hasPrivilege('LabAutherizing')) and !(webUserController.hasPrivilege('LabDeAutherizing')) or ! patientReportController.currentPatientReport.approved}"   
-                                                value="Sent SMS"             
+                                                value="Send SMS"             
                                                 action="#{patientReportController.sendSmsForPatientReport()}" 
                                                 ajax="false">
                                             </p:commandButton>
