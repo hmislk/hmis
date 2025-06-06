@@ -19699,5 +19699,19 @@ public class SearchController implements Serializable {
         }
     }
 
+    public void searchOpdBillsWithIndications() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+        if (bills != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getIndication() != null && !b.getIndication().trim().isEmpty())
+                    .collect(Collectors.toList());
+        }
+    }
+
     // </editor-fold>
 }
