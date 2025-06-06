@@ -187,7 +187,7 @@
                 class="w-100 mt-1 form-control"
                 value="#{cc.attrs.controller.reportViewType}">
                 <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}" />
-                <f:selectItems value="#{enumController.reportViewTypes}"
+                <f:selectItems value="#{cc.attrs.controller.reportViewTypes}"
                                var="rvt"
                                itemLabel="#{rvt.label}"
                                itemValue="#{rvt}" />

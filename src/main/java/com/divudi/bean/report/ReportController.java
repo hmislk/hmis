@@ -36,6 +36,8 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
+import com.divudi.service.BillAnalyticsService;
+import com.divudi.service.BillService;
 
 import java.io.IOException;
 import javax.inject.Named;
@@ -67,6 +69,7 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+import org.hl7.fhir.r5.model.Bundle;
 
 /**
  * @author Senula Nanayakkara
@@ -91,6 +94,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     private ReportTimerController reportTimerController;
     @EJB
     PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    BillService billService;
+    @EJB
+    BillAnalyticsService billAnalyticsService;
 
     @Inject
     private InstitutionController institutionController;
@@ -1220,6 +1227,46 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) institutionFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
         bundle.setReportTemplateRows(results);
+    }
+
+    public void processIncomeBillCounts() {
+        if (reportViewType == null) {
+            reportViewType = ReportViewType.BY_BILL;
+        }
+        switch (reportViewType) {
+            case BY_BILL:
+                processIncomeBillCountsByBill();
+                break;
+            case BY_BILL_ITEM:
+                processIncomeBillCountsByBillItem();
+                break;
+            default:
+                processIncomeBillCountsByBill();
+        }
+    }
+
+    public void processIncomeBillCountsByBill() {
+        bundle = new ReportTemplateRowBundle();
+        ReportTemplateRowBundle opdServicesBundle = new ReportTemplateRowBundle("OPD Services");
+        ReportTemplateRowBundle opdInvestigationBundle = new ReportTemplateRowBundle("OPD Investigations");
+        ReportTemplateRowBundle outpatientPharmacyBundle = new ReportTemplateRowBundle("OPD Pharmacy");
+        ReportTemplateRowBundle inpatientPharmacyBundle = new ReportTemplateRowBundle("Inpatient Pharmacy");
+        ReportTemplateRowBundle ccBundle = new ReportTemplateRowBundle("Collection Centres");
+        
+        billAnalyticsService.fillBundleForOpdServiceCounts(opdServicesBundle, fromDate, toDate);
+        
+        bundle.getBundles().add(opdServicesBundle);
+        bundle.getBundles().add(opdInvestigationBundle);
+        bundle.getBundles().add(outpatientPharmacyBundle);
+        bundle.getBundles().add(inpatientPharmacyBundle);
+        bundle.getBundles().add(ccBundle);
+        
+        
+        
+    }
+
+    public void processIncomeBillCountsByBillItem() {
+
     }
 
     public void processCollectingCentreBook() {
@@ -2930,7 +2977,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
 
-    public String navigateToBillCountReport() {
+    public String navigateToIncomeBillCountReport() {
         reportViewTypes = new ArrayList<>();
         reportViewTypes.add(ReportViewType.BY_BILL);
         reportViewTypes.add(ReportViewType.BY_BILL_ITEM);
@@ -4167,5 +4214,4 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         this.admissionType = admissionType;
     }
 
-    
 }

@@ -604,6 +604,7 @@ public class BillService {
         return btas;
     }
 
+    
     public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
 

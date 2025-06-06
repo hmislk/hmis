@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <h:form>
+
+                    <common:common_filters controller="#{reportController}"/>
+
+                    <p:commandButton 
+                        value="Process"
+                        ajax="false"
+                        action="#{reportController.processIncomeBillCounts()}"></p:commandButton>
+
+                    <ui:repeat value="#{reportController.bundle}" var="bundle">
+                        <h:panelGroup styleClass="mb-4">
+                            <h:panelGrid columns="5" styleClass="table table-bordered w-100 text-center">
+                                <f:facet name="header">
+                                    <h:outputText value="Summary - #{bundle.name}" styleClass="fw-bold text-start" />
+                                </f:facet>
+                                <h:outputText value="Billed" />
+                                <h:outputText value="Cancelled" />
+                                <h:outputText value="Returned" />
+                                <h:outputText value="Net" />
+                                <h:inputText readonly="true" value="#{bundle.billedCount}" styleClass="form-control text-end" />
+                                <h:inputText readonly="true" value="#{bundle.cancelledCount}" styleClass="form-control text-end" />
+                                <h:inputText readonly="true" value="#{bundle.returnCount}" styleClass="form-control text-end" />
+                                <h:inputText readonly="true" value="#{bundle.netCount}" styleClass="form-control text-end" />
+                            </h:panelGrid>
+
+                            <h:dataTable value="#{bundle.reportTemplateRows}" var="row" styleClass="table table-striped table-sm w-100 mt-2" rowClasses="align-middle">
+                                <f:facet name="header">
+                                    <h:outputText value="Details by Department" styleClass="fw-bold" />
+                                </f:facet>
+                                <h:column>
+                                    <f:facet name="header">Department</f:facet>
+                                    <h:inputText readonly="true" value="#{row.department.name}" styleClass="form-control" />
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">Billed</f:facet>
+                                    <h:inputText readonly="true" value="#{row.billedCount}" styleClass="form-control text-end" />
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">Cancelled</f:facet>
+                                    <h:inputText readonly="true" value="#{row.cancelledCount}" styleClass="form-control text-end" />
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">Returned</f:facet>
+                                    <h:inputText readonly="true" value="#{row.returnCount}" styleClass="form-control text-end" />
+                                </h:column>
+                                <h:column>
+                                    <f:facet name="header">Net</f:facet>
+                                    <h:inputText readonly="true" value="#{row.netCount}" styleClass="form-control text-end" />
+                                </h:column>
+                            </h:dataTable>
+                        </h:panelGroup>
+                    </ui:repeat>
+
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
