@@ -145,7 +145,7 @@ Our contributors and the Open Source Community for their knowledge and time. Hea
 * Suwasahana Medical Center, Kataragama - 2015 Up to date
 * Suwana Medical Center, Akuressa - 2015 Up to date
 * New Multi Drugs, Galle - 2015 up to date
-* Matara Pharamcy, Akuressa, 2013  up to date
+* Matara Pharmacy, Akuressa, 2013 up to date
 * Matara Pharmacy, Deniyaya, 2013 up to date
 * Matara Pharmacy, Urubokka, 2013 - 2015
 * Matara Pharmacy, Galle, 2015 up to date
