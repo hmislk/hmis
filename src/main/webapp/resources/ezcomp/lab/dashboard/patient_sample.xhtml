@@ -424,42 +424,44 @@
                     <h:panelGroup 
                         id="sampleCollect"
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}"
-                        class="d-flex gap-2 w-100">
-                        <p:commandButton
-                            value="Not Collected Samples"
-                            ajax="false"
-                            action="#{laboratoryManagementController.nonCollectedSampleList()}"
-                            title="Collect Samples"
-                            icon="pi pi-plus-circle"
-                            styleClass="w-100 ui-button-primary" >
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Select All"
-                            ajax="false"
-                            rendered="#{!laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.selectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Unselect All"
-                            ajax="false"
-                            rendered="#{laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.unSelectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton
-                            value="Collect"
-                            ajax="false"
-                            style="width: 11em;"
-                            action="#{laboratoryManagementController.collectSamples()}"
-                            title="Collect Samples"
-                            icon="pi pi-plus-circle"
-                            styleClass="ui-button-primary" >
-                        </p:commandButton>
+                        >
+                        <div class="d-flex gap-2 w-100">
+                            <p:commandButton
+                                value="Not Collected Samples"
+                                ajax="false"
+                                action="#{laboratoryManagementController.nonCollectedSampleList()}"
+                                title="Collect Samples"
+                                icon="pi pi-plus-circle"
+                                styleClass="w-100 ui-button-primary" >
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Select All"
+                                ajax="false"
+                                rendered="#{!laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.selectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Unselect All"
+                                ajax="false"
+                                rendered="#{laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.unSelectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton
+                                value="Collect"
+                                ajax="false"
+                                style="width: 11em;"
+                                action="#{laboratoryManagementController.collectSamples()}"
+                                title="Collect Samples"
+                                icon="pi pi-plus-circle"
+                                styleClass="ui-button-primary" >
+                            </p:commandButton>
+                        </div>
 
                         <hr/>
 
@@ -479,18 +481,19 @@
                     <h:panelGroup 
                         id="sampleSend"
                         rendered="#{webUserController.hasPrivilege('LabSampleSending')}">
+
                         <p:autoComplete 
                             completeMethod="#{staffController.completeStaff}"
                             value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
                             var="mys" 
                             class="w-100 mt-2" 
-                            maxResults="50"
+                            maxResults="15"
                             inputStyleClass="form-control"
-                            itemLabel="#{mys.person.name}" 
+                            itemLabel="#{mys.person.nameWithTitle}" 
                             panelStyleClass="custom-dropdown-panel"
                             itemValue="#{mys}">
-                            <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
-                            <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                            <p:column headerText="Code" style="padding: 4px; width: 20px;">#{mys.code}</p:column>
+                            <p:column headerText="Name" style="padding: 4px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
                         </p:autoComplete>
 
                         <div class="d-flex gap-2 mt-2">
@@ -532,49 +535,53 @@
                         </div>
 
                         <hr/>
+
                     </h:panelGroup>
 
                     <h:panelGroup 
                         id="sampleReceive" 
                         rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}"
-                        class="d-flex gap-2">
-                        <p:commandButton 
-                            value="Non Received Samples"
-                            ajax="false"
-                            action="#{laboratoryManagementController.nonReceivedSampleList()}"
-                            title="Receive Samples"
-                            icon="pi pi-check-circle"
-                            styleClass="w-100 ui-button-info">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Select All"
-                            ajax="false"
-                            rendered="#{!laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.selectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Unselect All"
-                            ajax="false"
-                            rendered="#{laboratoryManagementController.selectAll}"
-                            style="width: 15em;"
-                            action="#{laboratoryManagementController.unSelectAllSamples()}"
-                            icon="fa-regular fa-square-check"
-                            styleClass="ui-button-secondary">
-                        </p:commandButton>
-                        <p:commandButton 
-                            value="Receive"
-                            ajax="false"
-                            style="width: 11em;"
-                            action="#{laboratoryManagementController.receiveSamplesAtLab()}"
-                            title="Receive Samples"
-                            icon="pi pi-check-circle"
-                            styleClass="ui-button-info">
-                        </p:commandButton>
+                        >
+                        <div class="d-flex gap-2">
+                            <p:commandButton 
+                                value="Non Received Samples"
+                                ajax="false"
+                                action="#{laboratoryManagementController.nonReceivedSampleList()}"
+                                title="Receive Samples"
+                                icon="pi pi-check-circle"
+                                styleClass="w-100 ui-button-info">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Select All"
+                                ajax="false"
+                                rendered="#{!laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.selectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Unselect All"
+                                ajax="false"
+                                rendered="#{laboratoryManagementController.selectAll}"
+                                style="width: 15em;"
+                                action="#{laboratoryManagementController.unSelectAllSamples()}"
+                                icon="fa-regular fa-square-check"
+                                styleClass="ui-button-secondary">
+                            </p:commandButton>
+                            <p:commandButton 
+                                value="Receive"
+                                ajax="false"
+                                style="width: 11em;"
+                                action="#{laboratoryManagementController.receiveSamplesAtLab()}"
+                                title="Receive Samples"
+                                icon="pi pi-check-circle"
+                                styleClass="ui-button-info">
+                            </p:commandButton>
+                        </div>
 
                         <hr/>
+
                     </h:panelGroup>
 
                     <p:commandButton 
@@ -587,8 +594,6 @@
                         icon="pi pi-check-circle"
                         styleClass="m-1  w-100 ui-button-info" >
                     </p:commandButton>
-
-
 
                     <h:panelGroup 
                         rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}"
@@ -605,7 +610,7 @@
                             action="#{laboratoryManagementController.rejectSamples()}"
                             title="Reject Samples"
                             icon="pi pi-times-circle"
-                            styleClass="m-1  w-100 ui-button-danger" >
+                            styleClass="mt-2  w-100 ui-button-danger" >
                         </p:commandButton>
                     </h:panelGroup>
                 </div>
