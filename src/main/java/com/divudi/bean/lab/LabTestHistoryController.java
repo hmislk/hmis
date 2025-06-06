@@ -47,16 +47,20 @@ public class LabTestHistoryController implements Serializable {
         if (current == null) {
             return;
         }
-        if (current.getId() != null) {
-            getFacade().edit(current);
-            JsfUtil.addSuccessMessage("Updated Successfully.");
-        } else {
-            current.setCreatedAt(new Date());
-            current.setCreatedBy(getSessionController().getLoggedUser());
-            getFacade().create(current);
-            JsfUtil.addSuccessMessage("Saved Successfully");
+        try {
+            if (current.getId() != null) {
+                getFacade().edit(current);
+                JsfUtil.addSuccessMessage("Updated Successfully.");
+            } else {
+                current.setCreatedAt(new Date());
+                current.setCreatedBy(getSessionController().getLoggedUser());
+                getFacade().create(current);
+                JsfUtil.addSuccessMessage("Saved Successfully");
+            }
+            items = null;
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
         }
-        items = null;
     }
 
     public LabTestHistory getCurrent() {
