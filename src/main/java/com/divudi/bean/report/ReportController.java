@@ -1937,7 +1937,7 @@ public class ReportController implements Serializable {
                 + " where ah.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
-                + " order by ah.createdAt";
+                + " order by ah.bill.id";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
