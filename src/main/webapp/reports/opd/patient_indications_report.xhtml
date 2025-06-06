@@ -10,7 +10,7 @@
     <ui:composition template="/opd/analytics/index.xhtml">
         <ui:define name="subcontent">
             <h:form >
-                <p:panel header="Test Counts" >
+                <p:panel header="Patient Indications Report" >
 
                     <h:panelGrid columns="2" class="mb-2">
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -22,7 +22,7 @@
                                 inputStyleClass="w-100"
                                 showTime="true"
                                 showButtonBar="true"
-                                value="#{opdReportController.fromDate}"
+                                value="#{searchController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                         </p:datePicker>
 
@@ -35,7 +35,7 @@
                                 showButtonBar="true"
                                 class="mt-1 w-100"
                                 inputStyleClass="w-100"
-                                value="#{opdReportController.toDate}"
+                                value="#{searchController.toDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                         </p:datePicker>
 
@@ -112,7 +112,7 @@
                     <p:commandButton
                             value="Process"
                             ajax="false"
-                            action="#{reportController.processOpdServiceCountDoctorWise()}"
+                            action="#{searchController.searchOpdBillsWithIndications()}"
                             styleClass="ui-button-success m-1"
                             icon="pi pi-cog">
                     </p:commandButton>
@@ -121,8 +121,8 @@
                             value="Download"
                             ajax="false"
                             styleClass="ui-button-info m-1"
-                            icon="pi pi-download"
-                            action="#{reportController.downloadOpdServiceCount()}">
+                            icon="pi pi-download">
+                        <p:dataExporter fileName="Patient_Indications_Report.xlsx" target="tbl" type="xlsx" />
                     </p:commandButton>
 
                     <p:commandButton
@@ -145,24 +145,41 @@
 
 
                     <p:dataTable id="tbl"
-                                 value="#{reportController.reportOpdServiceCount}"
-                                 var="item"
+                                 value="#{searchController.bills}"
+                                 var="bill"
                                  paginatorPosition="bottom"
                                  paginator="true"
                                  class="mt-3"
-                                 rows="10"
-
-                    >
-                        <p:column headerText="Doctor Name">
-                            <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedDoctor(item.doctorId)}"
-                                            value="#{item.doctor}"/>
+                                 rows="10">
+                        <p:column
+                                headerText="Bill No"
+                                filterBy="#{bill.deptId}"
+                                filterMatchMode="contains"
+                                sortBy="#{bill.deptId}">
+                            <p:commandLink
+                                    id="billNo"
+                                    ajax="false"
+                                    value="#{bill.deptId}"
+                                    action="#{billSearch.navigateToViewSingleOpdBill()}">
+                                <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}"/>
+                            </p:commandLink>
                         </p:column>
-                        <p:column headerText="Test Name">
-                            <p:commandLink  ajax="false" class="mr-4" action="#{reportController.filterOpdServiceCountBySelectedService(item.serviceId)}"
-                                            value="#{item.service}"/>
+                        <p:column headerText="Patient Name">
+                            <h:outputLabel value="#{bill.patient.person.name}"/>
                         </p:column>
-                        <p:column headerText="Test Count">
-                            <h:outputText value="#{item.serviceCount}" />
+                        <p:column headerText="Date of Registration">
+                            <p:outputLabel id="billTime1" value="#{bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                            </p:outputLabel>
+                        </p:column>
+                        <p:column headerText="Indication">
+                            <h:outputLabel value="#{bill.indication}" />
+                        </p:column>
+                        <p:column headerText="Billed By">
+                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" />
+                        </p:column>
+                        <p:column headerText="Billed Department">
+                            <h:outputLabel id="byDep" value="#{bill.fromDepartment.name}" />
                         </p:column>
                     </p:dataTable>
                 </p:panel>
