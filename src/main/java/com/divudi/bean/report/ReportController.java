@@ -3367,6 +3367,7 @@ public class ReportController implements Serializable {
         reportTimerController.trackReportExecution(() -> {
             // 1. Query for Billed Items
             String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.id, "
                     + " bi.item.code, "
                     + " bi.item.name, "
                     + " count(bi), "
@@ -3410,6 +3411,7 @@ public class ReportController implements Serializable {
 
             // 2. Query for Cancellations and Refunds
             String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.id, "
                     + " bi.item.code, "
                     + " bi.item.name, "
                     + " count(bi), "
@@ -3462,7 +3464,7 @@ public class ReportController implements Serializable {
             // Put billed items in map
             if (billedReports != null) {
                 for (TestWiseCountReport r : billedReports) {
-                    finalMap.put(r.getTestCode(), r);
+                    finalMap.put(r.getTestId().toString(), r);
                 }
             }
 
@@ -3477,10 +3479,10 @@ public class ReportController implements Serializable {
                     cr.setTotal(-Math.abs(cr.getTotal()));
 
                     // 3b: Merge with existing item in finalMap, or add as new negative entry
-                    TestWiseCountReport existing = finalMap.get(cr.getTestCode());
+                    TestWiseCountReport existing = finalMap.get(cr.getTestId().toString());
                     if (existing == null) {
                         // If there's no billed entry, just put the negative
-                        finalMap.put(cr.getTestCode(), cr);
+                        finalMap.put(cr.getTestId().toString(), cr);
                     } else {
                         existing.setCount(existing.getCount() + cr.getCount());
                         existing.setHosFee(existing.getHosFee() + cr.getHosFee());
