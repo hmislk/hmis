@@ -5,7 +5,7 @@ public enum CashierReports implements IReportType {
     CASHIER_SUMMARY("Cashier Summary"),
     CASHIER_DETAILED("Cashier Detailed"),
     TOTAL_CASHIER_SUMMARY("Total Cashier Summary"),
-    CASHIER_SHIFT_END_SUMMARY("Total Cashier Summary");
+    CASHIER_SHIFT_END_SUMMARY("Cashier Shift End Summary"),;
 
     private final String displayName;
 
