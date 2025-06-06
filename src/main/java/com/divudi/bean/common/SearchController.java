@@ -121,6 +121,7 @@ import org.primefaces.model.StreamedContent;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.Collections;
 
 import java.util.TreeMap;
@@ -139,7 +140,7 @@ public class SearchController implements Serializable {
     @EJB
     private BillFacade billFacade;
     @EJB
-    AgentHistoryFacade agentHistoryFacade;
+    private AgentHistoryFacade agentHistoryFacade;
     @EJB
     private PaymentFacade paymentFacade;
     @EJB
@@ -151,70 +152,75 @@ public class SearchController implements Serializable {
     @EJB
     private PharmacyBean pharmacyBean;
     @EJB
-    BillSessionFacade billSessionFacade;
+    private BillSessionFacade billSessionFacade;
     @EJB
-    StockFacade stockFacade;
+    private StockFacade stockFacade;
     @EJB
-    PatientReportFacade patientReportFacade;
+    private PatientReportFacade patientReportFacade;
     @EJB
     private PatientFacade patientFacade;
     @EJB
-    TokenFacade tokenFacade;
+    private TokenFacade tokenFacade;
     @EJB
     private DrawerFacade drawerFacade;
     @EJB
-    BillService billService;
+    private BillService billService;
     @EJB
-    PatientInvestigationService patientInvestigationService;
+    private PatientInvestigationService patientInvestigationService;
     @EJB
     private ReportTimerController reportTimerController;
-
+    @EJB
+    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
     @Inject
+    private BillController billController;
+    @Inject
     private SessionController sessionController;
     @Inject
-    TransferController transferController;
+    private TransferController transferController;
     @Inject
-    PharmacySaleBhtController pharmacySaleBhtController;
+    private PharmacySaleBhtController pharmacySaleBhtController;
     @Inject
-    AuditEventApplicationController auditEventApplicationController;
+    private AuditEventApplicationController auditEventApplicationController;
     @Inject
-    OpdPreSettleController opdPreSettleController;
+    private OpdPreSettleController opdPreSettleController;
     @Inject
-    PharmacyPreSettleController pharmacyPreSettleController;
+    private PharmacyPreSettleController pharmacyPreSettleController;
     @Inject
     private DepartmentController departmentController;
     @Inject
-    BillSearch billSearch;
+    private BillSearch billSearch;
     @Inject
-    PharmacyBillSearch pharmacyBillSearch;
+    private PharmacyBillSearch pharmacyBillSearch;
     @Inject
-    OpdBillController opdBillController;
+    private OpdBillController opdBillController;
     @Inject
-    ConfigOptionApplicationController configOptionApplicationController;
+    private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    ChannelSearchController channelSearchController;
+    private ChannelSearchController channelSearchController;
     @Inject
-    ReportTemplateController reportTemplateController;
+    private ReportTemplateController reportTemplateController;
     @Inject
-    CashBookEntryController cashBookEntryController;
+    private CashBookEntryController cashBookEntryController;
     @Inject
-    ExcelController excelController;
+    private ExcelController excelController;
     @Inject
-    PdfController pdfController;
+    private PdfController pdfController;
     @Inject
-    DrawerEntryController drawerEntryController;
+    private DrawerEntryController drawerEntryController;
     @Inject
-    DrawerController drawerController;
+    private DrawerController drawerController;
     @Inject
-    EnumController enumController;
+    private EnumController enumController;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private String visitType;
     private String methodType;
+
+    private boolean printPreview = false;
 
     private Category category;
     private ReportTemplateType reportTemplateType;
@@ -227,6 +233,7 @@ public class SearchController implements Serializable {
     private String backLink;
     private int maxResult = 50;
     private BillType billType;
+    private BillTypeAtomic billTypeAtomic;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
     private List<Bill> bills;
@@ -239,65 +246,106 @@ public class SearchController implements Serializable {
     private List<BillFee> billFeesDone;
     private List<BillItem> billItems;
     private List<PatientInvestigation> patientInvestigations;
+    private List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     private List<PatientReport> patientReports;
     private List<PatientInvestigation> patientInvestigationsSigle;
-    private BillTypeAtomic billTypeAtomic;
     private BillClassType billClassType;
     private String selectedOpdPackageBillSelector;
     private List<String> OpdPackageBillSelector;
+    private ReportTemplateRow selectedChannelBookingBillRow;
+    String settledBillType;
+
+    public String getSettledBillType() {
+        return settledBillType;
+    }
+
+    public void setSettledBillType(String settledBillType) {
+        this.settledBillType = settledBillType;
+    }
+
+    public ReportTemplateRow getSelectedChannelBookingBillRow() {
+        return selectedChannelBookingBillRow;
+    }
+
+    public void setSelectedChannelBookingBillRow(ReportTemplateRow selectedChannelBookingBillRow) {
+        this.selectedChannelBookingBillRow = selectedChannelBookingBillRow;
+    }
+
+    public void handleChannelBillRowClick() {
+        if (selectedChannelBookingBillRow == null || selectedChannelBookingBillRow.getBill() == null) {
+            return;
+        }
+
+        if (selectedChannelBookingBillRow.getBill() instanceof CancelledBill) {
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                if (r.getBill() != null
+                        && r.getBill().getCancelledBill() != null
+                        && r.getBill().getCancelledBill().equals(selectedChannelBookingBillRow.getBill())) {
+                    this.selectedChannelBookingBillRow = r;
+                    break;
+                }
+            }
+        } else if (selectedChannelBookingBillRow.getBill() instanceof RefundBill) {
+            for (ReportTemplateRow r : bundle.getReportTemplateRows()) {
+                if (r.getBill() != null && r.getBill().getRefundedBill() != null && r.getBill().getRefundedBill().equals(selectedChannelBookingBillRow.getBill())) {
+                    this.selectedChannelBookingBillRow = r;
+                    break;
+                }
+            }
+        }
+    }
 
     private StreamedContent downloadingExcel;
 
-    BillSummaryRow billSummaryRow;
-    Bill cancellingIssueBill;
-    Bill bill;
-    Speciality speciality;
-    PatientEncounter patientEncounter;
-    Staff staff;
-    Item item;
-    double dueTotal;
-    double doneTotal;
-    double netTotal;
+    private Bill cancellingIssueBill;
+    private Bill bill;
+    private Speciality speciality;
+    private PatientEncounter patientEncounter;
+    private Staff staff;
+    private Item item;
+    private double dueTotal;
+    private double doneTotal;
+    private double netTotal;
     private double totalBillCount;
     private double grossTotal;
     private double discount;
-    ServiceSession selectedServiceSession;
-    Staff currentStaff;
+    private ServiceSession selectedServiceSession;
+    private Staff currentStaff;
     private String mrnNo;
-    List<BillItem> billItem;
-    List<PatientInvestigation> userPatientInvestigations;
+    private List<BillItem> billItem;
+    private List<PatientInvestigation> userPatientInvestigations;
 
-    String menuBarSearchText;
-    String smsText;
-    String uniqueSmsText;
-    boolean channelingPanelVisible;
-    boolean pharmacyPanelVisible;
-    boolean opdPanelVisible;
-    boolean inwardPanelVisible;
-    boolean labPanelVisile;
-    boolean patientPanelVisible;
-    ReportKeyWord reportKeyWord;
+    private String menuBarSearchText;
+    private String smsText;
+    private String uniqueSmsText;
+    private boolean channelingPanelVisible;
+    private boolean pharmacyPanelVisible;
+    private boolean opdPanelVisible;
+    private boolean inwardPanelVisible;
+    private boolean labPanelVisile;
+    private boolean patientPanelVisible;
+    private ReportKeyWord reportKeyWord;
 
-    List<Bill> channellingBills;
-    List<BillSession> billSessions;
-    List<Bill> opdBills;
-    List<Bill> pharmacyBills;
-    List<Admission> admissions;
-    List<PatientInvestigation> pis;
-    List<Patient> patients;
-    List<String> telephoneNumbers;
-    List<String> selectedTelephoneNumbers;
-    List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
+    private List<Bill> channellingBills;
+    private List<BillSession> billSessions;
+    private List<Bill> opdBills;
+    private List<Bill> pharmacyBills;
+    private List<Admission> admissions;
+    private List<PatientInvestigation> pis;
+    private List<Patient> patients;
+    private List<String> telephoneNumbers;
+    private List<String> selectedTelephoneNumbers;
+    private List<PharmacyAdjustmentRow> pharmacyAdjustmentRows;
 
-    BillSession selectedBillSession;
-    UploadedFile file;
+    private BillSession selectedBillSession;
+    private UploadedFile file;
     private Institution creditCompany;
 
     private Institution otherInstitution;
 
     private Institution institution;
     private Department department;
-    List<Bill> prescreptionBills;
+    private List<Bill> prescreptionBills;
     private Department fromDepartment;
     private Department toDepartment;
     private Institution fromInstitution;
@@ -306,10 +354,8 @@ public class SearchController implements Serializable {
     private Patient patient;
     private Institution dealer;
     private List<Bill> grnBills;
-    Bill currentBill;
+    private Bill currentBill;
     private Long currentBillId;
-    private Bill preBill;
-    boolean billPreview;
     private Long barcodeIdLong;
     private Date maxDate;
 
@@ -351,6 +397,12 @@ public class SearchController implements Serializable {
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigators">
+    public String navigateToBillCountList() {
+        fromDate = CommonFunctions.getStartOfMonth(new Date());
+        toDate = CommonFunctions.getEndOfMonth(new Date());
+        return "/analytics/bill_count_list?faces-redirect=true";
+    }
+
     public String navigateToMyDepartmentAllCashierSummary() {
         department = sessionController.getDepartment();
         institution = sessionController.getInstitution();
@@ -492,6 +544,249 @@ public class SearchController implements Serializable {
             return;
         } else {
             bills = new ArrayList<>();
+        }
+    }
+
+    public void findBillcount() {
+        if (configOptionApplicationController.getBooleanValueByKey("Calculating bill count using the item in bills", true)) {
+            findBillcountUsingBillItem();
+        } else {
+            findBillcountUsingBills();
+        }
+    }
+
+    public void findBillcountUsingBills() {
+        String sql;
+        List<BillTypeAtomic> billTypeAtomic = new ArrayList<>();
+        //OPD Types
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_REFUND);
+        //Package Types
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        //CC Types
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+//        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        bundle = new ReportTemplateRowBundle();
+
+        Long mainRowCount = 1L;
+
+        for (BillTypeAtomic atomic : billTypeAtomic) {
+            Map temMap = new HashMap();
+            sql = "select new com.divudi.core.light.common.BillLight( b.billTypeAtomic, count(b) )"
+                    + " from Bill b where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.cancelled=false "
+                    + " and b.billTypeAtomic =:billTypes ";
+
+            if (institution != null) {
+                sql += " and b.institution =:ins";
+                temMap.put("ins", getInstitution());
+            }
+            if (site != null) {
+                sql += " and b.department.site =:site";
+                temMap.put("site", getSite());
+            }
+            if (department != null) {
+                sql += " and b.department =:dept";
+                temMap.put("dept", getDepartment());
+            }
+            if (toInstitution != null) {
+                sql += " and b.toInstitution =:toIns";
+                temMap.put("toIns", getToInstitution());
+            }
+            if (toSite != null) {
+                sql += " and b.toDepartment.site =:toSite";
+                temMap.put("toSite", getToSite());
+            }
+            if (toDepartment != null) {
+                sql += " and b.toDepartment =:toDept";
+                temMap.put("toDept", getToDepartment());
+            }
+
+            sql += " group by b.billTypeAtomic";
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("billTypes", atomic);
+            List<BillLight> mainBills = getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+            if (mainBills == null) {
+                continue;
+            }
+
+            for (BillLight mainBill : mainBills) {
+                ReportTemplateRow mainBillRow = new ReportTemplateRow();
+                mainBillRow.setRowType("MainRow");
+                mainBillRow.setCounter(mainRowCount);
+                mainBillRow.setBillTypeAtomic(mainBill.getBillTypeAtomic());
+                mainBillRow.setCategoryCount(mainBill.getCount());
+                bundle.getReportTemplateRows().add(mainBillRow);
+                mainRowCount++;
+            }
+
+            Map params = new HashMap();
+
+            String jpql = "select new com.divudi.core.light.common.BillLight( b.toDepartment, count(b) )"
+                    + " from Bill b where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.billTypeAtomic =:billTypes "
+                    + " and b.cancelled=false "
+                    + " and b.toDepartment is not null";
+            if (institution != null) {
+                jpql += " and b.institution =:ins";
+                params.put("ins", getInstitution());
+            }
+            if (site != null) {
+                jpql += " and b.department.site =:site";
+                params.put("site", getSite());
+            }
+            if (department != null) {
+                jpql += " and b.department =:dept";
+                params.put("dept", getDepartment());
+            }
+            if (toInstitution != null) {
+                jpql += " and b.toInstitution =:toIns";
+                params.put("toIns", getToInstitution());
+            }
+            if (toSite != null) {
+                jpql += " and b.toDepartment.site =:toSite";
+                params.put("toSite", getToSite());
+            }
+            if (toDepartment != null) {
+                jpql += " and b.toDepartment =:toDept";
+                params.put("toDept", getToDepartment());
+            }
+
+            jpql += " group by b.toDepartment";
+            params.put("toDate", getToDate());
+            params.put("fromDate", getFromDate());
+            params.put("billTypes", atomic);
+            List<BillLight> subBills = getBillFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+            if (subBills == null) {
+                continue;
+            }
+
+            Long subRowCount = 1L;
+            for (BillLight subBill : subBills) {
+                ReportTemplateRow subBillsrow = new ReportTemplateRow();
+                subBillsrow.setRowType("SubRow");
+                subBillsrow.setCounter(subRowCount);
+                subBillsrow.setToDepartment(subBill.getToDpartment());
+                subBillsrow.setCategoryCount(subBill.getCount());
+                bundle.getReportTemplateRows().add(subBillsrow);
+                subRowCount++;
+            }
+
+        }
+    }
+
+    public void findBillcountUsingBillItem() {
+        String sql;
+        List<BillTypeAtomic> billTypeAtomic = new ArrayList<>();
+        //OPD Types
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.OPD_BILL_REFUND);
+        //Package Types
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        //CC Types
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+//        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+//        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+
+        //Pharmacy Types
+        billTypeAtomic.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+//        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        bundle = new ReportTemplateRowBundle();
+
+        Long mainRowCount = 1L;
+
+        for (BillTypeAtomic atomic : billTypeAtomic) {
+            Map temMap = new HashMap();
+            sql = "select new com.divudi.core.data.ReportTemplateRow(bi.item.department, b.billTypeAtomic, count(b) )"
+                    + " from BillItem bi "
+                    + " Join bi.bill b"
+                    + " where "
+                    + " b.createdAt between :fromDate and :toDate "
+                    + " and b.cancelled=false "
+                    + " and b.billTypeAtomic =:billTypes ";
+
+            if (institution != null) {
+                sql += " and b.institution =:ins";
+                temMap.put("ins", institution);
+            }
+            if (site != null) {
+                sql += " and b.department.site =:site";
+                temMap.put("site", site);
+            }
+            if (department != null) {
+                sql += " and b.department =:dept";
+                temMap.put("dept", department);
+            }
+            if (toInstitution != null) {
+                sql += " and b.toInstitution =:toIns";
+                temMap.put("toIns", toInstitution);
+            }
+            if (toSite != null) {
+                sql += " and b.toDepartment.site =:toSite";
+                temMap.put("toSite", toSite);
+            }
+            if (toDepartment != null) {
+                sql += " and b.toDepartment =:toDept";
+                temMap.put("toDept", toDepartment);
+            }
+
+            sql += " group by bi.item.department, b.billTypeAtomic";
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("billTypes", atomic);
+            List<ReportTemplateRow> mainBills = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(sql, temMap, TemporalType.TIMESTAMP);
+
+            if (mainBills == null) {
+                continue;
+            }
+
+            bundle.getReportTemplateRows().addAll(mainBills);
         }
     }
 
@@ -690,6 +985,42 @@ public class SearchController implements Serializable {
 
     public String navigateToBillList() {
         resetAllFiltersExceptDateRange();
+        return "/analytics/bills?faces-redirect=true";
+    }
+
+    public String navigateToCancellationBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/cancellation_bills?faces-redirect=true";
+    }
+
+    public String navigateToReturnBillList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/return_bills?faces-redirect=true";
+    }
+
+    public String navigateToPharmaceuticalBillItemList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/pharmaceutical_bill_items?faces-redirect=true";
+    }
+
+    public String navigateToPatientInvestigationList() {
+        resetAllFiltersExceptDateRange();
+        return "/analytics/patient_investigations?faces-redirect=true";
+    }
+
+    public String navigateToBillListFromBill(Bill bill) {
+        resetAllFilters();
+        fromDate = CommonFunctions.getStartOfBeforeDay(bill.getCreatedAt());
+        toDate = CommonFunctions.getEndOfDay(bill.getCreatedAt());
+        webUser = bill.getCreater();
+        institution = bill.getInstitution();
+        department = bill.getDepartment();
+        if (bill.getDepartment() != null) {
+            site = bill.getDepartment().getSite();
+        }
+        billTypeAtomic = bill.getBillTypeAtomic();
+        billType = bill.getBillType();
+        listBills();
         return "/analytics/bills?faces-redirect=true";
     }
 
@@ -981,6 +1312,7 @@ public class SearchController implements Serializable {
         searchKeyword = null;
         printPreview = false;
         showLoggedDepartmentOnly = true;
+        settledBillType = null;
     }
 
     public String navigateToSearchOpdBillsOfLoggedDepartment() {
@@ -1214,6 +1546,10 @@ public class SearchController implements Serializable {
 
     public String navigateToAllCashierHandovers() {
         return "/reports/cashier_reports/all_cashier_shifts?faces-redirect=true";
+    }
+
+    public String navigateToShiftEndCash() {
+        return "/reports/cashier_reports/shift_end_cash_list?faces-redirect=true";
     }
 
     public String navigatToReportDoctorPaymentOpd() {
@@ -1482,7 +1818,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -1534,7 +1870,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2317,6 +2653,14 @@ public class SearchController implements Serializable {
         this.showLoggedDepartmentOnly = showLoggedDepartmentOnly;
     }
 
+    public List<PharmaceuticalBillItem> getPharmaceuticalBillItems() {
+        return pharmaceuticalBillItems;
+    }
+
+    public void setPharmaceuticalBillItems(List<PharmaceuticalBillItem> pharmaceuticalBillItems) {
+        this.pharmaceuticalBillItems = pharmaceuticalBillItems;
+    }
+
     public class billsWithbill {
 
         Bill b;
@@ -2392,7 +2736,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2434,7 +2778,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2551,7 +2895,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2688,7 +3032,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2753,7 +3097,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2817,7 +3161,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -2975,7 +3319,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -3100,7 +3444,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -3150,7 +3494,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -3224,7 +3568,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             m.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -3555,92 +3899,170 @@ public class SearchController implements Serializable {
         totalPaying = 0.0;
     }
 
-    public void createTableByBillType() {
-        Date startTime = new Date();
-
-        if (billType == null) {
+    public void processPharmacyBillSearch() {
+        if (billTypeAtomic == null) {
             JsfUtil.addErrorMessage("Please Select Bill Type");
             return;
-
         }
-
-        String sql;
-        Map temMap = new HashMap();
-
-        sql = "select b from Bill b where b.retired=false and "
-                + " (type(b)=:class1 or type(b)=:class2) "
-                + " and b.department=:dep and b.billType = :billType "
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select b from Bill b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic = :billTypeAtomic  "
+                + " and b.department=:dep "
                 + " and b.createdAt between :fromDate and :toDate ";
 
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
-            sql += " and  ((b.deptId) like :billNo )";
-            temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            jpql += " and  ((b.deptId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
-            sql += " and  ((b.insId) like :requestNo )";
-            temMap.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+            jpql += " and  ((b.insId) like :requestNo )";
+            params.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
-            temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+            jpql += " and  ((b.netTotal) = :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
-            sql += " and  ((b.fromInstitution.name) like :frmIns )";
-            temMap.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
+            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
+            params.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
-            sql += " and  ((b.fromDepartment.name) like :frmDept )";
-            temMap.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
+            jpql += " and  ((b.fromDepartment.name) like :frmDept )";
+            params.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
-            sql += " and  ((b.toInstitution.name) like :toIns )";
-            temMap.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
-            sql += " and  ((b.toDepartment.name) like :toDept )";
-            temMap.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
-            sql += " and  ((b.referenceBill.deptId) like :refId )";
-            temMap.put("refId", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+            jpql += " and  ((b.referenceBill.deptId) like :refId )";
+            params.put("refId", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
-            sql += " and  ((b.invoiceNumber) like :inv )";
-            temMap.put("inv", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+            jpql += " and  ((b.invoiceNumber) like :inv )";
+            params.put("inv", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
-            sql += " and b.id in (select bItem.bill.id  "
+            jpql += " and b.id in (select bItem.bill.id  "
                     + " from BillItem bItem where bItem.retired=false and  "
                     + " ((bItem.item.name) like :itm ))";
-            temMap.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and b.id in (select bItem.bill.id  "
+            jpql += " and b.id in (select bItem.bill.id  "
                     + " from BillItem bItem where bItem.retired=false and  "
                     + " ((bItem.item.code) like :cde ))";
-            temMap.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+            params.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
-        sql += " order by b.createdAt desc  ";
+        jpql += " order by b.createdAt desc  ";
 
-        temMap.put("class1", BilledBill.class);
-        temMap.put("class2", PreBill.class);
-        temMap.put("billType", billType);
-        temMap.put("dep", getSessionController().getDepartment());
-        temMap.put("toDate", getToDate());
-        temMap.put("fromDate", getFromDate());
+        params.put("billTypeAtomic", billTypeAtomic);
+        params.put("dep", getSessionController().getDepartment());
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
         //temMap.put("dep", getSessionController().getDepartment());
-        bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, maxResult);
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
+        //     //System.err.println("SIZE : " + lst.size());
+
+    }
+
+    public void createTableByBillType() {
+        if (billType == null) {
+            JsfUtil.addErrorMessage("Please Select Bill Type");
+            return;
+        }
+        String jpql;
+        Map params = new HashMap();
+        jpql = "select b from Bill b where b.retired=false and "
+                + " (type(b)=:class1 or type(b)=:class2) "
+                + " and b.department=:dep and b.billType = :billType "
+                + " and b.createdAt between :fromDate and :toDate ";
+        if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
+            jpql += " and  ((b.deptId) like :billNo )";
+            params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRequestNo() != null && !getSearchKeyword().getRequestNo().trim().equals("")) {
+            jpql += " and  ((b.insId) like :requestNo )";
+            params.put("requestNo", "%" + getSearchKeyword().getRequestNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
+            jpql += " and  ((b.netTotal) = :netTotal )";
+            params.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromInstitution() != null && !getSearchKeyword().getFromInstitution().trim().equals("")) {
+            jpql += " and  ((b.fromInstitution.name) like :frmIns )";
+            params.put("frmIns", "%" + getSearchKeyword().getFromInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getFromDepartment() != null && !getSearchKeyword().getFromDepartment().trim().equals("")) {
+            jpql += " and  ((b.fromDepartment.name) like :frmDept )";
+            params.put("frmDept", "%" + getSearchKeyword().getFromDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().equals("")) {
+            jpql += " and  ((b.toInstitution.name) like :toIns )";
+            params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getToDepartment() != null && !getSearchKeyword().getToDepartment().trim().equals("")) {
+            jpql += " and  ((b.toDepartment.name) like :toDept )";
+            params.put("toDept", "%" + getSearchKeyword().getToDepartment().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getRefBillNo() != null && !getSearchKeyword().getRefBillNo().trim().equals("")) {
+            jpql += " and  ((b.referenceBill.deptId) like :refId )";
+            params.put("refId", "%" + getSearchKeyword().getRefBillNo().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getNumber() != null && !getSearchKeyword().getNumber().trim().equals("")) {
+            jpql += " and  ((b.invoiceNumber) like :inv )";
+            params.put("inv", "%" + getSearchKeyword().getNumber().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+            jpql += " and b.id in (select bItem.bill.id  "
+                    + " from BillItem bItem where bItem.retired=false and  "
+                    + " ((bItem.item.name) like :itm ))";
+            params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getCode() != null && !getSearchKeyword().getCode().trim().equals("")) {
+            jpql += " and b.id in (select bItem.bill.id  "
+                    + " from BillItem bItem where bItem.retired=false and  "
+                    + " ((bItem.item.code) like :cde ))";
+            params.put("cde", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+        }
+
+        jpql += " order by b.createdAt desc  ";
+
+        params.put("class1", BilledBill.class);
+        params.put("class2", PreBill.class);
+        params.put("billType", billType);
+        params.put("dep", getSessionController().getDepartment());
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        //temMap.put("dep", getSessionController().getDepartment());
+        bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, maxResult);
         //     //System.err.println("SIZE : " + lst.size());
 
     }
@@ -3738,7 +4160,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -4946,7 +5368,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bi.bill.netTotal) like :netTotal )";
+            sql += " and  ((bi.bill.netTotal) = :netTotal )";
             tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -4981,7 +5403,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -5143,10 +5565,15 @@ public class SearchController implements Serializable {
     }
 
     public void createPoTablePharmacy() {
-        Date startTime = new Date();
+        List<BillTypeAtomic> billTypesToList = new ArrayList<>();
+        billTypesToList.add(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        List<BillTypeAtomic> billTypesToAttachedToEachBillInTheList = new ArrayList<>();
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN);
+        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+//        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+//        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
 
-        createPoTable(InstitutionType.Dealer, BillType.PharmacyOrderApprove, BillType.PharmacyGrnBill);
-
+        createPoTable(InstitutionType.Dealer, billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
     public void createPoTableStore() {
@@ -5156,6 +5583,7 @@ public class SearchController implements Serializable {
 
     }
 
+    @Deprecated // Use the same overloaded method with billtypeatomic lists as parameters
     public void createPoTable(InstitutionType institutionType, BillType bt, BillType referenceBillType) {
         bills = null;
         String sql;
@@ -5179,7 +5607,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             tmp.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -5205,6 +5633,68 @@ public class SearchController implements Serializable {
 
     }
 
+    public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
+        bills = null;
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "Select b From Bill b "
+                + " where b.retired = false"
+                + " and b.billTypeAtomic in :btas"
+                + " and b.toInstitution.institutionType = :insTp "
+                + " and b.referenceBill.institution = :ins "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        if (getSearchKeyword() != null) {
+
+            if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().isEmpty()) {
+                jpql += " and upper(b.deptId) like :billNo ";
+                params.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getToInstitution() != null && !getSearchKeyword().getToInstitution().trim().isEmpty()) {
+                jpql += " and upper(b.toInstitution.name) like :toIns ";
+                params.put("toIns", "%" + getSearchKeyword().getToInstitution().trim().toUpperCase() + "%");
+            }
+
+            if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().isEmpty()) {
+                try {
+                    BigDecimal netTotalValue = new BigDecimal(getSearchKeyword().getNetTotal().trim());
+                    jpql += " and b.netTotal = :netTotal ";
+                    params.put("netTotal", netTotalValue);
+                } catch (NumberFormatException e) {
+                }
+            }
+            if (getSearchKeyword().getItemName() != null && !getSearchKeyword().getItemName().trim().equals("")) {
+                jpql += " and b.id in (select bItem.bill.id  "
+                        + " from BillItem bItem where bItem.retired=false and  "
+                        + " ((bItem.item.name) like :itm ))";
+                params.put("itm", "%" + getSearchKeyword().getItemName().trim().toUpperCase() + "%");
+            }
+        }
+
+        jpql += " order by b.createdAt desc ";
+
+        params.put("toDate", getToDate());
+        params.put("fromDate", getFromDate());
+        params.put("insTp", institutionType);
+        params.put("ins", getSessionController().getInstitution());
+        params.put("btas", billTypeAtomicToList);
+
+        if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        } else {
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
+        }
+
+        if (bills != null && !bills.isEmpty()) {
+            for (Bill b : bills) {
+                b.setListOfBill(getGrns(b, referenceBillTypes)); // N+1; refactor if needed
+            }
+        }
+    }
+
+    @Deprecated // Please use the overloaded method with Bill Type Atomics
     private List<Bill> getGrns(Bill b, BillType billType) {
         String sql = "Select b From BilledBill b "
                 + " where b.retired=false "
@@ -5215,6 +5705,49 @@ public class SearchController implements Serializable {
         hm.put("ref", b);
         hm.put("btp", billType);
         return getBillFacade().findByJpql(sql, hm);
+    }
+
+    private List<Bill> getGrns(Bill purchaseOrderBill, List<BillTypeAtomic> grnBillTypesAtomicsToList) {
+        List<Bill> result = new ArrayList<>();
+
+        // First: b.referenceBill = :ref
+        String jpql1 = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND b.referenceBill = :ref";
+
+        Map<String, Object> params1 = new HashMap<>();
+        params1.put("ref", purchaseOrderBill);
+        params1.put("btas", grnBillTypesAtomicsToList);
+
+        List<Bill> list1 = getBillFacade().findByJpql(jpql1, params1);
+
+        if (list1 != null) {
+            result.addAll(list1);
+        }
+
+        // Second: b.billedBill.referenceBill = :ref (with null check)
+        String jpql2 = "SELECT b FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND b.billedBill IS NOT NULL "
+                + "AND b.billedBill.referenceBill = :ref";
+
+        Map<String, Object> params2 = new HashMap<>();
+        params2.put("ref", purchaseOrderBill);
+        params2.put("btas", grnBillTypesAtomicsToList);
+
+        List<Bill> list2 = getBillFacade().findByJpql(jpql2, params2);
+
+        if (list2 != null) {
+            for (Bill b : list2) {
+                if (!result.contains(b)) {
+                    result.add(b);
+                }
+            }
+        }
+
+        return result;
     }
 
     private List<Bill> getIssudBills(Bill b) {
@@ -7021,7 +7554,7 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += "and b.netTotal like :netTotal ";
+                sql += "and b.netTotal = :netTotal ";
                 temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
             }
 
@@ -7053,7 +7586,7 @@ public class SearchController implements Serializable {
             }
 
             if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-                sql += " and  ((bi.bill.netTotal) like :netTotal )";
+                sql += " and  ((bi.bill.netTotal) = :netTotal )";
                 temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
             }
 
@@ -7090,19 +7623,17 @@ public class SearchController implements Serializable {
 
     }
 
-    @Inject
-    private BillController billController;
-
-    @EJB
-    private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-
-    private boolean printPreview = false;
-
     public String navigateToAddToStockBillPrint() {
         printPreview = true;
         duplicateBillView = true;
 
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
+    }
+
+    public String navigateToPharmcyBillSearch() {
+        printPreview = true;
+        duplicateBillView = true;
+        return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
     }
 
     public String navigateToItemizedSaleSummary() {
@@ -7264,7 +7795,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -7597,7 +8128,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((token.bill.netTotal) like :netTotal )";
+            sql += " and  ((token.bill.netTotal) = :netTotal )";
             parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -7646,7 +8177,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((token.bill.netTotal) like :netTotal )";
+            sql += " and  ((token.bill.netTotal) = :netTotal )";
             parameters.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -7903,7 +8434,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -7953,7 +8484,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8044,7 +8575,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8092,7 +8623,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8669,7 +9200,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) like :netTotal )";
+            sql += " and  ((bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8732,7 +9263,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) like :netTotal )";
+            sql += " and  ((bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8895,7 +9426,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) like :netTotal )";
+            sql += " and  ((bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -8986,7 +9517,7 @@ public class SearchController implements Serializable {
             temMap.put("billNo", "%" + searchKw.getBillNo().trim().toUpperCase() + "%");
         }
         if (searchKw != null && searchKw.getNetTotal() != null && !searchKw.getNetTotal().trim().equals("")) {
-            sql += " and  ((bill.netTotal) like :netTotal )";
+            sql += " and  ((bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + searchKw.getNetTotal().trim().toUpperCase() + "%");
         }
         if (searchKw != null && searchKw.getTotal() != null && !searchKw.getTotal().trim().equals("")) {
@@ -9186,7 +9717,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -9280,7 +9811,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -9439,7 +9970,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bf.bill.netTotal) like :netTotal )";
+            sql += " and  ((bf.bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -9532,7 +10063,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((bf.bill.netTotal) like :netTotal )";
+            sql += " and  ((bf.bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -9686,7 +10217,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -9767,7 +10298,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -10657,6 +11188,280 @@ public class SearchController implements Serializable {
 
     }
 
+    public void listCancellationBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listReturnBills() {
+        bills = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select b from Bill b where 1=1 ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        jpql.append(" and type(b)=:billClassType ");
+        params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by b.id ");
+
+        // Execute the query
+        bills = getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        total = 0.0;
+        netTotal = 0.0;
+        discount = 0.0;
+        if (bills != null) {
+            for (Bill bill : bills) {
+                if (bill != null) {
+                    total += bill.getTotal();
+                    netTotal += bill.getNetTotal();
+                    discount += bill.getDiscount();
+                }
+            }
+        }
+
+    }
+
+    public void listPharmaceuticalBillItems() {
+        pharmaceuticalBillItems = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select pbi from PharmaceuticalBillItem pbi "
+                + " join pbi.billItem bi join bi.bill b "
+                + " where 1=1 "
+                + " ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+                    break;
+
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        // Order by bill ID
+        jpql.append(" order by pbi.id ");
+
+        pharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
+    public void listPatientInvestigations() {
+        patientInvestigations = null;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select pi from PatientInvestigation pi "
+                + " join pi.billItem bi join bi.bill b "
+                + " where 1=1 "
+                + " ");
+        if (toDate != null && fromDate != null) {
+            jpql.append(" and b.createdAt between :fromDate and :toDate ");
+            params.put("toDate", toDate);
+            params.put("fromDate", fromDate);
+        }
+
+        if (institution != null) {
+            params.put("ins", institution);
+            jpql.append(" and b.department.institution = :ins ");
+        }
+
+        if (department != null) {
+            params.put("dept", department);
+            jpql.append(" and b.department = :dept ");
+        }
+
+        if (site != null) {
+            params.put("site", site);
+            jpql.append(" and b.department.site = :site ");
+        }
+
+        if (webUser != null) {
+            jpql.append(" and b.creater=:wu ");
+            params.put("wu", webUser);
+        }
+
+        if (billClassType != null) {
+            jpql.append(" and type(b)=:billClassType ");
+            switch (billClassType) {
+                case Bill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case BilledBill:
+                    params.put("billClassType", com.divudi.core.entity.BilledBill.class);
+                    break;
+                case CancelledBill:
+                    params.put("billClassType", com.divudi.core.entity.CancelledBill.class);
+                    break;
+                case OtherBill:
+                    params.put("billClassType", com.divudi.core.entity.Bill.class);
+                    break;
+                case PreBill:
+                    params.put("billClassType", com.divudi.core.entity.PreBill.class);
+                    break;
+                case RefundBill:
+                    params.put("billClassType", com.divudi.core.entity.RefundBill.class);
+                    break;
+            }
+        }
+
+        if (billType != null) {
+            jpql.append(" and b.billType=:billType ");
+            params.put("billType", billType);
+        }
+
+        if (billTypeAtomic != null) {
+            jpql.append(" and b.billTypeAtomic=:billTypeAtomic ");
+            params.put("billTypeAtomic", billTypeAtomic);
+        }
+
+        jpql.append(" order by pi.id ");
+
+        patientInvestigations = patientInvestigationFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+    }
+
     public void listBillsOpdCreditCompanySettle() {
         bills = null;
         Map<String, Object> params = new HashMap<>();
@@ -11442,7 +12247,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11489,7 +12294,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11534,7 +12339,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11583,7 +12388,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11640,7 +12445,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11688,7 +12493,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -11717,6 +12522,52 @@ public class SearchController implements Serializable {
         //System.err.println("Sql " + sql);
         bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 50);
 
+        if (settledBillType != null) {
+            bills = filterBills(bills, settledBillType);
+        }
+
+    }
+
+    private List<Bill> filterBills(List<Bill> bills, String settledBillType) {
+        List<Bill> filteredBills = new ArrayList<>();
+        String billType;
+
+        for (Bill b : bills) {
+            if (b.getBillItems() == null || b.getBillItems().isEmpty()) {
+                billType = "";
+            } else if (b.getBillItems().get(0).getPatientEncounter() != null) {
+                billType = "IP";
+            } else {
+                if (b.getBillItems().get(0).getReferenceBill() != null
+                        && b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic() != null) {
+                    billType = checkBillTypeByBill(b.getBillItems().get(0).getReferenceBill().getBillTypeAtomic());
+                } else {
+                    billType = "";
+                }
+            }
+
+            // Only add bills that match the status filter
+            if (billType.equals(settledBillType)) {
+                filteredBills.add(b);
+            }
+        }
+
+        return filteredBills; // Return the filtered list of bills
+    }
+
+    public String checkBillTypeByBill(BillTypeAtomic bta) {
+        switch (bta) {
+            case OPD_BATCH_BILL_WITH_PAYMENT:
+            case OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return "OP";
+            case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
+            case PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                return "PACKAGE";
+            case INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY:
+                return "IP";
+            default:
+                return "";
+        }
     }
 
     public void createCreditTableBillItemAll() {
@@ -11771,7 +12622,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) like :netTotal )";
+            sql += " and  ((b.bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12022,6 +12873,7 @@ public class SearchController implements Serializable {
         String sql = " SELECT b FROM BillFee b "
                 + "  where type(b.bill)=:class "
                 + " and b.bill.retired=false "
+                + " and b.bill.billTypeAtomic <> :bta"
                 + " and b.bill.paidAmount!=0 "
                 + " and b.bill.refunded=false "
                 + " and b.fee.feeType=:ftp"
@@ -12030,6 +12882,8 @@ public class SearchController implements Serializable {
                 + " and b.bill.billType in :bt ";
 
         HashMap hm = new HashMap();
+        hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        
         if (getFromDate() != null && getToDate() != null) {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
@@ -12071,9 +12925,8 @@ public class SearchController implements Serializable {
         //hm.put("ins", sessionController.getInstitution());
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
-        hm
-                .put("class", BilledBill.class
-                );
+        hm.put("class", BilledBill.class);
+        
         if (getReportKeyWord().isAdditionalDetails()) {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         } else {
@@ -12185,7 +13038,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) like :netTotal )";
+            jpql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12225,7 +13078,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            jpql += " and  ((b.netTotal) like :netTotal )";
+            jpql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12276,7 +13129,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) like :netTotal )";
+            sql += " and  ((b.bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12329,7 +13182,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12375,7 +13228,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.bill.netTotal) like :netTotal )";
+            sql += " and  ((b.bill.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12429,7 +13282,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12479,7 +13332,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12529,7 +13382,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12637,7 +13490,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12686,7 +13539,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12731,7 +13584,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -12777,7 +13630,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -13030,7 +13883,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -13075,7 +13928,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -13123,7 +13976,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -13167,7 +14020,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -13279,7 +14132,7 @@ public class SearchController implements Serializable {
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
-            sql += " and  ((b.netTotal) like :netTotal )";
+            sql += " and  ((b.netTotal) = :netTotal )";
             temMap.put("netTotal", "%" + getSearchKeyword().getNetTotal().trim().toUpperCase() + "%");
         }
 
@@ -14373,6 +15226,7 @@ public class SearchController implements Serializable {
     public void generateCashierDetailed() {
         reportTimerController.trackReportExecution(() -> {
             bundle = new ReportTemplateRowBundle();
+            bundle.setName("Cashier Detailed");
 
             double collectionForTheDay = 0.0;
             double netCashCollection = 0.0;
@@ -17560,11 +18414,13 @@ public class SearchController implements Serializable {
         parameters.put("br", true);
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        ;
+        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+
         if (bookingType != null) {
             switch (bookingType) {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+                    bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();
@@ -18840,6 +19696,20 @@ public class SearchController implements Serializable {
             createBillsBillItemsList(new HashSet<>(bills), allBillItems);
         } catch (IOException e) {
             e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    public void searchOpdBillsWithIndications() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+        if (bills != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getIndication() != null && !b.getIndication().trim().isEmpty())
+                    .collect(Collectors.toList());
         }
     }
 

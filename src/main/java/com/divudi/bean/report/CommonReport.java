@@ -48,6 +48,7 @@ import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1961,7 +1962,8 @@ public class CommonReport implements Serializable {
                 + " and b.retired=false and "
                 + " b.billType = :btp "
                 + " and b.department=:d "
-                + " and b.createdAt between :fromDate and :toDate ";
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.deptId is not null";
 
         if (institution != null) {
             sql += " and b.fromInstitution=:fIns ";
@@ -1978,7 +1980,7 @@ public class CommonReport implements Serializable {
             temMap.put("ins", getReferenceInstitution());
         }
 
-        if (getSupplier()!= null) {
+        if (getSupplier() != null) {
             if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
                 sql += " AND b.toInstitution = :supplier";
             } else {
@@ -1997,6 +1999,65 @@ public class CommonReport implements Serializable {
 
         return getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    private List<Bill> getBills(List<BillTypeAtomic> billTypeAtomics,
+            Department dep,
+            Institution paramInstitution,
+            Institution paramFromInstitution,
+            Institution paramToInstitution,
+            Institution paramReferanceInstitution,
+            String paramDeptId) {
+
+        if (billTypeAtomics == null || billTypeAtomics.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        StringBuilder jpql = new StringBuilder(
+                "SELECT b FROM Bill b"
+                + " WHERE b.retired = false"
+                + " AND b.billTypeAtomic IN :billTypeAtomics"
+                + " AND b.createdAt BETWEEN :fromDate AND :toDate"
+        );
+
+        Map<String, Object> params = new HashMap<>(8);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
+        params.put("billTypeAtomics", billTypeAtomics);
+
+        if (dep != null) {
+            jpql.append(" AND b.department = :dep");
+            params.put("dep", dep);
+        }
+
+        if (paramInstitution != null) {
+            jpql.append(" AND b.institution = :ins");
+            params.put("ins", paramInstitution);
+        }
+
+        if (paramFromInstitution != null) {
+            jpql.append(" AND b.fromInstitution IS NOT NULL AND b.fromInstitution = :fIns");
+            params.put("fIns", paramFromInstitution);
+        }
+
+        if (paramToInstitution != null) {
+            jpql.append(" AND b.toInstitution IS NOT NULL AND b.toInstitution = :tIns");
+            params.put("tIns", paramToInstitution);
+        }
+
+        if (paramReferanceInstitution != null) {
+            jpql.append(" AND b.referenceInstitution = :refIns");
+            params.put("refIns", paramReferanceInstitution);
+        }
+
+        if (paramDeptId != null && !paramDeptId.trim().isEmpty()) {
+            jpql.append(" AND b.deptId LIKE :deptId");
+            params.put("deptId", "%" + paramDeptId.trim() + "%");
+        }
+
+        jpql.append(" ORDER BY b.id");
+
+        return getBillFacade().findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     private List<Bill> getBills(Bill billClass, List<BillType> billTypes, Department dep) {
@@ -2930,6 +2991,24 @@ public class CommonReport implements Serializable {
 
     }
 
+    public double calValueNetTotal(List<Bill> bills, PaymentMethod paymentMethod) {
+        if (bills == null || bills.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            if (b != null
+                    && !b.isRetired()
+                    && b.getPaymentMethod() == paymentMethod) {
+                total += b.getNetTotal();
+            }
+        }
+
+        return total;
+    }
+
     private double calValueNetTotal(Bill billClass, BillType billType, PaymentMethod paymentMethod, Department dep) {
         String sql;
         Map temMap = new HashMap();
@@ -2950,7 +3029,7 @@ public class CommonReport implements Serializable {
             temMap.put("fIns", institution);
         }
 
-        if (getSupplier()!= null) {
+        if (getSupplier() != null) {
             if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
                 sql += " AND b.toInstitution = :supplier";
             } else {
@@ -2960,7 +3039,7 @@ public class CommonReport implements Serializable {
 
         }
 
-        if (getSupplier()!= null) {
+        if (getSupplier() != null) {
             if (billType == BillType.PharmacyGrnReturn && billClass.getBillClassType() == BillClassType.BilledBill) {
                 sql += " AND b.toInstitution = :supplier";
             } else {
@@ -3040,6 +3119,24 @@ public class CommonReport implements Serializable {
 
         return getBillFacade().findDoubleByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    public double calValueSaleValue(List<Bill> bills, PaymentMethod paymentMethod) {
+        if (bills == null || bills.isEmpty()) {
+            return 0.0;
+        }
+
+        double total = 0.0;
+
+        for (Bill b : bills) {
+            if (b != null
+                    && !b.isRetired()
+                    && b.getPaymentMethod() == paymentMethod) {
+                total += b.getSaleValue();
+            }
+        }
+
+        return total;
     }
 
     private double calValueSaleValue(Bill billClass, List<BillType> billTypes, PaymentMethod paymentMethod, Department dep) {
@@ -3824,7 +3921,7 @@ public class CommonReport implements Serializable {
             getChannelBilled().setCard(calValue(new BilledBill(), btys, PaymentMethod.Card, getWebUser(), getDepartment()));
             getChannelBilled().setCash(calValue(new BilledBill(), btys, PaymentMethod.Cash, getWebUser(), getDepartment()));
             getChannelBilled().setCheque(calValue(new BilledBill(), btys, PaymentMethod.Cheque, getWebUser(), getDepartment()));
-    //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
+            //        getChannelBilled().setCredit(calValue(new BilledBill(), btys, PaymentMethod.Credit, getWebUser(), getDepartment()));
             getChannelBilled().setSlip(calValue(new BilledBill(), btys, PaymentMethod.Slip, getWebUser(), getDepartment()));
 
             getChannelBilledAgent().setBills(userBillsOwn(new BilledBill(), BillType.ChannelAgent, PaymentMethod.Agent, getWebUser(), getDepartment()));
@@ -4892,7 +4989,6 @@ public class CommonReport implements Serializable {
 
     }
 
-    
     @Deprecated
     public void createGrnDetailTable() {
         reportTimerController.trackReportExecution(() -> {
@@ -4936,37 +5032,37 @@ public class CommonReport implements Serializable {
                 return;
             }
 
-            //GRN Billed Bills
+// GRN Billed Bills
             getGrnBilled().setBills(getBills(new BilledBill(), BillType.PharmacyGrnBill, getDepartment()));
-            getGrnBilled().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-            getGrnBilled().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
+            getGrnBilled().setCash(calValueNetTotal(getGrnBilled().getBills(), PaymentMethod.Cash));
+            getGrnBilled().setCredit(calValueNetTotal(getGrnBilled().getBills(), PaymentMethod.Credit));
+            getGrnBilled().setSaleCash(calValueSaleValue(getGrnBilled().getBills(), PaymentMethod.Cash));
+            getGrnBilled().setSaleCredit(calValueSaleValue(getGrnBilled().getBills(), PaymentMethod.Credit));
 
-            getGrnBilled().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-            getGrnBilled().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
-
-            //GRN Cancelled Bill
+// GRN Cancelled Bills
             getGrnCancelled().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnBill, getDepartment()));
-            getGrnCancelled().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-            getGrnCancelled().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
+            getGrnCancelled().setCash(calValueNetTotal(getGrnCancelled().getBills(), PaymentMethod.Cash));
+            getGrnCancelled().setCredit(calValueNetTotal(getGrnCancelled().getBills(), PaymentMethod.Credit));
+            getGrnCancelled().setSaleCash(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Cash));
+            getGrnCancelled().setSaleCredit(calValueSaleValue(getGrnCancelled().getBills(), PaymentMethod.Credit));
 
-            getGrnCancelled().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Cash, getDepartment()));
-            getGrnCancelled().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnBill, PaymentMethod.Credit, getDepartment()));
-
-            //GRN Refunded Bill
+// GRN Refunded Bills
             getGrnReturn().setBills(getBills(new BilledBill(), BillType.PharmacyGrnReturn, getDepartment()));
-            getGrnReturn().setCash(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-            getGrnReturn().setCredit(calValueNetTotal(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+            getGrnReturn().setCash(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Cash));
+            getGrnReturn().setCredit(calValueNetTotal(getGrnReturn().getBills(), PaymentMethod.Credit));
+            getGrnReturn().setSaleCash(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Cash));
+            getGrnReturn().setSaleCredit(calValueSaleValue(getGrnReturn().getBills(), PaymentMethod.Credit));
 
-            getGrnReturn().setSaleCash(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-            getGrnReturn().setSaleCredit(calValueSaleValue(new BilledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
+// GRN Refunded Bill Cancel
+//            List<BillTypeAtomic> grnReturnsOrRefunds = new ArrayList<>();
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+//            grnReturnsOrRefunds.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+//            getGrnReturnCancel().setBills(getBills(grnReturnsOrRefunds, department, institution, null, supplier, null, ""));
+//            getGrnReturnCancel().setCash(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setCredit(calValueNetTotal(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
+//            getGrnReturnCancel().setSaleCash(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Cash));
+//            getGrnReturnCancel().setSaleCredit(calValueSaleValue(getGrnReturnCancel().getBills(), PaymentMethod.Credit));
 
-            //GRN Refunded Bill Cancel
-            getGrnReturnCancel().setBills(getBills(new CancelledBill(), BillType.PharmacyGrnReturn, getDepartment()));
-            getGrnReturnCancel().setCash(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-            getGrnReturnCancel().setCredit(calValueNetTotal(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
-
-            getGrnReturnCancel().setSaleCash(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Cash, getDepartment()));
-            getGrnReturnCancel().setSaleCredit(calValueSaleValue(new CancelledBill(), BillType.PharmacyGrnReturn, PaymentMethod.Credit, getDepartment()));
             Date endTime = new Date();
             duration = endTime.getTime() - startTime.getTime();
             auditEvent.setEventDuration(duration);
@@ -5747,8 +5843,32 @@ public class CommonReport implements Serializable {
         // Add results from the second query (Institution-based)
         combinedResults.addAll(rtrsByReferredByInstitution);
 
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row : combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
+
+                mergedResults.add(newRow);
+            }
+        }
+
         // Set the combined results in the bundle
-        bundle.setReportTemplateRows(combinedResults);
+        bundle.setReportTemplateRows(mergedResults);
 
         // Format the report name with fromDate and toDate
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();
@@ -5803,8 +5923,32 @@ public class CommonReport implements Serializable {
         // Add results from the second query (Institution-based)
         combinedResults.addAll(rtrsByReferredByInstitution);
 
+        List<ReportTemplateRow> mergedResults = new ArrayList<>();
+
+        for (ReportTemplateRow row : combinedResults) {
+            if (row.getReferringInstitution() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringInstitution().getName());
+
+                mergedResults.add(newRow);
+            }
+
+            if (row.getReferringStaff() != null) {
+                ReportTemplateRow newRow = new ReportTemplateRow();
+
+                newRow.setRowValue(row.getRowValue());
+                newRow.setLong1(row.getLong1());
+                newRow.setRowType(row.getReferringStaff().getPerson().getNameWithTitle());
+
+                mergedResults.add(newRow);
+            }
+        }
+
         // Set the combined results in the bundle
-        bundle.setReportTemplateRows(combinedResults);
+        bundle.setReportTemplateRows(mergedResults);
 
         // Format the report name with fromDate and toDate
         String dateFormat = sessionController.getApplicationPreference().getLongDateFormat();

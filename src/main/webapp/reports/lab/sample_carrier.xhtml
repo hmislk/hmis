@@ -182,7 +182,14 @@
                         <p:autoComplete forceSelection="true" id="cmbDoc" value="#{reportsController.staff}"
                                         completeMethod="#{serviceFeeController.completeStaff}" var="st"
                                         itemLabel="#{st.person.name}"
-                                        itemValue="#{st}" size="30" style="width: 400px;"/>
+                                        itemValue="#{st}" size="30" style="width: 400px;">
+                            <p:column headerText="Name">
+                                #{st.person.name}
+                            </p:column>
+                            <p:column headerText="Code">
+                                #{st.code}
+                            </p:column>
+                        </p:autoComplete>
 
                         <p:spacer width="20"/>
 
@@ -291,8 +298,9 @@
                         <p:column headerText="Invoice No" width="12rem">
                             <h:outputText value="#{bi.patientInvestigation.billItem.bill.deptId}"
                                           rendered="#{reportsController.visitType == 'OP'}"/>
-                            <h:outputText value="#{bi.patientInvestigation.billItem.bill.patientEncounter.finalBill.deptId}"
-                                          rendered="#{reportsController.visitType == 'IP'}"/>
+                            <h:outputText
+                                    value="#{bi.patientInvestigation.billItem.bill.patientEncounter.finalBill.deptId}"
+                                    rendered="#{reportsController.visitType == 'IP'}"/>
                         </p:column>
                     </p:dataTable>
                 </p:panel>

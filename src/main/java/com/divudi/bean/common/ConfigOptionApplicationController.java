@@ -68,6 +68,29 @@ public class ConfigOptionApplicationController implements Serializable {
             applicationOptions.put(option.getOptionKey(), option);
         }
 //        initializeDenominations();
+        loadEmailGatewayConfigurationDefaults();
+    }
+
+    private void loadEmailGatewayConfigurationDefaults() {
+        getIntegerValueByKey("Email Gateway - SMTP Port", 587);
+        getBooleanValueByKey("Email Gateway - SMTP Auth Enabled", true);
+        getBooleanValueByKey("Email Gateway - StartTLS Enabled", true);
+        getBooleanValueByKey("Email Gateway - SSL Enabled", false);
+        // DO NOT set defaults for these, just trigger their presence in DB:
+        getShortTextValueByKey("Email Gateway - Username", "");
+        getShortTextValueByKey("Email Gateway - Password", "");
+        getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        getShortTextValueByKey("Email Gateway - URL", "");
+        //
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", true);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
     }
 
     public ConfigOption getApplicationOption(String key) {

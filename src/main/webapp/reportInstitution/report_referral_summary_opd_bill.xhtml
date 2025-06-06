@@ -11,7 +11,7 @@
 
 
     <ui:define name="subcontent">
-        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:outputStylesheet library="css" name="printing.css"/>
         <h:panelGroup rendered="true" >
             <h:form>
                 <p:panel>
@@ -56,24 +56,32 @@
                             <h:outputLabel value="#{commonReport.bundle.name}"/> 
                         </f:facet>
 
-                        <p:column headerText="Referred By" >
-                            <f:facet name="header">  
+                        <p:column headerText="Referred By"
+                                  sortBy="#{b.rowType}"
+                                  filterBy="#{b.rowType}"
+                                  filterMatchMode="contains">
+                            <f:facet name="header">
                                 <h:outputLabel value="Referred By" style="float: left"/>
-                            </f:facet> 
-                            <h:outputLabel value="#{b.referringInstitution.name}"/>
-                            <h:outputLabel value="#{b.referringStaff.person.nameWithTitle}"/>
+                            </f:facet>
+                            <h:outputLabel value="#{b.rowType}"/>
+<!--                            <h:outputLabel value="#{b.referringInstitution.name}"/>-->
+<!--                            <h:outputLabel value="#{b.referringStaff.person.nameWithTitle}"/>-->
                         </p:column>
 
 
 
-                        <p:column headerText="Count" >
+                        <p:column headerText="Count"
+                                  sortBy="#{b.long1}"
+                                  filterBy="#{b.long1}">
                             <f:facet name="header">  
                                 <h:outputLabel value="Count" style="float: left"/>
                             </f:facet> 
                             <h:outputLabel value="#{b.long1}"/>
                         </p:column>
 
-                        <p:column headerText="Value" >
+                        <p:column headerText="Value"
+                                  sortBy="#{b.rowValue}"
+                                  filterBy="#{b.rowValue}">
                             <f:facet name="header">  
                                 <h:outputLabel value="Value" style="float: left"/>
                             </f:facet> 

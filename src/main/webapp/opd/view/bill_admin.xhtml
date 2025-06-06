@@ -17,6 +17,7 @@
                             <div class="d-flex justify-content-between">
                                 <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
                                 <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
+                                <p:commandButton value="Bill Search" action="#{billSearch.navigateToBillListFromAdminBill()}" ajax="false" ></p:commandButton>
                             </div> 
                         </f:facet>
                         <div class="row">
@@ -28,8 +29,59 @@
                                 <h:panelGroup rendered="#{billSearch.viewingBill.refunded}" >
                                     <p:outputLabel value="Refunded" class="ui-message-error m-2 p-2 b-1 w-100 text-center" ></p:outputLabel>
                                 </h:panelGroup>
-
                                 <p:tabView orientation="left">
+                                    <p:tab title="Summary" >
+                                        <p:panel header="Bill Summary">
+                                            <p:panelGrid columns="2" styleClass="w-100" columnClasses="w-25,w-75">
+
+                                                <h:outputLabel value="Bill Type Atomic:" />
+                                                <h:outputText value="#{billSearch.viewingBill.billTypeAtomic}" />
+
+                                                <h:outputLabel value="Total:" />
+                                                <h:outputText value="#{billSearch.viewingBill.total}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Discount:" />
+                                                <h:outputText value="#{billSearch.viewingBill.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Net Total:" />
+                                                <h:outputText value="#{billSearch.viewingBill.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Created By:" />
+                                                <h:outputText value="#{billSearch.viewingBill.creater.webUserPerson.name}" />
+
+                                                <h:outputLabel value="Created At:" />
+                                                <h:outputText value="#{billSearch.viewingBill.createdAt}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+
+                                                <h:outputLabel value="Bill Items Count:" />
+                                                <h:outputText value="#{billSearch.viewingBillItems.size()}" />
+
+                                                <h:outputLabel value="Patient Investigations Count:" />
+                                                <h:outputText value="#{billSearch.viewingPatientInvestigations.size()}" />
+
+                                                <h:outputLabel value="Pharmaceutical Bill Items Count:" />
+                                                <h:outputText value="#{billSearch.viewingPharmaceuticalBillItems.size()}" />
+
+                                                <h:outputLabel value="Payments Count:" />
+                                                <h:outputText value="#{billSearch.viewingBillPayments.size()}" />
+
+                                                <h:outputLabel value="Cancelled?" />
+                                                <h:outputText value="#{billSearch.viewingBill.cancelled ? 'Yes' : 'No'}" />
+
+                                                <h:outputLabel value="Refunded?" />
+                                                <h:outputText value="#{billSearch.viewingBill.refunded ? 'Yes' : 'No'}" />
+
+                                            </p:panelGrid>
+                                        </p:panel>
+
+                                    </p:tab>
                                     <p:tab title="Bill Details" >
                                         <p:panel>
                                             <f:facet name="header">
@@ -40,10 +92,23 @@
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
-                                        <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
-                                        
-                                        <view:pharmaceutical_bill_item_list_edit editable="true" pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
-                                        
+
+                                        <p:accordionPanel >
+                                            <p:tab title="Bill Items" >
+                                                <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
+                                            </p:tab>
+                                            <p:tab title="Pharmaceutical Bill Items" >
+                                                <view:pharmaceutical_bill_item_list_edit 
+                                                    editable="true" 
+                                                    pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
+                                            </p:tab>
+                                            <p:tab title="Patient Investigations" >
+                                                <view:patient_investigation_list_edit 
+                                                    ptixs="#{billSearch.viewingPatientInvestigations}"
+                                                    editable="true"
+                                                    ></view:patient_investigation_list_edit>
+                                            </p:tab>
+                                        </p:accordionPanel>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
@@ -53,7 +118,6 @@
                                             value="Add New Payment" 
                                             ajax="false" 
                                             action="#{billSearch.addPaymentToViewingBillForAdminToCorrectErrors}" >
-
                                         </p:commandButton>
                                         <p:dataTable 
                                             value="#{billSearch.viewingBillPayments}" 

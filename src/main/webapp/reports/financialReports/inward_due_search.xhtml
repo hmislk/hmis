@@ -1,309 +1,514 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <h:body class="w-100 border">
-        <ui:composition template="/reports/index.xhtml" class="w-100 border">
-            <ui:define name="subcontent">
-                <h:form class="w-100">
-                    <p:panel header="INWARD CASH DUE" class="w-100">
-                        <h:panelGrid columns="8" class="w-100 ">
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel for="fromDate" value="From Date"  class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="fromDate" 
-                                value="#{creditCompanyDueController.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+<h:body class="w-100 border">
+    <ui:composition template="/reports/index.xhtml" class="w-100 border">
+        <ui:define name="subcontent">
+            <h:form class="w-100">
+                <p:panel header="INWARD CASH DUE" class="w-100">
+                    <h:panelGrid columns="8" class="w-100 ">
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel for="fromDate" value="From Date" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                class="w-100 "
+                                inputStyleClass="w-100"
+                                id="fromDate"
+                                value="#{creditCompanyDueController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:calendar>
 
-                            <p:spacer width="20" />
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf133;" styleClass="fa mr-2" />
-                                <p:outputLabel for="toDate" value="To Date" class="m-3" >
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:calendar 
-                                class="w-100 " 
-                                inputStyleClass="w-100" 
-                                id="toDate" 
-                                value="#{creditCompanyDueController.toDate}" 
-                                navigator="false" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                            </p:calendar>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
+                            <p:outputLabel for="toDate" value="To Date" class="m-3">
+                            </p:outputLabel>
+                        </h:panelGroup>
+                        <p:calendar
+                                class="w-100 "
+                                inputStyleClass="w-100"
+                                id="toDate"
+                                value="#{creditCompanyDueController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                        </p:calendar>
 
-                            <p:spacer width="20" />
+                        <p:spacer width="20"/>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf15b;" styleClass="fa mr-2" />
-                                <h:outputLabel for="bhtType" value="BHT Type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100" id="bhtType" value="#{creditCompanyDueController.paymentMethod}">
-                                <f:selectItem itemLabel="All BHT Types"/>
-                                <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
-                            </p:selectOneMenu>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf15b;" styleClass="fa mr-2"/>
+                            <h:outputLabel for="bhtType" value="BHT Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" id="bhtType" value="#{creditCompanyDueController.paymentMethod}">
+                            <f:selectItem itemLabel="All BHT Types"/>
+                            <f:selectItems value="#{enumController.paymentMethodForAdmission}"/>
+                        </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
-                                <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
+                            <h:outputLabel value="Institution" for="cmbIns" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
                                 value="#{creditCompanyDueController.institutionOfDepartment}"
                                 filter="true">
-                                <f:selectItem itemLabel="All Institutions"/>
-                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
-                                               itemValue="#{ins}"/>
-                                <!--                                <p:ajax process="cmbIns" update="cmbDept"/>-->
-                            </p:selectOneMenu>
+                            <f:selectItem itemLabel="All Institutions"/>
+                            <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
+                                           itemValue="#{ins}"/>
+                            <!--                                <p:ajax process="cmbIns" update="cmbDept"/>-->
+                        </p:selectOneMenu>
 
-                            <p:spacer width="20"/>
+                        <p:spacer width="20"/>
 
-                            <!--                            <h:panelGroup layout="block" styleClass="form-group">
-                                                            <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>  FontAwesome map marker icon 
-                                                            <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
-                                                        </h:panelGroup>
+                        <!--                            <h:panelGroup layout="block" styleClass="form-group">
+                                                        <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>  FontAwesome map marker icon
+                                                        <h:outputLabel value="Site" for="siteMenu" class="m-3"/>
+                                                    </h:panelGroup>
+                                                    <p:selectOneMenu
+                                                        id="siteMenu"
+                                                        styleClass="w-100 form-control"
+                                                        value="#{creditCompanyDueController.site}"
+                                                        filter="true">
+                                                        <f:selectItem itemLabel="All Sites"/>
+                                                        <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
+                                                                       itemValue="#{site}"/>
+                                                        <p:ajax process="siteMenu" update="cmbDept"/>
+                                                    </p:selectOneMenu>
+
+                                                    <p:spacer width="20"/>
+
+                                                    <h:panelGroup layout="block" styleClass="form-group">
+                                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>  FontAwesome sitemap icon
+                                                        <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup id="cmbDept">
+
+                                                         Component 1: Without Institution and Site
                                                         <p:selectOneMenu
-                                                            id="siteMenu"
+                                                            rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
                                                             styleClass="w-100 form-control"
-                                                            value="#{creditCompanyDueController.site}"
+                                                            value="#{creditCompanyDueController.department}"
+                                                            filterMatchMode="contains"
                                                             filter="true">
-                                                            <f:selectItem itemLabel="All Sites"/>
-                                                            <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
-                                                                           itemValue="#{site}"/>
-                                                            <p:ajax process="siteMenu" update="cmbDept"/>
+                                                            <f:selectItem itemLabel="All Departments"/>
+                                                            <f:selectItems
+                                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"/>
                                                         </p:selectOneMenu>
-                            
-                                                        <p:spacer width="20"/>
-                            
-                                                        <h:panelGroup layout="block" styleClass="form-group">
-                                                            <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>  FontAwesome sitemap icon 
-                                                            <h:outputLabel value="Department" for="cmbDept" class="m-3"/>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup id="cmbDept">
-                            
-                                                             Component 1: Without Institution and Site 
-                                                            <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site eq null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                                <f:selectItem itemLabel="All Departments"/>
-                                                                <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
-                            
-                                                             Component 2: With Site Only 
-                                                            <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                                <f:selectItem itemLabel="All Departments"/>
-                                                                <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
-                            
-                                                             Component 3: With Institution Only 
-                                                            <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                                <f:selectItem itemLabel="All Departments"/>
-                                                                <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
-                            
-                                                             Component 4: With Both Institution and Site 
-                                                            <p:selectOneMenu
-                                                                rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filterMatchMode="contains"
-                                                                filter="true">
-                                                                <f:selectItem itemLabel="All Departments"/>
-                                                                <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
-                            
-                                                            <p:selectOneMenu
-                                                                rendered="false"
-                                                                styleClass="w-100 form-control"
-                                                                value="#{creditCompanyDueController.department}"
-                                                                filter="true">
-                                                                <f:selectItem itemLabel="All Departments"/>
-                                                                <f:selectItems
-                                                                    value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
-                                                                    var="d"
-                                                                    itemLabel="#{d.name}"
-                                                                    itemValue="#{d}"/>
-                                                            </p:selectOneMenu>
-                                                        </h:panelGroup>-->
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf084;" styleClass="fa mr-2" />
-                                <h:outputLabel for="admissionType" value="Admission Type" class="m-3"/>
-                            </h:panelGroup>
-                            <p:selectOneMenu class="w-100" id="admissionType" value="#{creditCompanyDueController.admissionType}">
-                                <f:selectItem itemLabel="All Admission Type"/>
-                                <f:selectItems value="#{admissionTypeController.items}" var="myItem"
-                                               itemValue="#{myItem}" itemLabel="#{myItem.name}" />
-                            </p:selectOneMenu>
+                                                         Component 2: With Site Only
+                                                        <p:selectOneMenu
+                                                            rendered="#{creditCompanyDueController.institutionOfDepartment eq null and creditCompanyDueController.site ne null}"
+                                                            styleClass="w-100 form-control"
+                                                            value="#{creditCompanyDueController.department}"
+                                                            filterMatchMode="contains"
+                                                            filter="true">
+                                                            <f:selectItem itemLabel="All Departments"/>
+                                                            <f:selectItems
+                                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.site)}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"/>
+                                                        </p:selectOneMenu>
 
-                            <p:spacer width="20" />
+                                                         Component 3: With Institution Only
+                                                        <p:selectOneMenu
+                                                            rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site eq null}"
+                                                            styleClass="w-100 form-control"
+                                                            value="#{creditCompanyDueController.department}"
+                                                            filterMatchMode="contains"
+                                                            filter="true">
+                                                            <f:selectItem itemLabel="All Departments"/>
+                                                            <f:selectItems
+                                                                value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(creditCompanyDueController.institutionOfDepartment)}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"/>
+                                                        </p:selectOneMenu>
 
-                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText value="&#xf007;" styleClass="fa mr-2" /> 
-                                <h:outputLabel value="Company Name" for="companyName" class="m-3"/>
-                            </h:panelGroup>
-                            <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true" style="text-align: right;"
-                                            value="#{creditCompanyDueController.institution}"
-                                            completeMethod="#{creditCompanyController.completeCredit}"
-                                            var="ix" itemLabel="#{ix.name}"
-                                            itemValue="#{ix}" >
-                                <f:ajax event="itemSelect" execute="@this" />
-                            </p:autoComplete>
+                                                         Component 4: With Both Institution and Site
+                                                        <p:selectOneMenu
+                                                            rendered="#{creditCompanyDueController.institutionOfDepartment ne null and creditCompanyDueController.site ne null}"
+                                                            styleClass="w-100 form-control"
+                                                            value="#{creditCompanyDueController.department}"
+                                                            filterMatchMode="contains"
+                                                            filter="true">
+                                                            <f:selectItem itemLabel="All Departments"/>
+                                                            <f:selectItems
+                                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"/>
+                                                        </p:selectOneMenu>
 
-                        </h:panelGrid>
+                                                        <p:selectOneMenu
+                                                            rendered="false"
+                                                            styleClass="w-100 form-control"
+                                                            value="#{creditCompanyDueController.department}"
+                                                            filter="true">
+                                                            <f:selectItem itemLabel="All Departments"/>
+                                                            <f:selectItems
+                                                                value="#{departmentController.getDepartmentsOfInstitutionAndSite(creditCompanyDueController.institutionOfDepartment, creditCompanyDueController.site)}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"/>
+                                                        </p:selectOneMenu>
+                                                    </h:panelGroup>-->
 
-                        <h:panelGrid>
-                            <h:outputLabel value="**Site and Department Filtering Functions Not Available Yet**" class="m-3"/>   
-                        </h:panelGrid>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf084;" styleClass="fa mr-2"/>
+                            <h:outputLabel for="admissionType" value="Admission Type" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu class="w-100" id="admissionType"
+                                         value="#{creditCompanyDueController.admissionType}">
+                            <f:selectItem itemLabel="All Admission Type"/>
+                            <f:selectItems value="#{admissionTypeController.items}" var="myItem"
+                                           itemValue="#{myItem}" itemLabel="#{myItem.name}"/>
+                        </p:selectOneMenu>
 
-                        <p:commandButton 
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf007;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Company Name" for="companyName" class="m-3"/>
+                        </h:panelGroup>
+                        <p:autoComplete inputStyleClass="w-100" class="w-100" id="companyName" forceSelection="true"
+                                        style="text-align: right;"
+                                        value="#{creditCompanyDueController.institution}"
+                                        completeMethod="#{creditCompanyController.completeCredit}"
+                                        var="ix" itemLabel="#{ix.name}"
+                                        itemValue="#{ix}">
+                            <f:ajax event="itemSelect" execute="@this"/>
+                        </p:autoComplete>
+
+                    </h:panelGrid>
+
+                    <h:panelGrid>
+                        <h:outputLabel value="**Site and Department Filtering Functions Not Available Yet**"
+                                       class="m-3"/>
+                    </h:panelGrid>
+
+                    <p:commandButton
                             class="ui-button-warning my-4 mx-2"
                             style="width: 150px"
-                            ajax="false" 
-                            value="Process" 
-                            icon="fas fa-cogs" 
+                            ajax="false"
+                            value="Process"
+                            icon="fas fa-cogs"
                             action="#{creditCompanyDueController.createInwardCashDueData()}">
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:commandButton 
+                    <p:commandButton
                             class="ui-button-info my-4 mx-2"
                             style="width: 150px"
-                            icon="fas fa-print" 
-                            ajax="false" 
+                            icon="fas fa-print"
+                            ajax="false"
                             value="Print">
-                            <p:printer target="lstDue" />
-                        </p:commandButton>
+                        <p:printer target="printPanel"/>
+                    </p:commandButton>
 
-                        <p:commandButton 
+                    <p:commandButton
                             class="ui-button-success my-4 mx-2"
                             style="width: 150px"
-                            icon="fas fa-file-excel" 
-                            ajax="false" 
+                            icon="fas fa-file-excel"
+                            ajax="false"
                             value="Excel"
+                            action="#{creditCompanyDueController.exportInwardCashDueToExcel}"
                             actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
-                            <p:dataExporter target="lstDue" fileName="inward_due_age_credit_company_detail" type="xlsx"/>
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:commandButton 
+                    <p:commandButton
                             class="ui-button-danger my-4 mx-2"
                             style="width: 150px"
-                            icon= "fas fa-file-pdf" 
-                            ajax="false" 
+                            icon="fas fa-file-pdf"
+                            ajax="false"
                             value="PDF"
+                            action="#{creditCompanyDueController.exportInwardCashDueToPdf()}"
                             actionListener="#{creditCompanyDueController.createInwardAgeDetailAnalysis}">
-                            <p:dataExporter type="pdf" target="lstDue"  fileName="inward_due_age_credit_company_detail" />
-                        </p:commandButton>
+                    </p:commandButton>
 
-                        <p:dataTable 
-                            id="lstDue" 
-                            value="#{creditCompanyDueController.patientEncounters}"  
-                            var="p" 
-                            rowIndexVar="i" >
-                            <p:column>
-                                <p:outputLabel value="#{i+1}" />
-                            </p:column>
-                            <p:column headerText="BHT">
-                                <p:outputLabel value="#{p.bhtNo}" />
-                            </p:column>
-                            <p:column headerText="Company">
-                                <p:outputLabel value="#{p.creditCompany.name}" />
-                            </p:column>
-                            <p:column headerText="Admitted At">
-                                <p:outputLabel value="#{p.dateOfAdmission}" >
-                                    <f:convertDateTime pattern="yy MM dd hh:mmss a" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Discharged At">
-                                <p:outputLabel value="#{p.dateOfDischarge}" >
-                                    <f:convertDateTime pattern="yy MM dd hh:mmss a" />
-                                </p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Final Total"  style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{creditCompanyDueController.billed}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Paid By Patient" style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.settledAmountByPatient}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
+                    <h:panelGroup id="printPanel">
+                        <h:panelGroup id="tableContainer" layout="block" style="margin: 20px 0;">
+                            <table id="tblExport1" style="width: 100%; border-collapse: collapse;">
+                                <thead>
+                                <tr>
+                                    <th colspan="11"
+                                        style="font-size: 18px; font-weight: bold; text-align: center; background-color: lightgrey;">
+                                        Inward Cash Due
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;"></th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">BHT</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Admitted At</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Discharged At</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Final Total</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">GOP by Patient</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Patient</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Patient Due</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Paid by Companies</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Total Due</th>
+                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Details</th>
+                                </tr>
+                                </thead>
+                                <tbody>
 
-                                    <h:outputLabel value="#{creditCompanyDueController.paidByPatient}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                            <p:column headerText="Paid By Company"  style="text-align: right;">
-                                <h:outputLabel value="#{p.finalBill.settledAmountBySponsor}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                            
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{creditCompanyDueController.paidByCompany}">
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
+                                <f:event type="preRenderComponent"
+                                         listener="#{creditCompanyDueController.resetCounter}"/>
 
-                            <p:column headerText="Due"  style="text-align: right;" >
-                                <h:outputLabel value="#{(p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)) gt 0? (p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)):0.00}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                                <f:facet name="footer">
-                                    <h:outputLabel value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">
-                                        <f:convertNumber pattern="#,##0.00"/>                                    
-                                    </h:outputLabel>
-                                </f:facet>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                                <ui:repeat
+                                        value="#{creditCompanyDueController.institutionBillPatientEncounterMap.entrySet()}"
+                                        var="entry" rowIndexVar="i">
+                                    <tr style="border-bottom: 1px solid #d9d9d9;">
+                                        <td>#{creditCompanyDueController.nextRowCounter()}</td>
+                                        <td>#{entry.key.bhtNo}</td>
+                                        <td>
+                                            <h:outputText value="#{entry.key.dateOfAdmission}">
+                                                <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{entry.key.dateOfDischarge}">
+                                                <f:convertDateTime pattern="dd MM yyyy hh:mm:ss a"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{entry.key.finalBill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText
+                                                    value="#{entry.value.get(0).patientGopAmount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{entry.value.get(0).paidByPatient}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{entry.value.get(0).patientDue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText value="#{entry.value.get(0).totalPaidByCompanies}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td>
+                                            <h:outputText
+                                                    value="#{entry.value.get(0).totalDue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText></td>
+                                        <td>
+                                            <!-- Inner Table -->
+                                            <table style="width: 100%; border-collapse: collapse;">
+                                                <thead>
+                                                <tr>
+                                                    <th style="min-width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Company Name</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Policy Number</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9;">Reference Number</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">GOP by Company</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Paid by Company</th>
+                                                    <th style="width: 6rem; background-color: #f2f2f2; border-bottom: 1px solid #d9d9d9; text-align: right;">Company Due</th>
+                                                </tr>
+                                                </thead>
+                                                <tbody>
+                                                <ui:repeat value="#{entry.value}" var="b">
+                                                    <tr style="border-bottom: 1px solid #d9d9d9;">
+                                                        <td style="min-width: 6rem; ">#{b.institution.name}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getPolicyNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
+                                                        <td style="min-width: 6rem; ">#{creditCompanyDueController.getReferenceNumberFromEncounterCreditCompanyMap(entry.key.bhtNo, b.institution.name)}</td>
+                                                        <td style="width: 6rem; text-align: right">
+                                                            <h:outputText value="#{b.gopAmount}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 6rem; text-align: right">
+                                                            <h:outputText value="#{b.paidByCompany}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                        <td style="width: 6rem; text-align: right">
+                                                            <h:outputText
+                                                                    value="#{b.companyDue ne 0 ? b.companyDue : b.companyExcess}">
+                                                                <f:convertNumber pattern="#,##0.00"/>
+                                                            </h:outputText>
+                                                        </td>
+                                                    </tr>
+                                                </ui:repeat>
+                                                </tbody>
+                                                <tfoot>
+                                                <tr>
+                                                    <td style="font-weight: bold;" colspan="3">Total</td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText
+                                                                value="#{creditCompanyDueController.patientEncounterGopMap.get(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText
+                                                                value="#{creditCompanyDueController.patientEncounterPaidByCompanyMap.get(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                    <td style="text-align: right">
+                                                        <h:outputText
+                                                                value="#{creditCompanyDueController.patientEncounterGopMap.get(entry.key) - creditCompanyDueController.patientEncounterPaidByCompanyMap.get(entry.key)}"
+                                                                style="font-weight: bold;">
+                                                            <f:convertNumber pattern="#,##0.00"/>
+                                                        </h:outputText>
+                                                    </td>
+                                                </tr>
+                                                </tfoot>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+                                </tbody>
+                                <tfoot>
+                                <tr>
+                                    <td style="font-weight: bold; text-align: center;" colspan="4">Total</td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.billed}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.payableByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.paidByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.payableByPatient - creditCompanyDueController.paidByPatient}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.paidByCompany}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        <h:outputText
+                                                value="#{creditCompanyDueController.billed - creditCompanyDueController.paidByPatient - creditCompanyDueController.paidByCompany}"
+                                                style="font-weight: bold;">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                </tfoot>
+                            </table>
+                        </h:panelGroup>
+                    </h:panelGroup>
+
+                    <!--                    <p:dataTable-->
+                    <!--                            id="lstDue"-->
+                    <!--                            value="#{creditCompanyDueController.patientEncounters}"-->
+                    <!--                            var="p"-->
+                    <!--                            rowIndexVar="i">-->
+                    <!--                        <p:column>-->
+                    <!--                            <p:outputLabel value="#{i+1}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="BHT">-->
+                    <!--                            <p:outputLabel value="#{p.bhtNo}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Company">-->
+                    <!--                            <p:outputLabel value="#{p.creditCompany.name}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Company">-->
+                    <!--                            <p:outputLabel value="#{p.finalBill.deptId}"/>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Admitted At">-->
+                    <!--                            <p:outputLabel value="#{p.dateOfAdmission}">-->
+                    <!--                                <f:convertDateTime pattern="yy MM dd hh:mmss a"/>-->
+                    <!--                            </p:outputLabel>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Discharged At">-->
+                    <!--                            <p:outputLabel value="#{p.dateOfDischarge}">-->
+                    <!--                                <f:convertDateTime pattern="yy MM dd hh:mmss a"/>-->
+                    <!--                            </p:outputLabel>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Final Total" style="text-align: right;">-->
+                    <!--                            <h:outputLabel value="#{p.finalBill.netTotal}">-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel value="#{creditCompanyDueController.billed}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Paid By Patient" style="text-align: right;">-->
+                    <!--                            <h:outputLabel value="#{p.finalBill.settledAmountByPatient}">-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+
+                    <!--                                <h:outputLabel value="#{creditCompanyDueController.paidByPatient}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                        <p:column headerText="Paid By Company" style="text-align: right;">-->
+                    <!--                            <h:outputLabel value="#{p.finalBill.settledAmountBySponsor}">-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel value="#{creditCompanyDueController.paidByCompany}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+
+                    <!--                        <p:column headerText="Due" style="text-align: right;">-->
+                    <!--                            <h:outputLabel-->
+                    <!--                                    value="#{(p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)) gt 0? (p.finalBill.netTotal-(p.finalBill.settledAmountByPatient+p.finalBill.settledAmountBySponsor)):0.00}">-->
+                    <!--                                <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                            </h:outputLabel>-->
+                    <!--                            <f:facet name="footer">-->
+                    <!--                                <h:outputLabel-->
+                    <!--                                        value="#{creditCompanyDueController.billed-(creditCompanyDueController.paidByCompany+creditCompanyDueController.paidByPatient)}">-->
+                    <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                    <!--                                </h:outputLabel>-->
+                    <!--                            </f:facet>-->
+                    <!--                        </p:column>-->
+                    <!--                    </p:dataTable>-->
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
+</h:body>
 </html>

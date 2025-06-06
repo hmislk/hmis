@@ -224,6 +224,10 @@ public class OpdReportController implements Serializable {
         return "/opd/analytics/summary_reports/opd_income_daily_summary?faces-redirect=true";
     }
 
+    public String navigateToPatientIndicationsReport() {
+        return "/reports/opd/patient_indications_report?faces-redirect=true";
+    }
+
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public void processDailyStockBalanceReport() {
@@ -441,7 +445,7 @@ public class OpdReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-        List<Bill> bills = billService.fetchBillsWithToInstitution(
+        List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
                 fromDate,
                 toDate,
                 institution,
@@ -456,7 +460,7 @@ public class OpdReportController implements Serializable {
                 paymentScheme
         );
 
-        bundle = new IncomeBundle(bills);
+        bundle = new IncomeBundle(incomeBills);
         for (IncomeRow r : bundle.getRows()) {
             if (r.getBill() == null) {
                 continue;

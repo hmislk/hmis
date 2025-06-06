@@ -56,6 +56,7 @@ import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VmppFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -146,7 +147,6 @@ public class StoreBean implements Serializable {
         double updatableQty1 = getUserStockFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         double netUpdate = updatableQty1 + qty;
-
 
         if (netUpdate > fetchedStock.getStock()) {
             return false;
@@ -242,7 +242,6 @@ public class StoreBean implements Serializable {
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
 
-
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
         HashMap hm = new HashMap();
@@ -253,7 +252,7 @@ public class StoreBean implements Serializable {
         hm.put("frm", fromDepartment);
         hm.put("to", toDepartment);
         IssueRateMargins m = issueRateMarginsFacade.findFirstByJpql(sql, hm);
-        if(m==null){
+        if (m == null) {
             m = new IssueRateMargins();
             m.setAtPurchaseRate(true);
             m.setCreatedAt(new Date());
@@ -607,6 +606,24 @@ public class StoreBean implements Serializable {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
 
         if (s.getId() == null || s.getId() == 0) {
@@ -648,6 +665,24 @@ public class StoreBean implements Serializable {
             s.setDepartment(department);
             s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getId() == null || s.getId() == 0) {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
@@ -688,6 +723,24 @@ public class StoreBean implements Serializable {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -724,6 +777,24 @@ public class StoreBean implements Serializable {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -765,6 +836,24 @@ public class StoreBean implements Serializable {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         s.setStock(s.getStock() - qty);
         double number = s.getStock();
@@ -964,6 +1053,9 @@ public class StoreBean implements Serializable {
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
@@ -1013,9 +1105,12 @@ public class StoreBean implements Serializable {
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
 
-        sh.setStockQty(0.0);
+        sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);

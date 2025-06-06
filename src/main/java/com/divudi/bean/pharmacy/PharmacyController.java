@@ -912,48 +912,51 @@ public class PharmacyController implements Serializable {
 
         bills = new ArrayList<>();
 
-        String sql = "SELECT b FROM Bill b "
+        String jpql = "SELECT b FROM Bill b "
                 + " WHERE b.retired = false"
                 + " and b.cancelled = false"
                 + " and b.billTypeAtomic In :btas"
                 + " and b.createdAt between :fromDate and :toDate";
 
-        Map<String, Object> tmp = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
 
-        tmp.put("btas", bta);
-        tmp.put("fromDate", getFromDate());
-        tmp.put("toDate", getToDate());
+        params.put("btas", bta);
+        params.put("fromDate", getFromDate());
+        params.put("toDate", getToDate());
 
         if (institution != null) {
-            sql += " and b.institution = :fIns";
-            tmp.put("fIns", institution);
+            jpql += " and b.institution = :fIns";
+            params.put("fIns", institution);
         }
 
         if (site != null) {
-            sql += " and b.department.site = :site";
-            tmp.put("site", site);
+            jpql += " and b.department.site = :site";
+            params.put("site", site);
         }
 
         if (dept != null) {
-            sql += " and b.department = :dept";
-            tmp.put("dept", dept);
+            jpql += " and b.department = :dept";
+            params.put("dept", dept);
         }
 
         if (paymentMethod != null) {
-            sql += " and b.paymentMethod = :pm";
-            tmp.put("pm", paymentMethod);
+            jpql += " and b.paymentMethod = :pm";
+            params.put("pm", paymentMethod);
         }
 
         if (fromInstitution != null) {
-            sql += " AND b.fromInstitution = :supplier";
-            tmp.put("supplier", fromInstitution);
+            jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+            params.put("supplier", fromInstitution);
         }
 
-        sql += " order by b.id desc";
+        jpql += " order by b.id desc";
 
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+        
         try {
-            bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
-
+            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            System.out.println("bills = " + bills);
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
@@ -1641,7 +1644,7 @@ public class PharmacyController implements Serializable {
 
             PdfPTable table = new PdfPTable(2);
             table.setWidthPercentage(100);
-            table.setWidths(new float[]{7,2});
+            table.setWidths(new float[]{7, 2});
             table.addCell(new PdfPCell(new Phrase("Total", normalFont)));
             table.addCell(new PdfPCell(new Phrase(String.format("%.2f", totalSaleValue), normalFont)));
 
@@ -2017,17 +2020,17 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT b.toDepartment, "
-                        + "b.department, "
-                        + "b.deptId, "
-                        + "b.createdAt, "
-                        + "b.backwardReferenceBill, "
-                        + "b.backwardReferenceBill.deptId, "
-                        + "SUM(b.netTotal), "
-                        + "b "
-                        + "FROM Bill b "
-                        + "WHERE b.retired = false "
-                        + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                        + "AND b.billType = :billType "
+                + "b.department, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.backwardReferenceBill, "
+                + "b.backwardReferenceBill.deptId, "
+                + "SUM(b.netTotal), "
+                + "b "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.billType = :billType "
         );
 
         parameters.put("billType", billType);
@@ -2555,19 +2558,18 @@ public class PharmacyController implements Serializable {
     }
 
     public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
-                                                                                Date toDate,
-                                                                                Institution ins,
-                                                                                Department department,
-                                                                                Item item,
-                                                                                BillType[] billTypes,
-                                                                                BillType[] referenceBillTypes) {
+            Date toDate,
+            Institution ins,
+            Department department,
+            Item item,
+            BillType[] billTypes,
+            BillType[] referenceBillTypes) {
 
 //        if (false) {
 //            BillItem bi = new BillItem();
 //            bi.getNetValue();
 //            bi.getPharmaceuticalBillItem().getQty();
 //        }
-
         String sql;
         Map m = new HashMap();
         m.put("frm", getFromDate());
@@ -3157,7 +3159,6 @@ public class PharmacyController implements Serializable {
 //                + " and i.bill.billType=:btp "
 //                + " and i.createdAt between :frm and :to  "
 //                + " group by i.bill.department";
-
         return 0.0;
 
     }
@@ -4016,9 +4017,9 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(1).setCellValue(bill.getDeptId());
                 emptyRow.createCell(2).setCellValue(bill.getReferenceBill().getDeptId());
                 emptyRow.createCell(3).setCellValue(
-                        bill.getInvoiceNumber() != null ? bill.getInvoiceNumber() :
-                                (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
-                                        ? bill.getReferenceBill().getInvoiceNumber() : "-"));
+                        bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
+                        : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
+                        ? bill.getReferenceBill().getInvoiceNumber() : "-"));
                 emptyRow.createCell(4).setCellValue("-");
                 emptyRow.createCell(5).setCellValue("-");
                 emptyRow.createCell(6).setCellValue("-");
@@ -4031,17 +4032,17 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(13).setCellValue("-");
                 emptyRow.createCell(14).setCellValue(
                         bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
-                                ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
-                                ? bill.getToInstitution().getName() : "-")
-                                : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
-                                ? bill.getFromInstitution().getName() : "-"));
+                        ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
+                        ? bill.getToInstitution().getName() : "-")
+                        : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
+                        ? bill.getFromInstitution().getName() : "-"));
                 emptyRow.createCell(15).setCellValue("-");
                 emptyRow.createCell(16).setCellValue("-");
                 emptyRow.createCell(17).setCellValue("-");
                 emptyRow.createCell(18).setCellValue("-");
                 emptyRow.createCell(19).setCellValue(bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
-                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                        ? -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal());
                 emptyRow.createCell(20).setCellValue(bill.getNetTotal());
 
                 for (BillItem billItem : bill.getBillItems()) {
@@ -4053,21 +4054,21 @@ public class PharmacyController implements Serializable {
                     emptyInnerRow.createCell(3).setCellValue("-");
                     emptyInnerRow.createCell(4).setCellValue(
                             (billItem.getBill() != null && billItem.getBill().getToDepartment() != null && billItem.getBill().getToDepartment().getName() != null)
-                                    ? billItem.getBill().getToDepartment().getName()
-                                    : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null &&
-                                    billItem.getBill().getReferenceBill().getToDepartment() != null &&
-                                    billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
-                                    ? billItem.getBill().getReferenceBill().getToDepartment().getName()
-                                    : "-");
+                            ? billItem.getBill().getToDepartment().getName()
+                            : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null
+                            && billItem.getBill().getReferenceBill().getToDepartment() != null
+                            && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
+                            ? billItem.getBill().getReferenceBill().getToDepartment().getName()
+                            : "-");
                     emptyInnerRow.createCell(5).setCellValue(billItem.getItem().getCategory().getName());
                     emptyInnerRow.createCell(6).setCellValue(billItem.getItem().getCode());
                     emptyInnerRow.createCell(7).setCellValue(billItem.getItem().getName());
                     emptyInnerRow.createCell(8).setCellValue("-");
                     emptyInnerRow.createCell(9).setCellValue(billItem.getQty());
                     emptyInnerRow.createCell(10).setCellValue(
-                            (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null &&
-                                    billItem.getItem().getMeasurementUnit().getName() != null)
-                                    ? billItem.getItem().getMeasurementUnit().getName() : "-");
+                            (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
+                            && billItem.getItem().getMeasurementUnit().getName() != null)
+                            ? billItem.getItem().getMeasurementUnit().getName() : "-");
                     emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
                     emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
                     emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
@@ -4140,16 +4141,16 @@ public class PharmacyController implements Serializable {
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
-                table.addCell(bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
-                        (bill.getToInstitution() != null ? bill.getToInstitution().getName() : "-") :
-                        (bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : "-"));
+                table.addCell(bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                        ? (bill.getToInstitution() != null ? bill.getToInstitution().getName() : "-")
+                        : (bill.getFromInstitution() != null ? bill.getFromInstitution().getName() : "-"));
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell("-");
                 table.addCell(String.format("%.2f", bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) ?
-                        -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal()));
+                        || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
+                        ? -1 * bill.getReferenceBill().getNetTotal() : bill.getReferenceBill().getNetTotal()));
                 table.addCell(String.valueOf(bill.getNetTotal()));
 
                 for (BillItem billItem : bill.getBillItems()) {

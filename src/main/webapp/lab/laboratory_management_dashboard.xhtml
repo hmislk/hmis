@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
+      xmlns:dashboard="http://xmlns.jcp.org/jsf/composite/ezcomp/lab/dashboard"
+      xmlns:s="http://www.w3.org/1999/xhtml"
+      xmlns:p="http://primefaces.org/ui">
+    <ui:composition template="/resources/template/template.xhtml">
+        <ui:define name="content">
+            <h:head>
+                <style>
+                    #{configOptionApplicationController.getLongTextValueByKey('CSS for Sample Container Sticker')}
+                </style>
+            </h:head>
+
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('DashBoardMenu')}" >
+                <na:not_authorize />
+            </h:panelGroup>
+
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('DashBoardMenu')}" >
+                <h:form>
+                    <p:megaMenu orientation="horizontal" autoDisplay="false"  class="d-flex justify-content-center mt-3">
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToLaboratoryBills()}"
+                            ajax="false"
+                            class="d-flex justify-content-center"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardBillSearch'))}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;">
+                            <i class="fa-solid fa-file-invoice-dollar fa-lg mx-3"/>
+                            <h:outputText value="Lab Bills"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToSamples()}"
+                            ajax="false"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" 
+                            class="d-flex justify-content-center">
+                            <i class="fa-solid fa-vial fa-lg mx-3"/>
+                            <h:outputText value="Samples"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToInvestigation()}"
+                            ajax="false"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}"
+                            style="font-size: 22px; font-weight: 600; width: 12em;" 
+                            class="d-flex justify-content-center">
+                            <i class="fa-solid fa-list fa-lg mx-3"/>
+                            <h:outputText value="Investigations"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToReport()}"
+                            ajax="false"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" 
+                            class="d-flex justify-content-center">
+                            <i class="fa-solid fa-file-pen fa-lg mx-3"/>
+                            <h:outputText value="Reports"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToReportPrint()}"
+                            ajax="false"
+                            rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardPatientReportSearch'))}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" 
+                            class="d-flex justify-content-center">
+                            <i class="fa-solid fa-print fa-lg mx-3"/>
+                            <h:outputText value="Report Print"/> 
+                        </p:menuitem >
+
+                        <p:menuitem
+                            action="#{laboratoryManagementController.navigateToLaboratoryAdministration()}"
+                            ajax="false"
+                            rendered="#{webUserController.hasPrivilege('LabAdiministrator')}"
+                            style="font-size: 22px; font-weight: 600; width: 10em;" 
+                            class="d-flex justify-content-center">
+                            <i class="fa-solid fa-gears fa-lg mx-3"/>
+                            <h:outputText value="Settings"/> 
+                        </p:menuitem >
+                    </p:megaMenu>
+
+                    <div class="mx-3">
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
+                            <dashboard:bills/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                            <dashboard:patient_investigation/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
+                            <dashboard:view_barcode/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
+                            <dashboard:patient_sample/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
+                            <dashboard:patient_report/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
+                            <dashboard:print_report/>
+                        </h:panelGroup>
+                    </div>
+                </h:form>
+            </h:panelGroup>
+        </ui:define>
+    </ui:composition>
+</html>
