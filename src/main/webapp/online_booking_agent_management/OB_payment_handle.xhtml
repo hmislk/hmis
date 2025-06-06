@@ -3,6 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
@@ -132,8 +133,49 @@
 
                         <f:facet name="header">
                             <h:outputText id="doctorNameCancellation" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
-                            <p:commandButton class="mx-3" value="Cancel"  onclick="PF('cancelDialog').show();"  icon="fa-solid fa-check" update="growl dialogContentForCancellation"></p:commandButton>
-                            <p:commandButton value="Re-Open" action="#{bookingControllerViewScope.multipleSessionCancellation(bookingController.sessionsForCancellation, false)}" update="growl dialogContentForCancellation" icon="fa-solid fa-xmark"></p:commandButton>
+                            <p:panel class="my-3">
+                                <f:facet name="header">
+                                    <h:outputLabel value="Add New Patient Deposit" />
+                                </f:facet>
+
+                                <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
+                                    <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" style="width:200px">
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                        <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
+                                    </p:selectOneMenu>
+
+                                    <p:outputLabel value="Value" ></p:outputLabel>
+                                    <p:inputText onfocus="this.select()" class="mx-1" value="#{onlineBookingAgentController.paidToHospitalBill.netTotal}" id="txtNetTotal" style="width:200px"/>
+
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputText value="#{onlineBookingAgentController.paidToHospitalBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+
+
+                                </h:panelGrid>
+
+                                <div class="d-flex flex-wrap w-100 gap-2">
+                                    <h:panelGroup id="gpPaymentDetails" >
+                                        <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cheque'}" >
+                                            <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Slip'}" >
+                                            <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet_collect class="m-2" paymentMethodData="#{onlineBookingAgentController.paymentMethodData}" />
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+
+
+                                </div>
+
+                            </p:panel>
 
                         </f:facet>
 

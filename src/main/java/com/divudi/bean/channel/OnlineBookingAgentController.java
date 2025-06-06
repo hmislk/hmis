@@ -4,6 +4,8 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
@@ -65,6 +67,38 @@ public class OnlineBookingAgentController implements Serializable {
     private OnlineBookingFacade onlineBookingFacade;
     @EJB
     private BillFacade billFacade;
+    
+    private PaymentMethod paidToHospitalPaymentMethod;
+    private Bill paidToHospitalBill;
+    private PaymentMethodData paymentMethodData;
+
+    public PaymentMethodData getPaymentMethodData() {
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public Bill getPaidToHospitalBill() {
+        if(paidToHospitalBill == null){
+            paidToHospitalBill = new BilledBill();
+            paidToHospitalBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+        }
+        return paidToHospitalBill;
+    }
+
+    public void setPaidToHospitalBill(Bill paidToHospitalBill) {
+        this.paidToHospitalBill = paidToHospitalBill;
+    }
+
+    public PaymentMethod getPaidToHospitalPaymentMethod() {
+        return paidToHospitalPaymentMethod;
+    }
+
+    public void setPaidToHospitalPaymentMethod(PaymentMethod paidToHospitalPaymentMethod) {
+        this.paidToHospitalPaymentMethod = paidToHospitalPaymentMethod;
+    }
 
     public BillFacade getBillFacade() {
         return billFacade;
@@ -83,8 +117,7 @@ public class OnlineBookingAgentController implements Serializable {
     }
     
     public Bill  createHospitalPaymentBill(List<OnlineBooking> bookings){
-        Bill paidBill = new BilledBill();
-        paidBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+        Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
         paidBill.setCreater(getSessionController().getLoggedUser());
         paidBill.setToInstitution(institutionForBookings);
