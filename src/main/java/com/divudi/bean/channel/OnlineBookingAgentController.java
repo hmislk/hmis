@@ -42,12 +42,12 @@ public class OnlineBookingAgentController implements Serializable {
 
     private Institution current;
     private List<Institution> allAgents;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date fromDate;
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date toDate;
-    
+
     private Institution institutionForBookings;
     private Institution agentForBookings;
     private boolean paidStatus;
@@ -58,21 +58,24 @@ public class OnlineBookingAgentController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    
+
     @EJB
     private ChannelService channelService;
     private List<OnlineBooking> onlineBookingList;
-    
+
     @EJB
     private OnlineBookingFacade onlineBookingFacade;
     @EJB
     private BillFacade billFacade;
-    
+
     private PaymentMethod paidToHospitalPaymentMethod;
     private Bill paidToHospitalBill;
     private PaymentMethodData paymentMethodData;
 
     public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
         return paymentMethodData;
     }
 
@@ -81,7 +84,7 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public Bill getPaidToHospitalBill() {
-        if(paidToHospitalBill == null){
+        if (paidToHospitalBill == null) {
             paidToHospitalBill = new BilledBill();
             paidToHospitalBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
         }
@@ -115,8 +118,8 @@ public class OnlineBookingAgentController implements Serializable {
     public void setOnlineBookingFacade(OnlineBookingFacade onlineBookingFacade) {
         this.onlineBookingFacade = onlineBookingFacade;
     }
-    
-    public Bill  createHospitalPaymentBill(List<OnlineBooking> bookings){
+
+    public Bill createHospitalPaymentBill(List<OnlineBooking> bookings) {
         Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
         paidBill.setCreater(getSessionController().getLoggedUser());
@@ -126,18 +129,16 @@ public class OnlineBookingAgentController implements Serializable {
         paidBill.setBalance(0d);
         getBillFacade().create(paidBill);
         return paidBill;
-        
+
     }
-    
-    public void createPaymentForHospital(){
-        if(paidToHospitalList == null || paidToHospitalList.isEmpty()){
+
+    public void createPaymentForHospital() {
+        if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
         }
-        
-        
-        
-        for(OnlineBooking ob : paidToHospitalList){
-            if(!ob.isPaidToHospital()){
+
+        for (OnlineBooking ob : paidToHospitalList) {
+            if (!ob.isPaidToHospital()) {
                 ob.setPaidToHospital(true);
                 ob.setPaidToHospitalDate(new Date());
                 ob.setPaidToHospitalProcessedBy(getSessionController().getLoggedUser());
@@ -145,29 +146,29 @@ public class OnlineBookingAgentController implements Serializable {
             }
         }
     }
-    
+
     public void onRowSelect(SelectEvent<OnlineBooking> event) {
         OnlineBooking selected = event.getObject();
-    if (selected.isPaidToHospital()) {
-        FacesContext.getCurrentInstance().addMessage(null,
-            new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection not allowed", "This Booking is already paid."));
-        paidToHospitalList.remove(selected); // manually remove it
+        if (selected.isPaidToHospital()) {
+            FacesContext.getCurrentInstance().addMessage(null,
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection not allowed", "This Booking is already paid."));
+            paidToHospitalList.remove(selected); // manually remove it
+        }
     }
-}
-    
-    public double createTotalAmountToPay(){
-        if(paidToHospitalList == null || paidToHospitalList.isEmpty()){
+
+    public double createTotalAmountToPay() {
+        if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             return 0;
         }
-        
+
         double totalForPay = 0;
-        
-        for(OnlineBooking ob : paidToHospitalList){
-            if(!ob.isPaidToHospital()){
+
+        for (OnlineBooking ob : paidToHospitalList) {
+            if (!ob.isPaidToHospital()) {
                 totalForPay += ob.getAppoinmentTotalAmount();
             }
         }
-        
+
         return totalForPay;
     }
 
@@ -194,7 +195,6 @@ public class OnlineBookingAgentController implements Serializable {
     public void setOnlineBookingList(List<OnlineBooking> onlineBookingList) {
         this.onlineBookingList = onlineBookingList;
     }
-    
 
     public List<Institution> getAllAgents() {
         return allAgents;
@@ -224,15 +224,15 @@ public class OnlineBookingAgentController implements Serializable {
         current = new Institution();
         current.setInstitutionType(InstitutionType.OnlineBookingAgent);
     }
-    
-    public void fetchOnlineBookingsForManagement(){
-        if(institutionForBookings == null){
+
+    public void fetchOnlineBookingsForManagement() {
+        if (institutionForBookings == null) {
             JsfUtil.addErrorMessage("Please Select Hospital.");
             return;
         }
-        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate,agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
-        
-        if(bookingList != null){
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
+
+        if (bookingList != null) {
             onlineBookingList = bookingList;
         }
     }
@@ -286,8 +286,8 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addErrorMessage("Agent Code is missing.");
             return;
         }
-        
-        if(checkDuplicateCodeAvailability(current)){
+
+        if (checkDuplicateCodeAvailability(current)) {
             JsfUtil.addErrorMessage("Agent Code is already taken. Use different one.");
             return;
         }
@@ -320,9 +320,9 @@ public class OnlineBookingAgentController implements Serializable {
         m.put("type", InstitutionType.OnlineBookingAgent);
         allAgents = getInstitutionFacade().findByJpql(j, m);
     }
-    
+
     public List<Institution> completeAgent(String params) {
-        if(params == null){
+        if (params == null) {
             return null;
         }
         String j;
@@ -352,7 +352,7 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public Date getFromDate() {
-        if(fromDate == null){
+        if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
@@ -363,7 +363,7 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public Date getToDate() {
-        if(toDate == null){
+        if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;

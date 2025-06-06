@@ -81,7 +81,7 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
-                                update="dialogContentForPayment"
+                                update="dialogContentForPayment onlineBookingsToPay cmbPs" 
                                 process="@this"
                                 oncomplete="PF('payementSettle').show()"
                                 class="ui-button-success" icon="fas fa-cogs">
@@ -132,10 +132,10 @@
                         <p:ajax event="close" update="onlineBookings"></p:ajax>
 
                         <f:facet name="header">
-                            <h:outputText id="doctorNameCancellation" value="Sessions of #{bookingController.staff.person.nameWithTitle}" ></h:outputText>
+                            <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.paidToHospitalList ? 'No Selected' : onlineBookingAgentController.paidToHospitalList.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name}" ></h:outputText>
                             <p:panel class="my-3">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Add New Patient Deposit" />
+                                    <h:outputLabel value="Paid To Hospital List" />
                                 </f:facet>
 
                                 <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
