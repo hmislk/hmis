@@ -703,7 +703,7 @@ public class LaboratoryManagementController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
-                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click COllect again");
+                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click Collect again");
                 return;
             }
         }
@@ -738,7 +738,7 @@ public class LaboratoryManagementController implements Serializable {
             patientInvestigationFacade.edit(tptix);
             collectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
-
+        
         // Update bills status
         for (Bill tb : collectedBills.values()) {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
@@ -1331,7 +1331,6 @@ public class LaboratoryManagementController implements Serializable {
                 items.add(pr.getPatientInvestigation());
             }
         }
-        System.out.println("items = " + items.size());
 
     }
 
