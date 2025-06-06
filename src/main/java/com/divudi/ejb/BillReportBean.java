@@ -34,9 +34,9 @@ public class BillReportBean {
 
 
 
-    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes, Class bc) {
+    public Long calculateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes, Class bc) {
         String sql;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         sql = "select count(bi) "
                 + " from BillItem bi "
                 + " where bi.bill.retired=false "
@@ -68,10 +68,10 @@ public class BillReportBean {
         return billFacade.findLongByJpql(sql, m, TemporalType.TIMESTAMP);
     }
 
-    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes) {
-        return calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, BilledBill.class)
-                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, CancelledBill.class)
-                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, RefundBill.class);
+    public Long calculateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm, Institution institution, Department department, BillType[] billTypes) {
+        return calculateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, BilledBill.class)
+                - calculateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, CancelledBill.class)
+                - calculateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, RefundBill.class);
     }
 
 }

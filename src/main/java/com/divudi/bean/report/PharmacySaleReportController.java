@@ -4870,7 +4870,7 @@ public class PharmacySaleReportController implements Serializable {
             proTot = calBillFee(nowDate, FeeType.Staff, btps);
             regentFee = calBillFee(nowDate, FeeType.Chemical, btps);
 
-            count = billReportBean.calulateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
+            count = billReportBean.calculateRevenueBillItemCount(CommonFunctions.getStartOfDay(nowDate),
                     CommonFunctions.getEndOfDay(nowDate), null, institution, department, btps);
             countTotal += count;
 
