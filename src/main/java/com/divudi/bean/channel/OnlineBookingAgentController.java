@@ -165,7 +165,13 @@ public class OnlineBookingAgentController implements Serializable {
         paidBill.setBillDate(new Date());
         paidBill.setBillTime(new Date());
         paidBill.setPaymentMethod(paidToHospitalPaymentMethod);
-        getBillFacade().create(paidBill);
+        
+        if(paidBill.getId() == null){
+            getBillFacade().create(paidBill);
+        }else {
+            getBillFacade().edit(paidBill);
+        }
+
         return paidBill;
 
     }
@@ -174,12 +180,17 @@ public class OnlineBookingAgentController implements Serializable {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
         }
+        
+        if(createTotalAmountToPay() != getPaidToHospitalBill().getNetTotal()){
+            JsfUtil.addErrorMessage("Value is different than total amount.");
+        }
 
         for (OnlineBooking ob : paidToHospitalList) {
             if (!ob.isPaidToHospital()) {
                 ob.setPaidToHospital(true);
                 ob.setPaidToHospitalDate(new Date());
                 ob.setPaidToHospitalProcessedBy(getSessionController().getLoggedUser());
+                ob.setPaidToHospitalBill(paidToHospitalBill);
                 getOnlineBookingFacade().edit(ob);
             }
         }
