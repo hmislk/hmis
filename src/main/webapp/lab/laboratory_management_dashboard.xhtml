@@ -85,30 +85,31 @@
                         </p:menuitem >
                     </p:megaMenu>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
-                        <dashboard:bills/>
-                    </h:panelGroup>
+                    <div class="mx-3">
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
+                            <dashboard:bills/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                        <dashboard:patient_investigation/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                            <dashboard:patient_investigation/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
-                        <dashboard:view_barcode/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
+                            <dashboard:view_barcode/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
-                        <dashboard:patient_sample/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
+                            <dashboard:patient_sample/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
-                        <dashboard:patient_report/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
+                            <dashboard:patient_report/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
-                        <dashboard:print_report/>
-                    </h:panelGroup>
-
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
+                            <dashboard:print_report/>
+                        </h:panelGroup>
+                    </div>
                 </h:form>
             </h:panelGroup>
         </ui:define>
