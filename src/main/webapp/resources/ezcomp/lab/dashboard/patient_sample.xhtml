@@ -248,8 +248,10 @@
                             <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
                             <h:outputLabel value="#{ps.bill.patient.person.sex.label}" />
                             <br/>
-                            <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                            <h:outputLabel value="#{ps.bill.patient.person.mobile}" />
+                            <h:panelGroup rendered="#{!ps.bill.patient.person.mobile.blank}">
+                                <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                                <h:outputLabel value="#{ps.bill.patient.person.mobile}" />
+                            </h:panelGroup>
                         </p:column>
 
                         <!-- Status Column with Badge -->
@@ -422,7 +424,7 @@
                     <h:panelGroup 
                         id="sampleCollect"
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}"
-                        class="d-flex gap-2">
+                        class="d-flex gap-2 w-100">
                         <p:commandButton
                             value="Not Collected Samples"
                             ajax="false"
@@ -458,9 +460,9 @@
                             icon="pi pi-plus-circle"
                             styleClass="ui-button-primary" >
                         </p:commandButton>
-                        
+
                         <hr/>
-                        
+
                     </h:panelGroup>
 
                     <style>
@@ -528,7 +530,7 @@
                                 styleClass="ui-button-warning" >
                             </p:commandButton>
                         </div>
-                        
+
                         <hr/>
                     </h:panelGroup>
 
@@ -571,7 +573,7 @@
                             icon="pi pi-check-circle"
                             styleClass="ui-button-info">
                         </p:commandButton>
-                        
+
                         <hr/>
                     </h:panelGroup>
 
@@ -586,7 +588,7 @@
                         styleClass="m-1  w-100 ui-button-info" >
                     </p:commandButton>
 
-                    
+
 
                     <h:panelGroup 
                         rendered="#{webUserController.hasPrivilege('LabSampleRejecting')}"

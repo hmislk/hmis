@@ -34,6 +34,7 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
+import com.divudi.core.data.HistoryType;
 
 import java.io.IOException;
 import javax.inject.Named;
@@ -1879,12 +1880,14 @@ public class ReportController implements Serializable {
             String jpql = "select ah "
                     + " from AgentHistory ah "
                     + " where ah.retired=:ret"
-                    + " and ah.createdAt between :fd and :td ";
+                    + " and ah.createdAt between :fd and :td "
+                    + " and ah.historyType <> :ht ";
 
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
             m.put("fd", fromDate);
             m.put("td", toDate);
+            m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
             if (collectingCentre != null) {
                 jpql += " and ah.agency = :cc ";
