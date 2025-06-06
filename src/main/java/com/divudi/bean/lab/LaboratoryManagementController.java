@@ -741,7 +741,6 @@ public class LaboratoryManagementController implements Serializable {
         
         // Update bills status
         for (Bill tb : collectedBills.values()) {
-            System.out.println("Bill = " + tb);
             tb.setStatus(PatientInvestigationStatus.SAMPLE_COLLECTED);
             billFacade.edit(tb);
         }
@@ -1332,7 +1331,6 @@ public class LaboratoryManagementController implements Serializable {
                 items.add(pr.getPatientInvestigation());
             }
         }
-        System.out.println("items = " + items.size());
 
     }
 
