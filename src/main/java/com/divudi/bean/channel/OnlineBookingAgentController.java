@@ -72,6 +72,15 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethod paidToHospitalPaymentMethod;
     private Bill paidToHospitalBill;
     private PaymentMethodData paymentMethodData;
+    private double paidToHospitalTotal;
+
+    public double getPaidToHospitalTotal() {
+        return paidToHospitalTotal;
+    }
+
+    public void setPaidToHospitalTotal(double paidToHospitalTotal) {
+        this.paidToHospitalTotal = paidToHospitalTotal;
+    }
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -120,6 +129,29 @@ public class OnlineBookingAgentController implements Serializable {
         this.onlineBookingFacade = onlineBookingFacade;
     }
 
+    public void setTotalForPaymentMethodData(){
+        if(paidToHospitalPaymentMethod != null && paidToHospitalBill.getNetTotal() >0){
+            switch (paidToHospitalPaymentMethod) {
+                case Cash: 
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setTotalValue(paidToHospitalBill.getNetTotal());
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setTotalValue(paidToHospitalBill.getNetTotal());
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setTotalValue(paidToHospitalBill.getNetTotal());
+                    break;
+                case ewallet:
+                    getPaymentMethodData().getEwallet().setTotalValue(paidToHospitalBill.getNetTotal());
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+    }
+    
     public Bill createHospitalPaymentBill(List<OnlineBooking> bookings) {
         Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
@@ -168,6 +200,8 @@ public class OnlineBookingAgentController implements Serializable {
         paidToHospitalList.remove(selected);
     }
 
+    
+    
     public double createTotalAmountToPay() {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             return 0;
@@ -180,7 +214,7 @@ public class OnlineBookingAgentController implements Serializable {
                 totalForPay += ob.getAppoinmentTotalAmount();
             }
         }
-
+        paidToHospitalTotal = totalForPay;
         return totalForPay;
     }
 
@@ -256,6 +290,8 @@ public class OnlineBookingAgentController implements Serializable {
         if (bookingList != null) {
             onlineBookingList = bookingList;
         }
+        
+        paidToHospitalList = null;
     }
 
     public void delete() {
