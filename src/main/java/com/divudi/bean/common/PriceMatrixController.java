@@ -55,6 +55,7 @@ public class PriceMatrixController implements Serializable {
     public PriceMatrix fetchInwardMargin(BillItem billItem, double serviceValue, Department department, PaymentMethod paymentMethod) {
         PriceMatrix inwardPriceAdjustment;
         Category category;
+        boolean isPaymenthMethodAllowedInIwardMatrix = configOptionApplicationController.getBooleanValueByKey("Inward Matrix - Allow PaymentMethod for Inward Matrix Calculation", false);
         if (billItem.getItem() instanceof Investigation) {
             if(configOptionApplicationController.getBooleanValueByKey("Get Category Instead of Investigation Category In Price Matrix")){
                 category = ((Investigation) billItem.getItem()).getCategory();
@@ -64,13 +65,13 @@ public class PriceMatrixController implements Serializable {
         } else {
             category = billItem.getItem().getCategory();
         }
-        if (sessionController.getApplicationPreference() != null && sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
+        if (isPaymenthMethodAllowedInIwardMatrix) {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category, paymentMethod);
         } else {
             inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category);
         }
         if (inwardPriceAdjustment == null && category != null) {
-            if (sessionController.getApplicationPreference().isPaymentMethodAllowedInInwardMatrix()) {
+            if (isPaymenthMethodAllowedInIwardMatrix) {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory(), paymentMethod);
             } else {
                 inwardPriceAdjustment = getInwardPriceAdjustment(department, serviceValue, category.getParentCategory());
