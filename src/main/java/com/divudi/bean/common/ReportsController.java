@@ -4837,6 +4837,11 @@ public class ReportsController implements Serializable {
             parameters.put("code", investigationCode.getCode());
         }
 
+        if (investigation != null) {
+            jpql += "AND billItem.item = :inv ";
+            parameters.put("inv", investigation);
+        }
+
         jpql += "GROUP BY billItem";
 
 
