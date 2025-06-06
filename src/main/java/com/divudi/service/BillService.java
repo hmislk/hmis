@@ -7,6 +7,7 @@ import static com.divudi.core.data.BillCategory.PAYMENTS;
 import static com.divudi.core.data.BillCategory.PREBILL;
 import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillType;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
@@ -31,8 +32,11 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -667,6 +671,47 @@ public class BillService {
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findLongByJpql(jpql, params);
+    }
+
+    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
+            Institution institution, Department department, BillType[] billTypes, Class bc) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select count(bi) "
+                + " from BillItem bi "
+                + " where bi.bill.retired=false "
+                + " and bi.bill.billType in :billTypes "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and type(bi.bill) =:bc ";
+        if (pm != null) {
+            sql += " and bi.bill.paymentMethod=:pm ";
+            m.put("pm", pm);
+        }
+        if (institution != null) {
+            sql += " and bi.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            sql += " and bi.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        m.put("billTypes", bts);
+        m.put("bc", bc);
+        m.put("fd", fd);
+        m.put("td", td);
+
+        return billFacade.findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
+            Institution institution, Department department, BillType[] billTypes) {
+        return calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, BilledBill.class)
+                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, CancelledBill.class)
+                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, RefundBill.class);
     }
 
     public List<BillItem> fetchBillItems(List<Bill> bills) {
