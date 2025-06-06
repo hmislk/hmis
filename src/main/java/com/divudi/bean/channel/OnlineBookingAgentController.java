@@ -18,6 +18,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.ChannelService;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -148,12 +149,23 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public void onRowSelect(SelectEvent<OnlineBooking> event) {
+        System.out.println("line 151");
         OnlineBooking selected = event.getObject();
+
         if (selected.isPaidToHospital()) {
             FacesContext.getCurrentInstance().addMessage(null,
-                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection not allowed", "This Booking is already paid."));
+                    new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection is not allowed", "This Booking is already paid."));
             paidToHospitalList.remove(selected); // manually remove it
+        } else {
+            System.out.println("line 158");
+            paidToHospitalList.add(selected);
         }
+
+    }
+    
+    public void onRowUnselect(SelectEvent<OnlineBooking> event){
+        OnlineBooking selected = event.getObject();
+        paidToHospitalList.remove(selected);
     }
 
     public double createTotalAmountToPay() {
@@ -189,6 +201,10 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public List<OnlineBooking> getOnlineBookingList() {
+        System.out.println("line 202");
+        if(onlineBookingList == null){
+            onlineBookingList = new ArrayList<>();
+        }
         return onlineBookingList;
     }
 
@@ -228,6 +244,11 @@ public class OnlineBookingAgentController implements Serializable {
     public void fetchOnlineBookingsForManagement() {
         if (institutionForBookings == null) {
             JsfUtil.addErrorMessage("Please Select Hospital.");
+            return;
+        }
+        
+        if (agentForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
         }
         List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);

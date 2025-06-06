@@ -78,7 +78,7 @@
                             <p:commandButton  
                                 value="Settle Payment" 
                                 update="dialogContentForPayment onlineBookingsToPay cmbPs" 
-                                process="@this"
+                                process="@this onlineBookings "
                                 oncomplete="PF('payementSettle').show()"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
@@ -121,8 +121,8 @@
                             modal="true" 
                             id="payementSettleDlg"
                             resizable="false" 
-                            draggable="true" 
-                            height="600"
+                            draggable="false" 
+                            height="400"
                             width="800">
 
                             <p:ajax event="close" update="onlineBookings"></p:ajax>
@@ -178,6 +178,7 @@
                             <h:panelGroup id="dialogContentForPayment">
                                 <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 
                                              var="ob" 
+                                             scrollable="true"
                                              selection="false" 
                                              rowKey="#{s.id}">
 
@@ -225,14 +226,16 @@
                                      paginator="true" rows="10"
                                      id="onlineBookings"
                                      selection="#{onlineBookingAgentController.paidToHospitalList}"
-                                     rowKey="#{ob.id}"
                                      scrollable="true"
+                                     selectionMode="multiple"
+                                     rowKey="#{ob.id}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
 
                             <p:column selectionBox="true" width="20"></p:column>
-                            <p:ajax event="rowSelect" listener="#{onlineBookingAgentController.onRowSelect}" />
+                            <p:ajax event="rowSelect" process="@this" listener="#{onlineBookingAgentController.onRowSelect()}" />
+                            <p:ajax event="rowUnselect" process="@this" listener="#{onlineBookingAgentController.onRowUnselect()}" />
 
                             <p:column headerText="OB ID">
                                 <h:outputText value="#{ob.id}">
