@@ -2,6 +2,7 @@ package com.divudi.core.entity.lab;
 
 import com.divudi.core.data.lab.Analyzer;
 import com.divudi.core.data.lab.TestHistoryType;
+import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.WebUser;
@@ -73,7 +74,7 @@ public class LabTestHistory implements Serializable {
     private Department toDepartment;
 
     @ManyToOne
-    private Analyzer analyzer;
+    private Category analyzer;
 
     public Long getId() {
         return id;
@@ -230,11 +231,11 @@ public class LabTestHistory implements Serializable {
         this.toDepartment = toDepartment;
     }
 
-    public Analyzer getAnalyzer() {
+    public Category getAnalyzer() {
         return analyzer;
     }
 
-    public void setAnalyzer(Analyzer analyzer) {
+    public void setAnalyzer(Category analyzer) {
         this.analyzer = analyzer;
     }
     
