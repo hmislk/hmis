@@ -1241,32 +1241,36 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 processIncomeBillCountsByBillItem();
                 break;
             default:
-                processIncomeBillCountsByBill();
+                processIncomeBillCountsByBillItem();
         }
     }
 
-    public void processIncomeBillCountsByBill() {
+    public void processIncomeBillCountsByBillItem() {
         bundle = new ReportTemplateRowBundle();
         ReportTemplateRowBundle opdServicesBundle = new ReportTemplateRowBundle("OPD Services");
-        ReportTemplateRowBundle opdInvestigationBundle = new ReportTemplateRowBundle("OPD Investigations");
+        ReportTemplateRowBundle inpatientServicesBundle = new ReportTemplateRowBundle("OPD Investigations");
         ReportTemplateRowBundle outpatientPharmacyBundle = new ReportTemplateRowBundle("OPD Pharmacy");
         ReportTemplateRowBundle inpatientPharmacyBundle = new ReportTemplateRowBundle("Inpatient Pharmacy");
         ReportTemplateRowBundle ccBundle = new ReportTemplateRowBundle("Collection Centres");
-        
+
         billAnalyticsService.fillBundleForOpdServiceCounts(opdServicesBundle, fromDate, toDate);
-        
+        billAnalyticsService.fillBundleForInpatientServiceCounts(inpatientServicesBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForOpdPharmacyCounts(outpatientPharmacyBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForInpatientPharmacyCounts(inpatientPharmacyBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForCollectionCentreServiceCounts(ccBundle, fromDate, toDate);
+
         bundle.getBundles().add(opdServicesBundle);
-        bundle.getBundles().add(opdInvestigationBundle);
+        bundle.getBundles().add(inpatientServicesBundle);
+        
         bundle.getBundles().add(outpatientPharmacyBundle);
         bundle.getBundles().add(inpatientPharmacyBundle);
+        
         bundle.getBundles().add(ccBundle);
-        
-        
-        
+
     }
 
-    public void processIncomeBillCountsByBillItem() {
-
+    public void processIncomeBillCountsByBill() {
+        JsfUtil.addErrorMessage("Not Suported Yet");
     }
 
     public void processCollectingCentreBook() {
@@ -2981,8 +2985,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportViewTypes = new ArrayList<>();
         reportViewTypes.add(ReportViewType.BY_BILL);
         reportViewTypes.add(ReportViewType.BY_BILL_ITEM);
-        reportViewType = ReportViewType.BY_BILL;
-        return "/analytics/summaries/bill_counts?faces-redirect=true";
+        reportViewType = ReportViewType.BY_BILL_ITEM;
+        return "/analytics/summaries/income_bill_counts?faces-redirect=true";
     }
 
     public String navigateToStockTransferReport() {

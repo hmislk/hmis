@@ -17,55 +17,109 @@
 
                     <common:common_filters controller="#{reportController}"/>
 
+
+
+
+<!--                    <ui:repeat value="#{reportController.bundle.bundles}" var="mybundle">
+                    #{mybundle.name}
+                </ui:repeat>-->
+
                     <p:commandButton 
                         value="Process"
+                        icon="pi pi-check"
+                        styleClass="ui-button-success"
                         ajax="false"
-                        action="#{reportController.processIncomeBillCounts()}"></p:commandButton>
+                        action="#{reportController.processIncomeBillCounts()}"/>
 
-                    <ui:repeat value="#{reportController.bundle}" var="bundle">
-                        <h:panelGroup styleClass="mb-4">
-                            <h:panelGrid columns="5" styleClass="table table-bordered w-100 text-center">
-                                <f:facet name="header">
-                                    <h:outputText value="Summary - #{bundle.name}" styleClass="fw-bold text-start" />
-                                </f:facet>
-                                <h:outputText value="Billed" />
-                                <h:outputText value="Cancelled" />
-                                <h:outputText value="Returned" />
-                                <h:outputText value="Net" />
-                                <h:inputText readonly="true" value="#{bundle.billedCount}" styleClass="form-control text-end" />
-                                <h:inputText readonly="true" value="#{bundle.cancelledCount}" styleClass="form-control text-end" />
-                                <h:inputText readonly="true" value="#{bundle.returnCount}" styleClass="form-control text-end" />
-                                <h:inputText readonly="true" value="#{bundle.netCount}" styleClass="form-control text-end" />
-                            </h:panelGrid>
+                    <h:panelGroup 
+                        id="panelTbl"
+                        rendered="#{not empty reportController.bundle.bundles}">
 
-                            <h:dataTable value="#{bundle.reportTemplateRows}" var="row" styleClass="table table-striped table-sm w-100 mt-2" rowClasses="align-middle">
-                                <f:facet name="header">
-                                    <h:outputText value="Details by Department" styleClass="fw-bold" />
-                                </f:facet>
-                                <h:column>
-                                    <f:facet name="header">Department</f:facet>
-                                    <h:inputText readonly="true" value="#{row.department.name}" styleClass="form-control" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header">Billed</f:facet>
-                                    <h:inputText readonly="true" value="#{row.billedCount}" styleClass="form-control text-end" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header">Cancelled</f:facet>
-                                    <h:inputText readonly="true" value="#{row.cancelledCount}" styleClass="form-control text-end" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header">Returned</f:facet>
-                                    <h:inputText readonly="true" value="#{row.returnCount}" styleClass="form-control text-end" />
-                                </h:column>
-                                <h:column>
-                                    <f:facet name="header">Net</f:facet>
-                                    <h:inputText readonly="true" value="#{row.netCount}" styleClass="form-control text-end" />
-                                </h:column>
-                            </h:dataTable>
-                        </h:panelGroup>
-                    </ui:repeat>
 
+                        <table class="w-100 table table-bordered m-2" >
+
+                            <tr>
+                                <td>
+                                    <h:outputText value="Service Type" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td>
+                                    <h:outputText value="Department" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td  class="text-end">
+                                    <h:outputText value="Billed Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td  class="text-end">
+                                    <h:outputText value="Cancelled Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="Refund Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="Net Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                            </tr>
+
+
+
+                            <ui:repeat value="#{reportController.bundle.bundles}" var="ibundle">
+                                <tr>
+                                    <td >
+                                        <h:outputText value="#{ibundle.name}" styleClass="h5 fw-bold mb-3" />
+                                    </td>
+                                    <td></td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.billedCount}" styleClass="h5 fw-bold text-end w-100" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.cancelledCount}" styleClass="h5 fw-bold text-end w-100" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.returnCount}" styleClass="h5 fw-bold text-end w-100" />
+                                        <h:outputText value="" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.netCount}" styleClass="h5 fw-bold text-end w-100" />
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+
+
+                                <ui:repeat value="#{ibundle.reportTemplateRows}" var="row">
+
+                                    <tr>
+                                        <td>
+
+                                        </td>
+                                        <td>
+                                            <h:outputText  value="#{row.department.name}" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.billedCount}" styleClass="text-end w-100" />        
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.cancelledCount}" styleClass="text-end w-100" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.returnCount}" styleClass="text-end w-100" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.netCount}" styleClass="text-end w-100" />
+                                        </td>
+                                    </tr>
+
+
+
+
+
+
+                                </ui:repeat>
+
+                            </ui:repeat>
+
+                        </table>
+
+                    </h:panelGroup>
 
                 </h:form>
 
