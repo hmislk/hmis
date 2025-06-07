@@ -7,3 +7,8 @@
 3. Update `src/main/webapp/home.xhtml` to reference the new `Icon` constant and image. This home page change should be tracked as a separate issue when creating pull requests.
 
 These guidelines apply to the entire repository.
+
+## Handling Privileges
+
+- Add all privilege constants to `src/main/java/com/divudi/core/data/Privileges.java`.
+- Use `WebUserController.hasPrivilege(String)` to verify a user's access for a department or feature.
