@@ -760,42 +760,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public PharmacyDirectPurchaseController() {
     }
 
-    public void onEditPurchaseRate(BillItem tmp) {
-
-        double retail = tmp.getPharmaceuticalBillItem().getPurchaseRate() + (tmp.getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        tmp.getPharmaceuticalBillItem().setRetailRate(retail);
-
-        onEdit(tmp);
-    }
-
-    public void onEditPurchaseRate() {
-
-        double retail = getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() + (getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRate() * (getPharmacyBean().getMaximumRetailPriceChange() / 100));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(retail);
-
-        onEdit(getCurrentBillItem());
-    }
-
-    public void onEdit(BillItem tmp) {
-
-        if (tmp.getPharmaceuticalBillItem().getPurchaseRate() > tmp.getPharmaceuticalBillItem().getRetailRate()) {
-            tmp.getPharmaceuticalBillItem().setRetailRate(0);
-            JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
-        }
-
-        if (tmp.getPharmaceuticalBillItem().getDoe() != null) {
-            if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
-                tmp.getPharmaceuticalBillItem().setDoe(null);
-                JsfUtil.addErrorMessage("Check Date of Expiry");
-            }
-        }
-
-        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
-        wsRate = CommonFunctions.round(wsRate);
-        tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
-        calTotal();
-    }
-
     public void setBatch(BillItem pid) {
         if (pid.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
