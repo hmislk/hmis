@@ -114,6 +114,7 @@ public enum Icon {
     Optician_Product_Catalog("Optician - Product Catalog"),
     Optician_Repair_Management("Optician - Repair Management"),
     Optician_Retail_Sale("Optician - Retail Sale"),
+    Appointments("Appointments"),
     Channel_Booking("Channel Booking"),
     Cashier_Summaries("Cashier Summaries"),
     Shift_End_Summary("Shift End Summary"),
