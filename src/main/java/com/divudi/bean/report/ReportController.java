@@ -1248,7 +1248,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     public void processIncomeBillCountsByBillItem() {
         bundle = new ReportTemplateRowBundle();
         ReportTemplateRowBundle opdServicesBundle = new ReportTemplateRowBundle("OPD Services");
-        ReportTemplateRowBundle inpatientServicesBundle = new ReportTemplateRowBundle("OPD Investigations");
+        ReportTemplateRowBundle inpatientServicesBundle = new ReportTemplateRowBundle("Inpatient Services");
         ReportTemplateRowBundle outpatientPharmacyBundle = new ReportTemplateRowBundle("OPD Pharmacy");
         ReportTemplateRowBundle inpatientPharmacyBundle = new ReportTemplateRowBundle("Inpatient Pharmacy");
         ReportTemplateRowBundle ccBundle = new ReportTemplateRowBundle("Collection Centres");
