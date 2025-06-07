@@ -41,9 +41,7 @@ import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
-import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
@@ -194,7 +192,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
         distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
-//        calulateTotalsWhenAddingItemsOldMethod();
     }
 
 // ChatGPT contributed - Recalculates line-level financial values before adding BillItem to bill
@@ -500,10 +497,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     private AmpFacade ampFacade;
     @EJB
     BillFeeFacade billFeeFacade;
-    @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
-    @EJB
-    PaymentFacade paymentFacade;
     @EJB
     BillEjb billEjb;
     @EJB
@@ -866,7 +859,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             if (tmp.getPharmaceuticalBillItem().getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
                 tmp.getPharmaceuticalBillItem().setDoe(null);
                 JsfUtil.addErrorMessage("Check Date of Expiry");
-                //    return;
             }
         }
 
@@ -881,11 +873,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             Date date = pid.getPharmaceuticalBillItem().getDoe();
             DateFormat df = new SimpleDateFormat("ddMMyyyy");
             String reportDate = df.format(date);
-// Print what date is today!
-            //       //System.err.println("Report Date: " + reportDate);
             pid.getPharmaceuticalBillItem().setStringValue(reportDate);
         }
-        onEdit(pid);
     }
 
     public void setBatch() {
@@ -985,10 +974,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         double grossTotal;
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
         }
         distributeProportionalBillValuesToItems(billItems, bill);
     }
@@ -1076,9 +1062,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         saveBill();
-        //   saveBillComponent();
 
-//        Payment p = createPayment(getBill());
         List<Payment> ps = paymentService.createPayment(getBill(), getPaymentMethodData());
 
         billItemsTotalQty = 0;
@@ -1164,28 +1148,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         currentBillItem = null;
     }
 
-    public Payment createPayment(Bill bill) {
-        Payment p = new Payment();
-        p.setBill(bill);
-        setPaymentMethodData(p, bill.getPaymentMethod());
-        return p;
-    }
-
-    public void setPaymentMethodData(Payment p, PaymentMethod pm) {
-
-        p.setInstitution(getSessionController().getInstitution());
-        p.setDepartment(getSessionController().getDepartment());
-        p.setCreatedAt(new Date());
-        p.setCreater(getSessionController().getLoggedUser());
-        p.setPaymentMethod(pm);
-
-        p.setPaidValue(p.getBill().getNetTotal());
-
-        if (p.getId() == null) {
-            getPaymentFacade().create(p);
-        }
-
-    }
 
     public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
@@ -1205,28 +1167,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-//        createBillFeePaymentAndPayment(bf, p);
     }
-
-    @Deprecated
-    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
-    }
-//
-//    public void recreate() {
-//
-////        cashPaid = 0.0;
-//        currentPharmacyItemData = null;
-//        pharmacyItemDatas = null;
-//    }
 
     public void addItemWithLastRate() {
         if (getCurrentBillItem().getItem() == null) {
@@ -1614,21 +1555,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.billFeeFacade = billFeeFacade;
     }
 
-    public BillFeePaymentFacade getBillFeePaymentFacade() {
-        return billFeePaymentFacade;
-    }
-
-    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
-        this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
-    public PaymentFacade getPaymentFacade() {
-        return paymentFacade;
-    }
-
-    public void setPaymentFacade(PaymentFacade paymentFacade) {
-        this.paymentFacade = paymentFacade;
-    }
 
     public BillListWithTotals getBillListWithTotals() {
         return billListWithTotals;

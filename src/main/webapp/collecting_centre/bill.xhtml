@@ -14,11 +14,11 @@
                 >
 
     <ui:define name="content">
-        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+        <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('CollectingCentreBilling'))}" >
             <na:not_authorize />
         </h:panelGroup>
 
-        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+        <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling') or webUserController.hasPrivilege('CollectingCentreBilling')}" styleClass="opdPanel" >
             <h:form id="form">
                 <p:growl id="msg" ></p:growl>
 
