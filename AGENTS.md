@@ -92,59 +92,6 @@ Define the following colour config options via `configOptionApplicationControlle
 style="color: #{configOptionApplicationController.getShortTextValueByKey('Home Icon Colour', true)}"
 ```
 
-## Homepage Icon Management Guidelines
-
-To ensure visual consistency and maintainability across all homepage icons:
-
-### 1. Use of SVG Files Only
-- All icons **must be SVG**.
-- Discontinue use of PNG, JPG, and WebP formats.
-- Replace existing bitmap icons with SVGs over time.
-
-### 2. Style Consistency
-- Use **simple line-based SVGs**.
-- All SVG paths must use `fill="currentColor"` to allow CSS/theming control.
-- Avoid multi-colour icons or complex illustrations.
-
-### 3. Size Standardisation
-- All icons must be displayed at `width="80"` and `height="80"`.
-- SVGs should retain a clean `viewBox="0 0 48 48"` or similar.
-- Remove padding/margin from SVGs to align visuals.
-
-### 4. File Naming and Storage
-- All icons must be placed in `/resources/images/home/`
-- Use lowercase and hyphen-separated filenames:
-  - ✅ `cashier-drawer.svg`
-  - ❌ `CashierDrawer.PNG`
-
-### 5. Rendering in Code
-Use this format:
-```xhtml
-<p:graphicImage library="images" name="home/your-icon.svg"
-                style="cursor: pointer;" width="80" height="80"/>
-```
-- Wrap with `img-thumbnail` for border and uniform styling.
-- Use consistent tooltip and hidden label pattern for accessibility.
-
-### 6. Tooltip and Labeling
-- Use meaningful `value` attributes in `p:tooltip`.
-- Hide text label with `display: none;` unless required.
-- Maintain consistency across all icons.
-
-### 7. Future Additions
-All new icons must:
-- Be SVG.
-- Match visual style and dimensions.
-- Use `currentColor` fill.
-- Follow naming/storage conventions.
-
-### 8. Theming and Accessibility
-- Use `fill="currentColor"` for dynamic theming.
-- Reference colours via `configOptionApplicationController`.
-- Plan for light/dark mode support.
-
----
-
 ## ConfigOptionApplicationController Usage
 
 This controller is used to dynamically manage application-wide configuration values. These values can be accessed via Java code or JSF EL expressions.
