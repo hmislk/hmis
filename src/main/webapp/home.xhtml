@@ -1520,7 +1520,17 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
-                <h:panelGroup rendered="#{ui.icon eq 'InpatientAppointments' and webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" layout="block" class="col-1 p-1">
+                <!-- Admit Patient -->
+                <h:panelGroup rendered="#{ui.icon eq 'Admit' and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="cmdAdmit" value="Admit Patient" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="cmdAdmit" ajax="false" action="#{patientController.navigatePatientAdmit()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Admit Patient"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{ui.icon eq 'Inpatient_Appointments' and webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" layout="block" class="col-1 p-1">
                     <h:form>
                         <p:tooltip for="Appointments" value="Appointments" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="Appointments" ajax="false"
@@ -1530,6 +1540,28 @@
                                             name="home/appointments.svg"
                                             style="cursor:pointer;" width="80" height="80"/>
                             <h:outputText style="display:none;" value="Appointments"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Search Admissions -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Search_Admissions'}">
+                    <h:form>
+                        <p:tooltip for="search_admissions" value="Search Admissions" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink id="search_admissions" ajax="false" action="#{admissionController.navigateToListAdmissions}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail"  library="image" name="home/admissions_search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Search Admissions" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Trace Investigations -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Investigation_Trace'}">
+                    <h:form>
+                        <p:tooltip for="investigation_trace" value="Trace Investigations" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink id="investigation_trace" ajax="false" action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail"  library="image" name="home/investigation_trace.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Trace Investigations" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
