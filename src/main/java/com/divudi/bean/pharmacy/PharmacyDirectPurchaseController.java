@@ -193,8 +193,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         calculateBillTotalsFromItems();
 //        calulateTotalsWhenAddingItemsOldMethod();
     }
-
-// ChatGPT contributed - Recalculates line-level financial values before adding BillItem to bill
     private void recalculateFinancialsBeforeAddingBillItem(BillItemFinanceDetails f) {
         // 1. Retrieve user-entered input values, ensuring non-null defaults
         BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;                   // actual quantity
@@ -274,11 +272,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
         // - Units-per-pack logic is safely handled with fallback
     }
 
-// ChatGPT contributed - Distributes user-entered bill-level values proportionally to items and calculates derived totals and rates
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
-        if (bill == null || bill.getBillFinanceDetails() == null || billItems == null || billItems.isEmpty()) {
             return;
-        }
 
         // Step 1: Calculate proportional basis per item (based on quantity + freeQuantity)
         BigDecimal totalBasis = BigDecimal.ZERO;
@@ -450,8 +445,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         recalculateFinancialsBeforeAddingBillItem(f);
     }
 
-    // ChatGPT contributed: Optimized for null-safety and readability
-    public void onRetailSaleRateChange() {
         if (currentBillItem == null) {
             return;
         }
@@ -554,9 +547,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void setCurrentExpense(BillItem currentExpense) {
         this.currentExpense = currentExpense;
     }
-// ChatGPT contributed: Null-safe and debug-augmented version
 
-    public void onItemSelect(SelectEvent event) {
         BillItem current = getCurrentBillItem();
         if (current == null || current.getItem() == null) {
             return;
@@ -697,8 +688,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 //        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * 1.08);
 //    }
 
-// ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
-    // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
     public double calcProfitMargin(BillItem ph) {
         if (ph == null || ph.getBillItemFinanceDetails() == null) {
             return 0.0;
