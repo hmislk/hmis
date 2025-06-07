@@ -25,6 +25,21 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Admission -->
+                <h:panelGroup rendered="#{ui.icon eq 'Admission'}" layout="block" class="col-1 p-1" >
+                    <h:form>
+                        <p:tooltip for="Admission" value="Admission" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Admission"
+                            ajax="false"
+                            action="#{admissionController.navigateToAdmitFromMenu()}"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/admission.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Admission"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Patient Lookup -->
                 <h:panelGroup rendered="#{ui.icon eq 'Patient_Lookup' and webUserController.hasPrivilege('OpdPreBilling')}" layout="block" class="col-1 p-1" >
                     <h:form>

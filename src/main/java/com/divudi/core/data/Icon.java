@@ -118,6 +118,7 @@ public enum Icon {
     Cashier_Summaries("Cashier Summaries"),
     Shift_End_Summary("Shift End Summary"),
     Day_End_Summary("Day End Summary"),
+    Admission("Admission"),
     Admit("Admit Patient"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
     // icons for cashier
