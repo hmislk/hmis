@@ -1520,6 +1520,16 @@
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
+                <!-- Admit Patient -->
+                <h:panelGroup rendered="#{ui.icon eq 'Admit' and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" class="col-1 p-1">
+                    <h:form>
+                        <p:tooltip for="cmdAdmit" value="Admit Patient" showDelay="0" hideDelay="0"/>
+                        <p:commandLink id="cmdAdmit" ajax="false" action="#{patientController.navigatePatientAdmit()}" styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Admit Patient"/>
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
                 <h:panelGroup rendered="#{ui.icon eq 'Inpatient_Appointments' and webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" layout="block" class="col-1 p-1">
                     <h:form>
                         <p:tooltip for="Appointments" value="Appointments" showDelay="0" hideDelay="0"/>
