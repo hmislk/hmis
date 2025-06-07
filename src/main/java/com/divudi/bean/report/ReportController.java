@@ -37,7 +37,7 @@ import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 import com.divudi.service.BillAnalyticsService;
 import com.divudi.service.BillService;
-
+import com.divudi.core.data.HistoryType;
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -1937,12 +1937,14 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             String jpql = "select ah "
                     + " from AgentHistory ah "
                     + " where ah.retired=:ret"
-                    + " and ah.createdAt between :fd and :td ";
+                    + " and ah.createdAt between :fd and :td "
+                    + " and ah.historyType <> :ht ";
 
             Map<String, Object> m = new HashMap<>();
             m.put("ret", false);
             m.put("fd", fromDate);
             m.put("td", toDate);
+            m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
             if (collectingCentre != null) {
                 jpql += " and ah.agency = :cc ";
@@ -1992,7 +1994,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 + " where ah.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
-                + " order by ah.createdAt";
+                + " order by ah.bill.id";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
@@ -3441,6 +3443,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportTimerController.trackReportExecution(() -> {
             // 1. Query for Billed Items
             String jpqlBilled = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.id, "
                     + " bi.item.code, "
                     + " bi.item.name, "
                     + " count(bi), "
@@ -3484,6 +3487,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             // 2. Query for Cancellations and Refunds
             String jpqlCancelRefund = "select new com.divudi.core.data.TestWiseCountReport("
+                    + " bi.item.id, "
                     + " bi.item.code, "
                     + " bi.item.name, "
                     + " count(bi), "
@@ -3536,7 +3540,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             // Put billed items in map
             if (billedReports != null) {
                 for (TestWiseCountReport r : billedReports) {
-                    finalMap.put(r.getTestCode(), r);
+                    finalMap.put(r.getTestId().toString(), r);
                 }
             }
 
@@ -3551,10 +3555,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     cr.setTotal(-Math.abs(cr.getTotal()));
 
                     // 3b: Merge with existing item in finalMap, or add as new negative entry
-                    TestWiseCountReport existing = finalMap.get(cr.getTestCode());
+                    TestWiseCountReport existing = finalMap.get(cr.getTestId().toString());
                     if (existing == null) {
                         // If there's no billed entry, just put the negative
-                        finalMap.put(cr.getTestCode(), cr);
+                        finalMap.put(cr.getTestId().toString(), cr);
                     } else {
                         existing.setCount(existing.getCount() + cr.getCount());
                         existing.setHosFee(existing.getHosFee() + cr.getHosFee());
