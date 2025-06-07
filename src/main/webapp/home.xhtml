@@ -26,7 +26,7 @@
                 </h:panelGroup>
 
                 <!-- Admission -->
-                <h:panelGroup rendered="#{ui.icon eq 'Admission'}" layout="block" class="col-1 p-1" >
+                <h:panelGroup rendered="#{ui.icon eq 'Admission' and webUserController.hasPrivilege('InwardAdmissionsAdmission')}" layout="block" class="col-1 p-1" >
                     <h:form>
                         <p:tooltip for="Admission" value="Admission" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
