@@ -1270,7 +1270,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public void processIncomeBillCountsByBill() {
-        JsfUtil.addErrorMessage("Not Suported Yet");
+        JsfUtil.addErrorMessage("Not Supported Yet");
     }
 
     public void processCollectingCentreBook() {
