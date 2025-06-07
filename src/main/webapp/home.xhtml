@@ -6,6 +6,14 @@
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
     <!--Author : Dr. M H B Ariyaratne, MO(Health Information), buddhika.ari@gmail.com-->
     <ui:define name="content">
+        <h:outputStylesheet>
+            .svg-link {
+                color: #{configOptionApplicationController.getColorValueByKey('Home Icon Colour', '#1E88E5')};
+            }
+            .svg-link:hover {
+                color: #{configOptionApplicationController.getColorValueByKey('Home Icon Hover Colour', '#1565C0')};
+            }
+        </h:outputStylesheet>
 
         <div class="row" >
             <ui:repeat value="#{sessionController.userIcons}" var="ui">
@@ -48,7 +56,7 @@
                             action="#{pharmacyController.navigateToPharmacyAnalytics()}"
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_analytics.png" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy Analytics"/>
                         </p:commandLink>
                     </h:form>
@@ -62,7 +70,7 @@
                             action="#{supplierPaymentController.navigateToDealerPaymentIndex()}" 
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/supplier_payment_management.webp" width="100%" />
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/supplier_payment_management.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Patient Lookup"/>
                         </p:commandLink>
                     </h:form>
@@ -991,7 +999,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/direct_purchase.webp" style="cursor: pointer;" width="100%" />
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/direct_purchase.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Direct Purchase" />
                         </p:commandLink>
                     </h:form>
@@ -1021,7 +1029,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  cache="true" library="image" name="home/grn.webp" style="cursor: pointer;" width="100%" />
+                            <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
                         </p:commandLink>
                     </h:form>
