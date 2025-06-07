@@ -57,13 +57,22 @@
                                 </h:panelGroup>
 
                                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Approval is necessary for Procument Payments', false)}">
-                                    <p:commandButton 
+                                    <p:commandButton
                                         class="w-100"
                                         ajax="false"
                                         value="Generate Payments"
-                                        icon="fas fa-file-invoice"  
+                                        icon="fas fa-file-invoice"
                                         styleClass="ui-button-danger"
                                         action="#{supplierPaymentController.navigateToGenerateSupplierPayments()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Generate Return Payments"
+                                        icon="fas fa-undo"
+                                        styleClass="ui-button-danger"
+                                        action="#{supplierPaymentController.navigateToGenerateSupplierReturnPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                     <p:commandButton 
