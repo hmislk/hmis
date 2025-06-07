@@ -171,7 +171,11 @@
                 autoWidth="false"
                 value="#{cc.attrs.controller.paymentScheme}" >
                 <f:selectItem itemLabel="Select"/>
-                <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                <f:selectItems 
+                    value="#{paymentSchemeController.items}" 
+                    var="ps" 
+                    itemLabel="#{ps.name}" 
+                    itemValue="#{ps}"/>
             </p:selectOneMenu>
 
             <p:spacer ></p:spacer>
