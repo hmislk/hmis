@@ -3,7 +3,7 @@
 ## Adding User Icons
 
 1. Add a new constant to `src/main/java/com/divudi/core/data/Icon.java`. The value should be the label displayed to users.
-2. Create an SVG (or gvd) under `src/main/webapp/resources/image/home` with the graphic for the new feature.
+2. Create an SVG (or gvd) under `src/main/webapp/resources/images/home` with the graphic for the new feature.
 3. Update `src/main/webapp/home.xhtml` to reference the new `Icon` constant and image. This home page change should be tracked as a separate issue when creating pull requests.
 
 
@@ -47,7 +47,7 @@ To ensure visual consistency and maintainability across all homepage icons:
 ### 5. Rendering in Code
 Use this format:
 ```xhtml
-<p:graphicImage library="image" name="home/your-icon.svg"
+<p:graphicImage library="images" name="home/your-icon.svg"
                 style="cursor: pointer;" width="80" height="80"/>
 ```
 - Wrap with `img-thumbnail` for border and uniform styling.
@@ -120,7 +120,7 @@ To ensure visual consistency and maintainability across all homepage icons:
 ### 5. Rendering in Code
 Use this format:
 ```xhtml
-<p:graphicImage library="image" name="home/your-icon.svg"
+<p:graphicImage library="images" name="home/your-icon.svg"
                 style="cursor: pointer;" width="80" height="80"/>
 ```
 - Wrap with `img-thumbnail` for border and uniform styling.
@@ -142,33 +142,6 @@ All new icons must:
 - Use `fill="currentColor"` for dynamic theming.
 - Reference colours via `configOptionApplicationController`.
 - Plan for light/dark mode support.
-
----
-
-## Colour Configuration Options
-
-Define the following colour config options via `configOptionApplicationController`:
-
-| Config Key                         | Description                                | Default Value |
-|------------------------------------|--------------------------------------------|---------------|
-| `Home Icon Colour`                 | Fill colour for homepage icons             | `#1E88E5`     |
-| `Home Icon Hover Colour`          | Hover state colour                         | `#1565C0`     |
-| `Home Icon Background`            | Icon background colour                     | `#FFFFFF`     |
-| `Homepage Tooltip Colour`         | Tooltip text colour                        | `#424242`     |
-| `Homepage Section Header Colour`  | Colour for section headers                 | `#263238`     |
-| `Critical Alert Colour`           | Colour for critical messages               | `#D32F2F`     |
-| `Warning Alert Colour`            | Colour for warnings                        | `#FBC02D`     |
-| `Success Highlight Colour`        | Colour for success states                  | `#388E3C`     |
-
-### Sample Access in JSF
-```xhtml
-style="color: #{configOptionApplicationController.getShortTextValueByKey('Home Icon Colour', true)}"
-```
-
-Ensure these keys are defined in the configuration for consistent UI styling.
-
----
-
 
 ---
 
