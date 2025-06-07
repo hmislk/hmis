@@ -1,43 +1,10 @@
 package com.divudi.service;
 
-import com.divudi.core.data.BillCategory;
-import static com.divudi.core.data.BillCategory.BILL;
-import static com.divudi.core.data.BillCategory.CANCELLATION;
-import static com.divudi.core.data.BillCategory.PAYMENTS;
-import static com.divudi.core.data.BillCategory.PREBILL;
-import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.data.BillTypeAtomic;
-import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
-import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
-import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
-import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
-import com.divudi.core.data.FeeType;
-import com.divudi.core.data.InstitutionType;
-import com.divudi.core.data.PaymentMethod;
-
-import static com.divudi.core.data.PaymentMethod.Cash;
-import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
 
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
-import com.divudi.core.data.dataStructure.ComponentDetail;
-import com.divudi.core.data.dataStructure.PaymentMethodData;
-import com.divudi.core.data.dataStructure.SearchKeyword;
-import com.divudi.core.entity.Bill;
-import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BillFinanceDetails;
-import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Department;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.PaymentScheme;
-import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.cashTransaction.DenominationTransaction;
-import com.divudi.core.entity.inward.AdmissionType;
-import com.divudi.core.entity.lab.PatientInvestigation;
-import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -52,14 +19,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
-import javax.persistence.TemporalType;
-import com.google.gson.GsonBuilder;
 import java.util.*;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -316,7 +277,6 @@ public class BillAnalyticsService {
 
         List<BillTypeAtomic> returnedTypes = new ArrayList<>(Arrays.asList(
                 BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
-                BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS,
                 BillTypeAtomic.PHARMACY_WHOLESALE_REFUND
         ));
 
