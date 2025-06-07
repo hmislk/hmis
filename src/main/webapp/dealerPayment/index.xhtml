@@ -114,6 +114,15 @@
                                         action="#{supplierPaymentController.navigateToGenerateSupplierReturnPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="List All GRNs"
+                                        icon="fas fa-list"
+                                        styleClass="ui-button-secondary"
+                                        action="#{supplierPaymentController.navigateToListAllGrns()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
                                 </h:panelGroup>
 
                                 <p:separator/>
