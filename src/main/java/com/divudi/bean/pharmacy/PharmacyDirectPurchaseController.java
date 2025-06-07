@@ -39,11 +39,10 @@ import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
-import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.entity.Payment;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -499,10 +498,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     @EJB
     BillFeeFacade billFeeFacade;
     @EJB
-    BillFeePaymentFacade billFeePaymentFacade;
-    @EJB
-    PaymentFacade paymentFacade;
-    @EJB
     BillEjb billEjb;
     @EJB
     PaymentService paymentService;
@@ -564,14 +559,12 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void onItemSelect(SelectEvent event) {
         BillItem current = getCurrentBillItem();
         if (current == null || current.getItem() == null) {
-            System.out.println("DEBUG: Current BillItem or Item is null. Exiting.");
             return;
         }
 
         Item item = current.getItem();
         Department dept = getSessionController().getDepartment();
         if (dept == null) {
-            System.out.println("DEBUG: Department is null. Exiting.");
             return;
         }
 
@@ -590,7 +583,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 rr = (lastRetailRatePerUnit != null) ? lastRetailRatePerUnit.doubleValue() : 0.0;
                 retailRate = lastRetailRatePerUnit != null ? lastRetailRatePerUnit : BigDecimal.ZERO;
 
-                System.out.println("DEBUG: Retrieved from lastPurchasedBillItem - PurchaseRate: " + pr + ", RetailRatePerUnit: " + rr);
             }
         }
 
@@ -598,7 +590,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         if (pr == 0.0 || rr == 0.0) {
             double fallbackPr = getPharmacyBean().getLastPurchaseRate(item, dept);
             double fallbackRr = getPharmacyBean().getLastRetailRateByBillItemFinanceDetails(item, dept);
-            System.out.println("DEBUG: Fallback - PurchaseRate: " + fallbackPr + ", RetailRate: " + fallbackRr);
             pr = fallbackPr > 0.0 ? fallbackPr : pr;
             rr = fallbackRr > 0.0 ? fallbackRr : rr;
             retailRate = BigDecimal.valueOf(rr);
@@ -612,7 +603,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         BillItemFinanceDetails f = current.getBillItemFinanceDetails();
         if (f == null) {
-            System.out.println("DEBUG: BillItemFinanceDetails is null. Exiting.");
             return;
         }
 
@@ -625,12 +615,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             f.setUnitsPerPack(unitsPerPack);
             f.setRetailSaleRate(retailRate);
             f.setRetailSaleRatePerUnit(retailRate.divide(unitsPerPack, MathContext.DECIMAL64));
-            System.out.println("DEBUG: Ampp Item - UnitsPerPack: " + unitsPerPack + ", RetailRate: " + retailRate + ", RetailRatePerUnit: " + f.getRetailSaleRatePerUnit());
         } else {
             f.setUnitsPerPack(BigDecimal.ONE);
             f.setRetailSaleRate(retailRate);
             f.setRetailSaleRatePerUnit(retailRate);
-            System.out.println("DEBUG: Non-Ampp Item - RetailRate: " + retailRate);
         }
 
         recalculateFinancialsBeforeAddingBillItem(f);
@@ -883,7 +871,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             //       //System.err.println("Report Date: " + reportDate);
             pid.getPharmaceuticalBillItem().setStringValue(reportDate);
         }
-        onEdit(pid);
     }
 
     public void setBatch() {
@@ -1612,21 +1599,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.billFeeFacade = billFeeFacade;
     }
 
-    public BillFeePaymentFacade getBillFeePaymentFacade() {
-        return billFeePaymentFacade;
-    }
-
-    public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
-        this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
-    public PaymentFacade getPaymentFacade() {
-        return paymentFacade;
-    }
-
-    public void setPaymentFacade(PaymentFacade paymentFacade) {
-        this.paymentFacade = paymentFacade;
-    }
 
     public BillListWithTotals getBillListWithTotals() {
         return billListWithTotals;
