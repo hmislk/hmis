@@ -20,7 +20,6 @@ import com.divudi.core.data.dataStructure.BillAndItemDataRow;
 import com.divudi.core.data.dataStructure.ItemDetailsCell;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.reports.CollectionCenterReport;
-import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
@@ -69,7 +68,6 @@ import javax.faces.context.FacesContext;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
-import org.hl7.fhir.r5.model.Bundle;
 
 /**
  * @author Senula Nanayakkara
