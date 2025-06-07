@@ -13,14 +13,15 @@ import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.TestWiseCountReport;
 import com.divudi.core.data.dataStructure.BillAndItemDataRow;
 import com.divudi.core.data.dataStructure.ItemDetailsCell;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.reports.CollectionCenterReport;
-import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -34,8 +35,9 @@ import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
+import com.divudi.service.BillAnalyticsService;
+import com.divudi.service.BillService;
 import com.divudi.core.data.HistoryType;
-
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -72,7 +74,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @Named
 @SessionScoped
-public class ReportController implements Serializable {
+public class ReportController implements Serializable, ControllerWithReportFilters {
 
     @EJB
     BillItemFacade billItemFacade;
@@ -90,6 +92,10 @@ public class ReportController implements Serializable {
     private ReportTimerController reportTimerController;
     @EJB
     PatientInvestigationFacade patientInvestigationFacade;
+    @EJB
+    BillService billService;
+    @EJB
+    BillAnalyticsService billAnalyticsService;
 
     @Inject
     private InstitutionController institutionController;
@@ -222,6 +228,13 @@ public class ReportController implements Serializable {
     private String reportTemplateFileIndexName;
 
     private List<String> siteIds;
+
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
+
+    private PaymentScheme paymentScheme;
+
+    private AdmissionType admissionType;
 
     public String getTableRowColor(AgentHistory ah) {
         if (ah == null) {
@@ -1214,6 +1227,50 @@ public class ReportController implements Serializable {
         bundle.setReportTemplateRows(results);
     }
 
+    public void processIncomeBillCounts() {
+        if (reportViewType == null) {
+            reportViewType = ReportViewType.BY_BILL;
+        }
+        switch (reportViewType) {
+            case BY_BILL:
+                processIncomeBillCountsByBill();
+                break;
+            case BY_BILL_ITEM:
+                processIncomeBillCountsByBillItem();
+                break;
+            default:
+                processIncomeBillCountsByBillItem();
+        }
+    }
+
+    public void processIncomeBillCountsByBillItem() {
+        bundle = new ReportTemplateRowBundle();
+        ReportTemplateRowBundle opdServicesBundle = new ReportTemplateRowBundle("OPD Services");
+        ReportTemplateRowBundle inpatientServicesBundle = new ReportTemplateRowBundle("Inpatient Services");
+        ReportTemplateRowBundle outpatientPharmacyBundle = new ReportTemplateRowBundle("OPD Pharmacy");
+        ReportTemplateRowBundle inpatientPharmacyBundle = new ReportTemplateRowBundle("Inpatient Pharmacy");
+        ReportTemplateRowBundle ccBundle = new ReportTemplateRowBundle("Collection Centres");
+
+        billAnalyticsService.fillBundleForOpdServiceCounts(opdServicesBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForInpatientServiceCounts(inpatientServicesBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForOpdPharmacyCounts(outpatientPharmacyBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForInpatientPharmacyCounts(inpatientPharmacyBundle, fromDate, toDate);
+        billAnalyticsService.fillBundleForCollectionCentreServiceCounts(ccBundle, fromDate, toDate);
+
+        bundle.getBundles().add(opdServicesBundle);
+        bundle.getBundles().add(inpatientServicesBundle);
+        
+        bundle.getBundles().add(outpatientPharmacyBundle);
+        bundle.getBundles().add(inpatientPharmacyBundle);
+        
+        bundle.getBundles().add(ccBundle);
+
+    }
+
+    public void processIncomeBillCountsByBill() {
+        JsfUtil.addErrorMessage("Not Supported Yet");
+    }
+
     public void processCollectingCentreBook() {
         String sql;
         HashMap m = new HashMap();
@@ -1236,9 +1293,9 @@ public class ReportController implements Serializable {
 
     public void createDebtorSettlement() {
         StringBuilder jpql = new StringBuilder(
-                "SELECT bi FROM BillItem bi " +
-                        "WHERE bi.retired = :ret " +
-                        "AND bi.bill.billTypeAtomic IN :btas");
+                "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = :ret "
+                + "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -2924,6 +2981,14 @@ public class ReportController implements Serializable {
         return "/reports/inpatientReports/admission_category_wise_admission?faces-redirect=true";
     }
 
+    public String navigateToIncomeBillCountReport() {
+        reportViewTypes = new ArrayList<>();
+        reportViewTypes.add(ReportViewType.BY_BILL);
+        reportViewTypes.add(ReportViewType.BY_BILL_ITEM);
+        reportViewType = ReportViewType.BY_BILL_ITEM;
+        return "/analytics/summaries/income_bill_counts?faces-redirect=true";
+    }
+
     public String navigateToStockTransferReport() {
 
         return "/reports/inventoryReports/stock_transfer_report?faces-redirect=true";
@@ -3020,22 +3085,27 @@ public class ReportController implements Serializable {
         this.reportIndex = reportIndex;
     }
 
+    @Override
     public Institution getInstitution() {
         return institution;
     }
 
+    @Override
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
 
+    @Override
     public Department getDepartment() {
         return department;
     }
 
+    @Override
     public void setDepartment(Department department) {
         this.department = department;
     }
 
+    @Override
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = CommonFunctions.getStartOfDay(new Date());
@@ -3043,10 +3113,12 @@ public class ReportController implements Serializable {
         return fromDate;
     }
 
+    @Override
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
+    @Override
     public Date getToDate() {
         if (toDate == null) {
             toDate = CommonFunctions.getEndOfDay(new Date());
@@ -3054,6 +3126,7 @@ public class ReportController implements Serializable {
         return toDate;
     }
 
+    @Override
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -3799,10 +3872,12 @@ public class ReportController implements Serializable {
         this.patientInvestigationStatus = patientInvestigationStatus;
     }
 
+    @Override
     public Institution getSite() {
         return site;
     }
 
+    @Override
     public void setSite(Institution site) {
         this.site = site;
     }
@@ -4107,6 +4182,42 @@ public class ReportController implements Serializable {
 
     public void setTotalAdditionalFee(double totalAdditionalFee) {
         this.totalAdditionalFee = totalAdditionalFee;
+    }
+
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
     }
 
 }
