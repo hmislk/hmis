@@ -14,7 +14,7 @@
                     <p:panel>
                         <f:facet name="header" > 
                             <h:outputText styleClass="fas fa-file-invoice"/>
-                            <h:outputLabel class="mx-4" value="Generate Supplier Payments"/>  
+                            <h:outputLabel class="mx-4" value="Generate Supplier Return Payments"/>
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
@@ -34,25 +34,11 @@
                                 <p:separator></p:separator>
 
                                 <p:commandButton
-                                    value="Pharmacy GRNs to Generate Payments"
-                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}"
+                                    value="Pharmacy GRN Returns to Generate Payments"
+                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyReturnBills}"
                                     ajax="false"
-                                    icon="fas fa-prescription-bottle-alt"
+                                    icon="fas fa-undo"
                                     class="my-1 w-100 ui-button-warning" />
-
-                                <p:commandButton 
-                                    value="Store Credit Bills to Generate Payments" 
-                                    action="#{supplierPaymentController.fillUnsettledCreditStoreBills()}" 
-                                    ajax="false"  
-                                    icon="fas fa-store-alt" 
-                                    class="my-1 w-100  ui-button-warning" />
-
-                                <p:commandButton 
-                                    value="All Credit Bills to Generate Payments"
-                                    action="#{supplierPaymentController.fillUnsettledCreditBills()}"
-                                    ajax="false"
-                                    icon="fas fa-file-invoice-dollar"
-                                    class="my-1 w-100  ui-button-warning" />
 
 
                                 <p:separator></p:separator>

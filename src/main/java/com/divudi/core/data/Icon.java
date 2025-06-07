@@ -114,12 +114,17 @@ public enum Icon {
     Optician_Product_Catalog("Optician - Product Catalog"),
     Optician_Repair_Management("Optician - Repair Management"),
     Optician_Retail_Sale("Optician - Retail Sale"),
+    /**
+     * @deprecated Retained for backward compatibility with DB entries. Use {@link #Channel_Booking} for channel bookings.
+     */
+    @Deprecated
     Appointments("Appointments"),
     Channel_Booking("Channel Booking"),
     Cashier_Summaries("Cashier Summaries"),
     Shift_End_Summary("Shift End Summary"),
     Day_End_Summary("Day End Summary"),
     Admit("Admit Patient"),
+    Inpatient_Appointments("Inpatient Appointments"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
     // icons for cashier
     Cashier_Drawer("Logged User Drawer"),;
