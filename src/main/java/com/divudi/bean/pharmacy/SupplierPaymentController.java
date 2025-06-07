@@ -181,6 +181,12 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/list_grn_returns_to_generate_supplier_payments?faces-redirect=true";
     }
 
+    public String navigateToListAllGrns() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/list_all_grns?faces-redirect=true";
+    }
+
     public String navigateToApproveSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
