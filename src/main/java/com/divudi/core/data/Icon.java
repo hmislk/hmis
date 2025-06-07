@@ -129,7 +129,7 @@ public enum Icon {
     Investigation_Trace("Trace Investigations"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
     // icons for cashier
-    Cashier_Drawer("Logged User Drawer"),;
+    Cashier_Drawer("Logged User Drawer");
 
     private final String label;
 
