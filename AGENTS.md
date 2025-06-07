@@ -7,3 +7,8 @@
 3. Update `src/main/webapp/home.xhtml` to reference the new `Icon` constant and image. This home page change should be tracked as a separate issue when creating pull requests.
 
 These guidelines apply to the entire repository.
+
+## Menu Icons
+* When creating menu items or command buttons, always specify an icon using
+  PrimeFaces (`pi pi-*`) or Font Awesome (`fa`/`fas`) classes. This ensures the
+  UI remains consistent across themes.
