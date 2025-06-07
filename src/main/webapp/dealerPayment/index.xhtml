@@ -43,7 +43,7 @@
                                         styleClass="ui-button-success"
                                         action="#{supplierPaymentController.navigateToDealerDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
-                                    
+
                                     <p:commandButton 
                                         class="w-100"
                                         ajax="false"
@@ -66,14 +66,7 @@
                                         action="#{supplierPaymentController.navigateToGenerateSupplierPayments()}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
-                                    <p:commandButton
-                                        class="w-100"
-                                        ajax="false"
-                                        value="Generate Return Payments"
-                                        icon="fas fa-undo"
-                                        styleClass="ui-button-danger"
-                                        action="#{supplierPaymentController.navigateToGenerateSupplierReturnPayments()}"
-                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
+
 
                                     <p:commandButton 
                                         class="w-100"
@@ -111,10 +104,19 @@
                                         action="#{supplierPaymentController.navigateToDealerDoneSearch}"
                                         rendered="#{webUserController.hasPrivilege('PharmacyGRNPaymentDoneSearch')}" />
 
-
+                                    <p:separator/>
+                                    <p:commandButton
+                                        class="w-100"
+                                        ajax="false"
+                                        value="Receive Return Payments"
+                                        icon="fas fa-undo"
+                                        styleClass="ui-button-secondary"
+                                        action="#{supplierPaymentController.navigateToGenerateSupplierReturnPayments()}"
+                                        rendered="#{webUserController.hasPrivilege('PharmacyDealerDueSearch')}" />
 
                                 </h:panelGroup>
 
+                                <p:separator/>
 
                                 <p:commandButton 
                                     class="w-100 bg-indigo-500 hover:bg-indigo-600 text-white" 
