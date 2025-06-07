@@ -125,6 +125,8 @@ public enum Icon {
     Day_End_Summary("Day End Summary"),
     Admit("Admit Patient"),
     Inpatient_Appointments("Inpatient Appointments"),
+    Search_Admissions("Search Admissions"),
+    Investigation_Trace("Trace Investigations"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
     // icons for cashier
     Cashier_Drawer("Logged User Drawer"),;
