@@ -1633,38 +1633,38 @@
                     icon="fa fa-fw fa-users"
                     rendered="#{webUserController.hasPrivilege('Hr')}" >
                     <p:submenu label="Working Time" rendered="#{webUserController.hasPrivilege('HrWorkingTime')}" >
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance" rendered="#{webUserController.hasPrivilege('HrUploadAttendance')}" ></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"></p:menuitem>
-                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff" value="Analyse Attendance By Staff" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByStaff')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table" value="Roster Table" icon="fa fa-calendar-alt" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}" rendered="#{webUserController.hasPrivilege('HrRosterTable')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_upload_attendance" value="Upload Attendance" icon="fa fa-upload" rendered="#{webUserController.hasPrivilege('HrUploadAttendance')}" ></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print" value="Analyse Attendance" icon="fa fa-chart-line" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByRoster')}" actionListener="#{staffShiftController.updateStaffShiftWithoutRoster()}"></p:menuitem>
+                        <p:menuitem  ajax="false"  action="/hr/hr_shift_table_finger_print_by_staff" value="Analyse Attendance By Staff" icon="fa fa-user-check" rendered="#{webUserController.hasPrivilege('HrAnalyseAttendenceByStaff')}" ></p:menuitem>
                     </p:submenu>                                   
                     <p:submenu label="Forms" rendered="#{webUserController.hasPrivilege('HrForms')}">                                       
-                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form" rendered="#{webUserController.hasPrivilege('HrLeaveForms')}"  />
+                        <p:menuitem  ajax="false"  action="/hr/hr_form_staff_leave" value="Leave form" icon="fa fa-file-alt" rendered="#{webUserController.hasPrivilege('HrLeaveForms')}"  />
                         <p:submenu label="Additional" rendered="#{webUserController.hasPrivilege('HrAdditionalForms')}">
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}" />    
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}" />    
-                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}" />    
+                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_extra" value="Extra Time" actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-clock"/>    
+                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift" value="Extra Shift Normal " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-user-clock"/>    
+                            <p:menuitem  ajax="false"  action="/hr/hr_form_staff_additional_shift_day_off" value="Extra Shift Day Off /PH " actionListener="#{staffAdditionalFormController.clear()}" rendered="#{webUserController.hasPrivilege('Hr')}"  icon="fa fa-calendar-check"/>    
                         </p:submenu>                                       
                     </p:submenu>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance" rendered="#{webUserController.hasPrivilege('HrAdvanceSalary')}"
+                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_advance"  icon="fa fa-hand-holding-usd" rendered="#{webUserController.hasPrivilege('HrAdvanceSalary')}"
                                  value="Staff Salary Advace"   
                                  actionListener="#{staffSalaryController.clear}"/>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
+                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary"  icon="fa fa-money-check-alt" value="Staff Salary"  rendered="#{webUserController.hasPrivilege('HrGenerateSalary')}" 
                                  actionListener="#{staffSalaryController.clear}"/>
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_special" value="Staff Salary Special"  rendered="#{webUserController.hasPrivilege('HrGenerateSalarySpecial')}" 
+                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_special"  icon="fa fa-coins" value="Staff Salary Special"  rendered="#{webUserController.hasPrivilege('HrGenerateSalarySpecial')}" 
                                  actionListener="#{staffSalaryController.clear}"/>
 
-                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print" value="Staff Salary Print"   
+                    <p:menuitem  ajax="false"  action="/hr/hr_staff_salary_print"  icon="fa fa-print" value="Staff Salary Print"   
                                  actionListener="#{staffSalaryController.clear}" rendered="#{webUserController.hasPrivilege('HrPrintSalary')}" />
 
                     <p:menuitem  
                         ajax="false"  
                         action="#{processController.navigateToProcessIndex}" 
-                        value="Processes"  />
+                         icon="fa fa-cogs" value="Processes"  />
                     <p:menuitem  
                         ajax="false"  
                         action="/hr/hr_reports" 
-                        value="HR Analytics" 
+                         icon="fa fa-chart-bar" value="HR Analytics" 
                         rendered="#{webUserController.hasPrivilege('HrReports')}" />
 
                 </p:submenu>
