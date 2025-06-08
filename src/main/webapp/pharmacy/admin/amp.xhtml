@@ -103,7 +103,17 @@
 
 
                                 <h:outputText  value="Code" class="w-100"></h:outputText>
-                                <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" class="w-100" ></p:inputText>
+                                <h:panelGroup id="codePanel" class="w-100">
+                                    <p:inputText id="code" autocomplete="off"  value="#{ampController.current.code}" class="w-75">
+                                        <p:ajax event="blur" process="@this" update="msg btnSave" listener="#{ampController.checkCodeDuplicate}" />
+                                    </p:inputText>
+                                    <p:commandButton id="generateCode" value="Generate Code"
+                                                     action="#{ampController.generateCode()}"
+                                                     process="generateCode codePanel"
+                                                     update="codePanel msg btnSave"
+                                                     class="mx-1 ui-button-secondary"
+                                                     icon="pi pi-refresh" />
+                                </h:panelGroup>
 
 
                                 <h:outputText  value="Bar Code" class="w-100"></h:outputText>
@@ -179,14 +189,15 @@
                                     class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>
-                            <p:commandButton 
-                                id="btnSave" 
-                                value="Save" 
-                                process="btnSave gpDetail" 
-                                update="acAmp msg" 
+                            <p:commandButton
+                                id="btnSave"
+                                value="Save"
+                                process="btnSave gpDetail"
+                                update="acAmp msg"
                                 class=" m-1 ui-button-warning w-25"
                                 icon="fas fa-save"
-                                action="#{ampController.save}" 
+                                disabled="#{ampController.duplicateCode}"
+                                action="#{ampController.save}"
                                 >
                             </p:commandButton>
 
