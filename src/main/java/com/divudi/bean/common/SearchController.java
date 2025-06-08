@@ -9135,7 +9135,7 @@ public class SearchController implements Serializable {
             jpql += " and b.creditCompany=:cc ";
             m.put("cc", creditCompany);
         }
-
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
@@ -12883,7 +12883,7 @@ public class SearchController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        
+
         if (getFromDate() != null && getToDate() != null) {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
@@ -12926,7 +12926,7 @@ public class SearchController implements Serializable {
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
-        
+
         if (getReportKeyWord().isAdditionalDetails()) {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         } else {
@@ -17249,6 +17249,7 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
+        //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
         List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
                 PaymentCategory.NON_CREDIT_COLLECTION);
         List<PaymentMethod> ppms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
@@ -19696,6 +19697,20 @@ public class SearchController implements Serializable {
             createBillsBillItemsList(new HashSet<>(bills), allBillItems);
         } catch (IOException e) {
             e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    public void searchOpdBillsWithIndications() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+        if (bills != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getIndication() != null && !b.getIndication().trim().isEmpty())
+                    .collect(Collectors.toList());
         }
     }
 
