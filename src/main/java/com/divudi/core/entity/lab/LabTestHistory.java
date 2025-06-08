@@ -5,6 +5,7 @@ import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -75,6 +76,12 @@ public class LabTestHistory implements Serializable {
 
     @ManyToOne
     private Category analyzer;
+    
+    @ManyToOne
+    private Staff staff;
+    
+    @ManyToOne
+    private PatientSampleComponant sampleComponant;
 
     public Long getId() {
         return id;
@@ -237,6 +244,22 @@ public class LabTestHistory implements Serializable {
 
     public void setAnalyzer(Category analyzer) {
         this.analyzer = analyzer;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public PatientSampleComponant getSampleComponant() {
+        return sampleComponant;
+    }
+
+    public void setSampleComponant(PatientSampleComponant sampleComponant) {
+        this.sampleComponant = sampleComponant;
     }
     
 }
