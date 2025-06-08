@@ -356,14 +356,15 @@
                                     </p:commandButton>
                                     <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}" />
 
-                                    <p:commandButton  
+                                    <p:commandButton
                                         style="float: right;"
-                                        value="Settle" 
+                                        value="Settle"
                                         icon="fa fa-check"
-                                        action="#{collectingCentreBillController.settleCcBill()}" 
-                                        ajax="false" 
+                                        action="#{collectingCentreBillController.settleCcBill()}"
+                                        ajax="false"
+                                        disabled="#{collectingCentreBillController.ccBillSettlingStarted}"
                                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                    return false;"
+                                                    return false; this.disabled=true;"
 
                                         class="ui-button-success ">
                                     </p:commandButton>
