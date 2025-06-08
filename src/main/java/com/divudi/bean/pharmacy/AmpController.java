@@ -795,6 +795,9 @@ public class AmpController implements Serializable {
 
     private String generateCharacterCode(int length) {
         String base = generateShortCode(current.getName());
+        if (base.isEmpty()) {
+            base = "AMP"; // Default fallback
+        }
         if (base.length() > length) {
             base = base.substring(0, length);
         }
