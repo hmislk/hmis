@@ -1,19 +1,36 @@
 package com.divudi.bean.channel;
 
+import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
+import static com.divudi.core.data.PaymentMethod.Agent;
+import static com.divudi.core.data.PaymentMethod.Card;
+import static com.divudi.core.data.PaymentMethod.Cash;
+import static com.divudi.core.data.PaymentMethod.Cheque;
+import static com.divudi.core.data.PaymentMethod.Credit;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.core.data.PaymentMethod.OnCall;
+import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
+import static com.divudi.core.data.PaymentMethod.PatientDeposit;
+import static com.divudi.core.data.PaymentMethod.Slip;
+import static com.divudi.core.data.PaymentMethod.Staff;
+import static com.divudi.core.data.PaymentMethod.YouOweMe;
+import static com.divudi.core.data.PaymentMethod.ewallet;
+import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.ChannelService;
@@ -73,6 +90,12 @@ public class OnlineBookingAgentController implements Serializable {
     private Bill paidToHospitalBill;
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
+    
+    @EJB
+    private PaymentFacade paymentFacade;
+    
+    @Inject
+    private DrawerController drawerController;
 
     public double getPaidToHospitalTotal() {
         return paidToHospitalTotal;
@@ -151,6 +174,99 @@ public class OnlineBookingAgentController implements Serializable {
             }
         }
     }
+    
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+        List<Payment> ps = new ArrayList<>();
+        if (pm == PaymentMethod.MultiplePaymentMethods) {
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                Payment p = new Payment();
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                p.setPaymentMethod(cd.getPaymentMethod());
+
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
+                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        break;
+                    case Cheque:
+                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
+                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
+                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        break;
+                    case Cash:
+                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        break;
+                    case ewallet:
+
+                    case Agent:
+                    case Credit:
+                    case PatientDeposit:
+                    case Slip:
+                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
+                        p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                    case OnCall:
+                    case OnlineSettlement:
+                    case YouOweMe:
+                    case MultiplePaymentMethods:
+                }
+
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            switch (pm) {
+                case Card:
+                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
+                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
+                    break;
+                case Cheque:
+                    p.setChequeDate(paymentMethodData.getCheque().getDate());
+                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
+                    break;
+                case Cash:
+                    break;
+                case ewallet:
+                    break;
+                case Credit:
+                    break;
+                case PatientDeposit:
+                    break;
+                case Slip:
+                    p.setBank(paymentMethodData.getSlip().getInstitution());
+                    p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                case OnCall:
+                    break;
+                case OnlineSettlement:
+                    break;
+                case Staff:
+                    break;
+                case YouOweMe:
+                    break;
+                case MultiplePaymentMethods:
+                    break;
+            }
+
+            p.setPaidValue(p.getBill().getNetTotal());
+            paymentFacade.create(p);
+
+            ps.add(p);
+        }
+        return ps;
+    }
 
     public Bill createHospitalPaymentBill(List<OnlineBooking> bookings) {
         Bill paidBill = getPaidToHospitalBill();
@@ -190,6 +306,11 @@ public class OnlineBookingAgentController implements Serializable {
         }
 
         Bill paidBill = createHospitalPaymentBill(paidToHospitalList);
+        
+        if(paidBill != null){
+            List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod);
+            drawerController.updateDrawerForIns(payments);;
+        }
 
         if (paidBill != null) {
             for (OnlineBooking ob : paidToHospitalList) {
