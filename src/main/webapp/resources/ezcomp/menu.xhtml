@@ -1675,26 +1675,26 @@
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('MyFinanacialTransactionManager')}" 
                         action="#{sessionController.navigateToChangePasswordByUser}" 
-                        value="Change My Password"></p:menuitem>
+                        value="Change My Password" icon="pi pi-lock"></p:menuitem>
                     <p:menuitem 
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('ChangeMyTheme')}" 
                         action="#{themeController.navigateToChangeOwnTheme()}"
-                        value="Change My Theme"  ></p:menuitem>
+                        value="Change My Theme" icon="pi pi-palette" ></p:menuitem>
                     <p:menuitem 
                         ajax="false" 
                         rendered="#{webUserController.hasPrivilege('ChangePreferece')}" 
                         action="#{sessionController.navigateToManageOwnWebUserPreferences()}"
-                        value="Change My Preferences"  ></p:menuitem>
+                        value="Change My Preferences" icon="pi pi-sliders-h"  ></p:menuitem>
                     <p:menuitem  
                         ajax="false"  
                         rendered="#{webUserController.hasPrivilege('ChangeMyApiKeys')}" 
                         action="#{apiKeyController.toManageMyApiKeys()}" 
-                        value="Manage My API Keys"  ></p:menuitem>
+                        value="Manage My API Keys" icon="pi pi-key"  ></p:menuitem>
                     <p:menuitem
                         ajax="false"
                         action="#{versionController.navigateToAboutSoftware()}"
-                        value="About Software"  ></p:menuitem>
+                        value="About Software" icon="pi pi-info-circle"  ></p:menuitem>
 
                 </p:submenu>
 
