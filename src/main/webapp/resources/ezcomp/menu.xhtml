@@ -1686,20 +1686,20 @@
                 <p:submenu id="smReports" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
                     <p:menuitem  ajax="false"  action="#{searchController.navigateToAnalytics}" 
                                  value="Analytics" 
-                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>  
-                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
+                                 rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-chart-line"></p:menuitem>  
+                    <p:menuitem  ajax="false"  action="/reports/index?faces-redirect=true" value="Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-file-alt" ></p:menuitem> 
                     <p:menuitem  ajax="false"  action="/reports/dynamic_reports/dynamic_reports?faces-redirect=true" 
-                                 value="Dynamic Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem> 
-                    <p:menuitem  ajax="false"  action="/reportInstitution/report_own?faces-redirect=true" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" ></p:menuitem>                               
-                    <p:menuitem  ajax="false"  action="/reportIncome/report_income?faces-redirect=true" value="Income Report"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/revenue_reports/index?faces-redirect=true" value="Revenue Reports"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/reportInstitution/report_referrals_index?faces-redirect=true" value="Referral Reports"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/reportLab/report_lab?faces-redirect=true" value="Lab Report"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/credit/index_inward_due_acces?faces-redirect=trues" value="Inward Dues and Access"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/credit/index_opd_due_access?faces-redirect=true" value="Opd Dues and Access"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Pharmacy Dues and Access"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/dataAdmin/report_entered_data?faces-redirect=true" value="Check Entered Data"  ></p:menuitem>
-                    <p:menuitem  ajax="false"  action="/dataAdmin/update_entered_data?faces-redirect=true" value="Update Entered Data"  ></p:menuitem>
+                                 value="Dynamic Reports" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-cogs" ></p:menuitem> 
+                    <p:menuitem  ajax="false"  action="/reportInstitution/report_own?faces-redirect=true" value="Institution Report" rendered="#{webUserController.hasPrivilege('ReportsSearchCashCardOwn')}" icon="fa fa-building" ></p:menuitem>                               
+                    <p:menuitem  ajax="false"  action="/reportIncome/report_income?faces-redirect=true" value="Income Report"   icon="fa fa-coins" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/revenue_reports/index?faces-redirect=true" value="Revenue Reports"   icon="fa fa-chart-area" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/reportInstitution/report_referrals_index?faces-redirect=true" value="Referral Reports"   icon="fa fa-user-friends" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/reportLab/report_lab?faces-redirect=true" value="Lab Report"   icon="fa fa-vials" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/credit/index_inward_due_acces?faces-redirect=trues" value="Inward Dues and Access"   icon="fa fa-bed" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/credit/index_opd_due_access?faces-redirect=true" value="Opd Dues and Access"   icon="fa fa-hospital-user" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/credit/index_pharmacy_due_access?faces-redirect=true" value="Pharmacy Dues and Access"   icon="fa fa-pills" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/dataAdmin/report_entered_data?faces-redirect=true" value="Check Entered Data"   icon="fa fa-search" ></p:menuitem>
+                    <p:menuitem  ajax="false"  action="/dataAdmin/update_entered_data?faces-redirect=true" value="Update Entered Data"   icon="fa fa-edit" ></p:menuitem>
 
                 </p:submenu>
 
