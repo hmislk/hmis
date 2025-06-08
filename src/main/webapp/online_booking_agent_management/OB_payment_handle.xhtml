@@ -77,7 +77,7 @@
 
                             <p:commandButton  
                                 value="Settle Payment" 
-                                update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay" 
+                                update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
                                 process="@this onlineBookings cmbPs"
                                 oncomplete="PF('payementSettle').show()"
                                 actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
@@ -146,7 +146,7 @@
                                             <p:commandButton  
                                                 value="Settle" 
                                                 ajax="false"
-
+                                                action="#{onlineBookingAgentController.createPaymentForHospital()}"
                                                 class="ui-button-success" icon="fas fa-cogs">
                                             </p:commandButton>
                                         </h:panelGroup>
@@ -157,7 +157,7 @@
                                         <p:outputLabel value="Payment Method" ></p:outputLabel>
                                         <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" style="width:200px">
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                            <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" />
+                                            <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}"/>
                                         </p:selectOneMenu>
 
                                         <p:outputLabel value="Value" ></p:outputLabel>

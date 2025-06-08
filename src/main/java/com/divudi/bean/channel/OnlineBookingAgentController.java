@@ -216,7 +216,13 @@ public class OnlineBookingAgentController implements Serializable {
         paidToHospitalList.remove(selected);
     }
 
-    
+    public void clearPreviousValues(){
+        paidToHospitalBill = null;
+        paidToHospitalPaymentMethod = null;
+        paidToHospitalTotal = 0;
+        paidToHospitalList = null;
+        
+    }
     
     public double createTotalAmountToPay() {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
@@ -231,6 +237,10 @@ public class OnlineBookingAgentController implements Serializable {
             }
         }
         paidToHospitalTotal = totalForPay;
+        if(paidToHospitalBill != null){
+            paidToHospitalBill.setNetTotal(totalForPay);
+        }
+        
         return totalForPay;
     }
 
