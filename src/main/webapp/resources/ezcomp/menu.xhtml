@@ -588,38 +588,43 @@
 
                 <p:submenu id="smLab" icon="fa fa-fw fa-flask"  rendered="#{webUserController.hasPrivilege('Lab')}">
 
-                    <p:submenu 
+                    <p:submenu
                         id="smLabBilling"
                         label="Billing"
+                        icon="fa fa-fw fa-file-invoice-dollar"
                         rendered="#{webUserController.hasPrivilege('LabBilling') and configOptionApplicationController.getBooleanValueByKey('Show the Billing Section in Under the Lab Module',false)}">
 
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdBillController.navigateToNewOpdBill()}" 
                             value="Lab Billing"
+                            icon="fa fa-fw fa-notes-medical"
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
                         </p:menuitem>
 
                         <p:menuitem 
                             ajax="false" 
-                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"  
-                            actionListener="#{opdPreBillController.prepareNewBill}" 
+                            action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}"
+                            actionListener="#{opdPreBillController.prepareNewBill}"
                             value="Billing for Cashier"
+                            icon="fa fa-fw fa-cash-register"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" >
                         </p:menuitem>
 
                         <p:menuitem 
                             ajax="false"
-                            action="/opd/opd_bill_package?faces-redirect=true" 
-                            actionListener="#{billPackageController.clearBillValues}" 
+                            action="/opd/opd_bill_package?faces-redirect=true"
+                            actionListener="#{billPackageController.clearBillValues}"
                             value="Package Billing"
+                            icon="fa fa-fw fa-boxes"
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}" >
                         </p:menuitem>
 
                         <p:menuitem 
                             ajax="false" 
                             action="#{billBhtController.navigateToAddServicesFromMenu}"
-                            value="Inpatient Billing" 
+                            value="Inpatient Billing"
+                            icon="fa fa-fw fa-procedures"
                             rendered="#{webUserController.hasPrivilege('InwardServicesAndItemsAddServices')}" >
                         </p:menuitem>
 
@@ -628,36 +633,41 @@
                     <p:submenu
                         id="smLabBillingSearch"
                         label="Billing Search"
+                        icon="fa fa-fw fa-search"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Show the Bill Search in Under the Lab Module', false)}">
                         <p:menuitem 
                             ajax="false" 
                             action="#{opdBillController.navigateToSearchOpdBills()}" 
                             value="Lab Bill Search"
+                            icon="fa fa-fw fa-search-dollar"
                             actionListener="#{searchController.clearBillList()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}" >
                         </p:menuitem>
                         <p:menuitem 
                             ajax="false" 
                             action="/opd_search_billitem_own?faces-redirect=true" 
-                            value="Lab Bill Item Search" 
-                            actionListener="#{searchController.makeListNull}" 
+                            value="Lab Bill Item Search"
+                            icon="fa fa-fw fa-list"
+                            actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}" >
                         </p:menuitem>
 
                         <p:menuitem 
                             ajax="false" 
                             action="/lab/inward_search_service?faces-redirect=true" 
-                            value="Search In-patient Bills" 
-                            actionListener="#{searchController.makeListNull}"  
+                            value="Search In-patient Bills"
+                            icon="fa fa-fw fa-procedures"
+                            actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('LabInwardSearchServiceBill')}" >
                         </p:menuitem>
 
                     </p:submenu>
 
-                    <p:menuitem 
+                    <p:menuitem
                         ajax="false"
                         action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
-                        value="Sample Management" 
+                        value="Sample Management"
+                        icon="fa fa-fw fa-vials"
                         rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                     </p:menuitem>
 
@@ -670,31 +680,35 @@
                     </p:menuitem>
 
                     <p:menuitem
-                        ajax="false"  
+                        ajax="false"
                         rendered="false"
-                        action="/lab/sample_at_lab_index?faces-redirect=true" 
-                        value="Sample Management - Lab">
+                        action="/lab/sample_at_lab_index?faces-redirect=true"
+                        value="Sample Management - Lab"
+                        icon="fa fa-fw fa-vials">
                     </p:menuitem>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="/lab/receive?faces-redirect=true" 
-                        actionListener="#{patientInvestigationController.toPrintWorksheets()}" 
-                        value="Worksheets" 
+                    <p:menuitem
+                        ajax="false"
+                        action="/lab/receive?faces-redirect=true"
+                        actionListener="#{patientInvestigationController.toPrintWorksheets()}"
+                        value="Worksheets"
+                        icon="fa fa-fw fa-book-medical"
                         rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}" >
                     </p:menuitem>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="#{searchController.navigateToLabReportSearch}"  
-                        value="Report Management" 
+                    <p:menuitem
+                        ajax="false"
+                        action="#{searchController.navigateToLabReportSearch}"
+                        value="Report Management"
+                        icon="fa fa-fw fa-file-alt"
                         rendered="#{webUserController.hasPrivilege('LabReportSearch')}" >
                     </p:menuitem>
 
-                    <p:menuitem 
-                        ajax="false" 
-                        action="#{searchController.navigateToPatientReportSearch()}" 
-                        value="Report Search by Billing Department" >
+                    <p:menuitem
+                        ajax="false"
+                        action="#{searchController.navigateToPatientReportSearch()}"
+                        value="Report Search by Billing Department"
+                        icon="fa fa-fw fa-hospital-user" >
                     </p:menuitem>
 
                     <!--                    <p:menuitem 
