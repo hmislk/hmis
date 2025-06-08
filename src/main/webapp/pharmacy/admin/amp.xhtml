@@ -133,7 +133,12 @@
                                                  ></p:autoComplete>
 
 
-
+                                <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
+                                <h:inputTextarea 
+                                    id="txtComments" 
+                                    value="#{ampController.current.comments}" 
+                                    required="false" 
+                                    class="form-control" ></h:inputTextarea>
 
 
                                 <h:outputText  value="Manufacturer" class="w-100"></h:outputText>
@@ -181,6 +186,7 @@
                                     onLabel="Yes"
                                     offLabel="No"
                                     class="w-100" />
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
                                 <h:inputTextarea 
                                     id="txtIns" 
