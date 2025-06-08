@@ -1570,6 +1570,24 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
+        for (PatientSample ps : selectedPatientSamples) {
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                LabTestHistory sampleCollectHistory = new LabTestHistory();
+                sampleCollectHistory.setPatientInvestigation(pi);
+                sampleCollectHistory.setPatientSample(ps);
+                sampleCollectHistory.setInstitution(sessionController.getInstitution());
+                sampleCollectHistory.setDepartment(sessionController.getDepartment());
+                sampleCollectHistory.setFromDepartment(sessionController.getDepartment());
+                sampleCollectHistory.setToDepartment(sessionController.getDepartment());
+                sampleCollectHistory.setTestHistoryType(TestHistoryType.SAMPLE_COLLECTED);
+                sampleCollectHistory.setCreatedAt(new Date());
+                sampleCollectHistory.setCreatedBy(sessionController.getLoggedUser());
+                labTestHistoryFacade.create(sampleCollectHistory);
+                
+                System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + ps.getId());
+            }
+        }
+
         JsfUtil.addSuccessMessage("Selected Samples Collected");
     }
 
