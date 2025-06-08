@@ -3,7 +3,7 @@
  * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  * amd
- * Damitha Deshan
+ * H.K. Damitha Deshan | hkddrajapaksha@gmail.com
  */
 package com.divudi.core.data.lab;
 
@@ -18,6 +18,7 @@ public enum TestHistoryType {
     SAMPLE_ACCEPTED,
     SAMPLE_REJECTED,
     SAMPLE_SENT,
+    SAMPLE_SENT_OUT_LAB,
     SAMPLE_RECEIVED,
     SAMPLE_TRANSFERRED,
     SAMPLE_PUT_TO_ANALYZER,
