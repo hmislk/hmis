@@ -66,6 +66,8 @@ import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
 import com.divudi.core.data.BillTypeAtomic;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static com.divudi.core.data.BillTypeAtomic.PHARMACY_ISSUE_CANCELLED;
 
 import com.divudi.core.data.InstitutionType;
@@ -307,6 +309,7 @@ public class BillSearch implements Serializable {
 
     private boolean opdBillCancellationSameDay = false;
     private boolean opdBillRefundAllowedSameDay = false;
+    private final AtomicBoolean ccBillCancellingStarted = new AtomicBoolean(false);
 
     //Edit Bill details
     private Doctor referredBy;
@@ -2510,12 +2513,18 @@ public class BillSearch implements Serializable {
     }
 
     public void cancelCollectingCentreBill() {
+        if (!ccBillCancellingStarted.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Cancellation already Started");
+            return;
+        }
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No bill");
+            ccBillCancellingStarted.set(false);
             return;
         }
         if (getBill().getId() == null) {
             JsfUtil.addErrorMessage("No Saved bill");
+            ccBillCancellingStarted.set(false);
             return;
         }
 
@@ -2526,17 +2535,20 @@ public class BillSearch implements Serializable {
                     JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
                 } else {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    ccBillCancellingStarted.set(false);
                     return;
                 }
             } else {
                 if (!getWebUserController().hasPrivilege("OpdCancel")) {
                     JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    ccBillCancellingStarted.set(false);
                     return;
                 }
             }
         } else {
             if (!getWebUserController().hasPrivilege("OpdCancel")) {
                 JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                ccBillCancellingStarted.set(false);
                 return;
             }
         }
@@ -2574,6 +2586,7 @@ public class BillSearch implements Serializable {
         bill = billFacade.find(bill.getId());
         printPreview = true;
         comment = null;
+        ccBillCancellingStarted.set(false);
     }
 
     public WebUserFacade getWebUserFacade() {
@@ -4409,6 +4422,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
+        ccBillCancellingStarted.set(false);
         paymentMethod = bill.getPaymentMethod();
 //        createBillItemsAndBillFees();
 //        boolean flag = billController.checkBillValues(bill);
@@ -5447,6 +5461,14 @@ public class BillSearch implements Serializable {
 
     public void setOpdBillRefundAllowedSameDay(boolean opdBillRefundAllowedSameDay) {
         this.opdBillRefundAllowedSameDay = opdBillRefundAllowedSameDay;
+    }
+
+    public boolean isCcBillCancellingStarted() {
+        return ccBillCancellingStarted.get();
+    }
+
+    public void setCcBillCancellingStarted(boolean ccBillCancellingStarted) {
+        this.ccBillCancellingStarted.set(ccBillCancellingStarted);
     }
 
     public Doctor getReferredBy() {
