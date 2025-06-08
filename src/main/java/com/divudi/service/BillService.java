@@ -1729,8 +1729,10 @@ public class BillService {
             case CC_PAYMENT_RECEIVED_BILL:
             case CC_PAYMENT_MADE_BILL:
             case CC_PAYMENT_MADE_CANCELLATION_BILL:
-                boolean billHasNoBillItems = billHasNoBillItems(bill);
-                if (billHasNoBillItems) {
+                boolean noItemsError = billHasNoBillItems(bill);
+                boolean netTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+
+                if (noItemsError || netTotalError) {
                     hasAtLeatOneError = true;
                 }
                 break;
