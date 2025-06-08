@@ -27,7 +27,7 @@
                             ajax="false"
                             action="#{financialTransactionController.navigateToMyDrawer()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/cashier_drawer.svg" style="cursor: pointer;" width="140" height="140"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/cashier_drawer.svg" style="cursor: pointer;" width="140" height="140"/>
                             <h:outputText style="display: none;" value="Cashier Drawer"/>
                         </p:commandLink>
                     </h:form>
@@ -42,7 +42,7 @@
                             action="opd/patient_search.xhtml" 
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/health_worker_form.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/health_worker_form.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Patient Lookup"/>
                         </p:commandLink>
                     </h:form>
@@ -85,7 +85,7 @@
                             action="opd/patient_edit.xhtml" 
                             ajax="false" 
                             styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/addPatient.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/addPatient.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: #{configOptionApplicationController.getBooleanValueByKey('Show Text Below User Icons')};" value="Add New Patient" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>
@@ -102,7 +102,7 @@
                             ajax="false" 
                             styleClass="svg-link" 
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}">
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/invoice.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/invoice.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>
@@ -119,7 +119,7 @@
                             actionListener="#{opdPreBillController.prepareNewBill}" 
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Billing For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>
@@ -135,7 +135,7 @@
                             action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"
                             rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Collecting Centre Billing"/>
                         </p:commandLink>
                     </h:form>
@@ -150,7 +150,7 @@
                             action="opd_bill_package?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('OpdBilling')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/OPD_Default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/OPD_Default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>
@@ -164,7 +164,7 @@
                             ajax="false"
                             action="#{opdPreSettleController.navigateToScanBills()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/scan.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/scan.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Scan Bills"/>
                         </p:commandLink>
                     </h:form>
@@ -179,7 +179,7 @@
                             action="/opd/opd_search_pre_bill?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
                         </p:commandLink>
                     </h:form>               
@@ -194,7 +194,7 @@
                             action="opd_search_pre_batch_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Accept Payment for OPD Batch Bills"/>
                         </p:commandLink>
                     </h:form >
@@ -208,7 +208,7 @@
                             ajax="false"
                             action="/pharmacy/pharmacy_search_pre_bill?faces-redirect=true" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/bill_bprove.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Accept Payments for Pharmacy Bills" />
                         </p:commandLink>
                     </h:form>
@@ -223,7 +223,7 @@
                             action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Refunds" />
                         </p:commandLink>
                     </h:form>
@@ -238,7 +238,7 @@
                             action="/opd/opd_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Refunds for OPD Bills" />
                         </p:commandLink>
                     </h:form>
@@ -253,7 +253,7 @@
                             action="/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Refunds for Pharmacy Bills" />
                         </p:commandLink>
                     </h:form>
@@ -269,7 +269,7 @@
                             action="opd/opd_bill_search?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Bill Search" />
                         </p:commandLink>
                     </h:form>               
@@ -286,7 +286,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('OpdBillItemSearch')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Bill Item Search" />
                         </p:commandLink>
                     </h:form>               
@@ -301,7 +301,7 @@
                             ajax="false"
                             action="/opd_search_bill_fee_payment?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Payment Search" />
                         </p:commandLink>
                     </h:form>               
@@ -318,7 +318,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('OpdCollectingCentreBilling')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Collecting Centre Bill Search" />
                         </p:commandLink>
                     </h:form>               
@@ -334,7 +334,7 @@
                             actionListener="#{billController.clear()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Bills To Pay Search" />
                         </p:commandLink>
                     </h:form>               
@@ -351,7 +351,7 @@
                             actionListener="#{billController.clear()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Credit paid Bill Search" />
                         </p:commandLink>
                     </h:form>               
@@ -368,7 +368,7 @@
                             actionListener="#{billController.clear()}"
                             rendered="#{webUserController.hasPrivilege('OpdBillSearch')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Credit paid Bills with OPD Bill Search" />
                         </p:commandLink>
                     </h:form>               
@@ -385,7 +385,7 @@
                             action="#{workingTimeController.navigateToMarkIn()}"
                             rendered="#{webUserController.hasPrivilege('Opd')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/in.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/in.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Mark In" />
                         </p:commandLink>
                     </h:form>               
@@ -400,7 +400,7 @@
                             ajax="false"
                             action="#{workingTimeController.navigateToListCurrentWorkTimes()}" 
                             rendered="#{webUserController.hasPrivilege('Opd')}">
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/out.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/out.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Mark Out" />
                         </p:commandLink>
                     </h:form>               
@@ -416,7 +416,7 @@
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
                             rendered="#{webUserController.hasPrivilege('Opd')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/times.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/times.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Working Times" />
                         </p:commandLink>
                     </h:form>               
@@ -432,7 +432,7 @@
                             ajax="false"
                             action="#{tokenController.navigateToTokenIndex()}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/token.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/token.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Manage Token" />
                         </p:commandLink>
                     </h:form>
@@ -448,7 +448,7 @@
                             ajax="false"
                             action="/lab/report_for_opd_print?faces-redirect=true" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/lab_report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/lab_report.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Lab Report print" />
                         </p:commandLink>
                     </h:form>
@@ -464,7 +464,7 @@
                             ajax="false"
                             action="#{cashierReportController.navigateToOpdAnalytics()}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/summary_report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/summary_report.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Summaries" />
                         </p:commandLink>
                     </h:form>
@@ -479,7 +479,7 @@
                             ajax="false"
                             action="#{opdBillController.navigateToOpdAnalyticsIndex()}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Analytics" />
                         </p:commandLink>
                     </h:form>
@@ -498,7 +498,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/cart-shopping-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/cart-shopping-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Pharmacy - Retail Sale" />
                         </p:commandLink>
                     </h:form>
@@ -515,7 +515,7 @@
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Retail Sale for cashier"  />
                         </p:commandLink>
                     </h:form>
@@ -531,7 +531,7 @@
                             action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWithoutStock')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Sale without Stocks" />
                         </p:commandLink>
                     </h:form>
@@ -548,7 +548,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill" />
                         </p:commandLink>
                     </h:form>
@@ -564,7 +564,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Pre Bill" />
                         </p:commandLink>
                     </h:form>
@@ -580,7 +580,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill Items" />
                         </p:commandLink>
                     </h:form>
@@ -597,7 +597,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items Only" />
                         </p:commandLink>
                     </h:form>
@@ -614,7 +614,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySaleReturn')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items and Payments" />
                         </p:commandLink>
                     </h:form>
@@ -631,7 +631,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Return Bill (Item)" />
                         </p:commandLink>
                     </h:form>
@@ -649,7 +649,7 @@
 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add To Stock" />
                         </p:commandLink>
                     </h:form>
@@ -668,7 +668,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSale')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale" />
                         </p:commandLink>
                     </h:form>
@@ -685,7 +685,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyWholesaleSaleForCashier')}" 
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/sack-dollar-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/sack-dollar-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale for cashier" />
                         </p:commandLink>
                     </h:form>
@@ -702,7 +702,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill" />
                         </p:commandLink>
                     </h:form>
@@ -718,7 +718,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill to Pay" />
                         </p:commandLink>
                     </h:form>
@@ -734,7 +734,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill Items" />
                         </p:commandLink>
                     </h:form>
@@ -751,7 +751,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;"  value="Wholesale Return - Items Only" />
                         </p:commandLink>
                     </h:form>
@@ -768,7 +768,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale Return - Items and Payments" />
                         </p:commandLink>
                     </h:form>
@@ -786,7 +786,7 @@
 
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Return Wholesale Bill (Item)"  />
                         </p:commandLink>
                     </h:form>
@@ -802,7 +802,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySaleWh')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add To Stock" />
                         </p:commandLink>
                     </h:form>
@@ -820,7 +820,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyPurchaseWh')}" 
                             actionListener="#{pharmacyPurchaseController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale Purchase" />
                         </p:commandLink>
                     </h:form>
@@ -839,7 +839,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" 
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to BHTs" />
                         </p:commandLink>
                     </h:form>
@@ -856,7 +856,7 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
                         </p:commandLink>
                     </h:form>
@@ -873,7 +873,7 @@
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
                         </p:commandLink>
                     </h:form>
@@ -889,7 +889,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Bill" />
                         </p:commandLink>
                     </h:form>
@@ -905,7 +905,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Item" />
                         </p:commandLink>
                     </h:form>
@@ -921,7 +921,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issue Returns by Bill" />
                         </p:commandLink>
                     </h:form>
@@ -938,7 +938,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;"  value="Search Inpatient Direct Issue Returns by Item"  />
                         </p:commandLink>
                     </h:form>
@@ -954,7 +954,7 @@
                             ajax="false" 
                             action="#{purchaseOrderRequestController.navigateToCreateNewPurchaseOrder()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Create Purchase Order"  />
                         </p:commandLink>
                     </h:form>
@@ -969,7 +969,7 @@
                             ajax="false" 
                             action="#{reorderController.autoOrderByDistributor()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Auto Order (P Model)" />
                         </p:commandLink>
                     </h:form>
@@ -984,7 +984,7 @@
                             ajax="false" 
                             action="#{reorderController.autoOrderByDistributor()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Auto Order (Q Model)" />
                         </p:commandLink>
                     </h:form>
@@ -1014,7 +1014,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase_order_list_to_approve?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Purchase Orders Approval" />
                         </p:commandLink>
                     </h:form>
@@ -1044,7 +1044,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return Received Goods" />
                         </p:commandLink>
                     </h:form>
@@ -1059,7 +1059,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_return_withouttresing?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return without Receipt" />
                         </p:commandLink>
                     </h:form>
@@ -1074,7 +1074,7 @@
                             ajax="false" 
                             action="#{searchController.navigateToCancelPurchaseOrder()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/ban-solid.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/ban-solid.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Multiple Purchase Order Cancellation" />
                         </p:commandLink>
                     </h:form>
@@ -1091,7 +1091,7 @@
                             action="/pharmacy/pharmacy_issue?faces-redirect=true"  
                             actionListener="#{pharmacyIssueController.resetAll()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue" />
                         </p:commandLink>
                     </h:form>
@@ -1107,7 +1107,7 @@
                             actionListener="#{searchController.makeListNull}"
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill" />
                         </p:commandLink>
                     </h:form>
@@ -1124,7 +1124,7 @@
                             actionListener="#{searchController.makeListNull}"   
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill Items" />
                         </p:commandLink>
                     </h:form>
@@ -1141,7 +1141,7 @@
                             actionListener="#{searchController.makeListNull}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Return Bill" />
                         </p:commandLink>
                     </h:form>
@@ -1156,7 +1156,7 @@
                             ajax="false" 
                             action="/store/issue_rate_margin_manager?faces-redirect=true" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Unit Issue Margin" />
                         </p:commandLink>
                     </h:form>
@@ -1173,7 +1173,7 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Request" />
                         </p:commandLink>
                     </h:form>
@@ -1190,7 +1190,7 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue for Requests" />
                         </p:commandLink>
                     </h:form>
@@ -1207,7 +1207,7 @@
                             actionListener="#{transferIssueController.makeNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue" />
                         </p:commandLink>
                     </h:form>
@@ -1224,7 +1224,7 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Receive" />
                         </p:commandLink>
                     </h:form>
@@ -1241,7 +1241,7 @@
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyTransfer')}" 
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Reports" />
                         </p:commandLink>
                     </h:form>
@@ -1258,7 +1258,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" 
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Department Stock(QTY)" />
                         </p:commandLink>
                     </h:form>
@@ -1274,7 +1274,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" 
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Staff Stock Adjustment" />
                         </p:commandLink>
                     </h:form>
@@ -1291,7 +1291,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" 
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Purchase Rate" />
                         </p:commandLink>
                     </h:form>
@@ -1307,7 +1307,7 @@
                             action="/pharmacy/pharmacy_adjustment_retail_sale_rate?faces-redirect=true"  
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Sale Rate" />
                         </p:commandLink>
                     </h:form>
@@ -1324,7 +1324,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" 
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale Rate" />
                         </p:commandLink>
                     </h:form>
@@ -1341,7 +1341,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}" 
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Expiry Date" />
                         </p:commandLink>
                     </h:form>
@@ -1356,7 +1356,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Adjustment Bills" />
                         </p:commandLink>
                     </h:form>
@@ -1372,7 +1372,7 @@
                             action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('PharmacyStockAdjustment')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Transfer All Stock" />
                         </p:commandLink>
                     </h:form>
@@ -1388,7 +1388,7 @@
                             action="/dealerPayment/dealor_due?faces-redirect=true" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Supplier Due Search" />
                         </p:commandLink>
                     </h:form>
@@ -1405,7 +1405,7 @@
                             actionListener="#{supplierPaymentController.makeNull()}"
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Dealer Due By Age" />
                         </p:commandLink>
                     </h:form>
@@ -1422,7 +1422,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
                             actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Supplier" />
                         </p:commandLink>
                     </h:form>
@@ -1439,7 +1439,7 @@
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}" 
                             actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="By Bill" />
                         </p:commandLink>
                     </h:form>
@@ -1456,7 +1456,7 @@
                             actionListener="#{searchController.makeListNull2()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="GRN Payment Approve" />
                         </p:commandLink>
                     </h:form>
@@ -1473,7 +1473,7 @@
                             actionListener="#{searchController.makeListNull2()}" 
                             rendered="#{webUserController.hasPrivilege('PharmacyDealorPayment')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="GRN Payment Done Search" />
                         </p:commandLink>
                     </h:form>
@@ -1488,7 +1488,7 @@
                             ajax="false" 
                             action="/credit/index_pharmacy_due_access?faces-redirect=true"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Credit Dues and Access" />
                         </p:commandLink>
                     </h:form>
@@ -1507,7 +1507,7 @@
                             actionListener="#{billSearch.recreateModel}" 
                             rendered="#{webUserController.hasPrivilege('PharmacySearch')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy_default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Item Search" />
                         </p:commandLink>
                     </h:form>
@@ -1523,7 +1523,7 @@
                             action="/pharmacy/pharmacy_reports_index?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('PharmacyReports')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/reports.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/reports.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Generate Reports" />
                         </p:commandLink>
                     </h:form>
@@ -1533,7 +1533,7 @@
                     <h:form>
                         <p:tooltip for="cmdAdmit" value="Admit Patient" showDelay="0" hideDelay="0"/>
                         <p:commandLink id="cmdAdmit" ajax="false" action="#{patientController.navigatePatientAdmit()}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" library="image" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Admit Patient"/>
                         </p:commandLink>
                     </h:form>
@@ -1544,7 +1544,7 @@
                         <p:commandLink id="Appointments" ajax="false"
                                        action="#{appointmentController.navigateToInwardAppointmentFromMenu()}"
                                        styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail" library="image"
+                            <p:graphicImage class="img-thumbnail" library="images"
                                             name="home/appointments.svg"
                                             style="cursor:pointer;" width="80" height="80"/>
                             <h:outputText style="display:none;" value="Appointments"/>
@@ -1557,7 +1557,7 @@
                     <h:form>
                         <p:tooltip for="search_admissions" value="Search Admissions" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink id="search_admissions" ajax="false" action="#{admissionController.navigateToListAdmissions}" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/admissions_search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/admissions_search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Admissions" />
                         </p:commandLink>
                     </h:form>
@@ -1568,7 +1568,7 @@
                     <h:form>
                         <p:tooltip for="investigation_trace" value="Trace Investigations" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink id="investigation_trace" ajax="false" action="/inward/investigation_search_for_reporting_bht?faces-redirect=true" styleClass="svg-link">
-                            <p:graphicImage class="img-thumbnail"  library="image" name="home/investigation_trace.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/investigation_trace.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Trace Investigations" />
                         </p:commandLink>
                     </h:form>
@@ -1584,7 +1584,7 @@
                             action="/pharmacy/pharmacy_summery_index?faces-redirect=true"
                             rendered="#{webUserController.hasPrivilege('PharmacySummery')}"
                             styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail" cache="true" library="image" name="home/summary_report.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/summary_report.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Summary Views" />
                         </p:commandLink>
                     </h:form>
