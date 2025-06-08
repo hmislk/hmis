@@ -21,6 +21,7 @@ import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.StockHistory;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -28,12 +29,11 @@ import java.util.Objects;
 import java.util.UUID;
 import java.io.Serializable;
 import java.math.BigDecimal;
+
 /**
- *
  * @author Dr M H B Ariyaratne
- *
  */
-public class PharmacyRow  implements Serializable{
+public class PharmacyRow implements Serializable {
 
     private Long id;
     private UUID uuid;
@@ -43,6 +43,7 @@ public class PharmacyRow  implements Serializable{
     private Double quantity;
     private Double purchaseValue;
     private Double saleValue;
+    private Double costValue;
     private Double stockQty;
 
     private Long counter;
@@ -179,12 +180,13 @@ public class PharmacyRow  implements Serializable{
 
     private double purchaseRate;
     private double retailRate;
+    private double costRate;
 
     private double qty;
 
     private long duration;
 
-    
+
     private BigDecimal grossSaleRate = BigDecimal.ZERO;
     private BigDecimal discountRate = BigDecimal.ZERO;
     private BigDecimal marginRate = BigDecimal.ZERO;
@@ -193,8 +195,8 @@ public class PharmacyRow  implements Serializable{
     private BigDecimal marginValue = BigDecimal.ZERO;
     private BigDecimal discountValue = BigDecimal.ZERO;
     private BigDecimal netSaleValue = BigDecimal.ZERO;
-    
-    
+
+
     public PharmacyRow() {
         this.uuid = UUID.randomUUID();
     }
@@ -1449,7 +1451,20 @@ public class PharmacyRow  implements Serializable{
     public void setStockQty(Double stockQty) {
         this.stockQty = stockQty;
     }
-    
 
-    
+    public Double getCostRate() {
+        return costRate;
+    }
+
+    public void setCostRate(double costRate) {
+        this.costRate = costRate;
+    }
+
+    public Double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(Double costValue) {
+        this.costValue = costValue;
+    }
 }

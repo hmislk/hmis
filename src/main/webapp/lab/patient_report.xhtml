@@ -45,6 +45,7 @@
                                                 action="#{patientReportController.savePatientReport()}" 
                                                 ajax="false">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 class="mx-1"
@@ -55,6 +56,7 @@
                                                 value="Calculate" 
                                                 action="#{patientReportController.calculate}">
                                             </p:commandButton>
+                                            
                                             <p:commandButton 
                                                 id="btnApprove"  
                                                 class=" ui-button-success"
@@ -66,19 +68,29 @@
                                                 ajax="false"   >
                                             </p:commandButton>
 
+                                            <!-- Button to Send SMS -->
+                                            <p:commandButton  
+                                                icon="fa-solid fa-message"
+                                                class="mx-1 ui-button-secondary"
+                                                id="btnSms"  
+                                                disabled="#{!(webUserController.hasPrivilege('LabDataentry')) and !(webUserController.hasPrivilege('LabAutherizing')) and !(webUserController.hasPrivilege('LabDeAutherizing')) or ! patientReportController.currentPatientReport.approved}"   
+                                                value="Send SMS"             
+                                                action="#{patientReportController.sendSmsForPatientReport()}" 
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <!-- Button to show the email dialog -->
                                             <p:commandButton 
                                                 id="btnShowEmailDialogForApprovedReport"  
                                                 icon="fa-solid fa-envelope" 
                                                 class="mx-1 ui-button-secondary"
-                                                value="Email"
+                                                value="Send Email"
                                                 process="@this"
                                                 update="dlgEmailForApprovedReport"
                                                 oncomplete="PF('wvDlgEmailForApprovedReport').show()"
                                                 disabled="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"
-                                                />
-
+                                                >
+                                            </p:commandButton>
 
                                             <p:commandButton   
                                                 id="btnCancelApproval"  

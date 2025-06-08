@@ -23,6 +23,11 @@ public class ReportTemplateRow implements Serializable {
     private String uuid;
     private Long counter;
 
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
+
     private Category category;
     private Bill bill;
     private BillItem billItem;
@@ -165,8 +170,8 @@ public class ReportTemplateRow implements Serializable {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
-    
-    public ReportTemplateRow(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public ReportTemplateRow(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.toDepartment = toDpartment;
         this.itemCount = count;
@@ -1382,4 +1387,38 @@ public class ReportTemplateRow implements Serializable {
     public void setAgentReferenceBook(AgentReferenceBook agentReferenceBook) {
         this.agentReferenceBook = agentReferenceBook;
     }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+    
+    
 }

@@ -224,6 +224,10 @@ public class OpdReportController implements Serializable {
         return "/opd/analytics/summary_reports/opd_income_daily_summary?faces-redirect=true";
     }
 
+    public String navigateToPatientIndicationsReport() {
+        return "/reports/opd/patient_indications_report?faces-redirect=true";
+    }
+
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Functions">
     public void processDailyStockBalanceReport() {
