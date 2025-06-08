@@ -80,8 +80,6 @@
                                             icon="fa fa-money-bill-wave"
                                             style="float:right; width: 8em;"
                                             class="ui-button-warning"
-                                            disabled="#{billReturnController.returningStarted}"
-                                            onclick="if (!confirm('Are You Sure You Want to Refund this Items?')) return false; this.disabled=true;"
                                             action="#{billReturnController.settleOpdReturnBill()}">
                                         </p:commandButton>
                                     </f:facet>
