@@ -140,8 +140,6 @@
                                             value="Return Selected Items"
                                             ajax="false"
                                             class="ui-button-warning"
-                                            disabled="#{billReturnController.returningStarted}"
-                                            onclick="if (!confirm('Are You Sure You Want to Refund this Items?')) return false; this.disabled=true;"
                                             action="#{billReturnController.settleCCReturnBill()}"
                                             oncomplete="PF('dlg').hide();" >
                                         </p:commandButton>

@@ -11647,6 +11647,7 @@ public class SearchController implements Serializable {
         if (allBills != null) {
             for (Bill tmpBill : allBills) {
                 boolean billHasErrors;
+                billService.reloadBill(tmpBill);
                 billHasErrors = billService.checkBillForErrors(tmpBill);
                 if (!billHasErrors) {
                     continue;
