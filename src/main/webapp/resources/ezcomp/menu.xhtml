@@ -1676,11 +1676,11 @@
                     rendered="#{webUserController.hasPrivilege('Clinical')}">
                     <p:menuitem ajax="false" action="#{patientController.toSearchPatient()}" icon="pi pi-search" value="Patient Search"/>
                     <p:menuitem ajax="false" action="#{patientController.toAddNewPatient()}" icon="fa fa-plus" value="Add New Patient"/>
-                    <p:menuitem ajax="false" action="/clinical/clinical_queue?faces-redirect=true" value="Clinical Queue"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" value="Queue"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" value="EMR Analytics"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToSettings()}" value="Settings"/>
-                    <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" value="Administration"/>
+                    <p:menuitem ajax="false" action="/clinical/clinical_queue?faces-redirect=true" icon="pi pi-users" value="Clinical Queue"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalQueue()}" icon="pi pi-list" value="Queue"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToClinicalReportsIndex()}" icon="pi pi-chart-bar" value="EMR Analytics"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToSettings()}" icon="pi pi-cog" value="Settings"/>
+                    <p:menuitem ajax="false" action="#{emrController.navigateToEmrAdmin()}" icon="pi pi-sliders-h" value="Administration"/>
                 </p:submenu>
 
                 <p:submenu id="smReports" icon="pi pi-chart-bar" rendered="#{webUserController.hasPrivilege('Reports')}">
