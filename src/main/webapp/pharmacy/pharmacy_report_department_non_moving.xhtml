@@ -1,100 +1,136 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      >
+>
 
-    <h:body>
+<h:body>
 
-        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+    <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
 
-            <ui:define name="subcontent">
-                <h:form>
+        <ui:define name="subcontent">
+            <h:form>
 
 
-                    <p:panel header="Non Moving Stock Report" >
-                        
-                        <h:panelGrid columns="2" class="my-2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
-                                </p:autoComplete>
-                            <h:outputLabel value="Category" ></h:outputLabel>
-                                <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100" completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="cat" 
-                                                itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true" value="#{reportsStock.category}"
-                                                >
-                                </p:autoComplete>
-                            <h:outputLabel value="Movement Type" ></h:outputLabel>
-                                <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types"  >
-                                    <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt" itemLabel="#{pbt.label}" itemValue="#{pbt}" ></f:selectItems>
-                                </p:selectCheckboxMenu>
-                            <h:outputLabel value="From" ></h:outputLabel>
-                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.fromDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                                <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDateE}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                        </h:panelGrid>
-                        <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-outlined" ajax="false" value="Three Months Nonmoving" actionListener="#{reportsStock.fillThreeMonthsNonmoving()}" ></p:commandButton>
-                            <p:commandButton class="ui-button-outlined" ajax="false" value="Six Months Nonmoving" actionListener="#{reportsStock.fillSixMonthsNonmoving()}" ></p:commandButton>
-                            <p:commandButton class="ui-button-outlined" ajax="false" value="One Year Nonmoving" actionListener="#{reportsStock.fillOneYearNonmoving()}" ></p:commandButton>
+                <p:panel header="Non Moving Stock Report">
 
-                            <p:commandButton class="ui-button-warning mx-2" icon="fas fa-cogs" ajax="false" value="Process" actionListener="#{reportsStock.fillDepartmentNonmovingStocks}" ></p:commandButton>
-                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
-                               <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Total Stock"/>
-                            </p:commandButton>
-                        </h:panelGrid>
+                    <h:panelGrid columns="2" class="my-2">
+                        <h:outputLabel value="Department"></h:outputLabel>
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"
+                                        completeMethod="#{departmentController.completeDept}" var="dept"
+                                        itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                        value="#{reportsStock.department}">
+                        </p:autoComplete>
+                        <h:outputLabel value="Category"></h:outputLabel>
+                        <p:autoComplete class="w-100 mx-4" inputStyleClass="w-100"
+                                        completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
+                                        var="cat"
+                                        itemLabel="#{cat.name}" itemValue="#{cat}" forceSelection="true"
+                                        value="#{reportsStock.category}"
+                        >
+                        </p:autoComplete>
+                        <h:outputLabel value="Movement Type"></h:outputLabel>
+                        <p:selectCheckboxMenu class="w-100 mx-4" value="#{reportsStock.billTypes}" label="Bill Types">
+                            <f:selectItems value="#{enumController.pharmacyBillTypes3}" var="pbt"
+                                           itemLabel="#{pbt.label}" itemValue="#{pbt}"></f:selectItems>
+                        </p:selectCheckboxMenu>
+                        <h:outputLabel value="From"></h:outputLabel>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.fromDateE}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                        <h:outputLabel value="To"></h:outputLabel>
+                        <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDateE}"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:calendar>
+                    </h:panelGrid>
+                    <h:panelGrid columns="6" class="my-2">
+                        <p:commandButton class="ui-button-outlined" ajax="false" value="Three Months Nonmoving"
+                                         actionListener="#{reportsStock.fillThreeMonthsNonmoving()}"></p:commandButton>
+                        <p:commandButton class="ui-button-outlined" ajax="false" value="Six Months Nonmoving"
+                                         actionListener="#{reportsStock.fillSixMonthsNonmoving()}"></p:commandButton>
+                        <p:commandButton class="ui-button-outlined" ajax="false" value="One Year Nonmoving"
+                                         actionListener="#{reportsStock.fillOneYearNonmoving()}"></p:commandButton>
 
-                        <h:panelGroup id="gpBillPreview"   style="min-width: 100%!important;">
-                            <p:dataTable id="tbl"  value="#{reportsStock.items}" var="i"  
-                                         rows="10"
-                                         paginator="true"
-                                         paginatorPosition="bottom"
-                                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                         rowsPerPageTemplate="5,10,15"
-                                         >
+                        <p:commandButton ajax="false" value="Process"
+                                         styleClass="ui-button-success m-1"
+                                         icon="pi pi-cog"
+                                         actionListener="#{reportsStock.fillDepartmentNonmovingStocks}">
+                        </p:commandButton>
+                        <p:commandButton value="Download"
+                                         styleClass="ui-button-info m-1"
+                                         icon="pi pi-download"
+                                         ajax="false">
+                            <p:dataExporter type="xlsx" target="tbl" fileName="Non Movement"/>
+                        </p:commandButton>
+                        <p:commandButton value="To Print"
+                                         styleClass="ui-button-warning m-1"
+                                         icon="pi pi-print"
+                                         ajax="false"
+                                         action="pharmacy_report_department_non_moving_print?faces-redirect=true"/>
+                    </h:panelGrid>
+
+                    <h:panelGroup id="gpBillPreview" style="min-width: 100%!important;">
+                        <p:dataTable id="tbl" value="#{reportsStock.stocks}" var="i"
+                                     rows="10"
+                                     paginator="true"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,15"
+                        >
+                            <f:facet name="header">
+                                <h:outputLabel value="Non Moving Stocks - #{reportsStock.department.name}"/>
+                            </f:facet>
+
+                            <p:column headerText="Category"
+                                      sortBy="#{i.itemBatch.item.category.name}"
+                                      filterBy="#{i.itemBatch.item.category.name}"
+                                      filterMatchMode="contains"
+                            >
+                                <h:outputLabel value="#{i.itemBatch.item.category.name}"/>
+                            </p:column>
+                            <p:column headerText="Item"
+                                      sortBy="#{i.itemBatch.item.name}"
+                                      filterBy="#{i.itemBatch.item.name}"
+                                      filterMatchMode="contains"
+                            >
+                                <h:outputLabel value="#{i.itemBatch.item.name}"/>
+                            </p:column>
+
+                            <p:column headerText="Code"
+                                      sortBy="#{i.itemBatch.item.code}"
+                                      filterBy="#{i.itemBatch.item.code}"
+                                      filterMatchMode="contains"
+                            >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Non Moving Stocks - #{reportsStock.department.name}"/>                                     
-                                </f:facet>   
-                                <p:column headerText="Category" 
-                                          sortBy="#{i.category.name}"
-                                          filterBy="#{i.category.name}"
-                                          filterMatchMode="contains"
-                                          >
-                                    <h:outputLabel value="#{i.category.name}" ></h:outputLabel>
-                                </p:column>
-                                <p:column headerText="Item" 
-                                          sortBy="#{i.name}"
-                                          filterBy="#{i.name}"
-                                          filterMatchMode="contains"
-                                          >
-                                    <h:outputLabel value="#{i.name}" ></h:outputLabel>
-                                </p:column>
+                                    <h:outputLabel value="Code"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.itemBatch.item.code}"/>
+                            </p:column>
+                            <p:column headerText="Current Stock"
+                                      sortBy="#{i.stock}"
+                                      filterBy="#{i.stock}"
+                                      filterMatchMode="contains"
+                            >
+                                <f:facet name="header">
+                                    <h:outputLabel value="Current Stock"/>
+                                </f:facet>
+                                <h:outputLabel value="#{i.stock}">
+                                    <f:convertNumber pattern="#,###"/>
+                                </h:outputLabel>
+                            </p:column>
 
-                                <p:column headerText="Code"
-                                          sortBy="#{i.code}"
-                                          filterBy="#{i.code}"
-                                          filterMatchMode="contains"
-                                          >
-                                    <f:facet name="header">
-                                        <h:outputLabel value="Code"/>
-                                    </f:facet>
-                                    <h:outputLabel value="#{i.code}" ></h:outputLabel>
-                                </p:column>
-                            </p:dataTable>
-                        </h:panelGroup>
-                    </p:panel>
-                </h:form>
+                        </p:dataTable>
+                    </h:panelGroup>
+                </p:panel>
+            </h:form>
 
 
-            </ui:define>
+        </ui:define>
 
 
-        </ui:composition>
+    </ui:composition>
 
-    </h:body>
+</h:body>
 </html>

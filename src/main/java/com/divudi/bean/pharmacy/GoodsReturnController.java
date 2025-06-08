@@ -22,6 +22,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -125,11 +126,11 @@ public class GoodsReturnController implements Serializable {
 
     public void onEdit(BillItem tmp) {
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
-        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getQtyInUnit() > getPharmacyRecieveBean().calculateRemainigQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
-        if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > getPharmacyRecieveBean().calFreeQty(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
+        if (tmp.getPharmaceuticalBillItem().getFreeQtyInUnit() > getPharmacyRecieveBean().calculateRemainingFreeQtyFromOrder(tmp.getReferanceBillItem().getReferanceBillItem().getPharmaceuticalBillItem())) {
             tmp.setTmpFreeQty(0.0);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
         }
@@ -147,20 +148,38 @@ public class GoodsReturnController implements Serializable {
     private void saveReturnBill() {
         getReturnBill().setInvoiceDate(getBill().getInvoiceDate());
         getReturnBill().setReferenceBill(getBill());
-//        getReturnBill().setToInstitution(getBill().getFromInstitution());
-        getReturnBill().setToDepartment(getBill().getFromDepartment());
-        getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyGrnReturn, BillClassType.BilledBill, BillNumberSuffix.GRNRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyGrnReturn, BillClassType.BilledBill, BillNumberSuffix.GRNRET));
+        getReturnBill().setBilledBill(getBill());
+
+        String billNumber = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN_RETURN);
+
+        getReturnBill().setDeptId(billNumber);
+        getReturnBill().setInsId(billNumber);
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
-        // getReturnBill().setReferenceBill(getBill());
+
+        getReturnBill().setFromInstitution(getBill().getToInstitution());
+
+        getReturnBill().setToDepartment(getBill().getDepartment());
+
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
+        //Out of all the payment methods allowed, only credit payments should not have a balance. They are paid in full amount and balance is zero.
+        if (getReturnBill().getPaymentMethod() != PaymentMethod.Credit) {
+            getReturnBill().setBalance(0d);
+            getReturnBill().setPaid(true);
+            getReturnBill().setPaidAmount(getReturnBill().getNetTotal());
+            getReturnBill().setPaidAt(new Date());
+        } else {
+            getReturnBill().setBalance(getReturnBill().getNetTotal());
+            getReturnBill().setPaid(false);
+            getReturnBill().setPaidAmount(0d);
+        }
 
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
+        } else {
+            getBillFacade().edit(getReturnBill());
         }
 
     }
@@ -288,10 +307,35 @@ public class GoodsReturnController implements Serializable {
     }
 
     public void settle() {
-
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Select a Bill");
+            return;
+        }
+        if (returnBill == null) {
+            JsfUtil.addErrorMessage("Programming Error. Contact System Administrator.");
+            return;
+        }
         if (getReturnBill().getToInstitution() == null) {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
+        }
+        if (getReturnBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        switch (getReturnBill().getPaymentMethod()) {
+            case MultiplePaymentMethods:
+                JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed");
+                return;
+            case Agent:
+            case OnCall:
+            case PatientDeposit:
+            case PatientPoints:
+            case Staff:
+            case Staff_Welfare:
+            case None:
+                JsfUtil.addErrorMessage("This Payment Method is NOT allowed");
+                return;
         }
         if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
@@ -299,6 +343,10 @@ public class GoodsReturnController implements Serializable {
         }
         if (checkGrnItems()) {
             JsfUtil.addErrorMessage("ITems for this GRN Already issued so you can't Return ");
+            return;
+        }
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items selected for return");
             return;
         }
 
@@ -310,18 +358,10 @@ public class GoodsReturnController implements Serializable {
         saveReturnBill();
 
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
-//        saveComponent();
         saveComponent(p);
 
         calTotal();
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
-
-        
-        getReturnBill().setToDepartment(getBill().getDepartment());
-        getBillFacade().edit(getReturnBill());
-        
-        getBill().setReferenceBill(getReturnBill());
-        getBillFacade().edit(getBill());
 
         updateOriginalBill();
 
@@ -594,21 +634,13 @@ public class GoodsReturnController implements Serializable {
     }
 
     private void updateOriginalBill() {
-        if (bill == null) {
-            return;
-        }
-        if (returnBill == null) {
-            return;
-        }
         returnBill.setBilledBill(bill);
         billFacade.edit(returnBill);
-
         bill.getRefundBills().add(returnBill);
         bill.setRefundAmount(Math.abs(bill.getRefundAmount()) + Math.abs(returnBill.getNetTotal()));
         bill.setBalance(Math.abs(bill.getNetTotal()) - Math.abs(bill.getRefundAmount()));
-
+        bill.setBackwardReferenceBill(getReturnBill());
         billFacade.edit(bill);
-
     }
 
 }

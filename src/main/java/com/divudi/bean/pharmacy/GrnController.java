@@ -226,6 +226,7 @@ public class GrnController implements Serializable {
         return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
     }
 
+    @Deprecated // Please use navigateToResive
     public String navigateToResiveAll() {
         grnBill = null;
         dealor = null;
@@ -777,6 +778,14 @@ public class GrnController implements Serializable {
         return freeTotal;
     }
 
+    public double calFreeQuantitySaleValue(Bill b) {
+        double freeTotal = 0.0;
+        for (BillItem bi : b.getBillItems()) {
+            freeTotal = freeTotal + (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getRetailRate());
+        }
+        return freeTotal;
+    }
+
     private void updateBalanceForGrn(Bill grn) {
         if (grn == null) {
             return;
@@ -983,9 +992,9 @@ public class GrnController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double calculatedReturns = getPharmacyCalculation().calQtyInTwoSql(i);
+            double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
             double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1033,8 +1042,8 @@ public class GrnController implements Serializable {
 
         for (BillItem importBi : importGrnBill.getBillItems()) {
             PharmaceuticalBillItem i = importBi.getPharmaceuticalBillItem();
-            double remains = i.getQty() - getPharmacyCalculation().calQtyInTwoSql(i);
-            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calFreeQtyInTwoSql(i);
+            double remains = i.getQty() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
+            double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
 
             if (remains > 0 || remainFreeQty > 0) {
                 BillItem bi = new BillItem();
@@ -1084,7 +1093,7 @@ public class GrnController implements Serializable {
     public void generateBillComponentAll() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-            double remains = i.getQtyInUnit() - getPharmacyCalculation().calQtyInTwoSql(i);
+            double remains = i.getQtyInUnit() - getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
 
             BillItem bi = new BillItem();
             bi.setSearialNo(getBillItems().size());

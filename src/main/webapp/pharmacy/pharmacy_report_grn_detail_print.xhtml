@@ -1,0 +1,462 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+
+                <h:form >
+                    <p:panel header="GRN Detailed Report Print View" styleClass="w-100">
+                        <f:facet name="header"  >
+                            <div class="d-flex justify-content-between">
+                                <h:outputText value="GRN Detailed Report Print View" class="mt-2"/>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        icon="fa-solid fa-print"
+                                        class="ui-button-info"
+                                        style="width: 150px"
+                                        ajax="false" 
+                                        value="Print">
+                                        <p:printer target="reportView" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back to Report" 
+                                        style="width: 200px"
+                                        icon="fa fa-arrow-left"
+                                        class="ui-button-warning"
+                                        action="pharmacy_report_grn_detail?faces-redirect=true" >
+                                    </p:commandButton>
+                                </div>
+
+                            </div>
+                        </f:facet>
+
+                        <style>
+
+                            @media screen{
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+                                    zoom: 2.0;
+                                }
+                                
+                                table {
+                                    border-collapse: collapse;
+                                    width: 100%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                
+                                .header{
+                                    font-size: 16px!important;
+                                }
+                                
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+
+                            @media print {
+                                @page {
+                                    @bottom-right {
+                                        content: "Page " counter(page) " of " counter(pages);
+                                        font-family: Arial, sans-serif;
+                                        font-size: 10pt;
+                                    }
+                                    size: A4 landscape!important;
+                                }
+
+                                body {
+                                    counter-reset: page;
+                                }
+
+                                .paper{
+                                    position: static !important;
+                                    width: 297mm!important;
+
+
+                                }
+
+                                .header{
+                                    line-height: 1.1;
+                                    margin: 0mm!important;
+                                    font-size: 13px!important;
+                                }
+
+                                table {
+                                    border-collapse: collapse;
+                                    width: 99.9%;
+                                    font-size: 12px!important;
+                                    margin-top: 1mm!important;
+                                }
+                                th, td {
+                                    border: 1px solid #000;
+                                    padding: 0px!important;
+                                    margin: 2px!important;
+                                    text-align: left;
+                                    margin-left: 10mm!important;
+                                }
+                                th {
+
+                                }
+                                tfoot{
+                                    font-weight: 700!important;
+                                    font-size: 11px!important;
+                                }
+                            }
+                        </style>
+
+                        <h:panelGroup id="reportView" class="d-flex justify-content-center">
+                            <div class="paper">
+                                <div class="header" >
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 22px;margin-bottom: 5px;">
+                                        <h:outputText value="#{commonReport.department.institution.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
+                                        <h:outputText value="GRN Detailed Report - "/>
+                                        <h:outputText value="#{commonReport.department.name}"/>
+                                    </div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
+                                        <h:outputText value="From Date - "/>
+                                        <h:outputText value="#{commonReport.fromDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                        <h:outputText value="" style="width: 2em!important;" class="text-center"/>
+                                        <h:outputText value="To Date - "/>
+                                        <h:outputText value="#{commonReport.toDate}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputText>
+                                    </div>
+                                </div>
+                                <!--GRN Table-->
+                                <div style="margin-bottom: 5mm">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="float: left">
+                                        <h:outputText value="GRN"/>
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center;">GRN No</th>
+                                            <th style="text-align: center;">Created At</th>
+                                            <th style="text-align: center;">Supplier Name</th>
+                                            <th style="text-align: center;">PO No</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Credit</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Credit</th>
+                                            <th style="text-align: center;">Remark</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <ui:repeat value="#{commonReport.grnBilled.bills}" var="i">
+                                            <tr>
+                                                <td><h:outputText value="#{i.deptId}" /></td>
+                                                <td>
+                                                    <h:outputText value="#{i.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td><h:outputText value="#{i.fromInstitution.name}" /></td>
+                                                <td><h:outputText value="#{i.referenceBill.deptId}" /></td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{i.paymentMethod == 'Cash'}" value="#{i.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{i.paymentMethod != 'Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{i.paymentMethod == 'Credit'}" value="#{i.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{i.paymentMethod != 'Credit'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{i.paymentMethod == 'Cash'}" value="#{i.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{i.paymentMethod != 'Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{i.paymentMethod == 'Credit'}" value="#{i.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{i.paymentMethod != 'Credit'}" value="0.00" />
+                                                </td>
+                                                <td>
+                                                    <h:panelGroup rendered="#{i.cancelled==true}">
+                                                        <h:outputText value="Cancelled " />
+                                                        <h:outputLabel value="#{i.cancelledBill.deptId}" />
+                                                    </h:panelGroup>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="4" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Totals :" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnBilled.cash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnBilled.credit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnBilled.saleCash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnBilled.saleCredit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <!--Cancelled GRN Table-->
+                                <div style="margin-bottom: 5mm">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="float: left">
+                                        <h:outputText value="Cancelled GRN"/>
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center;">Cancelled NO</th>
+                                            <th style="text-align: center;">Cancelled At</th>
+                                            <th style="text-align: center;">Supplier Name</th>
+                                            <th style="text-align: center;">GRN No</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Credit</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Credit</th>
+                                            <th style="text-align: center;">Comment</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <ui:repeat rendered="#{commonReport.grnCancelled.bills.size()!=0}" value="#{commonReport.grnCancelled.bills}" var="j">
+                                            <tr>
+                                                <td><h:outputText value="#{j.deptId}" /></td>
+                                                <td>
+                                                    <h:outputText value="#{j.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td><h:outputText value="#{j.fromInstitution.name}" /></td>
+                                                <td><h:outputText value="#{j.billedBill.deptId}" /></td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{j.paymentMethod=='Cash'}" value="#{j.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{j.paymentMethod!='Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{j.paymentMethod=='Credit'}" value="#{j.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{j.paymentMethod!='Credit'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{j.paymentMethod=='Cash'}" value="#{j.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{j.paymentMethod!='Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{j.paymentMethod=='Credit'}" value="#{j.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{j.paymentMethod!='Credit'}" value="0.00" />
+                                                </td>
+                                                <td>
+                                                    <h:outputText value="#{j.comments}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="4" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Totals :" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnCancelled.cash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnCancelled.credit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnCancelled.saleCash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnCancelled.saleCredit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <!--Returned GRN Table-->
+                                <div style="margin-bottom: 5mm">
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="float: left">
+                                        <h:outputText value="Returned GRN"/>
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                        <tr>
+                                            <th style="text-align: center;">Returned No</th>
+                                            <th style="text-align: center;">Returned At</th>
+                                            <th style="text-align: center;">Supplier Name</th>
+                                            <th style="text-align: center;">GRN No</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Purchase Value Credit</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Cash</th>
+                                            <th style="width:25mm; text-align: right;">Sale Value Credit</th>
+                                            <th style="text-align: center;">Remark</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <ui:repeat rendered="#{commonReport.grnReturn.bills.size()!=0}" value="#{commonReport.grnReturn.bills}" var="b">
+                                            <tr>
+                                                <td><h:outputText value="#{b.deptId}" /></td>
+                                                <td>
+                                                    <h:outputText value="#{b.createdAt}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                                    </h:outputText>
+                                                </td>
+                                                <td><h:outputText value="#{b.toInstitution.name}" /></td>
+                                                <td><h:outputText value="#{b.referenceBill.deptId}" /></td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.netTotal}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{b.paymentMethod=='Cash'}" value="#{b.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00" />
+                                                </td>
+                                                <td style="text-align: right;">
+                                                    <h:outputLabel rendered="#{b.paymentMethod=='Credit'}" value="#{b.saleValue}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                    <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00" />
+                                                </td>
+                                                <td>
+                                                    <h:outputLabel value="Cancelled. (#{b.cancelledBill.deptId})" rendered="#{b.cancelled==true}" />
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="4" style="text-align: left; font-weight: 700;" >
+                                                <h:outputText value="Totals :" />
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnReturn.cash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnReturn.credit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnReturn.saleCash}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{commonReport.grnReturn.saleCredit}">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td>
+
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <!--Summary Table-->
+                                <div>
+                                    <div class="d-flex justify-content-center text-5 gap-2" style="float: left">
+                                        <h:outputText value="Summary"/>
+                                    </div>
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <tbody>
+                                        <ui:repeat value="#{commonReport.grnTotal}" var="a">
+                                            <tr>
+                                                <td>
+                                                    <h:outputLabel value="#{a.string}" />
+                                                </td>
+                                                <td style="text-align: right; font-weight: bold;">
+                                                    <h:outputLabel value="#{a.value}" rendered="#{a.string ne ''}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                                <td style="text-align: right; font-weight: bold;">
+                                                    <h:outputLabel value="#{a.value2}" rendered="#{a.string ne ''}">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </h:outputLabel>
+                                                </td>
+                                            </tr>
+                                        </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                            </div>
+                        </h:panelGroup>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

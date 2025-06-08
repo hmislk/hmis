@@ -1,0 +1,131 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/admin/items/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+    <ui:define name="item">
+
+        <h:form>
+            <p:growl />
+
+            <p:panel header="Default Service Department List">
+
+                <p:panelGrid columns="2" columnClasses="label, value">
+
+                    <p:outputLabel value="Ordering Department" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.orderingDepartment}" 
+                        completeMethod="#{departmentController.completeDept}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}"
+                        forceSelection="true">
+                        <p:column>
+                            <h:outputText value="#{d.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{d.name}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:outputLabel value="Service Department" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.serviceDepartment}" 
+                        completeMethod="#{departmentController.completeDept}"
+                        var="d"
+                        itemLabel="#{d.name}"
+                        itemValue="#{d}"
+                        forceSelection="true">
+                        <p:column>
+                            <h:outputText value="#{d.institution.name}" />
+                        </p:column>
+                        <p:column>
+                            <h:outputText value="#{d.name}" />
+                        </p:column>
+                    </p:autoComplete>
+
+                    <p:outputLabel value="Category" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.category}" 
+                        completeMethod="#{categoryController.completeCategory}"
+                        var="c"
+                        itemLabel="#{c.name}"
+                        itemValue="#{c}"
+                        forceSelection="true" />
+
+                    <p:outputLabel value="Item" />
+                    <p:autoComplete 
+                        value="#{defaultServiceDepartmentController.item}" 
+                        completeMethod="#{itemController.completeServicesPlusInvestigationsAll}"
+                        var="i"
+                        itemLabel="#{i.name}"
+                        itemValue="#{i}"
+                        forceSelection="true" />
+
+                </p:panelGrid>
+
+                <p:separator />
+
+                <p:commandButton 
+                    value="List Items" 
+                    ajax="false"
+                    class="ui-button-primary"
+                    icon="fas fa-search"
+                    action="#{defaultServiceDepartmentController.listDefaultServiceDepartments}" />
+
+                <p:separator />
+
+                <p:dataTable 
+                    value="#{defaultServiceDepartmentController.items}" 
+                    var="dsd"
+                    paginator="true"
+                    rows="10"
+                    rowsPerPageTemplate="10,20,50"
+                    filterEvent="enter"
+                    sortMode="multiple">
+
+                    <p:column headerText="ID" sortBy="#{dsd.id}" filterBy="#{dsd.id}">
+                        <h:outputText value="#{dsd.id}" />
+                    </p:column>
+
+                    <p:column headerText="Ordering Department" sortBy="#{dsd.billingDepartment.name}" filterBy="#{dsd.billingDepartment.name}">
+                        <h:outputText value="#{dsd.billingDepartment.name}" />
+                    </p:column>
+
+                    <p:column headerText="Service Department" sortBy="#{dsd.performingDepartment.name}" filterBy="#{dsd.performingDepartment.name}">
+                        <h:outputText value="#{dsd.performingDepartment.name}" />
+                    </p:column>
+
+                    <p:column headerText="Category" sortBy="#{dsd.category.name}" filterBy="#{dsd.category.name}">
+                        <h:outputText value="#{dsd.category != null ? dsd.category.name : '-'}" />
+                    </p:column>
+
+                    <p:column headerText="Item" sortBy="#{dsd.item.name}" filterBy="#{dsd.item.name}">
+                        <h:outputText value="#{dsd.item != null ? dsd.item.name : '-'}" />
+                    </p:column>
+
+                    <p:column headerText="Actions">
+                        <p:commandButton 
+                            value="Edit"
+                            icon="fas fa-edit"
+                            ajax="false"
+                            action="#{defaultServiceDepartmentController.navigateToEditDefaultServiceDepartment}">
+                            <f:setPropertyActionListener 
+                                target="#{defaultServiceDepartmentController.current}" 
+                                value="#{dsd}" />
+                        </p:commandButton>
+                    </p:column>
+
+                </p:dataTable>
+
+            </p:panel>
+
+        </h:form>
+
+    </ui:define>
+
+</ui:composition>

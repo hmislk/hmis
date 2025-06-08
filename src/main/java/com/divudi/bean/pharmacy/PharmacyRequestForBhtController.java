@@ -130,6 +130,7 @@ public class PharmacyRequestForBhtController implements Serializable {
     private BillBeanController billBean;
     @Inject
     NotificationController notificationController;
+    private String comment;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
@@ -914,11 +915,13 @@ public class PharmacyRequestForBhtController implements Serializable {
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(bta);
         bill.setBillType(bt);
+        bill.setComments(comment);
 
         billFacade.edit(bill);
         notificationController.createNotification(bill);
         clearBill();
         clearBillItem();
+        comment = "";
         billPreview = true;
 
     }
@@ -1652,6 +1655,14 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

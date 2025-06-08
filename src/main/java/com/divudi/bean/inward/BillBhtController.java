@@ -11,6 +11,8 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
 import com.divudi.bean.common.BillSearch;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemFeeManager;
@@ -56,6 +58,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.ItemLight;
+import static com.divudi.core.data.ItemListingStrategy.*;
 import com.divudi.core.data.lab.InvestigationTubeSticker;
 import com.divudi.core.entity.UserPreference;
 import com.divudi.ws.lims.Lims;
@@ -94,6 +97,10 @@ public class BillBhtController implements Serializable {
     PatientInvestigationController patientInvestigationController;
     @Inject
     ItemFeeManager itemFeeManager;
+    @Inject
+    DepartmentController departmentController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /////////////////
     @EJB
     private ItemFeeFacade itemFeeFacade;
@@ -157,6 +164,11 @@ public class BillBhtController implements Serializable {
     private ItemLight itemLight;
 
     private int entriesIndex;
+    
+    private List<ItemLight> departmentInwardItems;
+    private Department selectedInwardItemDepartment;
+    private List<Department> inwardItemDepartments;
+    private List<ItemLight> inwardItem;
 
     public String navigateToAddServiceFromMenu() {
         resetBillData();
@@ -799,7 +811,23 @@ public class BillBhtController implements Serializable {
     public List<BillFee> billFeeFromBillItemWithMatrix(BillItem billItem, PatientEncounter patientEncounter, Department matrixDepartment, PaymentMethod paymentMethod) {
 
         List<BillFee> billFeeList = new ArrayList<>();
-        List<ItemFee> itemFee = itemFeeManager.fillFees(billItem.getItem());
+        boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are the same for all departments, institutions and sites.", true);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("Inward Bill Fees are based on the site", false);
+        List<ItemFee> itemFee;
+        
+        if (siteBasedBillFees && !addAllBillFees) {
+            if (sessionController.getDepartment() != null 
+                && sessionController.getDepartment().getSite() != null) {
+                itemFee = itemFeeManager.fillFees(
+                    billItem.getItem(),
+                    sessionController.getDepartment().getSite()
+                );
+            } else {
+                itemFee = itemFeeManager.fillFees(billItem.getItem());
+            }
+        } else {
+            itemFee = itemFeeManager.fillFees(billItem.getItem());
+        }
 
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
@@ -975,6 +1003,81 @@ public class BillBhtController implements Serializable {
         lstBillEntries = temp;
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
+    }
+    
+    public List<ItemLight> fillInwardItem() {
+        UserPreference up = sessionController.getDepartmentPreference();
+        List<ItemLight> temItems;
+        switch (up.getInwardItemListingStrategy()) {
+            case ALL_ITEMS:
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
+            case ITEMS_MAPPED_TO_LOGGED_DEPARTMENT:
+                temItems = itemMappingController.fillItemLightByDepartment(sessionController.getDepartment());
+                break;
+            case ITEMS_MAPPED_TO_LOGGED_INSTITUTION:
+                temItems = itemMappingController.fillItemLightByInstitution(sessionController.getInstitution());
+                break;
+            case ITEMS_OF_LOGGED_DEPARTMENT:
+                temItems = itemController.getDepartmentItems();
+                break;
+            case ITEMS_OF_LOGGED_INSTITUTION:
+                temItems = itemController.getInstitutionItems();
+                break;
+            case SITE_FEE_ITEMS:
+                temItems = itemFeeManager.fillItemLightsForSite(sessionController.getDepartment().getSite());
+                break;
+            default:
+                temItems = itemApplicationController.getInvestigationsAndServices();
+                break;
+        }
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
+        if (listItemsByDepartment) {
+            fillInwardItemDepartments(temItems);
+        } else {
+            inwardItemDepartments = null;
+        }
+        if (getSelectedInwardItemDepartment() != null) {
+            departmentInwardItems = filterItemLightesByDepartment(temItems, getSelectedInwardItemDepartment());
+        }
+
+        return temItems;
+    }
+    
+    private List<ItemLight> filterItemLightesByDepartment(List<ItemLight> ils, Department dept) {
+        boolean listItemsByDepartment = configOptionApplicationController.getBooleanValueByKey("List Inward Items by Department", false);
+        if (!listItemsByDepartment || dept == null || dept.getId() == null) {
+            return ils;
+        }
+        List<ItemLight> tils = new ArrayList<>();
+        for (ItemLight il : ils) {
+            if (il.getDepartmentId() != null && il.getDepartmentId().equals(dept.getId())) {
+                tils.add(il);
+            }
+        }
+        return tils;
+    }
+    
+    public void fillInwardItemDepartments(List<ItemLight> itemLightsToAddDepartments) {
+        inwardItemDepartments = new ArrayList<>();
+        Set<Long> uniqueDeptIds = new HashSet<>();
+        for (ItemLight il : itemLightsToAddDepartments) {
+            if (il.getDepartmentId() != null) {
+                uniqueDeptIds.add(il.getDepartmentId());
+            }
+        }
+        for (Long deptId : uniqueDeptIds) {
+            Department d = departmentController.findDepartment(deptId);
+            inwardItemDepartments.add(d);
+        }
+    }
+    
+    public void departmentChanged() {
+        if (selectedInwardItemDepartment == null) {
+            departmentInwardItems = getInwardItem();
+        } else {
+            departmentInwardItems = filterItemLightesByDepartment(getInwardItem(), getSelectedInwardItemDepartment());
+        }
     }
 
     public BillFacade getEjbFacade() {
@@ -1356,6 +1459,51 @@ public class BillBhtController implements Serializable {
 
     public void setEntriesIndex(int entriesIndex) {
         this.entriesIndex = entriesIndex;
+    }
+    
+    public List<ItemLight> getInwardItem() {
+        if (inwardItem == null) {
+            inwardItem = fillInwardItem();
+        }
+        return inwardItem;
+    }
+    
+    public void setInwardItem(List<ItemLight> inwardItem) {
+        this.inwardItem = inwardItem;
+    }
+
+    public List<ItemLight> getDepartmentInwardItems() {
+        getInwardItem();
+        departmentInwardItems = filterItemLightesByDepartment(getInwardItem(), getSelectedInwardItemDepartment());
+        return departmentInwardItems;
+    }
+
+    public void setDepartmentInwardItems(List<ItemLight> departmentInwardItems) {
+        this.departmentInwardItems = departmentInwardItems;
+    }
+
+    public Department getSelectedInwardItemDepartment() {
+        if (selectedInwardItemDepartment == null) {
+            if (inwardItemDepartments != null && !inwardItemDepartments.isEmpty()) {
+                selectedInwardItemDepartment = inwardItemDepartments.get(0);
+            }
+        }
+        return selectedInwardItemDepartment;
+    }
+
+    public void setSelectedInwardItemDepartment(Department selectedInwardItemDepartment) {
+        this.selectedInwardItemDepartment = selectedInwardItemDepartment;
+    }
+
+    public List<Department> getInwardItemDepartments() {
+        if (inwardItemDepartments == null) {
+            getInwardItem();
+        }
+        return inwardItemDepartments;
+    }
+
+    public void setInwardItemDepartments(List<Department> inwardItemDepartments) {
+        this.inwardItemDepartments = inwardItemDepartments;
     }
 
 }

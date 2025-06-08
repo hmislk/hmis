@@ -13,6 +13,7 @@ import com.divudi.core.data.ItemBatchQty;
 import com.divudi.core.data.StockQty;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.IssueRateMargins;
@@ -53,6 +54,7 @@ import com.divudi.core.facade.VmpFacade;
 import com.divudi.core.facade.VmppFacade;
 import com.divudi.core.facade.VtmFacade;
 import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -240,8 +242,6 @@ public class PharmacyBean {
 
     }
 
-    
-    
     private List<BillItem> createBillItemsForPharmacyRetailSaleCancellationPreBillWithStockReturn(Bill originalBill, Bill cancellationPreBill, WebUser user, Department department) {
 
         List<BillItem> billItems = new ArrayList<>();
@@ -284,7 +284,7 @@ public class PharmacyBean {
         return billItems;
 
     }
-    
+
     public Bill reAddToStock(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
 //        if (bill.isCancelled()) {
 //            JsfUtil.addErrorMessage("Bill Already Cancelled");
@@ -525,6 +525,24 @@ public class PharmacyBean {
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
             getStockFacade().createAndFlush(s);
         } else {
             getStockFacade().refresh(s);
@@ -549,6 +567,24 @@ public class PharmacyBean {
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             s.setCode(pharmaceuticalBillItem.getCode());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
             getStockFacade().createAndFlush(s);
         } else {
             s.setStock(s.getStock() + qty);
@@ -570,6 +606,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -595,6 +649,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -625,6 +697,24 @@ public class PharmacyBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         s.setStock(s.getStock() - qty);
         if (s.getId() == null || s.getId() == 0) {
@@ -690,6 +780,7 @@ public class PharmacyBean {
                     + " and s.itemBatch.dateOfExpire > :doe"
                     + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
             params.put("amps", amps);
+            params.put("doe", new Date());
         } else {
             JsfUtil.addErrorMessage("Not supported yet");
             return new ArrayList<>();
@@ -802,40 +893,46 @@ public class PharmacyBean {
     }
 
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Department d) {
-        if (phItem == null) {
+        if (phItem == null || phItem.getBillItem() == null || phItem.getBillItem().getItem() == null) {
             return;
         }
-        if (phItem.getBillItem() == null) {
-            return;
-        }
-        if (phItem.getBillItem().getItem() == null) {
-            return;
-        }
-        StockHistory sh = new StockHistory();
-        sh.setFromDate(new Date());
-        sh.setPbItem(phItem);
-        sh.setHxDate(Calendar.getInstance().get(Calendar.DATE));
-        sh.setHxMonth(Calendar.getInstance().get(Calendar.MONTH));
-        sh.setHxWeek(Calendar.getInstance().get(Calendar.WEEK_OF_YEAR));
-        sh.setHxYear(Calendar.getInstance().get(Calendar.YEAR));
 
-        sh.setStockAt(new Date());
-        sh.setCreatedAt(new Date());
+        // Resolve AMP if item is an AMPP
+        Item originalItem = phItem.getBillItem().getItem();
+        Item amp = originalItem instanceof Ampp ? ((Ampp) originalItem).getAmp() : originalItem;
+
+        StockHistory sh = new StockHistory();
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+
+        sh.setFromDate(now);
+        sh.setPbItem(phItem);
+        sh.setHxDate(cal.get(Calendar.DATE));
+        sh.setHxMonth(cal.get(Calendar.MONTH));
+        sh.setHxWeek(cal.get(Calendar.WEEK_OF_YEAR));
+        sh.setHxYear(cal.get(Calendar.YEAR));
+
+        sh.setStockAt(now);
+        sh.setCreatedAt(now);
         sh.setDepartment(d);
         sh.setInstitution(d.getInstitution());
 
         Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
         sh.setStockQty(fetchedStock.getStock());
-        sh.setItem(phItem.getBillItem().getItem());
+
+        // Ensure AMP is used for item tracking
+        sh.setItem(amp);
         sh.setItemBatch(fetchedStock.getItemBatch());
-        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
-        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
-        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
+        sh.setItemStock(getStockQty(amp, d));
+        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(amp));
+
         if (sh.getId() == null) {
             getStockHistoryFacade().createAndFlush(sh);
         } else {
             getStockHistoryFacade().editAndCommit(sh);
         }
+
         phItem.setStockHistory(sh);
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
@@ -1351,8 +1448,6 @@ public class PharmacyBean {
     }
 
     public Vmp getVmp(Vtm vtm, double strength, MeasurementUnit strengthUnit, PharmaceuticalItemCategory cat) {
-        System.out.println("getVmp");
-        System.out.println("strength = " + strength);
 
         String sql;
         String vmpName = "";
@@ -1434,11 +1529,61 @@ public class PharmacyBean {
         this.VtmFacade = VtmFacade;
     }
 
+    public BillItem getLastPurchaseItem(Item item, Department dept) {
+        if (item == null || dept == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND bi.bill.department = :d "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("d", dept);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(jpql, params);
+
+        // If not found, fallback to search without department
+        if (bi == null) {
+            bi = getLastPurchaseItem(item); // call overload
+        }
+
+        return bi;
+    }
+
+    public BillItem getLastPurchaseItem(Item item) {
+        if (item == null) {
+            return null;
+        }
+
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT bi "
+                + "FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        params.put("i", item);
+        params.put("t", BillType.PharmacyGrnBill);
+        params.put("t1", BillType.PharmacyPurchaseBill);
+
+        return getBillItemFacade().findFirstByJpql(jpql, params);
+    }
+
     public double getLastPurchaseRate(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
-
         Map m = new HashMap();
         String sql;
         sql = "Select bi.pharmaceuticalBillItem.itemBatch from BillItem bi where "
@@ -1455,7 +1600,37 @@ public class PharmacyBean {
         } else {
             return 0.0f;
         }
+    }
+// ChatGPT contributed: Improved for type safety, null checks, and clarity
 
+    public double getLastRetailRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getRetailSaleRate() == null) {
+            return 0.0;
+        }
+
+        return f.getRetailSaleRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {

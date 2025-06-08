@@ -11,6 +11,7 @@ import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 /**
@@ -40,6 +41,15 @@ public class ViewScopeDataTransferController  implements Serializable {
     private SessionInstance selectedSessionInstance;
     private Patient patient;
     private PaymentScheme paymentScheme;
+    private List<SessionInstance> sessionsFiltered;
+
+    public List<SessionInstance> getSessionsFiltered() {
+        return sessionsFiltered;
+    }
+
+    public void setSessionsFiltered(List<SessionInstance> sessionsFiltered) {
+        this.sessionsFiltered = sessionsFiltered;
+    }
 
 
 
