@@ -1725,6 +1725,25 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(tptix);
             receivedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
+        
+        for (PatientSample ps : selectedPatientSamples) {
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                LabTestHistory sampleReceiveHistory = new LabTestHistory();
+                sampleReceiveHistory.setPatientInvestigation(pi);
+                sampleReceiveHistory.setPatientSample(ps);
+                sampleReceiveHistory.setInstitution(sessionController.getInstitution());
+                sampleReceiveHistory.setDepartment(sessionController.getDepartment());
+                sampleReceiveHistory.setFromDepartment(sessionController.getDepartment());
+                sampleReceiveHistory.setToDepartment(sessionController.getDepartment());
+                sampleReceiveHistory.setStaff(sampleTransportedToLabByStaff);
+                sampleReceiveHistory.setTestHistoryType(TestHistoryType.SAMPLE_RECEIVED);
+                sampleReceiveHistory.setCreatedAt(new Date());
+                sampleReceiveHistory.setCreatedBy(sessionController.getLoggedUser());
+                labTestHistoryFacade.create(sampleReceiveHistory);
+
+                System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + ps.getId());
+            }
+        }
 
         // Update bills status
         for (Bill tb : receivedBills.values()) {
