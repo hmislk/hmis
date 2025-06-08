@@ -145,5 +145,48 @@ In XHTML pages, configuration values can be checked or used directly for renderi
 - Missing keys will be auto-created with default values if provided.
 
 
+## Adding and Managing Privileges
+
+The system uses an enum-based approach to define and control user privileges.
+
+### 🔧 Step-by-Step: Adding a New Privilege
+
+1. **Add a new enum value** to the `Privileges` enum:
+
+```java
+package com.divudi.core.data;
+
+public enum Privileges {
+    InwardAdmissionsInwardAppoinment, // Example
+    ...
+}
+```
+
+2. **Update the User Privileges UI**
+
+Navigate to:  
+`/admin/users/user_privileges.xhtml`
+
+Ensure that the new enum value is available for assignment to users per department via this interface.
+
+3. **Assign Privileges to Users**
+
+For a user to access a specific function or page, the corresponding privilege **must** be assigned to them for at least one department.
+
+4. **Render Menu Items or Features Conditionally**
+
+Use the following check to conditionally render a UI component:
+
+```xhtml
+<h:panelGroup rendered="#{webUserController.hasPrivilege('InwardAdmissionsInwardAppoinment')}" layout="block" class="col-1 p-1">
+    ...
+</h:panelGroup>
+```
+
+### 📌 Notes
+
+- Privileges are checked at runtime, per user and department.
+- If a privilege is missing, related functions/pages will be hidden or blocked.
+- All new privileges must be assigned manually via the User Privileges page.
 
 These guidelines apply to the entire repository.
