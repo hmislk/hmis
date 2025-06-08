@@ -1731,8 +1731,10 @@ public class BillService {
             case CC_PAYMENT_MADE_CANCELLATION_BILL:
                 boolean noItemsError = billHasNoBillItems(bill);
                 boolean netTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+                boolean hospitalFeeError = billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(bill);
+                boolean centreFeeError = billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(bill);
 
-                if (noItemsError || netTotalError) {
+                if (noItemsError || netTotalError || hospitalFeeError || centreFeeError) {
                     hasAtLeatOneError = true;
                 }
                 break;
@@ -1768,6 +1770,50 @@ public class BillService {
         if (mismatch) {
             bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
                     + "Bill net total (" + billNetTotal + ") does not match sum of bill item net totals (" + billItemNetTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate collecting centre fee totals
+    public boolean billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billCcTotal = Math.abs(bill.getTotalCenterFee());
+        double billItemCcTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billCcTotal - billItemCcTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill collecting centre fee total (" + billCcTotal + ") does not match sum of bill item collecting centre fees (" + billItemCcTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate hospital fee totals
+    public boolean billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
+        double billItemHospitalTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billHospitalTotal - billItemHospitalTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill hospital fee total (" + billHospitalTotal + ") does not match sum of bill item hospital fees (" + billItemHospitalTotal + "). ");
         }
 
         return mismatch;
