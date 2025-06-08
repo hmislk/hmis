@@ -1,6 +1,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
+import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
@@ -116,6 +117,8 @@ public class ReportsController implements Serializable {
     private DepartmentController departmentController;
     @Inject
     CollectingCentreBillController collectingCentreBillController;
+    @Inject
+    private WebUserController webUserController;
 
     /**
      * Properties
@@ -1279,6 +1282,14 @@ public class ReportsController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
     }
 
     public BillFeeFacade getBillFeeFacade() {
@@ -4201,7 +4212,7 @@ public class ReportsController implements Serializable {
 
     public void generateCollectionCenterBillWiseDetailReport() {
 
-        if (collectingCentre == null) {
+        if (collectingCentre == null && !getWebUserController().hasPrivilege("Developers")) {
             JsfUtil.addErrorMessage("Please select an Agent");
             return;
         }
@@ -4835,6 +4846,11 @@ public class ReportsController implements Serializable {
         if (investigationCode != null) {
             jpql += "AND billItem.patientInvestigation.investigation.code = :code ";
             parameters.put("code", investigationCode.getCode());
+        }
+
+        if (investigation != null) {
+            jpql += "AND billItem.item = :inv ";
+            parameters.put("inv", investigation);
         }
 
         jpql += "GROUP BY billItem";

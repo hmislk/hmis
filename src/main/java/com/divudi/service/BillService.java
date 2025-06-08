@@ -608,6 +608,7 @@ public class BillService {
         return btas;
     }
 
+    
     public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
 
@@ -1436,6 +1437,7 @@ public class BillService {
             return null;
         }
         List<BillTypeAtomic> btas = new ArrayList<>();
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         switch (inputBill.getBillTypeAtomic()) {
             case PHARMACY_GRN:
                 btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
@@ -1727,8 +1729,12 @@ public class BillService {
             case CC_PAYMENT_RECEIVED_BILL:
             case CC_PAYMENT_MADE_BILL:
             case CC_PAYMENT_MADE_CANCELLATION_BILL:
-                boolean billHasNoBillItems = billHasNoBillItems(bill);
-                if (billHasNoBillItems) {
+                boolean noItemsError = billHasNoBillItems(bill);
+                boolean netTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+                boolean hospitalFeeError = billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(bill);
+                boolean centreFeeError = billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(bill);
+
+                if (noItemsError || netTotalError || hospitalFeeError || centreFeeError) {
                     hasAtLeatOneError = true;
                 }
                 break;
@@ -1764,6 +1770,50 @@ public class BillService {
         if (mismatch) {
             bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
                     + "Bill net total (" + billNetTotal + ") does not match sum of bill item net totals (" + billItemNetTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate collecting centre fee totals
+    public boolean billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billCcTotal = Math.abs(bill.getTotalCenterFee());
+        double billItemCcTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billCcTotal - billItemCcTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill collecting centre fee total (" + billCcTotal + ") does not match sum of bill item collecting centre fees (" + billItemCcTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate hospital fee totals
+    public boolean billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
+        double billItemHospitalTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billHospitalTotal - billItemHospitalTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill hospital fee total (" + billHospitalTotal + ") does not match sum of bill item hospital fees (" + billItemHospitalTotal + "). ");
         }
 
         return mismatch;

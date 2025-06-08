@@ -121,6 +121,9 @@ public class CommonFunctions {
     }
 
     public static boolean checkOnlyNumeric(String text) {
+        if (text == null) {
+            return false;
+        }
         String cleandtext = text.replaceAll("[\\s+\\-()]", "");
         String regex = "^[0-9]+$";
         // Check if the text matches the pattern
