@@ -362,10 +362,6 @@
                                         icon="fa fa-check"
                                         action="#{collectingCentreBillController.settleCcBill()}"
                                         ajax="false"
-                                        disabled="#{collectingCentreBillController.ccBillSettlingStarted}"
-                                        onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                    return false; this.disabled=true;"
-
                                         class="ui-button-success ">
                                     </p:commandButton>
 
@@ -477,7 +473,7 @@
                                             class="form-control" >
                                         </p:inputText>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
                                         <h:panelGroup>
                                             <p:outputLabel value="Referring Doctor"></p:outputLabel>
