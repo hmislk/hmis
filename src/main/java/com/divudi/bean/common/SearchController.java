@@ -11647,6 +11647,7 @@ public class SearchController implements Serializable {
         if (allBills != null) {
             for (Bill tmpBill : allBills) {
                 boolean billHasErrors;
+                billService.reloadBill(tmpBill);
                 billHasErrors = billService.checkBillForErrors(tmpBill);
                 if (!billHasErrors) {
                     continue;
@@ -11696,6 +11697,8 @@ public class SearchController implements Serializable {
                 if (diff > 1.0) { // Significant error found
                     Bill b = ah.getBill();
                     if (b != null && !bills.contains(b)) { // Avoid duplicates
+                        String msg = "Agent history balance mismatch.";
+                        b.setTmpComments((b.getTmpComments() == null ? "" : b.getTmpComments()) + msg + " ");
                         bills.add(b);
                     }
                 }
