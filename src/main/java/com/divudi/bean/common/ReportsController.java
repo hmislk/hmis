@@ -4,6 +4,7 @@ import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.core.data.dataStructure.InstitutionBillEncounter;
 import com.divudi.core.data.reports.FinancialReport;
+import com.divudi.core.data.reports.ManagementReport;
 import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.*;
@@ -1952,21 +1953,23 @@ public class ReportsController implements Serializable {
     }
 
     public void generatePackageReport() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
 
 
-        bundle.setName("Package Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Package Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateBillItems(opdBts);
+            bundle = generateBillItems(opdBts);
+        }, FinancialReport.PACKAGE_REPORT, sessionController.getLoggedUser());
     }
 
     private ReportTemplateRowBundle generateBillItems(List<BillTypeAtomic> bts) {
@@ -2039,40 +2042,40 @@ public class ReportsController implements Serializable {
     }
 
     public void generateOPDWeeklyReport() {
+        reportTimerController.trackReportExecution(() -> {
+            if (month == null) {
+                JsfUtil.addErrorMessage("Please select a month");
+                return;
+            }
 
-        if (month == null) {
-            JsfUtil.addErrorMessage("Please select a month");
-            return;
-        }
+            bundle = new ReportTemplateRowBundle();
 
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            if (visitType == null || visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            }
 
-        if (visitType == null || visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        }
-
-        if (visitType == null || visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-        }
+            if (visitType == null || visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                opdBts.add(BillTypeAtomic.CANCELLED_INWARD_FINAL_BILL);
+                opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+            }
 //        if (visitType == null) {
 //            opdBts.add(BillTypeAtomic.CC_BILL);
 //            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
@@ -2080,16 +2083,17 @@ public class ReportsController implements Serializable {
 //        }
 
 
-        bundle.setName("Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateWeeklyBillItems(opdBts);
+            bundle = generateWeeklyBillItems(opdBts);
 
-        if (reportType.equalsIgnoreCase("summary")) {
-            groupBillItemsWeekly();
-        } else if (reportType.equalsIgnoreCase("detail")) {
-            groupBillItemsDaily();
-        }
+            if (reportType.equalsIgnoreCase("summary")) {
+                groupBillItemsWeekly();
+            } else if (reportType.equalsIgnoreCase("detail")) {
+                groupBillItemsDaily();
+            }
+        }, ManagementReport.OPD_WEEKLY_REPORT, sessionController.getLoggedUser());
     }
 
     public int getNumberOfWeeksOfMonth() {
@@ -2434,32 +2438,34 @@ public class ReportsController implements Serializable {
     }
 
     public void generateInvoiceAndReportSerialWiseReport() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<PaymentMethod> paymentMethods = new ArrayList<>();
-        if (paymentMethod != null) {
-            paymentMethods.add(paymentMethod);
-        } else {
-            addAllPaymentMethods(paymentMethods);
-        }
+            List<PaymentMethod> paymentMethods = new ArrayList<>();
+            if (paymentMethod != null) {
+                paymentMethods.add(paymentMethod);
+            } else {
+                addAllPaymentMethods(paymentMethods);
+            }
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
 
-        bundle.setName("Invoice and Receipt Report Bill Items");
-        bundle.setBundleType("billItemList");
-        bundle = generateBillItems(opdBts, paymentMethods);
-        bundle.calculateTotalByBillItems();
+            bundle.setName("Invoice and Receipt Report Bill Items");
+            bundle.setBundleType("billItemList");
+            bundle = generateBillItems(opdBts, paymentMethods);
+            bundle.calculateTotalByBillItems();
+        }, FinancialReport.INVOICE_AND_RECEIPT_REPORT, sessionController.getLoggedUser());
     }
 
     private void addAllPaymentMethods(List<PaymentMethod> paymentMethods) {
@@ -3016,21 +3022,23 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterWiseInvoiceListReport() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        opdBts.add(BillTypeAtomic.CC_BILL);
-        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        // If transaction add other CC types
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            // If transaction add other CC types
 
-        bundle.setName("Package Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Package Bills");
+            bundle.setBundleType("billList");
 
-        bundle = generateCollectingCenterWiseBills(opdBts);
-        bundle.calculateTotalByHospitalFee();
-        bundle.calculateTotalCCFee();
+            bundle = generateCollectingCenterWiseBills(opdBts);
+            bundle.calculateTotalByHospitalFee();
+            bundle.calculateTotalCCFee();
+        }, CollectionCenterReport.COLLECTION_CENTER_WISE_INVOICE_LIST_REPORT, sessionController.getLoggedUser());
     }
 
     public ReportTemplateRowBundle generateCollectingCenterWiseBills(List<BillTypeAtomic> bts) {
@@ -3129,9 +3137,10 @@ public class ReportsController implements Serializable {
 ////
 ////        bundle = generateDebtorBalanceReportBills(opdBts, paymentMethods, onlyDueBills);
 //        if (visitType.equalsIgnoreCase("IP")) {
-////            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
-////            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-////            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
+
+    /// /            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
+    /// /            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+    /// /            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
 //
 //            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
 //            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
@@ -3170,7 +3179,6 @@ public class ReportsController implements Serializable {
 //        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
 //        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
 //    }
-
     public void generateDebtorBalanceReport(final boolean onlyDueBills) {
         reportTimerController.trackReportExecution(() -> {
             if (visitType == null || visitType.trim().isEmpty()) {
@@ -3704,35 +3712,36 @@ public class ReportsController implements Serializable {
     }
 
     public void generatePaymentSettlementReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
+            }
 
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        }
+            if (visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        if (reportType.equalsIgnoreCase("summary")) {
-            bundle = generateReportBill(opdBts, null);
-            bundle.calculateTotalByRefBills(visitType.equalsIgnoreCase("OP"));
-        } else {
-            bundle = generateReportBillItems(opdBts, null);
-            bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
-        }
-
+            if (reportType.equalsIgnoreCase("summary")) {
+                bundle = generateReportBill(opdBts, null);
+                bundle.calculateTotalByRefBills(visitType.equalsIgnoreCase("OP"));
+            } else {
+                bundle = generateReportBillItems(opdBts, null);
+                bundle.calculateTotalByReferenceBills(visitType.equalsIgnoreCase("OP"));
+            }
+        }, FinancialReport.PAYMENT_SETTLEMENT_REPORT, sessionController.getLoggedUser());
     }
 
     public ReportTemplateRowBundle generateReportBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -3888,20 +3897,22 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBookWiseDetailReport() {
-        bundle = new ReportTemplateRowBundle();
+        reportTimerController.trackReportExecution(() -> {
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        opdBts.add(BillTypeAtomic.CC_BILL);
-        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
 //        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        bundle = generateCollectionCenterBookWiseBills(opdBts);
+            bundle = generateCollectionCenterBookWiseBills(opdBts);
+        }, CollectionCenterReport.COLLECTION_CENTER_BOOK_WISE_DETAIL_REPORT, sessionController.getLoggedUser());
     }
 
     public void exportCollectionCenterBookWiseDetailToPdf() {
@@ -4211,33 +4222,34 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBillWiseDetailReport() {
+        reportTimerController.trackReportExecution(() -> {
+            if (collectingCentre == null && !getWebUserController().hasPrivilege("Developers")) {
+                JsfUtil.addErrorMessage("Please select an Agent");
+                return;
+            }
 
-        if (collectingCentre == null && !getWebUserController().hasPrivilege("Developers")) {
-            JsfUtil.addErrorMessage("Please select an Agent");
-            return;
-        }
+            bundle = new ReportTemplateRowBundle();
 
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-
-        opdBts.add(BillTypeAtomic.CC_BILL);
-        opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-        opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            opdBts.add(BillTypeAtomic.CC_BILL);
+            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
 
 
-        bundle.setName("Route Analysis Bill Items");
-        bundle.setBundleType("billItemList");
+            bundle.setName("Route Analysis Bill Items");
+            bundle.setBundleType("billItemList");
 
-        bundle = generateCollectingCenterBillWiseBillItems(opdBts);
+            bundle = generateCollectingCenterBillWiseBillItems(opdBts);
 
-        if (reportType.equalsIgnoreCase("Report")) {
-            groupBillItems();
-        } else {
-            bundle.calculateTotalHospitalFeeByBillItems();
-            bundle.calculateTotalByBillItems();
-            bundle.calculateTotalStaffFeeByBillItems();
-        }
+            if (reportType.equalsIgnoreCase("Report")) {
+                groupBillItems();
+            } else {
+                bundle.calculateTotalHospitalFeeByBillItems();
+                bundle.calculateTotalByBillItems();
+                bundle.calculateTotalStaffFeeByBillItems();
+            }
+        }, CollectionCenterReport.COLLECTION_CENTER_BILL_WISE_DETAIL_REPORT, sessionController.getLoggedUser());
     }
 
     /**
@@ -4445,38 +4457,40 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCreditInvoiceDispatchReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
+            }
 
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        if (visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        } else {
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-            opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        }
+            if (visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            } else {
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.INPATIENT_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+                opdBts.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        bundle = generateCreditInvoiceDispatchBillItems(opdBts, null);
+            bundle = generateCreditInvoiceDispatchBillItems(opdBts, null);
 
-        bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
-        bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalByBills(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalBalance(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalSettledAmountByPatients(visitType.equalsIgnoreCase("OP"));
+            bundle.calculateTotalSettledAmountBySponsors(visitType.equalsIgnoreCase("OP"));
+        }, FinancialReport.CREDIT_INVOICE_DISPATCH_REPORT, sessionController.getLoggedUser());
     }
 
     public ReportTemplateRowBundle generateCreditInvoiceDispatchBillItems(List<BillTypeAtomic> bts, List<PaymentMethod> billPaymentMethods) {
@@ -4558,60 +4572,62 @@ public class ReportsController implements Serializable {
     }
 
     public void externalLaboratoryWorkloadReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
+            }
 
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("CC")) {
-            opdBts.add(BillTypeAtomic.CC_BILL);
-            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        }
+            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("CC")) {
+                opdBts.add(BillTypeAtomic.CC_BILL);
+                opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts);
+            if (reportType.equalsIgnoreCase("detail")) {
+                bundle = generateExternalLaboratoryWorkloadBillItems(opdBts);
 
-            bundle.calculateTotalByBillItemsNetTotal();
-        } else {
-            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+                bundle.calculateTotalByBillItemsNetTotal();
+            } else {
+                bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
 
-            bundle.calculateTotalByBillItemRowValues();
-        }
+                bundle.calculateTotalByBillItemRowValues();
+            }
+        }, LaboratoryReport.EXTERNAL_LABORATORY_WORKLOAD_REPORT, sessionController.getLoggedUser());
     }
 
     private List<BillTypeAtomic> cancelAndRefundBillTypeAtomics() {
@@ -4917,8 +4933,9 @@ public class ReportsController implements Serializable {
 ////            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
 ////            opdBts.add(BillTypeAtomic.INWARD_DEPOSIT_CANCELLATION);
 //        } else if (visitType.equalsIgnoreCase("OP")) {
-////            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-////            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+    /// /            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+    /// /            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 //            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
 //            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 //            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
@@ -4944,7 +4961,6 @@ public class ReportsController implements Serializable {
 //
 //        groupBills();
 //    }
-
     public void generateOpdAndInwardDueReport() {
         reportTimerController.trackReportExecution(() -> {
             if (visitType == null || visitType.trim().isEmpty()) {
@@ -6606,65 +6622,67 @@ public class ReportsController implements Serializable {
     }
 
     public void generateDiscountReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
-
-        bundle = new ReportTemplateRowBundle();
-
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
-
-        if (visitType.equalsIgnoreCase("IP")) {
-            if (reportType.equalsIgnoreCase("detail")) {
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            } else if (reportType.equalsIgnoreCase("summary")) {
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
             }
-        } else if (visitType.equalsIgnoreCase("OP")) {
-            if (reportType.equalsIgnoreCase("detail")) {
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            } else if (reportType.equalsIgnoreCase("summary")) {
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+
+            bundle = new ReportTemplateRowBundle();
+
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
+
+            if (visitType.equalsIgnoreCase("IP")) {
+                if (reportType.equalsIgnoreCase("detail")) {
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                } else if (reportType.equalsIgnoreCase("summary")) {
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                }
+            } else if (visitType.equalsIgnoreCase("OP")) {
+                if (reportType.equalsIgnoreCase("detail")) {
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                } else if (reportType.equalsIgnoreCase("summary")) {
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                    opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                    opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                    opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+                }
             }
-        }
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            bundle.setName("BillItems");
-            bundle.setBundleType("billItemList");
+            if (reportType.equalsIgnoreCase("detail")) {
+                bundle.setName("BillItems");
+                bundle.setBundleType("billItemList");
 
-            bundle = generateDiscountBillItems(opdBts);
-            bundle.calculateTotalDiscountByBillItems();
-        } else if (reportType.equalsIgnoreCase("summary")) {
-            bundle.setName("Bills");
-            bundle.setBundleType("billList");
+                bundle = generateDiscountBillItems(opdBts);
+                bundle.calculateTotalDiscountByBillItems();
+            } else if (reportType.equalsIgnoreCase("summary")) {
+                bundle.setName("Bills");
+                bundle.setBundleType("billList");
 
-            bundle = generateDiscountBills(opdBts);
-            bundle.calculateTotalDiscountByBills();
-        }
+                bundle = generateDiscountBills(opdBts);
+                bundle.calculateTotalDiscountByBills();
+            }
+        }, FinancialReport.DISCOUNT_REPORT, sessionController.getLoggedUser());
     }
 
     public double calculateDiscountForOP(final BillItem billItem, final List<ReportTemplateRow> reportTemplateRows) {
