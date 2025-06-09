@@ -12,11 +12,11 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel >
+                    <p:panel class="w-100 m-1">
                         <f:facet name="header">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <h:outputText value="Fund Transfer Received Bill"/>
+                                    <h:outputText value="Float Transfer Receive"/>
                                 </div>
                                 <div>
                                     <p:commandButton 
@@ -25,42 +25,55 @@
                                         ajax="false" 
                                         action="#{financialTransactionController.navigateToReceiveFundTransferBillsForMe()}" >
                                     </p:commandButton>
+                                    <p:commandButton 
+                                        value="Receive Float" 
+                                        ajax="false" 
+                                        icon="fas fa-check"
+                                        class="mx-2 ui-button-success"
+                                        action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
+                                    </p:commandButton>
                                 </div>
                             </div>
                         </f:facet>
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div>
-                                <h:outputText value="From" >
-                                </h:outputText>
-                                <h:outputText style="font-weight: bold" class="mx-2" value="#{financialTransactionController.currentBill.referenceBill.fromStaff.person.nameWithTitle}" >
-                                </h:outputText>
+                        <div class="row">
+                            <div class="col-6" >
 
-                                <h:outputText value="Value" class="mx-2" >
-                                </h:outputText>
-                                <h:outputText style="font-weight: bold" value="#{financialTransactionController.currentBill.referenceBill.total}" >
-                                </h:outputText>
+                                <p:panelGrid 
+                                    class="w-100 m-1"
+                                    layout="tabular"
+                                    columns="2" 
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText value="Transfer From" >
+                                    </h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.fromWebUser.webUserPerson.nameWithTitle}" >
+                                    </h:outputText>
+
+                                    <h:outputText value="Transfer At" >
+                                    </h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.referenceBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+
+                                    <h:outputText value="Value" class="mx-2" >
+                                    </h:outputText>
+                                    <h:outputText style="font-weight: bold" value="#{financialTransactionController.currentBill.referenceBill.absoluteNetTotalTransient}" >
+                                    </h:outputText>
+                                </p:panelGrid>
                             </div>
-                            <div class="d-flex align-items-center">
-
-                                <p:commandButton 
-                                    value="Settle Receipt" 
-                                    ajax="false" 
-                                    icon="fas fa-check"
-                                    class="mx-2 ui-button-success"
-                                    action="#{financialTransactionController.settleFundTransferReceiveBill()}" >
-                                </p:commandButton>
+                            <div class="col-6" >
+                                <p:dataTable class="m-1" id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="Value" class="text-end" >
+                                        <h:outputText value="#{bp.absolutePaidValueTransient}" >
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputText>
+                                    </p:column>
+                                </p:dataTable>
                             </div>
                         </div>
                     </p:panel>
-                    <p:dataTable class="my-2" id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Value" >
-                            <h:outputText value="#{bp.paidValue}" ></h:outputText>
-                        </p:column>
-                    </p:dataTable>
-
                 </h:form>
             </ui:define>
         </ui:composition>

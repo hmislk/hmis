@@ -1,14 +1,12 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.cashTransaction.DrawerEntry;
-import com.divudi.facade.DrawerEntryFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.facade.DrawerEntryFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.DrawerService;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -42,8 +40,6 @@ public class DrawerEntryController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-
-    CommonFunctions commonFunctions;
 
     private DrawerEntry current;
     private List<DrawerEntry> userDrawerEntry;

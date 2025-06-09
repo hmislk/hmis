@@ -9,32 +9,33 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.PatientDepositController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -71,6 +72,8 @@ public class InwardPaymentController implements Serializable {
     private SessionController sessionController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     private boolean printPreview;
     private double due;
     String comment;
@@ -94,6 +97,11 @@ public class InwardPaymentController implements Serializable {
 
     public String navigateToInpationDashbord() {
         return "/inward/admission_profile?faces-redirect=true";
+    }
+
+    public String navigateToPatientRefund() {
+        paymentMethodData = new PaymentMethodData();
+        return "inward_cancel_bill_refund?faces-redirect=true";
     }
 
     private double getFinalBillDue() {
@@ -265,9 +273,18 @@ public class InwardPaymentController implements Serializable {
             return;
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Inward Deposit Payment Bill Payment Type Required", false)
+                && configOptionApplicationController.getBooleanValueByKey("Get Payment Type Instead of Comment", false)) {
+
+            if (comment == null || comment.trim().isEmpty()) { // Trim to handle whitespace-only cases
+                JsfUtil.addErrorMessage("Please Select a Payment Type");
+                return;
+            }
+        }
+
         saveBill();
         saveBillItem();
-        
+
         List<Payment> payments = paymentService.createPayment(current, paymentMethodData);
         paymentService.updateBalances(payments);
 
@@ -307,7 +324,7 @@ public class InwardPaymentController implements Serializable {
 
         return curr;
     }
-    
+
     public void listnerForPaymentMethodChange() {
         if (getCurrent().getPaymentMethod() == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());

@@ -14,7 +14,7 @@
 
                     <h:panelGrid id="gpDetail" columns="1">
                         <p:panel>
-                            <h:panelGrid id="gpDetailText" columns="2">                               
+                            <h:panelGrid id="gpDetailText" columns="2">
                                 <h:outputText  value="Roster" ></h:outputText>
                                 <p:selectOneMenu  value="#{rosterStaffController.currentRoster}">
                                     <f:selectItem itemLabel="Select Roster"/>
@@ -25,8 +25,8 @@
                                 <hr:completeStaff value="#{rosterStaffController.currentStaff}"/>
 
                                 <p:commandButton id="btnAddStaff" value="Add Staff" ajax="false"
-                                                 action="#{rosterStaffController.add}"  >                                      
-                                </p:commandButton>  
+                                                 action="#{rosterStaffController.add}"  >
+                                </p:commandButton>
                                 <p:defaultCommand target="btnAddStaff"/>
                             </h:panelGrid>
                         </p:panel>
@@ -42,7 +42,7 @@
                                     <h:outputLabel value="Staff List"/><br></br>
                                     <h:outputLabel value="Roster : #{rosterStaffController.currentRoster.name}" rendered="#{rosterStaffController.currentRoster ne null}"/><br></br>
                                     <h:outputLabel value="Department : #{rosterStaffController.currentRoster.department.name}" rendered="#{rosterStaffController.currentRoster ne null}"/>
-                                </f:facet>                               
+                                </f:facet>
                                 <p:column headerText="Staff" >
                                     <h:outputLabel value="#{s.person.nameWithTitle}"/>
                                 </p:column>
@@ -50,19 +50,19 @@
                                     <h:outputLabel value="#{s.code}"/>
                                 </p:column>
                                 <p:column styleClass="noPrintButton">
-                                    <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >  
+                                    <p:commandLink ajax="false" value="Remove" action="#{rosterStaffController.remove}" >
                                         <f:setPropertyActionListener value="#{s}" target="#{rosterStaffController.currentStaff}"/>
-                                    </p:commandLink>  
+                                    </p:commandLink>
                                 </p:column>
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
                             </p:dataTable>
-                        </p:panel>                      
+                        </p:panel>
                     </h:panelGrid>
 
                 </h:panelGrid>

@@ -8,26 +8,26 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:panelGrid columns="2" class="w-75 mx-3" >
+        <h:panelGrid columns="2" class="w-100">
             <p:outputLabel value="Card Number" for="txtCardNumber"></p:outputLabel>
-            <p:inputText 
+            <p:inputText
                 autocomplete="off"
                 class="w-100"
                 onfocus="this.select();"
-                value="#{cc.attrs.paymentMethodData.creditCard.no}"  
+                value="#{cc.attrs.paymentMethodData.creditCard.no}"
                 id="txtCardNumber"
                 placeholder="Card Last 4 Digits">
                 <p:ajax process="@this" ></p:ajax>
-            </p:inputText>    
-            
-            <p:outputLabel 
-                value="Bank" 
+            </p:inputText>
+
+            <p:outputLabel
+                value="Bank"
                 for="cmbCcBank"></p:outputLabel>
             <p:selectOneMenu
                 class="w-100"
@@ -36,9 +36,9 @@
                 <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
-            
-            <p:outputLabel 
-                value="Comments" 
+
+            <p:outputLabel
+                value="Comments"
                 for="txtCcComments"></p:outputLabel>
             <p:inputText id="txtCcComments" class="w-100" value="#{cc.attrs.paymentMethodData.creditCard.comment}" placeholder="Enter Credit Card Comments" ></p:inputText>
         </h:panelGrid>

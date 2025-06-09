@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity.Patient"  />
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -59,8 +59,8 @@
                 <h:outputLabel value=" : " class="mx-3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}"/>
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
                     <p:badge
-                        value="#{cc.attrs.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}" 
-                        severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}" 
+                        value="#{cc.attrs.patient.person.foreigner?'Patient is Forigner':'Patient is Local'}"
+                        severity="#{cc.attrs.patient.person.foreigner?'warning':'success'}"
                         styleClass="mr-2">
                     </p:badge>
                 </h:panelGroup>

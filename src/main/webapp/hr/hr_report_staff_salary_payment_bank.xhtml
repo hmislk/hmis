@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -20,11 +20,11 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
                                              var="t">
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -78,7 +78,7 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >                     
+                        <p:panel id="gpBillPreview"  styleClass="noBorder summeryBorder" >
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss"  editable="true" rowStyleClass="#{ss.hold ? 'greenText': ss.blocked ? 'redText' :''}">
                                 <f:facet name="header" >
 
@@ -106,7 +106,7 @@
                                     <br/><br/>
                                     <h:outputLabel value="Cheque No :................................."/>
                                 </f:facet>
-                                <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />  
+                                <p:ajax event="rowEdit" listener="#{hrReportController.onEdit}" />
                                 <p:column>
                                     <f:facet name="header">
                                         <h:outputLabel value="EMP No"/>
@@ -116,8 +116,8 @@
                                     </p:outputLabel>
                                 </p:column>
 
-                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">  
-                                    <p:rowEditor />  
+                                <p:column style="width:6%"  exportable="false" styleClass="noPrintButton">
+                                    <p:rowEditor />
                                 </p:column>
 
                                 <p:column rendered="#{!hrReportController.hold}" >
@@ -128,7 +128,7 @@
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and !ss.hold)
                                                             or sessionController.loggedPreference.applicationInstitution ne 'Ruhuna'}">
                                     </p:outputLabel>
-                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.hold) 
+                                    <p:outputLabel value="Ruhunu Hospital (Pvt) Ltd" rendered="#{(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.hold)
                                                                                                  or(sessionController.loggedPreference.applicationInstitution eq 'Ruhuna' and ss.blocked)}">
                                     </p:outputLabel>
                                 </p:column>
@@ -153,17 +153,17 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Bank Branch"/>
                                     </f:facet>
-                                    <p:cellEditor>  
+                                    <p:cellEditor>
                                         <f:facet name="output">
                                             <p:outputLabel value="#{ss.bankBranch.name}"/>
                                         </f:facet>
                                         <f:facet name="input">
-                                            <p:autoComplete disabled="#{!ss.blocked and !ss.hold}" id="pgbank" completeMethod="#{institutionController.completeBankBranch}" 
+                                            <p:autoComplete disabled="#{!ss.blocked and !ss.hold}" id="pgbank" completeMethod="#{institutionController.completeBankBranch}"
                                                             var="dept"
                                                             itemLabel="#{dept.name}"
                                                             itemValue="#{dept}"
-                                                            forceSelection="true" 
-                                                            value="#{ss.bankBranch}" 
+                                                            forceSelection="true"
+                                                            value="#{ss.bankBranch}"
                                                              >
                                                 <p:column headerText="Name">
                                                     <h:outputLabel value="#{dept.name}"/>
@@ -195,7 +195,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Account No"/>
                                     </f:facet>
-                                    <p:cellEditor>  
+                                    <p:cellEditor>
                                         <f:facet name="output">
                                             <p:outputLabel value="#{ss.accountNo}"  />
                                         </f:facet>
@@ -213,7 +213,7 @@
                                 </p:column>
 
                                 <p:column headerText="Block" styleClass="noPrintButton">
-                                    <p:cellEditor>  
+                                    <p:cellEditor>
                                         <f:facet name="output">
                                             <h:outputLabel value="Blocked" rendered="#{ss.blocked}">
                                             </h:outputLabel>
@@ -221,12 +221,12 @@
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boBlock" value="#{ss.blocked}" >
                                                 <f:ajax event="change"  execute="@this" render="@this txtin boHold pgbank" listener="#{hrReportController.listnerBlock(ss)}"/>
-                                            </p:selectBooleanCheckbox>  
+                                            </p:selectBooleanCheckbox>
                                         </f:facet>
                                     </p:cellEditor>
                                 </p:column>
                                 <p:column headerText="Hold" styleClass="noPrintButton">
-                                    <p:cellEditor>  
+                                    <p:cellEditor>
                                         <f:facet name="output">
                                             <h:outputLabel value="Hold" rendered="#{ss.hold}">
                                             </h:outputLabel>
@@ -234,7 +234,7 @@
                                         <f:facet name="input">
                                             <p:selectBooleanCheckbox id="boHold" value="#{ss.hold}" >
                                                 <f:ajax event="change" execute="@this" render="@this txtin boBlock pgbank" listener="#{hrReportController.listnerHold(ss)}"/>
-                                            </p:selectBooleanCheckbox>   
+                                            </p:selectBooleanCheckbox>
                                         </f:facet>
                                     </p:cellEditor>
                                 </p:column>
@@ -262,7 +262,7 @@
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{hrReportController.totalOverTime}" style="text-align: right;" styleClass="noPrintButton">
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
 
@@ -276,10 +276,10 @@
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{hrReportController.totalOverTime+hrReportController.totalTransNetSalary}" style="text-align: right;">
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                
+
                                 <p:column rendered="#{hrReportController.hold}">
                                     <f:facet name="header">
                                         <h:outputLabel value="Signature"/>
@@ -288,18 +288,18 @@
                                 </p:column>
 
                                 <p:column rendered="false" >
-                                    <p:commandButton process="@this" 
+                                    <p:commandButton process="@this"
                                                      ajax="false"
-                                                     value="Update"  
-                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}" 
-                                                     >                              
-                                    </p:commandButton>                          
+                                                     value="Update"
+                                                     actionListener="#{hrReportController.onEditBlockedUpdate(ss)}"
+                                                     >
+                                    </p:commandButton>
                                 </p:column>
 
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

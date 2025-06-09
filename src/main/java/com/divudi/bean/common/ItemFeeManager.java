@@ -5,20 +5,20 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.FeeType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.ItemLight;
-import com.divudi.entity.Category;
-import com.divudi.entity.Institution;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Institution;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -36,13 +36,11 @@ import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.Font;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
-import org.apache.poi.xssf.usermodel.XSSFTableStyleInfo;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 /**
@@ -119,10 +117,20 @@ public class ItemFeeManager implements Serializable {
         itemFees = new ArrayList<>();
         return "/admin/pricing/download_base_item_fees?faces-redirect=true";
     }
-    
+
     public String navigateToUploadToReplaceSiteFeesByItemCode() {
         itemFees = new ArrayList<>();
         return "/admin/pricing/upload_to_replace_site_fees_by_item_code?faces-redirect=true";
+    }
+
+    public String navigateToUploadToAddSiteFeesByItemCode() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/upload_to_add_site_fees_by_item_code?faces-redirect=true";
+    }
+
+    public String navigateToUploadToAddCcFeesByItemCode() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/upload_to_add_cc_fees_by_item_code?faces-redirect=true";
     }
 
     public String navigateToDownloadItemFeesForSites() {
@@ -136,7 +144,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public String navigateToUploadFeeListItemFees() {
-        return "";
+        return "/admin/pricing/feelist_item_fees_upload?faces-redirect=true";
     }
 
     public String navigateToDownloadItemFeesForLists() {
@@ -542,6 +550,10 @@ public class ItemFeeManager implements Serializable {
         itemFees = fillFees(item);
     }
 
+    public void fillFeesForAuditing() {
+        itemFees = fillFeesForAuditing(item);
+    }
+
     public void updateItemAndCollectingCentreFees() {
         itemFees = new ArrayList<>();
         if (item == null) {
@@ -717,6 +729,10 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, null, null);
     }
 
+    public List<ItemFee> fillFeesForAuditing(Item i) {
+        return fillFees(i, null, null, true);
+    }
+
     public List<ItemFee> fillFees(Item i, Institution ins) {
         return fillFees(i, ins, null);
     }
@@ -725,16 +741,20 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, null, cat);
     }
 
+    // Original method preserved
     public List<ItemFee> fillFees(Item i, Institution forInstitution, Category forCategory) {
-        System.out.println("fillFees");
-        System.out.println("i = " + i);
-        System.out.println("forInstitution = " + forInstitution);
-        System.out.println("forCategory = " + forCategory);
-        String jpql = "select f "
-                + " from ItemFee f "
-                + " where f.retired=:ret ";
+        return fillFees(i, forInstitution, forCategory, false);
+    }
+
+// Overloaded method that ignores 'retired' filtering if includeRetired is true
+    public List<ItemFee> fillFees(Item i, Institution forInstitution, Category forCategory, boolean includeRetired) {
+        String jpql = "select f from ItemFee f where 1=1";
         Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
+
+        if (!includeRetired) {
+            jpql += " and f.retired=:ret";
+            m.put("ret", false);
+        }
 
         if (i != null) {
             jpql += " and f.item=:i";
@@ -754,9 +774,8 @@ public class ItemFeeManager implements Serializable {
         } else {
             jpql += " and f.forCategory is null";
         }
-        System.out.println("m = " + m);
-        List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
-        return fs;
+
+        return itemFeeFacade.findByJpql(jpql, m);
     }
 
     public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
@@ -785,12 +804,12 @@ public class ItemFeeManager implements Serializable {
     public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
         System.out.println("fillFees");
         System.out.println("forInstitution = " + forInstitution);
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
                 + "f.item.name, "
                 + "f.item.code, "
-                + "f.item.total, "
+                + " sum(f.fee), "
                 + "f.item.department.id) "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
@@ -820,7 +839,7 @@ public class ItemFeeManager implements Serializable {
     public List<ItemLight> fillItemLightsForCc(Institution cc) {
         System.out.println("fillFees");
         System.out.println("forInstitution = " + cc);
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
                 + "f.item.name, "
@@ -1141,9 +1160,11 @@ public class ItemFeeManager implements Serializable {
         }
         double t = 0.0;
         double tf = 0.0;
-        for (ItemFee f : itemFees) {
-            t += f.getFee();
-            tf += f.getFfee();
+        if (itemFees != null) {
+            for (ItemFee f : itemFees) {
+                t += f.getFee();
+                tf += f.getFfee();
+            }
         }
         getItem().setTotal(t);
         getItem().setTotalForForeigner(tf);

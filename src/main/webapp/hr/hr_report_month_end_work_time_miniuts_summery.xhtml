@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -21,16 +21,16 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle : "/>
-                            <p:selectOneMenu id="advanced" 
-                                             value="#{hrReportController.salaryCycle}" 
-                                             var="t" 
-                                             filter="true" 
+                            <p:selectOneMenu id="advanced"
+                                             value="#{hrReportController.salaryCycle}"
+                                             var="t"
+                                             filter="true"
                                              filterMatchMode="startsWith"  >
 
                                 <f:selectItem itemLabel="Slect Cycle"/>
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -76,7 +76,7 @@
                             <p:panel id="gpBillPreview1" >
                                 <p:dataTable value="#{hrReportController.summeryForMonths}" var="ss">
                                     <f:facet name="header" >
-                                        
+
                                         <h:outputLabel value="Summary" />
                                         <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
                                             <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -208,7 +208,7 @@
                                                 <h:outputLabel value="Mins(5 Weeks)" ></h:outputLabel>
                                             </h:panelGrid>
                                         </p:tooltip>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column styleClass="shortNumericColumn" >
                                         <f:facet name="header" >
                                             <h:outputLabel value="Over Time" />
@@ -424,7 +424,7 @@
                                                 </h:outputLabel>
                                                 <h:outputLabel value="hrs" ></h:outputLabel>
                                             </p:tooltip>
-                                        </p:column> 
+                                        </p:column>
                                         <p:column styleClass="shortNumericColumn" >
                                             <f:facet name="header" >
                                                 <h:outputLabel value="Entitled" />
@@ -438,7 +438,7 @@
                                                 </h:outputLabel>
                                                 <h:outputLabel value="hrs" ></h:outputLabel>
                                             </p:tooltip>
-                                        </p:column> 
+                                        </p:column>
 
                                         <p:column styleClass="shortNumericColumn">
                                             <f:facet name="header" >
@@ -456,7 +456,7 @@
                                                 </h:outputLabel>
                                                 <h:outputLabel value="hrs" ></h:outputLabel>
                                             </p:tooltip>
-                                        </p:column>  
+                                        </p:column>
 
                                         <p:column styleClass="shortNumericColumn">
                                             <f:facet name="header" >
@@ -465,7 +465,7 @@
                                                     <h:outputLabel value="Weekely Orvertime Value" />
                                                 </p:tooltip>
                                             </f:facet>
-                                            <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">  
+                                            <h:outputLabel value="#{ss.overTime*ss.basicPerSecond*1.5}">
                                                 <f:convertNumber pattern="0" />
                                             </h:outputLabel>
                                         </p:column>
@@ -473,7 +473,7 @@
                                     <f:facet name="footer">
                                         <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                         <p:outputLabel value="Print At : " />
-                                        <p:outputLabel value="#{commonController.currentDateTime}" >
+                                        <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                             <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                         </p:outputLabel>
                                     </f:facet>

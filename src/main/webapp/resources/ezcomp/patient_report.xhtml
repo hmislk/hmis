@@ -11,7 +11,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patientReport" class="com.divudi.entity.lab.PatientReport" />
+        <cc:attribute name="patientReport" class="com.divudi.core.entity.lab.PatientReport" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -97,7 +97,7 @@
                             <tr>
                                 <td>
                                     <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   #{cc.attrs.patientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" 
+                                                   #{cc.attrs.patientReport.patientInvestigation.investigation.printName}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"
                                                    style="font-weight: bold;font-size: 20px!important; margin: 5px;padding: 5px; border: solid black 1px;"/>
                                 </td>
                             </tr>
@@ -144,7 +144,7 @@
 
                                     <ui:repeat value="#{cc.attrs.patientReport.item.reportItems}" var="myMicIi" >
                                         <div style="#{myMicIi.cssStyle}; left: #{prvl.cssLeft};">
-                                            <h:outputText rendered="#{myMicIi.retired ne true and myMicIi.ixItemType eq 'List' }" 
+                                            <h:outputText rendered="#{myMicIi.retired ne true and myMicIi.ixItemType eq 'List' }"
                                                           value="#{myMicIi.name}" style="color: #{myMicIi.cssColor}" escape="false" ></h:outputText>
                                         </div>
                                     </ui:repeat>
@@ -158,14 +158,14 @@
                                     <table>
                                         <tr>
                                             <td colspan="2"  >
-                                                <h:outputLabel value="Antibiotic Sensitivity Test" 
+                                                <h:outputLabel value="Antibiotic Sensitivity Test"
                                                                rendered="#{cc.attrs.patientReport.transHasAbst}"
                                                                style="font-size: 120%; font-weight: bold; padding-left: 20px;"></h:outputLabel>
                                             </td>
                                         </tr>
-                                        <ui:repeat  value="#{cc.attrs.patientReport.patientReportItemValues}" 
+                                        <ui:repeat  value="#{cc.attrs.patientReport.patientReportItemValues}"
                                                     var="prv" >
-                                            <h:panelGroup 
+                                            <h:panelGroup
                                                 rendered="#{prv.investigationItem.ixItemType eq 'Value' and prv.investigationItem.ixItemValueType eq 'Varchar' and prv.investigationItem.retired eq false and prv.strValue ne '' and prv.strValue ne null  }" >
                                                 <tr>
                                                     <td style="min-width: 250px;">

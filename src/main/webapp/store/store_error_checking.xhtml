@@ -17,9 +17,9 @@
             <p:panel header="Error Detection" >
                 <f:facet name="header" >
                     <h:outputLabel value="Error Detection" ></h:outputLabel>
-                    <p:autoComplete value="#{storeErrorChecking.department}"  
-                                    style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
-                                    forceSelection="true" rendered="true" 
+                    <p:autoComplete value="#{storeErrorChecking.department}"
+                                    style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}"
+                                    forceSelection="true" rendered="true"
                                     requiredMessage="You must select a department" >
                         <p:column headerText="Department">
                             <h:outputLabel value="#{dept.name}"/>
@@ -29,10 +29,10 @@
                         </p:column>
 
                     </p:autoComplete>
-                    <p:autoComplete value="#{storeErrorChecking.item}"  
-                                    style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"  
-                                    completeMethod="#{itemController.completeStoreItem}" 
-                                    var="item" itemValue="#{item}" itemLabel="#{item.name}" 
+                    <p:autoComplete value="#{storeErrorChecking.item}"
+                                    style="text-align: left; margin: 5px; padding: 5px; max-width: 300px!important;"
+                                    completeMethod="#{itemController.completeStoreItem}"
+                                    var="item" itemValue="#{item}" itemLabel="#{item.name}"
                                     forceSelection="true"  >
                         <p:column headerText="Item">
                             <h:outputLabel value="#{item.name}"/>
@@ -65,22 +65,22 @@
                         <h:outputLabel value="" ></h:outputLabel>
 
                         <p:dataTable value="#{storeErrorChecking.billItems}" var="pb"  rowIndexVar="i"
-                                     rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''} 
-                                     #{((pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyGrnBill' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PharmacyGrnReturn' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PurchaseReturn' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.PreBill' and pb.bill.billType eq 'PharmacyPre' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PharmacyTransferIssue' )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyTransferReceive' )
+                                     rowStyleClass="#{(pb.retired eq true or pb.bill.retired eq true) ?'greenText' : ''}
+                                     #{((pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PharmacyGrnBill' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PharmacyGrnReturn' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PurchaseReturn' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.PreBill' and pb.bill.billType eq 'PharmacyPre' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PharmacyTransferIssue' )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PharmacyTransferReceive' )
                                        )? 'redText' : ''}
-                                     #{((pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PharmacyGrnBill' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyGrnReturn' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PurchaseReturn' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.RefundBill' and pb.bill.billType eq 'PharmacyPre' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.CancelledBill' and pb.bill.billType eq 'PharmacyTransferIssue' and pb.bill.createdAt ne null )or
-                                       (pb.bill.billClass eq 'class com.divudi.entity.BilledBill' and pb.bill.billType eq 'PharmacyTransferReceive' and pb.bill.createdAt ne null )
+                                     #{((pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PharmacyPurchaseBill' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PharmacyGrnBill' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PharmacyGrnReturn' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PurchaseReturn' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.RefundBill' and pb.bill.billType eq 'PharmacyPre' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.CancelledBill' and pb.bill.billType eq 'PharmacyTransferIssue' and pb.bill.createdAt ne null )or
+                                       (pb.bill.billClass eq 'class com.divudi.core.entity.BilledBill' and pb.bill.billType eq 'PharmacyTransferReceive' and pb.bill.createdAt ne null )
                                        )? 'greenText' : ''}"
 
                                      sortBy="#{pb.id}" >
@@ -93,7 +93,7 @@
                                 </h:commandButton>
                             </p:column>
 
-                            <p:column headerText="Department" >                              
+                            <p:column headerText="Department" >
                                 <h:outputLabel value="#{pb.bill.department.name}" >
                                 </h:outputLabel>
 
@@ -108,12 +108,12 @@
                                 <h:outputLabel value="#{pb.bill.insId}" >
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Before Change Stock Qty" >
                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.stockHistory.stockQty}" >
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="Qty" >
                                 <h:outputLabel value="#{pb.qty}" >
                                 </h:outputLabel>
@@ -123,7 +123,7 @@
                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.qtyInUnit}" >
                                 </h:outputLabel>
                             </p:column>
-                            
+
                             <p:column headerText="PH Free Qty" >
                                 <h:outputLabel value="#{pb.pharmaceuticalBillItem.freeQtyInUnit}" >
                                 </h:outputLabel>

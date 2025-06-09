@@ -10,23 +10,28 @@
         <ui:composition template="./index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="My Handovers" >
-
-
-                        <p:panelGrid columns="2" >
-                            <p:outputLabel value="From" ></p:outputLabel>
+                    <p:panel 
+                        header="My Handovers" 
+                        class="m-1"
+                        >
+                        <h:panelGrid
+                            columns="7"
+                            class="m-1 gap-5 p-5">
+                            <p:outputLabel value="From" class="me-2"></p:outputLabel>
                             <p:datePicker 
                                 value="#{financialTransactionController.fromDate}"
                                 showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:datePicker>
+                            <p:spacer width="5em" ></p:spacer>
 
-                            <p:outputLabel value="To" ></p:outputLabel>
+                            <p:outputLabel value="To" class="me-2" ></p:outputLabel>
                             <p:datePicker 
                                 value="#{financialTransactionController.toDate}"
                                 showTime="true"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:datePicker>
+                            <p:spacer width="5em" ></p:spacer>
 
                             <p:commandButton 
                                 class="ui-button-info mx-2" 
@@ -34,7 +39,7 @@
                                 value="List My Handovers" 
                                 action="#{financialTransactionController.fillMyHandovers()}" ></p:commandButton>
 
-                        </p:panelGrid>
+                        </h:panelGrid>
 
 
                         <p:dataTable
@@ -49,43 +54,83 @@
                                 <h:outputText value="#{bp.id}" />
                             </p:column>
 
-                            <p:column headerText="Number">
-                                <h:outputText value="#{bp.insId}" />
+
+                            <p:column headerText="Shift Number">
+                                <h:outputText value="#{bp.referenceBill.deptId}" />
                             </p:column>
 
 
-                            <p:column headerText="Username">
-                                <h:outputText value="#{bp.fromWebUser.name}" />
-                            </p:column>
-
-                            <p:column headerText="Staff Name">
-                                <h:outputText value="#{bp.staff.person.nameWithTitle}" />
-                            </p:column>
-
-                            <p:column headerText="Created At">
-                                <h:outputText value="#{bp.createdAt}" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift Start">
+                                <h:outputText value="#{bp.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Value">
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift End">
+                                <h:outputText value="#{bp.referenceBill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Handover Number">
+                                <h:outputText value="#{bp.insId}" />
+                            </p:column>
+                            <p:column headerText="Handover Time">
+                                <h:outputText value="#{bp.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column 
+                                headerText="Accept Number">
+                                <h:outputText value="#{bp.backwardReferenceBill.deptId}" />
+                            </p:column>
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Accept At">
+                                <h:outputText value="#{bp.backwardReferenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Value" 
+                                class="text-end"
+                                width="8em">
                                 <h:outputText value="#{bp.netTotal}" >
                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Value">
+                            <p:column 
+                                headerText="Status" 
+                                width="10em"
+                                class="text-center">
                                 <p:badge value="&nbsp;&nbsp;Awaiting" severity="info" icon="pi pi-hourglass" 
                                          rendered="#{not bp.completed and not bp.cancelled}" ></p:badge>
                                 <p:badge value="&nbsp;&nbsp;Rejected" severity="danger" icon="pi pi-times" 
                                          rendered="#{bp.cancelled}" ></p:badge>
-                                         <p:badge value="&nbsp;&nbsp;Completed" severity="success" icon="pi pi-check" 
+                                <p:badge value="&nbsp;&nbsp;Completed" severity="success" icon="pi pi-check" 
                                          rendered="#{bp.completed and not bp.cancelled}" ></p:badge>
                             </p:column>
 
 
-                            <p:column headerText="Actions">
-
+                            <p:column 
+                                headerText="Actions"
+                                width="12em"      >
+                                <p:commandButton 
+                                    value="View"
+                                    action="#{financialTransactionController.navigateToViewHandoverBill()}"
+                                    ajax="false"
+                                    class="m-1 ui-button-success"
+                                    icon="pi pi-times-circle">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
+                                </p:commandButton>
                                 <p:commandButton 
                                     rendered="#{not bp.completed and not bp.cancelled}"
                                     value="Recall"
@@ -97,6 +142,7 @@
                                     icon="pi pi-times-circle">
                                     <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
                                 </p:commandButton>
+
                             </p:column>
 
 

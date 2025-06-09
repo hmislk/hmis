@@ -7,16 +7,16 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.entity.Department;
-import com.divudi.entity.Fee;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Service;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.ServiceFacade;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.ServiceFacade;
+import com.divudi.core.facade.StaffFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,7 +29,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)

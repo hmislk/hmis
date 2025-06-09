@@ -32,7 +32,7 @@
                             id="toDate" 
                             inputStyleClass="form-control"
                             value="#{searchController.toDate}" 
-                            navigator="false" 
+                            navigator="true" 
                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >                                                                              
                         </p:calendar>
                         <p:commandButton 
@@ -92,7 +92,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup> 
                             </p:column>  
-                           
+
                             <p:column width="100px" headerText="Action" >
                                 <p:commandButton 
                                     id="edit"
@@ -112,24 +112,34 @@
                                     title="Approve Request" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
-                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill ne null or p.cancelled eq true or not webUserController.hasPrivilege('PurchaseOrdersApprovel')}"
+                                    disabled="#{p.checkedBy eq null or p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
                                         target="#{transferRequestController.transerRequestBillPre}"
                                         value="#{p}"/>
                                 </p:commandButton>
+
                                 <p:commandButton  
                                     class="m-1"  
                                     icon="fa fa-eye"
                                     title="View Bill" 
                                     ajax="false"
                                     action="/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true" 
-                                    disabled="#{p.checkedBy eq null or p.forwardReferenceBill eq null}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p.forwardReferenceBill}"/>
+                                    disabled="#{p.approveUser eq null}">
+                                    <f:setPropertyActionListener target="#{transferRequestController.bill}" value="#{p}"/>
                                     <f:setPropertyActionListener target="#{transferRequestController.printPreview}" value="true"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
+                        <h:outputScript>
+                            window.addEventListener("pageshow", function(event) {
+                            if (event.persisted) { // Detect if the page is loaded from cache (Back button)
+                                
+                                }
+                            });
+                        </h:outputScript>
+
+
                     </div>
                 </div>
 

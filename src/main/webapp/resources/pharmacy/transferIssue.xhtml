@@ -18,7 +18,7 @@
         <h:outputStylesheet library="css" name="pharmacyA4.css"/>
         <div >
 
-            <table style="width: 100%; border-collapse: collapse; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Headings in Pharmacy Disbursement Reports', '12pt')}!Important;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 10pt !important;">
                 <!-- Institution Details -->
                 <tr>
                     <td colspan="2" style="text-align: center; font-weight: bold;">
@@ -50,13 +50,10 @@
 
                 <!-- Bill Heading -->
                 <tr>
-                    <td colspan="2" style="text-align: center; font-size: 1.2em; text-decoration: underline;">
+                    <td colspan="2" style="text-align: center; font-size: 1.2em; text-decoration: underline;font-weight: bold;">
                         <h:outputLabel value="Transfer Issue Note" />
                         <h:outputLabel value="**Cancelled**" style="color: red;" rendered="#{cc.attrs.bill.billedBill.cancelled eq true}" />
                     </td>
-                </tr>
-                <tr>
-                    <td><br></br></td>
                 </tr>
                 <!-- Bill Details -->
                 <tr>
@@ -86,16 +83,16 @@
                 <tr>
                     <td style="padding: 1px;">
                         <h:panelGroup>
-                            <h:outputLabel value="Issued Date Time: " />
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <h:outputLabel value="Request Date Time: " />
+                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">
                                 <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a" />
                             </h:outputLabel>
                         </h:panelGroup>
                     </td>
                     <td style="padding: 1px;">
                         <h:panelGroup>
-                            <h:outputLabel value="Request Date Time: " />
-                            <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.createdAt}">
+                            <h:outputLabel value="Issued Date Time: " />
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
                                 <f:convertDateTime pattern="dd/MM/yy  &nbsp; hh:mm a" />
                             </h:outputLabel>
                         </h:panelGroup>
@@ -200,6 +197,7 @@
                             <h:outputLabel value="Sale Value"/>
                         </f:facet>
                         <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
                             <h:outputLabel styleClass="totalSaleValue" value="0.00">

@@ -1,0 +1,164 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cc="http://xmlns.jcp.org/jsf/composite"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+
+    <cc:interface>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="duplicate" type="java.lang.Boolean"/>
+    </cc:interface>
+
+    <cc:implementation>
+
+        <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note CSS')}">
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Header Text')}" escape="false" ></h:outputText>
+            </div>
+
+            <div class="billline">
+                <hr/>
+            </div>
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title CSS')}">
+                <h:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Title', 'Float Receive Note')}"/>
+                <h:outputLabel value=" - **Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
+                <table style="width: 100%!important;">
+                    <tr>
+                        <td>
+                            <h:outputLabel value="From" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="Transferred At" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.referenceBill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <h:outputLabel value="To Staff" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" ></h:outputLabel>
+                        </td>
+                        <td>
+                            <h:outputLabel value="Received At" ></h:outputLabel>
+                        </td>
+                        <td>:</td>
+                        <td>
+                            <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Bill Detail CSS')}">
+                <table width="100%">
+                    <ui:repeat value="#{cc.attrs.bill.payments}" var="bip">
+                        <tr>
+                            <td >
+                                <h:outputLabel value="#{bip.paymentMethod}" ></h:outputLabel>
+                            </td>
+                            <td>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cash'}">
+                                    <ui:repeat value="#{bip.humanReadableDenominations}" var="denomination">
+                                        <h:outputText value="#{denomination}"/>
+                                        <br/>
+                                    </ui:repeat>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Cheque'}">
+                                    <h:outputText value="#{bip.bank.name} " />
+                                    <h:outputText value="#{bip.chequeRefNo} " />
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                    </h:outputText>
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Card'}">
+                                    <h:outputText value="#{bip.paidValue} " />
+                                    <h:outputText value="#{bip.creditCardRefNo} " />
+                                    <h:outputText value="#{bip.institution.name} " />
+                                    <h:outputText value="#{bip.comments}" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'ewallet'}">
+                                    <h:outputText value="#{bip.paidValue} " />
+                                    <h:outputText value="#{bip.chequeRefNo} " />
+                                    <h:outputText value="#{bip.institution.name} " />
+                                    <h:outputText value="#{bip.comments}" />
+                                </h:panelGroup>
+                                <h:panelGroup rendered="#{bip.paymentMethod eq 'Slip'}">
+                                    <h:outputText value="#{bip.paidValue} " />
+                                    <h:outputText value="#{bip.bank.name} " />
+                                    <h:outputText value="#{bip.chequeDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"></f:convertDateTime>
+                                    </h:outputText>
+                                    <h:outputText value=" #{bip.comments}" />
+                                </h:panelGroup>
+                            </td>
+                            <td style="text-align: right;">
+                                <h:outputLabel  value="#{bip.paidValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </ui:repeat>
+                </table>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div>
+                <table style="width: 100%;">
+                    <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
+                        <tr>
+                            <td  >
+                                <h:outputLabel value="Total"/>
+                            </td>
+                            <td >
+                                <h:outputLabel value="#{cc.attrs.bill.total}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                </table>
+            </div>
+
+            <div style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Horizontal Line CSS')}">
+                <hr/>
+            </div>
+
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer CSS')}" >
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Float Receive Note Footer Text')}" escape="false" ></h:outputText>
+            </div>
+
+        </div>
+    </cc:implementation>
+</html>

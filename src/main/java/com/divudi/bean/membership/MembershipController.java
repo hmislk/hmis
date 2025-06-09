@@ -24,9 +24,21 @@ public class MembershipController implements Serializable {
     public void setMembershipAdminIndex(int membershipAdminIndex) {
         this.membershipAdminIndex = membershipAdminIndex;
     }
-    
-    public String navigateToMembershipAnalyticsIndex(){
+
+    public String navigateToMembershipAnalyticsIndex() {
         return "/membership/analytics/index?faces-redirect=true";
+    }
+
+    public String navigateToMembershipAdministrationIndex() {
+        return "/membership/admin/index?faces-redirect=true;";
+    }
+
+    public String navigateToManageMembershipScheme() {
+        return "/membership/admin/membership_scheme?faces-redirect=true;";
+    }
+
+    public String navigateToManageRelationships() {
+        return "/membership/admin/relationships?faces-redirect=true;";
     }
 
 }

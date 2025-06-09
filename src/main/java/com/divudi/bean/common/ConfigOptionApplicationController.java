@@ -1,14 +1,13 @@
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Denomination;
-import com.divudi.data.OptionScope;
-import com.divudi.data.OptionValueType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ConfigOption;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.ConfigOptionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -34,7 +33,7 @@ public class ConfigOptionApplicationController implements Serializable {
     private ConfigOptionFacade optionFacade;
 
     private List<ConfigOption> options;
-    private List<Denomination> denominations;
+//    private List<Denomination> denominations;
 
     /**
      * Creates a new instance of OptionController
@@ -50,26 +49,55 @@ public class ConfigOptionApplicationController implements Serializable {
 
     }
 
-    private void initializeDenominations() {
-        String denominationsStr = getLongTextValueByKey("Currency Denominations");
-        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
-            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
-        }
-        denominations = Arrays.stream(denominationsStr.split(","))
-                .map(String::trim) // Trim any extra spaces
-                .filter(s -> !s.isEmpty()) // Filter out empty strings
-                .map(Integer::parseInt)
-                .map(value -> new Denomination(value, 0))
-                .collect(Collectors.toList());
-    }
-
+//    private void initializeDenominations() {
+//        String denominationsStr = getLongTextValueByKey("Currency Denominations");
+//        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
+//            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
+//        }
+//        denominations = Arrays.stream(denominationsStr.split(","))
+//                .map(String::trim) // Trim any extra spaces
+//                .filter(s -> !s.isEmpty()) // Filter out empty strings
+//                .map(Integer::parseInt)
+//                .map(value -> new Denomination(value, 0))
+//                .collect(Collectors.toList());
+//    }
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
         List<ConfigOption> options = getApplicationOptions();
         for (ConfigOption option : options) {
             applicationOptions.put(option.getOptionKey(), option);
         }
-        initializeDenominations();
+//        initializeDenominations();
+        loadEmailGatewayConfigurationDefaults();
+        loadPharmacyConfigurationDefaults();
+    }
+
+    private void loadEmailGatewayConfigurationDefaults() {
+        getIntegerValueByKey("Email Gateway - SMTP Port", 587);
+        getBooleanValueByKey("Email Gateway - SMTP Auth Enabled", true);
+        getBooleanValueByKey("Email Gateway - StartTLS Enabled", true);
+        getBooleanValueByKey("Email Gateway - SSL Enabled", false);
+        // DO NOT set defaults for these, just trigger their presence in DB:
+        getShortTextValueByKey("Email Gateway - Username", "");
+        getShortTextValueByKey("Email Gateway - Password", "");
+        getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        getShortTextValueByKey("Email Gateway - URL", "");
+        //
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one minute", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", true);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
+        getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
+    }
+
+    private void loadPharmacyConfigurationDefaults() {
+        getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        getDoubleValueByKey("Retail to Purchase Factor", 1.15);
+        getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
     }
 
     public ConfigOption getApplicationOption(String key) {
@@ -93,16 +121,15 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-    public List<Denomination> getDenominations() {
-        if (denominations == null) {
-            initializeDenominations();
-        }
-        for (Denomination d : denominations) {
-            d.setCount(0);
-        }
-        return denominations;
-    }
-
+//    public List<Denomination> getDenominations() {
+//        if (denominations == null) {
+//            initializeDenominations();
+//        }
+//        for (Denomination d : denominations) {
+//            d.setCount(0);
+//        }
+//        return denominations;
+//    }
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -159,9 +186,9 @@ public class ConfigOptionApplicationController implements Serializable {
         return getEnumValue(option, enumClass);
     }
 
-    public Double getDoubleValueByKey(String key, Double defaultValue) {
+    public Integer getIntegerValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
-        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
             option = new ConfigOption();
             option.setCreatedAt(new Date());
             option.setOptionKey(key);
@@ -169,7 +196,29 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setInstitution(null);
             option.setDepartment(null);
             option.setWebUser(null);
-            option.setValueType(OptionValueType.DOUBLE);
+            option.setValueType(OptionValueType.INTEGER);
+            option.setOptionValue("0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Integer.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Integer getIntegerValueByKey(String key, Integer defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.INTEGER) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.INTEGER);
             if (defaultValue == null) {
                 option.setOptionValue("");
             } else {
@@ -179,7 +228,7 @@ public class ConfigOptionApplicationController implements Serializable {
             loadApplicationOptions();
         }
         try {
-            return Double.valueOf(option.getOptionValue());
+            return Integer.valueOf(option.getOptionValue());
         } catch (NumberFormatException e) {
             return null;
         }
@@ -197,6 +246,32 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setWebUser(null);
             option.setValueType(OptionValueType.DOUBLE);
             option.setOptionValue("0.0");
+            optionFacade.create(option);
+            loadApplicationOptions();
+        }
+        try {
+            return Double.valueOf(option.getOptionValue());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    public Double getDoubleValueByKey(String key, Double defaultValue) {
+        ConfigOption option = getApplicationOption(key);
+        if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
+            option = new ConfigOption();
+            option.setCreatedAt(new Date());
+            option.setOptionKey(key);
+            option.setScope(OptionScope.APPLICATION);
+            option.setInstitution(null);
+            option.setDepartment(null);
+            option.setWebUser(null);
+            option.setValueType(OptionValueType.DOUBLE);
+            if (defaultValue == null) {
+                option.setOptionValue("");
+            } else {
+                option.setOptionValue(defaultValue + "");
+            }
             optionFacade.create(option);
             loadApplicationOptions();
         }
@@ -291,7 +366,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -309,7 +384,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
         return option.getOptionValue();
     }
-    
+
     public String getColorValueByKey(String key, String defaultColorHashCode) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
@@ -328,7 +403,7 @@ public class ConfigOptionApplicationController implements Serializable {
         return option.getOptionValue();
     }
 
-    public String getEnumValueByKey(String key ) {
+    public String getEnumValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM) {
             option = new ConfigOption();

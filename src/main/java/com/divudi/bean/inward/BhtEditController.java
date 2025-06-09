@@ -11,28 +11,28 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.SurgeryBillType;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Person;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,10 +46,10 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.facade.EncounterCreditCompanyFacade;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
 import java.util.Map;
 
 /**
@@ -66,8 +66,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     SessionController sessionController;
     @Inject
     BillBeanController billBean;
-    @Inject
-    AdmissionController admissionController;
     /////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -101,8 +99,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     @Inject
     InwardStaffPaymentBillController inwardStaffPaymentBillController;
-
-    CommonFunctions commonFunctions;
 
     YearMonthDay yearMonthDay;
     private PaymentMethod paymentMethod;
@@ -421,7 +417,7 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
     }
 
     public void dateChangeListen() {
-        getCurrent().getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getCurrent().getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -596,14 +592,6 @@ public class BhtEditController implements Serializable, ControllerWithPatient {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {

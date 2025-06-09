@@ -219,7 +219,7 @@
                                                 </p:column>
 
                                                 <p:column>
-                                                    <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem}" >
+                                                    <h:commandButton id="btnRemove" value="X" action="#{billBhtController.removeBillItem(bi)}" >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{billBhtController.index}" />
                                                         <p:ajax  process="btnRemove" update="@form" />
                                                     </h:commandButton>

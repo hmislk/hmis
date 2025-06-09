@@ -24,8 +24,8 @@
 package com.divudi.bean.common;
 
 
-import com.divudi.entity.Upload;
-import com.divudi.facade.UploadFacade;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -83,19 +83,19 @@ public class StreamedContentController {
                 if (imgArr == null) {
                     return new DefaultStreamedContent();
                 }
-                
+
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
-                
+
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
 
-                
+
                 return str;
             } else {
                 return new DefaultStreamedContent();
             }
         }
     }
-    
+
     public StreamedContent getImageByUpWebContentId() {
         FacesContext context = FacesContext.getCurrentInstance();
         if (context.getRenderResponse()) {
@@ -122,21 +122,21 @@ public class StreamedContentController {
                 if (imgArr == null) {
                     return new DefaultStreamedContent();
                 }
-                
+
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
-                
+
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
 
-                
+
                 return str;
             } else {
                 return new DefaultStreamedContent();
             }
         }
     }
-    
-    
-    
+
+
+
 //
 //    public StreamedContent imageByCodeInlineWithoutGet(String code) {
 //        FacesContext context = FacesContext.getCurrentInstance();
@@ -194,9 +194,9 @@ public class StreamedContentController {
                 if (imgArr == null) {
                     return new DefaultStreamedContent();
                 }
-                
+
                 InputStream targetStream = new ByteArrayInputStream(temImg.getBaImage());
-                
+
                 StreamedContent str = DefaultStreamedContent.builder().contentType(temImg.getFileType()).name(temImg.getFileName()).stream(() -> targetStream).build();
 
                 return str;
@@ -380,7 +380,7 @@ public class StreamedContentController {
 //        }
 //    }
 
-   
+
 
     public UploadFacade getUploadFacade() {
         return uploadFacade;

@@ -12,14 +12,14 @@
             <p:panel header="Holiday Report" >
                 <p:panelGrid columns="2" >
                     <h:outputLabel value="From Time"/>
-                    <p:calendar id="requestedDate" 
+                    <p:calendar id="requestedDate"
                                 value="#{phDateController.frDate}"
                                 pattern="yyyy MM dd HH:mm:ss">
-                    </p:calendar> 
+                    </p:calendar>
                     <h:outputLabel value="To Time"/>
                     <p:calendar id="forDate" value="#{phDateController.toDate}"
                                 pattern="yyyy MM dd HH:mm:ss" >
-                    </p:calendar> 
+                    </p:calendar>
                 </p:panelGrid>
 
                 <p:commandButton value="Fill" action="#{phDateController.createHollydays}" ajax="false" />
@@ -41,7 +41,7 @@
                             </h:outputLabel>
                             <h:outputLabel/>
                             <h:outputLabel/>
-                            <h:outputLabel value="  To : "/> 
+                            <h:outputLabel value="  To : "/>
                             <h:outputLabel  value="#{phDateController.toDate}">
                                 <f:convertDateTime pattern="dd MM yy "/>
                             </h:outputLabel><br/>
@@ -97,7 +97,7 @@
                         <f:facet name="footer">
                             <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                             <p:outputLabel value="Print At : " />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                             </p:outputLabel>
                         </f:facet>

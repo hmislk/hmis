@@ -2,14 +2,14 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.inward.InwardReservationEvent;
+import com.divudi.core.data.inward.InwardReservationEvent;
 
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.entity.inward.Reservation;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.ReservationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.inward.Reservation;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.ReservationFacade;
+import com.divudi.core.util.CommonFunctions;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -54,7 +54,7 @@ public class InwardReservationController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    ////////////////////////    
+    ////////////////////////
     private PatientEncounter patientEncounter;
 
     Date fromDate;

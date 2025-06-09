@@ -32,9 +32,9 @@
                                     </f:facet>
                                     <h:panelGrid columns="2" class="w-100">
                                         <h:outputLabel value="Category" ></h:outputLabel>
-    <!--                                    <p:autoComplete  value="#{pharmacyController.category}" 
-                                                         forceSelection="true" 
-                                                         completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" 
+    <!--                                    <p:autoComplete  value="#{pharmacyController.category}"
+                                                         forceSelection="true"
+                                                         completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}"
                                                          var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{vt.name}" ></h:outputLabel>
@@ -51,8 +51,8 @@
                                             <p:ajax event="itemSelect" update="acStock" process="@this" />
                                         </p:selectOneMenu>
                                         <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}" 
-                                                        completeMethod="#{pharmacyController.completeAllStockItems}" var="i" 
+                                        <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}"
+                                                        completeMethod="#{pharmacyController.completeAllStockItems}" var="i"
                                                         placeholder="Select an Item"
                                                         class="w-100" inputStyleClass="w-100"
                                                         itemLabel="#{i.name}" itemValue="#{i}" >
@@ -65,7 +65,7 @@
                                             <p:ajax event="itemSelect" process="@this" update="det" listener="#{pharmacyAdjustmentController.listnerItemSelect}"/>
                                         </p:autoComplete>
                                         <h:outputLabel value="New Quantity" ></h:outputLabel>
-                                        <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" 
+                                        <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}"
                                                      disabled="#{pharmacyAdjustmentController.manualAdjust}" class="w-100" >
                                             <p:ajax event="keyup" process="@this det" update="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
                                         </p:inputText>
@@ -89,9 +89,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="justify-content-end d-flex">                 
+                                    <div class="justify-content-end d-flex">
 
-                                    </div> 
+                                    </div>
 
                                 </p:panel>
                             </div>
@@ -101,7 +101,7 @@
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" 
+                                    <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}"
                                                  class="w-100"
                                                  var="s" editable="true" >
                                         <p:ajax event="rowEdit" listener="#{pharmacyAdjustmentController.onEdit}" update=":#{p:resolveFirstComponentWithId('input',view).clientId}" />
@@ -149,8 +149,8 @@
                                             <f:facet name="header">
                                                 <p:outputLabel value="Date Of Expiry" style="float: right;"/>
                                             </f:facet>
-                                            <p:outputLabel value="#{s.itemBatch.dateOfExpire}" style="float: right #{commonController.currentDateTime > s.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                    commonController.dateAfterThreeMonthsCurrentDateTime > s.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
+                                            <p:outputLabel value="#{s.itemBatch.dateOfExpire}" style="float: right #{commonFunctionsProxy.currentDateTime > s.itemBatch.dateOfExpire ?'color: red; ':
+                                                                    commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > s.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
                                                 <f:convertDateTime pattern="yyyy MMM dd" />
                                             </p:outputLabel>
                                         </p:column>

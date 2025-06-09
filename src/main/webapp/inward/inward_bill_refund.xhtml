@@ -74,8 +74,14 @@
                 <h:panelGroup class="row" rendered="#{inwardRefundController.current.patientEncounter.bhtNo ne null}">
                     <p:panel rendered="#{!inwardRefundController.printPreview}">
                         <f:facet name="header">
-                            <p:outputLabel value="Inward Refund Payment"/>
-
+                            <h:outputText styleClass="fa-solid fa-address-card fa-lg" style="margin-left: 8px;"/>
+                            <p:outputLabel value="Inward Refund Payment" class="m-2"/>
+                            <h:panelGroup style="float: right; padding-right: 10px;">
+                                <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" 
+                                                 ajax="false" value="Refund" action="#{inwardRefundController.pay}" />
+                                <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" 
+                                                 value="Clear" action="#{inwardRefundController.makeNull}" />
+                            </h:panelGroup>
                         </f:facet>
                         <div class="row">
                             <div class="col-md-6">
@@ -118,7 +124,7 @@
                                     <h:panelGrid columns="3" class="w-100" rendered="#{!inwardRefundController.current.patientEncounter.paymentFinalized}">
                                         <p:spacer/>
                                         <h:outputLabel value="No Record Found" style="font-size: 1.3em; text-align: center" />
-                                          <h:outputLabel value="" />
+                                        <h:outputLabel value="" />
                                     </h:panelGrid>
                                 </p:panel>
                                 <p:panel id="amount" class="my-2">
@@ -128,35 +134,43 @@
                                     </f:facet>
                                     <h:panelGrid columns="3" class="w-100" >
                                         <h:outputLabel value="Payment Method"/>
-                                        <h:outputLabel value=":" ></h:outputLabel>
-                                        <p:selectOneMenu class="w-45" autoWidth="false" id="cmbPs" value="#{inwardRefundController.current.paymentMethod}"  >
-                                            <f:selectItem itemLabel="Select Payment Method" />
-                                            <f:selectItems value="#{inwardRefundController.paymentMethods}"  />
-                                            <p:ajax process="cmbPs" update="creditCard cheque slip  " event="change" />
+                                        <h:outputLabel value=":"/>
+                                        <p:selectOneMenu class="w-100" autoWidth="false" id="cmbPs" value="#{inwardRefundController.current.paymentMethod}">
+                                            <f:selectItem itemLabel="Select Payment Method"/>
+                                            <f:selectItems value="#{inwardRefundController.paymentMethods}"/>
+                                            <p:ajax process="cmbPs" update="creditCard cheque slip lblCreditCard lblCheque lblSlip lblCreditCardColon lblChequeColon lblSlipColon" event="change"/>
                                         </p:selectOneMenu>
-                                        <h:panelGroup id="creditCard" style="display: #{inwardRefundController.current.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
+
+                                        <h:outputLabel id="lblCreditCard" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};" />
+                                        <h:outputLabel id="lblCreditCardColon" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};" />
+                                        <h:panelGroup id="creditCard" style="display: #{inwardRefundController.current.paymentMethod eq 'Card' ? 'block' : 'none'};">
                                             <pa:creditCard paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="cheque" style="display: #{inwardRefundController.current.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
+                                        <h:outputLabel id="lblCheque" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};" />
+                                        <h:outputLabel id="lblChequeColon" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};" />
+                                        <h:panelGroup id="cheque" style="display: #{inwardRefundController.current.paymentMethod eq 'Cheque' ? 'block' : 'none'};">
                                             <pa:cheque paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
                                         </h:panelGroup>
 
-                                        <h:panelGroup id="slip" style="display: #{inwardRefundController.current.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
+                                        <h:outputLabel id="lblSlip" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};" />
+                                        <h:outputLabel id="lblSlipColon" value=""
+                                                       style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};" />
+                                        <h:panelGroup id="slip" style="display: #{inwardRefundController.current.paymentMethod eq 'Slip' ? 'block' : 'none'};">
                                             <pa:slip paymentMethodData="#{inwardRefundController.paymentMethodData}"/>
                                         </h:panelGroup>
+
                                         <p:outputLabel class="mt-1" value="Amount"/>
-                                        <h:outputLabel class="mt-1" value=":" ></h:outputLabel>
-                                        <p:inputText class="w-45 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}" />
-                                        
+                                        <h:outputLabel class="mt-1" value=":"/>
+                                        <p:inputText class="w-100 mt-1" autocomplete="off" value="#{inwardRefundController.current.total}"/>
+
 <!--                                    disabled="#{inwardRefundController.paidAmount gt 0 }"    -->
-                                        
-                                    </h:panelGrid>
-                                    <h:panelGrid columns="6" class="my-2">
-                                        <p:commandButton class="ui-button-warning" icon="fas fa-arrow-rotate-left" id="btnRefund" ajax="false" value="Refund" 
-                                                         action="#{inwardRefundController.pay}" />
-                                        <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" value="Clear" action="#{inwardRefundController.makeNull}" />
-                                        <p:defaultCommand target="btnRefund"/>
+
                                     </h:panelGrid>
                                 </p:panel>
 
@@ -165,7 +179,7 @@
                     </p:panel>
                 </h:panelGroup>    
                 <p:panel rendered="#{inwardRefundController.printPreview}">
-                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
+                    <p:commandButton ajax="false" value="New Bill" class="ui-button-success mb-3" icon="fas fa-plus" action="#{inwardRefundController.makeNull}" />
                     <bill:paymentRefund_1 bill="#{inwardRefundController.current}"/>
                 </p:panel>
 

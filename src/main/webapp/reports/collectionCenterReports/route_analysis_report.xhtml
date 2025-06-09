@@ -6,7 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles" 
+      xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp/bundles"
       xmlns:c="http://java.sun.com/jsp/jstl/core">
 
 <h:body>
@@ -20,10 +20,13 @@
                             <h:outputText value="&#xf073;" styleClass="fa ml-5"/> <!-- FontAwesome calendar icon -->
                             <h:outputLabel value="From Date" class="mx-3"/>
                         </h:panelGroup>
-                        <p:datePicker value="#{reportsController.fromDate}"
-                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                      class="w-100 mr-5"
-                                      inputStyleClass="w-100"/>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                value="#{reportsController.fromDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                         <p:spacer width="20"/>
 
@@ -31,11 +34,13 @@
                             <h:outputText value="&#xf073;" styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
                             <h:outputLabel value="To Date" class="mx-3"/>
                         </h:panelGroup>
-
-                        <p:datePicker value="#{reportsController.toDate}"
-                                      pattern="#{sessionController.applicationPreference.longDateFormat}"
-                                      class="w-100"
-                                      inputStyleClass="w-100"/>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                value="#{reportsController.toDate}"
+                                navigator="false"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
 
                         <p:spacer width="20"/>
 
@@ -229,9 +234,68 @@
                             class="m-2 ui-button-info"
                             style="width: 150px"
                             ajax="false"
-                            value="Print">
-                        <p:printer target="printPanel"/>
-                    </p:commandButton>
+                            value="Print"
+                            onclick="handlePrint(); return false;"/>
+
+                    <h:outputScript>
+                        function handlePrint() {
+                            console.log("Print button clicked");
+
+                            const convertChartToImage = function (widgetVarName) {
+                                return new Promise((resolve, reject) => {
+                                    const chartWidget = PF(widgetVarName);
+                                    if (!chartWidget || !chartWidget.cfg || !chartWidget.cfg.chart) {
+                                        console.warn("Chart not available:", widgetVarName);
+                                        return resolve(false);
+                                    }
+
+                                    const canvas = chartWidget.cfg.chart.canvas;
+                                    const img = document.createElement("img");
+                                    img.onload = () => {
+                                        canvas.parentNode.replaceChild(img, canvas);
+                                        resolve(true);
+                                    };
+                                    img.onerror = reject;
+
+                                    img.src = chartWidget.cfg.chart.toBase64Image();
+                                    img.style.width = canvas.style.width;
+                                    img.style.height = canvas.style.height;
+                                });
+                            };
+
+                            Promise.all([
+                                convertChartToImage('countChartWidget'),
+                                convertChartToImage('serviceChartWidget')
+                            ]).then(() => {
+                                setTimeout(() => {
+                                    window.print();
+                                }, 300);
+                            }).catch((e) => {
+                                console.error("Error during chart conversion", e);
+                                window.print();
+                            });
+                        }
+                    </h:outputScript>
+
+                    <h:outputStylesheet>
+                        @media print {
+                            body * {
+                                visibility: hidden !important;
+                            }
+
+                            .print-panel, .print-panel * {
+                                visibility: visible !important;
+                            }
+
+                            .print-panel {
+                                position: absolute !important;
+                                left: 0;
+                                top: 0;
+                                width: 100%;
+                            }
+                        }
+                    </h:outputStylesheet>
+
                     <p:commandButton class="m-2 ui-button-success"
                                      style="width: 150px"
                                      icon="fas fa-file-excel"
@@ -266,36 +330,44 @@
                             value="PDF">
                     </p:commandButton>
 
-                    <h:panelGrid columns="2" class="mb-2">
-                        <h:outputLabel value="From Date :  "/>
-                        <h:outputLabel value="#{reportsController.fromDate}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                        </h:outputLabel>
+                    <h:panelGroup id="printPanel" layout="block" styleClass="print-panel">
+                        <h:panelGrid columns="2" class="mb-2">
+                            <h:outputLabel value="Route Analysis Report" style="font-weight: bold;" styleClass="w-100"/>
+                            <h:outputLabel value="" styleClass="w-100"/>
 
-                        <h:outputLabel value="To Date :  "/>
-                        <h:outputLabel value="#{reportsController.toDate}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                        </h:outputLabel>
+                            <h:outputLabel value="From Date :  "/>
+                            <h:outputLabel value="#{reportsController.fromDate}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
 
-                        <h:outputLabel value="Collection Center Name :  "/>
-                        <h:outputLabel value="#{reportsController.collectingCentre.name}"/>
-                    </h:panelGrid>
+                            <h:outputLabel value="To Date :  "/>
+                            <h:outputLabel value="#{reportsController.toDate}">
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                            </h:outputLabel>
 
-                    <h:panelGroup id="printPanel">
+                            <h:outputLabel value="Collection Center Name :  "/>
+                            <h:outputLabel value="#{reportsController.collectingCentre.name}"/>
+                        </h:panelGrid>
+
                         <div class="card">
-                            <h:form rendered="#{reportsController.showChart}">
+                            <h:form>
                                 <p:growl id="growl" showDetail="true"/>
-                                <p:lineChart model="#{chartJsView.countChartModel}"
+                                <p:lineChart id="countChart"
+                                             widgetVar="countChartWidget"
+                                             model="#{chartJsView.countChartModel}"
                                              style="width: 100%; height: 500px;"
-                                             rendered="#{reportsController.reportType ne null}">
-                                    <p:ajax event="itemSelect" listener="#{chartJsView.itemSelect}" update="growl"/>
+                                             rendered="#{reportsController.showChart and reportsController.reportType ne null}">
                                 </p:lineChart>
 
-                                <p:lineChart model="#{chartJsView.serviceChartModel}"
+                                <p:lineChart id="serviceChart"
+                                             widgetVar="serviceChartWidget"
+                                             model="#{chartJsView.serviceChartModel}"
                                              style="width: 100%; height: 500px;"
-                                             rendered="#{reportsController.reportType ne null}">
-                                    <p:ajax event="itemSelect" listener="#{chartJsView.itemSelect}" update="growl"/>
+                                             rendered="#{reportsController.showChart and reportsController.reportType ne null}">
                                 </p:lineChart>
+
                             </h:form>
                         </div>
 
@@ -411,6 +483,12 @@
                                     <br/>
                                     <h:outputText value="Total"/>
                                 </f:facet>
+                            </p:column>
+                            <p:column width="5em">
+                                <f:facet name="header">
+                                    <h:outputText value="Route Code"/>
+                                </f:facet>
+                                <h:outputText value="#{entryset.key.code}"/>
                             </p:column>
                             <p:column width="5em">
                                 <f:facet name="header">

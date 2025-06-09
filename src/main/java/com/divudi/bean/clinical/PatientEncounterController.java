@@ -9,54 +9,50 @@
 package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.data.clinical.PrescriptionTemplateType;
-import com.divudi.data.inward.PatientEncounterType;
-import com.divudi.data.lab.InvestigationResultForGraph;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.clinical.ClinicalEntity;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.clinical.DocumentTemplate;
-import com.divudi.entity.clinical.ItemUsage;
-import com.divudi.entity.clinical.Prescription;
-import com.divudi.entity.clinical.PrescriptionTemplate;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.ClinicalEntityFacade;
-import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.facade.ItemUsageFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PrescriptionFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.data.clinical.PrescriptionTemplateType;
+import com.divudi.core.data.inward.PatientEncounterType;
+import com.divudi.core.data.lab.InvestigationResultForGraph;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.clinical.ClinicalEntity;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.clinical.DocumentTemplate;
+import com.divudi.core.entity.clinical.ItemUsage;
+import com.divudi.core.entity.clinical.Prescription;
+import com.divudi.core.entity.clinical.PrescriptionTemplate;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.ClinicalEntityFacade;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.ItemUsageFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PrescriptionFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.CommonReportItemController;
 import com.divudi.bean.lab.PatientReportController;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientReportFacade;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.lab.PatientReport;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -71,6 +67,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.PhaseId;
@@ -117,24 +115,16 @@ public class PatientEncounterController implements Serializable {
     private ItemUsageFacade itemUsageFacade;
     @EJB
     private PrescriptionFacade prescriptionFacade;
-    @EJB
-    private PatientReportFacade prFacade;
-    @EJB
-    BillItemFacade billItemFacade;
 
     /**
      * Controllers
      */
-    @Inject
-    private CommonFunctionsController commonFunctions;
     @Inject
     SessionController sessionController;
     @Inject
     PharmacySaleController pharmacySaleController;
     @Inject
     BillController billController;
-    @Inject
-    CommonController commonController;
     @Inject
     DocumentTemplateController documentTemplateController;
     @Inject
@@ -811,9 +801,9 @@ public class PatientEncounterController implements Serializable {
 //        if (bill.getId()==null){
 //            billFacade.create(bill);
 //        }
-//        
+//
 //        bi.setBill(bill);
-//        
+//
 //        if (bi.getId() == null) {
 //            billItemFacade.create(bi);
 //        }
@@ -1329,9 +1319,9 @@ public class PatientEncounterController implements Serializable {
         String nic = e.getPatient().getPerson().getNic() != null ? e.getPatient().getPerson().getNic() : "";
         String phn = e.getPatient().getPhn() != null ? e.getPatient().getPhn() : "";
 
-        String visitDate = CommonController.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
-        String weight = CommonController.formatNumber(e.getWeight(), "0.0") + " kg";
-        String height = CommonController.formatNumber(e.getHeight(), "0") + " cm";
+        String visitDate = CommonFunctions.formatDate(e.getCreatedAt(), sessionController.getApplicationPreference().getLongDateFormat());
+        String weight = CommonFunctions.formatNumber(e.getWeight(), "0.0") + " kg";
+        String height = CommonFunctions.formatNumber(e.getHeight(), "0") + " cm";
         String bmi = e.getBmiFormatted();
         String bp = e.getBp() != null ? e.getBp() : "";
         String rr = e.getRespiratoryRate() != null ? e.getRespiratoryRate() + " bpm" : "";
@@ -1916,7 +1906,7 @@ public class PatientEncounterController implements Serializable {
     }
 
 //    public List<PatientEncounter> getSelectedItems() {
-//        selectedItems = getFacade().findByJpql("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.data.PatientEncounterType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+//        selectedItems = getFacade().findByJpql("select c from PatientEncounter c where c.retired=false and i.institutionType = com.divudi.core.data.PatientEncounterType.Agency and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
 //        return selectedItems;
 //    }
     public void prepareAdd() {
@@ -2446,7 +2436,7 @@ public class PatientEncounterController implements Serializable {
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = new Date();
-            fromDate = getCommonFunctions().getStartOfDay(fromDate);
+            fromDate = CommonFunctions.getStartOfDay(fromDate);
         }
         return fromDate;
     }
@@ -2458,7 +2448,7 @@ public class PatientEncounterController implements Serializable {
     public Date getToDate() {
         if (toDate == null) {
             toDate = new Date();
-            toDate = getCommonFunctions().getEndOfDay(toDate);
+            toDate = CommonFunctions.getEndOfDay(toDate);
         }
         return toDate;
     }
@@ -2507,10 +2497,6 @@ public class PatientEncounterController implements Serializable {
         return patientFacade;
     }
 
-    public CommonFunctionsController getCommonFunctions() {
-        return commonFunctions;
-    }
-
     public BillFacade getBillFacade() {
         return billFacade;
     }
@@ -2549,14 +2535,6 @@ public class PatientEncounterController implements Serializable {
 
     public void setGraphInvestigationItem(InvestigationItem graphInvestigationItem) {
         this.graphInvestigationItem = graphInvestigationItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<PatientEncounter> getSelectedItems() {

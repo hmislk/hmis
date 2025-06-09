@@ -222,9 +222,26 @@
                             style="width: 150px"
                             icon="fas fa-print"
                             ajax="false"
-                            value="Print">
-                        <p:printer target="tblExport"/>
+                            value="Print"
+                            onclick="hidePaginatorBeforePrint()">
+                        <p:printer target="printPanel" oncomplete="restorePaginatorAfterPrint()"/>
                     </p:commandButton>
+
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                        };
+                    </h:outputScript>
 
                     <p:commandButton
                             class="ui-button-success my-4 mx-2"
@@ -232,7 +249,11 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel">
-                        <p:dataExporter type="xlsx" target="tblExport" fileName="payment_settlement_report.xlsx"/>
+                        <p:dataExporter type="xlsx"
+                                        target="#{reportsController.visitType eq 'IP' and reportsController.reportType eq 'detail' ? 'tblipdetail' :
+                                                    reportsController.visitType eq 'IP' and reportsController.reportType eq 'summary' ? 'tblipsummary' :
+                                                    reportsController.visitType eq 'OP' and reportsController.reportType eq 'detail' ? 'tblopdetail' : 'tblopsummary'}"
+                                        fileName="payment_settlement_report.xlsx"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -241,342 +262,394 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF">
-                        <p:dataExporter type="pdf" target="tblExport" fileName="payment_settlement_report.pdf"/>
+                        <p:dataExporter type="pdf"
+                                        target="#{reportsController.visitType eq 'IP' and reportsController.reportType eq 'detail' ? 'tblipdetail' :
+                                                    reportsController.visitType eq 'IP' and reportsController.reportType eq 'summary' ? 'tblipsummary' :
+                                                    reportsController.visitType eq 'OP' and reportsController.reportType eq 'detail' ? 'tblopdetail' : 'tblopsummary'}"
+                                        fileName="payment_settlement_report.pdf"/>
                     </p:commandButton>
 
-                    <!--table 1 / report type - ip/ details-->
-                    <p:dataTable
-                            id="tblExport"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            rendered="#{reportsController.reportType eq 'detail' and reportsController.visitType eq 'IP'}"
-                            rows="10"
-                            var="bi"
-                            rowIndexVar="n"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
+                    <h:panelGroup id="printPanel">
+                        <!--table 1 / report type - ip/ details-->
+                        <p:dataTable
+                                id="tblipdetail"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rendered="#{reportsController.reportType eq 'detail' and reportsController.visitType eq 'IP'}"
+                                rows="10"
+                                var="bi"
+                                rowIndexVar="n"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
 
-                        <f:facet name="header">
-                            <h:outputText value="Visit Type - IP"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                            <h:outputText value="Report Type - Details"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
-                        <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="BHT No" width="8rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.bhtNo}"/>
-                        </p:column>
-                        <p:column headerText="Credit Company" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.bill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsController.bundle.total}">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - IP"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText value="Report Type - Details"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
-                        </p:column>
-                        <p:column headerText="Receipt Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paidAmount}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.bank.name}"/>
-                        </p:column>
-                        <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
-                        </p:column>
-                        <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled By" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled Date" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-
-                    <!--table 2 / report type - ip /summary-->
-                    <p:dataTable
-                            id="tblExport2"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            rendered="#{reportsController.reportType eq 'summary' and reportsController.visitType eq 'IP'}"
-                            rows="10"
-                            var="bi"
-                            rowIndexVar="n"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-                        <f:facet name="header">
-                            <h:outputText value="Visit Type - IP"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                            <h:outputText value="Report Type - Summary"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
-                        <p:column headerText="Receipt No" width="8rem">
-                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Credit Company" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.bill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.paymentMethod.name()}"/>
-                        </p:column>
-                        <p:column headerText="Total Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsController.bundle.total}">
+                            <p:column headerText="Receipt No" width="8rem">
+                                <h:outputText value="#{bi.billItem.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="BHT No" width="8rem">
+                                <h:outputText value="#{bi.billItem.patientEncounter.bhtNo}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="5rem">
+                                <h:outputText
+                                        value="#{bi.billItem.bill.fromInstitution.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.patientEncounter.dateOfDischarge}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText
+                                        value="#{bi.billItem.patientEncounter.finalBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.paymentMethod.name()}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Value" width="5rem">
+                                <h:outputText value="#{bi.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
-                            </f:facet>
-                        </p:column>
-                        <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.bank.name}"/>
-                        </p:column>
-                        <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
-                        </p:column>
-                        <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled By" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled Date" width="5rem">
-                            <h:outputText
-                                    value="#{bi.billItem.patientEncounter.finalBill.cancelledBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-
-                    <!--table 3 / report type - op/ details-->
-                    <p:dataTable
-                            id="tblExport3"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            rendered="#{reportsController.visitType eq 'OP' and reportsController.reportType eq 'detail'}"
-                            rows="10"
-                            var="bi"
-                            rowIndexVar="n"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-                        <f:facet name="header">
-                            <h:outputText value="Visit Type - OP"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                            <h:outputText value="Report Type - Details"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
-                        <p:column headerText="Receipt No" width="10rem">
-                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="OPD Bill No" width="10rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Credit Company" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.paidAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsController.bundle.total}">
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsController.bundle.total}" style="text-align: right">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Receipt Value" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.bank.name}"/>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.chequeDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText
+                                        value="#{bi.billItem.bill.cancelledBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText
+                                        value="#{bi.billItem.bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <!--table 2 / report type - ip /summary-->
+                        <p:dataTable
+                                id="tblipsummary"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rendered="#{reportsController.reportType eq 'summary' and reportsController.visitType eq 'IP'}"
+                                rows="10"
+                                var="bi"
+                                rowIndexVar="n"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - IP"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText value="Report Type - Summary"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
-                        </p:column>
-                        <p:column headerText="Receipt Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.netValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.bank.name}"/>
-                        </p:column>
-                        <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
-                        </p:column>
-                        <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled By" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
-
-                    <!--table 2 / report type - op/ summary-->
-                    <p:dataTable
-                            id="tblExport4"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            rendered="#{reportsController.reportType eq 'summary' and reportsController.visitType eq 'OP'}"
-                            rows="10"
-                            var="bi"
-                            rowIndexVar="n"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-
-                        <f:facet name="header">
-                            <h:outputText value="Visit Type - OP"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                            <h:outputText value="Report Type - Summary"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
-                        <p:column headerText="Receipt No" width="6rem">
-                            <h:outputText value="#{bi.billItem.bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Credit Company" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.creditCompany.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoice Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.paidAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Settlement By" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Payment Method" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
-                        </p:column>
-                        <p:column headerText="Total Value" width="5rem">
-                            <h:outputText value="#{bi.billItem.referenceBill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputLabel value="#{reportsController.bundle.total}">
+                            <p:column headerText="Receipt No" width="8rem">
+                                <h:outputText value="#{bi.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="5rem">
+                                <h:outputText
+                                        value="#{bi.bill.fromInstitution.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="#{bi.bill.referenceBill.createdAt}"
+                                              rendered="#{bi.bill.billItems[0].patientEncounter.finalBill eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{bi.bill.billedBill.forwardReferenceBill.createdAt}"
+                                              rendered="#{bi.bill.billItems[0].patientEncounter.finalBill eq null and bi.bill.referenceBill eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{bi.bill.billItems[0].patientEncounter.finalBill.createdAt}"
+                                              rendered="#{bi.bill.billItems[0].patientEncounter.finalBill ne null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="#{bi.bill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText
+                                        value="#{bi.bill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="#{bi.bill.paymentMethod.name()}"/>
+                            </p:column>
+                            <p:column headerText="Total Value" width="5rem">
+                                <h:outputText value="#{bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="#{bi.bill.bank.name}"/>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="#{bi.bill.chequeRefNo}"/>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="#{bi.bill.chequeDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="#{bi.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="#{bi.bill.cancelledBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText
+                                        value="#{bi.bill.cancelledBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText
+                                        value="#{bi.bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <!--table 3 / report type - op/ details-->
+                        <p:dataTable
+                                id="tblopdetail"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rendered="#{reportsController.visitType eq 'OP' and reportsController.reportType eq 'detail'}"
+                                rows="10"
+                                var="bi"
+                                rowIndexVar="n"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - OP"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText value="Report Type - Details"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
                             </f:facet>
-                        </p:column>
-                        <p:column headerText="Bank" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.bank.name}"/>
-                        </p:column>
-                        <p:column headerText="Cheque No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
-                        </p:column>
-                        <p:column headerText="Cheque Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.chequeDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Comments" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Cancelled Receipt No" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled By" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Receipt Cancelled Date" width="5rem">
-                            <h:outputText value="#{bi.billItem.bill.cancelledBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
+                            <p:column headerText="Receipt No" width="10rem">
+                                <h:outputText value="#{bi.billItem.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="OPD Bill No" width="10rem">
+                                <h:outputText value="#{bi.billItem.referenceBill.deptId}"
+                                              rendered="#{bi.billItem.referenceBill ne null}"/>
+                                <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.deptId}"
+                                              rendered="#{bi.billItem.referenceBill eq null}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.fromInstitution.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.referenceBill.createdAt}"
+                                              rendered="#{bi.billItem.referenceBill ne null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{bi.billItem.bill.billedBill.forwardReferenceBill.createdAt}"
+                                              rendered="#{bi.billItem.referenceBill eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText value="#{bi.billItem.referenceBill.creater.webUserPerson.name}"
+                                              rendered="#{bi.billItem.referenceBill ne null}"/>
+                                <h:outputText
+                                        value="#{bi.billItem.bill.billedBill.forwardReferenceBill.creater.webUserPerson.name}"
+                                        rendered="#{bi.billItem.referenceBill eq null}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.paymentMethod}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Value" width="5rem">
+                                <h:outputText value="#{bi.billItem.netValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Receipt Value" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.bank.name}"/>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.chequeRefNo}"/>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.chequeDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.cancelledBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.cancelledBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText value="#{bi.billItem.bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+
+                        <!--table 2 / report type - op/ summary-->
+                        <p:dataTable
+                                id="tblopsummary"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rendered="#{reportsController.reportType eq 'summary' and reportsController.visitType eq 'OP'}"
+                                rows="10"
+                                var="bi"
+                                rowIndexVar="n"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
+
+                            <f:facet name="header">
+                                <h:outputText value="Visit Type - OP"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                                <h:outputText value="Report Type - Summary"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Receipt No" width="12rem">
+                                <h:outputText value="#{bi.bill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Credit Company" width="12rem">
+                                <h:outputText value="#{bi.bill.fromInstitution.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoice Date" width="5rem">
+                                <h:outputText value="#{bi.bill.billItems[0].referenceBill.createdAt}"
+                                              rendered="#{bi.bill.billItems[0].referenceBill ne null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                                <h:outputText value="#{bi.bill.billedBill.forwardReferenceBill.createdAt}"
+                                              rendered="#{bi.bill.billItems[0].referenceBill eq null}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement Date" width="5rem">
+                                <h:outputText value="#{bi.bill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Settlement By" width="5rem">
+                                <h:outputText value="#{bi.bill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Payment Method" width="5rem">
+                                <h:outputText value="#{bi.bill.paymentMethod}"/>
+                            </p:column>
+                            <p:column headerText="Total Value" width="5rem">
+                                <h:outputText value="#{bi.bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Bank" width="5rem">
+                                <h:outputText value="#{bi.bill.bank.name}"/>
+                            </p:column>
+                            <p:column headerText="Cheque No" width="5rem">
+                                <h:outputText value="#{bi.bill.chequeRefNo}"/>
+                            </p:column>
+                            <p:column headerText="Cheque Date" width="5rem">
+                                <h:outputText value="#{bi.bill.chequeDate}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Comments" width="5rem">
+                                <h:outputText value="#{bi.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Cancelled Receipt No" width="5rem">
+                                <h:outputText value="#{bi.bill.cancelledBill.deptId}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled By" width="5rem">
+                                <h:outputText value="#{bi.bill.cancelledBill.creater.webUserPerson.name}"/>
+                            </p:column>
+                            <p:column headerText="Receipt Cancelled Date" width="5rem">
+                                <h:outputText value="#{bi.bill.cancelledBill.createdAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>

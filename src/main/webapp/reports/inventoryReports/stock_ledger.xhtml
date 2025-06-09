@@ -8,6 +8,26 @@
     <h:body>
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
+                <style>
+                    .stock-in-badge {
+                        background-color: #28a745 !important;
+                        color: white !important;
+                        padding: 2px 6px !important;
+                        border-radius: 4px !important;
+                        font-size: 12px !important;
+                        font-weight: bold !important;
+                        display: inline-block !important;
+                    }
+                    .stock-out-badge {
+                        background-color: #dc3545 !important;
+                        color: white !important;
+                        padding: 2px 6px !important;
+                        border-radius: 4px !important;
+                        font-size: 12px !important;
+                        font-weight: bold !important;
+                        display: inline-block !important;
+                    }
+                </style>
                 <h:form >
                     <p:panel header="Stock Ledger" >
 
@@ -202,19 +222,12 @@
                                 action="#{pharmacyReportController.processStockLedgerReport()}" >
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button- mx-1" 
-                                icon="fas fa-print" 
-                                ajax="false" 
-                                value="Print All">
-                                <p:printer target="tbl" />
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tbl" oncomplete="restorePaginatorAfterPrint()"/>
                             </p:commandButton>
 
-                            <p:commandButton 
-                                class="ui-button-success mx-1" 
-                                icon="fas fa-file-excel" 
-                                ajax="false" 
-                                value="Download">
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
                                     fileName="Stock Ledger Report" 
@@ -225,14 +238,26 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Stock Ledger Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportStockLedgerToPdf()}">
                             </p:commandButton>
 
                         </div>
+                        <h:outputScript>
+                            function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                            }
+
+                            function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                            }
+
+                            window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                            };
+                        </h:outputScript>
 
 
                         <p:dataTable id="tbl" 
@@ -266,10 +291,9 @@
                                 <h:outputText value="#{f.pbItem.billItem.item.measurementUnit.name}" />
                             </p:column>
                             <p:column headerText="Transaction Type" width="8em">
-                                <p:badge 
-                                    value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}" 
-                                    severity="#{f.pbItem.transThisIsStockIn ? 'success' : 'danger'}" 
-                                    styleClass="mr-2" />
+                                <h:outputText 
+                                    value="#{f.pbItem.transThisIsStockIn ? 'STOCK IN' : 'STOCK OUT'}"
+                                    styleClass="#{f.pbItem.transThisIsStockIn ? 'stock-in-badge' : 'stock-out-badge'}" />
                             </p:column>
                             <p:column headerText="Doc No" width="15em">
                                 <p:commandLink 
@@ -278,7 +302,7 @@
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{not empty f.pbItem.billItem.bill ? f.pbItem.billItem.bill : (f.pbItem.billItem.bill.referenceBill or f.pbItem.billItem.bill.backwardReferenceBill or f.pbItem.billItem.bill.forwardReferenceBill)}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
@@ -286,42 +310,26 @@
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
-                                    value="#{not empty f.pbItem.billItem.bill.cancelledBill ? f.pbItem.billItem.bill.cancelledBill.deptId : f.pbItem.billItem.bill.referenceBill.deptId}"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                                    value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
-                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
 
-                            <!--                            <p:column headerText="Ref Doc No." width="15em">
-                                                            <p:commandLink 
-                                                                value="#{f.pbItem.billItem.bill.cancelledBill.deptId}"
-                                                                class="m-1 ui-button-info"
-                                                                style="width: 100px;"
-                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                                                ajax="false">
-                                                                <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                            </p:commandLink>
-                                                            <p:commandLink 
-                                                                value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
-                                                                class="m-1 ui-button-info"
-                                                                style="width: 100px;"
-                                                                action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                                                ajax="false">
-                                                                <f:setPropertyActionListener value="#{f.pbItem.billItem.bill}" target="#{billSearch.bill}" />
-                                                            </p:commandLink>
-                                                        </p:column>-->
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.cancelledBill.createdAt}" />
-                                <h:outputText value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+
                             </p:column>
                             <p:column headerText="From Store" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.fromDepartment.name}" />
                             </p:column>
                             <p:column headerText="To Store" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.bill.toDepartment.name}" />
+                                <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
                             <p:column headerText="Document Type" width="5em">
                                 <h:outputText 
@@ -342,7 +350,9 @@
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
                             <p:column headerText="Closing Stock Value" width="15em">
-                                <h:outputText value="#{f.itemStockValueAtPurchaseRate}" />
+                                <h:outputText value="#{f.itemStock * f.pbItem.purchaseRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Locator" width="5em">
                                 <h:outputText value="" />

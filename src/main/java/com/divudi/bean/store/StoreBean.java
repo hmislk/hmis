@@ -4,58 +4,61 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemBatchQty;
-import com.divudi.data.StockQty;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemBatchQty;
+import com.divudi.core.data.StockQty;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.IssueRateMargins;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.MeasurementUnit;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.StoreItemCategory;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.IssueRateMarginsFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemsDistributorsFacade;
-import com.divudi.facade.MeasurementUnitFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.StoreItemCategoryFacade;
-import com.divudi.facade.UserStockContainerFacade;
-import com.divudi.facade.UserStockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VmppFacade;
-import com.divudi.facade.VtmFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.IssueRateMargins;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StoreItemCategory;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.IssueRateMarginsFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemsDistributorsFacade;
+import com.divudi.core.facade.MeasurementUnitFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.StoreItemCategoryFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VmppFacade;
+import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
+import com.divudi.core.util.CommonFunctions;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -71,7 +74,7 @@ import javax.persistence.TemporalType;
  * @author Buddhika
  */
 @Singleton
-public class StoreBean {
+public class StoreBean implements Serializable {
 
     @EJB
     PharmaceuticalItemCategoryFacade PharmaceuticalItemCategoryFacade;
@@ -144,7 +147,6 @@ public class StoreBean {
         double updatableQty1 = getUserStockFacade().findDoubleByJpql(sql, hm, TemporalType.TIMESTAMP);
 
         double netUpdate = updatableQty1 + qty;
-
 
         if (netUpdate > fetchedStock.getStock()) {
             return false;
@@ -240,7 +242,6 @@ public class StoreBean {
     @EJB
     IssueRateMarginsFacade issueRateMarginsFacade;
 
-    
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
         HashMap hm = new HashMap();
@@ -251,7 +252,7 @@ public class StoreBean {
         hm.put("frm", fromDepartment);
         hm.put("to", toDepartment);
         IssueRateMargins m = issueRateMarginsFacade.findFirstByJpql(sql, hm);
-        if(m==null){
+        if (m == null) {
             m = new IssueRateMargins();
             m.setAtPurchaseRate(true);
             m.setCreatedAt(new Date());
@@ -605,6 +606,24 @@ public class StoreBean {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
 
         if (s.getId() == null || s.getId() == 0) {
@@ -646,6 +665,24 @@ public class StoreBean {
             s.setDepartment(department);
             s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getId() == null || s.getId() == 0) {
             //System.err.println("Initial Stock Before Updation" + s.getStock());
@@ -686,6 +723,24 @@ public class StoreBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -722,6 +777,24 @@ public class StoreBean {
             s = new Stock();
             s.setStaff(staff);
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         if (s.getStock() < qty) {
             return false;
@@ -763,6 +836,24 @@ public class StoreBean {
             s = new Stock();
             s.setDepartment(department);
             s.setItemBatch(batch);
+            ItemBatch ib = batch;
+            Item i = null;
+            if (ib != null) {
+                i = ib.getItem();
+            }
+            if (i != null) {
+                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                String code = i.getCode();
+                Long longCode = CommonFunctions.stringToLong(code);
+                s.setLongCode(longCode);
+                s.setDateOfExpire(ib.getDateOfExpire());
+                s.setRetailsaleRate(ib.getRetailsaleRate());
+            } else {
+                s.setItemName("UNKNOWN");
+                s.setBarcode("");
+                s.setLongCode(0L);
+            }
         }
         s.setStock(s.getStock() - qty);
         double number = s.getStock();
@@ -962,6 +1053,9 @@ public class StoreBean {
         sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);
@@ -1011,9 +1105,12 @@ public class StoreBean {
 
         Stock fetchedStock = getStockFacade().find(stock.getId());
 
-        sh.setStockQty(0.0);
+        sh.setStockQty(fetchedStock.getStock());
         sh.setItem(phItem.getBillItem().getItem());
         sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(phItem.getBillItem().getItem(), d));
+        sh.setInstitutionItemStock(getStockQty(phItem.getBillItem().getItem(), d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(phItem.getBillItem().getItem()));
 
         if (sh.getId() == null) {
             getStockHistoryFacade().create(sh);

@@ -23,7 +23,6 @@
                          var="pm" >
                 <p:column class="w-100">
                     <f:facet name="header" class="d-flex justify-content-center" >
-
                         <div class="d-flex align-items-center justify-content-between">
                             <p:outputLabel value="Multiple Payments" class="mx-1" ></p:outputLabel>
                             <div class="d-flex ">
@@ -52,7 +51,6 @@
                             <p:commandButton icon="fas fa-arrows-rotate" process="@this" update="tblMultiplePayments"/>
                         </div>
 
-
                     </f:facet>
                     <div class="row" >
                         <div class=" d-flex justify-content-between">
@@ -67,7 +65,7 @@
                                     itemLabel="#{pm1.label}"
                                     itemValue="#{pm1}"/>
                                 <p:ajax process="pay" 
-                                        update="paymentDetails"
+                                        update="paymentDetails tblMultiplePayments"
                                         event="change"
                                         listener="#{cc.attrs.controller.recieveRemainAmountAutomatically()}"  />
                             </p:selectOneMenu>
@@ -83,9 +81,7 @@
                     </div>
 
                     <div class="row mt-2" >
-
                         <div class="col-12" >
-
                             <h:panelGroup layout="block" class="col-12"  id="paymentDetails"  >
                                 <h:panelGroup id="cash" rendered="#{pm.paymentMethod eq 'Cash'}"  layout="block" class="row" >
                                     <pa:cash valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
@@ -111,19 +107,10 @@
                                 <h:panelGroup id="Staff_Welfare" rendered="#{pm.paymentMethod eq 'Staff_Welfare'}" layout="block" class="row">
                                     <pa:staff_welfare valueRequired="true" paymentMethodData="#{pm.paymentMethodData}"/>
                                 </h:panelGroup>
-
-
                             </h:panelGroup>
-
                         </div></div>
-
-
-
                 </p:column>
             </p:dataTable>
         </div>
-
-
-
     </cc:implementation>
 </html>

@@ -40,15 +40,15 @@
                                     <h:outputText id="item" value="#{bItm.item.name}" >                                   
                                     </h:outputText>
                                 </p:column>  
-                                
+
                                 <p:column headerText="Req. Qty" width="70px;">
                                     <h:outputLabel value="#{bItm.referanceBillItem.qty}"/>                        
                                 </p:column>
-                                
+
                                 <p:column headerText="Stock. Qty" width="70px;">
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.stock}"/>                        
                                 </p:column>
-                                
+
                                 <p:column headerText="Issued Qty" width="80px;">
                                     <h:outputLabel value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
@@ -91,7 +91,13 @@
                         <p:panel >
                             <f:facet name="header" >                                  
                                 <h:outputText value="Issue Details" ></h:outputText>
-                                <p:commandButton  value="Issue" icon="fas fa-check" action="#{transferIssueController.settle}" style="float: right;" ajax="false" class="ui-button-success mx-2" >
+                                <p:commandButton  
+                                    value="Issue" 
+                                    icon="fas fa-check" 
+                                    action="#{transferIssueController.settle}" 
+                                    style="float: right;" 
+                                    ajax="false" 
+                                    class="ui-button-success mx-2" >
                                 </p:commandButton>  
                             </f:facet>
                             <h:panelGrid columns="3">
@@ -140,7 +146,8 @@
                     icon="fas fa-print"
                     class="ui-button-info mx-2 mb-2"
                     ajax="false" 
-                    action="#" >
+                    action="#"
+                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
 
@@ -148,12 +155,18 @@
 
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
+                            <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
+                            <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                        </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
 
                 </h:panelGroup>

@@ -1,17 +1,17 @@
 package com.divudi.service;
 
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.entity.process.ProcessInstance;
-import com.divudi.entity.process.ProcessStepActionDefinition;
-import com.divudi.entity.process.ProcessStepDefinition;
-import com.divudi.entity.process.ProcessStepInstance;
-import com.divudi.facade.ProcessInstanceFacade;
-import com.divudi.facade.ProcessStepActionDefinitionFacade;
-import com.divudi.facade.ProcessStepDefinitionFacade;
-import com.divudi.facade.ProcessStepInstanceFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.entity.process.ProcessInstance;
+import com.divudi.core.entity.process.ProcessStepActionDefinition;
+import com.divudi.core.entity.process.ProcessStepDefinition;
+import com.divudi.core.entity.process.ProcessStepInstance;
+import com.divudi.core.facade.ProcessInstanceFacade;
+import com.divudi.core.facade.ProcessStepActionDefinitionFacade;
+import com.divudi.core.facade.ProcessStepDefinitionFacade;
+import com.divudi.core.facade.ProcessStepInstanceFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -304,7 +304,7 @@ public class ProcessService {
 
         System.out.println("jpql = " + jpql);
         System.out.println("params = " + params);
-        
+
         List<ProcessInstance> processInstances = processInstanceFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("processInstances = " + processInstances);
         return processInstances;

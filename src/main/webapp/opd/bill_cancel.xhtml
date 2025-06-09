@@ -63,19 +63,9 @@
                                         </f:facet>
                                         <p:selectOneMenu 
                                             id="cmbPs" 
-                                            value="#{billSearch.paymentMethod}" 
-                                            rendered="#{billSearch.bill.billType eq 'OpdBill'}">
-                                            <f:selectItem itemLabel="Select paymentMethod"/>
+                                            value="#{billSearch.paymentMethod}" >
+                                             <f:selectItem itemLabel="Same as Billed" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForOpdBillCanceling}"/>
-                                        </p:selectOneMenu>
-
-                                        <p:selectOneMenu 
-                                            id="cmbPs2" 
-                                            value="#{billSearch.paymentMethod}"  
-                                            disabled="#{billSearch.bill.paymentMethod eq 'Agent'}"
-                                            rendered="#{billSearch.bill.billType eq 'CollectingCentreBill'}">
-                                            <f:selectItem itemLabel="Select paymentMethod"/>
-                                            <f:selectItems value="#{enumController.collectingCentrePaymentMethods}"/>
                                         </p:selectOneMenu>
                                     </p:panel>
                                 </div>

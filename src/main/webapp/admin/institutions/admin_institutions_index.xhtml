@@ -111,11 +111,12 @@
                                             action="#{navigationController.navigateToCollectingCenter()}" >
                                         </p:commandButton>
                                         
-                                        <p:commandButton  
-                                            styleClass="linkButton" 
-                                            ajax="false" 
-                                            value="Credit Companies" 
-                                            icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}" >
+                                        <p:commandButton
+                                            styleClass="linkButton"
+                                            ajax="false"
+                                            value="Credit Companies"
+                                            icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}"
+                                            rendered="#{webUserController.hasPrivilege('ManageCreditCompany')}" >
                                         </p:commandButton>
 
                                         <p:commandButton  

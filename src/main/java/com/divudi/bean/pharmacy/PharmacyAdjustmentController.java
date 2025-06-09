@@ -5,36 +5,35 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -64,8 +63,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -160,7 +157,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
-        List<BillItem> billItems = new ArrayList<>();
+        List<BillItem> billItems;
 
         Map m = new HashMap();
         String sql;
@@ -543,7 +540,7 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
 
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setQty((double) qty);
+        tbi.setQty(qty);
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
@@ -678,46 +675,80 @@ public class PharmacyAdjustmentController implements Serializable {
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
-    private void saveRsrAdjustmentBillItems() {
+    private void deductBeforeAdjustmentItemFromStock() {
         if (stock == null) {
             JsfUtil.addErrorMessage("Please select a stock");
             return;
         }
-        billItem = null;
-        BillItem tbi = getBillItem();
-        PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
+
+        BillItem tbi = new BillItem();
+        PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
         ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
-        ph.setBillItem(null);
-        ph.setPurchaseRate(itemBatch.getPurcahseRate());
-        ph.setRetailRate(itemBatch.getRetailsaleRate());
+
         tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setRate(rsr);
-        //pharmaceutical Bill Item
-        ph.setStock(stock);
-        //Rates
-        //Values
         tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
         tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
         tbi.setInwardChargeType(InwardChargeType.Medicine);
-        tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setBill(getDeptAdjustmentPreBill());
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
 
-        if (ph.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(ph);
-        }
-        tbi.setPharmaceuticalBillItem(ph);
-
-        if (tbi.getId() == null) {
-            getBillItemFacade().edit(tbi);
-        }
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setRetailRate(itemBatch.getRetailsaleRate());
+        ph.setStock(stock);
+        ph.setQty(0 - stock.getStock());
 
         ph.setBillItem(tbi);
-        getPharmaceuticalBillItemFacade().edit(ph);
-//        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        tbi.setPharmaceuticalBillItem(ph);
+
+        getBillItemFacade().create(tbi);
+
+        boolean returnFlag = getPharmacyBean().deductFromStock(
+                getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
+        if (!returnFlag) {
+            JsfUtil.addErrorMessage("Stock deduction failed – transaction rolled back?");
+        }
+
+    }
+
+    private void saveRsrAdjustmentBillItems() {
+        if (stock == null) {
+            JsfUtil.addErrorMessage("Please select a stock");
+            return;
+        }
+
+        BillItem tbi = new BillItem();
+        PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+        ItemBatch itemBatch = itemBatchFacade.find(getStock().getItemBatch().getId());
+
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setRate(rsr);
+        tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
+        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
+        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        ph.setPurchaseRate(itemBatch.getPurcahseRate());
+        ph.setBeforeAdjustmentValue(itemBatch.getRetailsaleRate());
+        ph.setAfterAdjustmentValue(rsr);
+        ph.setRetailRate(rsr);
+        ph.setStock(stock);
+        ph.setQty(stock.getStock());
+
+        ph.setBillItem(tbi);
+        tbi.setPharmaceuticalBillItem(ph);
+
+        getBillItemFacade().create(tbi);
+
+        boolean addFlag = getPharmacyBean().addToStock(
+                getStock(), Math.abs(getStock().getStock()), ph, getDeptAdjustmentPreBill().getDepartment());
+
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
@@ -929,7 +960,7 @@ public class PharmacyAdjustmentController implements Serializable {
             fromBi.setPharmaceuticalBillItem(null);
             fromPbi.setStock(s);
             fromBi.setItem(s.getItemBatch().getItem());
-            fromBi.setQty(0 - ((double) s.getStock()));
+            fromBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             fromPbi.setDoe(s.getItemBatch().getDateOfExpire());
             fromPbi.setFreeQty(0.0);
@@ -968,7 +999,7 @@ public class PharmacyAdjustmentController implements Serializable {
             toBi.setPharmaceuticalBillItem(null);
             toPbi.setStock(s);
             toBi.setItem(s.getItemBatch().getItem());
-            toBi.setQty(0 - ((double) s.getStock()));
+            toBi.setQty(0 - s.getStock());
             //pharmaceutical Bill Item
             toPbi.setDoe(s.getItemBatch().getDateOfExpire());
             toPbi.setFreeQty(0.0);
@@ -1011,57 +1042,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
-    public void tem() {
-        Stock s = new Stock();
-        Bill toBill = new PreBill();
-        int i = 0;
-
-        BillItem toBi = new BillItem();
-        PharmaceuticalBillItem toPbi = new PharmaceuticalBillItem();
-        toBi.setPharmaceuticalBillItem(null);
-        toPbi.setStock(s);
-        toBi.setItem(s.getItemBatch().getItem());
-        toBi.setQty(0 - ((double) s.getStock()));
-        //pharmaceutical Bill Item
-        toPbi.setDoe(s.getItemBatch().getDateOfExpire());
-        toPbi.setFreeQty(0.0);
-        toPbi.setItemBatch(s.getItemBatch());
-        toPbi.setQty(toBi.getQty());
-        //Rates
-        toBi.setNetRate(s.getItemBatch().getPurcahseRate());
-        toBi.setRate(s.getItemBatch().getRetailsaleRate());
-        //Values
-        toBi.setGrossValue(s.getItemBatch().getRetailsaleRate() * s.getStock());
-        toBi.setNetValue(s.getStock() * toBi.getNetRate());
-        toBi.setDiscount(0.0);
-        toBi.setInwardChargeType(InwardChargeType.Medicine);
-        toBi.setItem(s.getItemBatch().getItem());
-        toBi.setBill(toBill);
-        toBi.setSearialNo(i + 1);
-        toBi.setCreatedAt(Calendar.getInstance().getTime());
-        toBi.setCreater(getSessionController().getLoggedUser());
-
-        toPbi.setBillItem(null);
-
-        if (toPbi.getId() == null) {
-            getPharmaceuticalBillItemFacade().create(toPbi);
-        }
-        toBi.setPharmaceuticalBillItem(toPbi);
-        if (toBi.getId() == null) {
-            getBillItemFacade().create(toBi);
-        }
-        toPbi.setBillItem(toBi);
-        getPharmaceuticalBillItemFacade().edit(toPbi);
-        toBill.getBillItems().add(toBi);
-        getBillFacade().edit(toBill);
-
-    }
-
     public void adjustDepartmentStock() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1078,10 +1059,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustStockForDepartment() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1091,7 +1068,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1118,7 +1095,7 @@ public class PharmacyAdjustmentController implements Serializable {
             JsfUtil.addErrorMessage("Add Quantity..");
             return;
         }
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1186,10 +1163,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustPurchaseRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1204,7 +1177,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1222,10 +1195,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustExDate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1235,7 +1204,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1254,10 +1223,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustRetailRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1267,12 +1232,13 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
 
         saveSaleRateAdjustmentBill();
+        deductBeforeAdjustmentItemFromStock();
         saveRsrAdjustmentBillItems();
         getStock().getItemBatch().setRetailsaleRate(rsr);
         getItemBatchFacade().edit(getStock().getItemBatch());
@@ -1285,10 +1251,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void adjustWholesaleRate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (errorCheck()) {
             return;
         }
@@ -1298,7 +1260,7 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
-        if ((comment == null) || (comment.trim().equals(""))) {
+        if ((comment == null) || (comment.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Add the Comment..");
             return;
         }
@@ -1599,14 +1561,6 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setYearMonthDay(YearMonthDay yearMonthDay) {
         this.yearMonthDay = yearMonthDay;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public List<Stock> getStocks() {

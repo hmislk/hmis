@@ -6,31 +6,31 @@
 package com.divudi.bean.store;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -258,9 +258,9 @@ public class StoreAdjustmentController implements Serializable {
         getBillItem().getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         getBillItem().getPharmaceuticalBillItem().setFreeQty(0.0f);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        
+
         Stock fetchedStock = getStockFacade().find(stock.getId());
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(fetchedStock.getStock());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(qty);
@@ -311,12 +311,12 @@ public class StoreAdjustmentController implements Serializable {
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(ib.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(pr);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(ib);
-        
+
         //Values
         getBillItem().setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         getBillItem().setNetValue(getStock().getStock() * getBillItem().getNetRate());
@@ -339,7 +339,7 @@ public class StoreAdjustmentController implements Serializable {
         System.out.println("Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
         return getBillItem().getPharmaceuticalBillItem();
     }
-    
+
     private void saveRetailSaleRateAdjustmentBillItems() {
         billItem = new BillItem();
 
@@ -353,12 +353,12 @@ public class StoreAdjustmentController implements Serializable {
 
         //pharmaceutical Bill Item
         getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        
+
         //Adjustment Rates
         getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(itemBatch.getPurcahseRate());
         getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(rsr);
         getBillItem().getPharmaceuticalBillItem().setItemBatch(itemBatch);
-        
+
         //Values
         getBillItem().setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
         getBillItem().setNetValue(getStock().getStock() * getBillItem().getNetRate());
@@ -454,14 +454,14 @@ public class StoreAdjustmentController implements Serializable {
         }
 
         saveAdjustmentBill(BillTypeAtomic.STORE_STAFF_STOCK_ADJUSTMENT);
-        
+
         getDeptAdjustmentPreBill().setStaff(getStock().getStaff());
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
-        
+
         PharmaceuticalBillItem ph = saveDeptAdjustmentBillItems();
         setBill(getBillFacade().find(getDeptAdjustmentPreBill().getId()));
         getStoreBean().resetStock(ph, stock, qty, getSessionController().getDepartment());
@@ -788,7 +788,7 @@ public class StoreAdjustmentController implements Serializable {
 //    }
 //    public void fillSelectStock(){
 //        List<Stock> items = new ArrayList<>();
-//        
+//
 //        String sql;
 //        Map m = new HashMap();
 //        sql = "select i "
@@ -799,7 +799,7 @@ public class StoreAdjustmentController implements Serializable {
 //
 //        items = getStockFacade().findByJpql(sql, m);
 //
-//        
+//
 //    }
     public Item getSelectedItem() {
         return selectedItem;

@@ -14,7 +14,7 @@
         <h:form>
             <p:panel  class="my-3"  rendered="#{roomChangeController.current eq null}">
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                     <p:outputLabel value="Admitted Patient" class="m-2"/>
                 </f:facet>
 
@@ -52,7 +52,7 @@
             <h:panelGroup rendered="#{roomChangeController.current ne null}">
                 <p:panel>
                     <f:facet name="header" >
-                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                        <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                         <p:outputLabel value="Admitted Patient Room" class="m-2"/>
                         <div class="d-flex" style="float: right">
                             <p:commandButton

@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:p="http://primefaces.org/ui"
-                
+
                 xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <ui:define name="content">
@@ -39,8 +39,8 @@
                                 <h:outputLabel value="Time Type : "/>
                                 <p:selectOneMenu   value="#{staffAdditionalFormController.reportKeyWord.times}">
                                     <f:selectItem itemLabel="Please Day Type "/>
-                                    <f:selectItems  value="#{enumController.timeses}" ></f:selectItems>                    
-                                </p:selectOneMenu> 
+                                    <f:selectItems  value="#{enumController.timeses}" ></f:selectItems>
+                                </p:selectOneMenu>
 
 
 
@@ -52,8 +52,8 @@
                                 </p:selectManyCheckbox>
                             </h:panelGrid>
                         </h:panelGrid>
-                        <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />                           
-                        <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />      
+                        <p:commandButton ajax="false" value="Search By Created Date" action="#{staffAdditionalFormController.searchFormByCreatedDate()}" />
+                        <p:commandButton ajax="false" value="Search By Shift Date" action="#{staffAdditionalFormController.searchFormByShiftDate()}" />
                         <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton"  >
                             <p:dataExporter type="xlsx" target="tb1" fileName="hr_form_staff_form_report"  />
                         </p:commandButton>
@@ -61,13 +61,13 @@
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
 
-                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >  
+                        <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
 
-                            <p:dataTable  value="#{staffAdditionalFormController.hrForms}" 
+                            <p:dataTable  value="#{staffAdditionalFormController.hrForms}"
                                           var="add" id="tb1" >
-                                
+
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Additional Working Shift Sheet"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{staffAdditionalFormController.fromDate}" >
@@ -75,7 +75,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{staffAdditionalFormController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -266,7 +266,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
@@ -276,6 +276,6 @@
                 </h:panelGrid>
             </p:panel>
         </h:form>
-    </ui:define> 
+    </ui:define>
 
 </ui:composition>

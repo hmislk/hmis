@@ -9,35 +9,28 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.report.ReportController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import static com.divudi.data.BillTypeAtomic.PATIENT_DEPOSIT;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Payment;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientDepositFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.service.PatientDepositService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -133,7 +126,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         return "/patient_deposit/receive?faces-redirect=true";
     }
 
-    
+
     public void clearDataForPatientDeposit() {
         patientController.setCurrent(null);
         current = null;
@@ -308,7 +301,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         patientController.save(patient);
 
         String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PATIENT_DEPOSIT);
-        
+
         getBill().setInsId(deptId);
         getBill().setDeptId(deptId);
 

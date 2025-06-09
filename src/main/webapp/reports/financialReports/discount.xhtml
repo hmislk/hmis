@@ -334,13 +334,15 @@
                         <p:dataTable id="tblSummary"
                                      value="#{reportsController.bundle.reportTemplateRows}"
                                      var="row"
-                                     rendered="#{reportsController.reportType eq 'summary'}"
-                                     rows="10">
+                                     rendered="#{reportsController.reportType eq 'summary'}">
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{row.bill.patient.person.name}"/>
                             </p:column>
-                            <p:column headerText="MRN">
+                            <p:column headerText="MRN" rendered="#{reportsController.visitType eq 'OP'}">
                                 <h:outputText value="#{row.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="MRN" rendered="#{reportsController.visitType eq 'IP'}">
+                                <h:outputText value="#{row.bill.patientEncounter.bhtNo}"/>
                             </p:column>
                             <p:column headerText="Visit Type">
                                 <h:outputText value="#{row.bill.ipOpOrCc}"/>
@@ -407,19 +409,21 @@
                         <p:dataTable id="tblDetail"
                                      value="#{reportsController.bundle.reportTemplateRows}"
                                      var="row"
-                                     rendered="#{reportsController.reportType eq 'detail'}"
-                                     rows="10">
+                                     rendered="#{reportsController.reportType eq 'detail'}">
                             <p:column headerText="Patient Name">
                                 <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
                             </p:column>
-                            <p:column headerText="MRN">
+                            <p:column headerText="MRN" rendered="#{reportsController.visitType eq 'OP'}">
                                 <h:outputText value="#{row.billItem.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="MRN" rendered="#{reportsController.visitType eq 'IP'}">
+                                <h:outputText value="#{row.billItem.bill.patientEncounter.bhtNo}"/>
                             </p:column>
                             <p:column headerText="Visit Type">
                                 <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
                             </p:column>
                             <p:column headerText="Admission Type" rendered="#{reportsController.visitType eq 'IP'}">
-                                <h:outputText value="#{row.billItem.patientEncounter.admissionType.name}"/>
+                                <h:outputText value="#{row.billItem.bill.patientEncounter.admissionType.name}"/>
                             </p:column>
                             <p:column headerText="Invoice No" width="13rem">
                                 <h:outputText value="#{row.billItem.bill.deptId}"
@@ -439,8 +443,11 @@
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Service name">
+                            <p:column headerText="Service name" rendered="#{reportsController.visitType eq 'OP'}">
                                 <h:outputText value="#{row.billItem.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Service name" rendered="#{reportsController.visitType eq 'IP'}" width="10rem">
+                                <h:outputText value="#{row.billItem.inwardChargeType.name()}"/>
                             </p:column>
                             <p:column headerText="Gross Amount">
                                 <h:outputText value="#{row.billItem.bill.netTotal}"

@@ -5,17 +5,17 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.StringsDoublesRow;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.StringsDoublesRow;
 import com.divudi.ejb.RevenueBean;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -45,8 +45,7 @@ public class RevenueController implements Serializable {
     InstitutionController institutionController;
     @Inject
     DepartmentController departmentController;
-    @Inject
-    CommonController commonController;
+
     /**
      * Properties
      */
@@ -66,7 +65,6 @@ public class RevenueController implements Serializable {
      * Functions
      */
     public void fillRevenueSummery() {
-        Date startTime = new Date();
 
         ////// // System.out.println("fillRevenueSummery ");
         rows = new ArrayList<>();
@@ -105,13 +103,13 @@ public class RevenueController implements Serializable {
             grandTotal += insTotal;
         }
 
-        
+
 
     }
 
     public void fillRevenueReport() {
         Date startTime = new Date();
-        
+
         ////// // System.out.println("fillRevenueReport");
         rows = new ArrayList<>();
         List<Institution> institutions = getInstitutionController().getCompanies();
@@ -285,8 +283,8 @@ public class RevenueController implements Serializable {
 
         grandTotal = cashTotal + creditTotal + creditCardTotal + chequeTotal;
 
-        
-        
+
+
 
     }
 
@@ -403,14 +401,6 @@ public class RevenueController implements Serializable {
         this.chequeTotal = chequeTotal;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public int getRevenueReportIndex() {
         return revenueReportIndex;
     }
@@ -418,7 +408,5 @@ public class RevenueController implements Serializable {
     public void setRevenueReportIndex(int revenueReportIndex) {
         this.revenueReportIndex = revenueReportIndex;
     }
-
-    
 }
 

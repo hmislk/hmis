@@ -8,66 +8,56 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.ItemLight;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Packege;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.BillValidation;
-import static com.divudi.data.PaymentMethod.Card;
-import static com.divudi.data.PaymentMethod.Cash;
-import static com.divudi.data.PaymentMethod.Cheque;
-import static com.divudi.data.PaymentMethod.Credit;
-import static com.divudi.data.PaymentMethod.PatientDeposit;
-import static com.divudi.data.PaymentMethod.Slip;
-import static com.divudi.data.PaymentMethod.Staff;
-import static com.divudi.data.PaymentMethod.ewallet;
-import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillValidation;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.service.StaffService;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.Payment;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.PatientDeposit;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.PaymentFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -101,7 +91,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     private BillItemFacade billItemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -134,11 +123,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Injects">
     @Inject
+    EnumController enumController;
+    @Inject
     SessionController sessionController;
     @Inject
     private BillBeanController billBean;
     @Inject
     private BillSearch billSearch;
+    @Inject
+    private WebUserController webUserController;
     @Inject
     ItemApplicationController itemApplicationController;
     @Inject
@@ -148,13 +141,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    DrawerController drawerController;
-    @Inject
     OpdBillController opdBillController;
     @Inject
     ApplicationController applicationController;
-    @Inject
-    WebUserController webUserController;
     @Inject
     PatientDepositController patientDepositController;
     //</editor-fold>
@@ -270,7 +259,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
                 if (Objects.equals(e.getBillItem().getItem().getTransDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);   
+                    // getBillBean().calculateBillItem(myBill, e);
                     list.add(e.getBillItem());
                     tmp.add(e);
                 }
@@ -515,7 +504,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (getPaymentSchemeController().checkPaymentMethodError(paymentMethod, getPaymentMethodData())) {
             return true;
         }
-
         return false;
     }
 
@@ -531,11 +519,41 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!webUserController.hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+        
+        if (getBill().getBackwardReferenceBill().getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBill().getBackwardReferenceBill());
+
+            if (items != null && !items.isEmpty()) {
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
+                return "";
+            }
         }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
+            if (!checkCancelBill(getBill())) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                if (getWebUserController().hasPrivilege("BillCancel")) {
+                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                } else {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    batchBillCancellationStarted = false;
+                    return "";
+                }
+            } else {
+                if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                    batchBillCancellationStarted = false;
+                    return "";
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
+        }
+
         if (errorsPresentOnOpdBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -575,7 +593,93 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
         bill.setCancelled(true);
         bill.setCancelledBill(cancellationBill);
-        getBillFacade().edit(bill);
+        if (bill.getId() == null) {
+            getBillFacade().create(bill);
+        } else {
+            getBillFacade().edit(bill);
+        }
+
+        List<BillItem> originalBillItem = getBillBean().fillBillItems(bill);
+
+        for (BillItem bi : originalBillItem) {
+            BillItem cancelBillItem = new BillItem();
+            cancelBillItem.copy(bi);
+            cancelBillItem.setReferanceBillItem(bi);
+            cancelBillItem.setBill(cancellationBill);
+            cancelBillItem.setCreatedAt(new Date());
+            cancelBillItem.setCreater(getSessionController().getLoggedUser());
+            //Create Cancel BillItem
+            if (cancelBillItem.getId() == null) {
+                billItemFacade.create(cancelBillItem);
+            } else {
+                billItemFacade.edit(cancelBillItem);
+            }
+
+            List<BillFee> originalBillItemFees = getBillBean().fetchBillFees(bi);
+
+            double hospitalFee = 0.0;
+            double ccFee = 0.0;
+            double staffFee = 0.0;
+            double reagentFee = 0.0;
+            double otherFee = 0.0;
+
+            for (BillFee fee : originalBillItemFees) {
+                BillFee cancelBillItemFee = new BillFee();
+                cancelBillItemFee.copy(fee);
+                cancelBillItemFee.setReferenceBillFee(fee);
+                cancelBillItemFee.setBill(cancellationBill);
+                cancelBillItemFee.setBillItem(cancelBillItem);
+
+                //Create Cancel BillItemFee
+                if (cancelBillItemFee.getId() == null) {
+                    billFeeFacade.create(cancelBillItemFee);
+                } else {
+                    billFeeFacade.edit(cancelBillItemFee);
+                }
+
+                if (cancelBillItemFee.getFee().getFeeType() == FeeType.CollectingCentre) {
+                    ccFee += cancelBillItemFee.getFeeValue();
+                } else if (cancelBillItemFee.getFee().getFeeType() == FeeType.Staff) {
+                    staffFee += cancelBillItemFee.getFeeValue();
+                } else {
+                    hospitalFee += cancelBillItemFee.getFeeValue();
+                }
+
+                if (cancelBillItemFee.getFee().getFeeType() == FeeType.Chemical) {
+                    reagentFee += cancelBillItemFee.getFeeValue();
+                } else if (cancelBillItemFee.getFee().getFeeType() == FeeType.Additional) {
+                    otherFee += cancelBillItemFee.getFeeValue();
+                }
+
+                //update Original BillItemFee
+                fee.setReferenceBillFee(cancelBillItemFee);
+                if (cancelBillItemFee.getId() == null) {
+                    billFeeFacade.create(fee);
+                } else {
+                    billFeeFacade.edit(fee);
+                }
+            }
+
+            cancelBillItem.setHospitalFee(hospitalFee);
+            cancelBillItem.setStaffFee(staffFee);
+            cancelBillItem.setCollectingCentreFee(ccFee);
+            cancelBillItem.setReagentFee(reagentFee);
+            cancelBillItem.setOtherFee(otherFee);
+
+            if (cancelBillItem.getId() == null) {
+                billItemFacade.create(cancelBillItem);
+            } else {
+                billItemFacade.edit(cancelBillItem);
+            }
+
+            //update Original BillItem
+            bi.setReferanceBillItem(cancelBillItem);
+            if (bi.getId() == null) {
+                billItemFacade.create(bi);
+            } else {
+                billItemFacade.edit(bi);
+            }
+        }
 
         if (cancellationBill.getPaymentMethod() == PaymentMethod.PatientDeposit) {
             PatientDeposit pd = patientDepositController.getDepositOfThePatient(cancellationBill.getPatient(), sessionController.getDepartment());
@@ -588,10 +692,20 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 getBillFacade().edit(cancellationBill);
             }
         }
+
         payments = paymentService.createPayment(cancellationBill, getPaymentMethodData());
         printPreview = true;
         batchBillCancellationStarted = false;
         return null;
+    }
+
+    public boolean checkCancelBill(Bill originalBill) {
+        List<PatientInvestigationStatus> availableStatus = enumController.getAvailableStatusforCancel();
+        boolean canCancelBill = false;
+        if (availableStatus.contains(originalBill.getStatus())) {
+            canCancelBill = true;
+        }
+        return canCancelBill;
     }
 
     public String cancelPackageBatchBill() {
@@ -606,11 +720,43 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             batchBillCancellationStarted = false;
             return "";
         }
-        if (!webUserController.hasPrivilege("OpdCancel")) {
-            JsfUtil.addErrorMessage("You have no privilege to cancel OPD bills. Please contact System Administrator.");
-            batchBillCancellationStarted = false;
-            return "";
+        
+        if (getBatchBill().getPaymentMethod() == PaymentMethod.Credit) {
+            List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(getBatchBill());
+
+            if (items != null && !items.isEmpty()) {
+                JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be canceled.");
+                return "";
+            }
         }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
+            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+                if (!checkCancelBill(singleBill)) {
+                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                    if (getWebUserController().hasPrivilege("BillCancel")) {
+                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
+                    } else {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                } else {
+                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                        batchBillCancellationStarted = false;
+                        return "";
+                    }
+                }
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+                batchBillCancellationStarted = false;
+                return "";
+            }
+        }
+
         if (errorsPresentOnOpdBatchBillCancellation()) {
             batchBillCancellationStarted = false;
             return "";
@@ -975,7 +1121,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        //getCurrent().setCashBalance(cashBalance); 
+        //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.OpdBill);
@@ -1009,7 +1155,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         temp.setCreater(getSessionController().getLoggedUser());
 
         String billNumber = billNumberBean.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         temp.setDeptId(billNumber);
         temp.setInsId(billNumber);
         temp.setComments(comment);
@@ -1940,14 +2086,6 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         calTotals();
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public void setLstBillEntries(List<BillEntry> lstBillEntries) {
         this.lstBillEntries = lstBillEntries;
     }
@@ -2253,6 +2391,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void reloadPackages() {
         itemController.reloadItems();
+        itemApplicationController.reloadItems();
+        fillPackages();
     }
 
     private void fillPackages() {
@@ -2361,6 +2501,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     public void setRemainAmount(double remainAmount) {
         this.remainAmount = remainAmount;
+    }
+
+    public WebUserController getWebUserController() {
+        return webUserController;
+    }
+
+    public void setWebUserController(WebUserController webUserController) {
+        this.webUserController = webUserController;
     }
 
 }

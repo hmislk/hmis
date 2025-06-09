@@ -1,0 +1,393 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/resources/template/template.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+                xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <ui:define name="content">
+        <h:form id="form">
+            <p:growl id="inpatientDashboardGrowl" ></p:growl>
+            
+             <h:panelGroup class="row" rendered="#{inwardReportControllerBht.patientEncounter eq null}"> 
+                <div class="col-12">
+                    <h:panelGroup>
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
+                                <p:outputLabel value="Patient Details" class="m-2"/>
+                            </f:facet>
+                            <div>
+                                <h:outputLabel value="Type Patient Name or BHT : " class="mt-2"/>
+
+                                <p:autoComplete 
+                                    widgetVar="aPt2"  
+                                    id="acPt2" 
+                                    forceSelection="true" 
+                                    value="#{inwardReportControllerBht.patientEncounter}" 
+                                    completeMethod="#{admissionController.completePatient}"
+                                    var="apt2"
+                                    itemLabel="#{apt2.bhtNo}"
+                                    itemValue="#{apt2}" 
+                                    size="30"  
+                                    inputStyleClass="form-control"
+                                    class="mx-2 w-50"
+                                    >
+                                    <!--<p:ajax event="itemSelect" process="@this" update="@all"/>-->
+                                    <p:column headerText="BHT No" style="padding: 6px; width: 150px;">
+                                        <h:outputLabel value="#{apt2.bhtNo}"/> 
+                                    </p:column>
+                                    <p:column headerText="Patient Name" style="padding: 6px;">
+                                        <h:outputLabel value="#{apt2.patient.person.name}"/> 
+                                    </p:column>
+                                    <p:column headerText="Room No" style="padding: 6px; width: 200px;">
+                                        <h:outputLabel value="#{apt2.currentPatientRoom.roomFacilityCharge.name}"/>
+                                    </p:column>
+                                </p:autoComplete> 
+
+                                <p:commandButton 
+                                    value="Select" 
+                                    ajax="false" action="#{inwardReportControllerBht.processInpatientPharmacyItemList}" >
+                                </p:commandButton>
+
+                            </div>
+
+                        </p:panel>
+                    </h:panelGroup>
+                </div>
+                <br/><br/>
+            </h:panelGroup>
+            
+            <h:panelGroup rendered="#{inwardReportControllerBht.patientEncounter ne null}">
+                <p:panel >
+                <f:facet name="header" >
+                    <h:outputText styleClass="fa fa-id-card"></h:outputText>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+
+                    <p:commandButton 
+                        value="Download" 
+                        ajax="false"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-download">
+                        <p:dataExporter fileName="Inpatient Medicine Issue" target="tbl1" type="xlsx"></p:dataExporter>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Print" 
+                        ajax="false"
+                        class="ui-button-primary m-1"
+                        icon="fa fa-print">
+                        <p:printer target="tbl1"></p:printer>
+                    </p:commandButton>
+
+                    <p:commandButton 
+                        value="Back to Inpatient Profile" 
+                        action="#{admissionController.navigateToSearchAdmissions()}" 
+                        style="float: right;"
+                        class="ui-button-secondary m-1"
+                        rendered="false"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+                    
+                    <p:commandButton 
+                        value="New Search" 
+                        action="#{inwardReportControllerBht.madeNull()}" 
+                        style="float: right;"
+                        class="ui-button-warning m-1"
+                        icon="fa fa-arrow-circle-left">
+                    </p:commandButton>
+
+
+                </f:facet>
+
+                <style>
+                    @media print{
+
+                        body {
+                            margin :0px 5px;
+                        }
+                    }
+                </style>
+
+
+                <div class="row" >
+                    <div class="col-3" >
+                        <div class="m-1" >
+                            <common:patient_details_view patient="#{inwardReportControllerBht.patient}" class="w-100"/>
+                        </div>
+                        <div class="m-1" >
+                            <common:admission_details admission="#{inwardReportControllerBht.patientEncounter}" class="w-100 m-1"></common:admission_details>
+                        </div>
+                    </div>
+                    <div class="col-9 " >
+                        <p:panel>
+                            <f:facet name="header">
+
+                                <p:outputLabel value="Medicine Issued Department" style="font-weight: bold"></p:outputLabel>
+
+                                <p:selectOneMenu class="mx-4 w-50"  value="#{inwardReportControllerBht.department}" filter="true">
+                                    <f:selectItem itemLabel="All Departments" ></f:selectItem>
+                                    <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(sessionController.loggedUser.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" ></f:selectItems>
+                                </p:selectOneMenu>
+
+                                <p:commandButton 
+                                    value="Process" 
+                                    ajax="false"
+                                    action="#{inwardReportControllerBht.processInpatientPharmacyItemList()}" 
+                                    icon="fa fa-prescription-bottle-alt"
+                                    class="ui-button-success"
+                                    >
+                                </p:commandButton>
+
+                            </f:facet>
+
+                            <!--                            <h:panelGroup id="tbl" >
+                                                            <table style="width: 100%; border-collapse: collapse; text-align: center;"  cellpadding="5">
+                                                                 Header Information Rows 
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Name:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Age:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Gender:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Room Number:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.name}" />
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Date of Admission:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Date of Discharge:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="BHT:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td colspan="2" style="text-align: left;">
+                                                                        <h:outputText value="Phone Number:" />
+                                                                    </td>
+                                                                    <td colspan="3" style="text-align: left;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+                                                                    </td>
+                                                                </tr>
+                            
+                                                                 Column Headers 
+                                                                <tr>
+                                                                    <th style="width: 5%; text-align: center;">
+                                                                        <h:outputText value="No" />
+                                                                    </th>
+                                                                    <th style="text-align: left;">
+                                                                        <h:outputText value="Item Name" />
+                                                                    </th>
+                                                                    <th style="width: 10%; text-align: right;">
+                                                                        <h:outputText value="QTY" />
+                                                                    </th>
+                                                                    <th style="width: 10%; text-align: right;">
+                                                                        <h:outputText value="Rate" />
+                                                                    </th>
+                                                                    <th style="width: 10%; text-align: right;">
+                                                                        <h:outputText value="Net Value" />
+                                                                    </th>
+                                                                </tr>
+                            
+                                                                 Data Rows 
+                                                                <ui:repeat var="bip" value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}" varStatus="status">
+                                                                    <tr>
+                                                                        <td style="text-align: center;">
+                                                                            <h:outputText value="#{status.index + 1}" />
+                                                                        </td>
+                                                                        <td style="text-align: left;">
+                                                                            <h:outputText value="#{bip.item.name}" />
+                                                                        </td>
+                                                                        <td style="text-align: right;">
+                                                                            <h:outputText value="#{bip.qty}">
+                                                                                <f:convertNumber pattern="#0" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                        <td style="text-align: right;">
+                                                                            <h:outputText value="#{bip.netValue / bip.qty}">
+                                                                                <f:convertNumber pattern="#0.00" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                        <td style="text-align: right;">
+                                                                            <h:outputText value="#{bip.netValue}">
+                                                                                <f:convertNumber pattern="#0.00" />
+                                                                            </h:outputText>
+                                                                        </td>
+                                                                    </tr>
+                                                                </ui:repeat>
+                            
+                                                                 Footer Row 
+                                                                <tr>
+                                                                    <td colspan="4" style="text-align: right; font-weight: bold;">
+                                                                        <h:outputText value="Total:" />
+                                                                    </td>
+                                                                    <td style="text-align: right;">
+                                                                        <h:outputText value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounterNetTotal}">
+                                                                            <f:convertNumber pattern="#0.00" />
+                                                                        </h:outputText>
+                                                                    </td>
+                                                                </tr>
+                                                            </table>
+                                                        </h:panelGroup>-->
+
+
+
+                            <p:dataTable 
+                                id="tbl1" 
+                                rowIndexVar="rowIndex" 
+                                
+                                value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounter}"  
+                                var="bip">
+
+                                <f:facet name="header">
+                                    <f:facet name="header">
+                                        <h:panelGrid columns="5" style="width: 100%; text-align: left;">
+                                            <h:outputLabel value="Name:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.nameWithTitle}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Age:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.age}" />
+
+                                            <h:outputLabel value="Gender:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.person.sex.label}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Room Number:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.currentPatientRoom.roomFacilityCharge.room.name}" />
+
+                                            <h:outputLabel value="Date of Admission:" />
+                                            <h:outputLabel>
+                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfAdmission}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Date of Discharge:" />
+                                            <h:outputLabel>
+                                                <h:outputText value="#{inwardReportControllerBht.patientEncounter.dateOfDischarge}">
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputText>
+                                            </h:outputLabel>
+
+                                            <h:outputLabel value="BHT:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.bhtNo}" />
+                                            <h:outputLabel value="" />
+                                            <h:outputLabel value="Phone Number:" />
+                                            <h:outputLabel value="#{inwardReportControllerBht.patientEncounter.patient.phoneNumberStringTransient}" />
+
+                                        </h:panelGrid>
+                                    </f:facet>
+
+                                </f:facet>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="No" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{rowIndex+1}" />
+                                </p:column>
+
+                                <p:column width="20em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Item Name" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{bip.item.name}" />
+                                </p:column>
+
+                                <p:column width="2em" style="padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="QTY" />
+                                    </f:facet>
+                                    <p:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.qty : bip.qty}">
+                                        <f:convertNumber pattern="#0" />
+                                    </p:outputLabel>
+<!--                                    <p:outputLabel value="#{bip.qty}">
+                                        <f:convertNumber pattern="#0" />
+                                    </p:outputLabel>-->
+                                </p:column>
+
+                                <p:column width="3em" style="text-align: right; padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Rate" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{(bip.netValue / bip.qty &lt; 0 ? -(bip.netValue / bip.qty) : bip.netValue / bip.qty) }" >
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+
+                                </p:column>
+
+                                <p:column width="4em" style="text-align: right; padding: 2px" styleClass="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 'ui-messages-warn' : bip.referanceBillItem ne null and bip.referanceBillItem.bill.cancelled ? 'ui-messages-fatal' : ''}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Net Value" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{(bip.referanceBillItem ne null and bip.referanceBillItem.bill.billTypeAtomic ne 'REQUEST_MEDICINE_INWARD') and !bip.referanceBillItem.bill.cancelled ? 0 - bip.netValue : bip.netValue}">
+                                        <f:convertNumber pattern="#0.00" />
+                                    </h:outputLabel>
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{inwardReportControllerBht.pharmacyIssueBillItemsToPatientEncounterNetTotal}">
+                                            <f:convertNumber pattern="#0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                            </p:dataTable>
+
+
+                        </p:panel>
+
+                    </div>
+                </div>
+            </p:panel>
+            </h:panelGroup>
+
+        </h:form>
+    </ui:define>
+</ui:composition>
+

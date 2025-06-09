@@ -5,32 +5,32 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PharmacyItemData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PharmacyItemData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.Payment;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -183,7 +183,7 @@ public class PurchaseReturnController implements Serializable {
 
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) (0 - i.getQty()));
+            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
 
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
                 continue;
@@ -224,7 +224,7 @@ public class PurchaseReturnController implements Serializable {
 
     private void saveComponent(Payment p) {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit((double) (double) (0 - i.getQty()));
+            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
             i.getPharmaceuticalBillItem().setFreeQtyInUnit(0 - i.getPharmaceuticalBillItem().getFreeQty());
 
             if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
@@ -278,7 +278,7 @@ public class PurchaseReturnController implements Serializable {
 
     private boolean checkGrnItems() {
         for (BillItem bi : getBillItems()) {
-            bi.getPharmaceuticalBillItem().setQty((double) (double) bi.getQty());
+            bi.getPharmaceuticalBillItem().setQty(bi.getQty());
             if (checkStock(bi.getPharmaceuticalBillItem())) {
                 return true;
             }
@@ -300,6 +300,7 @@ public class PurchaseReturnController implements Serializable {
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
         returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         getBillFacade().edit(getReturnBill());
+        getBillFacade().edit(getBill());
 
         printPreview = true;
         JsfUtil.addSuccessMessage("Successfully Returned");
@@ -340,7 +341,7 @@ public class PurchaseReturnController implements Serializable {
 
             //System.err.println("Billed Qty " + i.getQty());
             //System.err.println("Return Qty " + rBilled);
-            tmp.setQty((double) (i.getQty() - Math.abs(rBilled)));
+            tmp.setQty(i.getQty() - Math.abs(rBilled));
 
             bi.setPharmaceuticalBillItem(tmp);
 
@@ -361,8 +362,8 @@ public class PurchaseReturnController implements Serializable {
     }
 
     public void onEditItem(PharmacyItemData tmp) {
-        double pur = (double) getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
-        double ret = (double) getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+        double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
+        double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
 
         tmp.getPharmaceuticalBillItem().setPurchaseRateInUnit(pur);
         tmp.getPharmaceuticalBillItem().setRetailRateInUnit(ret);

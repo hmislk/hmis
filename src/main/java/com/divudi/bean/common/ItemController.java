@@ -1,45 +1,45 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.DepartmentItemCount;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionItemCount;
-import com.divudi.data.ItemLight;
-import com.divudi.data.ItemType;
-import com.divudi.data.dataStructure.ItemFeeRow;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.BillExpense;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Packege;
-import com.divudi.entity.Service;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.inward.InwardService;
-import com.divudi.entity.inward.TheatreService;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vmpp;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.DepartmentItemCount;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionItemCount;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.dataStructure.ItemFeeRow;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.BillExpense;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.inward.InwardService;
+import com.divudi.core.entity.inward.TheatreService;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.ItemForItem;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.data.SessionNumberType;
-import com.divudi.data.Sex;
-import com.divudi.entity.UserPreference;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemMappingFacade;
-import com.divudi.facade.ServiceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.SessionNumberType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemMappingFacade;
+import com.divudi.core.facade.ServiceFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ItemFeeService;
 import java.io.IOException;
 import java.io.InputStream;
@@ -48,6 +48,7 @@ import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -72,9 +73,7 @@ import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
-import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.Font;
-import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -142,6 +141,7 @@ public class ItemController implements Serializable {
      * Properties
      */
     private Institution site;
+    private Institution collectionCentre;
     private Item current;
     private Item sampleComponent;
     private List<Item> items = null;
@@ -195,7 +195,7 @@ public class ItemController implements Serializable {
         }
     }
 
-    public void uploadAddReplaceSiteFeesByItemCode() {
+    public void uploadToReplaceSiteFeesByItemCode() {
         if (site == null) {
             JsfUtil.addErrorMessage("Please select a site");
             return;
@@ -204,6 +204,36 @@ public class ItemController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 allItemFees = replaceSiteFeesFromItemCodeFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public void uploadToAddSiteFeesByItemCode() {
+        if (site == null) {
+            JsfUtil.addErrorMessage("Please select a site");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, site);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    public void uploadToAddCcFeesByItemCode() {
+        if (collectionCentre == null) {
+            JsfUtil.addErrorMessage("Please select a Collection Centre");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForInstitutionItemFeesFromItemCodeFromExcel(inputStream, collectionCentre);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -286,14 +316,98 @@ public class ItemController implements Serializable {
             itemFee.setFee(feeValue);
             itemFee.setFfee(feeValue);
             itemFeeFacade.edit(itemFee);
-            
+
             itemFeeService.updateFeeValue(itemFee.getItem(), site, feeValue, feeValue);
-            
+
             output += rowNumber + " - Successfully added Fee for Item with Code " + itemCode + "/n<br/>";
 
         }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
+        return itemFeesSaved;
+    }
+
+    private List<ItemFee> addForInstitutionItemFeesFromItemCodeFromExcel(InputStream inputStream, Institution fromInstitution) throws IOException {
+        output = "";
+
+        if (fromInstitution == null) {
+            output = "❌ From Institution is not selected. Please select before proceeding.<br/>";
+            return Collections.emptyList();
+        }
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ItemFee> itemFeesSaved = new ArrayList<>();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next(); // Skip header
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+
+            String itemCode = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.STRING) {
+                    itemCode = codeCell.getStringCellValue();
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) codeCell.getNumericCellValue());
+                }
+            }
+
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                output += rowNumber + " - Missing Item Code.<br/>";
+                continue;
+            }
+
+            Item item = findItemByCode(itemCode);
+            if (item == null) {
+                output += rowNumber + " - No matching item found for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            Double feeValue = 0.0;
+            Cell feeCell = row.getCell(1);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.STRING) {
+                    feeValue = CommonFunctions.stringToDouble(feeCell.getStringCellValue());
+                } else if (feeCell.getCellType() == CellType.NUMERIC) {
+                    feeValue = feeCell.getNumericCellValue();
+                }
+            }
+
+            if (feeValue < 1) {
+                output += rowNumber + " - Invalid Fee Value for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Hospital Fee");
+            itf.setItem(item);
+            itf.setInstitution(sessionController.getInstitution());
+            itf.setDepartment(sessionController.getDepartment());
+            itf.setFeeType(FeeType.OwnInstitution);
+            itf.setFee(feeValue);
+            itf.setFfee(feeValue);
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+            itf.setForInstitution(fromInstitution);
+
+            itemFeeFacade.create(itf);
+            itemFeeService.updateFeeValue(item, site, feeValue, feeValue);
+
+            itemFeesSaved.add(itf);
+            output += rowNumber + " - Fee added successfully for Code " + itemCode + "<br/>";
+        }
+
+        workbook.close();
         return itemFeesSaved;
     }
 
@@ -483,7 +597,7 @@ public class ItemController implements Serializable {
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
 
         // Query for items with departments
-        String jpqlWithDept = "select new com.divudi.data.DepartmentItemCount("
+        String jpqlWithDept = "select new com.divudi.core.data.DepartmentItemCount("
                 + "i.department.id, i.department.name, count(i)) "
                 + "from Item i "
                 + "where i.retired=:ret "
@@ -519,7 +633,7 @@ public class ItemController implements Serializable {
                 + "and (TYPE(i)=:ix or TYPE(i)=:sv)";
 
         // Query for items with institutions
-        String jpqlWithIns = "select new com.divudi.data.InstitutionItemCount("
+        String jpqlWithIns = "select new com.divudi.core.data.InstitutionItemCount("
                 + "i.institution.id, i.institution.name, i.institution.code, count(i)) "
                 + "from Item i "
                 + "where i.retired=:ret "
@@ -589,7 +703,7 @@ public class ItemController implements Serializable {
     public String fillInstitutionAndDepartmentItems(Institution institution, Department department) {
         if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "f.item.id, "
                     + "f.item.name, "
                     + "f.item.code, "
@@ -617,7 +731,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         } else {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "i.id, "
                     + "i.name, "
                     + "i.code, "
@@ -637,7 +751,6 @@ public class ItemController implements Serializable {
                 jpql += "AND i.department=:dept ";
                 parameters.put("dept", department);
             }
-
             jpql += "ORDER BY i.name";
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
@@ -648,7 +761,7 @@ public class ItemController implements Serializable {
     public String fillItemsWithoutInstitution() {
         if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "f.item.id, "
                     + "f.item.name, "
                     + "f.item.code, "
@@ -669,7 +782,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         } else {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "i.id, "
                     + "i.name, "
                     + "i.code, "
@@ -692,7 +805,7 @@ public class ItemController implements Serializable {
     public String fillItemsWithoutDepartment() {
         if (configOptionApplicationController.getBooleanValueByKey("List OPD Items with Item Fees in Manage Items", false)) {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "f.item.id, "
                     + "f.item.name, "
                     + "f.item.code, "
@@ -714,7 +827,7 @@ public class ItemController implements Serializable {
 
         } else {
             Map<String, Object> parameters = new HashMap<>();
-            String jpql = "SELECT new com.divudi.data.ItemLight("
+            String jpql = "SELECT new com.divudi.core.data.ItemLight("
                     + "i.id, "
                     + "i.name, "
                     + "i.code, "
@@ -766,7 +879,7 @@ public class ItemController implements Serializable {
 
     public List<ItemLight> fillItems() {
         Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
                 + "d.name, d.id, s.name, s.id, "
@@ -988,7 +1101,7 @@ public class ItemController implements Serializable {
             } else {
                 item = new Item();
                 item.setName(name);
-                item.setCode(CommonController.nameToCode(name));
+                item.setCode(CommonFunctions.nameToCode(name));
                 item.setParentItem(parentItem);
                 getFacade().create(item);
             }
@@ -1515,6 +1628,30 @@ public class ItemController implements Serializable {
             itemFacade.edit(i);
         }
         JsfUtil.addSuccessMessage("All Unmarked for Print Separate Fees");
+    }
+
+    public void markSelectedItemsForRequestForQuentity() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setRequestForQuentity(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Request For Quentity");
+    }
+
+    public void unMarkSelectedItemsForRequestForQuentity() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setRequestForQuentity(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Request For Quentity");
     }
 
     public void addSessionNumberType() {
@@ -2306,7 +2443,7 @@ public class ItemController implements Serializable {
                     + " or type(c)=:inv"
                     + " or type(c)=:ward "
                     + " or type(c)=:the)  "
-                    + " and (c.name) like :q"
+                    + " and ((c.name) like :q or (c.code) like :q ) "
                     + " order by c.name";
             m.put("pac", Packege.class);
             m.put("ser", Service.class);
@@ -3467,6 +3604,8 @@ public class ItemController implements Serializable {
     public Department getFilterDepartment() {
         return filterDepartment;
     }
+    
+    
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;
@@ -3542,6 +3681,29 @@ public class ItemController implements Serializable {
 
     public void setOutput(String output) {
         this.output = output;
+    }
+
+    public Item findItemByNameAndInstitution(String itemName, String institutionName) {
+        String jpql;
+        Map m = new HashMap();
+        jpql = "select i "
+                + " from Item i "
+                + " where i.retired=:ret "
+                + " and i.name=:itemName"
+                + " and i.institution.name=:institutionName";
+        m.put("ret", false);
+        m.put("itemName", itemName);
+        m.put("institutionName", institutionName);
+        Item item = getFacade().findFirstByJpql(jpql, m);
+        return item;
+    }
+
+    public Institution getCollectionCentre() {
+        return collectionCentre;
+    }
+
+    public void setCollectionCentre(Institution collectionCentre) {
+        this.collectionCentre = collectionCentre;
     }
 
     @FacesConverter("itemLightConverter")

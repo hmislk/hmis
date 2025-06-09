@@ -1,0 +1,526 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill" 
+      xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+
+    <h:body>
+
+        <ui:composition template="/resources/template/template.xhtml">
+
+            <ui:define name="content">
+                <h:form>
+                    <p:panel rendered="#{inwardSearch.patient.person ne null}">
+                        <p:panel styleClass="alignTop" rendered="#{inwardSearch.patient.person ne null}" class="">
+                            <f:facet name="header">
+                                <div class="d-flex justify-content-between">
+                                    <div class="d-flex">
+                                        <h:outputText styleClass="fas fa-print"></h:outputText>
+                                        <h:outputLabel value="Edit Provisional Bill" class="mx-4"></h:outputLabel>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <p:commandButton 
+                                            icon=" fa fa-refresh"
+                                            value="Refresh" 
+                                            action="#{inwardSearch.refreshBill}"
+                                            class="ui-button-warning"
+                                            process="@this"
+                                            update="@all" />
+                                        <p:commandButton 
+                                            icon=" fa fa-save"
+                                            value="Save Bill" 
+                                            action="#{inwardSearch.saveProvisionalBill(inwardSearch.bill)}"
+                                            class="ui-button-warning"
+                                            ajax="false" />
+                                        <p:commandButton 
+                                            icon=" fa fa-check"
+                                            value="Settle Bill" 
+                                            action="#{bhtSummeryController.settleProvisionalBill(inwardSearch.bill)}"
+                                            class="ui-button-success"
+                                            ajax="false" />
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            icon="fa fa-cancel"
+                                            class="ui-button-danger"
+                                            value="To Cancel Bill"
+                                            action="inward_cancel_bill_provisional?faces-redirect=true"
+                                            disabled="#{inwardSearch.bill.cancelled}"  />
+                                        <p:commandButton 
+                                            ajax="false"
+                                            icon="fas fa-id-card"
+                                            class="ui-button-secondary " 
+                                            value="Inpatient Dashboard"
+                                            action="#{bhtSummeryController.navigateToInpatientProfile()}"
+                                            >
+                                            <f:setPropertyActionListener 
+                                                value="#{admissionController.current}" 
+                                                target="#{admissionController.current}" >
+                                            </f:setPropertyActionListener>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+
+                                <h:panelGroup rendered="false">
+                                    <div class="d-flex justify-content-between mb-2" style="display: ">
+                                        <div></div>
+                                        <div class="d-flex gap-2">
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - Single page" ajax="false">
+                                                <p:printer  ></p:printer>
+                                            </p:commandButton>
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill - 3 pages" ajax="false">
+                                                <p:printer  ></p:printer>
+                                            </p:commandButton> 
+                                            <p:commandButton value="Final Bill &amp; Profesional Bill (Duplicate)" ajax="false">
+                                                <p:printer  ></p:printer>
+                                            </p:commandButton>
+                                            <p:commandButton value="Print Credit Company Letter" ajax="false">
+                                                <p:printer  ></p:printer>
+                                            </p:commandButton>
+                                        </div>
+                                    </div>
+                                </h:panelGroup>
+
+                            </f:facet>
+
+                            <div class="row mt-3">
+                                <div class="col-lg-4">
+                                    <common:patient_details_for_addmission editable="true" searchable="false" controller="#{admissionController}" class="w-100" />
+                                </div>
+                                <div class="col-lg-4">
+                                    <common:admission_details admission="#{admissionController.current}" class="w-100"/>
+                                </div>
+                                <div class="col-lg-4">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <div class="d-flex gap-2 mt-2">
+                                                    <i Class="fa fa-file-invoice mt-1"></i>
+                                                    <h:outputLabel value="Bill Details" ></h:outputLabel>
+                                                </div>
+                                                <div>
+                                                    <p:commandButton value="View Charges" type="button" onclick="PF('chargesList').show();" />
+
+                                                    <p:dialog header="Inward Charges List" widgetVar="chargesList" modal="true" height="60vh" width="75vw">
+                                                        <in:finalTable bill="#{inwardSearch.bill}"/>
+                                                    </p:dialog>
+                                                </div>
+                                            </div>
+
+                                        </f:facet>
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Bill No" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:outputLabel value="#{inwardSearch.bill.deptId}" style="float: right;"></h:outputLabel>
+                                            </div>
+                                        </div> 
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Total" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:outputLabel value="#{inwardSearch.bill.grantTotal}" style="float: right;" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Discount" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p:inputText value="#{inwardSearch.bill.discount}" style="float: right;" >
+                                                    <p:ajax process="@this" update="@all"
+                                                            event="blur"
+                                                            listener="#{inwardSearch.updateTotal()}"/>
+                                                </p:inputText>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Net Total" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:outputLabel value="#{inwardSearch.bill.netTotal}" style="float: right;" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Paid Amount" ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:outputLabel value="#{inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany}" style="float: right;" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-5">
+                                                <h:outputLabel value="Due " ></h:outputLabel>
+                                            </div>
+                                            <div class="col-md-1 justify-content-end d-flex">
+                                                <p:outputLabel value=":" class="mx-2"/>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <h:outputLabel value="#{inwardSearch.bill.netTotal-(inwardSearch.bill.paidAmount+inwardSearch.bill.patientEncounter.paidByCreditCompany)}" style="float: right;" >
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputLabel>
+                                            </div>
+                                        </div>
+
+                                        <h:panelGroup rendered="#{inwardSearch.bill.patientEncounter.paymentMethod eq 'Credit'}">
+                                            <div class="row">
+                                                <div class="col-md-5 mt-2 d-flex gap-2">
+                                                    <h:outputLabel value="Credit Limit" class="mt-2"/>
+                                                    <p:commandButton 
+                                                        ajax="false" 
+                                                        icon="fa fa-pencil"
+                                                        id="edit_credit_limit"
+                                                        class="ui-button-warning"
+                                                        action="#{inwardSearch.edit()}">
+                                                    </p:commandButton>
+                                                </div>
+                                                <div class="col-md-1 justify-content-end d-flex mt-2">
+                                                    <p:outputLabel value=":" class="mx-2 mt-2" />
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <p:inputText value="#{inwardSearch.bill.patientEncounter.creditLimit}" style="float: right;"  class="mt-2">
+                                                        <f:convertNumber pattern="#,##0.00" />
+                                                    </p:inputText>
+                                                </div>
+                                            </div>
+
+                                            <p:tooltip for="edit_credit_limit" value="Edit Credit Limit"  showDelay="0" hideDelay="0"></p:tooltip>
+
+                                        </h:panelGroup>
+
+                                    </p:panel>
+                                </div>
+                            </div> 
+
+                            <div class="row my-2">
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex align-item-center justify-content-between" >
+                                                <div>
+                                                    <p:outputLabel value="Edit Details" />
+                                                </div>
+                                                <div>
+                                                    <p:selectBooleanCheckbox value="#{inwardSearch.showZeroInwardChargeCategoryTypes}" 
+                                                                             label="Show Other Categories" itemLabel="Show Other Categories"
+                                                                             class="mx-2" >
+                                                        <p:ajax process="@this" update="@all"/>
+                                                    </p:selectBooleanCheckbox>
+                                                </div>
+                                            </div>
+                                        </f:facet>
+                                        <p:dataTable value="#{inwardSearch.bill.billItems}" 
+                                                     var="bip"
+                                                     class="w-100">
+                                            <p:column rendered="#{inwardSearch.showZeroInwardChargeCategoryTypes or bip.adjustedValue ne 0}" filterBy="#{bip.inwardChargeType.name}" filterMatchMode="contains">
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Discription"/>
+                                                </f:facet>
+                                                <h:outputLabel value="#{bip.inwardChargeType.name}" />
+                                            </p:column>
+                                            <p:column sortBy="#{bip.adjustedValue}" rendered="#{inwardSearch.showZeroInwardChargeCategoryTypes or bip.adjustedValue ne 0}">
+                                                <f:facet name="header">
+                                                    <h:outputLabel value="Charge (Rs.)"/>
+                                                </f:facet>
+                                                <p:inputText value="#{bip.adjustedValue}" disabled="#{bip.inwardChargeType eq 'ProfessionalCharge'}" >
+                                                    <p:ajax process="@this" update="@all"
+                                                            event="blur"
+                                                            listener="#{inwardSearch.updateTotal()}"/>
+<!--                                                    <p:ajax process="@this" event="keyup"
+                                                            update="@all"
+                                                            listener="#{inwardSearch.changeIsMade()}"/>-->
+                                                </p:inputText>
+                                            </p:column>
+                                        </p:dataTable>
+                                        <ui:repeat value="#{inwardSearch.bill.billItems}" var="bip">
+                                            <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' or bip.inwardChargeType eq 'DoctorAndNurses'}">
+                                                <p:dataTable value="#{bip.proFees}" var="fe" class="my-2" rendered="#{bip.proFees.size() ne 0 or not empty bip.proFees}">
+                                                    <f:facet name="header">
+                                                        <h:outputLabel value="Professional Charges" rendered="#{bip.inwardChargeType eq 'ProfessionalCharge'}"/>
+                                                        <h:outputLabel value="Doctor Charges" rendered="#{bip.inwardChargeType eq 'DoctorAndNurses'}"/>
+                                                    </f:facet>
+                                                    <p:column>
+                                                        <f:facet name="header">
+                                                            <h:outputLabel value="Doctor Name"/>
+                                                        </f:facet>
+                                                        <p:outputLabel value="#{fe.staff.person.nameWithTitle}" />
+                                                    </p:column>
+                                                    <p:column>
+                                                        <f:facet name="header">
+                                                            <h:outputLabel value="Charge (Rs.)"/>
+                                                        </f:facet>
+                                                        <p:inputText value="#{fe.feeAdjusted ne 0 ? fe.feeAdjusted : fe.feeValue}" >
+                                                            <p:ajax process="@this" update="@all"
+                                                                    event="blur"
+                                                                    listener="#{inwardSearch.updateProTotal(bip)}"/>
+<!--                                                            <p:ajax process="@this" event="keyup"
+                                                                    update="@all"
+                                                                    listener="#{inwardSearch.changeIsMade()}"/>-->
+                                                        </p:inputText>
+                                                    </p:column>
+                                                </p:dataTable>
+                                            </h:panelGroup>
+                                        </ui:repeat>
+                                    </p:panel>
+                                </div>
+                                <div class="col-6">
+                                    <p:panel>
+                                        <f:facet name="header">
+                                            <div class="d-flex justify-content-between">
+                                                <div><h:outputLabel value="Original" class="mt-2"/></div>
+                                                <div class="d-flex gap-2">
+                                                    <p:selectBooleanCheckbox
+                                                        id="box"
+                                                        value="#{inwardSearch.withProfessionalFee}"
+                                                        itemLabel="With Professional Fee"  
+                                                        onchange="#{inwardSearch.showProfessionalFee()}">
+                                                        <p:ajax process="@this" update="finalOriginalBillPriview"/>
+                                                    </p:selectBooleanCheckbox>
+                                                    <p:commandButton 
+                                                        icon="fa fa-print"
+                                                        value="Hospital Bill"
+                                                        disabled="#{inwardSearch.changed}"
+                                                        class="ui-button-info"
+                                                        ajax="false">
+                                                        <p:printer target="finalOriginalBillPriview" ></p:printer>
+                                                    </p:commandButton>
+                                                </div>
+
+                                            </div>
+                                        </f:facet>
+
+                                        <h:panelGroup id="finalOriginalBillPriview">
+                                            <bi:finalBill bill="#{inwardSearch.showOrginalBill ? inwardSearch.bill.referenceBill : inwardSearch.bill}" showProfessional="#{inwardSearch.withProfessionalFee}" /><!-- **Hospital Bill**Original Bill**-->
+                                        </h:panelGroup>
+
+                                    </p:panel>
+                                </div>
+                            </div>
+
+                        </p:panel>
+
+                        <p:panel rendered="false" header="Final Bill">
+                            <bi:finalBill bill="#{inwardSearch.bill}"/> **Original Bill**
+                            <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true"/> Final Bill - **Hospital Bill**Original Bill**
+                            <bi:finalBill bill="#{inwardSearch.bill}" hosCopy="true" showProfessional="true" /> **Hospital Bill**Original Bill**
+                            <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true"/> Final Bill - **Hospital Bill**Duplicate Bill**
+                            <bi:finalBill bill="#{inwardSearch.bill}" duplicate="true" showProfessional="true" /> Final Bill - **Hospital Bill**Duplicate Bill**
+
+                        </p:panel>
+
+                        <p:panel rendered="false" header="Professional Bill">
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" hosCopy="true" />
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" duplicate="true" />
+                        </p:panel>
+
+                        <p:panel rendered="false">
+                            <bi:finalBill  bill="#{inwardSearch.bill}" /> 
+                            <bi:finalBill  bill="#{inwardSearch.bill}" hosCopy="true"/>
+                            <bi:finalBill  bill="#{inwardSearch.bill}" duplicate="true"/>
+                            <bi:finalBill hosCopy="true" showProfessional="true"  bill="#{inwardSearch.bill}"/>                 
+                            <bi:finalBill duplicate="true" showProfessional="true" bill="#{inwardSearch.bill}" />
+
+                            <bi:finalBill_1 bill="#{inwardSearch.bill}" hosCopy="true"/>
+                            <bi:finalBill_1 bill="#{inwardSearch.bill}" duplicate="true"/> 
+
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" hosCopy="true" />
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" duplicate="true" />
+                            <bi:finalProfessionalBill bill="#{inwardSearch.bill}" /> 
+
+                            <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="true"/>               
+                            <bi:finalBillGreenSheet  bill="#{inwardSearch.bill}" showProfessional="false"/>
+
+
+                            <div style="width: 100%; text-align: center; margin: auto; padding: 10px; " >
+
+                                <div>
+                                    <p:dataTable id="pharmacy" value="#{bhtSummeryFinalizedController.pharmacyItems}" var="iss" 
+                                                 sortBy="#{iss.bill.deptId}"
+                                                 rowStyleClass="#{(iss.bill.netTotal ne 0 )                                                                       
+                                                                  and                                                                        
+                                                                  ((iss.bill.billClass eq 'class com.divudi.entity.PreBill')
+                                                                  or 
+                                                                  (iss.bill.billedBill ne null 
+                                                                  and iss.bill.billClass eq 'class com.divudi.entity.RefundBill'))? '':'noDisplayRow'}">
+                                        <p:column headerText="Bill No">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Bill No"/>
+                                            </f:facet>
+                                            <h:outputLabel value="#{iss.bill.deptId}"/>                                    
+                                        </p:column>                  
+                                        <p:column headerText="Item Name">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Item Name"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.item.name}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Qty">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Qty"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.qty}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>                               
+                                        <p:column style="text-align: right;" headerText="Total Value"  exportable="false">
+                                            <h:outputLabel  value="#{iss.grossValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column style="text-align: right;" headerText="Margin Value" exportable="false">
+                                            <h:outputLabel  value="#{iss.marginValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column style="text-align: right;" headerText="Gross Value" >
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Gross Value"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.grossValue+iss.marginValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column style="text-align: right;" headerText="Discount Value">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Discount Value"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.discount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column style="text-align: right;" headerText="Net Value">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Net Value"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.netValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+                                        <p:column style="text-align: right;" headerText="Adjusted Value">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Adjusted Value"/>
+                                            </f:facet>
+                                            <h:outputLabel  value="#{iss.adjustedValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </p:column>
+
+                                        <p:column headerText="Created At" exportable="false">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Created At"/> 
+                                            </f:facet>
+                                            <h:outputLabel value="#{iss.bill.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                            </h:outputLabel>                                                   
+                                            <br/>
+                                            <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                               value="#{iss.bill.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+
+                                        <p:column headerText="Billed By" exportable="false" >
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Billed By"/> 
+                                            </f:facet>
+                                            <h:outputLabel value="#{iss.bill.creater.webUserPerson.name}"/>     
+                                            <br/>
+                                            <h:panelGroup rendered="#{iss.bill.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled By " />
+                                                <h:outputLabel style="color: red;" rendered="#{iss.bill.cancelled}" 
+                                                               value="#{iss.bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>   
+                                        <p:column headerText="Edited" exportable="false">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Edited"/> 
+                                            </f:facet>
+                                            <h:panelGroup  rendered="#{iss.bill.editor ne null}" >
+                                                <h:outputLabel style="color: #008000;" value="Edited By " />
+                                                <h:outputLabel style="color: #008000;" 
+                                                               value="#{iss.bill.editor.webUserPerson.name}" >
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                            <h:panelGroup  rendered="#{iss.bill.editedAt ne null}" >
+                                                <h:outputLabel style="color: #008000;" value="Edited at " />
+                                                <h:outputLabel style="color: #008000;" 
+                                                               value="#{iss.bill.editedAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Checked" exportable="false">
+                                            <f:facet name="header">
+                                                <h:outputLabel value="Checked"/> 
+                                            </f:facet>
+                                            <h:panelGroup  rendered="#{iss.bill.checkedBy ne null}" >
+
+                                                <h:outputLabel style="color: #008000;" 
+                                                               value="#{iss.bill.checkedBy.webUserPerson.name}" >
+                                                </h:outputLabel>
+                                            </h:panelGroup><br/>
+                                            <h:panelGroup  rendered="#{iss.bill.checkeAt ne null}" >
+
+                                                <h:outputLabel style="color: #008000;" 
+                                                               value="#{iss.bill.checkeAt}" >
+                                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                                </h:outputLabel>
+                                            </h:panelGroup>                        
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </div>
+                            </div>
+
+                        </p:panel>
+
+
+                        <h:outputStylesheet library="css" name="printing.css" ></h:outputStylesheet>
+
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

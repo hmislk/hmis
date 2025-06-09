@@ -44,7 +44,9 @@
                                     <f:selectItem itemLabel="Select" />                           
                                     <f:selectItems value="#{enumController.allPaymentMethods}" />                                    
                                 </p:selectOneMenu>
-                                <p:spacer ></p:spacer>
+                                <p:commandButton id="btnAddAllforPaymentMethod" value="Add Discount Percentage for All Categories for Selected Payment Methods" ajax="false"
+                                                 action="#{opdMemberShipDiscountController.savePharmacyCategoryPaymentSchemeForAllCategoriesAndSelectedPaymentMethod()}" >
+                                </p:commandButton>
 
                                 <h:outputLabel value="Discount Percentage" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" class="w-100" />

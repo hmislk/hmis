@@ -1,25 +1,25 @@
 /*
  * Open Hospital Management Information System
  * Dr M H B Ariyaratne
- * buddhika.ari@gmail.comcontroller class which are not used. 
+ * buddhika.ari@gmail.comcontroller class which are not used.
  */
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.CashTransactionFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.CashTransactionFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.io.Serializable;
 import java.util.Date;
 import javax.ejb.EJB;

@@ -8,14 +8,14 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission" />
+        <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission" />
 
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <h:form class="w-100" >
-  
+
             <h:outputStylesheet>
                 /* Styles for screen display */
                 .page {
@@ -81,7 +81,7 @@
 
                         <div class="my-4" style="font-weight: bold;text-align: center;">
                             <h1><h:outputLabel value="#{cc.attrs.admission.admissionType.name}" /></h1>
-                            
+
                         </div>
 
                         <div class="row d-flex justify-content-center ">
@@ -344,8 +344,8 @@
 
                         <div class="my-5" style="font-weight: bold">
                             <p>
-                                I agree to Abide by the terms and conditions of admission prevailing 
-                                at this hospital and hold myself responsible for payment of all bills of 
+                                I agree to Abide by the terms and conditions of admission prevailing
+                                at this hospital and hold myself responsible for payment of all bills of
                                 this patient before discharge from this hospital.
                             </p>
                         </div>
@@ -361,7 +361,7 @@
                                 <div  >
                                     <h:outputLabel value="Cashier : #{cc.attrs.admission.creater.code}" style="text-decoration: overline;">
                                     </h:outputLabel>
-                                </div> 
+                                </div>
                             </div>
                         </div>
 
@@ -371,27 +371,27 @@
                         <!--                        <div class="BillDate">
                                                     <h:outputLabel value="Payment Methord : ">
                                                     </h:outputLabel>
-                        
+
                                                     <h:outputLabel value="#{cc.attrs.admission.paymentMethod}" >
-                                                        
+
                                                     </h:outputLabel>
                                                 </div>
-                                                
+
                                                 <div class="BillDate">
                                                     <h:outputLabel value="Referring Doctor : ">
                                                     </h:outputLabel>
-                        
+
                                                     <h:outputLabel value="#{cc.attrs.admission.referringDoctor.person.nameWithTitle}" >
-                                                        
+
                                                     </h:outputLabel>
                                                 </div>
-                                                
+
                                                 <div class="BillDate">
                                                     <h:outputLabel value="OPD Doctor : ">
                                                     </h:outputLabel>
-                        
+
                                                     <h:outputLabel value="#{cc.attrs.admission.opdDoctor.person.nameWithTitle}" >
-                                                        
+
                                                     </h:outputLabel>
                                                 </div>-->
 

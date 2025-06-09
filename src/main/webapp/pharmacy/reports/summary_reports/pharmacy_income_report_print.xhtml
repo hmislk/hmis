@@ -1,0 +1,146 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
+
+    <h:head>
+        <h:outputStylesheet>
+            .printTable {
+            border-collapse: collapse;
+            font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;
+            }
+            .printTable th, .printTable td {
+            border: 1px solid black;
+            padding: 5px;
+            }
+            .printTable th {
+            background-color: #f2f2f2;
+            }
+            .pageBreak {
+            page-break-after: always;
+            }
+            .screenOnly {
+            display: none;
+            }
+            @media screen {
+            .screenOnly {
+            display: inline-block;
+            }
+            }
+        </h:outputStylesheet>
+    </h:head>
+
+    <h:body>
+        <ui:composition template="/resources/template/template_contents_only.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:commandButton 
+                        value="Print" 
+                        onclick="window.print();" 
+                        class="screenOnly ui-button-warning m-1"
+                        icon="pi pi-print"/>
+
+                    <table class="printTable w-100">
+                        <thead>
+                            <tr>
+                                <th>Bill No</th>
+                                <th>Patient</th>
+                                <th>Date</th>
+                                <th class="text-end">Net Total</th>
+                                <th class="text-end">Cash</th>
+                                <th class="text-end">Card</th>
+                                <th class="text-end">Discount</th>
+                                <th class="text-end">Service Charge</th>
+                                <th class="text-end">Actual Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <ui:repeat value="#{pharmacySummaryReportController.bundle.rows}" var="row" varStatus="status">
+                                <tr>
+                                    <td><h:outputText value="#{row.bill.deptId}" /></td>
+                                    <td style="text-align: left;"><h:outputText value="#{row.bill.patient.person.nameWithTitle}" /></td>
+                                    <td>
+                                        <h:outputText value="#{row.bill.createdAt}">
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.bill.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.cashValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.cardValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.discount}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.serviceCharge}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText value="#{row.grossTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </td>
+                                </tr>
+                                <h:panelGroup rendered="#{(status.index + 1) mod pharmacySummaryReportController.rowsPerPageForPrinting == 0}">
+                                    <tr class="pageBreak"><td colspan="9"></td></tr>
+                                </h:panelGroup>
+                            </ui:repeat>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end fw-bold">Total:</td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cashValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.serviceCharge}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="#{pharmacySummaryReportController.bundle.summaryRow.grossTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

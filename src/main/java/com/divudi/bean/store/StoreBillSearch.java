@@ -6,33 +6,33 @@ package com.divudi.bean.store;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.WebUserController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -96,7 +96,6 @@ public class StoreBillSearch implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     /////////
-    private CommonFunctions commonFunctions;
     @EJB
     private BillNumberGenerator billNumberBean;
     @Inject
@@ -234,12 +233,12 @@ public class StoreBillSearch implements Serializable {
 
     private LazyDataModel<Bill> lazyBills;
 
-   
+
     public LazyDataModel<Bill> getSearchSaleBills() {
         return lazyBills;
     }
 
-  
+
     public EjbApplication getEjbApplication() {
         return ejbApplication;
     }
@@ -854,7 +853,7 @@ public class StoreBillSearch implements Serializable {
 
             can.getBillItems().add(b);
         }
-        
+
         for (BillItem i : can.getBilledBill().getBillExpenses()) {
             BillItem b = new BillItem();
             b.copy(i);
@@ -1100,7 +1099,7 @@ public class StoreBillSearch implements Serializable {
 //
 //            ph.setBillItem(b);
 //            getPharmaceuticalBillItemFacade().edit(ph);
-//   
+//
 //            getBillItemFacede().edit(b);
 //
 //            can.getBillItems().add(b);
@@ -1777,7 +1776,7 @@ public class StoreBillSearch implements Serializable {
         return bills;
     }
 
-  
+
     public void updatePhIem() {
         if (currentBillItem == null) {
             return;
@@ -1824,7 +1823,7 @@ public class StoreBillSearch implements Serializable {
         lazyBills = null;
 
     }
-    
+
     public String viewBill() {
 
         if (bill != null) {
@@ -2288,7 +2287,7 @@ public class StoreBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -2301,7 +2300,7 @@ public class StoreBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -2310,14 +2309,6 @@ public class StoreBillSearch implements Serializable {
         resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {

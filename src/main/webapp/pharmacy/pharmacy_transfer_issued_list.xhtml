@@ -66,12 +66,13 @@
                                 <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                            
                             </p:column> 
                             <p:column headerText="Issued At" width="100px">                      
-                                <h:outputLabel value="#{p.createdAt}"/>                       
+                                <h:outputLabel value="#{p.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>                       
                                 <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
-                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
-                                                   value="#{p.cancelledBill.createdAt}" >
+                                    <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.createdAt}" >
                                         <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                     </h:outputLabel>
                                 </h:panelGroup>

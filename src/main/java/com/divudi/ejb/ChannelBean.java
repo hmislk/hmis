@@ -5,25 +5,24 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.channel.BookingController;
-import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.dataStructure.ChannelFee;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionLeave;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.ServiceSessionLeaveFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.dataStructure.ChannelFee;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.ServiceSessionLeave;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.ServiceSessionLeaveFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -64,8 +63,6 @@ public class ChannelBean {
     SessionController sessionController;
     @Inject
     BookingController bookingController;
-    @Inject
-    ChannelBillController channelBillController;
 
     public ChannelFee getChannelFee(BillSession bs, FeeType feeType) {
         ChannelFee doctorFee = new ChannelFee();
@@ -275,14 +272,14 @@ public class ChannelBean {
                         //////System.out.println("Specific Count : " + sessionDayCount);
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!tmp.equals(ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
                 }
             }
 
-            if (hasSpecificDateSession == false) {
+            if (!hasSpecificDateSession) {
                 for (ServiceSession ss : sessions) {
                     Calendar wdc = Calendar.getInstance();
                     wdc.setTime(nowDate);
@@ -302,7 +299,7 @@ public class ChannelBean {
 
                         serviceSessions.add(newSs);
 
-                        if (tmp != ss.getSessionWeekday()) {
+                        if (!tmp.equals(ss.getSessionWeekday())) {
                             sessionDayCount++;
                         }
                     }
@@ -329,14 +326,10 @@ public class ChannelBean {
         hm.put("st", staff);
         ServiceSessionLeave tmp = getServiceSessionLeaveFacade().findFirstByJpql(slq, hm, TemporalType.DATE);
 
-        if (tmp != null) {
-            return true;
-        } else {
-            return false;
-        }
+        return tmp != null;
     }
 
-//    
+//
 //    public List<ServiceSession> generateDailyServiceSessionsFromWeekdaySessions(List<ServiceSession> inputSessions) {
 //        int sessionDayCount = 0;
 //        List<ServiceSession> createdSessions = new ArrayList<>();
@@ -786,7 +779,7 @@ public class ChannelBean {
     }
 
     public List<SessionInstance> listTodaysSessionInstances(Boolean ongoing, Boolean completed, Boolean pending) {
-        List<SessionInstance> sessionInstances = new ArrayList<>();
+        List<SessionInstance> sessionInstances;
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.sessionDate=:sd");
 
         // Initializing the parameters map
@@ -994,7 +987,7 @@ public class ChannelBean {
 
     public void createDocLeaveSession(List<ServiceSession> createdSessions, Date nDate, int rIndex) {
         ServiceSession newSs = new ServiceSession();
-        newSs.setId(1l);
+        newSs.setId(1L);
         newSs.setName("Leave");
         newSs.setSessionAt(nDate);
         newSs.setMaxNo(0);
@@ -1018,6 +1011,7 @@ public class ChannelBean {
         SessionInstance newSs = new SessionInstance();
         newSs.setOriginatingSession(ss);
         newSs.setName(ss.getName());
+        newSs.setAcceptOnlineBookings(ss.isAcceptOnlineBookings());
         newSs.setMaxNo(ss.getMaxNo());
         newSs.setStartingTime(ss.getStartingTime());
         newSs.setSessionWeekday(ss.getSessionWeekday());
@@ -1074,7 +1068,7 @@ public class ChannelBean {
         return sessionNumberGenerator;
     }
 
-//    
+//
 //    public List<ServiceSession> generateServiceSessionsForSelectedDate(List<ServiceSession> inputSessions, Date date) {
 //        int sessionDayCount = 0;
 //        List<ServiceSession> createdSessions = new ArrayList<>();

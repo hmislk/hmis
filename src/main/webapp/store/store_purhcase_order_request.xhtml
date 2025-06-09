@@ -19,10 +19,10 @@
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <h:outputLabel  value="Store Purhcase Order" class="mt-2"/>
-                                <p:commandButton 
-                                    ajax="false"  
-                                    value="New Order" 
-                                    icon="pi pi-plus" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="New Order"
+                                    icon="pi pi-plus"
                                     class="ui-button-warning m-1"
                                     action="#{storePurchaseOrderRequestController.recreate}"/>
                             </div>
@@ -30,19 +30,19 @@
                         </f:facet>
                         <div class="row">
                             <div class="col-9">
-                                <p:dataTable styleClass="noBorder" rowIndexVar="i" 
+                                <p:dataTable styleClass="noBorder" rowIndexVar="i"
                                              var="bi" scrollable="true" rowKey="#{bi.searialNo}"
-                                             scrollHeight="250" value="#{storePurchaseOrderRequestController.billItems}" 
+                                             scrollHeight="250" value="#{storePurchaseOrderRequestController.billItems}"
                                              selection="#{storePurchaseOrderRequestController.selectedBillItems}"
-                                             id="itemList" >  
+                                             id="itemList" >
 
-                                    <f:facet name="header">   
+                                    <f:facet name="header">
                                         <div class="d-flex justify-content-between">
                                             <h:outputLabel style="font-weight: 600" value="Store Bill Items"/>
-                                            <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected" 
+                                            <p:commandButton ajax="false" class="ui-button-danger" value="Remove Selected"
                                                              action="#{storePurchaseOrderRequestController.removeSelected()}"/>
                                         </div>
-                                    </f:facet> 
+                                    </f:facet>
 
                                     <p:column selectionMode="multiple" style="width: 10px;"></p:column>
 
@@ -51,43 +51,43 @@
                                         #{bi.searialNo+1}
                                     </p:column>
 
-                                    <p:column headerText="Item Name"  style="width:30%">  
-                                        #{bi.item.name} 
-                                    </p:column>  
+                                    <p:column headerText="Item Name"  style="width:30%">
+                                        #{bi.item.name}
+                                    </p:column>
                                     #{a}
-                                    <p:column headerText="Qty" style="width:20%"> 
-                                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">                       
-                                            <f:ajax event="blur" render="@this total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
-                                        </p:inputText>
-                                    </p:column> 
-                                    <p:column headerText="Free Qty" style="width:20%"> 
-                                        <p:inputText autocomplete="off"  id="freeQty" value="#{bi.tmpFreeQty}" style="width:100%" label="Qty">                       
+                                    <p:column headerText="Qty" style="width:20%">
+                                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty">
                                             <f:ajax event="blur" render="@this total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                             <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                                         </p:inputText>
                                     </p:column>
-                                    <p:column headerText="Purchase Price" style="width:20%">  
+                                    <p:column headerText="Free Qty" style="width:20%">
+                                        <p:inputText autocomplete="off"  id="freeQty" value="#{bi.tmpFreeQty}" style="width:100%" label="Qty">
+                                            <f:ajax event="blur" render="@this total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
+                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
+                                        </p:inputText>
+                                    </p:column>
+                                    <p:column headerText="Purchase Price" style="width:20%">
                                         <h:panelGroup id="price">
-                                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">                                
+                                            <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}">
                                                 <f:ajax event="keyup" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{storePurchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
                                                 <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{storePurchaseOrderRequestController.onFocus(bi)}" />
                                             </p:inputText>
                                         </h:panelGroup>
-                                    </p:column>  
+                                    </p:column>
 
-                                    <p:column headerText="Total" style="width:20%">  
+                                    <p:column headerText="Total" style="width:20%">
                                         <h:panelGroup id="total">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >                                
+                                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                             </h:outputText>
                                         </h:panelGroup>
-                                    </p:column>  
+                                    </p:column>
 
                                     <p:column style="width:10%">
                                         <p:commandButton icon="fas fa-trash" ajax="false" action="#{storePurchaseOrderRequestController.removeItem(bi)}" class="ui-button-danger"/>
                                     </p:column>
 
-                                </p:dataTable>  
+                                </p:dataTable>
                                 <p:spacer height="50"/>
                                 <st:history/>
                             </div>
@@ -99,20 +99,20 @@
                                         <p:outputLabel value="Purchase Order"/>
                                     </f:facet>
 
-                                    <p:spacer height="5" /> 
+                                    <p:spacer height="5" />
                                     <h:panelGrid columns="2" class="flex-column justify-content-between w-100">
                                         <h:outputLabel value="Supplier"></h:outputLabel>
                                         <p:autoComplete class="w-100"
                                                         inputStyleClass="w-100"
-                                                        converter="deal" 
-                                                        value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"  
+                                                        converter="deal"
+                                                        value="#{storePurchaseOrderRequestController.currentBill.toInstitution}"
                                                         forceSelection="true"
                                                         completeMethod="#{storeDealorController.completeDealor}"
                                                         var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                             <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('exDItem',view).clientId}" listener="#{storePurchaseOrderRequestController.setInsListener}"/>
                                         </p:autoComplete>
                                         <h:outputLabel value="Select Payment Method"/>
-                                        <p:selectOneMenu   id="cmbPs" class="w-100" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">    
+                                        <p:selectOneMenu   id="cmbPs" class="w-100" value="#{storePurchaseOrderRequestController.currentBill.paymentMethod}">
                                             <f:selectItem itemLabel="Select Payment Method"/>
                                             <f:selectItems value="#{enumController.paymentMethodsForPo}"/>
                                         </p:selectOneMenu>
@@ -126,17 +126,17 @@
 
                                     <p:spacer height="5" />
                                     <div class="d-flex justify-content-end">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnSave"
-                                            ajax="false" 
-                                            value="Save" 
+                                            ajax="false"
+                                            value="Save"
                                             action="#{storePurchaseOrderRequestController.save}"
-                                            icon="pi pi-save" 
+                                            icon="pi pi-save"
                                             class="ui-button-warning m-1"/>
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="finalize Order" 
-                                            icon="pi pi-check" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="finalize Order"
+                                            icon="pi pi-check"
                                             class="ui-button-success m-1"
                                             action="#{storePurchaseOrderRequestController.request}"/>
                                     </div>
@@ -144,21 +144,21 @@
 
                                 </p:panel>
                                 <p:panel header="Add Items" >
-                                    <p:outputLabel 
+                                    <p:outputLabel
                                         class="form-label w-100"
                                         value="Add supplier Items" ></p:outputLabel>
-                                    <p:commandButton 
-                                        class="m-1 ui-button-success"  
-                                        ajax="false" 
-                                        value="Add All" 
+                                    <p:commandButton
+                                        class="m-1 ui-button-success"
+                                        ajax="false"
+                                        value="Add All"
                                         action="#{storePurchaseOrderRequestController.createOrderWithItems}"/>
                                     <hr/>
-                                    <p:outputLabel 
-                                        for="exDItem" 
+                                    <p:outputLabel
+                                        for="exDItem"
                                         class="form-label w-100"
                                         value="Select and Add a supplier Item" ></p:outputLabel>
-                                    <p:selectOneMenu 
-                                        id="exDItem" 
+                                    <p:selectOneMenu
+                                        id="exDItem"
                                         value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         class="w-75"
                                         filterMatchMode="contains"
@@ -173,26 +173,26 @@
                                             <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Pack Size" >
-                                            <p:outputLabel value=" X #{vt.dblValue}" 
-                                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                            <p:outputLabel value=" X #{vt.dblValue}"
+                                                           rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
                                         </p:column>
                                     </p:selectOneMenu>
                                     <p:commandButton value="Add Item" class="mx-1 my-2 ui-button-success" action="#{storePurchaseOrderRequestController.addItem}" process="exDItem @this" update="exDItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId} " />
-                                    <p:outputLabel 
-                                        for="exItem" 
+                                    <p:outputLabel
+                                        for="exItem"
                                         class="form-label w-100"
                                         value="Select an Item and Add" ></p:outputLabel>
-                                    <p:autoComplete 
-                                        id="exItem" 
+                                    <p:autoComplete
+                                        id="exItem"
                                         value="#{storePurchaseOrderRequestController.currentBillItem.item}"
                                         forceSelection="true"
                                         class="w-75"
                                         maxResults="50"
                                         inputStyleClass="w-100"
-                                        completeMethod="#{itemController.completeStoreItem}" 
+                                        completeMethod="#{itemController.completeStoreItem}"
                                         var="vt"
                                         scrollHeight="600"
-                                        itemLabel="#{vt.name}" 
+                                        itemLabel="#{vt.name}"
                                         itemValue="#{vt}" >
                                         <p:column headerText="Item" style="max-width: 600px; padding: 6px;">
                                             <h:outputLabel value="#{vt.name}"></h:outputLabel>
@@ -201,15 +201,15 @@
                                             <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Pack Size" style="max-width: 50px; padding: 6px;">
-                                            <p:outputLabel value=" X #{vt.dblValue}" 
-                                                           rendered="#{vt.class eq 'class com.divudi.entity.pharmacy.Ampp'}"/>                            
+                                            <p:outputLabel value=" X #{vt.dblValue}"
+                                                           rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
                                         </p:column>
                                     </p:autoComplete>
-                                    <p:commandButton 
-                                        value="Add Item" 
-                                        class="mx-1  my-2 ui-button-success"  
-                                        action="#{storePurchaseOrderRequestController.addItem}" 
-                                        process="exItem @this" 
+                                    <p:commandButton
+                                        value="Add Item"
+                                        class="mx-1  my-2 ui-button-success"
+                                        action="#{storePurchaseOrderRequestController.addItem}"
+                                        process="exItem @this"
                                         update="exItem :#{p:resolveFirstComponentWithId('itemList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}" />
 
                                 </p:panel>
@@ -219,7 +219,7 @@
                     </p:panel>
                 </h:panelGroup>
 
-                <p:panel 
+                <p:panel
                     rendered="#{storePurchaseOrderRequestController.printPreview}"
                     styleClass="print-preview"
                     class="w-100">
@@ -229,15 +229,15 @@
                                 <h:outputLabel value="Purchase Order Request" class="mt-2"/>
                             </div>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Print" 
-                                    icon="fas fa-print" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print"
                                     class="ui-button-info">
                                     <p:printer target="printPaper" />
                                 </p:commandButton>
-                                <p:commandButton ajax="false"  value="New Order" 
-                                                 icon="pi pi-plus" 
+                                <p:commandButton ajax="false"  value="New Order"
+                                                 icon="pi pi-plus"
                                                  class="ui-button-warning"
                                                  action="#{storePurchaseOrderRequestController.recreate}"/>
                             </div>
@@ -260,11 +260,11 @@
                                         <h:outputLabel value="#{storePurchaseOrderRequestController.currentBill.creater.department.telephone1}"/>
                                     </div>
                                     <div >
-                                        <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{storePurchaseOrderRequestController.currentBill.creater.institution.fax}"/>                                                 
+                                        <h:outputLabel value="Fax : &nbsp;&nbsp;&nbsp;&nbsp;#{storePurchaseOrderRequestController.currentBill.creater.institution.fax}"/>
                                     </div>
                                     <div >
                                         <h:outputLabel value="Email : "/>
-                                        <h:outputLabel value="#{storePurchaseOrderRequestController.currentBill.creater.department.email}"/>                                                 
+                                        <h:outputLabel value="#{storePurchaseOrderRequestController.currentBill.creater.department.email}"/>
                                     </div>
                                 </div>
 
@@ -374,8 +374,8 @@
                     </div>
                 </p:panel>
 
-            </h:panelGroup>            
+            </h:panelGroup>
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

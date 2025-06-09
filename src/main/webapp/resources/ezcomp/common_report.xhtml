@@ -9,8 +9,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute  name="commonReportFormat" type="com.divudi.entity.Category" />
-        <cc:attribute  name="patientReport" type="com.divudi.entity.lab.PatientReport" />
+        <cc:attribute  name="commonReportFormat" type="com.divudi.core.entity.Category" />
+        <cc:attribute  name="patientReport" type="com.divudi.core.entity.lab.PatientReport" />
         <cc:attribute  name="showBorders" type="java.lang.Boolean" />
         <cc:attribute  name="showBackground" type="java.lang.Boolean" />
     </cc:interface>
@@ -23,16 +23,16 @@
         <h:panelGroup rendered="#{cc.attrs.showBackground}">
             <h:panelGroup rendered="#{empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}">
                 <p:graphicImage
-                    value="#{uploadViewController.categoryUploadById}" 
-                    cache="false" 
+                    value="#{uploadViewController.categoryUploadById}"
+                    cache="false"
                     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; ">
                     <f:param name="id" value="#{cc.attrs.commonReportFormat.idStr}" />
                 </p:graphicImage>
             </h:panelGroup >
             <h:panelGroup rendered="#{not empty uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}">
                 <p:graphicImage
-                    value="#{uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}" 
-                    cache="false" 
+                    value="#{uploadViewController.getReportTemplate(cc.attrs.commonReportFormat.idStr)}"
+                    cache="false"
                     style="width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
                 </p:graphicImage>
             </h:panelGroup>
@@ -41,21 +41,21 @@
         <ui:repeat rendered="#{cc.attrs.patientReport ne null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
             <div style="#{myCli.outerCssStyle}">
 
-                <h:panelGroup 
-                    rendered="#{myCli.ixItemType eq 'QrCode' and myCli.retired ne true }"  
-                    style="#{myIi.innerCssStyle};" 
+                <h:panelGroup
+                    rendered="#{myCli.ixItemType eq 'QrCode' and myCli.retired ne true }"
+                    style="#{myIi.innerCssStyle};"
                     >
                     <h:panelGroup rendered="#{myCli.reportItemType eq 'QrCodeLink'}" >
-                        <canvas 
-                            id="qrcode_#{myCli.id}" 
+                        <canvas
+                            id="qrcode_#{myCli.id}"
                             data-content="#{cc.attrs.patientReport.qrCodeContentsLink}"
                             data-width="#{myCli.wtPix}"
                             data-height="#{myCli.htPix}">
                         </canvas>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{myCli.reportItemType eq 'QrCodeDetails'}" >
-                        <canvas 
-                            id="qrcode_#{myCli.id}" 
+                        <canvas
+                            id="qrcode_#{myCli.id}"
                             data-content="#{cc.attrs.patientReport.qrCodeContentsDetailed}"
                             data-width="#{myCli.wtPix}"
                             data-height="#{myCli.htPix}">
@@ -63,9 +63,9 @@
                     </h:panelGroup>
                 </h:panelGroup>
 
-                <h:panelGroup 
-                    rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
-                    layout="block" 
+                <h:panelGroup
+                    rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"
+                    layout="block"
                     style=" #{myCli.description}"    >
                 </h:panelGroup>
 
@@ -79,14 +79,21 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeOnBillDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.ageOnBilledDate(cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt)}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientAgeandGender' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.ageAsShortString}  /  #{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'NicNo' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.nic}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PatientSex' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.patient.person.sex}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'InvestigationName' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'Speciman' and  myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.investigation.sample.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre.chequePrintingName}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectingCenter' and myCli.retired eq false}"
+                    value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre != null ? cc.attrs.patientReport.patientInvestigation.billItem.bill.collectingCentre.chequePrintingName : 'N/A'}"
+                    style="#{myIi.innerCssStyle};"
+                    escape="false">
+                </h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BilledDate' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                 </h:outputText>
@@ -106,7 +113,14 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReportedTime' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.createdAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="hh:mm a"/>
                 </h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'ReferringDoctor' and myCli.retired eq false}"
+                    value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy != null and cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person != null and cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle != null ? cc.attrs.patientReport.patientInvestigation.billItem.bill.referredBy.person.nameWithTitle : 'N/A'}"
+                    style="#{myIi.innerCssStyle};"
+                    escape="false">
+                </h:outputText>
+
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledAt' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampledAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
                 </h:outputText>
@@ -125,7 +139,7 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedPosition' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}"  value="#{cc.attrs.patientReport.approveUser.staff.speciality.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'AutherizedQualification' and myCli.retired eq false  and cc.attrs.patientReport.approveUser.staff.id ne null}" value="#{cc.attrs.patientReport.approveUser.staff.qualification}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
 
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"  
+                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'MRN' and myCli.retired eq false }"
                               value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:panelGroup rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'SampledID' and myCli.retired eq false}">
                     <h:panelGroup rendered="#{empty cc.attrs.patientReport.sampleIDs}">
@@ -145,7 +159,13 @@
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BillingInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.institution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'PerformInstitution' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.toInstitution.name}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'VisitType' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.billItem.bill.ipOpOrCc}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
-                <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.encounter.bhtNo}" style="#{myIi.innerCssStyle};" escape="false" ></h:outputText>
+
+                <h:outputText
+                    rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'BHT' and myCli.retired eq false}"
+                    value="#{cc.attrs.patientReport.patientInvestigation.encounter.bhtNo != null ? cc.attrs.patientReport.patientInvestigation.encounter.bhtNo : 'N/A'}"
+                    style="#{myIi.innerCssStyle};"
+                    escape="false">
+                </h:outputText>
 
                 <h:outputText rendered="#{myCli.ixItemType ne 'Label' and myCli.reportItemType eq 'CollectedOn' and myCli.retired eq false }"  value="#{cc.attrs.patientReport.patientInvestigation.sampleCollectedAt}" style="#{myIi.innerCssStyle};" escape="false" >
                     <f:convertDateTime pattern="dd/MM/yyyy hh:mm a"/>
@@ -157,11 +177,11 @@
                 <h:panelGroup rendered="#{myCli.reportItemType eq 'AutherizedSignature' and myCli.retired eq false and cc.attrs.patientReport.approveUser.staff.id ne null }" >
 
                     <h:panelGroup rendered="#{cc.attrs.patientReport.approveUser.staff.signatureUrl eq null}">
-                        <p:graphicImage 
+                        <p:graphicImage
                             cache="false"
-                            value="#{staffImageController.signatureFromPatientReport}" 
-                            style="width: #{myCli.wtPix};overflow: visible; display: block;" 
-                            height="#{myCli.htPix}" 
+                            value="#{staffImageController.signatureFromPatientReport}"
+                            style="width: #{myCli.wtPix};overflow: visible; display: block;"
+                            height="#{myCli.htPix}"
                             width="#{myCli.wtPix}">
                         </p:graphicImage>
                     </h:panelGroup>
@@ -169,9 +189,9 @@
                     <h:panelGroup rendered="#{cc.attrs.patientReport.approveUser.staff.signatureUrl ne null}">
                         <p:graphicImage
                             cache="false"
-                            value="#{cc.attrs.patientReport.approveUser.staff.signatureUrl}" 
-                            style="width: #{myCli.wtPix};overflow: visible; display: block;" 
-                            height="#{myCli.htPix}" 
+                            value="#{cc.attrs.patientReport.approveUser.staff.signatureUrl}"
+                            style="width: #{myCli.wtPix};overflow: visible; display: block;"
+                            height="#{myCli.htPix}"
                             width="#{myCli.wtPix}">
                         </p:graphicImage>
                     </h:panelGroup>
@@ -179,30 +199,30 @@
                 </h:panelGroup>
 
                 <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }">
-                    <p:barcode 
-                        value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
+                    <p:barcode
+                        value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}"
                         cache="false"
                         type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
-                    
+
                 </h:panelGroup>
-                
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
+
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"
                               >
                     <div style="height: #{myCli.htPix}px; width:#{myCli.wtPix}px; right: 0px; position: absolute; overflow: hidden; " >
-                        <p:barcode 
-                            value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}" 
-                            cache="false" 
+                        <p:barcode
+                            value="#{cc.attrs.patientReport.patientInvestigation.patient.phn}"
+                            cache="false"
                             style="overflow: hidden; "
-                            type="code128" 
-                            orientation="90" 
-                            height="#{myCli.htPix}" 
+                            type="code128"
+                            orientation="90"
+                            height="#{myCli.htPix}"
                             width="#{myCli.wtPix}" />
                     </div>
 
                 </h:panelGroup>
-                <h:panelGroup 
-                    rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true and myCli.ixItemValueType eq 'Image'}"  
-                    layout="block" 
+                <h:panelGroup
+                    rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true and myCli.ixItemValueType eq 'Image'}"
+                    layout="block"
                     style=" #{myCli.description}" >
                 </h:panelGroup>
 
@@ -215,12 +235,12 @@
         <ui:repeat rendered="#{cc.attrs.patientReport eq null}" value="#{commonReportItemController.listCommonRportItems(cc.attrs.commonReportFormat)}" var="myCli" >
             <div style="#{myCli.cssStyle}; position:absolute; overflow: hidden; #{cc.attrs.showBorders eq true ? 'border: 1px solid green;':''} ">
 
-                <h:panelGroup 
-                    rendered="#{myCli.ixItemType eq 'QrCode' and myCli.retired ne true }"  
+                <h:panelGroup
+                    rendered="#{myCli.ixItemType eq 'QrCode' and myCli.retired ne true }"
                     >
                     <h:panelGroup rendered="#{myCli.reportItemType eq 'QrCodeLink'}" >
-                        <canvas 
-                            id="qrcode_#{myCli.id}" 
+                        <canvas
+                            id="qrcode_#{myCli.id}"
                             data-content="Link to view report"
                             data-width="#{myCli.wtPix}"
                             data-height="#{myCli.htPix}"
@@ -228,8 +248,8 @@
                         </canvas>
                     </h:panelGroup>
                     <h:panelGroup rendered="#{myCli.reportItemType eq 'QrCodeDetails'}" >
-                        <canvas 
-                            id="qrcode_#{myCli.id}" 
+                        <canvas
+                            id="qrcode_#{myCli.id}"
                             data-content="Details of Report"
                             data-width="#{myCli.wtPix}"
                             data-height="#{myCli.htPix}"
@@ -240,26 +260,26 @@
 
                 <h:outputText rendered="#{myCli.ixItemType eq 'Label' and myCli.retired ne true }"  value="#{myCli.name}"  escape="false" ></h:outputText>
                 <h:outputText rendered="#{myCli.ixItemType eq 'Value' and myCli.retired ne true }"  value="#{myCli.name}"  escape="false" ></h:outputText>
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"  
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Css' and myCli.retired ne true }"
                               layout="block" style=" #{myCli.description}"    >
                 </h:panelGroup>
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"  
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'Barcode' and myCli.retired ne true }"
                               >
-                    <p:barcode 
-                        value="0123456789" 
+                    <p:barcode
+                        value="0123456789"
                         cache="false"
                         type="code128" height="#{myCli.htPix}" width="#{myCli.wtPix}" />
                 </h:panelGroup>
-                <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"  
+                <h:panelGroup rendered="#{myCli.ixItemType eq 'BarcodeVertical' and myCli.retired ne true }"
                               >
                     <div style="height: #{myCli.htPix}px; width:#{myCli.wtPix}px; right: 0px; position: absolute; overflow: hidden; " >
-                        <p:barcode 
-                            value="0123456789" 
-                            cache="false" 
+                        <p:barcode
+                            value="0123456789"
+                            cache="false"
                             style="overflow: hidden; "
-                            type="code128" 
-                            orientation="90" 
-                            height="#{myCli.htPix}" 
+                            type="code128"
+                            orientation="90"
+                            height="#{myCli.htPix}"
                             width="#{myCli.wtPix}" />
                     </div>
 

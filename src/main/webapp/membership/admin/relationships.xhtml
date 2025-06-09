@@ -1,0 +1,103 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/membership/admin/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:me="http://xmlns.jcp.org/jsf/composite/ezcomp/pages/membership">
+    <ui:define name="subcontent">
+        <h:form  >
+            <p:growl />
+            <p:focus id="selectFocus" for="lstSelect" />
+            <p:focus id="detailFocus" for="txtName" />
+            <p:panel id ="gpVeda" class="w-100" >
+                <f:facet name="header" >
+                    <h:outputText value="Manage Relationships" ></h:outputText>
+                </f:facet>
+                <div class="d-flex gap-2 mb-2">
+                    <p:commandButton
+                        id="btnAdd" 
+                        value="Add"
+                        action="#{relationController.prepareAdd()}"
+                        process="btnAdd"
+                        icon="pi pi-plus"  
+                        class="ui-button-Warning "
+                        update="lstSelect gpDetailText detailFocus">
+                        <p:ajax
+                            event="click" 
+                            update="gpDetailText detailFocus" 
+                            process="@this" >
+                        </p:ajax>
+                    </p:commandButton>
+                    <p:commandButton 
+                        id="btnDelete"
+                        icon="pi pi-trash" 
+                        class="ui-button-danger "
+                        onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                    return false;" action="#{relationController.delete()}"  value="Delete" ajax="false"  >
+                    </p:commandButton>
+
+                    <p:commandButton  
+                        value="Reload"
+                        action="#{relationController.fillItems()}" 
+                        class="ui-button-info" 
+                        icon="pi pi-refresh" 
+                        >
+                        <f:ajax event="click" render="btnAdd  btnDelete btnSave lstSelect :#{p:resolveFirstComponentWithId('gpDetailText',view).clientId} detailFocus" execute="@this" >
+                        </f:ajax>
+                    </p:commandButton>
+                </div>
+
+                <div class="row" >
+                    <div class="col-5" >
+                        <p:selectOneListbox  
+                            id="lstSelect"  
+                            class="w-100" 
+                            scrollHeight="500" 
+                            value="#{relationController.current}" 
+                            filter="true">
+                            <f:selectItems  value="#{relationController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                            <!--                                        <f:ajax render="gpDetailText" execute="lstSelect" >
+                                                                    </f:ajax>-->
+                            <p:ajax process="lstSelect" update="gpDetailText"/>
+                        </p:selectOneListbox>
+
+
+                    </div>
+                    <div class="col-7" >
+                        <p:panel >
+                            <f:facet name="header">
+                                <h:outputText value="Details of the Relationship" class="mt-2"></h:outputText>
+                                <p:commandButton 
+                                    id="btnSave" 
+                                    value="Save"
+                                    icon="pi pi-save" 
+                                    style="float: right;"
+                                    class="ui-button-success"
+                                    action="#{relationController.saveSelected()}" 
+                                    process="btnSave gpDetailText " 
+                                    update="lstSelect selectFocus msg"
+                                    >
+                                </p:commandButton>
+                            </f:facet>
+                            <p:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                <p:outputLabel for="txtName" id="lblName" value="Name" class="w-100"></p:outputLabel>
+                                <p:inputText autocomplete="off" required="true" class="mb-1 w-100" id="txtName" value="#{relationController.current.name}"  ></p:inputText>
+
+                                <p:outputLabel for="txtCode" id="lblCode" value="Code" ></p:outputLabel>
+                                <p:inputText autocomplete="off" id="txtCode" class="mb-1 w-100" value="#{relationController.current.code}" ></p:inputText>
+
+                            </p:panelGrid>
+                        </p:panel>
+
+                        <p:messages id="msg"  />
+                        <p:defaultCommand target="btnSave"/>
+                    </div>
+                </div>
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+</ui:composition>

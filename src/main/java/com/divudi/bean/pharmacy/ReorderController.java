@@ -1,41 +1,31 @@
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DepartmentController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentListMethod;
-import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfAllInstitutions;
-import static com.divudi.data.DepartmentListMethod.ActiveDepartmentsOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfAllInstitutions;
-import static com.divudi.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfAllInstitutions;
-import static com.divudi.data.DepartmentListMethod.AllPharmaciesOfLoggedInstitution;
-import static com.divudi.data.DepartmentListMethod.LoggedDepartmentOnly;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.ItemReorders;
-import com.divudi.data.dataStructure.ItemTransactionSummeryRow;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentListMethod;
+import static com.divudi.core.data.DepartmentListMethod.AllDepartmentsOfLoggedInstitution;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.ItemReorders;
+import com.divudi.core.data.dataStructure.ItemTransactionSummeryRow;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Person;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Reorder;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.ReorderFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Reorder;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.ReorderFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -76,8 +66,6 @@ public class ReorderController implements Serializable {
     ItemController itemController;
     @Inject
     PurchaseOrderRequestController purchaseOrderRequestController;
-    @Inject
-    CommonController commonController;
 
 //    EJBs
     @EJB
@@ -148,7 +136,7 @@ public class ReorderController implements Serializable {
     }
 
     public boolean isAmpHaveReorder(Amp amp, Department dept, Institution ins) {
-        List<Reorder> r = new ArrayList<>();
+        List<Reorder> r;
         Map m = new HashMap();
         String sql = "select r from Reorder r where r.item=:amp";
         m.put("amp", amp);
@@ -164,11 +152,7 @@ public class ReorderController implements Serializable {
         }
 
         r = reorderFacade.findByJpql(sql, m);
-        if (r.size() == 0 || r.isEmpty()) {
-            return false;
-        } else {
-            return true;
-        }
+        return !r.isEmpty();
     }
 
     public void removeReOrder(Reorder ro) {
@@ -179,7 +163,7 @@ public class ReorderController implements Serializable {
     }
 
     public void createReOrdersByDepartment() {
-        List<Amp> amps = new ArrayList();
+        List<Amp> amps;
         amps = getAmpController().findItems();
         for (Amp amp : amps) {
             if (isAmpHaveReorder(amp, department, null) == false) {
@@ -366,7 +350,7 @@ public class ReorderController implements Serializable {
     public List<ItemTransactionSummeryRow> findDailyStockAverage(Item item, Department dept, Date fd, Date td) {
         String jpql;
         List<ItemTransactionSummeryRow> rows;
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow"
+        jpql = "SELECT new com.divudi.core.data.dataStructure.ItemTransactionSummeryRow"
                 + "(s.item, avg(s.stockQty), FUNC('DATE',s.createdAt)) "
                 + " FROM StockHistory s "
                 + " WHERE s.createdAt between :fd and :td "
@@ -430,12 +414,12 @@ public class ReorderController implements Serializable {
     public List<ItemTransactionSummeryRow> findDailyTransactions(Item item, Department dept, Date fd, Date td, List<BillType> billTypes) {
         String jpql;
         List<ItemTransactionSummeryRow> rows;
-        if (false) {
-            BillItem bi = new BillItem();
-            bi.getQty();
-            bi.getItem();
-        }
-        jpql = "SELECT new com.divudi.data.dataStructure.ItemTransactionSummeryRow(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
+//        if (false) {
+//            BillItem bi = new BillItem();
+//            bi.getQty();
+//            bi.getItem();
+//        }
+        jpql = "SELECT new com.divudi.core.data.dataStructure.ItemTransactionSummeryRow(s.item, sum(s.qty), FUNC('DATE',s.bill.createdAt)) "
                 + " FROM BillItem s "
                 + " WHERE s.bill.createdAt between :fd and :td "
                 + " and s.item=:item ";
@@ -514,7 +498,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false);
 
-        
+
 
     }
 
@@ -523,7 +507,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(false, true);
 
-        
+
     }
 
     public List<Reorder> getReorders() {
@@ -548,11 +532,11 @@ public class ReorderController implements Serializable {
     public void listAllItems() {
         String j;
         Map m = new HashMap();
-        if (false) {
-            Reorder r = new Reorder();
-            r.getDepartment();
-            r.getRol();
-        }
+//        if (false) {
+//            Reorder r = new Reorder();
+//            r.getDepartment();
+//            r.getRol();
+//        }
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
@@ -569,11 +553,11 @@ public class ReorderController implements Serializable {
     public void listItemsBelowRol() {
         String j;
         Map m = new HashMap();
-        if (false) {
-            Reorder r = new Reorder();
-            r.getDepartment();
-            r.getRol();
-        }
+//        if (false) {
+//            Reorder r = new Reorder();
+//            r.getDepartment();
+//            r.getRol();
+//        }
         j = "select r from Reorder r where r.department=:dept ";
         m.put("dept", getDepartment());
         reordersAvailableForSelection = new ArrayList<>();
@@ -596,7 +580,7 @@ public class ReorderController implements Serializable {
 
         generateReorders(true, false, departmentListMethod);
 
-        
+
 
     }
 
@@ -647,11 +631,11 @@ public class ReorderController implements Serializable {
         List<Department> depst = departmentController.getDepartments(sql, m);
 
         //// // System.out.println("m = " + m);
-        if (false) {
-            Stock s = new Stock();
-            s.getDepartment();
-            s.getItemBatch().getItem().setDepartmentType(DepartmentType.Pharmacy);
-        }
+//        if (false) {
+//            Stock s = new Stock();
+//            s.getDepartment();
+//            s.getItemBatch().getItem().setDepartmentType(DepartmentType.Pharmacy);
+//        }
         sql = "select s.department from Stock s "
                 + " where s.stock > 0 "
                 + " and (s.itemBatch.item.departmentType=:dt or s.itemBatch.item.departmentType is null) ";
@@ -746,7 +730,7 @@ public class ReorderController implements Serializable {
     }
 
     private void generateReorders(boolean overWrite, boolean requiredItemsOnly, DepartmentListMethod departmentListMethod) {
-        List<Item> iss = null;
+        List<Item> iss;
 
         if (autoOrderMethod == AutoOrderMethod.ByDistributor) {
             itemController.setInstitution(institution);
@@ -787,9 +771,7 @@ public class ReorderController implements Serializable {
                 deps.add(sessionController.getDepartment());
                 break;
             default:
-                if (deps == null) {
-                    deps = new ArrayList<>();
-                }
+                deps = new ArrayList<>();
         }
 
         for (Item i : iss) {
@@ -888,7 +870,7 @@ public class ReorderController implements Serializable {
         }
         JsfUtil.addSuccessMessage("Saved.");
 
-        
+
 
     }
 
@@ -1014,22 +996,12 @@ public class ReorderController implements Serializable {
     }
 
     public double calculateRoq(Reorder reorder) {
-        int numberOfDaysToOrder;
-        if (reorder.getPurchaseCycleDurationInDays() < reorder.getLeadTimeInDays()) {
-            numberOfDaysToOrder = reorder.getLeadTimeInDays();
-        } else {
-            numberOfDaysToOrder = reorder.getPurchaseCycleDurationInDays();
-        }
+        int numberOfDaysToOrder = Math.max(reorder.getPurchaseCycleDurationInDays(), reorder.getLeadTimeInDays());
         return numberOfDaysToOrder * reorder.getDemandInUnitsPerDay();
     }
 
     public double calculateRol(Reorder reorder) {
-        int numberOfDaysToOrder;
-        if (reorder.getPurchaseCycleDurationInDays() < reorder.getLeadTimeInDays()) {
-            numberOfDaysToOrder = reorder.getLeadTimeInDays();
-        } else {
-            numberOfDaysToOrder = reorder.getPurchaseCycleDurationInDays();
-        }
+        int numberOfDaysToOrder = Math.max(reorder.getPurchaseCycleDurationInDays(), reorder.getLeadTimeInDays());
         return numberOfDaysToOrder * reorder.getDemandInUnitsPerDay();
     }
 
@@ -1073,7 +1045,7 @@ public class ReorderController implements Serializable {
         }
 
         int count = 0;
-        long differenceInMs = 0l;
+        long differenceInMs = 0L;
         for (Object[] objc : obj) {
             Bill b = (Bill) objc[0];
             //    //// // System.out.println("b = " + b);
@@ -1088,7 +1060,7 @@ public class ReorderController implements Serializable {
         int avgLeadTimeInDays;
 
         try {
-            Long avgLeadTimeInMs = differenceInMs / count;
+            long avgLeadTimeInMs = differenceInMs / count;
             avgLeadTimeInDays = ((Long) (avgLeadTimeInMs / (1000 * 60 * 60 * 24))).intValue();
         } catch (Exception e) {
             avgLeadTimeInDays = 7;
@@ -1131,7 +1103,7 @@ public class ReorderController implements Serializable {
         }
         Date minDate;
         Date maxDate;
-        Double totalQty;
+        double totalQty;
 
         try {
             //    //// // System.out.println(" obj[0] = " + obj[0]);
@@ -1160,7 +1132,7 @@ public class ReorderController implements Serializable {
         //    //// // System.out.println("ds = " + ds);
         //    //// // System.out.println("totalQty = " + totalQty);
 
-        double dailyDemand = 0;
+        double dailyDemand;
         if (ds == 0) {
             ds = 1;
         }
@@ -1245,7 +1217,7 @@ public class ReorderController implements Serializable {
         int ds = daysDiff.getDays();
         //    //// // System.out.println("ds = " + ds);
         //    //// // System.out.println("count = " + count);
-        return (int) (ds / count);
+        return ds / count;
 
     }
 
@@ -1395,7 +1367,7 @@ public class ReorderController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ReorderController controller = (ReorderController) facesContext.getApplication().getELResolver().
@@ -1404,15 +1376,13 @@ public class ReorderController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1428,14 +1398,6 @@ public class ReorderController implements Serializable {
             }
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

@@ -5,13 +5,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.MessageType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Sms;
-import com.divudi.facade.SmsFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 
 import java.util.List;
 import java.util.Map;
@@ -46,7 +46,6 @@ public class SmsController implements Serializable {
     @Inject
     SessionController sessionController;
 
-    CommonFunctions commonFunctions;
     /*
     Class Variables
      */
@@ -69,7 +68,7 @@ public class SmsController implements Serializable {
     public void setFaildsms(List<Sms> faildsms) {
         this.faildsms = faildsms;
     }
-    
+
     List<SmsSummeryRow> smsSummeryRows;
     ReportKeyWord reportKeyWord;
     private String number;
@@ -105,7 +104,7 @@ public class SmsController implements Serializable {
         boolean b = smsManager.sendSms(s);
         selectedSms = s;
     }
-    
+
     public void sendSmsFromWeb() {
         System.out.println("sendSmsFromWeb");
         System.out.println("doNotSendAnySms = " + doNotSendAnySms);
@@ -180,14 +179,6 @@ public class SmsController implements Serializable {
 
     public void setSmsSummeryRows(List<SmsSummeryRow> smsSummeryRows) {
         this.smsSummeryRows = smsSummeryRows;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public String getNumber() {

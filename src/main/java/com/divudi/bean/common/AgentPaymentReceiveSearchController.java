@@ -5,39 +5,38 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.cashTransaction.FinancialTransactionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PaymentType;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.EjbApplication;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BilledBillFacade;
-import com.divudi.facade.CancelledBillFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.RefundBillFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BilledBillFacade;
+import com.divudi.core.facade.CancelledBillFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.RefundBillFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
@@ -62,62 +61,63 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     private BillFeeFacade billFeeFacade;
 
     @EJB
-    BillService billService;
-
-    BilledBill bill;
-    List<BillEntry> billEntrys;
-    List<BillItem> billItems;
-    List<BillComponent> billComponents;
-    List<BillFee> billFees;
-    PaymentMethod paymentMethod;
+    private BillService billService;
 
     @EJB
     private BillNumberGenerator billNumberBean;
     @EJB
-    CancelledBillFacade cancelledBillFacade;
+    private CancelledBillFacade cancelledBillFacade;
     @EJB
     private BillItemFacade billItemFacede;
     @EJB
-    BilledBillFacade billedBillFacade;
+    private BilledBillFacade billedBillFacade;
     @EJB
     private BillComponentFacade billCommponentFacade;
     @EJB
     private RefundBillFacade refundBillFacade;
     @EJB
-    InstitutionFacade institutionFacade;
+    private InstitutionFacade institutionFacade;
     @EJB
-    DrawerFacade drawerFacade;
+    private DrawerFacade drawerFacade;
     @EJB
-    PaymentService paymentService;
+    private PaymentService paymentService;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private EjbApplication ejbApplication;
+    @EJB
+    private PaymentFacade paymentFacade;
 
     @Inject
     private BillBeanController billBean;
-    @EJB
-    private BillFacade billFacade;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
     @Inject
     private WebUserController webUserController;
     @Inject
-    AgentAndCcPaymentController agentAndCcPaymentController;
+    private AgentAndCcPaymentController agentAndCcPaymentController;
     @Inject
-    AgentAndCcApplicationController agentAndCcApplicationController;
+    private AgentAndCcApplicationController agentAndCcApplicationController;
     @Inject
-    DrawerController drawerController;
-    @EJB
-    EjbApplication ejbApplication;
-    @EJB
-    PaymentFacade paymentFacade;
+    private DrawerController drawerController;
 
-    PaymentMethodData paymentMethodData;
+    private BilledBill bill;
+    private List<BillEntry> billEntrys;
+    private List<BillItem> billItems;
+    private List<BillComponent> billComponents;
+    private List<BillFee> billFees;
+    private PaymentMethod paymentMethod;
+    private PaymentMethodData paymentMethodData;
 
     private List<BillItem> tempbillItems;
     private String comment;
-    WebUser user;
+    private WebUser user;
     private CancelledBill cancelledBill;
 
-    boolean agencyDepositCanellationStarted = false;
+    private boolean agencyDepositCanellationStarted = false;
 
     public WebUser getUser() {
         return user;
@@ -387,7 +387,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             agencyDepositCanellationStarted = false;
             return;
         }
-        Bill origianlBil = billBean.fetchBill(getBill().getId());
+        Bill origianlBil = billBean.fetchBillBypassingCache(getBill().getId());
         System.out.println("origianlBil = " + origianlBil);
         if (origianlBil == null) {
             JsfUtil.addErrorMessage("No SUch Bill");
@@ -414,11 +414,13 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         if (paymentMethod == PaymentMethod.Cash) {
             Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
             if (userDrawer.getCashInHandValue() < bill.getNetTotal()) {
-                System.out.println(origianlBil.getNetTotal());
-                JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
-                printPreview = false;
-                agencyDepositCanellationStarted = false;
-                return;
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    System.out.println(origianlBil.getNetTotal());
+                    JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
+                    printPreview = false;
+                    agencyDepositCanellationStarted = false;
+                    return;
+                }
             }
         }
         System.out.println(origianlBil.getNetTotal() + "this");
@@ -449,18 +451,24 @@ public class AgentPaymentReceiveSearchController implements Serializable {
 
     public void cancelCollectingCentreDepositBill() {
         if (agencyDepositCanellationStarted) {
-            JsfUtil.addErrorMessage("Already Started");
+            JsfUtil.addErrorMessage("Cancellation already Started");
             printPreview = false;
             return;
         }
         agencyDepositCanellationStarted = true;
         if (getBill() == null) {
-            JsfUtil.addErrorMessage("No Bill to Calcel");
+            JsfUtil.addErrorMessage("No Bill to Cancel");
             printPreview = false;
             agencyDepositCanellationStarted = false;
             return;
         }
-        Bill origianlBil = billBean.fetchBill(getBill().getId());
+        if (getBill().getId() == null) {
+            JsfUtil.addErrorMessage("Not a Saved Bill. Can NOT Cancel");
+            printPreview = false;
+            agencyDepositCanellationStarted = false;
+            return;
+        }
+        Bill origianlBil = billBean.fetchBillBypassingCache(getBill().getId());
         System.out.println("origianlBil = " + origianlBil);
         if (origianlBil == null) {
             JsfUtil.addErrorMessage("No SUch Bill");
@@ -476,26 +484,13 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             agencyDepositCanellationStarted = false;
             return;
         }
-//        System.out.println("origianlBil.isCancelled() = " + origianlBil.isCancelled());
-//        if (origianlBil.isCancelled()) {
-//            JsfUtil.addErrorMessage("Already Cancelled");
-//            printPreview = false;
-//            agencyDepositCanellationStarted = false;
-//            return;
-//        }
-
-//        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         cancelledBill = generateCancelBillForCcDepositBill(origianlBil);
-
         cancelBillItems(cancelledBill, origianlBil);
 
         origianlBil.setCancelled(true);
         origianlBil.setCancelledBill(cancelledBill);
         getBillFacade().editAndCommit(origianlBil);
-
-        List<Payment> cancellationPayments=paymentService.createPayment(cancelledBill, getPaymentMethodData());
-        
-//        drawerController.updateDrawerForOuts(cancellationPayments);
+        List<Payment> cancellationPayments = paymentService.createPayment(cancelledBill, getPaymentMethodData());
         agentAndCcApplicationController.updateCcBalance(
                 cancelledBill.getFromInstitution(),
                 0,

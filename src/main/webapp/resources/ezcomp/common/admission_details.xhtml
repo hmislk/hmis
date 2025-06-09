@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="admission" type="com.divudi.entity.inward.Admission"  />
+        <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission"  />
         <cc:attribute name="rooms" type="java.util.List" />
     </cc:interface>
 
@@ -53,7 +53,7 @@
                     <div class="row">
                         <div class="col-md-5"><p:outputLabel value="Referring Doctor"/></div>
                         <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":" class="mx-2"/></div>
-                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.referringDoctor.person.name}" /></div>
+                        <div class="col-md-6"><h:outputText value="#{cc.attrs.admission.referringDoctor ne null ? cc.attrs.admission.referringDoctor.person.name : cc.attrs.admission.referringConsultant.person.name}" /></div>
                     </div>
 
                     <div class="row">
@@ -111,17 +111,17 @@
             <p:dataTable value="#{cc.attrs.rooms}" rendered="#{cc.attrs.rooms ne null}" var="rm">
                 <p:column headerText="Room Name">
                     <h:outputText value="#{rm.roomFacilityCharge.name}" ></h:outputText>
-                </p:column>      
+                </p:column>
                 <p:column headerText="Admitted At">
                     <h:outputText value="#{rm.admittedAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                </p:column>     
+                </p:column>
                 <p:column headerText="Discharged At">
                     <h:outputText value="#{rm.dischargedAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                     </h:outputText>
-                </p:column>     
+                </p:column>
             </p:dataTable>
 
 

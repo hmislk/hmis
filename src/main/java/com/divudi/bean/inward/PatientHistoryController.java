@@ -4,16 +4,16 @@
  */
 package com.divudi.bean.inward;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Service;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.TimedItemFacade;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.TimedItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -63,7 +63,7 @@ public class PatientHistoryController implements Serializable {
         if (searchedPatient == null) {
             return;
         }
-        //and TYPE(bt.item)=Service 
+        //and TYPE(bt.item)=Service
         String sql = "SELECT bt FROM BillItem bt WHERE bt.retired=false and  bt.bill.id in (SELECT  b.id FROM BilledBill b WHERE b.retired=false  and b.patient=:pt)";
         HashMap hm = new HashMap();
         hm.put("pt", getSearchedPatient());

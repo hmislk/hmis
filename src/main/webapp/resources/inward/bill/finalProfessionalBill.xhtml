@@ -10,9 +10,9 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />        
+        <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
-        <cc:attribute name="hosCopy" />   
+        <cc:attribute name="hosCopy" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -27,14 +27,14 @@
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
                             <div class="col-12">
-                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}" 
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}"
                                               escape="false"
                                               >
                                 </h:outputText>
                             </div>
                         </div>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
                         <div>
                             <div class="col-12 text-center">
@@ -51,25 +51,28 @@
                     <table class="headingPrinting" >
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel 
-                                    class="mark" 
-                                    value="**Professional Bill**" 
+                                <h:outputLabel
+                                    class="mark"
+                                    style="font-size: 18px;"
+                                    value="**Professional Bill**"
                                     rendered="#{cc.attrs.duplicate ne true and cc.attrs.hosCopy ne true}"/>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel 
-                                    class="mark" 
-                                    value="**Professional Bill**Duplicate Bill**" 
+                                <h:outputLabel
+                                    class="mark"
+                                    style="font-size: 18px;"
+                                    value="**Professional Bill**Duplicate Bill**"
                                     rendered="#{cc.attrs.duplicate eq true}"/>
                             </td>
                         </tr>
                         <tr>
                             <td colspan="4">
-                                <h:outputLabel 
-                                    class="mark" 
-                                    value="**Professional Bill**Original Bill**" 
+                                <h:outputLabel
+                                    class="mark"
+                                    style="font-size: 18px;"
+                                    value="**Professional Bill**Original Bill**"
                                     rendered="#{cc.attrs.hosCopy eq true}"/>
                             </td>
                         </tr>
@@ -130,7 +133,7 @@
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.nameWithTitle}" />
-                                                                    </td>                           
+                                                                    </td>
                                                                 </tr>
                                                                 <tr >
                                                                     <td >
@@ -141,7 +144,7 @@
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
-                                                                    </td>                           
+                                                                    </td>
                                                                 </tr>
                                                                 <tr >
                                                                     <td >
@@ -152,7 +155,7 @@
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.deptId}" />
-                                                                    </td>                           
+                                                                    </td>
                                                                 </tr>
                                                                 <tr>
                                                                     <td >
@@ -160,7 +163,7 @@
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" />
-                                                                    </td>                           
+                                                                    </td>
                                                                 </tr>
                                                                 <tr >
                                                                     <td >
@@ -168,9 +171,9 @@
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.guardian.nameWithTitle}" />
-                                                                    </td>                           
+                                                                    </td>
                                                                 </tr>
-                                        
+
                                                                 <tr>
                                                                     <td >
                                                                         <h:outputLabel value="Time of Admission : " />
@@ -190,23 +193,23 @@
                                                                             <f:convertDateTime pattern="dd MM yyyy h:mm a" />
                                                                         </h:outputLabel>
                                                                     </td>
-                                                                </tr>                        
+                                                                </tr>
                                                                 <tr >
                                                                     <td>
                                                                         <h:outputLabel value="Company : "  rendered="#{cc.attrs.bill.patientEncounter.creditCompany ne null}"/>
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.creditCompany.name}" />
-                                                                    </td>                            
-                                                                </tr>      
+                                                                    </td>
+                                                                </tr>
                                                                 <tr >
                                                                     <td >
                                                                         <h:outputLabel value="BHT : " />
                                                                     </td>
                                                                     <td >
                                                                         <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" />
-                                                                    </td>    
-                                        
+                                                                    </td>
+
                                                                 </tr>      -->
 
 
@@ -252,21 +255,21 @@
                                 <br></br>
                                 <p:dataTable style="noBorder" value="#{bip.proFees}" var="fe">
 
-                                    <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;"> 
-                                        <h:panelGroup rendered="#{fe.bill.cancelled eq false 
-                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
-                                            <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/> 
+                                    <p:column headerText="Consultant Name" style="text-align: left!important; line-height: 2px;">
+                                        <h:panelGroup rendered="#{fe.bill.cancelled eq false
+                                                                  and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
+                                            <h:outputLabel value="#{fe.staff.person.nameWithTitle}"/>
                                         </h:panelGroup>
                                     </p:column>
                                     <p:column headerText="Amount" style="text-align: right;">
                                         <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted ne 0.0
-                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                  and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                             <h:outputLabel value="#{fe.feeAdjusted}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </h:panelGroup>
                                         <h:panelGroup rendered="#{fe.bill.cancelled eq false and fe.feeAdjusted eq 0.0
-                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}">
+                                                                  and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}">
                                             <h:outputLabel value="Free of Charge"/>
                                         </h:panelGroup>
                                     </p:column>
@@ -282,7 +285,7 @@
                                             </p:column>
                                         </p:row>
                                     </p:columnGroup>
-                                </p:dataTable>                         
+                                </p:dataTable>
                             </h:panelGroup>
                         </ui:repeat>
                     </div>

@@ -19,20 +19,26 @@
                         </f:facet>
 
                         <div class="d-flex justify-content-between">
-                            <div class="d-flex gap-2">
+                            <div >
                                 <p:commandButton 
                                     ajax="false" 
                                     icon="fas fa-list"
-                                    class="ui-button-warning m-2"
+                                    class="ui-button-warning mx-2"
                                     action="/pharmacy/pharmacy_transfer_request_list?faces-redirect=true" 
                                     actionListener="#{pharmacyBillSearch.makeNull()}" 
-                                    value="Issued List"/>
+                                    value="Back to Issued List"/>
+                                <p:commandButton 
+                                    value="Back to Transfer Issue by Bill Report" 
+                                    action="#{reportsTransfer.navigateBackToTransferIssueByBill}" 
+                                    ajax="false" 
+                                    icon="fa fa-file-export" 
+                                    class="ui-button-secondary mx-1"></p:commandButton>
 
                                 <p:commandButton 
                                     ajax="false" 
                                     value="To Cancel" 
                                     icon="fas fa-cancel"
-                                    class="ui-button-danger m-2"
+                                    class="ui-button-danger mx-1"
                                     action="pharmacy_cancel_transfer_issue?faces-redirect=true" 
                                     rendered="#{pharmacyBillSearch.bill.department eq sessionController.loggedUser.department}" disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                                 </p:commandButton>  
@@ -57,7 +63,7 @@
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" class="d-flex justify-content-center">
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
+<!--                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
                                     <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                                 </h:panelGroup>
@@ -71,6 +77,20 @@
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
                                     <ph:Pharmacy_department_Issue_pos_bill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
                                 </h:panelGroup>
+                            </h:panelGroup>-->
+
+                            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
+                                    <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
+                                    <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}" />
+                                </h:panelGroup>
+                            </h:panelGroup>
+
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
+                                <ph:saleBill_Header_Transfer bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header_Transfer>
                             </h:panelGroup>
 
                         </h:panelGroup>

@@ -12,8 +12,17 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Petty Cash Bill Search To Approe"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                            <h:panelGroup layout="block" style="line-height: 40px;">
+                                <h:outputText styleClass="fas fa-search" />
+                                <h:outputLabel value="Petty Cash Cancel Bill Search To Approved" styleClass="mx-4"/>
+                                <p:commandButton 
+                                    value="Back" 
+                                    icon="fas fa-arrow-left" 
+                                    class="ui-button-primary" 
+                                    style="float: right;" 
+                                    action="/payments/pay_index?faces-redirect=true" 
+                                    ajax="false"/>     
+                            </h:panelGroup>
                         </f:facet>
 
                         <div class="row">
@@ -127,7 +136,7 @@
                                         <h:outputLabel value="#{bill.referenceBill.approveUser.name}" >
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Approved AT" >
+                                    <p:column headerText="Approved At" >
                                         <p:outputLabel value="#{bill.referenceBill.approveAt}">
                                             <f:convertDateTime pattern="#{sessionController.departmentPreference.shortDateFormat}" />
                                         </p:outputLabel>

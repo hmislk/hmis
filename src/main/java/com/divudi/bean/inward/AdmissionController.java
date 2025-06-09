@@ -9,52 +9,47 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.ClinicalFindingValueController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.AdmissionStatus;
-import com.divudi.data.inward.AdmissionTypeEnum;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.AdmissionStatus;
+import com.divudi.core.data.inward.AdmissionTypeEnum;
 
-import com.divudi.entity.Appointment;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.EncounterCreditCompany;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.inward.Admission;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.facade.AdmissionFacade;
-import com.divudi.facade.AppointmentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.EncounterCreditCompanyFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.RoomFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Appointment;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.EncounterCreditCompany;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.inward.Admission;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.facade.AdmissionFacade;
+import com.divudi.core.facade.AppointmentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.EncounterCreditCompanyFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.RoomFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import static com.divudi.data.inward.AdmissionStatus.ADMITTED_BUT_NOT_DISCHARGED;
-import static com.divudi.data.inward.AdmissionStatus.ANY_STATUS;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_AND_FINAL_BILL_COMPLETED;
-import static com.divudi.data.inward.AdmissionStatus.DISCHARGED_BUT_FINAL_BILL_NOT_COMPLETED;
-import com.divudi.entity.Department;
-import com.divudi.entity.Staff;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.ClinicalFindingValueFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -94,13 +89,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     @Inject
     InpatientClinicalDataController inpatientClinicalDataController;
     @Inject
-    CommonFunctionsController commonFunctionsController;
-    @Inject
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    @Inject
-    private CommonController commonController;
+
     ////////////
     @EJB
     private AdmissionFacade ejbFacade;
@@ -127,7 +119,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     ClinicalFindingValueController clinicalFindingValueController;
 
     ////////////////////////////
-    private CommonFunctions commonFunctions;
     ///////////////////////
     List<Admission> selectedItems;
     private Admission current;
@@ -252,6 +243,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void addCreditCompnay() {
+        if (encounterCreditCompany.getCreditLimit() <= 0) {
+            JsfUtil.addErrorMessage("Credit limit must be greater than zero");
+            return;
+        }
         // need to add encounterCreditCompany to list
         if (encounterCreditCompany.getInstitution() != null) {
             encounterCreditCompany.setPatientEncounter(current);
@@ -290,7 +285,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -300,6 +295,12 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Checks if the given patient has a previous non-retired admission with a credit payment method and sets the last used credit company.
+     *
+     * @param p the patient to check for previous credit admissions
+     * @return true if a previous credit admission exists and the last credit company is set; false otherwise
+     */
     public boolean isPatientHaveALastUsedCreditCompany(Patient p) {
         if (p == null) {
             return false;
@@ -318,7 +319,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("pm", PaymentMethod.Credit);
         hash.put("pt", p);
         a = getFacade().findFirstByJpql(sql, hash);
-        System.out.println("a = " + a);
         if (a == null) {
             return false;
         } else {
@@ -327,6 +327,66 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
     }
 
+    /**
+     * Retrieves the most recent credit-based admission for the current patient and populates the current encounter's credit companies list with associated institutions and credit limits.
+     *
+     * If the current patient has a previous admission with credit payment, copies each linked, non-retired credit company to the current encounter and accumulates their credit limits.
+     */
+    public void findLastUsedCreditCompanies() {
+        if(configOptionApplicationController.getBooleanValueByKey("Inward Admission - Find And Fill Last Used Credit Companies of a Patient",false)) {
+            if (current.getPatient() == null) {
+                return;
+            }
+
+            Admission a = null;
+            String sql;
+            HashMap hash = new HashMap();
+            sql = "select c from Admission c "
+                    + " where c.patient=:pt "
+                    + " and c.paymentMethod= :pm"
+                    + " and c.retired=false "
+                    + " order by c.id desc";
+
+            hash.put("pm", PaymentMethod.Credit);
+            hash.put("pt", current.getPatient());
+            a = getFacade().findFirstByJpql(sql, hash);
+
+            if (a == null) {
+                return;
+            } else {
+                List<EncounterCreditCompany> encounterCreditCompanys = new ArrayList<>();
+                String jpql = "select ecc from EncounterCreditCompany ecc"
+                        + "  where ecc.retired=false "
+                        + " and ecc.patientEncounter=:pEnc ";
+                HashMap hm = new HashMap();
+                hm.put("pEnc", a);
+                encounterCreditCompanys = encounterCreditCompanyFacade.findByJpql(jpql, hm);
+
+                encounterCreditCompanies = new ArrayList<>();
+
+                for (EncounterCreditCompany ecc : encounterCreditCompanys) {
+                    encounterCreditCompany = new EncounterCreditCompany();
+                    encounterCreditCompany.setPatientEncounter(current);
+                    encounterCreditCompany.setInstitution(ecc.getInstitution());
+                    encounterCreditCompany.setCreditLimit(ecc.getCreditLimit());
+                    encounterCreditCompany.setPolicyNo(ecc.getPolicyNo());
+                    current.setCreditLimit(current.getCreditLimit() + encounterCreditCompany.getCreditLimit());
+                    encounterCreditCompanies.add(encounterCreditCompany);
+                    encounterCreditCompany = new EncounterCreditCompany();
+                }
+            }
+        }
+
+    }
+
+    /**
+     * Returns a list of discharged credit admissions with outstanding credit balances matching the given query.
+     *
+     * The query matches against BHT number, patient name, or credit company name. Only admissions with a positive credit balance, payment method set to credit, and not retired are included.
+     *
+     * @param qry the search string to match against BHT number, patient name, or credit company name
+     * @return a list of matching admissions with outstanding credit balances
+     */
     public List<Admission> completeBhtCredit(String qry) {
         List<Admission> a = null;
         String sql;
@@ -483,7 +543,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         parentAdmission = current;
         Admission ad = new Admission();
         if (ad.getDateOfAdmission() == null) {
-            ad.setDateOfAdmission(commonController.getCurrentDateTime());
+            ad.setDateOfAdmission(CommonFunctions.getCurrentDateTime());
         }
         setCurrent(ad);
         current.setParentEncounter(parentAdmission);
@@ -521,6 +581,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public String navigateToSearchAdmissions() {
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(false);
         return "/inward/inpatient_search?faces-redirect=true";
     }
 
@@ -620,7 +681,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             j += "  and c.parentEncounter=:pent ";
             m.put("pent", parentAdmission);
         }
-        
+
         if (admissionTypeForSearch != null) {
             j += "  and c.admissionType=:at ";
             m.put("at", admissionTypeForSearch);
@@ -628,7 +689,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         items = getFacade().findByJpql(j, m, TemporalType.TIMESTAMP);
     }
-    
+
     public void searchAdmissionsWithoutRoom() {
         if (fromDate == null || toDate == null) {
             JsfUtil.addErrorMessage("Please select date");
@@ -722,9 +783,9 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
         current.getPatient().setEditingMode(false);
         bhtSummeryController.setPatientEncounter(current);
+        bhtSummeryController.setPatientEncounterHasProvisionalBill(isAddmissionHaveProvisionalBill((Admission) current));
         return bhtSummeryController.navigateToInpatientProfile();
     }
-    
 
     public List<Admission> completeAdmission(String query) {
         List<Admission> suggestions;
@@ -825,6 +886,34 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public String navigateToListCurrentInpatients() {
         listCurrentInpatients();
         return "";
+
+    }
+
+    /**
+     * Checks if the given admission has any non-retired, non-canceled provisional bills.
+     *
+     * @param ad the admission to check for provisional bills
+     * @return true if at least one provisional bill exists for the admission; false otherwise
+     */
+    public boolean isAddmissionHaveProvisionalBill(Admission ad) {
+        List<Bill> ads = new ArrayList<>();
+        String sql;
+        HashMap h = new HashMap();
+        sql = "select b from Bill b where b.retired=false "
+                + " and b.billTypeAtomic=:bt "
+                + " and b.cancelled=false"
+                + " and b.patientEncounter=:pe";
+        h.put("bt", BillTypeAtomic.INWARD_PROVISIONAL_BILL);
+        h.put("pe", ad);
+        ads = getBillFacade().findByJpql(sql, h);
+
+        System.out.println("ads.size() = " + ads.size());
+
+        if (ads.size() > 0 || !ads.isEmpty()) {
+            return true;
+        } else {
+            return false;
+        }
 
     }
 
@@ -1033,8 +1122,8 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     private void savePatient() {
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
-        String updatedPersonName = commonFunctionsController.changeTextCases(getPatient().getPerson().getName(), tc);
-        String updatedAddress = commonFunctionsController.changeTextCases(getPatient().getPerson().getAddress(), tc);
+        String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
+        String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
         if (updatedPersonName == null) {
             getPatient().getPerson().setName(updatedPersonName);
         }
@@ -1082,6 +1171,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     }
 
+    /**
+     * Validates the current admission for required fields and configuration-based constraints.
+     *
+     * Checks admission type, payment method, admission date, credit company details, room assignment, referring consultant, patient, and guardian information as per application settings. Returns {@code true} if any validation fails and an error message is added; otherwise, returns {@code false}.
+     *
+     * @return {@code true} if validation errors are found; {@code false} otherwise
+     */
     private boolean errorCheck() {
         if (getCurrent().getAdmissionType() == null) {
             JsfUtil.addErrorMessage("Please select Admission Type");
@@ -1112,6 +1208,16 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 getCurrent().setCreditLimit(tec.getCreditLimit());
                 getCurrent().setPolicyNo(tec.getPolicyNo());
                 getCurrent().setReferanceNo(tec.getReferanceNo());
+
+                for (EncounterCreditCompany ecc : getEncounterCreditCompanies()) {
+                    if (configOptionApplicationController.getBooleanValueByKey("Inward Patient Admit - Credit Companies Require Reference Number", false)) {
+                        if (ecc.getReferanceNo() == null || ecc.getReferanceNo().isEmpty()) {
+                            JsfUtil.addErrorMessage("Please Add the Reference Number for " + ecc.getInstitution().getName() + " Company");
+                            return true;
+                        }
+                    }
+                }
+
                 //TO Do - add other fields
             }
 
@@ -1120,7 +1226,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
-        
+
         if (getCurrent().getAdmissionType().isRoomChargesAllowed()) {
             if (getPatientRoom().getRoomFacilityCharge() == null) {
                 JsfUtil.addErrorMessage("Select Room ");
@@ -1170,6 +1276,56 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                 return true;
             }
         }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Guardian Details Required in Patient Admission")) {
+            if (getCurrent().getGuardian() == null) {
+                JsfUtil.addErrorMessage("Guardian is Required");
+                return true;
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Title is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getTitle() == null) {
+                    JsfUtil.addErrorMessage("Guardian Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Name is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getName() == null || getCurrent().getGuardian().getName().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Name is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian NIC is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getNic() == null || getCurrent().getGuardian().getNic().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian NIC is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Address is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getAddress() == null || getCurrent().getGuardian().getAddress().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Address is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Mobile Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getMobile() == null || getCurrent().getGuardian().getMobile().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Mobile Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Home Phone Number is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardian().getPhone() == null || getCurrent().getGuardian().getPhone().isEmpty()) {
+                    JsfUtil.addErrorMessage("Guardian Home Phone Number is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Guardian Relationship is Required in Patient Admission", true)) {
+                if (getCurrent().getGuardianRelationshipToPatient() == null) {
+                    JsfUtil.addErrorMessage("Guardian Relationship is Required");
+                    return true;
+                }
+            }
+        }
+
         return false;
     }
 
@@ -1268,14 +1424,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
 
     public void saveSelected() {
-        if(admittingProcessStarted){
+        if (admittingProcessStarted) {
             JsfUtil.addErrorMessage("Admittin process already started.");
             return;
         }
-        admittingProcessStarted=true;
-        
+        admittingProcessStarted = true;
+
         if (errorCheck()) {
-            admittingProcessStarted=false;
+            admittingProcessStarted = false;
             return;
         }
         savePatient();
@@ -1331,10 +1487,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
         // Save EncounterCreditCompanies
         // Need to create EncounterCredit
-        admittingProcessStarted=false;
+        admittingProcessStarted = false;
         printPreview = true;
     }
-    
+
     public void saveConvertSelected() {
         if (errorCheck()) {
             return;
@@ -1389,7 +1545,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         }
 
         saveEncounterCreditCompanies(current);
-        
+
         getCurrentNonBht().setParentEncounter(current);
         getCurrentNonBht().setDischarged(true);
         getCurrentNonBht().setDateOfDischarge(new Date());
@@ -1550,15 +1706,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 
     public void setAgeText(String ageText) {
         this.ageText = ageText;
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(ageText));
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(ageText));
     }
 
     public PatientRoomFacade getPatientRoomFacade() {
@@ -1940,7 +2088,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         this.currentNonBht = currentNonBht;
     }
 
-
     public boolean isAdmittingProcessStarted() {
         return admittingProcessStarted;
     }
@@ -1948,7 +2095,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setAdmittingProcessStarted(boolean admittingProcessStarted) {
         this.admittingProcessStarted = admittingProcessStarted;
     }
-    
 
     public AdmissionType getAdmissionTypeForSearch() {
         return admissionTypeForSearch;
@@ -1957,7 +2103,6 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     public void setAdmissionTypeForSearch(AdmissionType admissionTypeForSearch) {
         this.admissionTypeForSearch = admissionTypeForSearch;
     }
-
 
     /**
      *

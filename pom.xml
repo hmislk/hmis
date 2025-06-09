@@ -58,7 +58,7 @@
         <dependency>
             <groupId>commons-beanutils</groupId>
             <artifactId>commons-beanutils</artifactId>
-            <version>1.9.4</version>
+            <version>1.11.0</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -150,6 +150,7 @@
                     <artifactId>bcprov-jdk15on</artifactId>
                 </exclusion>
             </exclusions>
+            <type>jar</type>
         </dependency>
 
         <!-- Optional: If you need to convert DOCX to HTML -->
@@ -176,12 +177,13 @@
             <type>jar</type>
         </dependency>
 
-        <!-- MySQL Connector -->
+        <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.30</version>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.4.0</version>
         </dependency>
+
 
         <!-- OpenPDF -->
         <dependency>
@@ -224,7 +226,14 @@
             <version>14.0.6</version>
             <type>jar</type>
         </dependency>
-        
+
+        <!-- JFreeChart -->
+        <dependency>
+            <groupId>org.jfree</groupId>
+            <artifactId>jfreechart</artifactId>
+            <version>1.5.4</version>
+        </dependency>
+
         <!--        <dependency>
             <groupId>org.primefaces.extensions</groupId>
             <artifactId>primefaces-extensions</artifactId>
@@ -348,7 +357,7 @@
         <dependency>
             <groupId>org.apache.tomcat</groupId>
             <artifactId>tomcat-catalina</artifactId>
-            <version>9.0.98</version> <!-- or the version compatible with your setup -->
+            <version>9.0.105</version> <!-- or the version compatible with your setup -->
         </dependency>
         <dependency>
             <groupId>com.github.hmislk</groupId>
@@ -361,7 +370,13 @@
             <version>2.8.9</version>
             <type>jar</type>
         </dependency>
-        
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     
@@ -371,7 +386,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <release>8</release> <!-- Compile with Java 8 compatibility -->
                     <debug>false</debug>

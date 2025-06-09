@@ -17,17 +17,17 @@
                             <p:panelGrid columns="2" >
                                 <h:outputLabel value="From Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.fromDate}"
-                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">     
-                                </p:calendar>   
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}">
+                                </p:calendar>
                                 <h:outputLabel value="To Date"/>
                                 <p:calendar value="#{fingerPrintRecordController.toDate}"
                                             pattern="#{sessionController.applicationPreference.shortDateFormat}">
-                                </p:calendar> 
+                                </p:calendar>
                                 <h:outputLabel value="Staff : "/>
-                                <au:completeStaff value="#{fingerPrintRecordController.staff}"/>                               
+                                <au:completeStaff value="#{fingerPrintRecordController.staff}"/>
 
                                 <h:outputLabel value="Institution : "/>
-                                <au:institution value="#{fingerPrintRecordController.institution}"/> 
+                                <au:institution value="#{fingerPrintRecordController.institution}"/>
 
                                 <h:outputLabel value="Department : "/>
                                 <au:department value="#{fingerPrintRecordController.department}"/>
@@ -44,12 +44,12 @@
                             </p:commandButton>
                         </p:panel>
                         <p:panel id="gpBillPreview" styleClass="noBorder summeryBorder" >
-                            <p:dataTable value="#{fingerPrintRecordController.fingerPrintRecords}" var="l" 
+                            <p:dataTable value="#{fingerPrintRecordController.fingerPrintRecords}" var="l"
                                          rowStyleClass="#{l.retired eq true ? 'redText':''}"
                                          scrollable="true"
                                          scrollHeight="300" id="tb1">
                                 <f:facet name="header">
-                                    
+
                                     <h:outputLabel value="Staff Shift"/><br/>
                                     <h:outputLabel value="  From : "  />
                                     <h:outputLabel  value="#{fingerPrintRecordController.fromDate}" >
@@ -57,7 +57,7 @@
                                     </h:outputLabel>
                                     <h:outputLabel/>
                                     <h:outputLabel/>
-                                    <h:outputLabel value="  To : "/> 
+                                    <h:outputLabel value="  To : "/>
                                     <h:outputLabel  value="#{fingerPrintRecordController.toDate}">
                                         <f:convertDateTime pattern="dd MM yy "/>
                                     </h:outputLabel><br/>
@@ -70,7 +70,7 @@
                                         <br/>
                                     </h:panelGroup>
                                 </f:facet>
-                                <p:column headerText="View" >                                    
+                                <p:column headerText="View" >
                                     <p:commandButton ajax="false" value="View" action="hr_staff_finger_edit" actionListener="#{fingerPrintRecordController.viewStaffFinger(l)}" disabled="#{l.retired}"></p:commandButton>
                                 </p:column>
 
@@ -108,16 +108,16 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                </h:panelGrid>              
+                </h:panelGrid>
             </p:panel>
         </h:form>
-    </ui:define> 
+    </ui:define>
 
 </ui:composition>

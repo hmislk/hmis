@@ -11,16 +11,16 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up JDK 11
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '11'
 
       - name: Cache Maven Packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.m2
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -31,7 +31,7 @@ jobs:
         run: |
           sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunu</jta-data-source>|' src/main/resources/META-INF/persistence.xml
           sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/ruhunuAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-      
+
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
           grep '<jta-data-source>' src/main/resources/META-INF/persistence.xml
@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Build Artifact
         uses: actions/download-artifact@v4
@@ -65,9 +65,9 @@ jobs:
 
       - name: Deploy to Payara
         env:
-          SERVER_IP: ${{ secrets.RUHUNU_PROD_SERVER_IP }}
-          SERVER_USER: ${{ secrets.RUHUNU_PROD_SERVER_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.RUHUNU_PROD_SHARED_SERVER_IP }}
+          SERVER_USER: ${{ secrets.RUHUNU_PROD_SHARED_SERVER_USER }}
+          SSH_PRIVATE_KEY: ${{ secrets.RUHUNU_PROD_SHARED_SSH_PRIVATE_KEY }}
           PAYARA_ADMIN_PASS: ${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}
         run: |
           # Add SSH private key to the SSH agent
@@ -82,9 +82,8 @@ jobs:
 
           # Ensure deployment directory exists
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo mkdir -p $WAR_DIR
-            sudo chown -R appuser:appuser /home/appuser/app/latest
-            sudo su - appuser
+            mkdir -p $WAR_DIR
+            chown -R appuser:appuser $WAR_DIR
             cd $WAR_DIR
 
             # Remove old backup if it exists
@@ -99,28 +98,25 @@ jobs:
           "
 
           # Copy new WAR file to the server
-          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:/tmp/$WAR_NAME
+          rsync -aL --progress -e "ssh -i private_key.pem" ./*.war $SERVER_USER@$SERVER_IP:$WAR_DIR/$WAR_NAME
 
-          # Move the file to /home/appuser/app/latest/ and set permissions
+          # Set the WAR file permission
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo mv /tmp/$WAR_NAME $WAR_DIR/
-            sudo chown appuser:appuser $WAR_DIR/$WAR_NAME
+            chown appuser:appuser $WAR_DIR/$WAR_NAME
           "
 
           # Deploy the WAR using asadmin
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
-            /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
+            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt undeploy $APP_NAME || true
+            /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt deploy --force=true --contextroot $APP_NAME $WAR_DIR/$WAR_NAME
             rm /tmp/payara-admin-pass.txt
           "
 
           # Validate if the application is running
           ssh -i private_key.pem -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP "
-            sudo su - appuser
-            echo 'AS_ADMIN_PASSWORD=${{ secrets.RUHUNU_PROD_PAYARA_ADMIN_PASS }}' > /tmp/payara-admin-pass.txt
-            if /opt/payara5/glassfish/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
+            echo 'AS_ADMIN_PASSWORD=$PAYARA_ADMIN_PASS' > /tmp/payara-admin-pass.txt
+            if /opt/payara5/bin/asadmin --user admin --passwordfile /tmp/payara-admin-pass.txt list-applications | grep -q '$APP_NAME'; then
               echo 'Application is running.'
             else
               echo 'Application failed to start.'

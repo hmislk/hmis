@@ -5,7 +5,8 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
@@ -13,15 +14,56 @@
                 <h:form>
                     <h:panelGroup rendered="#{!inwardSearch.printPreview}" styleClass="alignTop" >
                         <p:panel  header="Payment Cancellation">
-                            <p:selectOneMenu   id="cmbPs" value="#{inwardSearch.paymentMethod}" required="true"  >
-                                <f:selectItem itemLabel="Select Payment Method" />
-                                <f:selectItems value="#{inwardPaymentController.paymentMethods}"  />
-                            </p:selectOneMenu>
-                            <h:commandButton value="Cancel" action="#{inwardSearch.cancelBillRefund()}" >
-                            </h:commandButton>                            
+                            <div class="align-items-center justify-content-between" style="display: flex">
+                                <div>
+                                    <p:selectOneMenu id="cmbPs" value="#{inwardSearch.paymentMethod}" required="true">
+                                        <f:selectItem itemLabel="Select Payment Method"/>
+                                        <f:selectItems value="#{inwardPaymentController.paymentMethods}"/>
+                                        <p:ajax process="cmbPs" update="paymentDetails @all" event="change"
+                                                listener="#{inwardSearch.listnerForPaymentMethodChange(inwardSearch.bill)}"/>
+                                    </p:selectOneMenu>
+                                </div>
+                                <div>
+                                    <p:inputText value="#{inwardSearch.comment}" placeholder="Enter a comment"
+                                                 size="150"/>
+                                </div>
+                                <div>
+                                    <p:commandButton value="Cancel" action="#{inwardSearch.cancelBillRefund()}"
+                                                     class="ui-button-danger" ajax="false" icon="fas fa-ban">
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <div class="row ">
+                                <div class="col-md-2"></div>
+                                <div class="col-md-8">
+                                    <h:panelGroup id="paymentDetails">
+                                        <h:panelGroup id="creditCard"
+                                                      rendered="#{inwardSearch.paymentMethod eq 'Card'}">
+                                            <pa:creditCard paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="cheque" rendered="#{inwardSearch.paymentMethod eq 'Cheque'}">
+                                            <pa:cheque paymentMethodData="#{inwardSearch.paymentMethodData}"
+                                                       valueRequired="false"/>
+                                        </h:panelGroup>
+
+                                        <h:panelGroup id="slip" rendered="#{inwardSearch.paymentMethod eq 'Slip'}">
+                                            <pa:slip paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"
+                                                id="patientDeposit"
+                                                rendered="#{inwardSearch.paymentMethod eq 'PatientDeposit'}">
+                                            <pa:patient_deposit paymentMethodData="#{inwardSearch.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </div>
+                            </div>
                         </p:panel>
                         <p:panelGrid columns="2" style="width: 100%;">
-                            <p:panel header="Patient Detail">
+                            <p:panel header="Patient Details">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Patient ​Name:" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.patient.person.nameWithTitle}" ></h:outputLabel>
@@ -39,7 +81,7 @@
                                     </h:outputLabel>
                                 </p:panelGrid>
                             </p:panel>
-                            <p:panel header="Bill Detail">
+                            <p:panel header="Bill Details">
                                 <p:panelGrid columns="2">
                                     <h:outputLabel value="Bill No :" ></h:outputLabel>
                                     <h:outputLabel value="#{inwardSearch.bill.deptId}" ></h:outputLabel>
@@ -52,7 +94,7 @@
                                 </p:panelGrid>
                             </p:panel>
                         </p:panelGrid>
-                        <p:panel header="Bill Item Detail">
+                        <p:panel header="Bill Item Details">
                             <p:dataTable rowIndexVar="rowIndex" value="#{inwardSearch.billItems}" var="bip" >
                                 <p:column>
                                     <f:facet name="header">No</f:facet>
@@ -68,19 +110,30 @@
                                 </p:column>
                             </p:dataTable>
                         </p:panel>
-                        <p:panel header="Comments">
-                            <h:inputTextarea value="#{inwardSearch.comment}"/>                            
-                        </p:panel>
                     </h:panelGroup>
 
 
                     <h:panelGroup rendered="#{inwardSearch.printPreview}" >
-                        <p:commandButton value="Print" ajax="false" action="#" >
-                            <p:printer target="gpBillPreview" ></p:printer>
-                        </p:commandButton>
-                        <h:panelGroup id="gpBillPreview">
-                            <bi:paymentRefund bill="#{inwardSearch.bill.cancelledBill}" />
-                        </h:panelGroup>
+                        <p:panel>
+                            <f:facet name="header">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <h:outputLabel value="Inward Refund Cancellation"/>
+                                    </div>
+                                    <div>
+                                        <p:commandButton value="Print" ajax="false" action="#" icon="fas fa-print"
+                                                         class="ui-button-info">
+                                            <p:printer target="gpBillPreview"></p:printer>
+                                        </p:commandButton>
+                                    </div>
+                                </div>
+                            </f:facet>
+                            <h:panelGroup id="gpBillPreview">
+                                <bi:paymentRefund_cancellation bill="#{inwardSearch.bill.cancelledBill}"/>
+                            </h:panelGroup>
+                        </p:panel>
+
+
                     </h:panelGroup>
 
 

@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/opd"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
@@ -194,54 +195,96 @@
                                         </div>
                                     </div>
 
-                                    <div class="d-flex gap-2">
+                                    <div class="d-flex gap-2 mt-2">
                                         <div class="col-6">
                                             <h:panelGroup id="groupPrint" >
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
+
+
+                                                <h:panelGroup id="gpBillPreviewFiveFiveCustom3"  rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
+                                                    <ui:repeat value="#{billSearch.bill}" var="bc3" >
+                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePaper')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="ffb">
                                                         <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePrintedPaper')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="ffpp">
                                                         <prints:five_five_paper_without_headings bill="#{ffpp}"  duplicate="true"/>
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'PosPaper'}" >
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is PosPaper')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="pp">
                                                         <prints:posOpdBill bill="#{pp}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}" >
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePaperCoustom1')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="ffb" >
                                                         <prints:five_five_paper_coustom_1 bill="#{ffb}" duplicate="true" payments="1"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
-                                                <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFiveCustom3')}" >
                                                     <ui:repeat value="#{billSearch.bill}" var="pp">
                                                         <prints:five_five_custom_3 bill="#{pp}" duplicate="true"/>                        
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is 5x8 inch Paper')}" >
+                                                    <ui:repeat value="#{billSearch.bill}" var="pp">
+                                                        <prints:five_eight_opd_bill bill="#{pp}" duplicate="true"/>                        
                                                     </ui:repeat>
                                                 </h:panelGroup>
                                             </h:panelGroup>
                                         </div>
                                         <div class="col-6">
                                             <h:panelGroup rendered="#{billSearch.bill.refunded}">
-                                                <h:panelGroup id="refundPrint" >
-                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'PosPaper'}">
-                                                        <bi:opdPOSReturnBill bill="#{billSearch.bill.refundedBill}" />
+                                                <h:panelGroup id="refundPrint">
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is PosPaper')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="rfbill">
+                                                            <bi:opdPOSReturnBill bill="#{rfbill}" />
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{sessionController.loggedPreference.opdBillPaperType eq 'FiveFivePaperCoustom1'}">
-                                                        <prints:five_five_paper_coustom_1 bill="#{billSearch.bill.refundedBill}" refunded="true"  duplicate="true" payments="1"/>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePaperCoustom1')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="rfbill">
+                                                            <prints:five_five_paper_coustom_opd_refundBill bill="#{rfbill}" duplicate="true" payments="1"/>
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>
                                                     </h:panelGroup>
 
-                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePrintedPaper'}" >
-                                                        <bi:opdReturnfive_five_paper_without_headings 
-                                                            bill="#{billSearch.bill.refundedBill}"/>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFivePrintedPaper')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="rfbill">
+                                                            <bi:opdReturnfive_five_paper_without_headings  bill="#{rfbill}"/>
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>  
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
-                                                        <prints:five_five_custom_3
-                                                            bill="#{billSearch.bill.refundedBill}"/>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is FiveFiveCustom3')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="rfbill">
+                                                            <prints:five_five_custom_3_refund_bill bill="#{rfbill}" duplicate="true"/>
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>
+                                                    </h:panelGroup>
+
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Bill Paper Size is 5x8 inch Paper')}" >
+                                                        <ui:repeat value="#{billSearch.refuendedBills}" var="pp">
+                                                            <prints:five_eight_opd_bill bill="#{pp}" duplicate="true"/>   
+                                                            <p:spacer />
+                                                            <p:spacer />
+                                                        </ui:repeat>
                                                     </h:panelGroup>
                                                 </h:panelGroup>
                                             </h:panelGroup>

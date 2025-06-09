@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -34,10 +34,10 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>                                                 
+                    <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>
                 </div>
             </div>
 
@@ -47,12 +47,12 @@
 
             <div class="" style=" text-align: center;font-weight: bold;font-size: 13pt">
                 <h:outputLabel value="Receipt" />
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
                 <br/>
             </div>
 
@@ -103,7 +103,7 @@
                         </td>
                     </tr>
 
-                    <tr> 
+                    <tr>
                         <td  width="10%" ><h:outputLabel value="Address" class="billDetailsFiveFive" ></h:outputLabel></td>
                         <td width="5%" style="text-align: center;" >:</td>
                         <td  width="70%" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.patient.person.address}" class="billDetailsFiveFive">
@@ -151,7 +151,7 @@
                         </td>
                     </tr>
 
-                    <tr> 
+                    <tr>
                         <td  width="20%" ><h:outputLabel value="Payment" class="billDetailsFiveFive" ></h:outputLabel></td>
                         <td width="5%" style="text-align: center;" >:</td>
                         <td  width="70%" ><h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive">
@@ -170,7 +170,7 @@
 
             <div  >
 
-                <table style="width: 100%;"> 
+                <table style="width: 100%;">
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <tr>
@@ -192,7 +192,7 @@
                             <td colspan="2" style="text-align: right!important; width: 40%; padding-right: 32px; font-size: 14px!important;
                                 font-family:Verdana, Helvetica, sans-serif!important;
                                 font-weight: bold;">
-                                <h:outputLabel value="#{commonFunctionsController.convertToWord(cc.attrs.bill.total)}" ></h:outputLabel>
+                                <h:outputLabel value="#{commonFunctionsProxy.convertToWordJSF(cc.attrs.bill.total)}" ></h:outputLabel>
                             </td>
                         </tr>
 
@@ -211,7 +211,7 @@
                         </tr>
                     </h:panelGroup>
 
-                </table> 
+                </table>
             </div>
 
             <div class="billline">

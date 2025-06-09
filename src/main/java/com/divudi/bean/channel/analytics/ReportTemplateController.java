@@ -9,25 +9,25 @@
 package com.divudi.bean.channel.analytics;
 
 import com.divudi.bean.common.*;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PaymentType;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.analytics.ReportTemplateColumn;
-import com.divudi.data.analytics.ReportTemplateFilter;
-import com.divudi.data.analytics.ReportTemplateType;
-import static com.divudi.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Department;
-import com.divudi.entity.ReportTemplate;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.ReportTemplateFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PaymentType;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.analytics.ReportTemplateColumn;
+import com.divudi.core.data.analytics.ReportTemplateFilter;
+import com.divudi.core.data.analytics.ReportTemplateType;
+import static com.divudi.core.data.analytics.ReportTemplateType.ITEM_SUMMARY_BY_BILL;
+
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.ReportTemplate;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.ReportTemplateFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -197,7 +197,7 @@ public class ReportTemplateController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill.department, sum(bill.netTotal)) "
                 + " from Payment p"
                 + " join p.bill bill "
@@ -269,7 +269,7 @@ public class ReportTemplateController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
                 + " where bill.retired=false ";
@@ -351,7 +351,7 @@ public class ReportTemplateController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
                 + " where bill.retired=false ";
@@ -418,7 +418,7 @@ public class ReportTemplateController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill) "
                 + " from Bill bill "
                 + " where bill.retired=false ";
@@ -488,7 +488,7 @@ public class ReportTemplateController implements Serializable {
 
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " p) "
                 + " from Payment p "
                 + " join p.bill bill "
@@ -1033,7 +1033,7 @@ public class ReportTemplateController implements Serializable {
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill.billTypeAtomic, sum(bf.feeValue)) "
                 + " from BillFee bf "
                 + " join bf.bill bill "
@@ -1196,7 +1196,7 @@ public class ReportTemplateController implements Serializable {
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill.billTypeAtomic, sum(bf.feeValue)) "
                 + " from BillFee bf "
                 + " join bf.bill bill "
@@ -1364,7 +1364,7 @@ public class ReportTemplateController implements Serializable {
         String jpql;
         Map<String, Object> parameters = new HashMap<>();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bill.billTypeAtomic, count(bill), sum(bill.netTotal)) "
                 + " from Bill bill "
                 + " where bill.retired<>:br ";
@@ -1878,7 +1878,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bi.item.category.name, sum(bi.netValue)) "
                 + " from BillItem bi"
                 + " join bi.bill bill "
@@ -2033,7 +2033,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bi.item.category, count(bi), sum(bi.netValue)) "
                 + " from BillItem bi"
                 + " join bi.bill bill "
@@ -2194,7 +2194,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bi.item.department, count(bi), sum(bi.netValue)) "
                 + " from BillItem bi"
                 + " join bi.bill bill "
@@ -2355,7 +2355,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + " bi.item, count(bi), sum(bi.netValue)) "
                 + " from BillItem bi"
                 + " join bi.bill bill "
@@ -2515,7 +2515,7 @@ public class ReportTemplateController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
 
-        jpql = "select new com.divudi.data.ReportTemplateRow(ss) "
+        jpql = "select new com.divudi.core.data.ReportTemplateRow(ss) "
                 + " from SessionInstance ss "
                 + " where ss.retired<>:br ";
         parameters.put("br", true);

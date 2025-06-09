@@ -4,6 +4,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/opd"
       xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:na="http://xmlns.jcp.org/jsf/composite/template"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
@@ -39,6 +40,16 @@
                                     icon="fa fa-plus"
                                     action="#{opdBillController.navigateToNewOpdBill()}"
                                     ajax="false">
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    value="Pharmacy Retail" 
+                                    class="ui-button-success mx-1"
+                                    icon="fa fa-shopping-cart"
+                                    action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true"   
+                                    rendered="#{webUserController.hasPrivilege('PharmacySale')}"
+                                    ajax="false">
+                                    <f:setPropertyActionListener target="#{pharmacySaleController.patient}" value="#{opdBillController.patient}"></f:setPropertyActionListener>
                                 </p:commandButton>
 
                                 <!-- Print Lookup Button -->
@@ -105,6 +116,18 @@
                                     </f:facet>
                                     <h:panelGroup id="groupPrint" >
                                         <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
+
+
+                                            <h:panelGroup
+                                                id="gpBillPreviewFiveFiveCustom3" 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
+                                                <ui:repeat value="#{opdBillController.bills}" var="bc3" >
+                                                    <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                </ui:repeat>
+                                            </h:panelGroup>
+
+
+
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                     <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
@@ -154,6 +177,13 @@
                                                     <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
                                                 </ui:repeat>
                                             </h:panelGroup>
+                                            
+                                            <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
+                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                </ui:repeat>
+                                            </h:panelGroup>
+                                            
                                         </ui:repeat>
                                     </h:panelGroup>
 
@@ -329,7 +359,7 @@
                                     </p:column>
                                     <p:column headerText="Value" class="text-end">
                                         <h:outputText value="#{p.paidValue}" >
-                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputText>
                                     </p:column>
                                 </p:dataTable>

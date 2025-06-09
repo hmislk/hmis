@@ -2,7 +2,7 @@ package com.divudi.bean.collectingCentre;
 
 import com.divudi.bean.lab.PatientInvestigationController;
 import com.divudi.bean.report.ReportController;
-import com.divudi.entity.Bill;
+import com.divudi.core.entity.Bill;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -15,7 +15,7 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class CourierController implements Serializable {
-    
+
     private Bill currentCCBill;
 
     @Inject
@@ -24,7 +24,7 @@ public class CourierController implements Serializable {
     ReportController reportController;
 
     private int activeIndex = 0;
-    
+
 
     /**
      * Creates a new instance of CourierController
@@ -68,82 +68,82 @@ public class CourierController implements Serializable {
         activeIndex = 6;
         return "/collecting_centre/courier/courier_report_index.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToCourierLabReportsPrint() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/courier_lab_report_print?faces-redirect=true";
     }
-    
+
     public String navigateToCCReportsPrint() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_report_print?faces-redirect=true";
     }
-    
+
     public String navigateToCCCurrentBalanceReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_current_balance_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBalanceReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_balance_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCReceiptReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_recipt_reports?faces-redirect=true";
     }
-    
+
     public String navigateToCCBillWiseDetailReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_bill_wise_detail_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCWiseInvoiceListReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_wise_invoice_list_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCStatementReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCWiseSummaryReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_wise_summary_report?faces-redirect=true";
     }
-    
+
     public String navigateToTestWiseCountReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_test_wise_count_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCRouteAnalysisReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/route_analysis_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBookReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_center_book_report?faces-redirect=true";
     }
-    
+
     public String navigateToCCBookWiseDetail() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/collection_centre_book_wise_detail?faces-redirect=true";
     }
-    
+
     public String navigateToCCInvestigationListReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/cc_investigation_list?faces-redirect=true";
     }
-    
+
     public String navigateToCCBillItemListReport() {
         reportController.setReportTemplateFileIndexName("/collecting_centre/courier/courier_report_index.xhtml");
         return "/reports/collectionCenterReports/cc_bill_item_list?faces-redirect=true";
     }
-    
+
     public String navigateToCourierViewReciptReports() {
         activeIndex = 7;
         return "/reports/collectionCenterReports/collection_center_recipt_reports_c?faces-redirect=true";
@@ -153,11 +153,11 @@ public class CourierController implements Serializable {
         activeIndex = 8;
         return "/collecting_centre/courier/viewPaymentReports.xhtml?faces-redirect=true";
     }
-    
+
     public String navigateToCCBillViewFormPaymentReports() {
         return "/collecting_centre/courier/cc_bill_reprint_view?faces-redirect=true";
     }
-    
+
     public String navigateToViewReciptFromCCBillView() {
         activeIndex = 7;
         return "/reports/collectionCenterReports/collection_center_recipt_reports_c?faces-redirect=true";

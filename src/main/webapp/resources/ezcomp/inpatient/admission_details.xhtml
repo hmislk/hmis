@@ -8,12 +8,12 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-         <cc:attribute name="admission" type="com.divudi.entity.inward.Admission"  />
+         <cc:attribute name="admission" type="com.divudi.core.entity.inward.Admission"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        
+
         <p:panel rendered="#{cc.attrs.admission eq null}">
             <f:facet name="header">
                 <p:outputLabel value="Admission Details" />
@@ -22,12 +22,12 @@
             <h:panelGrid columns="10">
 
                 <p:outputLabel value="Type Patient Name or BHT : " ></p:outputLabel>
-                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true" 
+                <p:autoComplete  widgetVar="aPt" id="acPt" forceSelection="true"
                                  value="#{cc.attrs.admission}"
-                                 completeMethod="#{admissionController.completePatientDishcargedNotFinalized}" 
-                                 var="myItem" itemValue="#{myItem}" 
-                                 itemLabel="#{myItem.bhtNo}" 
-                                 size="30"  
+                                 completeMethod="#{admissionController.completePatientDishcargedNotFinalized}"
+                                 var="myItem" itemValue="#{myItem}"
+                                 itemLabel="#{myItem.bhtNo}"
+                                 size="30"
                                  class="mx-2">
                     <p:column>
                         #{myItem.bhtNo}
@@ -41,9 +41,9 @@
                     <p:column>
                         <h:outputLabel value="Discharged"  rendered="#{myItem.discharged}"/>
                     </p:column>
-                </p:autoComplete>   
-                <p:commandButton ajax="false"  
-                                 value="Select" 
+                </p:autoComplete>
+                <p:commandButton ajax="false"
+                                 value="Select"
                                  action="#{bhtSummeryController.createTables()}" >
                 </p:commandButton>
 

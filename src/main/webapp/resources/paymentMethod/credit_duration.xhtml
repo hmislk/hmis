@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
@@ -16,7 +16,7 @@
     <cc:implementation>
         <div class="d-flex" >
             <div class="ui-inputgroup mx-1 my-1">
-                <p:inputText  
+                <p:inputText
                     value="#{cc.attrs.paymentMethodData.credit.creditDuration}" style="width: 10em;">
                 </p:inputText>
                 <div class="ui-inputgroup-addon">Days</div>

@@ -1,76 +1,72 @@
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.DoctorController;
-import com.divudi.bean.common.InstitutionController;
-import com.divudi.bean.common.ItemApplicationController;
-import com.divudi.bean.common.ItemController;
-import com.divudi.bean.common.PatientController;
-import com.divudi.bean.common.PersonController;
-import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.bean.pharmacy.StockHistoryController;
-import com.divudi.data.BillFinanceType;
-import com.divudi.data.BillItemStatus;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CategoryCount;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemCount;
-import com.divudi.data.ItemLight;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PharmacyRow;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.data.ReportTemplateRowBundle;
-import com.divudi.data.ServiceType;
-import com.divudi.data.Sex;
-import com.divudi.data.TestWiseCountReport;
-import com.divudi.data.dataStructure.BillAndItemDataRow;
-import com.divudi.data.dataStructure.ItemDetailsCell;
-import com.divudi.data.dataStructure.ItemLastSupplier;
-import com.divudi.data.dataStructure.PharmacyStockRow;
-import com.divudi.data.dataStructure.StockReportRecord;
-import com.divudi.data.lab.PatientInvestigationStatus;
+import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.InventoryReports;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillFinanceType;
+import com.divudi.core.data.BillItemStatus;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CategoryCount;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemCount;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PharmacyRow;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.TestWiseCountReport;
+import com.divudi.core.data.dataStructure.BillAndItemDataRow;
+import com.divudi.core.data.dataStructure.ItemDetailsCell;
+import com.divudi.core.data.dataStructure.ItemLastSupplier;
+import com.divudi.core.data.dataStructure.PharmacyStockRow;
+import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Route;
-import com.divudi.entity.Service;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.java.CommonFunctions;
-import com.divudi.light.common.BillLight;
-import com.divudi.light.common.PrescriptionSummaryReportRow;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientDepositHistory;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Route;
+import com.divudi.core.entity.Service;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.MeasurementUnit;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.light.common.BillLight;
+import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 
 import java.io.IOException;
 import javax.faces.context.ExternalContext;
@@ -116,7 +112,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
-import com.divudi.facade.ItemFacade;
+import com.divudi.core.facade.ItemFacade;
+
+import java.text.DecimalFormat;
+import java.util.LinkedHashMap;
+import java.util.function.Supplier;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  * @author Pubudu Piyankara
@@ -163,10 +166,13 @@ public class PharmacyReportController implements Serializable {
     @Inject
     WebUserController webUserController;
     @Inject
-    PatientInvestigationFacade patientInvestigationFacade;
+    ConfigOptionApplicationController configOptionApplicationController;
     @Inject
-    StockHistoryController stockHistoryController;
+    SessionController sessionController;
+    @EJB
+    private ReportTimerController reportTimerController;
 
+    private static final DecimalFormat DECIMAL_FORMAT = new DecimalFormat("#,##0.00");
     private int reportIndex;
     private Institution institution;
     private Institution site;
@@ -245,13 +251,13 @@ public class PharmacyReportController implements Serializable {
 
     private List<PatientDepositHistory> patientDepositHistories;
 
-    private CommonFunctions commonFunctions;
     private List<PatientInvestigation> patientInvestigations;
     private PatientInvestigationStatus patientInvestigationStatus;
 
     private List<AgentReferenceBook> agentReferenceBooks;
 
     private boolean showPaymentData;
+    private boolean showData;
 
     private List<BillAndItemDataRow> billAndItemDataRows;
     private BillAndItemDataRow headerBillAndItemDataRow;
@@ -285,6 +291,7 @@ public class PharmacyReportController implements Serializable {
     private List<Stock> stocks;
     private double stockSaleValue;
     private double stockPurchaseValue;
+    private double stockCostValue;
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
@@ -305,6 +312,13 @@ public class PharmacyReportController implements Serializable {
 
     private Map<Item, Map<Long, List<Stock>>> itemStockMap;
     private Double quantity;
+
+    private Double stockQty;
+
+    private Institution fromSite;
+    private Institution toSite;
+
+    private boolean consignmentItem;
 
     //Constructor
     public PharmacyReportController() {
@@ -543,7 +557,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -618,7 +632,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(bi), "
                 + "sum(bi.hospitalFee), "
@@ -701,7 +715,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle billedBundle = new ReportTemplateRowBundle();
         billedBundle.setName("Collecting Centre Report By Item");
         billedBundle.setDescription("From : to :");
-        String jpql = "select new com.divudi.data.ReportTemplateRow("
+        String jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -776,7 +790,7 @@ public class PharmacyReportController implements Serializable {
         ReportTemplateRowBundle crBundle = new ReportTemplateRowBundle();
         crBundle.setName("Collecting Centre Report By Item");
         crBundle.setDescription("From : to :");
-        jpql = "select new com.divudi.data.ReportTemplateRow("
+        jpql = "select new com.divudi.core.data.ReportTemplateRow("
                 + "b.collectingCentre, "
                 + "count(b), "
                 + "sum(b.totalHospitalFee), "
@@ -1060,7 +1074,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     //    public void processPharmacySaleReferralCount() {
-//        String jpql = "select new com.divudi.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
+//        String jpql = "select new com.divudi.core.data.BillLight(bi.referredBy.person.name, count(bi), count(bi.netTotal)) "
 //                + " from Bill bi "
 //                + " where bi.cancelled=:can "
 //                + " and bi.createdAt between :fd and :td "
@@ -1077,7 +1091,7 @@ public class PharmacyReportController implements Serializable {
 //            jpql += " and bi.fromDepartment=:fdept ";
 //            m.put("fdept", department);
 //        }
-//        
+//
 //        if (referingDoctor  != null) {
 //            jpql += " and bi.referredBy=:refDoc ";
 //            m.put("refDoc", referingDoctor);
@@ -1086,10 +1100,10 @@ public class PharmacyReportController implements Serializable {
 //        jpql += " order by bi.referredBy.person.name ";
 //        prescriptionSummaryReportRows = (List<PrescriptionSummaryReportRow>) billFacade.findLightsByJpql(jpql, m);
 //    }
-//    
+//
     public void processPresciptionSummeryReport() {
         String jpql = "select new "
-                + " com.divudi.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
+                + " com.divudi.core.light.common.PrescriptionSummaryReportRow(bi.referredBy.person.name, bi.referredBy.person.id, count(bi), sum(bi.netTotal)) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -1113,7 +1127,7 @@ public class PharmacyReportController implements Serializable {
 
     public void processPresciptionListEvenWhenNoPatientData() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, "
                 + " coalesce(p.person.name, 'No Patient'), bi.netTotal) "
                 + " from Bill bi "
                 + " left join bi.patient p "
@@ -1143,7 +1157,7 @@ public class PharmacyReportController implements Serializable {
 
     public void processPresciptionList() {
         String jpql = "select new "
-                + " com.divudi.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
+                + " com.divudi.core.light.common.BillLight(bi.id, bi.deptId, bi.billDate, bi.billTime, bi.patient.person.name, bi.netTotal) "
                 + " from Bill bi "
                 + " where bi.cancelled=:can "
                 + " and bi.billDate between :fd and :td "
@@ -1201,7 +1215,7 @@ public class PharmacyReportController implements Serializable {
     public ReportTemplateRowBundle generatePaymentMethodColumnsByBills(List<BillTypeAtomic> bts) {
         Map<String, Object> parameters = new HashMap<>();
 
-        String jpql = "SELECT new com.divudi.data.ReportTemplateRow("
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill.department, FUNCTION('date', p.createdAt), "
                 + "SUM(p.paidValue)) "
                 + "FROM Payment p "
@@ -1239,27 +1253,29 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void generatePharmacyCashInOutLedger() {
-        netTotal = 0.0;
-        bills = new ArrayList<>();
-        unifiedBundle = new ArrayList<>();
-        List<BillTypeAtomic> allBillTypes = new ArrayList<>();
-        Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
+        reportTimerController.trackReportExecution(() -> {
+            netTotal = 0.0;
+            bills = new ArrayList<>();
+            unifiedBundle = new ArrayList<>();
+            List<BillTypeAtomic> allBillTypes = new ArrayList<>();
+            Map<BillTypeAtomic, Double> btaNetTotals = new HashMap<>();
 
-        // Combine all relevant BillTypeAtomic
-        List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
-        List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
-        List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
-        List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
+            // Combine all relevant BillTypeAtomic
+            List<BillTypeAtomic> btasCashIn = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+            List<BillTypeAtomic> btasCashOut = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_OUT);
+            List<BillTypeAtomic> btasShiftStart = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_STARTING_BALANCE);
+            List<BillTypeAtomic> btasShiftEnd = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.OTHER, BillFinanceType.FLOAT_CLOSING_BALANCE);
 
-        allBillTypes.addAll(btasCashIn);
-        allBillTypes.addAll(btasCashOut);
-        allBillTypes.addAll(btasShiftStart);
-        allBillTypes.addAll(btasShiftEnd);
+            allBillTypes.addAll(btasCashIn);
+            allBillTypes.addAll(btasCashOut);
+            allBillTypes.addAll(btasShiftStart);
+            allBillTypes.addAll(btasShiftEnd);
 
-        allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
-        allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
+            allBillTypes.add(BillTypeAtomic.SUPPLEMENTARY_INCOME);
+            allBillTypes.add(BillTypeAtomic.OPERATIONAL_EXPENSES);
 
-        createPharmacyCashInOutLedger(allBillTypes);
+            createPharmacyCashInOutLedger(allBillTypes);
+        }, PharmacyReports.CASH_IN_OUT_REPORT, sessionController.getLoggedUser());
     }
 
     public void createPharmacyCashInOutLedger(List<BillTypeAtomic> billTypeAtomics) {
@@ -1328,7 +1344,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processPharmacySaleItemCount() {
-        String jpql = "select new com.divudi.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
+        String jpql = "select new com.divudi.core.data.ItemCount(bi.item.category.name, bi.item.name, count(bi.item)) "
                 + " from BillItem bi "
                 + " where bi.bill.cancelled=:can "
                 + " and bi.bill.billDate between :fd and :td "
@@ -1515,7 +1531,7 @@ public class PharmacyReportController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1820,7 +1836,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processCollectingCentreTestWiseCountReport() {
-        String jpql = "select new  com.divudi.data.TestWiseCountReport("
+        String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee) , "
@@ -1917,6 +1933,64 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    private void addFilter(StringBuilder sql, Map<String, Object> parameters, String sqlField, String paramKey, Object value) {
+        if (value != null) {
+            sql.append(" AND ").append(sqlField).append(" = :").append(paramKey).append(" ");
+            parameters.put(paramKey, value);
+        }
+    }
+
+    private void addFilter(StringBuilder sql, String condition) {
+        if (condition != null && !condition.isEmpty()) {
+            sql.append(" ").append(condition).append(" ");
+        }
+    }
+
+    public void processGoodInTransistReport() {
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select bi from BillItem bi"
+                + " where bi.bill.billType = :bt"
+                + " and bi.retired = :ret"
+                + " and bi.bill.billedBill is null "
+                + " and bi.bill.createdAt between :fd and :td"
+                + " and bi.bill.toStaff is not null"
+                + " and bi.bill.fromDepartment is not null");
+
+        parameters.put("bt", BillType.PharmacyTransferIssue);
+        parameters.put("ret", false);
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+        addFilter(sql, parameters, "bi.item", "item", item);
+        addFilter(sql, parameters, "bi.item.category", "cat", category);
+        addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+        if (showData) {
+            reportType = "pending";
+            sql.append(" and bi.bill.forwardReferenceBill Is null ");
+        }
+        if (reportType.equals("pending")) {
+            addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
+        }
+        if (reportType.equals("accepted")) {
+            addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+        }
+        if (reportType.equals("issueCancel")) {
+            addFilter(sql, "and bi.bill.cancelled = true");
+        }
+        System.out.println("dccdjidci" + showData);
+        sql.append(" order by bi.bill.id ");
+
+        billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+    }
+
     public void processStockLedgerReport() {
 
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -1925,9 +1999,11 @@ public class PharmacyReportController implements Serializable {
         if ("ipSaleDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyBhtPre);
         } else if ("opSaleDoc".equals(documentType)) {
+            billTypes.add(BillType.PharmacyPre);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
         } else if ("grnDoc".equals(documentType)) {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
@@ -1943,18 +2019,21 @@ public class PharmacyReportController implements Serializable {
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
         } else if ("consumptionDoc".equals(documentType)) {
             billTypes.add(BillType.PharmacyIssue);
 
         } else if ("transferIssueDoc".equals(documentType)) {
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
+            billTypes.add(BillType.PharmacyTransferIssue);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_ISSUE_CANCELLED);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_ISSUE_RETURN);
         } else if ("transferReceiveDoc".equals(documentType)) {
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
-            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            billTypes.add(BillType.PharmacyTransferReceive);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE);
+//            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
         }
 
         stockLedgerHistories = new ArrayList();
@@ -1999,28 +2078,1053 @@ public class PharmacyReportController implements Serializable {
             jpql += "and s.item=:itm ";
             m.put("itm", item);
         }
+        if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType)) {
+            jpql += " and s.department IS NOT NULL ";
+        }
 
         jpql += " order by s.createdAt ";
         stockLedgerHistories = facade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
-    public void processClosingStockReport() {
-        switch (reportType) {
-            case "itemWise":
-                processClosingStockItemWiseReport();
-                break;
-            case "batchWise":
-                processClosingStockBatchWiseReport();
-                break;
+    public void processClosingStockForBatchReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh "
+                + " where sh.retired = :ret ");
+//                + " and (sh.itemBatch.item.departmentType is null "
+//                + "      or sh.itemBatch.item.departmentType = :depty) ");
+
+        // Set query parameters
+//        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
+        if (department != null) {
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (amp != null) {
+            item = amp;
+            jpql.append("and sh.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+        // Group by itemBatch (and department if you want per-department breakdown)
+        jpql.append("group by sh.department, sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        // Fetch the IDs of the latest StockHistory rows per itemBatch
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+        System.out.println("ids = " + ids);
+
+        rows = new ArrayList<>();
+
+        // Build rows per ItemBatch
+        for (Long shid : ids) {
+            StockHistory shx = facade.find(shid);
+            if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            // Create a fresh row for each itemBatch
+            PharmacyRow row = new PharmacyRow();
+            row.setItem(shx.getItemBatch().getItem());
+            row.setItemBatch(shx.getItemBatch());
+
+            double batchQty = shx.getStockQty();
+            double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
+            double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+            double batchCostRate = shx.getItemBatch().getCostRate();
+
+            if (isConsignmentItem()) {
+                if (batchQty > 0) {
+                    continue;
+                }
+            } else {
+                if (batchQty <= 0) {
+                    continue;
+                }
+            }
+
+            // Populate row values directly (no accumulation needed, as each batch is its own row)
+            row.setQuantity(batchQty);
+            row.setPurchaseValue(batchQty * batchPurchaseRate);
+            row.setSaleValue(batchQty * batchSaleRate);
+            row.setPurchaseRate(batchPurchaseRate);
+            row.setRetailRate(batchSaleRate);
+            row.setCostRate(batchCostRate);
+            row.setCostValue(batchQty * batchCostRate);
+
+            rows.add(row);
         }
     }
 
-    public void processClosingStockBatchWiseReport() {
+    public static <T> T safeGet(Supplier<T> supplier, T defaultValue) {
+        try {
+            T result = supplier.get();
+            return result != null ? result : defaultValue;
+        } catch (NullPointerException e) {
+            return defaultValue;
+        }
+    }
+
+    private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
+            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+    };
+
+    private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
+        for (String header : headers) {
+            PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+            cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+            cell.setBackgroundColor(new BaseColor(220, 220, 220));
+            table.addCell(cell);
+        }
+    }
+
+    public void exportStockLedgerToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        List<StockHistory> histories = getStockLedgerHistories();
+        if (histories == null || histories.isEmpty()) {
+
+            System.out.println("No stock ledger data available for the selected period");
+            return;
+        }
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Ledger_Report.pdf");
+        Document document = null;
+        try (OutputStream out = response.getOutputStream()) {
+            document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            com.itextpdf.text.Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph title = new Paragraph("Stock Ledger Report", (Font) titleFont);
+            title.setAlignment(Element.ALIGN_CENTER);
+            title.setSpacingAfter(20);
+            document.add(title);
+
+            com.itextpdf.text.Font subTitleFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+            Paragraph dateRange = new Paragraph(
+                    String.format("From: %s To: %s",
+                            formatDate(getFromDate()),
+                            formatDate(getToDate())), (Font) subTitleFont);
+            dateRange.setAlignment(Element.ALIGN_CENTER);
+            dateRange.setSpacingAfter(20);
+            document.add(dateRange);
+
+            com.itextpdf.text.Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            com.itextpdf.text.Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            PdfPTable table = new PdfPTable(19); // Number of columns
+            table.setWidthPercentage(100);
+
+            table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
+
+            String[] headers = {
+                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                    "Closing Stock", "Rate", "Closing Value"
+            };
+
+            addTableHeaders(table, headerFont, headers);
+
+            SimpleDateFormat dateFormat = new SimpleDateFormat(configOptionApplicationController.getShortTextValueByKey("Short Date Format", sessionController.getApplicationPreference().getShortDateFormat()));
+
+            int rowNum = 1;
+            for (StockHistory f : histories) {
+                final BillItem billItem = f.getPbItem().getBillItem();
+                final Bill bill = billItem.getBill();
+                final Item item = billItem.getItem();
+                final Department fromDept = safeGet(() -> bill.getFromDepartment(), null);
+                final Department toDept = safeGet(() -> bill.getToDepartment(), null);
+                final Category itemCategory = safeGet(() -> item.getCategory(), null);
+                final MeasurementUnit unit = safeGet(() -> item.getMeasurementUnit(), null);
+                final BillTypeAtomic atomicType = safeGet(() -> bill.getBillTypeAtomic(), null);
+                final BillType billType = safeGet(() -> bill.getBillType(), null);
+                final double qty = safeGet(() -> f.getPbItem().getQty(), 0.0);
+                final double freeQty = safeGet(() -> f.getPbItem().getFreeQty(), 0.0);
+                final double purchaseRate = safeGet(() -> f.getPbItem().getPurchaseRate(), 0.0);
+                final boolean isIn = safeGet(() -> f.getPbItem().isTransThisIsStockIn(), false);
+                final boolean isOut = safeGet(() -> f.getPbItem().isTransThisIsStockOut(), false);
+
+                table.addCell(createCell(String.valueOf(rowNum++), cellFont));
+                table.addCell(createCell(safeGet(() -> f.getDepartment().getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> itemCategory.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getCode(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> item.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> unit.getName(), " "), cellFont));
+
+                String transactionType = isIn ? "STOCK IN" : isOut ? "STOCK OUT" : "N/A";
+                PdfPCell transCell = new PdfPCell(new Phrase(transactionType, cellFont));
+                transCell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(transCell);
+
+                table.addCell(createCell(safeGet(() -> bill.getDeptId(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> dateFormat.format(f.getCreatedAt()), ""), cellFont));
+
+                String refDocNo = getRefDocNo(f);
+                table.addCell(createCell(refDocNo != null ? refDocNo : "", cellFont));
+
+                String refDocDate = getRefDocDate(f);
+                table.addCell(createCell(refDocDate != null ? refDocDate : "", cellFont));
+
+                table.addCell(createCell(safeGet(() -> fromDept.getName(), ""), cellFont));
+                table.addCell(createCell(safeGet(() -> toDept.getName(), ""), cellFont));
+
+                String docType = atomicType != null ? atomicType.getLabel() : safeGet(() -> billType.getLabel(), "");
+                table.addCell(createCell(docType, cellFont));
+
+                double stockIn = isIn ? qty + freeQty : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockIn), cellFont));
+
+                double stockOut = isOut ? qty + freeQty : 0.0;
+                table.addCell(createCell(DECIMAL_FORMAT.format(stockOut), cellFont));
+
+                double itemStock = safeGet(() -> f.getItemStock(), 0.0);
+                table.addCell(createCell(DECIMAL_FORMAT.format(itemStock), cellFont));
+
+                table.addCell(createCell(DECIMAL_FORMAT.format(purchaseRate), cellFont));
+
+                double closingValue = itemStock * purchaseRate;
+                table.addCell(createCell(DECIMAL_FORMAT.format(closingValue), cellFont));
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (document != null) {
+                try {
+                    if (document.isOpen()) {
+                        document.close();
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+    private PdfPCell createCell(String content, Font font) {
+        if (content == null || content.isEmpty()) {
+            content = " ";
+        }
+        PdfPCell cell = new PdfPCell(new Phrase(content, font));
+        cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+        cell.setVerticalAlignment(Element.ALIGN_MIDDLE);
+        return cell;
+    }
+
+    private String formatDate(Date date) {
+        if (date == null) {
+            return "N/A";
+        }
+        return new SimpleDateFormat("dd-MMM-yyyy").format(date);
+    }
+
+    private String getRefDocNo(StockHistory f) {
+        return safeGet(() -> {
+            if ("opSaleDoc".equals(documentType) || "ipSaleDoc".equals(documentType)) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getDeptId();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getDeptId()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getDeptId();
+            }
+        }, "");
+    }
+
+    private String getRefDocDate(StockHistory f) {
+        Date refDocDate = safeGet(() -> {
+            if (documentType.equals("opSaleDoc") || documentType.equals("ipSaleDoc")) {
+                return f.getPbItem().getBillItem().getBill().getReferenceBill().isCancelled()
+                        ? f.getPbItem().getBillItem().getBill().getForwardReferenceBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getBackwardReferenceBill().getCreatedAt();
+            } else {
+                return f.getPbItem().getBillItem().getBill().getCancelledBill() != null
+                        ? f.getPbItem().getBillItem().getBill().getCancelledBill().getCreatedAt()
+                        : f.getPbItem().getBillItem().getBill().getReferenceBill().getCreatedAt();
+            }
+        }, null);
+
+        return refDocDate != null ? formatDate(refDocDate) : "";
+    }
+
+    public void processClosingStockForItemReport() {
+        List<Long> ids;
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
+                + " from StockHistory sh where sh.retired=:ret ");
+//                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+
+        // Set query parameters
+//        params.put("depty", DepartmentType.Pharmacy);
+        params.put("ret", false);
+
+        if (institution != null) {
+            jpql.append("and sh.institution = :ins ");
+            params.put("ins", institution);
+        }
+
+        if (site != null) {
+            jpql.append("and sh.department.site = :sit ");
+            params.put("sit", site);
+        }
+
+        if (department != null) {
+            jpql.append("and sh.department = :dep ");
+            params.put("dep", department);
+        }
+
+        if (category != null) {
+            jpql.append("and sh.itemBatch.item.category = :cat ");
+            params.put("cat", category);
+        }
+
+        if (amp != null) {
+            item = amp;
+            jpql.append("and sh.itemBatch.item = :itm ");
+            params.put("itm", item);
+        }
+
+        jpql.append("and sh.createdAt < :et ");
+        params.put("et", CommonFunctions.getEndOfDay(toDate));
+
+//        jpql.append("group by sh.department, sh.itemBatch.item ");
+        jpql.append("group by sh.department, sh.itemBatch ");
+        jpql.append("order by sh.itemBatch.item.name");
+
+        // Fetch the IDs of the latest StockHistory rows per ItemBatch
+        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+        System.out.println("jpql = " + jpql.toString());
+        System.out.println("params = " + params);
+        System.out.println("ids = " + ids);
+
+        rows = new ArrayList<>();
+
+        // Process each StockHistory to build rows per Item (not per batch)
+        for (Long shid : ids) {
+            StockHistory shx = facade.find(shid);
+            if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
+                continue;
+            }
+
+            // Assign class-level 'item' so it is not shadowed by a local variable
+            item = shx.getItemBatch().getItem();
+
+//            double batchQty = shx.getItemStock();
+            double batchQty = shx.getStockQty();
+            double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
+            double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+            double batchCostRate = shx.getItemBatch().getCostRate();
+
+            // Check if a PharmacyRow already exists for this Item
+            PharmacyRow matchingRow = null;
+            for (PharmacyRow r : rows) {
+                if (r.getItem() != null && r.getItem().equals(item)) {
+                    matchingRow = r;
+                    break;
+                }
+            }
+
+            // If not found, create one
+            if (matchingRow == null) {
+                matchingRow = new PharmacyRow();
+                matchingRow.setItem(item);
+                matchingRow.setQuantity(0.0);
+                matchingRow.setPurchaseValue(0.0);
+                matchingRow.setSaleValue(0.0);
+                matchingRow.setCostValue(0.0);
+                rows.add(matchingRow);
+            }
+
+            if (isConsignmentItem() && matchingRow.getQuantity() + batchQty > 0) {
+                rows.remove(matchingRow);
+                continue;
+            } else {
+                if (matchingRow.getQuantity() + batchQty <= 0) {
+                    rows.remove(matchingRow);
+                    continue;
+                }
+            }
+
+            // Accumulate the quantities and values
+            matchingRow.setQuantity(matchingRow.getQuantity() + batchQty);
+            matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
+            matchingRow.setSaleValue(matchingRow.getSaleValue() + batchQty * batchSaleRate);
+            matchingRow.setCostValue(matchingRow.getCostValue() + batchQty * batchCostRate);
+        }
+    }
+
+    public void processClosingStock() {
+        reportTimerController.trackReportExecution(() -> {
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            stockCostValue = 0.0;
+            stockQty = 0.0;
+            if (reportType.equals("batchWise")) {
+                processClosingStockForBatchReport();
+            } else if (reportType.equals("itemWise")) {
+                processClosingStockForItemReport();
+            } else {
+                JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
+                return;
+            }
+            if (rows != null) {
+                for (PharmacyRow pr : rows) {
+                    stockPurchaseValue += pr.getPurchaseValue() != null ? pr.getPurchaseValue() : 0.0;
+                    stockSaleValue += pr.getSaleValue() != null ? pr.getSaleValue() : 0.0;
+                    stockCostValue += pr.getCostValue() != null ? pr.getCostValue() : 0.0;
+                    stockQty += pr.getQuantity() != null ? pr.getQuantity() : 0.0;
+                }
+            }
+        }, InventoryReports.CLOSING_STOCK_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void exportBatchWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(14);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
+                    "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+                table.addCell(f.getItemBatch() != null && f.getItemBatch().getDateOfExpire() != null ? sdf.format(f.getItemBatch().getDateOfExpire()) : "-");
+                table.addCell(f.getItemBatch() != null ? f.getItemBatch().getBatchNo() : "-");
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostRate() != null ? String.format("%.2f", f.getCostRate()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
+                table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(7);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockCostValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+
+    public void exportItemWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Closing Stock", "Purchase Value", "Cost Value", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(5);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell(String.format("%.2f", getStockCostValue()));
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+
+    private Map<String, Double> cogs = new HashMap<>();
+
+    public void processCostOfGoodSold() {
+        cogs = new LinkedHashMap<>();
+
+        try {
+            if (fromDate == null) {
+                cogs.put("ERROR", -1.0);
+                return;
+            }
+
+            calculateOpeningStock();
+            calculateStockCorrection();
+            calculateGrnCashAndCredit();
+            calculateCogsOtherComponents();
+            calculateClosingStock();
+            calculateVariance();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to process COGS: " + e.getMessage());
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private double executeQueryAndCalculateTotal(StringBuilder query, Map<String, Object> params) {
+        try {
+            return facade.findDoubleByJpql(query.toString(), params, TemporalType.TIMESTAMP);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in executing aggregate query");
+            return -1.0;
+        }
+    }
+
+    private void calculateCogsOtherComponents() {
+        try {
+            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.netValue) FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL "
+                    + "OR sh2.itemBatch.item.departmentType = :depty) ");
+
+            Map<String, Object> commonParams = new HashMap<>();
+            commonParams.put("depty", DepartmentType.Pharmacy);
+            commonParams.put("fd", fromDate);
+            commonParams.put("td", toDate);
+
+            addFilter(baseQuery, commonParams, "sh2.institution", "ins", institution);
+            addFilter(baseQuery, commonParams, "sh2.department.site", "sit", site);
+            addFilter(baseQuery, commonParams, "sh2.department", "dep", department);
+
+            calculateDrugReturnIp(baseQuery, new HashMap<>(commonParams));
+            calculateDrugReturnOp(baseQuery, new HashMap<>(commonParams));
+            calculateStockConsumption(baseQuery, new HashMap<>(commonParams));
+            calculatePurchaseReturn(baseQuery, new HashMap<>(commonParams));
+            calculateTransferIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateTransferReceiveValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditValue(baseQuery, new HashMap<>(commonParams));
+            calculateBhtIssueValue(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCreditCard(baseQuery, new HashMap<>(commonParams));
+            calculateSaleCash(baseQuery, new HashMap<>(commonParams));
+            calculateClosingStockValue();
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in COGS components");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    double totalCalculatedClosingStockValue = 0.0;
+    double totalClosingStockValueByDatabaseQuery = 0.0;
+
+    private void calculateClosingStockValue() {
+        try {
+            totalCalculatedClosingStockValue = this.cogs.values().stream().mapToDouble(Double::doubleValue).sum();
+            cogs.put("Calculated Closing Stock Value", totalCalculatedClosingStockValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating closing stock value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateVariance() {
+        try {
+            double variance = totalCalculatedClosingStockValue - totalClosingStockValueByDatabaseQuery;
+            cogs.put("Variance", variance);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating variance");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCash(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Cash);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCash = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Cash", totalSaleCash);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale cash value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCreditCard(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod = :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", PaymentMethod.Card);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditCard = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Credit Card", totalSaleCreditCard);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit card value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateBhtIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            params.put("Doctype", BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalBhtIssueValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("BHT Issue Value", totalBhtIssueValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating BHT issues");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateSaleCreditValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            List<PaymentMethod> creditTypePaymentMethods = new ArrayList<>();
+            creditTypePaymentMethods.add(PaymentMethod.Credit);
+            creditTypePaymentMethods.add(PaymentMethod.Staff);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic = :Doctype ");
+            jpql.append("AND sh2.pbItem.billItem.bill.paymentMethod in :pm ");
+            params.put("Doctype", BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
+            params.put("pm", creditTypePaymentMethods);
+            jpql.append("ORDER BY sh2.createdAt");
+
+            double totalSaleCreditValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Sale Credit Value", totalSaleCreditValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating sale credit value");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateTransferIssueValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", BillType.PharmacyTransferIssue);
+
+            double totalTransferIssueValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Transfer Issue Value", totalTransferIssueValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating transfer issue");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateTransferReceiveValue(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", BillType.PharmacyTransferReceive);
+
+            double totalTransferReceiveValue = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Transfer Receive Value", totalTransferReceiveValue);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating tranfer receive");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculatePurchaseReturn(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :Doctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("Doctype", billTypeAtomics);
+
+            double totalPurchaseReturn = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Purchase Return", totalPurchaseReturn);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating purchase returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateStockConsumption(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billType = :conDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("conDoctype", BillType.PharmacyIssue);
+
+            double totalConsumption = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Stock Consumption", totalConsumption);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating stock consumption");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateDrugReturnIp(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :ipDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("ipDoctype", billTypeAtomics);
+
+            double totalReturnsIp = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Drug Return IP", totalReturnsIp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating drug return IP");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateDrugReturnOp(StringBuilder baseQuery, Map<String, Object> params) {
+        try {
+            StringBuilder jpql = new StringBuilder(baseQuery);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
+
+            jpql.append("AND sh2.pbItem.billItem.bill.billTypeAtomic in :opDoctype ");
+            jpql.append("ORDER BY sh2.createdAt");
+            params.put("opDoctype", billTypeAtomics);
+
+            double totalReturnsOp = executeQueryAndCalculateTotal(jpql, params);
+            cogs.put("Drug Return Op", totalReturnsOp);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating OP returns");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateGrnCashAndCredit() {
+        try {
+            StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
+                    .append("WHERE b.retired = false ")
+                    .append("AND b.billTypeAtomic = :bType ")
+                    .append("AND b.createdAt BETWEEN :fd AND :td ")
+                    .append("AND b.paymentMethod IN (:cash, :credit) ")
+                    .append("GROUP BY b.paymentMethod");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("bType", BillTypeAtomic.PHARMACY_GRN);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("cash", PaymentMethod.Cash);
+            params.put("credit", PaymentMethod.Credit);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            Map<PaymentMethod, Double> totalsByMethod = results.stream()
+                    .collect(Collectors.toMap(
+                            r -> (PaymentMethod) r[0],
+                            r -> r[1] != null ? ((Number) r[1]).doubleValue() : 0.0
+                    ));
+
+            cogs.put("GRN Cash Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Cash, 0.0));
+            cogs.put("GRN Credit Total", 0.0 - totalsByMethod.getOrDefault(PaymentMethod.Credit, 0.0));
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error calculating GRN totals");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateStockCorrection() {
+        try {
+            List<BillType> billTypes = Arrays.asList(
+                    BillType.PharmacyAdjustmentSaleRate,
+                    BillType.PharmacyAdjustmentPurchaseRate,
+                    BillType.PharmacyAdjustmentWholeSaleRate
+            );
+
+            StringBuilder jpql = new StringBuilder("SELECT SUM(sh2.pbItem.qty * (sh2.pbItem.afterAdjustmentValue - sh2.pbItem.beforeAdjustmentValue)) "
+                    + "FROM StockHistory sh2 "
+                    + "WHERE sh2.retired = false "
+                    + "AND sh2.createdAt BETWEEN :fd AND :td "
+                    + "AND (sh2.itemBatch.item.departmentType IS NULL OR sh2.itemBatch.item.departmentType = :depty) "
+                    + "AND sh2.pbItem.billItem.bill.billType IN :doctype");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("fd", fromDate);
+            params.put("td", toDate);
+            params.put("doctype", billTypes);
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            Double totalCorrection = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Stock Correction", totalCorrection != null ? totalCorrection : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateStockCorrection");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateOpeningStock() {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
+
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
+
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(fromDate));
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
+
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+
+            Double totalOpeningStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Opening Stock Value", totalOpeningStockValue != null ? totalOpeningStockValue : 0.0);
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculateOpeningStock");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    private void calculateClosingStock() {
+        try {
+            StringBuilder jpql = new StringBuilder();
+            Map<String, Object> params = new HashMap<>();
+
+            jpql.append("SELECT SUM(sh.itemStock * sh.itemBatch.retailsaleRate) ")
+                    .append("FROM StockHistory sh ")
+                    .append("WHERE sh.retired = false ")
+                    .append("AND sh.id IN (")
+                    .append("  SELECT MAX(sh2.id) FROM StockHistory sh2 ")
+                    .append("  WHERE sh2.retired = false ")
+                    .append("  AND (sh2.itemBatch.item.departmentType IS NULL ")
+                    .append("       OR sh2.itemBatch.item.departmentType = :depty) ")
+                    .append("  AND sh2.createdAt < :et ");
+
+            params.put("depty", DepartmentType.Pharmacy);
+            params.put("et", CommonFunctions.getStartOfDay(toDate));
+
+            addFilter(jpql, params, "sh2.institution", "ins", institution);
+            addFilter(jpql, params, "sh2.department.site", "sit", site);
+            addFilter(jpql, params, "sh2.department", "dep", department);
+
+            jpql.append("  GROUP BY sh2.itemBatch.item ")
+                    .append(") ");
+
+            addFilter(jpql, params, "sh.institution", "ins", institution);
+            addFilter(jpql, params, "sh.department.site", "sit", site);
+            addFilter(jpql, params, "sh.department", "dep", department);
+
+            Double totalClosingStockValue = facade.findDoubleByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            cogs.put("Closing Stock Value", totalClosingStockValue != null ? totalClosingStockValue : 0.0);
+            totalClosingStockValueByDatabaseQuery = totalClosingStockValue;
+
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error in calculate closing Stock");
+            cogs.put("ERROR", -1.0);
+        }
+    }
+
+    public Map<String, Double> getCogs() {
+        return Collections.unmodifiableMap(cogs);
+    }
+
+    public void setCogs(Map<String, Double> cogs) {
+        this.cogs = new HashMap<>(cogs);
+    }
+
+    @Deprecated
+    public void processClosingStockReport() {
+        stockSaleValue = 0.0;
+        stockQty = 0.0;
+        stockPurchaseValue = 0.0;
+        stockTotal = 0.0;
+
         List<Long> ids;
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
                 + " from StockHistory sh where sh.retired=:ret "
-                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+                + " and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+//                + "and sh.stockQty > 0 "); Eventhough the qty is zero, thay need to be considered
 
         params.put("depty", DepartmentType.Pharmacy);
         params.put("ret", false);
@@ -2064,7 +3168,6 @@ public class PharmacyReportController implements Serializable {
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        // Calculate purchase and sale values
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
         stockTotal = 0.0;
@@ -2074,9 +3177,11 @@ public class PharmacyReportController implements Serializable {
         if (ids == null) {
             return;
         }
+
         if (ids.isEmpty()) {
             return;
         }
+
         for (Long shid : ids) {
             System.out.println("shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
@@ -2089,86 +3194,45 @@ public class PharmacyReportController implements Serializable {
                 stockTotal += stockHx.getStockQty();
                 rows.add(pr);
             }
-
         }
 
-    }
+        if (reportType.equalsIgnoreCase("itemWise")) {
+            stockPurchaseValue = 0.0;
+            stockQty = 0.0;
 
-    public void processClosingStockItemWiseReport() {
-        List<Long> ids;
-        Map<String, Object> params = new HashMap<>();
-        StringBuilder jpql = new StringBuilder("select MAX(sh.id) "
-                + " from StockHistory sh where sh.retired=:ret "
-                + "and (sh.itemBatch.item.departmentType is null or sh.itemBatch.item.departmentType = :depty) ");
+            Map<String, PharmacyRow> map = new HashMap<>();
 
-        params.put("depty", DepartmentType.Pharmacy);
-        params.put("ret", false);
+            for (PharmacyRow row : rows) {
+                if (map.containsKey(row.getStockHistory().getItemBatch().getItem().getName())) {
+                    PharmacyRow pr = map.get(row.getStockHistory().getItemBatch().getItem().getName());
 
-        if (institution != null) {
-            jpql.append("and sh.institution = :ins ");
-            params.put("ins", institution);
-        }
+                    if (row.getStockHistory().getStockQty() == 0.0) {
+                        continue;
+                    }
 
-        if (site != null) {
-            jpql.append("and sh.department.site = :sit ");
-            params.put("sit", site);
-        }
+                    pr.getStockHistory().setStockQty(pr.getStockHistory().getStockQty() + row.getStockHistory().getStockQty());
+                    setStockQty(getStockQty() + row.getStockHistory().getStockQty());
 
-        if (department != null) {
-            jpql.append("and sh.department = :dep ");
-            params.put("dep", department);
-        }
+                    pr.getStockHistory().setStockSaleValue(pr.getStockHistory().getStockSaleValue() + row.getStockHistory().getStockQty()
+                            * row.getStockHistory().getItemBatch().getRetailsaleRate());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
+                } else {
+                    if (row.getStockHistory().getStockQty() == 0.0) {
+                        continue;
+                    }
 
-        if (category != null) {
-            jpql.append("and sh.item.category = :cat ");
-            params.put("cat", category);
-        }
+                    map.put(row.getStockHistory().getItemBatch().getItem().getName(), row);
 
-        System.out.println("amp = " + amp);
-        if (amp != null) {
-            item = amp;
-            System.out.println("item = " + item);
-            jpql.append("and sh.item=:itm ");
-            params.put("itm", item);
-        }
+                    map.get(row.getStockHistory().getItemBatch().getItem().getName()).getStockHistory().setStockSaleValue(
+                            row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getRetailsaleRate());
 
-        jpql.append("and sh.createdAt < :et ");
-        params.put("et", CommonFunctions.getEndOfDay(toDate));
-
-        jpql.append("group by sh.item ");
-        jpql.append("order by sh.item.name");
-
-        System.out.println("jpql.toString() = " + jpql.toString());
-        System.out.println("params = " + params);
-
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-        // Calculate purchase and sale values
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        stockTotal = 0.0;
-
-        rows = new ArrayList<>();
-
-        if (ids == null) {
-            return;
-        }
-        if (ids.isEmpty()) {
-            return;
-        }
-        for (Long shid : ids) {
-            System.out.println("shid = " + shid);
-            PharmacyRow pr = new PharmacyRow();
-            pr.setId(shid);
-            pr.setStockHistory(facade.find(shid));
-            if (pr.getStockHistory() != null) {
-                StockHistory stockHx = pr.getStockHistory();
-                stockPurchaseValue += stockHx.getItemBatch().getPurcahseRate() * stockHx.getStockQty();
-                stockSaleValue += stockHx.getItemBatch().getRetailsaleRate() * stockHx.getStockQty();
-                stockTotal += stockHx.getStockQty();
-                rows.add(pr);
+                    setStockQty(getStockQty() + row.getStockHistory().getStockQty());
+                    setStockPurchaseValue(getStockPurchaseValue() + row.getStockHistory().getStockQty() * row.getStockHistory().getItemBatch().getPurcahseRate());
+                }
             }
 
+            rows.clear();
+            rows.addAll(map.values());
         }
     }
 
@@ -2213,23 +3277,32 @@ public class PharmacyReportController implements Serializable {
         jpql = "select s"
                 + " from Stock s "
                 + " where s.itemBatch.dateOfExpire between :fd and :td ";
+
         if (institution != null) {
             jpql += " and s.department.institution=:ins ";
             m.put("ins", institution);
         }
+
         if (department != null) {
             jpql += " and s.department=:dep ";
             m.put("dep", department);
         }
+
         if (site != null) {
             jpql += " and s.department.site=:sit ";
             m.put("sit", site);
         }
+
         if (amp != null) {
             item = amp;
             System.out.println("item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
+        }
+
+        if (category != null) {
+            jpql += " and s.itemBatch.item.category=:cat ";
+            m.put("cat", category);
         }
 
         jpql += " order by s.id ";
@@ -2289,7 +3362,7 @@ public class PharmacyReportController implements Serializable {
 
             Row headerRow = sheet.createRow(rowIndex++);
 
-            String[] headers = {"Department", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
+            String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
                     "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
                     "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
                     "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
@@ -2309,7 +3382,7 @@ public class PharmacyReportController implements Serializable {
                     for (Stock stock : stockList) {
                         Row row = sheet.createRow(rowIndex++);
 
-                        row.createCell(0).setCellValue(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        row.createCell(0).setCellValue(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle());
                         row.createCell(1).setCellValue(item.getCategory() != null ? item.getCategory().getCode() : "-");
                         row.createCell(2).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
                         row.createCell(3).setCellValue(item.getCode() != null ? item.getCode() : "-");
@@ -2317,21 +3390,21 @@ public class PharmacyReportController implements Serializable {
                         row.createCell(5).setCellValue(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
                         row.createCell(6).setCellValue(item.getCategory() != null ? item.getCategory().getName() : "-");
                         row.createCell(7).setCellValue(stock.getItemBatch().getId());
-                        row.createCell(8).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                        row.createCell(8).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
                                 ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
-                        row.createCell(9).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getDateOfExpire() != null
+                        row.createCell(9).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getDateOfExpire() != null
                                 ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
-                        row.createCell(10).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                        row.createCell(10).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
                                 ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
-                        row.createCell(11).setCellValue(stock.getItemBatch() != null &&
-                                stock.getItemBatch().getDateOfExpire() != null
+                        row.createCell(11).setCellValue(stock.getItemBatch() != null
+                                && stock.getItemBatch().getDateOfExpire() != null
                                 ? calculateDaysRemaining(stock.getItemBatch().getDateOfExpire()) : 0);
                         row.createCell(12).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getPurcahseRate() : 0);
                         row.createCell(13).setCellValue(stock.getItemBatch() != null ? stock.getItemBatch().getRetailsaleRate() : 0);
@@ -2395,7 +3468,7 @@ public class PharmacyReportController implements Serializable {
             float[] columnWidths = {3f, 2f, 3f, 2f, 3f, 2f, 2f, 2f, 3f, 3f, 3f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f, 2f};
             table.setWidths(columnWidths);
 
-            String[] headers = {"Department", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
+            String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
                     "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
                     "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
@@ -2414,7 +3487,7 @@ public class PharmacyReportController implements Serializable {
                     List<Stock> stockList = batchEntry.getValue();
 
                     for (Stock stock : stockList) {
-                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : "-");
+                        table.addCell(stock.getDepartment() != null ? stock.getDepartment().getName() : stock.getStaff().getPerson().getNameWithTitle());
                         table.addCell(item.getCategory() != null ? item.getCategory().getCode() : "-");
                         table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
                         table.addCell(item.getCode() != null ? item.getCode() : "-");
@@ -2422,15 +3495,15 @@ public class PharmacyReportController implements Serializable {
                         table.addCell(item.getMeasurementUnit() != null ? item.getMeasurementUnit().getName() : "-");
                         table.addCell(item.getCategory() != null ? item.getCategory().getName() : "-");
                         table.addCell(stock.getItemBatch() != null ? String.valueOf(stock.getItemBatch().getId()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt() != null
                                 ? sdf.format(stock.getItemBatch().getLastPurchaseBillItem().getBill().getCreatedAt()) : "-");
                         table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
                                 ? sdf.format(stock.getItemBatch().getDateOfExpire()) : "-");
-                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill() != null &&
-                                stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
+                        table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getLastPurchaseBillItem() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill() != null
+                                && stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution() != null
                                 ? stock.getItemBatch().getLastPurchaseBillItem().getBill().getFromInstitution().getName() : "-");
                         table.addCell(stock.getItemBatch() != null && stock.getItemBatch().getDateOfExpire() != null
                                 ? String.valueOf(calculateDaysRemaining(stock.getItemBatch().getDateOfExpire())) : "0");
@@ -2446,16 +3519,24 @@ public class PharmacyReportController implements Serializable {
                         table.addCell("-");
                         table.addCell("-");
                     }
-                    for (int i = 0; i < 16; i++) table.addCell(" ");
+                    for (int i = 0; i < 16; i++) {
+                        table.addCell(" ");
+                    }
                     table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
                     table.addCell(String.valueOf(calculateBatchWiseQtyOfExpiredItems(item, batchNumber)));
-                    for (int i = 0; i < 2; i++) table.addCell(" ");
+                    for (int i = 0; i < 2; i++) {
+                        table.addCell(" ");
+                    }
                 }
-                for (int i = 0; i < 18; i++) table.addCell(" ");
+                for (int i = 0; i < 18; i++) {
+                    table.addCell(" ");
+                }
                 table.addCell(String.valueOf(calculateItemWiseTotalOfExpiredItems(item)));
                 table.addCell(String.valueOf(calculateItemWiseQtyOfExpiredItems(item)));
             }
-            for (int i = 0; i < 16; i++) table.addCell(" ");
+            for (int i = 0; i < 16; i++) {
+                table.addCell(" ");
+            }
             table.addCell(String.format("%.2f", stockPurchaseValue));
             table.addCell(String.format("%.2f", quantity));
             table.addCell(String.format("%.2f", stockPurchaseValue));
@@ -2824,7 +3905,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processLabTestWiseCountReport() {
-        String jpql = "select new com.divudi.data.TestWiseCountReport("
+        String jpql = "select new com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
                 + "count(bi.item.name), "
                 + "sum(bi.hospitalFee), "
@@ -3351,6 +4432,14 @@ public class PharmacyReportController implements Serializable {
         this.stockPurchaseValue = stockPurchaseValue;
     }
 
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
+    }
+
     public StockFacade getStockFacade() {
         return stockFacade;
     }
@@ -3405,6 +4494,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setDateRange(String dateRange) {
         this.dateRange = dateRange;
+    }
+
+    public Double getStockQty() {
+        return stockQty;
+    }
+
+    public void setStockQty(Double stockQty) {
+        this.stockQty = stockQty;
     }
 
     public BillType[] getBillTypes() {
@@ -3512,5 +4609,37 @@ public class PharmacyReportController implements Serializable {
 
     public void setQuantity(Double quantity) {
         this.quantity = quantity;
+    }
+
+    public Institution getFromSite() {
+        return fromSite;
+    }
+
+    public void setFromSite(Institution fromSite) {
+        this.fromSite = fromSite;
+    }
+
+    public Institution getToSite() {
+        return toSite;
+    }
+
+    public void setToSite(Institution toSite) {
+        this.toSite = toSite;
+    }
+
+    public boolean isShowData() {
+        return showData;
+    }
+
+    public void setShowData(boolean showData) {
+        this.showData = showData;
+    }
+
+    public boolean isConsignmentItem() {
+        return consignmentItem;
+    }
+
+    public void setConsignmentItem(boolean consignmentItem) {
+        this.consignmentItem = consignmentItem;
     }
 }

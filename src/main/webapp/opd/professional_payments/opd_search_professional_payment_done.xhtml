@@ -41,8 +41,8 @@
                                     <p:dataExporter type="xlsx" target="tblBills" fileName="opd_search_professional_payment_done"  />
                                 </p:commandButton>
                                 <p:defaultCommand target="btnSearch" />
-                                
-                                
+
+
 
                                 <h:outputLabel value="OPD Bill No"/>
                                 <p:inputText autocomplete="off"  value="#{searchController.searchKeyword.billNo}" class="w-100 my-1"/>
@@ -86,34 +86,34 @@
                                              rowsPerPageTemplate="5,10,25,50"
                                              rowIndexVar="i" >
 
-                                    <p:column headerText="OPD Bill No" filterBy="#{bi.paidForBillFee.bill.deptId}" filterMatchMode="contains">
+                                    <p:column headerText="OPD Bill No" width="6em" filterBy="#{bi.paidForBillFee.bill.deptId}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.deptId}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Billed At"  >
+                                    <p:column headerText="Billed At" width="5em" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                     </p:column> 
-                                    <p:column headerText="Credit Company" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" filterMatchMode="contains" >
+                                    <p:column headerText="Credit Company" width="5em" filterBy="#{bi.paidForBillFee.bill.creditCompany.name}" filterMatchMode="contains" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.creditCompany.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Client"  filterBy="#{bi.paidForBillFee.bill.patient.person.name}" filterMatchMode="contains">
+                                    <p:column headerText="Client" width="4em" filterBy="#{bi.paidForBillFee.bill.patient.person.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.patient.person.name}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Bill No" filterBy="#{bi.bill.deptId}" filterMatchMode="contains">
+                                    <p:column headerText="Payment Bill No" width="6em" filterBy="#{bi.bill.deptId}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.bill.deptId}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Payment Method" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
+                                    <p:column headerText="Payment Method" width="5em" rendered="#{searchController.searchKeyword.paymentMethod ne null}" >
                                         <h:outputLabel value="#{bi.paidForBillFee.bill.paymentMethod}" ></h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Specility"  filterBy="#{bi.paidForBillFee.staff.speciality.name}" filterMatchMode="contains">
+                                    <p:column headerText="Specility" width="5em"  filterBy="#{bi.paidForBillFee.staff.speciality.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.staff.speciality.name}" ></h:outputLabel>
                                     </p:column>    
-                                    <p:column headerText="Doctor"  filterBy="#{bi.paidForBillFee.staff.person.nameWithTitle}" filterMatchMode="contains">
+                                    <p:column headerText="Doctor" width="7em"  filterBy="#{bi.paidForBillFee.staff.person.nameWithTitle}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bi.paidForBillFee.staff.person.nameWithTitle}" ></h:outputLabel>
 
                                     </p:column>                         
-                                    <p:column headerText="Paid At"  >
+                                    <p:column headerText="Paid At" width="4em" >
                                         <h:outputLabel value="#{bi.bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
@@ -132,7 +132,7 @@
                                         </h:panelGroup>
                                     </p:column>  
 
-                                    <p:column headerText="Paid By" >
+                                    <p:column headerText="Paid By" width="4em" >
 
                                         <h:outputLabel value="#{bi.bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
@@ -149,18 +149,18 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>    
-                                    <p:column headerText="Service Name"  >
+                                    <p:column headerText="Service Name" width="5em" >
                                         <h:outputLabel value="#{bi.paidForBillFee.billItem.item.name}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Charges" styleClass="averageNumericColumn" >
+                                    <p:column headerText="Charges" width="5em" styleClass="averageNumericColumn" >
                                         <h:outputLabel value="#{bi.paidForBillFee.feeValue}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
 
                                     </p:column>
-                                    <p:column headerText="Action">
+                                    <p:column headerText="Action" width="5em">
                                         <p:commandButton 
                                             class="ui-button-primary" 
                                             icon="fas fa-eye" 

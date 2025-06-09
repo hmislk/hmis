@@ -5,25 +5,25 @@
 package com.divudi.bean.hr;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Department;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.StaffDesignation;
-import com.divudi.entity.hr.StaffEmployeeStatus;
-import com.divudi.entity.hr.StaffGrade;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.entity.hr.StaffStaffCategory;
-import com.divudi.entity.hr.StaffWorkingDepartment;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.StaffDesignationFacade;
-import com.divudi.facade.StaffEmployeeStatusFacade;
-import com.divudi.facade.StaffEmploymentFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffGradeFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.facade.StaffStaffCategoryFacade;
-import com.divudi.facade.StaffWorkingDepartmentFacade;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.StaffDesignation;
+import com.divudi.core.entity.hr.StaffEmployeeStatus;
+import com.divudi.core.entity.hr.StaffGrade;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.entity.hr.StaffStaffCategory;
+import com.divudi.core.entity.hr.StaffWorkingDepartment;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.StaffDesignationFacade;
+import com.divudi.core.facade.StaffEmployeeStatusFacade;
+import com.divudi.core.facade.StaffEmploymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffGradeFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.facade.StaffStaffCategoryFacade;
+import com.divudi.core.facade.StaffWorkingDepartmentFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -83,7 +83,7 @@ public class StaffChangeController implements Serializable {
             getStaff().setBasic(tmp.getStaffPaySheetComponentValue());
         }
     }
-    
+
     public void update() {
         if (getFromDate() == null) {
             JsfUtil.addErrorMessage("Select Active Date");

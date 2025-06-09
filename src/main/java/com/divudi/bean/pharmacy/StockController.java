@@ -8,20 +8,25 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.store.StoreBean;
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.StockFacade;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.StockLight;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.StockService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -39,6 +44,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -52,10 +58,14 @@ public class StockController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private StockFacade ejbFacade;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    StockService stockService;
     List<Stock> selectedItems;
     private Stock current;
     private List<Stock> items = null;
@@ -99,10 +109,7 @@ public class StockController implements Serializable {
     }
 
     public void listStocksOfSelectedItem(Item item) {
-        selectedItemStocks = null;
-        if (selectedItemStocks == null) {
-            selectedItemStocks = new ArrayList<>();
-        }
+        selectedItemStocks = new ArrayList<>();
         selectedItem = item;
         if (item == null) {
             return;
@@ -163,6 +170,16 @@ public class StockController implements Serializable {
         return d;
     }
 
+// ChatGPT contributed - 2025-05
+    public void addItemNamesToAllStocks() {
+        try {
+            stockService.addItemNamesToAllStocks();
+            JsfUtil.addSuccessMessage("Batch update has started in the background. You can continue using the system.");
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Failed to start the batch update: " + e.getMessage());
+        }
+    }
+
     public List<Stock> completeAvailableStocks(String qry) {
         Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
         List<Stock> initialStocks = completeAvailableStocksStartsWith(qry);
@@ -188,8 +205,10 @@ public class StockController implements Serializable {
             stockSet.addAll(initialStocks);
         }
 
+        Integer minItemsForContainsSearch = configOptionApplicationController.getIntegerValueByKey("Minimum number of items before switching from 'starts with' to 'contains' search", 3);
+
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
+        if (stockSet.size() <= minItemsForContainsSearch) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
                 stockSet.addAll(additionalStocks);
@@ -202,23 +221,29 @@ public class StockController implements Serializable {
     }
 
     public void addItemStockToStocks(Set<Stock> inputStocks) {
-        if (inputStocks == null) {
+        if (inputStocks == null || inputStocks.isEmpty()) {
             return;
         }
         if (inputStocks.size() > 20) {
             return;
         }
-        // Map to store the total stock quantity for each item
+
         Map<Item, Double> itemStockTotals = new HashMap<>();
 
         // First pass: calculate the total stock quantity for each item
         for (Stock s : inputStocks) {
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                continue;
+            }
             Item item = s.getItemBatch().getItem();
             itemStockTotals.put(item, itemStockTotals.getOrDefault(item, 0.0) + s.getStock());
         }
 
         // Second pass: set the total stock quantity for each stock
         for (Stock s : inputStocks) {
+            if (s == null || s.getItemBatch() == null || s.getItemBatch().getItem() == null) {
+                continue;
+            }
             Item item = s.getItemBatch().getItem();
             s.setTransItemStockQty(itemStockTotals.get(item));
         }
@@ -349,7 +374,7 @@ public class StockController implements Serializable {
     }
 
     public double findStock(Institution institution, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -371,8 +396,37 @@ public class StockController implements Serializable {
         return 0.0;
     }
 
+    public double findStock(Institution institution, Institution site, Department department, Item item) {
+        if (item instanceof Amp) {
+            return findStock(institution, site, department, (Amp) item);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findStock(Institution institution, Institution site, Department department, Amp amp) {
+        String jpql = "select sum(i.stock) from Stock i where i.retired=false and i.itemBatch.item=:amp";
+        Map<String, Object> m = new HashMap<>();
+        m.put("amp", amp);
+        if (department != null) {
+            jpql += " and i.department=:dep";
+            m.put("dep", department);
+        } else if (institution != null && site != null) {
+            jpql += " and i.department.site=:site and i.department.institution=:ins";
+            m.put("site", site);
+            m.put("ins", institution);
+        } else if (institution != null) {
+            jpql += " and i.department.institution=:ins";
+            m.put("ins", institution);
+        } else if (site != null) {
+            jpql += " and i.department.site=:site";
+            m.put("site", site);
+        }
+        return billItemFacade.findDoubleByJpql(jpql, m);
+    }
+
     public double findStock(Department department, List<Amp> amps) {
-        Double stock = null;
+        Double stock;
         String jpql;
         Map m = new HashMap();
 
@@ -420,7 +474,7 @@ public class StockController implements Serializable {
         if (amps.isEmpty()) {
             return 0.0;
         }
-        Double stock = null;
+        double stock;
         String jpql;
         Map m = new HashMap();
         Amp tamp = amps.get(0);
@@ -730,6 +784,55 @@ public class StockController implements Serializable {
 
     public void setSelectedItemExpiaringStocks(List<Stock> selectedItemExpiaringStocks) {
         this.selectedItemExpiaringStocks = selectedItemExpiaringStocks;
+    }
+
+    public StockLight findStockLightById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+
+        String jpql = "SELECT NEW com.divudi.core.data.StockLight("
+                + "s.id, "
+                + "s.itemName, "
+                + "s.code, "
+                + "s.barcode, "
+                + "s.dateOfExpire, "
+                + "s.retailsaleRate"
+                + "s.stock, "
+                + ") FROM Stock s WHERE s.id = :id";
+
+        List<StockLight> result = (List<StockLight>) getFacade().findLightsByJpql(jpql, params, TemporalType.DATE, 1);
+        return result.isEmpty() ? null : result.get(0);
+    }
+
+    @FacesConverter("stockLightConverter")
+    public static class StockLightConverter implements Converter {
+
+        @Override
+        public Object getAsObject(FacesContext context, UIComponent component, String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
+            }
+            try {
+                Long id = Long.valueOf(value);
+                StockController controller = (StockController) context.getApplication().getELResolver()
+                        .getValue(context.getELContext(), null, "stockController");
+                StockLight sl = controller.findStockLightById(id);
+                return sl;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+
+        @Override
+        public String getAsString(FacesContext context, UIComponent component, Object value) {
+            if (value instanceof StockLight) {
+                return ((StockLight) value).getId().toString();
+            }
+            return null;
+        }
     }
 
     /**

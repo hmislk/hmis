@@ -31,6 +31,13 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
+                                value="Back to Reports"
+                                immediate="true"
+                                action="/channel/channel_reports?faces-redirect=true"
+                                icon="fa-solid fa-arrow-left" />
+                            <p:commandButton 
+                                ajax="false" 
+                                class="mx-1 ui-button-secondary"
                                 value="Back to Bookings"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateBackToBookingsFromBillSession()}"
@@ -38,7 +45,7 @@
                             <p:commandButton 
                                 ajax="false" 
                                 class="mx-1 ui-button-secondary"
-                                value="Back"
+                                value="Back to Session"
                                 immediate="true"
                                 action="#{bookingControllerViewScope.navigateToManageSessionInstance(bookingControllerViewScope.selectedSessionInstance)}"
                                 icon="fa-solid fa-arrow-left" />
@@ -98,6 +105,9 @@
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom2',true)}">
                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
+                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom3',true)}">
+                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                    </h:panelGroup>
                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFivePrintedPaper',true)}">
                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                     </h:panelGroup>
@@ -106,7 +116,6 @@
                             </h:panelGroup>
                         </div>
                     </div>
-
 
                 </h:panelGroup>
 
@@ -165,6 +174,9 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Settling Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
@@ -237,6 +249,9 @@
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                                                     </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
+                                                    </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Duplicate Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.bill}" duplicate="true" />
                                                     </h:panelGroup>
@@ -258,7 +273,7 @@
                                 <div class="row">
                                     <f:facet name="header">
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <h:outputLabel value="Reprint(Original)" />
+                                            <h:outputLabel value="Reprint Original" />
                                             <div>
                                                 <p:outputLabel value="Paper Type" class="m-1"></p:outputLabel>
                                                 <p:selectOneMenu
@@ -298,7 +313,6 @@
                                         <div class="d-flex justify-content-center">
                                             <h:panelGroup id="groupChannelBillReprintAsOriginal">
                                                 <ui:repeat value="#{sessionController.departmentPreference.channellingBillCopiesList}" var="copy">
-
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is PosPaper',true)}">
                                                         <ez:bmsChannelBill  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
@@ -307,6 +321,9 @@
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                     </h:panelGroup>
                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
@@ -337,7 +354,29 @@
                                                         <h:outputText styleClass="fas fa-user" />
                                                         <h:outputLabel class="mx-4" value="Patient Details" />
                                                     </f:facet>
-                                                    <ezcommon:patient patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
+                                                    <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill ne null ? (bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking ne null ? true : false) : false }">
+
+                                                        <i class="fa fa-user fa-fw mx-3" style="color: #007bff;" title="Name" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.title}. #{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.patientName}" />
+                                                        <br></br>
+
+                                                        <i class="fa fa-user fa-fw mx-3" style="color: #007bff;" title="Foreigner" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.foreignStatus eq true ? 'Foreign Patient' : 'Local Patient'}" />
+                                                        <br></br>
+
+                                                        <i class="fa fa-phone fa-fw mx-3" style="color: #007bff;" title="Phone" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.phoneNo}" />
+                                                        <br></br>
+
+                                                        <i class="fa fa-id-card fa-fw mx-3" style="color: #007bff;" title="NIC" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.nic}" />
+                                                        <br></br>
+
+                                                        <i class="fa fa-flag fa-fw mx-3" style="color: #007bff;" title="Ref No" />
+                                                        <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking.referenceNo}" />
+
+                                                    </h:panelGroup>
+                                                    <ezcommon:patient rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}" patient="#{bookingControllerViewScope.selectedBillSession.bill.patient}" ></ezcommon:patient>
                                                 </p:panel>
                                             </div>
                                             <div class="col">
@@ -363,18 +402,13 @@
                                                     <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.discount}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
-                                                    <h:outputLabel value="Total" ></h:outputLabel>
+                                                    <h:outputLabel value="Net Total" ></h:outputLabel>
                                                     <h:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.netTotal}" >
                                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                     </h:outputLabel>
                                                 </p:panelGrid>
                                             </div>
                                         </div>
-
-
-
-
-
 
                                     </div>
                                     <div class="col-6">
@@ -423,10 +457,6 @@
                                             </h:outputText>
                                         </p:panel>
 
-
-
-
-
                                         <p:panel 
                                             class="m-1"
                                             rendered="#{
@@ -435,7 +465,7 @@
                                                 and bookingControllerViewScope.selectedBillSession.bill.paidAmount eq 0}"
                                             >
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Settle Payment" class="mx-4"></h:outputText>
                                                 <p:commandButton
                                                     value="Settle"
@@ -470,7 +500,6 @@
                                                             listener="#{bookingControllerViewScope.listnerForPaymentMethodChangeOnCreditSettle()}"/>
                                                 </p:selectOneMenu>
 
-
                                                 <p:outputLabel value="Discount Scheme"/>
                                                 <p:selectOneMenu 
                                                     class="w-100" 
@@ -491,15 +520,29 @@
                                                 </p:selectOneMenu>
 
                                                 <p:outputLabel value="Citizenship" ></p:outputLabel>
-                                                <p:selectBooleanButton offLabel="Local" onLabel="Foreigner"
-                                                                       class="w-75" 
-                                                                       id="f" 
-                                                                       value="#{bookingControllerViewScope.foriegn}">
-                                                    <f:ajax event="change" execute="@this" render="totalsPanel panelBookingDetails"/>
-                                                </p:selectBooleanButton>
+                                                <p:panel>
+                                                    <h:panelGroup id="gpLocalForeign"  class="col-md-6" rendered="#{!configOptionApplicationController.getBooleanValueByKey('Save the Patient with Patient Status')}">
+                                                        <p:commandButton
+                                                            value="Mark Foreigner"
+                                                            class="mx-2 my-2"
+                                                            action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
+                                                            rendered="#{!bookingControllerViewScope.foriegn}"
+                                                            process="@this"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            >
+                                                        </p:commandButton>
+                                                        <p:commandButton
+                                                            value="Mark Local"
+                                                            class="mx-2"
+                                                            action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
+                                                            rendered="#{bookingControllerViewScope.foriegn}"
+                                                            process="@this"
+                                                            update="gpLocalForeign totalsPanel panelBookingDetails paymentDetails tblBillFeesForAddingNewItem tblBillItemsForAddingNewItem"
+                                                            >
+                                                        </p:commandButton>
 
-
-
+                                                    </h:panelGroup>
+                                                </p:panel>
 
                                             </h:panelGrid>
                                             <h:panelGroup id="paymentDetails"  >
@@ -516,7 +559,6 @@
                                                     <h:panelGroup id="balance" class="w-100 my-2" style="font-weight: bolder" >
                                                         <p:outputLabel value="#{-bookingControllerViewScope.cashBalance}"/>
                                                     </h:panelGroup>
-
 
                                                 </h:panelGrid>
                                                 <h:panelGroup
@@ -680,7 +722,7 @@
                                                     layout="block"
                                                     id="multiplePaymentMethods"  rendered="#{bookingControllerViewScope.settlePaymentMethod eq 'MultiplePaymentMethods'}"
                                                     >
-                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" class="w-100"/>
+                                                    <pa:multiple_payment_methods controller="#{bookingControllerViewScope}" paymentMethods="#{enumController.paymentMethodsForChanneling}" class="w-100"/>
 
                                                 </h:panelGroup>
                                                 <!-- Agent Payment Method -->
@@ -757,7 +799,6 @@
                                                 <!--<p:ajax event="change" process="lstItems" update="lblSessionTotal :#{p:resolveFirstComponentWithId('gpFeeTotal',view).clientId}" listener="#{bookingControllerViewScope.fillFees}" ></p:ajax>-->
                                             </p:selectOneMenu>
 
-
                                             <p:commandButton 
                                                 id="btnAddItem"
                                                 process="lstItems btnAddItem"
@@ -768,7 +809,6 @@
                                                 update="lstItems tblBillItemsForAddingNewItem tblBillFeesForAddingNewItem totalsPanel :#{p:resolveFirstComponentWithId('balance',view).clientId} "
                                                 ></p:commandButton>
 
-
                                             <p:dataTable id="tblBillItemsForAddingNewItem" 
                                                          value="#{bookingControllerViewScope.selectedBillSession.bill.billItems}" 
                                                          var="bi" >
@@ -776,7 +816,7 @@
                                                     <h:outputText value="#{bi.item.name}" ></h:outputText>
                                                 </p:column>
                                                 <p:column >
-                                                    <h:outputText value="#{bi.netValue}" ></h:outputText>
+                                                    <h:outputText value="#{bookingControllerViewScope.foriegn ? bi.item.totalForForeigner : bi.netValue}" />
                                                 </p:column>
                                                 <p:column >
                                                     <p:commandButton 
@@ -790,7 +830,6 @@
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
-
 
                                             <p:dataTable 
                                                 id="tblBillFeesForAddingNewItem" 
@@ -811,8 +850,8 @@
                                                     </h:outputText>
                                                 </p:column>
                                                 <p:column headerText="Value">
-                                                    <p:inputText id="txtFee" value="#{bf.feeValue}" onfocus="this.select()">
-                                                        <f:convertNumber pattern="#,##0.00"></f:convertNumber>
+                                                    <p:inputText id="txtFee" value="#{bookingControllerViewScope.foriegn ? bf.fee.ffee : bf.fee.fee}" onfocus="this.select()">
+                                                        <f:convertNumber pattern="#,##0.00" />
                                                         <p:ajax event="keyup" 
                                                                 process="txtFee paymentDetails" 
                                                                 update=":#{p:resolveFirstComponentWithId('lstItems',view).clientId} 
@@ -826,8 +865,6 @@
 
                                             </p:dataTable>
                                         </p:panel>
-
-
 
                                         <p:dataTable 
                                             class="m-1"
@@ -859,13 +896,10 @@
                                             </p:column>
                                         </p:dataTable>
 
-
-
                                     </div>
 
                                 </div>
                             </h:panelGroup>
-
                         </p:tab>
                         <p:tab title="Booking" id="booking" class="w-100">
                             <div class="row" >
@@ -890,8 +924,6 @@
                                                     <h:outputText value="NOT PAID YET" ></h:outputText>
                                                 </span>
                                             </div>
-
-
 
                                             <h:panelGrid columns="2">
                                                 <p:outputLabel value="Name"/>
@@ -929,8 +961,6 @@
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.toStaff.person.nameWithTitle} - (#{bookingControllerViewScope.selectedBillSession.bill.toStaff.code}) " rendered="#{bookingControllerViewScope.selectedBillSession.bill.paymentMethod eq 'Staff'}"/>
                                                 <p:outputLabel value="User"/>
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
                                                 <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"/>
                                                 <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.bill.paidBill ne null}"> 
                                                     <f:convertDateTime pattern="dd MMM yyyy - hh:mm a" ></f:convertDateTime>
@@ -1055,8 +1085,6 @@
                                                             <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                                         </h:outputText>
 
-
-
                                                         <p:outputLabel value="Payment Method" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paymentMethod}"/>
 
@@ -1071,8 +1099,6 @@
 
                                                         <p:outputLabel value="User" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
 
                                                         <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledFromBillSession.bill.paidBill ne null}">
@@ -1121,8 +1147,6 @@
                                                             <f:convertDateTime pattern="MM/dd/yyyy HH:mm a"/>
                                                         </h:outputText>
 
-
-
                                                         <p:outputLabel value="Payment Method" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paymentMethod}"/>
 
@@ -1137,8 +1161,6 @@
 
                                                         <p:outputLabel value="User" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.creater.webUserPerson.nameWithTitle}"/>
-
-
 
                                                         <p:outputLabel value="Settled At" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}" style="font-weight: bold"/>
                                                         <p:outputLabel value="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill.createdAt}" rendered="#{bookingControllerViewScope.selectedBillSession.rescheduledToBillSession.bill.paidBill ne null}">
@@ -1202,7 +1224,6 @@
                                 </div>
                             </div>
 
-
                         </p:tab>
 
                         <p:tab title="Reprint" id="rePrint" >
@@ -1221,7 +1242,7 @@
                                                 <div class="row">
                                                     <f:facet name="header">
                                                         <div class="d-flex justify-content-between align-items-center">
-                                                            <h:outputLabel value="Reprint(Original)" />
+                                                            <h:outputLabel value="Reprint Original" />
 
                                                             <div>
                                                                 <p:outputLabel value="Paper Type" class="m-1"></p:outputLabel>
@@ -1274,6 +1295,9 @@
                                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom2',true)}">
                                                                         <ez:fivefivePapaerCustom2 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                                     </h:panelGroup>
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFIvePaperCustom3',true)}">
+                                                                        <ez:fivefivePapaerCustom3 bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
+                                                                    </h:panelGroup>
                                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Reprint Original Bill is FiveFivePrintedPaper',true)}">
                                                                         <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                                                     </h:panelGroup>
@@ -1294,7 +1318,11 @@
 
                             <h:panelGroup rendered="#{!bookingControllerViewScope.printPreviewC}" >
                                 #{bookingControllerViewScope.selectedBillSession.bill.paymentMethod}
-                                <h:panelGroup>
+                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill ne null ? (bookingControllerViewScope.selectedBillSession.bill.referenceBill.onlineBooking ne null ? true : false):false}">
+                                    <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill.referenceBill}" />
+                                </h:panelGroup>
+
+                                <h:panelGroup rendered="#{bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
                                     <ch:bill_fees bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}" />
                                 </h:panelGroup>
 
@@ -1303,6 +1331,7 @@
                                         <p:outputLabel value="Re-payment Method" class="mt-2"/>
                                         <p:selectOneMenu  id="cmbCancellPs" value="#{bookingControllerViewScope.cancelPaymentMethod}">
                                             <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
+                                            <f:selectItem itemLabel="Same As Billed Bill" itemValue="#{bookingControllerViewScope.billSession ne null ? (bookingControllerViewScope.billSession.bill.paidBill ne null ?  bookingControllerViewScope.billSession.bill.paidBill.paymentMethod : bookingControllerViewScope.billSession.bill.paymentMethod) : null}" ></f:selectItem>
                                             <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                         </p:selectOneMenu>
                                     </div>
@@ -1315,7 +1344,6 @@
                                         onclick="PF('confirmationDialog').show();">
                                     </p:commandButton>
                                 </div>
-
 
                             </h:panelGroup>
                             <h:panelGroup rendered="#{bookingControllerViewScope.printPreviewC}" >
@@ -1364,6 +1392,9 @@
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFIvePaperCustom2',true)}">
                                                 <ez:fivefivePapaerCustom2  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFIvePaperCustom3',true)}">
+                                                <ez:fivefivePapaerCustom3  bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Channel Booking By Dates Cancel Bill is FiveFivePrintedPaper',true)}">
                                                 <ez:bms5x5WIthoutHeaderChannelBill bill="#{bookingControllerViewScope.selectedBillSession.billItem.bill}"/>
@@ -1422,11 +1453,16 @@
                                     </p:selectOneMenu>
 
                                 </h:panelGrid>
-                                <h:panelGrid columns="2">
-                                    <h:outputLabel value="Refundable Total : "/>
-                                    <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
-                                </h:panelGrid>
-                                <p:dataTable value="#{bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" var="bi">
+                                <!--                                <h:panelGrid columns="2">
+                                                                    <h:outputLabel value="Refundable Total : "/>
+                                                                    <h:outputLabel id="tot" value="#{bookingControllerViewScope.refundableTotal}"/>
+                                                                </h:panelGrid>-->
+                                <p:dataTable value="#{bookingControllerViewScope.billSession.bill.referenceBill ne null ? 
+                                                      (bookingControllerViewScope.billSession.bill.referenceBill.onlineBooking ne null ? 
+                                                      bookingControllerViewScope.billSession.bill.referenceBill.billFeesWIthoutZeroValue : 
+                                                      bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue):
+                                                      bookingControllerViewScope.billSession.bill.billFeesWIthoutZeroValue}" 
+                                             var="bi">
                                     <p:column headerText="Fee Name">
                                         <p:outputLabel value="#{bi.fee.name}"/>
                                     </p:column>
@@ -1437,7 +1473,7 @@
                                         <p:outputLabel value="#{bi.feeValue}"/> 
                                     </p:column>
                                     <p:column headerText="Return Value">
-                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts')}"  >
+                                        <p:inputText value="#{bi.tmpChangedValue}" disabled="#{configOptionApplicationController.getBooleanValueByKey('Disallow Modifications to Refund Amounts') or (configOptionApplicationController.getBooleanValueByKey('Channel Booking by date appoinment allow rufund doctor fee only') ? (bi.fee.feeType ne 'Staff' ? true :false) : false)}"  >
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId}" event="blur" listener="#{bookingControllerViewScope.calRefundTotal()}"/>
                                             <f:ajax execute="@this" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} @this" event="blur" listener="#{bookingControllerViewScope.checkRefundTotal()}"/>
                                         </p:inputText>
@@ -1462,7 +1498,7 @@
                                         filter="true" 
                                         placeholder="Select or enter a comment"
                                         filterMatchMode="contains"  
-                                        style="float: right; width: 100%" 
+                                        style="float: right; width: 75%" 
                                         class="p-2">
                                         <f:selectItem itemLabel="Select or enter a comment" itemValue="" noSelectionOption="true"/>
                                         <f:selectItems 
@@ -1471,12 +1507,12 @@
                                             itemLabel="#{option}" 
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>                                    
-                                    <p:selectOneMenu class="py-2 mx-2 w-50" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
+                                    <p:selectOneMenu class="py-2 mx-2 w-10" id="RefundPs" value="#{bookingControllerViewScope.refundPaymentMethod}">
                                         <f:selectItem itemLabel="Select Cancel Payment Method" ></f:selectItem>
                                         <f:selectItems value="#{enumController.paymentMethodsForChannel}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning" icon="fas fa-reply" ajax="false"
+                                    <p:commandButton id="btnIdRefund" value="Refund Booking" class="ui-button-warning py-2" icon="fas fa-reply" ajax="false"
                                                      disabled="#{bookingControllerViewScope.billSession.bill.refunded==true
                                                                  or bookingControllerViewScope.billSession.bill.cancelled==true or bookingControllerViewScope.disableRefund==true}"
                                                      action="#{bookingControllerViewScope.channelBookingRefund()}">
@@ -1507,10 +1543,10 @@
                         <p:tab 
                             title="Change Patient"
                             id="change" 
-                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
                             <p:panelGrid columns="2" class="w-100">
                                 <f:facet name="header" >
-                                    <p:outputLabel value="Change Current Patient with a new Patient" ></p:outputLabel>
+                                    <p:outputLabel class="mx-2" value="Change Current Patient with a new Patient" ></p:outputLabel>
                                     <p:commandButton ajax="false" value="Change Patient" disabled ="#{bookingControllerViewScope.selectedBillSession.bill.creditCompany.institutionCode.equalsIgnoreCase('WEB_DOC990') and (bookingControllerViewScope.selectedBillSession.absent == true or bookingControllerViewScope.selectedBillSession.bill.cancelled == true)}" action="#{bookingControllerViewScope.changePatient()}" ></p:commandButton>
                                 </f:facet>
                                 <p:panel header="Current Patient for Booking" >
@@ -1523,7 +1559,7 @@
                         <p:tab 
                             title="Change Appointment Details"
                             id="changeNumber" 
-                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange')}">
+                            rendered="#{webUserController.hasPrivilege('ChannelBookingChange') and bookingControllerViewScope.selectedBillSession.bill.referenceBill eq null}">
 
                             <h:panelGrid columns="2" class="my-2">
                                 <p:outputLabel value="Patient Name"/>
@@ -1549,17 +1585,17 @@
                                                  disabled="#{bookingControllerViewScope.selectedBillSession.bill.cancelled==true
                                                              or bookingControllerViewScope.selectedBillSession.bill.refunded==true}" />
                             </h:panelGrid>
-
-
-
                         </p:tab>
 
-                        <p:tab title="Status" >
+                        <p:tab title="Status" id="statusTab">
                             <p:outputLabel value="Mark As Present / Absent"/>
+                            
                             <p:selectBooleanButton onLabel="Absent" offLabel="Absent" disabled="#{bookingControllerViewScope.selectedBillSession.bill.refunded==true
-                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true}"  value="#{bookingControllerViewScope.selectedBillSession.absent}" >
-                                <p:ajax process="@this" listener="#{bookingControllerViewScope.updateSelectedBillSessionPatient()}" ></p:ajax>
+                                                                                                  or bookingControllerViewScope.selectedBillSession.bill.cancelled==true or bookingControllerViewScope.checkPaid()}"  value="#{bookingControllerViewScope.absent}" >
+                                <p:ajax process="@this" update="statusTab" listener="#{bookingControllerViewScope.updatePresentStatusOfPatient(bookingControllerViewScope.absent)}" ></p:ajax>
                             </p:selectBooleanButton>
+                            
+                            <p:outputLabel class="mx-3" value="Can't change the status. Staff pay already done for this appoinment." rendered="#{bookingControllerViewScope.checkPaid()}" style="color: red; font-weight: bold"/>
 
                         </p:tab>
 
@@ -1743,7 +1779,7 @@
                                 </h:panelGrid>
                             </p:panel>
                         </p:tab>
-                        <p:tab title="Reshedule">
+                        <p:tab title="Reshedule" rendered="#{bookingControllerViewScope.selectedBillSession.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}">
                             <p:panel>
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between align-items-center">

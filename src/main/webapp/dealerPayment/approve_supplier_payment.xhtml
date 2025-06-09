@@ -29,59 +29,105 @@
                             </p:commandButton>
                         </f:facet>
 
+                        <div class="row" >
+                            <div class="col-6 p-1" >
+                                <p:panelGrid layout="tabular" columns="2" class="w-100">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Approval Details"/>
+                                    </f:facet>
+                                    <h:outputLabel value="Supplier" />
+                                    <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
 
-                        <p:panelGrid layout="tabular" columns="2" >
-                            <h:outputLabel value="Supplier" />
-                            <h:outputLabel value="#{supplierPaymentController.current.toInstitution.name}" />
+                                    <h:outputLabel value="Payment No" />
+                                    <h:outputLabel value="#{supplierPaymentController.current.deptId}" />
 
-                            <h:outputLabel value="Payment No" />
-                            <h:outputLabel value="#{supplierPaymentController.current.deptId}" />
+                                    <h:outputLabel value="Payment Method" />
+                                    <p:outputLabel 
+                                        id="cmbPs" 
+                                        value="#{supplierPaymentController.current.paymentMethod.label}">                                                                     
+                                    </p:outputLabel>
 
-                            <h:outputLabel value="Payment Method" />
-                            <p:outputLabel 
-                                id="cmbPs" 
-                                value="#{supplierPaymentController.current.paymentMethod.label}">                                                                     
-                            </p:outputLabel>
+                                    <p:outputLabel value="Total" />
+                                    <p:outputLabel
+                                        class="text-end w-100"
+                                        id="lblTotal"
+                                        value="#{supplierPaymentController.current.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
 
-                            <p:outputLabel value="Total" />
-                            <p:outputLabel
-                                class="text-end w-100"
-                                id="lblTotal"
-                                value="#{supplierPaymentController.current.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
+                                    <p:outputLabel value="Discount" />
+                                    <p:outputLabel 
+                                        id="txtDiscount"  
+                                        class="text-end w-100"
+                                        value="#{supplierPaymentController.current.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
 
-                            <p:outputLabel value="Discount" />
-                            <p:outputLabel 
-                                id="txtDiscount"  
-                                class="text-end w-100"
-                                value="#{supplierPaymentController.current.discount}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
+                                    <p:outputLabel value="Net Total" />
+                                    <p:outputLabel 
+                                        id="lblNetTotal"
+                                        class="text-end w-100"
+                                        value="#{supplierPaymentController.current.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
 
-                            <p:outputLabel value="Net Total" />
-                            <p:outputLabel 
-                                id="lblNetTotal"
-                                class="text-end w-100"
-                                value="#{supplierPaymentController.current.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
+                                    <p:outputLabel value="Approval Comments"/>
+                                    <p:inputTextarea
+                                        required="false"
+                                        requiredMessage="Please enter a comment to approve"
+                                        class="w-100"
+                                        style="min-width: 20em;"
+                                        rows="5"
+                                        value="#{supplierPaymentController.current.paymentApprovalComments}"/>   
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-6 p-1" >
+                                <p:panelGrid layout="tabular" columns="2" class="w-100 mb-1">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Payment Generation"/>
+                                    </f:facet>
+                                    <p:outputLabel value="Generation at"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.createdAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Generation By"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.creater.webUserPerson.name}">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Payment Generation Comments"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.paymentGenerationComments}"/>     
 
-                            <p:outputLabel value="Payment Creation Comments"/>
-                            <p:outputLabel
-                                class="w-100"
-                                value="#{supplierPaymentController.current.comments}"/>       
+                                </p:panelGrid>
 
-                            <p:outputLabel value="Approval Comments"/>
-                            <p:inputTextarea
-                                class="w-100"
-                                style="min-width: 20em;"
-                                rows="5"
-                                value="#{supplierPaymentController.current.paymentApprovalComments}"/>                                                         
+                                <p:panelGrid layout="tabular" columns="2" class="w-100 mt-1">
+                                    <f:facet name="header" >
+                                        <p:outputLabel value="Payment Checking"/>
+                                    </f:facet>
+                                    <p:outputLabel value="Checked at"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.completedAt}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Checked by"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.completedBy.webUserPerson.name}">
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Checking Comments"/>
+                                    <p:outputLabel
+                                        class="w-100"
+                                        value="#{supplierPaymentController.current.comments}"/>     
+                                </p:panelGrid>
+                            </div>
+                        </div>
 
 
-
-                        </p:panelGrid>
 
                         <p:dataTable  
                             value="#{supplierPaymentController.current.billItems}"
@@ -100,7 +146,7 @@
                                 <f:facet name="header">
                                     <h:outputLabel value="GRN No"/>                                  
                                 </f:facet> 
-                                <p:outputLabel value=" #{b.referenceBill.invoiceNumber}" ></p:outputLabel>
+                                <p:outputLabel value=" #{b.referenceBill.deptId}" ></p:outputLabel>
                             </p:column> 
                             <p:column >  
                                 <f:facet name="header">
@@ -114,7 +160,7 @@
                                 </p:outputLabel>
                             </p:column>
                             <p:column class="text-end" headerText="GRN Return Amount">
-                                <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                                <p:outputLabel value="#{b.referenceBill.refundAmount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>

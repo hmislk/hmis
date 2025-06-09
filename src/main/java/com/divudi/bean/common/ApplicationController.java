@@ -5,15 +5,15 @@
 package com.divudi.bean.common;
 
 import com.divudi.ejb.EmailManagerEjb;
-import com.divudi.entity.AppEmail;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Logins;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Sms;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.UserPreferenceFacade;
+import com.divudi.core.entity.AppEmail;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Logins;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.UserPreferenceFacade;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -59,10 +59,10 @@ public class ApplicationController {
 
     private boolean hasAwebsiteAsFrontEnd = false;
     private String themeName;
-    
+
     private Boolean firstLogin;
-    
-    
+
+
 
     private void loadApplicationPreferances() {
         String sql = "select p from UserPreference p where p.institution is null and p.department is null and p.webUser is null order by p.id desc";
