@@ -69,6 +69,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
 //        initializeDenominations();
         loadEmailGatewayConfigurationDefaults();
+        loadPharmacyConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -91,6 +92,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
+    }
+
+    private void loadPharmacyConfigurationDefaults() {
+        getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        getDoubleValueByKey("Retail to Purchase Factor", 1.15);
+        getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
     }
 
     public ConfigOption getApplicationOption(String key) {
