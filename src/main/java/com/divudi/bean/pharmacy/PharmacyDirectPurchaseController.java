@@ -572,20 +572,20 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         double pr = 0.0;
         double rr = 0.0;
-        BigDecimal retailRate = BigDecimal.ZERO;
+        BigDecimal packRate = BigDecimal.ZERO;
 
         BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(item, dept);
         if (lastPurchasedBillItem != null) {
             BillItemFinanceDetails lastDetails = lastPurchasedBillItem.getBillItemFinanceDetails();
             if (lastDetails != null) {
                 BigDecimal lineGrossRate = lastDetails.getLineGrossRate();
-                BigDecimal lastRetailRatePerUnit = lastDetails.getRetailSaleRatePerUnit();
+                BigDecimal lastRetailRate = lastDetails.getRetailSaleRate();
 
                 pr = (lineGrossRate != null) ? lineGrossRate.doubleValue() : 0.0;
-                rr = (lastRetailRatePerUnit != null) ? lastRetailRatePerUnit.doubleValue() : 0.0;
-                retailRate = lastRetailRatePerUnit != null ? lastRetailRatePerUnit : BigDecimal.ZERO;
+                rr = (lastRetailRate != null) ? lastRetailRate.doubleValue() : 0.0;
+                packRate = lastRetailRate != null ? lastRetailRate : BigDecimal.ZERO;
 
-                System.out.println("DEBUG: Retrieved from lastPurchasedBillItem - PurchaseRate: " + pr + ", RetailRatePerUnit: " + rr);
+                System.out.println("DEBUG: Retrieved from lastPurchasedBillItem - PurchaseRate: " + pr + ", RetailRate: " + rr);
             }
         }
 
@@ -596,7 +596,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             System.out.println("DEBUG: Fallback - PurchaseRate: " + fallbackPr + ", RetailRate: " + fallbackRr);
             pr = fallbackPr > 0.0 ? fallbackPr : pr;
             rr = fallbackRr > 0.0 ? fallbackRr : rr;
-            retailRate = BigDecimal.valueOf(rr);
+            packRate = BigDecimal.valueOf(rr);
         }
 
         PharmaceuticalBillItem pbi = current.getPharmaceuticalBillItem();
@@ -612,20 +612,19 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
         f.setLineGrossRate(BigDecimal.valueOf(pr));
-        f.setRetailSaleRatePerUnit(BigDecimal.valueOf(rr));
 
         if (item instanceof Ampp) {
             double units = item.getDblValue();
             BigDecimal unitsPerPack = (units > 0.0) ? BigDecimal.valueOf(units) : BigDecimal.ONE;
             f.setUnitsPerPack(unitsPerPack);
-            f.setRetailSaleRate(retailRate);
-            f.setRetailSaleRatePerUnit(retailRate.divide(unitsPerPack, MathContext.DECIMAL64));
-            System.out.println("DEBUG: Ampp Item - UnitsPerPack: " + unitsPerPack + ", RetailRate: " + retailRate + ", RetailRatePerUnit: " + f.getRetailSaleRatePerUnit());
+            f.setRetailSaleRate(packRate);
+            f.setRetailSaleRatePerUnit(packRate.divide(unitsPerPack, MathContext.DECIMAL64));
+            System.out.println("DEBUG: Ampp Item - UnitsPerPack: " + unitsPerPack + ", PackRate: " + packRate + ", RetailRatePerUnit: " + f.getRetailSaleRatePerUnit());
         } else {
             f.setUnitsPerPack(BigDecimal.ONE);
-            f.setRetailSaleRate(retailRate);
-            f.setRetailSaleRatePerUnit(retailRate);
-            System.out.println("DEBUG: Non-Ampp Item - RetailRate: " + retailRate);
+            f.setRetailSaleRate(packRate);
+            f.setRetailSaleRatePerUnit(packRate);
+            System.out.println("DEBUG: Non-Ampp Item - PackRate: " + packRate);
         }
 
         recalculateFinancialsBeforeAddingBillItem(f);
