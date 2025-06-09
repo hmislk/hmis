@@ -1228,18 +1228,22 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public void processIncomeBillCounts() {
-        if (reportViewType == null) {
-            reportViewType = ReportViewType.BY_BILL;
-        }
-        switch (reportViewType) {
-            case BY_BILL:
-                processIncomeBillCountsByBill();
-                break;
-            case BY_BILL_ITEM:
-                processIncomeBillCountsByBillItem();
-                break;
-            default:
-                processIncomeBillCountsByBillItem();
+        try {
+            if (reportViewType == null) {
+                reportViewType = ReportViewType.BY_BILL;
+            }
+            switch (reportViewType) {
+                case BY_BILL:
+                    processIncomeBillCountsByBill();
+                    break;
+                case BY_BILL_ITEM:
+                    processIncomeBillCountsByBillItem();
+                    break;
+                default:
+                    processIncomeBillCountsByBillItem();
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage(e, "Error processing report");
         }
     }
 
