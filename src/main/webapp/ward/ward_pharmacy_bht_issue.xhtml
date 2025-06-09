@@ -124,6 +124,12 @@
                                 <p:outputLabel value="BHT No" ></p:outputLabel>
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
+                                <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                 <p:outputLabel value="Consultant Name" ></p:outputLabel>
+                                <p:outputLabel value=":" ></p:outputLabel>
+                                <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.referringConsultant.person.nameWithTitle}" ></p:outputLabel>
                                 <p:outputLabel value="Patient Name" ></p:outputLabel>
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.patient.person.nameWithTitle}" ></p:outputLabel>
