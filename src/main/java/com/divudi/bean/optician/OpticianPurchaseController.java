@@ -380,7 +380,7 @@ public class OpticianPurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void calSaleRte() {
+    public void calculateSaleRate() {
         saleRate = 0.0;
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Bill Item is Null");
