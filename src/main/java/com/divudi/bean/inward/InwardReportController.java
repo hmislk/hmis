@@ -74,6 +74,8 @@ public class InwardReportController implements Serializable {
 
     List<AdmissionType> admissionty;
 
+    private List<AdmissionType> admissionTypes;
+
     @EJB
     PatientEncounterFacade peFacade;
     @EJB
@@ -135,7 +137,6 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(null, null);
 
-
     }
 
     public void fillAdmissionBookNew() {
@@ -161,13 +162,11 @@ public class InwardReportController implements Serializable {
 
         fillAdmissions(false, null);
 
-
     }
 
     public void fillAdmissionBookOnlyDischarged() {
         Date startTime = new Date();
         fillAdmissions(true, null);
-
 
     }
 
@@ -175,14 +174,11 @@ public class InwardReportController implements Serializable {
         Date startTime = new Date();
         fillAdmissions(true, false);
 
-
-
     }
 
     public void fillAdmissionBookOnlyDischargedFinalized() {
         Date startTime = new Date();
         fillAdmissions(true, true);
-
 
     }
 
@@ -276,7 +272,6 @@ public class InwardReportController implements Serializable {
         m.put("td", toDate);
         patientEncounters = getPeFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-
     }
 
     double total;
@@ -366,7 +361,7 @@ public class InwardReportController implements Serializable {
         for (PatientEncounter p : patientEncounters) {
             p.setTransPaidByPatient(calPaidByPatient(p));
             p.setTransPaidByCompany(calPaidByCompany(p));
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             for (BillItem bi : p.getFinalBill().getBillItems()) {
@@ -520,7 +515,6 @@ public class InwardReportController implements Serializable {
 
         calTotalDischargedNoChanges();
 
-
     }
 
     public void fillDischargeBookPaymentFinalizedNoChangesOnlyDue() {
@@ -565,7 +559,7 @@ public class InwardReportController implements Serializable {
         creditPaid = 0;
         creditUsed = 0;
         for (PatientEncounter p : list) {
-            if (p.getFinalBill()==null) {
+            if (p.getFinalBill() == null) {
                 continue;
             }
             p.setTransPaidByPatient(calPaidByPatient(p));
@@ -583,8 +577,6 @@ public class InwardReportController implements Serializable {
             }
 
         }
-
-
 
     }
 
@@ -665,8 +657,6 @@ public class InwardReportController implements Serializable {
         for (BillItem b : billItems) {
             total += b.getBill().getNetTotal();
         }
-
-
 
     }
 
@@ -768,8 +758,6 @@ public class InwardReportController implements Serializable {
 
         //System.err.println("Sql " + sql);
         patientInvestigations = getPatientInvestigationFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-
-
 
     }
 
@@ -886,7 +874,6 @@ public class InwardReportController implements Serializable {
             individualBhtIncomeByCategoryRecord.add(ibr);
         }
 
-
     }
 
     public void listDischargedBhtIncomeByCategories() {
@@ -966,7 +953,6 @@ public class InwardReportController implements Serializable {
         totalCancelledBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new CancelledBill());
         totalRefundBill = calTotalCreateCancelBillRefundBillProfessionalPaymentTableInwardAll(new RefundBill());
 
-
     }
 
     public void fillProfessionalPaymentDoneOPD() {
@@ -981,7 +967,6 @@ public class InwardReportController implements Serializable {
         totalBilledBill = createProfessionalPaymentTableTotals(new BilledBill(), BillType.PaymentBill, billTypes);
         totalCancelledBill = createProfessionalPaymentTableTotals(new CancelledBill(), BillType.PaymentBill, null);
         totalRefundBill = createProfessionalPaymentTableTotals(new RefundBill(), BillType.PaymentBill, null);
-
 
     }
 
@@ -1024,7 +1009,6 @@ public class InwardReportController implements Serializable {
             temMap.put("cc", institution);
         }
 
-
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
 
@@ -1060,7 +1044,6 @@ public class InwardReportController implements Serializable {
             sql = sql + " and b.bill.patientEncounter.creditCompany=:cc ";
             temMap.put("cc", institution);
         }
-
 
         return getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
     }
@@ -1254,6 +1237,7 @@ public class InwardReportController implements Serializable {
         this.admissionType = admissionType;
     }
 
+    @Deprecated
     public List<AdmissionType> getAdmissionty() {
         admissionty = getAdmissionTypeFacade().findAll("name", true);
         return admissionty;
@@ -1406,6 +1390,24 @@ public class InwardReportController implements Serializable {
 
     public void setReportKeyWord(ReportKeyWord reportKeyWord) {
         this.reportKeyWord = reportKeyWord;
+    }
+
+    public List<AdmissionType> getAdmissionTypes() {
+        if (admissionTypes == null) {
+            fillAdmissionTypes();
+        }
+        return admissionTypes;
+    }
+
+    public void setAdmissionTypes(List<AdmissionType> admissionTypes) {
+        this.admissionTypes = admissionTypes;
+    }
+
+    private void fillAdmissionTypes() {
+        String jpql = "select ad from AdmissionType ad "
+                + "where ad.retired=false "
+                + "order by ad.name";
+        admissionTypes = admissionTypeFacade.findByJpql(jpql);
     }
 
     public class IncomeByCategoryRecord {

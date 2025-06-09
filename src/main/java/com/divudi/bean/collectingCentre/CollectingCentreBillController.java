@@ -74,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -257,7 +258,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     private String externalDoctor;
 
-    private boolean ccBillSettlingStarted = false;
+    private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
 
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
@@ -829,20 +830,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
-        if (ccBillSettlingStarted) {
+        if (!ccBillSettlingStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Bill Settling Already Started.");
             return null;
         }
-        ccBillSettlingStarted = true;
         if (errorCheck()) {
-            ccBillSettlingStarted = false;
+            ccBillSettlingStarted.set(false);
             return "";
         }
         savePatient();
         calTotals();
         Bill ccBill = createCcBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment());
         if (ccBill == null) {
-            ccBillSettlingStarted = false;
+            ccBillSettlingStarted.set(false);
             return "";
         }
         List<BillItem> list = new ArrayList<>();
@@ -898,7 +898,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setPrintigBill();
         checkBillValues();
 
-        ccBillSettlingStarted = false;
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill_print?faces-redirect=true;";
 
     }
@@ -1696,7 +1696,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
         setPatient(getPatient());
-        ccBillSettlingStarted=false;
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1704,7 +1704,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
-        ccBillSettlingStarted=false;
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1734,7 +1734,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
-        ccBillSettlingStarted=false;
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -2556,11 +2556,11 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public boolean isCcBillSettlingStarted() {
-        return ccBillSettlingStarted;
+        return ccBillSettlingStarted.get();
     }
 
     public void setCcBillSettlingStarted(boolean ccBillSettlingStarted) {
-        this.ccBillSettlingStarted = ccBillSettlingStarted;
+        this.ccBillSettlingStarted.set(ccBillSettlingStarted);
 
     }
 

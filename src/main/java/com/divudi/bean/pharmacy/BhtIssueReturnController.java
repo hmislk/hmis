@@ -74,6 +74,10 @@ public class BhtIssueReturnController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     
     public String navigateToReturnPharmacyDirectIssueToInpatients(Bill b) {
+        if (b == null) {
+            JsfUtil.addErrorMessage("No Bill provided");
+            return null;
+        }
         bill = b;
         return navigateToReturnPharmacyDirectIssueToInpatients();
     }

@@ -26,6 +26,7 @@
 
                         <p:menuitem
                             action="#{laboratoryManagementController.navigateToLaboratoryBills()}"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
                             ajax="false"
                             class="d-flex justify-content-center"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardBillSearch'))}"
@@ -37,6 +38,7 @@
                         <p:menuitem
                             action="#{laboratoryManagementController.navigateToSamples()}"
                             ajax="false"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardSampleSearch'))}"
                             style="font-size: 22px; font-weight: 600; width: 10em;" 
                             class="d-flex justify-content-center">
@@ -47,6 +49,7 @@
                         <p:menuitem
                             action="#{laboratoryManagementController.navigateToInvestigation()}"
                             ajax="false"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardInvestigationSearch'))}"
                             style="font-size: 22px; font-weight: 600; width: 12em;" 
                             class="d-flex justify-content-center">
@@ -57,6 +60,7 @@
                         <p:menuitem
                             action="#{laboratoryManagementController.navigateToReport()}"
                             ajax="false"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardReportSearch'))}"
                             style="font-size: 22px; font-weight: 600; width: 10em;" 
                             class="d-flex justify-content-center">
@@ -67,6 +71,7 @@
                         <p:menuitem
                             action="#{laboratoryManagementController.navigateToReportPrint()}"
                             ajax="false"
+                            actionListener="#{laboratoryManagementController.makeNull()}"
                             rendered="#{(webUserController.hasPrivilege('DashBoardMenu') and webUserController.hasPrivilege('DashBoardPatientReportSearch'))}"
                             style="font-size: 22px; font-weight: 600; width: 10em;" 
                             class="d-flex justify-content-center">
@@ -85,30 +90,31 @@
                         </p:menuitem >
                     </p:megaMenu>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
-                        <dashboard:bills/>
-                    </h:panelGroup>
+                    <div class="mx-3">
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'BILLS'}" >
+                            <dashboard:bills/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                        <dashboard:patient_investigation/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
+                            <dashboard:patient_investigation/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
-                        <dashboard:view_barcode/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'VIEW_BARCODE'}">
+                            <dashboard:view_barcode/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
-                        <dashboard:patient_sample/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_SAMPLES'}">
+                            <dashboard:patient_sample/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
-                        <dashboard:patient_report/>
-                    </h:panelGroup>
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'PATIENT_REPORTS'}">
+                            <dashboard:patient_report/>
+                        </h:panelGroup>
 
-                    <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
-                        <dashboard:print_report/>
-                    </h:panelGroup>
-
+                        <h:panelGroup rendered="#{laboratoryManagementController.listingEntity eq 'REPORT_PRINT'}">
+                            <dashboard:print_report/>
+                        </h:panelGroup>
+                    </div>
                 </h:form>
             </h:panelGroup>
         </ui:define>

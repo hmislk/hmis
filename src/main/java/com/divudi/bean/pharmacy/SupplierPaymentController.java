@@ -175,6 +175,18 @@ public class SupplierPaymentController implements Serializable {
         return "/dealerPayment/list_bills_to_generate_supplier_payments?faces-redirect=true";
     }
 
+    public String navigateToGenerateSupplierReturnPayments() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/list_grn_returns_to_generate_supplier_payments?faces-redirect=true";
+    }
+
+    public String navigateToListAllGrns() {
+        bills = new ArrayList<>();
+        netTotal = 0.0;
+        return "/dealerPayment/list_all_grns?faces-redirect=true";
+    }
+
     public String navigateToApproveSupplierPayments() {
         bills = new ArrayList<>();
         netTotal = 0.0;
@@ -1036,7 +1048,38 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillUnsettledCreditPharmacyBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
+        List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
+
+        boolean needPaymentApproval = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
+        if (needPaymentApproval) {
+            bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01, true);
+        } else {
+            bills = billController.findUnpaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
+        }
+
+        netTotal = 0.0;
+        paidAmount = 0.0;
+        refundAmount = 0.0;
+        balance = 0.0;
+        for (Bill b : bills) {
+            netTotal += b.getNetTotal();
+            paidAmount += b.getPaidAmount();
+            balance += b.getBalance();
+            refundAmount += b.getRefundAmount();
+        }
+    }
+
+    public void fillUnsettledCreditPharmacyReturnBills() {
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN_RETURN,
+            BillTypeAtomic.PHARMACY_GRN_REFUND};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
 
         boolean needPaymentApproval = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
@@ -1171,7 +1214,16 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillSettledCreditPharmacyBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN, 
+            BillTypeAtomic.PHARMACY_GRN_CANCELLED, 
+            BillTypeAtomic.PHARMACY_GRN_RETURN,
+            BillTypeAtomic.PHARMACY_GRN_RETURN,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;
@@ -1187,7 +1239,11 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillUnsettledCreditStoreBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.STORE_GRN,
+            BillTypeAtomic.STORE_DIRECT_PURCHASE,
+            BillTypeAtomic.STORE_GRN_CANCELLED,
+            BillTypeAtomic.STORE_GRN_REFUND,
+            BillTypeAtomic.STORE_GRN_RETURN};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         boolean needPaymentApproval = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
         if (needPaymentApproval) {
@@ -1224,7 +1280,19 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillUnsettledCreditBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_GRN_RETURN,
+            BillTypeAtomic.PHARMACY_GRN_REFUND,
+            BillTypeAtomic.STORE_GRN,
+            BillTypeAtomic.STORE_DIRECT_PURCHASE,
+            BillTypeAtomic.STORE_GRN_CANCELLED,
+            BillTypeAtomic.STORE_GRN_REFUND,
+            BillTypeAtomic.STORE_GRN_RETURN};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         boolean needPaymentApproval = configOptionApplicationController.getBooleanValueByKey("Approval is necessary for Procument Payments", false);
         if (needPaymentApproval) {

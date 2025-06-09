@@ -562,6 +562,7 @@ public class SessionController implements Serializable, HttpSessionListener {
             wup.setWebUser(wu);
             wup.setPrivilege(pv);
             wup.setCreatedAt(new Date());
+            wup.setDepartment(dep);
             webUserPrivilegeFacade.create(wup);
         }
 
