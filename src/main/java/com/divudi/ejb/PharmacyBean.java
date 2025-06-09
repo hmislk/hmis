@@ -64,6 +64,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 
 /**
  *
@@ -112,6 +114,8 @@ public class PharmacyBean {
     VirtualProductIngredientFacade virtualProductIngredientFacade;
     @EJB
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -1165,7 +1169,7 @@ public class PharmacyBean {
     }
 
     public double getMaximumRetailPriceChange() {
-        return 15.0;
+        return configOptionApplicationController.getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
     }
 
     public void setMaximumGrnPriceChange() {
