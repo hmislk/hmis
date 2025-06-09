@@ -10,12 +10,12 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
 
-    <!-- IMPLEMENTATION --> 
+    <!-- IMPLEMENTATION -->
     <cc:implementation>
 
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
@@ -41,7 +41,7 @@
 
             <div class="headingBillFiveFive mt-2" style="text-align: center;font-weight: bold;">
                 <div class="d-flex align-items-center justify-content-center">
-                    <h:outputLabel value="OPD Refuned Receipt" />
+                    <h:outputLabel value="OPD Refund Receipt" />
                 </div>
                 <h:panelGroup  rendered="#{cc.attrs.duplicate eq true}"  >
                     <h:outputLabel value="**Duplicate**" />

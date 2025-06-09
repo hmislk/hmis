@@ -11,15 +11,15 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.UploadController;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.ReportItemType;
-import com.divudi.entity.Category;
-import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.entity.lab.ReportFormat;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.CommonReportItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.ReportItemType;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.lab.CommonReportItem;
+import com.divudi.core.entity.lab.ReportFormat;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.CommonReportItemFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.Serializable;
@@ -54,7 +54,7 @@ public class CommonReportItemController implements Serializable {
     private CommonReportItemFacade ejbFacade;
     @EJB
     CategoryFacade categoryFacade;
-//  Controllers    
+//  Controllers
     @Inject
     SessionController sessionController;
     @Inject

@@ -12,8 +12,17 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputLabel value="Petty Cash Bill Search To approved"/>
-                            <p:commandButton value="Back" icon="fas fa-arrow-left" class="ui-button-warning" style="float: right;" action="/payments/pay_index?faces-redirect=true" ajax="false"/>     
+                            <h:panelGroup layout="block" style="line-height: 40px;">
+                                <h:outputText styleClass="fas fa-search" />
+                                <h:outputLabel value="Petty Cash Bill Search To Approved" styleClass="mx-4"/>
+                                <p:commandButton 
+                                    value="Back" 
+                                    icon="fas fa-arrow-left" 
+                                    class="ui-button-primary" 
+                                    style="float: right;" 
+                                    action="/payments/pay_index?faces-redirect=true" 
+                                    ajax="false"/>     
+                            </h:panelGroup>  
                         </f:facet>
 
                         <div class="row">
@@ -111,7 +120,7 @@
                                     <p:column headerText="Paid To(Person)"  >
                                         <h:outputLabel value="#{bill.person.name}" />
                                     </p:column>
-                                     <p:column headerText="Paid To(Department)"  >
+                                    <p:column headerText="Paid To(Department)"  >
                                         <h:outputLabel value="#{bill.toDepartment.name}" />
                                     </p:column> 
                                     <p:column headerText="Net Value" >
@@ -129,7 +138,7 @@
                                     <p:column headerText="Approved By" >
                                         <h:outputLabel value=" #{bill.approveUser.name}" >
                                         </h:outputLabel><br/>
-                                          <p:outputLabel value="#{bill.approveAt}">
+                                        <p:outputLabel value="#{bill.approveAt}">
                                             <f:convertDateTime pattern="#{sessionController.departmentPreference.shortDateFormat}" />
                                         </p:outputLabel>
                                     </p:column> 
@@ -138,8 +147,8 @@
                                                          icon="fas fa-check" 
                                                          value="Approve"
                                                          onclick="if (!confirm('Are you sure you want to approve this ?'))
-                                                                return false;"
-                                                                action="#{pettyCashBillController.approveBill(bill)}"
+                                                                     return false;"
+                                                         action="#{pettyCashBillController.approveBill(bill)}"
                                                          disabled="#{bill.approveAt ne null or pettyCashBillController.checkForExpireofApproval(bill)}" />
                                     </p:column>
                                 </p:dataTable>

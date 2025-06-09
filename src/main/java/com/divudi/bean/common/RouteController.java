@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.Route;
-import com.divudi.facade.RouteFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Route;
+import com.divudi.core.facade.RouteFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -117,7 +117,7 @@ public class RouteController implements Serializable {
         m.put("n", name);
         return getFacade().findFirstByJpql(jpql, m);
     }
-    
+
     public Route findAndCreateRouteByName(String name){
         Route r =null;
         if (name == null) {
@@ -134,7 +134,7 @@ public class RouteController implements Serializable {
         m.put("ret", false);
         m.put("n", name);
         r =  getFacade().findFirstByJpql(jpql, m);
-        
+
         if(r==null){
             r = new Route();
             r.setName(name);

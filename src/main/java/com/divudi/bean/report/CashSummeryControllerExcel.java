@@ -6,39 +6,39 @@ package com.divudi.bean.report;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.inward.AdmissionTypeController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.AdmissionTypeBills;
-import com.divudi.data.dataStructure.BillItemWithFee;
-import com.divudi.data.dataStructure.BillsItems;
-import com.divudi.data.dataStructure.CategoryWithItem;
-import com.divudi.data.dataStructure.DailyCash;
-import com.divudi.data.dataStructure.DepartmentPayment;
-import com.divudi.data.dataStructure.ItemWithFee;
-import com.divudi.data.table.String1Value1;
-import com.divudi.data.table.String1Value2;
-import com.divudi.data.table.String1Value3;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.AdmissionTypeBills;
+import com.divudi.core.data.dataStructure.BillItemWithFee;
+import com.divudi.core.data.dataStructure.BillsItems;
+import com.divudi.core.data.dataStructure.CategoryWithItem;
+import com.divudi.core.data.dataStructure.DailyCash;
+import com.divudi.core.data.dataStructure.DepartmentPayment;
+import com.divudi.core.data.dataStructure.ItemWithFee;
+import com.divudi.core.data.table.String1Value1;
+import com.divudi.core.data.table.String1Value2;
+import com.divudi.core.data.table.String1Value3;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -69,7 +69,6 @@ public class CashSummeryControllerExcel implements Serializable {
     @Temporal(TemporalType.TIMESTAMP)
     private Date toDate;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
@@ -605,7 +604,7 @@ public class CashSummeryControllerExcel implements Serializable {
 
 //    public List<String2Value1> getInwardCollection(){
 //        for(AdmissionTypeBills adm:)
-//    
+//
 //    }
     private double calTotal(List<Bill> lst) {
         double tmp = 0.0;
@@ -738,14 +737,14 @@ public class CashSummeryControllerExcel implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1001,14 +1000,6 @@ public class CashSummeryControllerExcel implements Serializable {
 //
 //
 //    }
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }

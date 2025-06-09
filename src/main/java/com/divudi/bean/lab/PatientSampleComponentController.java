@@ -10,8 +10,8 @@ package com.divudi.bean.lab;
 
 import com.divudi.bean.common.*;
 
-import com.divudi.entity.lab.PatientSampleComponant;
-import com.divudi.facade.PatientSampleComponantFacade;
+import com.divudi.core.entity.lab.PatientSampleComponant;
+import com.divudi.core.facade.PatientSampleComponantFacade;
 import java.io.Serializable;
 import java.util.List;
 import javax.ejb.EJB;
@@ -80,10 +80,10 @@ public class PatientSampleComponentController implements Serializable {
         this.itemsSelected = itemsSelected;
     }
 
-    
-    
-    
-    
+
+
+
+
 
     /**
      *

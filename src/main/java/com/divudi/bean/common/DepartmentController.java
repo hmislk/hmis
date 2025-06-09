@@ -8,13 +8,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Route;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Route;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

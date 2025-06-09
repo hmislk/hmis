@@ -9,42 +9,41 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.lab.InvestigationWithCount;
-import com.divudi.data.lab.JsonInvestigation;
-import com.divudi.data.lab.JsonInvestigationList;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValueFlag;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.lab.WorksheetItem;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFlagFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.WorksheetItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.Sample;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.lab.InvestigationWithCount;
+import com.divudi.core.data.lab.JsonInvestigation;
+import com.divudi.core.data.lab.JsonInvestigationList;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValueFlag;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.entity.lab.WorksheetItem;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFlagFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.WorksheetItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.Sample;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.BufferedReader;
@@ -95,8 +94,6 @@ public class InvestigationController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -481,7 +478,7 @@ public class InvestigationController implements Serializable {
         investigationItemController.setCurrentInvestigation((Investigation) current.getReportedAs());
         return investigationItemController.toEditInvestigationFormat();
     }
-    
+
     public String navigateExportReoirtFormat() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -498,7 +495,7 @@ public class InvestigationController implements Serializable {
         investigationItemController.listInvestigationItem();
         return "/admin/lims/export?faces-redirect=true";
     }
-    
+
     public String navigateToEditFormatSinglePastData() {
         if (current == null) {
             JsfUtil.addErrorMessage("Please select investigation");
@@ -1268,9 +1265,9 @@ public class InvestigationController implements Serializable {
         parameters.put("nameQuery", "%" + qry.toUpperCase() + "%");
         parameters.put("codeQuery", "%" + qry + "%");
         parameters.put("ret", false);
-        
+
         List<Investigation> completeItems = getFacade().findByJpql(jpql,parameters);
-        
+
 
 //        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
@@ -1990,7 +1987,7 @@ public class InvestigationController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InvestigationController controller = (InvestigationController) facesContext.getApplication().getELResolver().
@@ -2005,9 +2002,7 @@ public class InvestigationController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -2023,14 +2018,6 @@ public class InvestigationController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + InvestigationController.class.getName());
             }
         }
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public Department getDepartment() {

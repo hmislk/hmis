@@ -28,7 +28,7 @@
             <div class="receipt-container">
                 <!-- Header Section -->
                 <div class="hospital-name">
-                    <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
+                    <h:outputLabel value="#{cc.attrs.bill.department.printingName}" />
                     <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
                     <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
                 </div>
@@ -53,10 +53,10 @@
                             </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="false" >
-                    #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
-                </h:panelGroup>
+                        #{pharmacySaleController.printBill.patient.person.sex.shortLabel}
+                    </h:panelGroup>
 
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
@@ -190,9 +190,23 @@
 
                                         </td>
                                     </tr>
+
                                 </ui:repeat>
+
+
                             </table>
                         </td>
+                    </tr>
+
+                    <tr> 
+                      
+                        <td style="width: 6cm">
+                            <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Staff_Welfare'}">
+                                <h:outputText style="font-size: 8pt;"  value="(Staff :"/>
+                                <h:outputText style="font-size: 8pt;"  value="#{cc.attrs.bill.toStaff.person.nameWithTitle})"/>
+                            </h:panelGroup>
+                        </td>
+
                     </tr>
                 </table> 
 

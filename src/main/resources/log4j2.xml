@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="WARN">
+    <Appenders>
+
+        <!-- Console output for debugging -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
+        </Console>
+
+        <!-- Additional console appender to stderr for early boot messages -->
+        <Console name="StartupLogger" target="SYSTEM_ERR">
+            <PatternLayout pattern="Log4j2 active — writing to %d{yyyy-MM-dd} at %c{1} [%p]: %m%n"/>
+        </Console>
+
+        <!-- Rolling file logger for errors -->
+        <RollingFile name="RollingFileLogger"
+                     fileName="logs/errors.log"
+                     filePattern="logs/archive/errors-%d{yyyy-MM-dd}.log.gz">
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss}] [%-5level] [%c{1}]: %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+            <DefaultRolloverStrategy>
+                <Delete basePath="logs/archive" maxDepth="1">
+                    <IfFileName glob="errors-*.log.gz"/>
+                    <IfLastModified age="7d"/>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="StartupLogger"/>
+            <AppenderRef ref="RollingFileLogger"/>
+        </Root>
+    </Loggers>
+</Configuration>

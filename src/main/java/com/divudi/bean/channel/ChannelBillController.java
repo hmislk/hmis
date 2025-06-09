@@ -5,64 +5,64 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.DoctorSpecialityController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.MessageType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Area;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Sms;
-import com.divudi.entity.Staff;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.membership.PaymentSchemeDiscount;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Area;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.membership.PaymentSchemeDiscount;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Payment;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.PaymentFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -290,7 +290,7 @@ public class ChannelBillController implements Serializable {
         b.setSingleBillItem(bi);
         b.setSingleBillSession(bs);
         getBillFacade().edit(b);
-        
+
         getBillSession().getBill().setBillPaymentCompletelySettled(true);
         getBillFacade().edit(getBillSession().getBill());
 
@@ -317,7 +317,7 @@ public class ChannelBillController implements Serializable {
         creditCompany = null;
         toStaff = null;
         paymentMethodData = null;
-        
+
         JsfUtil.addSuccessMessage("On Call Channel Booking Settled");
     }
 
@@ -650,8 +650,8 @@ public class ChannelBillController implements Serializable {
     }
 
     private boolean errorCheckForSettle() {
-        
-        
+
+
         if (settlePaymentMethod == PaymentMethod.OnCall ) {
             JsfUtil.addErrorMessage("You Can't Settle On-Call Bill with OnCall Payment");
             return true;
@@ -961,7 +961,7 @@ public class ChannelBillController implements Serializable {
             RefundBill rpb = (RefundBill) createRefundBill1(bill.getPaidBill());
             BillItem rpBilItm = refundBillItems(bill.getSingleBillItem(), rb);
             BillSession rpSession = refundBillSession(billSession.getPaidBillSession(), rpb, rpBilItm);
-           
+
             billSession.getPaidBillSession().setReferenceBillSession(rpSession);
             billSessionFacade.edit(billSession.getPaidBillSession());
 
@@ -981,7 +981,7 @@ public class ChannelBillController implements Serializable {
     }
 
     List<BillFee> listBillFees;
-    
+
       public Payment createPaymentForCancellationsAndRefunds(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -993,7 +993,7 @@ public class ChannelBillController implements Serializable {
         setPaymentMethodData(p, pm);
         return p;
     }
-      
+
      public void setPaymentMethodData(Payment p, PaymentMethod pm) {
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
@@ -1257,7 +1257,7 @@ public class ChannelBillController implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -1323,7 +1323,7 @@ public class ChannelBillController implements Serializable {
                 }
             }
 
-            //Update BillSession        
+            //Update BillSession
             billSession.setReferenceBillSession(cbs);
             billSessionFacade.edit(billSession);
 
@@ -1763,7 +1763,7 @@ public class ChannelBillController implements Serializable {
         if( bill.getPaymentMethod() == PaymentMethod.OnCall){
                 rb.setPaymentMethod(refundPaymentMethod);
         }
-        
+
         getBillFacade().edit(rb);
 
 //Need To Update Agent BAllance
@@ -2295,10 +2295,10 @@ public class ChannelBillController implements Serializable {
 
     private String chanellBookingSms(Bill b) {
         String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+        String date = CommonFunctions.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
         //System.out.println("date = " + date);
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getSingleBillSession().getSessionTime(),
                 "hh:mm a");
         //System.out.println("time = " + time);
@@ -2320,7 +2320,7 @@ public class ChannelBillController implements Serializable {
 //            }
 //        }
         if (ss != null && ss.getStartingTime() != null) {
-            time = CommonController.getDateFormat(
+            time = CommonFunctions.getDateFormat(
                     ss.getStartingTime(),
                     "hh:mm a");
         } else {
@@ -2344,9 +2344,9 @@ public class ChannelBillController implements Serializable {
 
     private String chanellReminderSms(Bill b) {
         String s;
-        String date = CommonController.getDateFormat(b.getSingleBillSession().getSessionDate(),
+        String date = CommonFunctions.getDateFormat(b.getSingleBillSession().getSessionDate(),
                 "dd MMM");
-        String time = CommonController.getDateFormat(
+        String time = CommonFunctions.getDateFormat(
                 b.getSingleBillSession().getSessionTime(),
                 "hh:mm a");
         String doc = b.getSingleBillSession().getStaff().getPerson().getNameWithTitle();

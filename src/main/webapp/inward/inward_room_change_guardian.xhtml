@@ -14,7 +14,7 @@
         <h:form>
             <p:panel header="Guardian Room Change" rendered="#{roomChangeController.current eq null}">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                     <p:outputLabel value="Guardian Room Change" class="m-2"/>
                 </f:facet>
                 <h:panelGrid id="gpSelectText" columns="4" >
@@ -42,7 +42,7 @@
 
             <p:panel rendered="#{roomChangeController.current ne null}">
                 <f:facet name="header">
-                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> <!-- FontAwesome Icon -->
+                    <h:outputText styleClass="fa-solid fa-address-card fa-lg" /> 
                     <p:outputLabel value="Guardian Room Change" class="m-2"/>
                     <div class="d-flex" style="float: right;">
                         <p:commandButton 

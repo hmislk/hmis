@@ -5,16 +5,16 @@
  */
 package com.divudi.service;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Staff;
-import com.divudi.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.StaffFacade;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
 /**
  *
  * @author Dr M H B Ariyaratne, buddhika.ari@gmail.com
- * 
+ *
  */
 @Stateless
 public class StaffService {

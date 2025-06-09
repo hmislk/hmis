@@ -33,11 +33,11 @@
 
                                 <p:separator></p:separator>
 
-                                <p:commandButton 
-                                    value="Pharmacy Credit Bills to Generate Payments" 
-                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}" 
-                                    ajax="false"  
-                                    icon="fas fa-prescription-bottle-alt" 
+                                <p:commandButton
+                                    value="Pharmacy GRNs to Generate Payments"
+                                    action="#{supplierPaymentController.fillUnsettledCreditPharmacyBills}"
+                                    ajax="false"
+                                    icon="fas fa-prescription-bottle-alt"
                                     class="my-1 w-100 ui-button-warning" />
 
                                 <p:commandButton 
@@ -109,8 +109,6 @@
                                     </p:column>
 
                                     <p:column headerText="Supplier" sortBy="#{b.fromInstitution.name}" filterBy="#{b.fromInstitution.name}" filterMatchMode="contains">
-                                        BIll ID #{b.id}<br/>
-                                        From Ins ID #{b.fromInstitution.id}<br/>
                                         <h:outputText value="#{b.fromInstitution.name}" />
                                     </p:column>
 

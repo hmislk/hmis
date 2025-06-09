@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.BillFee;
-import com.divudi.facade.BillFeeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.facade.BillFeeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;

@@ -5,9 +5,9 @@
  */
 package com.divudi.ejb.clinical;
 
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.facade.PatientEncounterFacade;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.facade.PatientEncounterFacade;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -63,12 +63,4 @@ public class ClinicalSearch {
         this.m = m;
     }
 
-    
-    
-    
-    
-    
-    
-    
-    
 }

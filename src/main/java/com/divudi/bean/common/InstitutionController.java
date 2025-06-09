@@ -1,12 +1,12 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Institution;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -41,8 +41,6 @@ public class InstitutionController implements Serializable {
      */
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     /**
      * EJBs
      */
@@ -74,7 +72,7 @@ public class InstitutionController implements Serializable {
     private List<Institution> sites;
 
     public void fillAllSites() {
-        sites = new ArrayList();
+        sites = new ArrayList<>();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
@@ -85,26 +83,26 @@ public class InstitutionController implements Serializable {
         hm.put("type", InstitutionType.Site);
         sites = getFacade().findByJpql(sql, hm);
     }
-    
+
     private List<Institution> institutions;
     private InstitutionType institutionType;
-    
+
     public void fillRetiredInstitution() {
-        institutions = new ArrayList();
+        institutions = new ArrayList<>();
         String sql;
         HashMap hm = new HashMap();
         sql = "select c from Institution c "
                 + " where c.retired=true ";
-        
+
         if(institutionType != null){
             sql += " and c.institutionType =:type ";
             hm.put("type", institutionType);
         }
-        
+
         sql += " order by c.name";
         institutions = getFacade().findByJpql(sql, hm);
     }
-    
+
     public void reactivateRetiredInstitution(Institution institution) {
         Institution currentRetiredInstitution = getFacade().find(institution.getId());
 
@@ -116,7 +114,7 @@ public class InstitutionController implements Serializable {
             JsfUtil.addErrorMessage("Already Active");
             return;
         }
-        
+
         currentRetiredInstitution.setRetired(false);
         getFacade().edit(currentRetiredInstitution);
 
@@ -131,7 +129,7 @@ public class InstitutionController implements Serializable {
         fillItems();
         return "/admin/institutions/institutions?faces-redirect=true";
     }
-    
+
     public String navigatetoActivateInstitutions() {
         return "/admin/institutions/activate_institutions?faces-redirect=true";
     }
@@ -990,7 +988,7 @@ public class InstitutionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             InstitutionController controller = (InstitutionController) facesContext.getApplication().getELResolver().
@@ -1024,13 +1022,4 @@ public class InstitutionController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

@@ -1,16 +1,16 @@
 /*
  * Open Hospital Management Information System
- * 
- * Dr M H B Ariyaratne 
- * Acting Consultant (Health Informatics) 
+ *
+ * Dr M H B Ariyaratne
+ * Acting Consultant (Health Informatics)
  * (94) 71 5812399
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.WebUserRole;
-import com.divudi.facade.WebUserRoleFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.facade.WebUserRoleFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -43,15 +43,15 @@ public class WebUserRoleController implements Serializable {
 
     private WebUserRole current;
     private List<WebUserRole> items = null;
-    
-    
+
+
     public String navigateToManageWebUserRoles(){
         items = findAllItems();
         return "/admin/users/user_roles?faces-redirect=true";
     }
-    
-  
-    
+
+
+
     public String navigateToManageWebUserRolePrivileges(){
         if(current==null){
             JsfUtil.addErrorMessage("Select a role");
@@ -63,7 +63,7 @@ public class WebUserRoleController implements Serializable {
         }
         return "/admin/users/user_role_privileges?faces-redirect=true";
     }
-    
+
     public String navigateToManageWebUserRoleIcons(){
         if(current==null){
             JsfUtil.addErrorMessage("Select a role");
@@ -75,7 +75,7 @@ public class WebUserRoleController implements Serializable {
         }
         return "/admin/users/user_role_icons?faces-redirect=true";
     }
-    
+
     public String navigateToManageWebUserRoleUsers(){
         if(current==null){
             JsfUtil.addErrorMessage("Select a role");
@@ -88,7 +88,7 @@ public class WebUserRoleController implements Serializable {
         webUserRoleUserController.getCurrent().setWebUserRole(current);
         return "/admin/users/user_role_users?faces-redirect=true";
     }
-    
+
     public String navigateToManageWebUserTriggerSubscriptions(){
         if(current==null){
             JsfUtil.addErrorMessage("Select a role");
@@ -100,17 +100,17 @@ public class WebUserRoleController implements Serializable {
         }
         return "/admin/users/user_role_subscription?faces-redirect=true";
     }
-    
+
     public void toAddNewUserRole(){
         current = new WebUserRole();
     }
-    
+
     public void saveCurrent(){
         save(current);
         items = findAllItems();
         JsfUtil.addSuccessMessage("Saved");
     }
-    
+
     public void save(WebUserRole r){
         if(r==null){
             return;
@@ -123,7 +123,7 @@ public class WebUserRoleController implements Serializable {
             getFacade().edit(r);
         }
     }
-    
+
     private List<WebUserRole> findAllItems(){
         String jpql = "Select r "
                 + " from WebUserRole r "
@@ -133,9 +133,9 @@ public class WebUserRoleController implements Serializable {
         m.put("ret", false);
         return getFacade().findByJpql(jpql, m);
     }
-    
 
-    
+
+
     public WebUserRoleFacade getEjbFacade() {
         return ejbFacade;
     }
@@ -155,7 +155,7 @@ public class WebUserRoleController implements Serializable {
     public WebUserRoleController() {
     }
 
-   
+
 
     public WebUserRole getCurrent() {
         return current;
@@ -175,7 +175,7 @@ public class WebUserRoleController implements Serializable {
         }
         return items;
     }
-    
+
 
     /**
      *

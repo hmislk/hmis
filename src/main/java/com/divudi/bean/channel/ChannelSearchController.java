@@ -7,33 +7,32 @@ package com.divudi.bean.channel;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.common.WebUserController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.PaymentFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.util.CommonFunctions;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -87,8 +86,6 @@ public class ChannelSearchController implements Serializable {
     @Inject
     BillController billController;
     @Inject
-    CommonController commonController;
-    @Inject
     DrawerController drawerController;
     @Inject
     private BillBeanController billBean;
@@ -138,9 +135,9 @@ public class ChannelSearchController implements Serializable {
         //// // System.out.println("txtSearch = " + txtSearch);
         //// // System.out.println("txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null
-                && (txtSearch == null || txtSearch.trim().equals(""))
-                && (txtSearchRef == null || txtSearchRef.trim().equals(""))
-                && (txtSearchPhone == null || txtSearchPhone.trim().equals(""))) {
+                && (txtSearch == null || txtSearch.trim().isEmpty())
+                && (txtSearchRef == null || txtSearchRef.trim().isEmpty())
+                && (txtSearchPhone == null || txtSearchPhone.trim().isEmpty())) {
             JsfUtil.addErrorMessage("Please Select From To Dates or BillNo Or Agent Referane No. or Telephone No");
             return;
         }
@@ -149,7 +146,7 @@ public class ChannelSearchController implements Serializable {
             return;
         }
         if (getFromDate() != null && getToDate() != null) {
-            double count = commonController.dateDifferenceInMinutes(getFromDate(), getToDate()) / (60 * 24);
+            double count = CommonFunctions.dateDifferenceInMinutes(getFromDate(), getToDate()) / (60 * 24);
             if (count > 1) {
                 JsfUtil.addErrorMessage("Please Selected Date Range To Long.(Date Range limit for 1 day)");
                 return;
@@ -163,18 +160,18 @@ public class ChannelSearchController implements Serializable {
                 + " where bs.retired=false "
                 + " and type(bs.bill)=:class ";
 
-        if (txtSearch != null && !txtSearch.trim().equals("")) {
+        if (txtSearch != null && !txtSearch.trim().isEmpty()) {
             sql += " and  ((bs.bill.insId like :ts ) "
                     + " or (bs.bill.deptId like :ts ))";
             m.put("ts", "%" + txtSearch.trim().toUpperCase() + "%");
         }
 
-        if (txtSearchRef != null && !txtSearchRef.trim().equals("")) {
+        if (txtSearchRef != null && !txtSearchRef.trim().isEmpty()) {
             sql += " and bs.billItem.agentRefNo like :ts2 ";
             m.put("ts2", "%" + txtSearchRef.trim().toUpperCase() + "%");
         }
 
-        if (txtSearchPhone != null && !txtSearchPhone.trim().equals("")) {
+        if (txtSearchPhone != null && !txtSearchPhone.trim().isEmpty()) {
             sql += " and bs.bill.patient.person.phone like :ts3";
             m.put("ts3", "%" + txtSearchPhone.trim().toUpperCase() + "%");
         }
@@ -273,7 +270,7 @@ public class ChannelSearchController implements Serializable {
             newlyCreatedCancellationProfessionalBillItem.setCreatedAt(new Date());
             newlyCreatedCancellationProfessionalBillItem.setCreater(getSessionController().getLoggedUser());
             newlyCreatedCancellationProfessionalBillItem.setPaidForBillFee(originalProfessionalPaymentBillItem.getPaidForBillFee());
-            
+
             getBillItemFacede().create(newlyCreatedCancellationProfessionalBillItem);
             List<BillFee> originalProfessionalPaymentFeesForBillItem = billBean.fetchBillFees(originalProfessionalPaymentBillItem);
             cancelBillFee(newlyCreatedCancellationProfessionalPaymentBill, newlyCreatedCancellationProfessionalBillItem, originalProfessionalPaymentFeesForBillItem);
@@ -501,7 +498,7 @@ public class ChannelSearchController implements Serializable {
             bf.setCreater(getSessionController().getLoggedUser());
 
             getBillFeeFacade().create(bf);
-            
+
             originalProfessionalPaymentFeeForBillItem.setPaidValue(0);
             getBillFeeFacade().edit(originalProfessionalPaymentFeeForBillItem);
         }

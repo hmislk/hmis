@@ -4,67 +4,67 @@ import com.divudi.bean.channel.AgentReferenceBookController;
 import com.divudi.bean.common.*;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.ItemLight;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
 import com.divudi.service.StaffService;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Staff;
-import com.divudi.entity.UserPreference;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.lab.PatientInvestigationStatus;
-import com.divudi.entity.FeeValue;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.UserPreference;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.entity.FeeValue;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -74,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -148,8 +149,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     @Inject
     ServiceSessionFunctions serviceSessionBean;
     @Inject
-    CommonController commonController;
-    @Inject
     SessionController sessionController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -179,7 +178,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private BillSearch billSearch;
     @Inject
     private BillBeanController billBean;
-    CommonFunctions commonFunctions;
 
     /**
      * Properties
@@ -260,6 +258,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     private String externalDoctor;
 
+    private final AtomicBoolean ccBillSettlingStarted = new AtomicBoolean(false);
+
     public List<AgentReferenceBook> getAgentReferenceBooks() {
         return agentReferenceBooks;
     }
@@ -279,6 +279,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setAgentReferenceBooks(List<AgentReferenceBook> agentReferenceBooks) {
         this.agentReferenceBooks = agentReferenceBooks;
+    }
+
+    public String generateBookNumberFromReference(String referenceNumber) {
+        if (referenceNumber != null && referenceNumber.length() > 2) {
+            return referenceNumber.substring(0, referenceNumber.length() - 2);
+        } else {
+            return null;
+        }
     }
 
     public void selectCollectingCentre() {
@@ -710,14 +718,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.bills = bills;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     private void savePatient() {
         if (getPatient().getId() == null) {
             getPatient().setPhn(applicationController.createNewPersonalHealthNumber(getSessionController().getInstitution()));
@@ -830,13 +830,19 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public String settleCcBill() {
+        if (!ccBillSettlingStarted.compareAndSet(false, true)) {
+            JsfUtil.addErrorMessage("Bill Settling Already Started.");
+            return null;
+        }
         if (errorCheck()) {
+            ccBillSettlingStarted.set(false);
             return "";
         }
         savePatient();
         calTotals();
         Bill ccBill = createCcBill(lstBillEntries.get(0).getBillItem().getItem().getDepartment());
         if (ccBill == null) {
+            ccBillSettlingStarted.set(false);
             return "";
         }
         List<BillItem> list = new ArrayList<>();
@@ -878,7 +884,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 totalHosFee,
@@ -892,6 +898,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         setPrintigBill();
         checkBillValues();
 
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill_print?faces-redirect=true;";
 
     }
@@ -1149,7 +1156,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
 
     }
 
@@ -1556,7 +1563,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(entryVat + entryNet);
 
-
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -1690,6 +1696,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     public String navigateToCollectingCenterBillingromMenu() {
         prepareNewBill();
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1697,6 +1704,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1726,6 +1734,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         prepareNewBillKeepingCollectingCenter();
         fillAvailableAgentReferanceNumbers(collectingCentre);
         setPatient(getPatient());
+        ccBillSettlingStarted.set(false);
         return "/collecting_centre/bill?faces-redirect=true";
     }
 
@@ -1806,14 +1815,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     }
 
     public double calBillPaidValue(Bill b) {
-        String sql;
-
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
-
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
-
+        String jpql;
+        jpql = "select sum(bfp.amount) from BillFeePayment bfp where "
+                + " bfp.retired=:ret "
+                + " and bfp.billFee.bill.id=:bid ";
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bid", b.getId());
+        double d = getBillFeePaymentFacade().findDoubleByJpql(jpql, params);
         return d;
     }
 
@@ -2435,14 +2444,6 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         this.reminingCashPaid = reminingCashPaid;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public List<String> getReferralIds() {
         return referralIds;
     }
@@ -2552,6 +2553,15 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 
     public void setExternalDoctor(String externalDoctor) {
         this.externalDoctor = externalDoctor;
+    }
+
+    public boolean isCcBillSettlingStarted() {
+        return ccBillSettlingStarted.get();
+    }
+
+    public void setCcBillSettlingStarted(boolean ccBillSettlingStarted) {
+        this.ccBillSettlingStarted.set(ccBillSettlingStarted);
+
     }
 
     public class CollectingCenterBookSummeryRow {

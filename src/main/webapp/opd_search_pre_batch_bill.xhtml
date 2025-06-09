@@ -20,72 +20,72 @@
                             <div class="col-2">
 
                                 <h:outputLabel class="my-1"  value="From Date"/>
-                                <p:calendar 
-                                    class="my-1 w-100" 
-                                    id="fromDate" 
+                                <p:calendar
+                                    class="my-1 w-100"
+                                    id="fromDate"
                                     value="#{searchController.fromDate}"
-                                    navigator="false" 
+                                    navigator="false"
                                     inputStyleClass="form-control"
-                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                    maxdate="#{commonFunctionsController.endOfDay}">      
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar 
-                                    class="my-1 w-100" 
-                                    id="toDate" 
+                                <p:calendar
+                                    class="my-1 w-100"
+                                    id="toDate"
                                     value="#{searchController.toDate}"
                                     inputStyleClass="form-control"
                                     navigator="false"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonFunctionsController.endOfDay}">                                                                              
+                                    maxdate="#{commonFunctionsProxy.endOfDay}">
                                 </p:calendar>
 
                                 <h:outputLabel value="Bill No" class="mt-2"/>
                                 <p:inputText autocomplete="off" class="w-100"  value="#{searchController.searchKeyword.billNo}" />
-                                <h:outputLabel value="Patient Name"/>    
+                                <h:outputLabel value="Patient Name"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.patientName}" />
                                 <h:outputLabel value="Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.total}" />
-                                <h:outputLabel value="Net Total"/>   
+                                <h:outputLabel value="Net Total"/>
                                 <p:inputText autocomplete="off" class="w-100" value="#{searchController.searchKeyword.netTotal}"/>
 
-                                <p:commandButton 
-                                    class="ui-button-success w-100 mt-3" 
-                                    icon="fas fa-search" 
-                                    id="btnSearch" 
-                                    ajax="false" 
-                                    value="Search All" 
+                                <p:commandButton
+                                    class="ui-button-success w-100 mt-3"
+                                    icon="fas fa-search"
+                                    id="btnSearch"
+                                    ajax="false"
+                                    value="Search All"
                                     action="#{searchController.createOpdBathcBillPreTable}"/>
                                 <p:commandButton
-                                    class="ui-button-warning w-100 my-1" 
-                                    icon="fas fa-search" id="btnSearch2" 
-                                    ajax="false" 
-                                    value="Search Paid Only" 
+                                    class="ui-button-warning w-100 my-1"
+                                    icon="fas fa-search" id="btnSearch2"
+                                    ajax="false"
+                                    value="Search Paid Only"
                                     action="#{searchController.createOpdBathcBillPreTablePaidOnly}"/>
-                                <p:commandButton 
-                                    class="ui-button-warning w-100" 
-                                    icon="fas fa-search" 
-                                    id="btnSearch3" 
-                                    ajax="false" 
-                                    value="Search Not Paid Only" 
+                                <p:commandButton
+                                    class="ui-button-warning w-100"
+                                    icon="fas fa-search"
+                                    id="btnSearch3"
+                                    ajax="false"
+                                    value="Search Not Paid Only"
                                     action="#{searchController.createOpdBathcBillPreTableNotPaidOly}"/>
 
-                                <p:commandButton 
-                                    class="ui-button-info w-100 my-1" 
-                                    icon="fas fa-search" 
-                                    ajax="false" 
-                                    value="Pharmacy Payment" 
+                                <p:commandButton
+                                    class="ui-button-info w-100 my-1"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Pharmacy Payment"
                                     action="/pharmacy/pharmacy_search_pre_bill.xhtml"/>
                                 <p:defaultCommand target="btnSearch"/>
 
 
                             </div>
                             <div class="col-10">
-                                <p:dataTable 
+                                <p:dataTable
                                     rowIndexVar="i"
-                                    id="tblBills" 
-                                    value="#{searchController.aceptPaymentBills}" 
-                                    var="bill"   
+                                    id="tblBills"
+                                    value="#{searchController.aceptPaymentBills}"
+                                    var="bill"
                                     paginator="true"
                                     rows="10"
                                     paginatorPosition="bottom"
@@ -100,10 +100,10 @@
 
                                     <p:column headerText="Bill No" >
                                         <h:outputLabel value="#{bill.deptId}"  ></h:outputLabel>
-                                    </p:column>   
+                                    </p:column>
                                     <p:column headerText="Name" >
                                         <h:outputLabel value="#{bill.patient.person.nameWithTitle}"  ></h:outputLabel>
-                                    </p:column>   
+                                    </p:column>
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -111,22 +111,22 @@
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" 
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}"
                                                            value="#{bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
-                                        </h:panelGroup>                             
-                                    </p:column>                 
+                                        </h:panelGroup>
+                                    </p:column>
                                     <p:column headerText="Billed By" >
-                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                         </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
-                                        </h:panelGroup>                               
-                                    </p:column>  
+                                        </h:panelGroup>
+                                    </p:column>
                                     <p:column headerText="Net Value" style="text-align: right; padding-right: 10px;" >
 
                                         <h:outputLabel value="#{bill.total - bill.discount}" >
@@ -135,19 +135,19 @@
                                     </p:column>
 
                                     <p:column headerText="Accept">
-                                        <p:commandButton 
-                                            ajax="false"  
-                                            value="Accept Payment" 
-                                            action="#{opdPreSettleController.toSettleBatch(bill)}" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Accept Payment"
+                                            action="#{opdPreSettleController.toSettleBatch(bill)}"
                                             disabled="#{(bill.referenceBill.balance le 0.0 )or bill.cancelled}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <p:column headerText="Reprint">
-                                        <p:commandButton 
-                                            ajax="false"  
-                                            value="Reprint" 
-                                            action="bill_print" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Reprint"
+                                            action="bill_print"
                                             disabled="#{bill.referenceBill.balance le 0.0}" >
                                             <f:setPropertyActionListener value="#{bill.forwardReferenceBills}" target="#{opdPreBillController.bills}" />
                                         </p:commandButton>

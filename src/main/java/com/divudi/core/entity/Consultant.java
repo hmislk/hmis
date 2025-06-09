@@ -1,0 +1,18 @@
+/*
+* Dr M H B Ariyaratne
+ * buddhika.ari@gmail.com
+ */
+package com.divudi.core.entity;
+
+import javax.persistence.Entity;
+
+/**
+ *
+ * @author buddhika
+ */
+@Entity
+public class Consultant extends Doctor {
+
+
+
+}

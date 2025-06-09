@@ -8,64 +8,64 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
         <div class="d-flex gap-2" >
-            <p:autoComplete 
-                id="creditCompany" 
+            <p:autoComplete
+                id="creditCompany"
                 class="w-100 -mx-2"
                 inputStyleClass="form-control"
                 forceSelection="true"
-                value="#{cc.attrs.paymentMethodData.credit.institution}"  
-                completeMethod="#{creditCompanyController.completeCredit}" 
+                value="#{cc.attrs.paymentMethodData.credit.institution}"
+                completeMethod="#{creditCompanyController.completeCredit}"
                 var="ix"
                 minQueryLength="4"
                 placeholder="Company (Type at least 4 letters to search)"
-                itemLabel="#{ix.name}" 
-                itemValue="#{ix}" 
+                itemLabel="#{ix.name}"
+                itemValue="#{ix}"
                 size="10"  >
 
-                <f:ajax  
-                    event="itemSelect" 
+                <f:ajax
+                    event="itemSelect"
                     listener="#{opdBillController.calTotals()}"
-                    execute="@this" 
+                    execute="@this"
                     render=":#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}  :#{p:resolveFirstComponentWithId('tblRequests',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId}" />
             </p:autoComplete>
 
-            <p:inputText 
-                id="polNo" 
+            <p:inputText
+                id="polNo"
                 style="width: 100px;"
-                value="#{cc.attrs.paymentMethodData.credit.referralNo}" 
+                value="#{cc.attrs.paymentMethodData.credit.referralNo}"
                 placeholder="Policy NO" >
             </p:inputText>
 
-            <p:inputText 
-                id="refNo" 
-                style="width: 100px;" 
-                value="#{cc.attrs.paymentMethodData.credit.referenceNo}" 
+            <p:inputText
+                id="refNo"
+                style="width: 100px;"
+                value="#{cc.attrs.paymentMethodData.credit.referenceNo}"
                 placeholder="Reference NO" >
             </p:inputText>
 
-            <p:inputText 
-                id="memo" 
+            <p:inputText
+                id="memo"
                 style="width: 300px;"
-                value="#{cc.attrs.paymentMethodData.credit.comment}" 
+                value="#{cc.attrs.paymentMethodData.credit.comment}"
                 placeholder="Memo" >
             </p:inputText>
 
-            <p:commandLink 
-                id="btnAddNewCreditCom" 
+            <p:commandLink
+                id="btnAddNewCreditCom"
                 value="(+)"
                 class="mx-3 mt-1"
                 title="Add New Credit Company"
-                rendered="#{webUserController.hasPrivilege('Admin')}" 
-                ajax="false" 
+                rendered="#{webUserController.hasPrivilege('Admin')}"
+                ajax="false"
                 action="#{navigationController.navigateToCreditCompany()}"
-                actionListener="#{creditCompanyController.prepareAdd()}" />  
+                actionListener="#{creditCompanyController.prepareAdd()}" />
 
         </div>
 

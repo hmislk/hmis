@@ -5,12 +5,13 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.channel.SessionInstance;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.channel.SessionInstance;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Named;
 /**
@@ -20,10 +21,10 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class ViewScopeDataTransferController  implements Serializable {
-    
+
     private String previousPage;
     private int manageFeeIndex=-1;
-    
+
     private Date fromDate;
     private Date toDate;
     private Boolean needToFillBillSessions;
@@ -33,15 +34,24 @@ public class ViewScopeDataTransferController  implements Serializable {
     private Boolean needToCreateOpdBillForChannellingBillSession;
     private Boolean needToFillMembershipDetails;
     private Boolean needToPrepareForNewBooking;
-    
-    
+
+
     private String sessionInstanceFilter;
     private BillSession selectedBillSession;
     private SessionInstance selectedSessionInstance;
     private Patient patient;
     private PaymentScheme paymentScheme;
-       
-        
+    private List<SessionInstance> sessionsFiltered;
+
+    public List<SessionInstance> getSessionsFiltered() {
+        return sessionsFiltered;
+    }
+
+    public void setSessionsFiltered(List<SessionInstance> sessionsFiltered) {
+        this.sessionsFiltered = sessionsFiltered;
+    }
+
+
 
     /**
      * Creates a new instance of ViewController
@@ -53,24 +63,24 @@ public class ViewScopeDataTransferController  implements Serializable {
         return previousPage;
     }
 
-    
-    
+
+
     public void setPreviousPage(String previousPage) {
         this.previousPage = previousPage;
     }
-    
+
     public void makeAdminFeesAsPreviousPage(){
         previousPage = "/admin_fees?faces-redirect=true";
     }
-    
+
     public void makeInvestigationAsPreviousPage(){
         previousPage = "/lab/investigation?faces-redirect=true";
     }
-    
+
     public void makeBulkFeesAsPreviousPage(){
         previousPage = "/dataAdmin/manage_item_fees_bulk?faces-redirect=true";
     }
-    
+
     public String backToPreviousPage(){
         if(previousPage==null||previousPage.trim().equals("")){
             previousPage = "/index";
@@ -197,8 +207,8 @@ public class ViewScopeDataTransferController  implements Serializable {
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
     }
-    
-    
-    
-    
+
+
+
+
 }

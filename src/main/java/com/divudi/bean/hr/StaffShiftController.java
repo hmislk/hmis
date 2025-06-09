@@ -8,14 +8,13 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.StaffShift;
-import com.divudi.entity.hr.StaffShiftReplace;
-import com.divudi.facade.StaffShiftFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.StaffShift;
+import com.divudi.core.entity.hr.StaffShiftReplace;
+import com.divudi.core.facade.StaffShiftFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -51,8 +50,6 @@ public class StaffShiftController implements Serializable {
     ShiftController shiftController;
     @Inject
     StaffController staffController;
-    @Inject
-    CommonController commonController;
     List<StaffShift> staffShifts;
     Staff staff;
     StaffShift staffshift;
@@ -252,7 +249,7 @@ public class StaffShiftController implements Serializable {
 
         staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        
+
 
     }
 
@@ -313,7 +310,7 @@ public class StaffShiftController implements Serializable {
 
         staffShifts = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        
+
 
     }
 
@@ -436,7 +433,7 @@ public class StaffShiftController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             StaffShiftController controller = (StaffShiftController) facesContext.getApplication().getELResolver().
@@ -451,9 +448,7 @@ public class StaffShiftController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -469,17 +464,6 @@ public class StaffShiftController implements Serializable {
                         + object.getClass().getName() + "; expected type: " + StaffShiftController.class.getName());
             }
         }
-    }
-
-    /**
-     *
-     */
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

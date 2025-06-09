@@ -143,7 +143,7 @@
                                         itemValue="#{d}" />
                                 </p:selectOneMenu>
 
-                                
+
                             </h:panelGroup>
                             <p:spacer></p:spacer>
 
@@ -163,9 +163,19 @@
                             <p:commandButton  
                                 value="Print" 
                                 ajax="false"
-                                class="ui-button-info mx-1" icon="fas fa-print">
+                                class="ui-button-info mx-1" 
+                                icon="fas fa-print">
                                 <p:printer target="printdata" />
                             </p:commandButton>
+
+                            <p:commandButton  
+                                value="Preview" 
+                                ajax="false"
+                                icon="fas fa-eye"
+                                class="ui-button-danger mx-1"
+                                onclick="window.open('#{request.contextPath}/faces/reports/cashier_reports/all_cashier_summary_preview.xhtml', '_blank'); return false;" />
+
+
 
                             <p:commandButton  
                                 value="Excel" 

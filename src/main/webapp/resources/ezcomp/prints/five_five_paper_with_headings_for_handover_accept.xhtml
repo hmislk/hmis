@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" ></cc:attribute>
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" ></cc:attribute>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -149,35 +149,31 @@
             <!-- Bill Header -->
             <div class="billHeader col-12" >
                 <div class="institutionName">
-                    <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.name}" />
+                    <h:outputLabel value="#{cc.attrs.bundle.handoverBill.institution.name}" />
                 </div>
                 <div class="institutionContact">
                     <div>
-                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.institution.address}" />
+                        <h:outputLabel value="#{cc.attrs.bundle.handoverBill.institution.address}" />
                     </div>
                     <div>
-                        <h:outputLabel value="#{cc.attrs.bundle.fromUser.department.name}" />
+                        <h:outputLabel value="#{cc.attrs.bundle.handoverBill.department.name}" />
                     </div>
                 </div>
                 <div class="headingBillFiveFive" style="text-align: center; font-weight: bold;">
-                    <h:outputLabel value="HAND OVER NOTE" />
+                    <h:outputLabel value="HAND OVER ACCEPT RECEIPT" />
                 </div>
             </div>
 
             <!-- Bill Body -->
             <div class="billBody">
 
-
-
-                <h:outputText value="Shift Details" style="font-weight: bold"/>
-
                 <h:panelGrid columns="2" styleClass="handover-grid" columnClasses="labelColumn,valueColumn">
 
 
-                    <h:outputText value="User:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.user.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+                    <h:outputText value="Haning Over User:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.startBill.creater.webUserPerson.nameWithTitle}" styleClass="handover-value" />
 
-                    <h:outputText value="Shift Start Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="Shift Start Receipt No:" styleClass="handover-label" style="font-weight: normal"/>
                     <h:outputText value="#{cc.attrs.bundle.startBill.deptId}" styleClass="handover-value" />
 
                     <h:outputText value="Shift Started At:" styleClass="handover-label" style="font-weight: normal" />
@@ -185,32 +181,55 @@
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                     </h:outputText>
 
-                    <h:outputText value="Shift End:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:panelGroup>
-                        <h:outputText rendered="#{cc.attrs.bundle.endBill eq null}" value="Shift Not Yet Ended" styleClass="handover-value" />
-                        <h:panelGrid columns="2" rendered="#{cc.attrs.bundle.endBill ne null}" styleClass="inner-grid">
-                            <h:outputText value="Shift End Bill ID:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
-                            <h:outputText value="Shift Ended At:" styleClass="handover-label" />
-                            <h:outputText value="#{cc.attrs.bundle.endBill.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                            </h:outputText>
-                        </h:panelGrid>
-                    </h:panelGroup>
 
-                    <!-- Total Handover Value -->
-                    <h:outputText value="Total Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.total}">
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift End Bill ID:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="Shift Ended At:" styleClass="handover-label" />
+                    <h:outputText  rendered="#{cc.attrs.bundle.endBill ne null}" value="#{cc.attrs.bundle.endBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+                    <h:outputText value="Handover Receipt No:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.referenceBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover At:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.referenceBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+
+                    <p:splitter ></p:splitter>
+                    <p:splitter ></p:splitter>
+
+
+                    <h:outputText value="Handover Accept Bill ID:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.deptId}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover Accept By:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.creater.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+
+                    <h:outputText value="Handover Accept At:" styleClass="handover-label" style="font-weight: normal" />
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.createdAt}">
+                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                    </h:outputText>
+
+
+
+                    <h:outputText value="Total Due Handover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.total}">
                         <f:convertNumber pattern="#,##0.00" />
                     </h:outputText>
 
-                    <!-- Handover To -->
-                    <h:outputText value="Handover To:" styleClass="handover-label" style="font-weight: normal"/>
-                    <h:outputText value="#{cc.attrs.bundle.toUser.webUserPerson.nameWithTitle}" styleClass="handover-value" />
+                    <h:outputText value="Handingover Value:" styleClass="handover-label" style="font-weight: normal"/>
+                    <h:outputText value="#{cc.attrs.bundle.handoverBill.netTotal}">
+                        <f:convertNumber pattern="#,##0.00" />
+                    </h:outputText>
+
 
                 </h:panelGrid>
 
-                <hr></hr>
+                <hr/>
 
 
                 <div class="handoverDetails my-3">
@@ -576,26 +595,21 @@
                     <!-- Additional contents ... -->
                 </div>
 
-                <hr></hr>
+                <hr/>
 
 
-                <p:dataTable 
+                <p:dataTable
+                    style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForPrinting}!important;"
+                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                     emptyMessage="No Financial Transactions to Handover"
-                    paginatorAlwaysVisible="false"
-                    value="#{cc.attrs.bundle.selectedBundles}" 
-                    var="summary"
-                    paginator="true" 
-                    rows="10" 
-
-                    paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
-                    currentPageReportTemplate="(Page {currentPage} of {totalPages})"
-                    paginatorPosition="top">
+                    value="#{cc.attrs.bundle.selectedBundles}"
+                    var="summary" >
 
                     <p:column headerText="Institution" style="font-weight: normal">
                         <h:outputText value="#{summary.department.institution.name}" />
                     </p:column>
 
-                    <p:column headerText="Site" >
+                    <p:column headerText="Site"  rendered="#{configOptionApplicationController.getBooleanValueByKey('Sites are Managed',true)}" >
                         <h:outputText value="#{summary.department.site.name}" />
                     </p:column>
 
@@ -615,9 +629,9 @@
 
 
 
-                    <p:column 
+                    <p:column
                         class="text-end"
-                        headerText="Cash Collected" 
+                        headerText="Cash Collected"
                         rendered="#{cc.attrs.bundle.hasCashTransaction}">
                         <h:outputText value="#{summary.cashValue}">
                             <f:convertNumber pattern="#,##0.00" />
@@ -628,12 +642,12 @@
                             </h:outputText>
                         </f:facet>
                     </p:column>
-                    <p:column 
-                        headerText="Cash Handover" 
+                    <p:column
+                        headerText="Cash Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasCashTransaction}">
-                        <h:outputText 
-                            value="#{summary.cashHandoverValue}" 
+                        <h:outputText
+                            value="#{summary.cashHandoverValue}"
                             style="width: 100%;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
@@ -643,8 +657,8 @@
                             </h:outputText>
                         </f:facet>
                     </p:column>
-                    <p:column 
-                        headerText="Card Value" 
+                    <p:column
+                        headerText="Card Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasCardTransaction}">
                         <h:outputText value="#{summary.cardValue}">
@@ -656,12 +670,12 @@
                             </h:outputText>
                         </f:facet>
                     </p:column>
-                    <p:column 
-                        headerText="Card Handover" 
+                    <p:column
+                        headerText="Card Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasCardTransaction}">
-                        <h:outputText 
-                            value="#{summary.cardHandoverValue}" 
+                        <h:outputText
+                            value="#{summary.cardHandoverValue}"
                             style="width: 100%;">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputText>
@@ -673,8 +687,8 @@
                     </p:column>
 
                     <!-- Credit Value Column -->
-                    <p:column 
-                        headerText="Credit Value" 
+                    <p:column
+                        headerText="Credit Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasCreditTransaction}">
                         <h:outputText value="#{summary.creditValue}">
@@ -688,8 +702,8 @@
                     </p:column>
 
                     <!-- Credit Handover Column -->
-                    <p:column 
-                        headerText="Credit Handover" 
+                    <p:column
+                        headerText="Credit Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasCreditTransaction}">
                         <h:outputText value="#{summary.creditHandoverValue}">
@@ -703,8 +717,8 @@
                     </p:column>
 
                     <!-- Staff Value Column -->
-                    <p:column 
-                        headerText="Staff Value" 
+                    <p:column
+                        headerText="Staff Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasStaffTransaction}">
                         <h:outputText value="#{summary.staffValue}">
@@ -718,8 +732,8 @@
                     </p:column>
 
                     <!-- Staff Handover Column -->
-                    <p:column 
-                        headerText="Staff Handover" 
+                    <p:column
+                        headerText="Staff Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasStaffTransaction}">
                         <h:outputText value="#{summary.staffHandoverValue}">
@@ -728,8 +742,8 @@
                     </p:column>
 
                     <!-- Voucher Value Column -->
-                    <p:column 
-                        headerText="Voucher Value" 
+                    <p:column
+                        headerText="Voucher Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
                         <h:outputText value="#{summary.voucherValue}">
@@ -743,8 +757,8 @@
                     </p:column>
 
                     <!-- Voucher Handover Column -->
-                    <p:column 
-                        headerText="Voucher Handover" 
+                    <p:column
+                        headerText="Voucher Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasVoucherTransaction}">
                         <h:outputText value="#{summary.voucherHandoverValue}">
@@ -753,8 +767,8 @@
                     </p:column>
 
                     <!-- IOU Value Column -->
-                    <p:column 
-                        headerText="IOU Value" 
+                    <p:column
+                        headerText="IOU Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasIouTransaction}">
                         <h:outputText value="#{summary.iouValue}">
@@ -768,8 +782,8 @@
                     </p:column>
 
                     <!-- IOU Handover Column -->
-                    <p:column 
-                        headerText="IOU Handover" 
+                    <p:column
+                        headerText="IOU Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasIouTransaction}">
                         <h:outputText value="#{summary.iouHandoverValue}">
@@ -778,8 +792,8 @@
                     </p:column>
 
                     <!-- Agent Value Column -->
-                    <p:column 
-                        headerText="Agent Value" 
+                    <p:column
+                        headerText="Agent Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasAgentTransaction}">
                         <h:outputText value="#{summary.agentValue}">
@@ -793,8 +807,8 @@
                     </p:column>
 
                     <!-- Agent Handover Column -->
-                    <p:column 
-                        headerText="Agent Handover" 
+                    <p:column
+                        headerText="Agent Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasAgentTransaction}">
                         <h:outputText value="#{summary.agentHandoverValue}">
@@ -803,8 +817,8 @@
                     </p:column>
 
                     <!-- Cheque Value Column -->
-                    <p:column 
-                        headerText="Cheque Value" 
+                    <p:column
+                        headerText="Cheque Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasChequeTransaction}">
                         <h:outputText value="#{summary.chequeValue}">
@@ -818,8 +832,8 @@
                     </p:column>
 
                     <!-- Cheque Handover Column -->
-                    <p:column 
-                        headerText="Cheque Handover" 
+                    <p:column
+                        headerText="Cheque Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasChequeTransaction}">
                         <h:outputText value="#{summary.chequeHandoverValue}">
@@ -828,8 +842,8 @@
                     </p:column>
 
                     <!-- Slip Value Column -->
-                    <p:column 
-                        headerText="Slip Value" 
+                    <p:column
+                        headerText="Slip Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasSlipTransaction}">
                         <h:outputText value="#{summary.slipValue}">
@@ -843,8 +857,8 @@
                     </p:column>
 
                     <!-- Slip Handover Column -->
-                    <p:column 
-                        headerText="Slip Handover" 
+                    <p:column
+                        headerText="Slip Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasSlipTransaction}">
                         <h:outputText value="#{summary.slipHandoverValue}">
@@ -853,8 +867,8 @@
                     </p:column>
 
                     <!-- eWallet Value Column -->
-                    <p:column 
-                        headerText="eWallet Value" 
+                    <p:column
+                        headerText="eWallet Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
                         <h:outputText value="#{summary.ewalletValue}">
@@ -868,8 +882,8 @@
                     </p:column>
 
                     <!-- eWallet Handover Column -->
-                    <p:column 
-                        headerText="eWallet Handover" 
+                    <p:column
+                        headerText="eWallet Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasEWalletTransaction}">
                         <h:outputText value="#{summary.ewalletHandoverValue}">
@@ -877,10 +891,9 @@
                         </h:outputText>
                     </p:column>
 
-                    
                     <!-- Patient Points Value Column -->
-                    <p:column 
-                        headerText="Patient Points Value" 
+                    <p:column
+                        headerText="Patient Points Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
                         <h:outputText value="#{summary.patientPointsValue}">
@@ -894,8 +907,8 @@
                     </p:column>
 
                     <!-- Patient Points Handover Column -->
-                    <p:column 
-                        headerText="Patient Points Handover" 
+                    <p:column
+                        headerText="Patient Points Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasPatientPointsTransaction}">
                         <h:outputText value="#{summary.patientPointsHandoverValue}">
@@ -904,8 +917,8 @@
                     </p:column>
 
                     <!-- Online Settlement Value Column -->
-                    <p:column 
-                        headerText="Online Settlement Value" 
+                    <p:column
+                        headerText="Online Settlement Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
                         <h:outputText value="#{summary.onlineSettlementValue}">
@@ -919,8 +932,8 @@
                     </p:column>
 
                     <!-- Online Settlement Handover Column -->
-                    <p:column 
-                        headerText="Online Settlement Handover" 
+                    <p:column
+                        headerText="Online Settlement Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasOnlineSettlementTransaction}">
                         <h:outputText value="#{summary.onlineSettlementHandoverValue}">
@@ -929,8 +942,8 @@
                     </p:column>
 
                     <!-- On Call Value Column -->
-                    <p:column 
-                        headerText="On Call Value" 
+                    <p:column
+                        headerText="On Call Value"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
                         <h:outputText value="#{summary.onCallValue}">
@@ -944,8 +957,8 @@
                     </p:column>
 
                     <!-- On Call Handover Column -->
-                    <p:column 
-                        headerText="On Call Handover" 
+                    <p:column
+                        headerText="On Call Handover"
                         class="text-end"
                         rendered="#{cc.attrs.bundle.hasOnCallTransaction}">
                         <h:outputText value="#{summary.onCallHandoverValue}">

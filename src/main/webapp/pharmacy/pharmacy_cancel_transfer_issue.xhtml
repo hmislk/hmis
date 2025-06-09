@@ -29,17 +29,6 @@
 
                             </f:facet>
 
-
-                            <p:panel>
-                                <f:facet name="header">
-                                    <h:outputText styleClass="fas fa-money-bill"></h:outputText>
-                                    <h:outputLabel value="Payment Mode" class="mx-2"></h:outputLabel>
-                                </f:facet>
-                                <p:selectOneMenu   id="cmbPs" value="#{pharmacyBillSearch.bill.paymentMethod}" required="true"  >
-                                    <f:selectItems value="#{enumController.paymentMethods}"/>
-                                </p:selectOneMenu>
-                            </p:panel> 
-
                             <div class="row" >
                                 <div class="col-6">
                                     <p:panel >

@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" />
     </cc:interface>
@@ -37,13 +37,13 @@
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="FUND DEPOSIT"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="FUND DEPOSIT"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -75,7 +75,7 @@
                         </td>
 
                     </tr>
-                    
+
 
                     <tr>
                         <td style="text-align: left;">
@@ -113,7 +113,7 @@
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill or true}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"
                                    />
                     </div>
                 </div>
@@ -146,7 +146,7 @@
                             <hr/>
                         </td>
                     </tr>
-                    
+
                     <h:panelGroup rendered="#{cc.attrs.payments ne null}">
                         <ui:repeat value="#{cc.attrs.payments}" var="bip"   >
                             <tr>

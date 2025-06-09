@@ -6,6 +6,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
+      xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       >
 
     <h:body>
@@ -25,6 +26,13 @@
                                 </p:commandButton>
                             </div>
                             <div>
+                                <p:commandButton class="ui-button-info mx-2" 
+                                                 icon="fas fa-print" 
+                                                 value="Reprint" 
+                                                 ajax="false" 
+                                                 action="#"  >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
                                 <p:commandButton ajax="false" value="Mark As Checked"
                                                  icon="fa fa-check-square"
                                                  class="m-2 ui-button-success"
@@ -50,7 +58,7 @@
                                         <h:outputText styleClass="fa fa-user-circle"/>
                                         <p:outputLabel class="mx-2" value="Patient Details"/>
                                     </f:facet>
-                                   <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
+                                    <in:bhtDetail admission="#{inwardSearch.bill.patientEncounter}"/>
                                 </p:panel>
                             </div>
                             <div class="col-md-6">
@@ -75,8 +83,19 @@
                                 </p:panel>
                             </div>
                         </div>
-                      
+
                     </p:panel>
+
+                    <div class="printingOnly" >
+                        <h:panelGroup id="gpBillPreview" class="m-3">
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
+                                <ui:repeat value="#{bhtSummeryController.additionalChargeBill}" var="pp">
+                                    <print:five_five_custom_3_inward_outside bill="#{pp}" duplicate="true" />
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
+                    </div>
 
                 </h:form>
             </ui:define>

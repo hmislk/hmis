@@ -9,8 +9,6 @@
 
     <h:body>
 
-
-
         <ui:composition template="/payments/pay_index.xhtml">
 
             <ui:define name="admin">
@@ -33,6 +31,7 @@
                                 </div>
                             </div>
                         </f:facet>
+
                         <div class="row">
                             <div class="col-md-6">
                                 <p:panel header="Staff Detail">
@@ -121,9 +120,6 @@
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-
-
-
                 </h:form>
 
                 <h:form >
@@ -132,9 +128,19 @@
                                      value="Print">
                         <p:printer target="gpBillPreview" />
                     </p:commandButton>
+                    
                     <h:panelGroup id="gpBillPreview">
-                        <bi:staffBill bill="#{inwardSearch.bill}" dup="true"/>
+
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                            <bi:staffBill bill="#{inwardSearch.bill}" dup="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.')}">
+                            <bi:staff_payment_five_five_paper_with_headings duplicate="true" controller="#{inwardSearch}" bill="#{inwardSearch.bill}" />
+                        </h:panelGroup>
+
                     </h:panelGroup>
+                    
                 </h:form>
 
             </ui:define>

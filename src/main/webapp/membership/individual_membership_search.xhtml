@@ -20,67 +20,105 @@
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('MemberShipSearch')}">
                     <na:not_authorize />
                 </h:panelGroup>
-                
+
 
                 <h:panelGroup  rendered="#{webUserController.hasPrivilege('MemberShipSearch')}">
                     <h:form  >
                         <p:growl />
-                        <p:panel header="Search and Edit Families" >
-                            <h:panelGrid columns="3" >
+                        <p:panel header="Search and Edit Members" class="m-1">
+                            <p:panelGrid columns="3" layout="tabular" class="w-100 m-1">
                                 <p:outputLabel value="Membership Card No / Phone No of CHH" ></p:outputLabel>
-                                <p:inputText value="#{patientController.searchText}" autocomplete="off"></p:inputText>
-                                <p:commandButton ajax="false" action="#{patientController.searchFamilyMember()}" value="Search" >
+                                <p:inputText value="#{patientController.searchText}" autocomplete="off" class="w-100"></p:inputText>
+                                <p:commandButton 
+                                    ajax="false" 
+                                    action="#{patientController.searchFamilyMember()}" 
+                                    value="Search" >
                                 </p:commandButton>
-                            </h:panelGrid>
+                            </p:panelGrid>
+                            
+                            <p:dataTable 
+                                value="#{patientController.familyMembers}" 
+                                var="f" 
+                                rowIndexVar="n" 
+                                rowKey="#{f.id}"
+                                paginator="true"
+                                rows="10"
+                                rowsPerPageTemplate="5,10,20,50"
+                                paginatorPosition="bottom"
+                                filteredValue="#{patientController.filteredFamilyMembers}"
+                                widgetVar="familyTable"
+                                emptyMessage="No matching records found">
+
+                                <p:column headerText="Membership" sortBy="#{f.family.membershipScheme.name}" filterBy="#{f.family.membershipScheme.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{f.family.membershipScheme.name}" />
+                                </p:column>
+
+                                <p:column headerText="Card No" sortBy="#{f.family.membershipCardNo}" filterBy="#{f.family.membershipCardNo}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{f.family.membershipCardNo}" />
+                                </p:column>
+
+                                <p:column headerText="Membership Phone No" sortBy="#{f.family.phoneNo}" filterBy="#{f.family.phoneNo}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{f.family.phoneNo}" />
+                                </p:column>
+
+                                <p:column headerText="Name" sortBy="#{f.patient.person.name}" filterBy="#{f.patient.person.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{f.patient.person.name}" />
+                                </p:column>
+                                
+                                <p:column headerText="Phone" sortBy="#{f.patient.person.name}" filterBy="#{f.patient.person.name}" filterMatchMode="contains">
+                                    <p:outputLabel value="#{f.patient.person.phone}" class="mx-1"/>
+                                    <p:outputLabel value="#{f.patient.person.mobile}" class="mx-1" />
+                                </p:column>
+
+                                <p:column headerText="Sex" sortBy="#{f.patient.person.sex}" filterBy="#{f.patient.person.sex}" filterMatchMode="exact">
+                                    <p:outputLabel value="#{f.patient.person.sex}" />
+                                </p:column>
+
+                                <p:column headerText="Age" sortBy="#{f.patient.age}">
+                                    <p:outputLabel value="#{f.patient.age}" />
+                                </p:column>
+
+                                <p:column headerText="Actions">
+                                     <p:commandButton 
+                                        action="#{patientController.navigateToManageFamily(f.family)}" 
+                                        ajax="false"
+                                        class="mx-2"
+                                        icon="fa fa-fw fa-file-medical"
+                                        title="Manage Family">
+                                    </p:commandButton>
+                                    
+                                    <p:commandButton 
+                                        action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                        ajax="false"
+                                        class="mx-2"
+                                        icon="fa fa-fw fa-file-medical"
+                                        title="OPD Billing">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        action="#{opdPreBillController.navigateToBillingForCashierFromMembership(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                        ajax="false"
+                                        class="mx-2"
+                                        icon="fa fa-fw fa-cash-register"
+                                        title="OPD Billing for Cashier">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false"
+                                        action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(f.patient, f.family.membershipScheme.paymentScheme)}" 
+                                        icon="fa fa-fw fa-calendar-check" 
+                                        class="mx-1"
+                                        title="Channelling"
+                                        disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
+                                    </p:commandButton>
+                                </p:column>
+                            </p:dataTable>
+
                         </p:panel>
 
 
-                        <p:dataTable value="#{patientController.familyMembers}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
-                            <p:column headerText="Membership" >
-                                <p:outputLabel value="#{f.family.membershipScheme.name}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Card No" >
-                                <p:outputLabel value="#{f.family.membershipCardNo}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Phone No" >
-                                <p:outputLabel value="#{f.family.phoneNo}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Name" >
-                                <p:outputLabel value="#{f.patient.person.name}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Sex" >
-                                <p:outputLabel value="#{f.patient.person.sex}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Age" >
-                                <p:outputLabel value="#{f.patient.age}" ></p:outputLabel>
-                            </p:column>
-                            <p:column headerText="Actions" >
-                                <p:commandButton 
-                                    action="#{opdBillController.navigateToNewOpdBillWithPaymentScheme(f.patient, f.family.membershipScheme.paymentScheme)}" 
-                                    ajax="false"
-                                    class="mx-2"
-                                    icon="fa fa-fw fa-file-medical"
-                                    title="OPD Billing">
-                                </p:commandButton>
 
-                                <p:commandButton 
-                                    action="#{opdPreBillController.navigateToBillingForCashierFromMembership(f.patient, f.family.membershipScheme.paymentScheme)}" 
-                                    ajax="false"
-                                    class="mx-2"
-                                    icon="fa fa-fw fa-cash-register"
-                                    title="OPD Billing for Cashier">
-                                </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false"
-                                    action="#{bookingControllerViewScope.navigateToChannelBookingFromMembershipByDate(f.patient, f.family.membershipScheme.paymentScheme)}" 
-                                    icon="fa fa-fw fa-calendar-check" 
-                                    class="mx-1"
-                                    title="Channelling"
-                                    disabled="#{!webUserController.hasPrivilege('ChannellingChannelBooking')}">
-                                </p:commandButton>
-                            </p:column>
-                        </p:dataTable>
 
 
 

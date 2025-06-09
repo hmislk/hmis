@@ -1,9 +1,9 @@
 package com.divudi.bean.process;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.process.ProcessDefinition;
-import com.divudi.entity.process.ProcessStepDefinition;
-import com.divudi.facade.ProcessStepDefinitionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.process.ProcessDefinition;
+import com.divudi.core.entity.process.ProcessStepDefinition;
+import com.divudi.core.facade.ProcessStepDefinitionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -195,7 +195,7 @@ public class ProcessStepDefinitionController implements Serializable {
         processStepDefinitionFacade.edit(current);
         JsfUtil.addSuccessMessage("Deleted");
         items = null;
-        return null; 
+        return null;
     }
 
     /**

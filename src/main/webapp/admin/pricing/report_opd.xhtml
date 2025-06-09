@@ -5,7 +5,9 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
-
+    <h:head>
+        <title>OPD Membership Report</title>
+    </h:head>
     <h:body>
 
         <ui:composition template="/admin/pricing/index.xhtml">
@@ -13,21 +15,21 @@
             <ui:define name="subcontent">
 
                 <h:form>
-
-                    <h:panelGrid columns="3"  >
-
-                        <p:panel header="Member Ship Report">
-                            <p:commandButton action="/membership/report_opd_member_ship_discount" value="Membership Scheme Discount"  styleClass="linkButton" ajax="false"  />                              
-                        </p:panel>
-
-
-                    </h:panelGrid>
-
+                    <p:panel header="OPD Membership Report" style="margin: 20px;">
+                        <p:outputPanel styleClass="ui-fluid">
+                            <p:panelGrid columns="1" layout="grid" styleClass="ui-panelgrid-blank" columnClasses="ui-grid-col-12">
+                                    <p:commandButton
+                                            action="/membership/report_opd_member_ship_discount"
+                                            value="Membership Scheme Discount"
+                                            styleClass="ui-button ui-button-info"
+                                            ajax="false"
+                                            style="width: 100%; max-width: 400px;">
+                                    </p:commandButton>
+                            </p:panelGrid>
+                        </p:outputPanel>
+                    </p:panel>
                 </h:form>
             </ui:define>
-
-
         </ui:composition>
-
     </h:body>
 </html>

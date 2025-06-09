@@ -13,29 +13,103 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:commandButton 
-                        value="Fund Bill Index" 
-                        action="#{financialTransactionController.navigateToFinancialTransactionIndex()}" 
-                        ajax="false" >
-                    </p:commandButton>
+                    <p:panel class="m-1">
+                        <f:facet name="header" >
+                            <h:outputText value="Float Transfer Note" >
+                            </h:outputText>
+                            <p:commandButton
+                                class="float-end"
+                                value="Back to Fund Transfer List"
+                                action="#{financialTransactionController.navigateToFinancialTransactionIndex()}"
+                                ajax="false" >
+                            </p:commandButton>
+                        </f:facet>
+                        <div class="row" >
+                            <div class="col-3" >
+                                <p:panelGrid
+                                    class="w-100"
+                                    layout="tabular"
+                                    columns="2"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Transfer From" >
+                                    </h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.fromWebUser.webUserPerson.nameWithTitle}" >
+                                    </h:outputText>
 
-                    <p:panel header="Iniaitl Fund Bill" >
-                        <h:outputText value="#{financialTransactionController.currentBill.total}" >
-                        </h:outputText>
+                                    <h:outputText class="fw-medium" value="Transfer At" >
+                                    </h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.createdAt}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-3" >
+                                <p:panelGrid
+                                    layout="tabular"
+                                    columns="2"
+                                    class="w-100"
+                                    columnClasses="text-start, text-end">
+                                    <h:outputText class="fw-medium" value="Transfer To" >
+                                    </h:outputText>
+                                    <h:outputText value="#{financialTransactionController.currentBill.toWebUser.webUserPerson.nameWithTitle}" >
+                                    </h:outputText>
+
+                                    <h:outputText class="fw-medium" value="Received At" >
+                                    </h:outputText>
+                                    <h:panelGroup >
+                                        <h:outputText
+                                            rendered="#{financialTransactionController.currentBill.referenceBill eq null}"
+                                            value="Not yet received" >
+                                        </h:outputText>
+                                        <h:outputText
+                                            rendered="#{financialTransactionController.currentBill.referenceBill ne null}"
+                                            value="#{financialTransactionController.currentBill.referenceBill.createdAt}" >
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                                        </h:outputText>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </div>
+                            <div class="col-6" >
+                                <p:dataTable
+                                    class="w-100"
+                                    id="tblPayments"
+                                    value="#{financialTransactionController.currentBillPayments}" var="bp" >
+                                    <p:column headerText="Payment Method" >
+                                        <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputLabel value="Total" >
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                    <p:column
+                                        headerText="Value"
+                                        class="text-end">
+                                        <h:outputText value="#{bp.paidValue}" ></h:outputText>
+                                        <f:facet name="footer" >
+                                            <h:outputLabel value="#{financialTransactionController.currentBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputLabel>
+                                        </f:facet>
+                                    </p:column>
+                                </p:dataTable>
+                            </div>
+                        </div>
 
                     </p:panel>
-                    <p:dataTable id="tblPayments" value="#{financialTransactionController.currentBillPayments}" var="bp" >
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paymentMethod}" ></h:outputText>
-                        </p:column>
-                        <p:column headerText="Payment Method" >
-                            <h:outputText value="#{bp.paidValue}" ></h:outputText>
-                        </p:column>
-                    </p:dataTable>
-                    
-                    
-                    
-                    <prints:float_transfer_five_five bill="#{financialTransactionController.currentBill}"/>  
+
+                    <h:panelGroup id="panelPrint" >
+                        <prints:float_transfer_five_five bill="#{financialTransactionController.currentBill}"/>
+                    </h:panelGroup>
+
+                    <p:commandButton
+                            value="Print"
+                            ajax="false"
+                            icon="pi pi-print"
+                            style="margin-top: 10px;">
+                        <p:printer target="panelPrint"    ></p:printer>
+                    </p:commandButton>
+
+
 
                 </h:form>
             </ui:define>

@@ -4,31 +4,30 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.InvestigationSummeryData;
-import com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.InvestigationSummeryData;
+import com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.Machine;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.MachineFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.MachineFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,12 +52,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonReport commonReport;
-    @Inject
-    CommonController commonController;
-    @EJB
-    private CommonFunctions commonFunctions;
+
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -132,7 +126,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -143,7 +137,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(Calendar.getInstance().getTime());
+            toDate = CommonFunctions.getEndOfDay(Calendar.getInstance().getTime());
         }
         return toDate;
     }
@@ -158,14 +152,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
     public void setBillFacade(BillFacade billFacade) {
         this.billFacade = billFacade;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     private Institution collectingIns;
@@ -222,7 +208,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         Map m;
         m = new HashMap();
 
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution, bi.bill.collectingCentre) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -261,7 +247,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         }
 
         m = new HashMap();
-        jpql = "Select new com.divudi.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
+        jpql = "Select new com.divudi.core.data.dataStructure.ItemInstitutionCollectingCentreCountRow(bi.item, count(bi), bi.bill.institution) "
                 + " from BillItem bi "
                 + " join bi.bill b "
                 + " join b.institution ins "
@@ -354,7 +340,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //            if (bobj.length < 3) {
 //                continue;
 //            }
-//            
+//
 //            ItemInstitutionCollectingCentreCountRow r = new ItemInstitutionCollectingCentreCountRow();
 //            r.setItem((Item) bobj[0]);
 //            r.setCount((Long) bobj[1]);
@@ -434,7 +420,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 //
 //        countTotal = billed - (refunded + cancelled);
 
-        
+
     }
 
     public List<InvestigationSummeryData> getItems3() {
@@ -469,7 +455,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("pm3", PaymentMethod.Cheque);
         temMap.put("ins", getSessionController().getInstitution());
 
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         List<BillItem> temps = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
 
         double tot = 0.0;
@@ -876,7 +862,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         temMap.put("pm1", PaymentMethod.Cash);
         temMap.put("pm2", PaymentMethod.Card);
         temMap.put("pm3", PaymentMethod.Cheque);
-        temMap.put("ixtype", com.divudi.entity.lab.Investigation.class);
+        temMap.put("ixtype", com.divudi.core.entity.lab.Investigation.class);
         temMap.put("bTp", BillType.OpdBill);
         temMap.put("ins", getSessionController().getInstitution());
         investigations = getItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
@@ -1198,7 +1184,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         }
 
-        
+
 
     }
 
@@ -1287,7 +1273,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             investigationCountWithMachines.add(tempMac);
         }
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineAndBillType() {
@@ -1358,7 +1344,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
         total += (totalOpd + totalcc + totalInward);
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public void createLabServiceWithCountAndValueByMachineInvestigationAndBillType() {
@@ -1529,7 +1515,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
 
         investigationCountWithMachines.add(row);
 
-        
+
     }
 
     public List<Item> getInvestigationItems() {
@@ -1965,14 +1951,6 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             this.count = count;
         }
 
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
 }

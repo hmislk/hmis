@@ -5,18 +5,17 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.common.UserPrivilageController.PrivilegeHolder;
-import com.divudi.entity.TriggerSubscription;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.Privileges;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.WebUserPrivilege;
-import com.divudi.entity.WebUserRole;
-import com.divudi.entity.WebUserRolePrivilege;
-import com.divudi.entity.WebUserRoleUser;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.WebUserRoleUserFacade;
+import com.divudi.core.entity.TriggerSubscription;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.Privileges;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.WebUserRole;
+import com.divudi.core.entity.WebUserRolePrivilege;
+import com.divudi.core.entity.WebUserRoleUser;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.WebUserRoleUserFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -101,7 +100,7 @@ public class WebUserRoleUserController implements Serializable {
             userPrivilageController.addUserPrivilege(p, webUser, department);
         }
     }
-    
+
 
     public void addUsers() {
         if (current == null) {

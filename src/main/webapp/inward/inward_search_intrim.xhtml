@@ -16,32 +16,32 @@
                             <h:panelGrid columns="1">
                                 <h:outputLabel value="From Date"/>
                                 <p:datePicker
-                                    value="#{searchController.fromDate}" 
+                                    value="#{searchController.fromDate}"
                                     class="w-100"
                                     showTime="true"
                                     showButtonBar="true"
                                     timeInput="true"
                                     inputStyleClass="form-control"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
 
                                 <h:outputLabel value="To Date"/>
-                                <p:datePicker 
-                                    value="#{searchController.toDate}" 
+                                <p:datePicker
+                                    value="#{searchController.toDate}"
                                     class="w-100"
                                     showTime="true"
                                     showButtonBar="true"
                                     timeInput="true"
                                     inputStyleClass="form-control"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
 
-                                <p:commandButton 
-                                    class="mt-2 w-100 mb-3 ui-button-warning" 
+                                <p:commandButton
+                                    class="mt-2 w-100 mb-3 ui-button-warning"
                                     icon="fa-solid fa-search"
-                                    ajax="false" 
+                                    ajax="false"
                                     action="#{searchController.createInwardIntrimBills()}"
                                     value="Search"  />
 
@@ -61,9 +61,9 @@
                                 <p:inputText autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                             </h:panelGrid>
                             <div class="p-1">
-                                <p:dataTable 
+                                <p:dataTable
                                     id="tblBills"
-                                    value="#{searchController.bills}" 
+                                    value="#{searchController.bills}"
                                     var="bb"
                                     rowKey="#{bb.id}"
                                     paginator="true"
@@ -84,7 +84,7 @@
                                         <h:outputLabel value="#{bb.patientEncounter.bhtNo}" ></h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Billed At" >   
+                                    <p:column headerText="Billed At" >
                                         <h:outputLabel value="#{bb.createdAt}" />
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
@@ -92,31 +92,31 @@
                                             <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.createdAt}" >
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
-                                        </h:panelGroup>                             
+                                        </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Billed By">  
-                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" >                                      
-                                        </h:outputLabel>                                  
+                                    <p:column headerText="Billed By">
+                                        <h:outputLabel value="#{bb.creater.webUserPerson.name}" >
+                                        </h:outputLabel>
                                         <br/>
                                         <h:panelGroup rendered="#{bb.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled By " />
-                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >                                       
+                                            <h:outputLabel style="color: red;" rendered="#{bb.cancelled}" value="#{bb.cancelledBill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
                                     <p:column headerText="Client" >
                                         <h:outputLabel value="#{bb.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
-                                    </p:column>         
-                                    <p:column headerText="Payment Method">                            
-                                        <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>                                   
                                     </p:column>
-                                    <p:column headerText="Value" >                              
+                                    <p:column headerText="Payment Method">
+                                        <h:outputLabel value="#{bb.paymentMethod}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Value" >
                                         <h:outputLabel value="#{bb.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>                                  
-                                    </p:column>                                
+                                        </h:outputLabel>
+                                    </p:column>
                                     <p:column headerText="Comments" >
                                         <h:outputLabel rendered="#{bb.refundedBill ne null}" value="#{bb.refundedBill.comments}" >
                                         </h:outputLabel>

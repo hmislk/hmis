@@ -7,12 +7,12 @@
 package com.divudi.bean.cashTransaction;
 
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.PaymentMethod;
-import com.divudi.entity.Bill;
-import com.divudi.entity.Payment;
-import com.divudi.entity.cashTransaction.DenominationTransaction;
-import com.divudi.facade.DenominationTransactionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.facade.DenominationTransactionFacade;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,6 +38,8 @@ public class DenominationTransactionController implements Serializable {
 
     @EJB
     private DenominationTransactionFacade denominationTransactionFacade;
+    @EJB
+    BillService billService;
 
     @Inject
     private SessionController sessionController;
@@ -82,11 +84,11 @@ public class DenominationTransactionController implements Serializable {
             denominationTransactionFacade.edit(transaction);
         }
     }
-    
+
     public List<DenominationTransaction> createDefaultDenominationTransaction() {
         List<DenominationTransaction> dts = new ArrayList<>();
-        List<com.divudi.entity.cashTransaction.Denomination> denominations = denominationController.getDenominations();
-        for (com.divudi.entity.cashTransaction.Denomination d : denominations) {
+        List<com.divudi.core.entity.cashTransaction.Denomination> denominations = denominationController.getDenominations();
+        for (com.divudi.core.entity.cashTransaction.Denomination d : denominations) {
             DenominationTransaction dt = new DenominationTransaction();
             dt.setDenomination(d);
             dt.setPaymentMethod(PaymentMethod.Cash);
@@ -95,16 +97,10 @@ public class DenominationTransactionController implements Serializable {
         return dts;
     }
 
-    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
-        String jpql = "select dt "
-                + " from DenominationTransaction dt "
-                + " where dt.retired=:ret "
-                + " and dt.bill=:b";
-        Map m = new HashMap();
-        m.put("b", b);
-        m.put("ret", false);
-        return denominationTransactionFacade.findByJpql(jpql, m);
-    }
+//    @Deprecated // Directly User method with the same name in BillService
+//    List<DenominationTransaction> fetchDenominationTransactionFromBill(Bill b) {
+//        return billService.fetchDenominationTransactionFromBill(b);
+//    }
 
     @FacesConverter(forClass = DenominationTransaction.class)
     public static class DenominationTransactionConverter implements Converter {

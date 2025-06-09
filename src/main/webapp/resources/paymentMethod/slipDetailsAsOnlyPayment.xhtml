@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" default="true"/>
     </cc:interface>
 
@@ -22,15 +22,15 @@
                 <p:ajax process="@this" ></p:ajax>
             </p:selectOneMenu>
             <p:outputLabel value="Date:"/>
-            <p:calendar 
-                value="#{cc.attrs.paymentMethodData.slip.date}" 
-                placeholder="Select date" 
-                pattern="#{sessionController.applicationPreference.longDateFormat}" 
-                id="date">                            
+            <p:calendar
+                value="#{cc.attrs.paymentMethodData.slip.date}"
+                placeholder="Select date"
+                pattern="#{sessionController.applicationPreference.longDateFormat}"
+                id="date">
                 <p:ajax process="@this" ></p:ajax>
             </p:calendar>
             <p:outputLabel value="Ref No:"/>
-            <p:inputText value="#{cc.attrs.paymentMethodData.slip.referenceNo}" 
+            <p:inputText value="#{cc.attrs.paymentMethodData.slip.referenceNo}"
                          placeholder="Referance No" class="w-100" ></p:inputText>
             <p:outputLabel value="Comments:"/>
             <p:inputTextarea value="#{cc.attrs.paymentMethodData.slip.comment}" placeholder="Comments" class="w-100" ></p:inputTextarea>

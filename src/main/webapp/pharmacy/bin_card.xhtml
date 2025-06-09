@@ -17,15 +17,26 @@
                 </f:facet>
                 <h:panelGrid columns="7" class="w-100">
                     <h:outputLabel value="From" ></h:outputLabel>
-                    <p:datePicker class="w-100 m-1" inputStyleClass="w-100" value="#{pharmacyErrorChecking.fromDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                    <p:datePicker 
+                        class="w-100 m-1" 
+                        showTime="true"
+                        inputStyleClass="w-100" 
+                        value="#{pharmacyErrorChecking.fromDate}" 
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></p:datePicker>
                     <p:spacer width="10" ></p:spacer>
                     <h:outputLabel value="To" ></h:outputLabel>
-                    <p:datePicker class="w-100 m-1" inputStyleClass="w-100" value="#{pharmacyErrorChecking.toDate}" pattern="dd MMMM yyyy"></p:datePicker>
+                    <p:datePicker 
+                        class="w-100 m-1" 
+                        inputStyleClass="w-100" 
+                        value="#{pharmacyErrorChecking.toDate}" 
+                        showTime="true"
+                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                    </p:datePicker>
                     <p:spacer width="10" ></p:spacer>
                     <p:commandButton class="m-1 ui-button-success" icon="fa fa-file-excel" ajax="false" value="Download" >
                         <p:dataExporter fileName="Stock Hx" target="tbl" type="xlsx" ></p:dataExporter>
                     </p:commandButton>
-                    
+
 
 
                     <p:outputLabel 
@@ -33,7 +44,8 @@
                     <p:autoComplete 
                         value="#{pharmacyErrorChecking.department}"  
                         inputStyleClass="w-100"
-                        class="w-100"
+                        class="w-100 m-1"
+                        required="true"
                         completeMethod="#{departmentController.completeDept}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" 
                         forceSelection="true" rendered="true" 
                         requiredMessage="You must select a department" >
@@ -49,7 +61,8 @@
                     <p:outputLabel value="Item" ></p:outputLabel>
                     <p:autoComplete value="#{pharmacyErrorChecking.item}" 
                                     inputStyleClass="w-100"
-                                    class="w-100"
+                                    class="w-100 m-1"
+                                    required="true"
                                     completeMethod="#{itemController.completeAmpItemAll}" 
                                     var="item" itemValue="#{item}" itemLabel="#{item.name}" 
                                     forceSelection="true"  >
@@ -61,22 +74,42 @@
                         </p:column>
                     </p:autoComplete>
                     <p:spacer width="10" ></p:spacer>
-                    <p:commandButton class="m-1 ui-button-warning" ajax="false" icon="fas fa-arrows-rotate" value="Process" action="#{pharmacyErrorChecking.processBinCard()}" >
+                    <p:commandButton 
+                        class="m-1 ui-button-warning" 
+                        ajax="false" 
+                        icon="fas fa-arrows-rotate"
+                        value="Process"
+                        action="#{pharmacyErrorChecking.processBinCard()}" >
                     </p:commandButton>
-                    
+
 
                 </h:panelGrid>
 
                 <p:dataTable value="#{pharmacyErrorChecking.stockHistories}"
                              var="sh"
                              rowIndexVar="i"
-                             rows="100"
+                             rows="10"
                              id="tbl"
                              rendered="true"
                              rowKey="#{sh.id}"
                              paginator="true"
                              paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                             rowsPerPageTemplate="20,50,100,500,1000">
+                             rowsPerPageTemplate="10,20,50,100,500,1000">
+
+
+                    <p:column 
+                        headerText="Stock Hx ID"
+                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                        width="10rem">
+                        <p:commandLink 
+                            ajax="false"
+                            action="#{stockHistoryController.navigateToViewStockHistory(sh)}"
+                            value="#{sh.id}" 
+                            ></p:commandLink>
+                        <f:facet name="footer">
+                            <h:outputText value="Total"/>
+                        </f:facet>
+                    </p:column>
 
                     <!-- Date & Time with Format -->
                     <p:column headerText="Date &amp; Time">
@@ -92,7 +125,7 @@
                     </p:column>
 
                     <!-- Quantity In -->
-                    <p:column headerText="Qty In">
+                    <p:column headerText="Qty In" class="text-end">
                         <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
                                       rendered="#{sh.pbItem.transThisIsStockIn}"
                                       styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
@@ -102,7 +135,7 @@
                     </p:column>
 
                     <!-- Quantity Out -->
-                    <p:column headerText="Qty Out">
+                    <p:column headerText="Qty Out" class="text-end">
                         <h:outputText 
                             value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
                             rendered="#{sh.pbItem.transThisIsStockOut}"
@@ -111,13 +144,13 @@
                         </h:outputText>
                     </p:column>
 
-                    <p:column headerText="Balance Qty">
+                    <p:column headerText="Balance Qty" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
                     </p:column>
-                    
-                    
+
+
 
                 </p:dataTable>
 

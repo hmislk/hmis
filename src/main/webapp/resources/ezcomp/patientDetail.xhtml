@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="patient" type="com.divudi.entity.Patient"  />
+        <cc:attribute name="patient" type="com.divudi.core.entity.Patient"  />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -57,11 +57,11 @@
         <div class="row mt-2">
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Age" ></p:outputLabel>
-                <p:inputText id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100" disabled="true"/>          
+                <p:inputText id="txtAgeStr" value="#{cc.attrs.patient.person.ageAsString}" class="form-control w-100" disabled="true"/>
             </div>
             <div class="col-md-4 p-1">
                 <p:outputLabel value="Date of Birth" ></p:outputLabel>
-                <p:datePicker id="calNewPtDob" 
+                <p:datePicker id="calNewPtDob"
                               value="#{cc.attrs.patient.person.dob}"
                               inputStyleClass="w-100"
                               class="w-100">

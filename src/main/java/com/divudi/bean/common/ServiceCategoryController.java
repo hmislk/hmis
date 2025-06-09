@@ -8,8 +8,8 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.ServiceCategory;
-import com.divudi.facade.ServiceCategoryFacade;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.facade.ServiceCategoryFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -21,7 +21,7 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 /**
  *
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics)

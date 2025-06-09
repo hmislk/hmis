@@ -28,37 +28,37 @@
                             <p:outputLabel value="From" ></p:outputLabel>
                             <!--<p:calendar timeInput="true"  pattern="dd/MM/yyyy hh:mm" value="#{financialTransactionController.fromDate}" ></p:calendar>-->
                             <p:datePicker
-                                value="#{financialTransactionController.fromDate}" 
+                                value="#{financialTransactionController.fromDate}"
                                 class="w-100"
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
                                 inputStyleClass="form-control"
-                                maxdate="#{commonFunctionsController.endOfDay}"
+                                maxdate="#{commonFunctionsProxy.endOfDay}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                             </p:datePicker>
                             <p:outputLabel value="To" ></p:outputLabel>
                             <!--<p:calendar timeInput="true"  pattern="dd/MM/yyyy hh:mm" value="#{financialTransactionController.toDate}" > </p:calendar>-->
                             <p:datePicker
-                                value="#{financialTransactionController.toDate}" 
+                                value="#{financialTransactionController.toDate}"
                                 class="w-100"
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
                                 inputStyleClass="form-control"
-                                maxdate="#{commonFunctionsController.endOfDay}"
+                                maxdate="#{commonFunctionsProxy.endOfDay}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                             </p:datePicker>
 
                         </p:panelGrid>
-                        <p:commandButton 
-                            value="Process" 
-                            ajax="false" 
+                        <p:commandButton
+                            value="Process"
+                            ajax="false"
                             class="mx-3 ui-button-success"
                             icon="fas fa-refresh"
                             action="#{financialTransactionController.processToHandoverCreateBillForSelectedPeriod}" >
                         </p:commandButton>
-                        <p:commandButton 
+                        <p:commandButton
                             value="Print"
                             ajax="false"
                             class="ui-button-warning"
@@ -74,7 +74,7 @@
                                         <h:outputLabel value="From : " style=" font-weight: bold;"/>
                                         <h:outputLabel class="mx-2" style=" font-weight: bold;" value="#{financialTransactionController.fromDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                        </h:outputLabel>                          
+                                        </h:outputLabel>
                                         <h:outputLabel value="&emsp;&emsp;To :" style=" font-weight: bold;"/>
                                         <h:outputLabel class="mx-2" style=" font-weight: bold;" value="#{financialTransactionController.toDate}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
@@ -119,9 +119,9 @@
                                                 <p:outputLabel value="Shift End" />
                                             </h:panelGroup>
                                             <h:panelGroup>
-                                                <p:badge value="Shift Not Yet Ended" 
-                                                         rendered="#{financialTransactionController.bundle.endBill eq null}" 
-                                                         styleClass="ui-badge-danger" 
+                                                <p:badge value="Shift Not Yet Ended"
+                                                         rendered="#{financialTransactionController.bundle.endBill eq null}"
+                                                         styleClass="ui-badge-danger"
                                                          icon="pi pi-times">
                                                 </p:badge>
 
@@ -219,12 +219,12 @@
                                         <p:autoComplete
                                             completeMethod="#{webUserController.completeUser}"
                                             class="mx-2 w-100"
-                                            id="acStaff" 
+                                            id="acStaff"
                                             inputStyleClass="w-100"
-                                            value="#{financialTransactionController.user}" 
+                                            value="#{financialTransactionController.user}"
                                             var="user"
                                             scrollHeight="450"
-                                            itemLabel="#{user.webUserPerson.name}" 
+                                            itemLabel="#{user.webUserPerson.name}"
                                             itemValue="#{user}" >
                                             <p:column headerText="Username" >
                                                 <h:outputText value="#{user.name}" ></h:outputText>
@@ -233,10 +233,10 @@
                                                 <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
                                             </p:column>
                                         </p:autoComplete>
-                                        <p:commandButton 
-                                            class="ui-button-success mx-2" 
-                                            ajax="false" 
-                                            value="&nbsp;&nbsp;Handover" 
+                                        <p:commandButton
+                                            class="ui-button-success mx-2"
+                                            ajax="false"
+                                            value="&nbsp;&nbsp;Handover"
                                             icon="fa fa-handshake"
                                             onclick="return confirm('Are you sure you want to handover this shift?');"
                                             action="#{financialTransactionController.settleHandoverStartBill()}" />
@@ -259,20 +259,20 @@
                                                 <p:outputLabel value="#{deno.denomination.displayName}" ></p:outputLabel>
                                             </p:column>
                                             <p:column  title="Denomination">
-                                                <p:inputText 
-                                                    class="text-end w-100" 
+                                                <p:inputText
+                                                    class="text-end w-100"
                                                     id="txtDenoQtyHandover"
-                                                    value="#{deno.denominationQty}" 
-                                                    style="width: 100%;" 
-                                                    label="Cash Handover" 
+                                                    value="#{deno.denominationQty}"
+                                                    style="width: 100%;"
+                                                    label="Cash Handover"
                                                     onfocus="this.select()">
                                                     <f:convertNumber integerOnly="true" />
-                                                    <p:ajax 
+                                                    <p:ajax
                                                         event="blur"
-                                                        process="txtDenoQtyHandover" 
+                                                        process="txtDenoQtyHandover"
                                                         listener="#{financialTransactionController.bundle.calculateTotalHandoverByDenominationQuantities()}"
                                                         update=":#{p:resolveFirstComponentWithId('txtCashHandover',view).clientId} txtDenoVal" ></p:ajax>
-                                                </p:inputText>  
+                                                </p:inputText>
                                             </p:column>
                                             <p:column >
                                                 <p:outputLabel
@@ -285,16 +285,16 @@
 
                                         </p:dataTable>
 
-                                        <p:commandButton 
-                                            value="Update" 
-                                            class="m-1 ui-button-info" 
-                                            icon="pi pi-refresh" 
+                                        <p:commandButton
+                                            value="Update"
+                                            class="m-1 ui-button-info"
+                                            icon="pi pi-refresh"
                                             ajax="false"
                                             action="#{financialTransactionController.updateForPaymentHandoverSelectionAtCreate()}" />
-                                        <p:commandButton 
-                                            value="Record Shortage" 
+                                        <p:commandButton
+                                            value="Record Shortage"
                                             class="m-1 ui-button-danger"
-                                            icon="pi pi-exclamation-triangle" 
+                                            icon="pi pi-exclamation-triangle"
                                             onclick="return confirm('Are you sure you want to create a shortage bill?');"
                                             action="#{financialTransactionController.navigateToMarkShortagesForShiftForHandover}">
                                         </p:commandButton>
@@ -312,13 +312,13 @@
 
                             <div class="row mx-2" >
 
-                                <p:dataTable 
+                                <p:dataTable
                                     emptyMessage="No Financial Transactions to Handover"
                                     paginatorAlwaysVisible="false"
-                                    value="#{financialTransactionController.bundle.bundles}" 
+                                    value="#{financialTransactionController.bundle.bundles}"
                                     var="summary"
-                                    paginator="true" 
-                                    rows="10" 
+                                    paginator="true"
+                                    rows="10"
 
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                     currentPageReportTemplate="(Page {currentPage} of {totalPages})"
@@ -354,7 +354,7 @@
                                         </h:outputText>
 
                                         <!-- Icon-Only Link to Open Dialog -->
-                                        <p:commandLink 
+                                        <p:commandLink
 
                                             oncomplete="PF('detailsDialog').show();"
                                             styleClass="ui-icon ui-icon-info mx-3"
@@ -370,10 +370,10 @@
                                             </h:outputText>
                                         </f:facet>
                                         <!-- Separate Dialog Component -->
-                                        <p:dialog 
-                                            widgetVar="detailsDialog" 
-                                            header="Cash Transaction Details" 
-                                            modal="true" 
+                                        <p:dialog
+                                            widgetVar="detailsDialog"
+                                            header="Cash Transaction Details"
+                                            modal="true"
                                             class="w-75"
                                             style="min-height: 60vh;"
                                             draggable="true"
@@ -381,8 +381,8 @@
                                             <p:ajax event="open" update="cashDetailsTable" />
 
                                             <!-- DataTable inside Dialog -->
-                                            <p:dataTable id="cashDetailsTable" 
-                                                         value="#{summary.reportTemplateRows}" 
+                                            <p:dataTable id="cashDetailsTable"
+                                                         value="#{summary.reportTemplateRows}"
                                                          var="cashRow"
                                                          rowIndexVar="n"
                                                          rowKey="#{cashRow.id}"
@@ -410,12 +410,12 @@
                                     </p:column>
 
 
-                                    <p:column 
-                                        headerText="Cash Handover" 
+                                    <p:column
+                                        headerText="Cash Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCashTransaction}">
-                                        <h:outputText 
-                                            value="#{summary.cashHandoverValue}" 
+                                        <h:outputText
+                                            value="#{summary.cashHandoverValue}"
                                             style="width: 100%;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -425,8 +425,8 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column 
-                                        headerText="Card Value" 
+                                    <p:column
+                                        headerText="Card Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCardTransaction}">
                                         <h:outputText value="#{summary.cardValue}">
@@ -438,12 +438,12 @@
                                             </h:outputText>
                                         </f:facet>
                                     </p:column>
-                                    <p:column 
-                                        headerText="Card Handover" 
+                                    <p:column
+                                        headerText="Card Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCardTransaction}">
-                                        <h:outputText 
-                                            value="#{summary.cardHandoverValue}" 
+                                        <h:outputText
+                                            value="#{summary.cardHandoverValue}"
                                             style="width: 100%;">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
@@ -452,11 +452,11 @@
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputText>
                                         </f:facet>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Card')}" >
                                         </p:commandButton>
                                     </p:column>
@@ -465,8 +465,8 @@
 
 
                                     <!-- Credit Value Column -->
-                                    <p:column 
-                                        headerText="Credit Value" 
+                                    <p:column
+                                        headerText="Credit Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
                                         <h:outputText value="#{summary.creditValue}">
@@ -480,25 +480,25 @@
                                     </p:column>
 
                                     <!-- Credit Handover Column -->
-                                    <p:column 
-                                        headerText="Credit Handover" 
+                                    <p:column
+                                        headerText="Credit Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasCreditTransaction}">
                                         <h:outputText value="#{summary.creditHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Credit')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Staff Value Column -->
-                                    <p:column 
-                                        headerText="Staff Value" 
+                                    <p:column
+                                        headerText="Staff Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
                                         <h:outputText value="#{summary.staffValue}">
@@ -512,25 +512,25 @@
                                     </p:column>
 
                                     <!-- Staff Handover Column -->
-                                    <p:column 
-                                        headerText="Staff Handover" 
+                                    <p:column
+                                        headerText="Staff Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasStaffTransaction}">
                                         <h:outputText value="#{summary.staffHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Staff')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Voucher Value Column -->
-                                    <p:column 
-                                        headerText="Voucher Value" 
+                                    <p:column
+                                        headerText="Voucher Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
                                         <h:outputText value="#{summary.voucherValue}">
@@ -544,25 +544,25 @@
                                     </p:column>
 
                                     <!-- Voucher Handover Column -->
-                                    <p:column 
-                                        headerText="Voucher Handover" 
+                                    <p:column
+                                        headerText="Voucher Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasVoucherTransaction}">
                                         <h:outputText value="#{summary.voucherHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Voucher')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- IOU Value Column -->
-                                    <p:column 
-                                        headerText="IOU Value" 
+                                    <p:column
+                                        headerText="IOU Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasIouTransaction}">
                                         <h:outputText value="#{summary.iouValue}">
@@ -576,25 +576,25 @@
                                     </p:column>
 
                                     <!-- IOU Handover Column -->
-                                    <p:column 
-                                        headerText="IOU Handover" 
+                                    <p:column
+                                        headerText="IOU Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasIouTransaction}">
                                         <h:outputText value="#{summary.iouHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'IOU')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Agent Value Column -->
-                                    <p:column 
-                                        headerText="Agent Value" 
+                                    <p:column
+                                        headerText="Agent Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
                                         <h:outputText value="#{summary.agentValue}">
@@ -608,25 +608,25 @@
                                     </p:column>
 
                                     <!-- Agent Handover Column -->
-                                    <p:column 
-                                        headerText="Agent Handover" 
+                                    <p:column
+                                        headerText="Agent Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasAgentTransaction}">
                                         <h:outputText value="#{summary.agentHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Agent')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Cheque Value Column -->
-                                    <p:column 
-                                        headerText="Cheque Value" 
+                                    <p:column
+                                        headerText="Cheque Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
                                         <h:outputText value="#{summary.chequeValue}">
@@ -640,25 +640,25 @@
                                     </p:column>
 
                                     <!-- Cheque Handover Column -->
-                                    <p:column 
-                                        headerText="Cheque Handover" 
+                                    <p:column
+                                        headerText="Cheque Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasChequeTransaction}">
                                         <h:outputText value="#{summary.chequeHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Cheque')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Slip Value Column -->
-                                    <p:column 
-                                        headerText="Slip Value" 
+                                    <p:column
+                                        headerText="Slip Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
                                         <h:outputText value="#{summary.slipValue}">
@@ -672,25 +672,25 @@
                                     </p:column>
 
                                     <!-- Slip Handover Column -->
-                                    <p:column 
-                                        headerText="Slip Handover" 
+                                    <p:column
+                                        headerText="Slip Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasSlipTransaction}">
                                         <h:outputText value="#{summary.slipHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'Slip')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- eWallet Value Column -->
-                                    <p:column 
-                                        headerText="eWallet Value" 
+                                    <p:column
+                                        headerText="eWallet Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
                                         <h:outputText value="#{summary.ewalletValue}">
@@ -704,25 +704,25 @@
                                     </p:column>
 
                                     <!-- eWallet Handover Column -->
-                                    <p:column 
-                                        headerText="eWallet Handover" 
+                                    <p:column
+                                        headerText="eWallet Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasEWalletTransaction}">
                                         <h:outputText value="#{summary.ewalletHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'ewallet')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Patient Points Value Column -->
-                                    <p:column 
-                                        headerText="Patient Points Value" 
+                                    <p:column
+                                        headerText="Patient Points Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
                                         <h:outputText value="#{summary.patientPointsValue}">
@@ -736,25 +736,25 @@
                                     </p:column>
 
                                     <!-- Patient Points Handover Column -->
-                                    <p:column 
-                                        headerText="Patient Points Handover" 
+                                    <p:column
+                                        headerText="Patient Points Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasPatientPointsTransaction}">
                                         <h:outputText value="#{summary.patientPointsHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'PatientPoints')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- Online Settlement Value Column -->
-                                    <p:column 
-                                        headerText="Online Settlement Value" 
+                                    <p:column
+                                        headerText="Online Settlement Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
                                         <h:outputText value="#{summary.onlineSettlementValue}">
@@ -768,25 +768,25 @@
                                     </p:column>
 
                                     <!-- Online Settlement Handover Column -->
-                                    <p:column 
-                                        headerText="Online Settlement Handover" 
+                                    <p:column
+                                        headerText="Online Settlement Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnlineSettlementTransaction}">
                                         <h:outputText value="#{summary.onlineSettlementHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'OnlineSettlement')}" >
                                         </p:commandButton>
                                     </p:column>
 
                                     <!-- On Call Value Column -->
-                                    <p:column 
-                                        headerText="On Call Value" 
+                                    <p:column
+                                        headerText="On Call Value"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
                                         <h:outputText value="#{summary.onCallValue}">
@@ -800,18 +800,18 @@
                                     </p:column>
 
                                     <!-- On Call Handover Column -->
-                                    <p:column 
-                                        headerText="On Call Handover" 
+                                    <p:column
+                                        headerText="On Call Handover"
                                         class="text-end"
                                         rendered="#{financialTransactionController.bundle.hasOnCallTransaction}">
                                         <h:outputText value="#{summary.onCallHandoverValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
-                                        <p:commandButton 
-                                            icon="pi pi-refresh" 
-                                            title="Change Handover Value" 
-                                            ajax="false" 
-                                            styleClass="ui-button-warning m-1 mx-2" 
+                                        <p:commandButton
+                                            icon="pi pi-refresh"
+                                            title="Change Handover Value"
+                                            ajax="false"
+                                            styleClass="ui-button-warning m-1 mx-2"
                                             action="#{financialTransactionController.navigateToSelectPaymentsForHandoverCreate(summary, 'OnCall')}" >
                                         </p:commandButton>
                                     </p:column>

@@ -4,14 +4,14 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.OptionScope;
-import com.divudi.data.OptionValueType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ConfigOption;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.ConfigOptionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.OptionValueType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ConfigOption;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.ConfigOptionFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -186,8 +186,7 @@ public class ConfigOptionController implements Serializable {
             default:
                 throw new AssertionError("Unhandled scope: " + scope);
         }
-        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-        return option;
+        return optionFacade.findFirstByJpql(jpql.toString(), params);
     }
 
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
@@ -582,7 +581,7 @@ public class ConfigOptionController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             ConfigOptionController controller = (ConfigOptionController) facesContext.getApplication().getELResolver().
@@ -597,9 +596,7 @@ public class ConfigOptionController implements Serializable {
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

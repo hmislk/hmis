@@ -8,16 +8,17 @@
  */
 package com.divudi.bean.membership;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.membership.AllowedPaymentMethod;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.AllowedPaymentMethodFacade;
-import com.divudi.facade.PaymentSchemeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.membership.AllowedPaymentMethod;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.AllowedPaymentMethodFacade;
+import com.divudi.core.facade.PaymentSchemeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,6 +49,8 @@ public class PaymentSchemeController implements Serializable {
     private PaymentSchemeFacade ejbFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     MembershipScheme membershipScheme;
     AllowedPaymentMethod paymentSchemeAllowedPaymentMethod;
     List<PaymentScheme> selectedItems;
@@ -93,7 +96,13 @@ public class PaymentSchemeController implements Serializable {
         this.membershipScheme = membershipScheme;
     }
 
+    @Deprecated // Use method with the same name in the Payment Service
     public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData) {
+        return checkPaymentMethodError(paymentMethod, paymentMethodData, null, null);
+    }
+
+    @Deprecated // Use method with the same name in the Payment Service
+    public boolean checkPaymentMethodError(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Double cashPaid) {
         if (paymentMethod == PaymentMethod.Cheque) {
             if (paymentMethodData.getCheque().getInstitution() == null
                     || paymentMethodData.getCheque().getNo() == null
@@ -126,6 +135,21 @@ public class PaymentSchemeController implements Serializable {
                     || paymentMethodData.getEwallet().getNo() == null) {
                 JsfUtil.addErrorMessage("Please Fill eWallet Reference Number and Bank");
                 return true;
+            }
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Need to Enter the Cash Tendered Amount to Settle Pharmacy Retail Bill", true)) {
+            if (paymentMethod == PaymentMethod.Cash) {
+                if (cashPaid != null && netTotal != null) {
+                    if (cashPaid == 0.0) {
+                        JsfUtil.addErrorMessage("Please enter the paid amount");
+                        return true;
+                    }
+                    if (cashPaid < netTotal) {
+                        JsfUtil.addErrorMessage("Please select tendered amount correctly");
+                        return true;
+                    }
+                }
             }
         }
         return false;

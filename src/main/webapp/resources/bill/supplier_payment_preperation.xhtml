@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billController" type="com.divudi.bean.pharmacy.DealorPaymentBillSearch" />
         <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
@@ -69,7 +69,7 @@
                         <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
                         </h:outputLabel>
                         <h:outputLabel value="Comments : " />
-                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        <h:outputLabel value="#{cc.attrs.bill.paymentGenerationComments}" >
                         </h:outputLabel>
                         <h:outputLabel value="Prepaired at :"  />
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
@@ -78,61 +78,48 @@
                     </h:panelGrid>
                 </div>
 
-                <div class="col-md-4 p-1" >
-                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
-                        <h:outputLabel value="Approved By : " />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovedBy.webUserPerson.name}" >
-                        </h:outputLabel>
-                        <h:outputLabel value="Comments : " />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovalComments}" >
-                        </h:outputLabel>
-                        <h:outputLabel value="Prepaired at :"  />
-                        <h:outputLabel value="#{cc.attrs.bill.paymentApprovedAt}"  >
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                        </h:outputLabel>
-                    </h:panelGrid>
-                </div>
+
             </div>
 
 
-            <p:dataTable  
+            <p:dataTable
                 value="#{cc.attrs.bill.billItems}"
-                var="b" 
-                id="itms" 
+                var="b"
+                id="itms"
                 rowIndexVar="n"
                 rowKey="#{b.searialNo}" >
-                <p:column >  
+                <p:column >
                     <f:facet name="header">
-                        <h:outputLabel value="No"/>                                  
-                    </f:facet>      
+                        <h:outputLabel value="No"/>
+                    </f:facet>
                     <p:outputLabel value="#{n+1}"/>
-                </p:column> 
-                <p:column >  
+                </p:column>
+                <p:column >
                     <f:facet name="header">
-                        <h:outputLabel value="GRN No"/>                                  
-                    </f:facet>      
+                        <h:outputLabel value="GRN No"/>
+                    </f:facet>
                     <p:outputLabel value="#{b.referenceBill.deptId}"/>
-                </p:column> 
-                <p:column >  
+                </p:column>
+                <p:column >
                     <f:facet name="header">
-                        <h:outputLabel value="Invoice No"/>                                  
-                    </f:facet>       
+                        <h:outputLabel value="Invoice No"/>
+                    </f:facet>
                     <p:outputLabel value="#{b.referenceBill.invoiceNumber}"></p:outputLabel>
-                </p:column> 
+                </p:column>
                 <p:column  class="text-end" headerText="GRN Amount">
                     <p:outputLabel value="#{b.referenceBill.netTotal}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>
                 <p:column  class="text-end" headerText="GRN Return Amount">
-                    <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                    <p:outputLabel value="#{b.referenceBill.refundAmount}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>
                 <p:column class="text-end" headerText="Paying Amount">
-                    <p:outputLabel 
+                    <p:outputLabel
                         class="w-100 text-end"
-                        value="#{b.netValue}">    
+                        value="#{b.netValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>

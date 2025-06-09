@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
     </cc:interface>
 
@@ -20,7 +20,7 @@
         <h:outputStylesheet library="css" name="pharmacypos.css" ></h:outputStylesheet>
         <div class="a4bill" style="width: 210mm;" >
 
-            <div style="height: 55mm!important;"></div>
+            <div style="height: #{configOptionApplicationController.getShortTextValueByKey('Inward Servise Bill Header Height',55)}mm!important;"></div>
 
             <div class="billDetailsFiveFive" >
                 <table style="width: 99%!important;" >
@@ -361,7 +361,7 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
-            
+
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
                 <div class="d-flex gap-2" style="font-size: 12px;">
                     <h:outputLabel value="Remark :"/>

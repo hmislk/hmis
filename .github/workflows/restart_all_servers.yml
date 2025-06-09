@@ -1,0 +1,68 @@
+name: Restart All Servers
+
+on:
+  workflow_dispatch:
+    inputs:
+      excludeDevelopment:
+        description: 'Exclude Development(4.240.39.63)?'
+        required: true
+        type: boolean
+      excludeQA:
+        description: 'Exclude QA(4.240.43.211)?'
+        required: true
+        type: boolean
+      excludeShared01:
+        description: 'Exclude Shared01(52.172.158.159)?'
+        required: true
+        type: boolean
+      excludeShared02:
+        description: 'Exclude Shared02(20.204.129.229)?'
+        required: true
+        type: boolean
+      excludeD01:
+        description: 'Exclude D01(4.213.180.217)?'
+        required: true
+        type: boolean
+
+jobs:
+  run_script_remote_server:
+    name: Run Script on Remote Server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate Excluded Servers List
+        id: exclude_list
+        run: |
+          EXCLUDED_SERVERS=""
+          if [[ "${{ inputs.excludeDevelopment }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="Development(4.240.39.63),"
+          fi
+          if [[ "${{ inputs.excludeQA }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="QA(4.240.43.211),"
+          fi
+          if [[ "${{ inputs.excludeShared01 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="Shared01(52.172.158.159),"
+          fi
+          if [[ "${{ inputs.excludeShared02 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="Shared02(20.204.129.229),"
+          fi
+          if [[ "${{ inputs.excludeD01 }}" == "true" ]]; then
+            EXCLUDED_SERVERS+="D01(4.213.180.217),"
+          fi
+          
+          EXCLUDED_SERVERS=${EXCLUDED_SERVERS%,}
+          echo "EXCLUDED_SERVERS=$EXCLUDED_SERVERS" >> $GITHUB_ENV
+
+      - name: Run Script on Remote Server
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            /home/azureuser/utils/server_utils/restart_all_servers.sh \"$EXCLUDED_SERVERS\"
+          "
+          
+          rm private_key.pem

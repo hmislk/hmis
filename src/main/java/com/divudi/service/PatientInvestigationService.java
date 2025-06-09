@@ -1,9 +1,8 @@
 package com.divudi.service;
 
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.facade.PatientInvestigationFacade;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,7 +28,7 @@ public class PatientInvestigationService {
         List<PatientInvestigation> patientInvestigations = new ArrayList<>();
 
         if (fromDate == null || toDate == null) {
-            return patientInvestigations; 
+            return patientInvestigations;
         }
 
         String jpql = "select pi "
@@ -69,7 +68,7 @@ public class PatientInvestigationService {
                 jpql += " and ((i.name) like :itm)";
                 params.put("itm", "%" + searchKeyword.getItemName().trim().toUpperCase() + "%");
             }
-            
+
             if (searchKeyword.getInvestigation()!= null) {
                 jpql += " and i=:ix ";
                 params.put("ix", searchKeyword.getInvestigation());

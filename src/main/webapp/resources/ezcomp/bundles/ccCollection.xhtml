@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -53,8 +53,8 @@
                         <tr class="#{row.bill ne null ? 'table-primary' : 'table-light'}">
                             <td>
                                 <h:outputText value="#{row.bill.deptId}" />
-                                <h:commandLink rendered="#{row.bill.deptId ne null}" 
-                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                <h:commandLink rendered="#{row.bill.deptId ne null}"
+                                               action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                                styleClass="btn btn-link mx-2 no-print">
                                     <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                                     <f:setPropertyActionListener value="true" target="#{agentAndCcPaymentController.printPreview}" />

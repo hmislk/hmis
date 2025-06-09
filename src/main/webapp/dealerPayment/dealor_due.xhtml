@@ -179,18 +179,23 @@
                                         </f:facet>
                                     </p:column>
 
-                                    <p:column  headerText="Actions" >
+                                    <p:column  headerText="Actions"  >
                                         <p:commandButton 
-                                            value="View" 
+                                            title="View" 
+                                            icon="fa fa-eye"
+                                            styleClass="ui-button-secondary mx-1"
                                             action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
-                                            ajax="false" >
+                                            ajax="false">
                                         </p:commandButton>
                                         <p:commandButton
-                                            value="Pay" 
+                                            title="Pay" 
+                                            icon="fa fa-money-bill-wave"
+                                            styleClass="ui-button-success mx-1"
                                             action="#{supplierPaymentController.navigateToStartSupplierPayment(b)}" 
                                             ajax="false" 
-                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}" >
+                                            disabled="#{b.referenceBill.billTypeAtomic eq 'SUPPLIER_PAYMENT' or b.paidAmount ne 0.0}">
                                         </p:commandButton>
+
 
 
                                     </p:column>

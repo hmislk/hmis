@@ -57,7 +57,7 @@
                                     size="6"
                                     showButtonBar="true"
                                     inputStyleClass="form-control"
-                                    maxdate="#{commonFunctionsController.endOfDay}"
+                                    maxdate="#{commonFunctionsProxy.endOfDay}"
                                     pattern="#{sessionController.applicationPreference.longDateTimeFormat}"          >
                                 </p:datePicker>
                                 <p:commandButton ajax="false"
@@ -75,24 +75,24 @@
 
 
                             <!-- View Ongoing Session Data Button -->
-                            <p:commandButton ajax="false" 
+                            <p:commandButton ajax="false"
                                              value="List Ongoing"
-                                             icon="fa fa-sync-alt" 
-                                             styleClass="ui-button-info mx-1" 
+                                             icon="fa fa-sync-alt"
+                                             styleClass="ui-button-info mx-1"
                                              action="#{bookingController.listTodaysOngoingSesionInstances()}" />
 
                             <!-- List Pending Button -->
-                            <p:commandButton ajax="false" 
+                            <p:commandButton ajax="false"
                                              value="List Pending"
-                                             icon="fa fa-hourglass-start" 
-                                             styleClass="ui-button-warning mx-1" 
+                                             icon="fa fa-hourglass-start"
+                                             styleClass="ui-button-warning mx-1"
                                              action="#{bookingController.listTodaysPendingSesionInstances()}" />
 
                             <!-- List All Button -->
-                            <p:commandButton ajax="false" 
+                            <p:commandButton ajax="false"
                                              value="List All"
-                                             icon="fa fa-list" 
-                                             styleClass="ui-button-primary mx-1" 
+                                             icon="fa fa-list"
+                                             styleClass="ui-button-primary mx-1"
                                              action="#{bookingController.listTodaysAllSesionInstances()}" />
 
                             <p:commandButton id="btnLogout" ajax="false" icon="pi pi-sign-out" action="#{sessionController.logout}" />
@@ -113,9 +113,9 @@
                 </div>
 
                 <h:panelGroup id="tblSi">
-                    <ui:repeat var="s" 
+                    <ui:repeat var="s"
                                id="tblSessions"
-                               value="#{bookingController.sessionInstancesFiltered}" 
+                               value="#{bookingController.sessionInstancesFiltered}"
                                class="w-100 mt-5">
 
                         <div class="bgCard row  w-100 p-2 shadow mt-1">
@@ -160,7 +160,7 @@
                                                     </h:outputText>
                                                 </span>
                                                 :
-                                                <span class="text-primary" style="font-size: 20pt;font-weight: bold"> 
+                                                <span class="text-primary" style="font-size: 20pt;font-weight: bold">
                                                     <h:outputText value="#{s.paidPatientCount}">
                                                         <f:convertNumber pattern="#,##00"/>
                                                     </h:outputText>
@@ -185,7 +185,7 @@
                                                     </h:panelGrid>
                                                 </span>
 
-                                                <span class="text-center"> 
+                                                <span class="text-center">
                                                     <h:panelGrid columns="1">
                                                         <h:outputText style="font-size: 8pt;font-weight: bold" value="Booked"/>
                                                         <h:outputText style="font-size: 20pt;font-weight: bold" value="#{s.bookedPatientCount}">
@@ -221,7 +221,7 @@
                                         </p:badge>
                                     </div>
 
-                                    <div>                                 
+                                    <div>
                                         <p:commandButton class="mx-2" icon="fas fa-eye"
                                                          styleClass="rounded-button ui-button-outlined ui-button-info " ajax="false"
                                                          value="View"
@@ -240,21 +240,21 @@
                         <!--                    <div class="card mt-1">
                                                 <div class="card-body">
                                                     <div class="row">
-                                                       
+
                                                                                                             <div class="col-2 bg-dark text-white">
                                                             <div>
                                                                                                                         </div>
                                                         </div>
                                                         <div class="col-4">
                                                             <div class="d-flex justify-content-between align-items-center">
-                                                                
+
                                                                 <h:panelGroup class="mx-2">
                                                                                                                                 </h:panelGroup>
                                                             </div>
                                                         </div>
                                                     </div>
-                        
-                        
+
+
                                                 </div>
                                             </div>-->
                     </ui:repeat>

@@ -10,10 +10,10 @@ package com.divudi.bean.membership;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.entity.Institution;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.facade.MembershipSchemeFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.facade.MembershipSchemeFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

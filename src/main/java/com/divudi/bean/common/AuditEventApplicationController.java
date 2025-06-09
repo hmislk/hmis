@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.AuditEvent;
-import com.divudi.facade.AuditEventFacade;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.facade.AuditEventFacade;
 import java.util.ArrayList;
 import javax.inject.Named;
 import javax.enterprise.context.ApplicationScoped;
@@ -51,7 +51,7 @@ public class AuditEventApplicationController {
         }
     }
 
-    public void saveAutitEvent(AuditEvent auditEvent) {
+    public void saveAuditEvent(AuditEvent auditEvent) {
         if (auditEvent == null) {
             return;
         }

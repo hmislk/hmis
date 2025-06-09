@@ -11,30 +11,30 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.CssFontStyle;
-import com.divudi.data.CssTextAlign;
-import com.divudi.data.CssTextDecoration;
-import com.divudi.data.CssVerticalAlign;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.ItemType;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.InvestigationItemValue;
-import com.divudi.entity.lab.InvestigationTube;
-import com.divudi.entity.lab.Machine;
-import com.divudi.entity.lab.ReportItem;
-import com.divudi.entity.lab.Sample;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InvestigationFacade;
-import com.divudi.facade.InvestigationItemFacade;
-import com.divudi.facade.InvestigationItemValueFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.ReportItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.CssFontStyle;
+import com.divudi.core.data.CssTextAlign;
+import com.divudi.core.data.CssTextDecoration;
+import com.divudi.core.data.CssVerticalAlign;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.InvestigationItemValueType;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.InvestigationItemValue;
+import com.divudi.core.entity.lab.InvestigationTube;
+import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.lab.ReportItem;
+import com.divudi.core.entity.lab.Sample;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InvestigationFacade;
+import com.divudi.core.facade.InvestigationItemFacade;
+import com.divudi.core.facade.InvestigationItemValueFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.ReportItemFacade;
+import com.divudi.core.util.JsfUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -734,7 +734,7 @@ public class InvestigationItemController implements Serializable {
 //            return new ArrayList<>();
 //        } else {
 //            String sql;
-//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
+//            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.core.data.InvestigationItemType.Value and (i.name) like '%" + qry.toUpperCase() + "%' and i.item.id = " + currentInvestigation.getId();
 //            iivs = getEjbFacade().findByJpql(sql);
 //        }
 //        if (iivs == null) {
@@ -798,7 +798,7 @@ public class InvestigationItemController implements Serializable {
             return new ArrayList<>();
         } else {
             String sql;
-            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
+            sql = "select i from InvestigationItem i where i.retired=false and i.ixItemType = com.divudi.core.data.InvestigationItemType.Value and i.item.id = " + currentInvestigation.getId();
             iivs = getEjbFacade().findByJpql(sql);
         }
         if (iivs == null) {

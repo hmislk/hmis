@@ -31,12 +31,29 @@
                                 </div>
 
                             </p:tab>
+                            <p:tab title="Default Service Department">
+                                <div class="d-grid gap-2">
+                                    <!-- Button to navigate to Add Default Service Department -->
+                                    <p:commandButton 
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="Add Default Service Department" 
+                                        action="#{defaultServiceDepartmentController.navigateToAddNewDefaultServiceDepartment}" />
+
+                                    <!-- Button to navigate to List Default Service Departments -->
+                                    <p:commandButton 
+                                        class="w-100"  
+                                        ajax="false" 
+                                        value="List Default Service Departments" 
+                                        action="#{defaultServiceDepartmentController.navigateToListDefaultServiceDepartments}" />
+                                </div>
+                            </p:tab>
                             <p:tab title="Manage Services">
                                 <div class="d-grid gap-2">
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
-                                        value="Service Categories" 
+                                        value="All Categories" 
                                         action="#{categoryController.navigateToManageCategories}" />
                                     <p:commandButton   
                                         class="w-100"  
@@ -84,7 +101,7 @@
                                         ajax="false" 
                                         value="Theatre Service" 
                                         action="#{investigationCategoryController.navigateToTheatreService()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -204,6 +221,12 @@
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
+                                        value="Item Upload to Correct Code" 
+                                        action="#{dataUploadController.navigateToUploadToCorrectCode()}" />
+
+                                    <p:commandButton   
+                                        class="w-100"  
+                                        ajax="false" 
                                         value="Item &amp; Doctor Fee Upload" 
                                         action="#{dataUploadController.navigateToUploadOpdItemsAndDoctorFees()}" />
 
@@ -219,13 +242,20 @@
                                         ajax="false" 
                                         value="Item &amp; Fee Upload for Collecting Centres" 
                                         action="#{dataUploadController.navigateToUploadCollectingCentreFees()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100 ui-button-warning"  
                                         ajax="false"
                                         icon="fa fa-upload"
                                         value="Item &amp; Fees Upload " 
                                         action="#{dataUploadController.navigateToUploadItemAndFees()}" />
+
+                                    <p:commandButton   
+                                        class="w-100 ui-button-warning"  
+                                        ajax="false"
+                                        icon="fa fa-upload"
+                                        value="Item &amp; Fees Upload (With Foreginer Fees)" 
+                                        action="#{dataUploadController.navigateToUploadItemAndFeesWithForeginerFee()}" />
 
                                     <p:commandButton   
                                         class="w-100"  
@@ -263,7 +293,7 @@
                                         ajax="false" 
                                         value="Bulk Delete of Investigations" 
                                         action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -275,7 +305,7 @@
                                         ajax="false" 
                                         value="Bulk Delete of Services" 
                                         action="#{investigationCategoryController.navigateToOpdListToRemove()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 
@@ -286,7 +316,7 @@
                                         ajax="false" 
                                         value="Bulk Delete of Investigations" 
                                         action="#{investigationCategoryController.navigateToInvestigationListToRemove()}" />
-                                    
+
                                     <p:commandButton   
                                         class="w-100"  
                                         ajax="false" 

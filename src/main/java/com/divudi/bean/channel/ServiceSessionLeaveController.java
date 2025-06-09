@@ -7,15 +7,15 @@ package com.divudi.bean.channel;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.ServiceSessionLeave;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.ServiceSessionLeaveFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.ServiceSessionLeave;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.ServiceSessionLeaveFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;

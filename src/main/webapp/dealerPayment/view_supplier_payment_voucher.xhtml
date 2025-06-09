@@ -11,13 +11,28 @@
     <h:body>
         <ui:composition template="/dealerPayment/index.xhtml">
             <ui:define name="subcontent">
+                <h:form>
+                    <p:commandButton value="Print" ajax="false" action="#" icon="pi pi-print"  styleClass="ui-button-secondary m-1" >
+                        <p:printer target="gpBillPreview" ></p:printer>
+                    </p:commandButton>
+                    <h:panelGroup rendered="#{supplierPaymentController.current.paymentMethod eq 'Cheque'}">
+                        <p:selectBooleanCheckbox value="#{supplierPaymentController.acPayeeOnly}"
+                                                 label="A/C Payee Only" itemLabel="A/C Payee Only"
+                                                 class="mx-2">
+                            <p:ajax process="@this" update="@all"/>
+                        </p:selectBooleanCheckbox>
+                        <p:commandButton value="Print Cheque" class="mx-2" ajax="false" action="#" icon="pi pi-print" >
+                            <p:printer target="gpBillPreview1" ></p:printer>
+                        </p:commandButton>
+                    </h:panelGroup>
+                    <p:panel   id="gpBillPreview">
+                        <bi:grn_payment_with_pre_bill billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current.referenceBill}"/>
+                    </p:panel>
 
-                <p:commandButton value="Print" ajax="false" action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
-                <p:panel   id="gpBillPreview">
-                    <bi:grn_payment billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}"/>
-                </p:panel>
+                    <h:panelGroup   id="gpBillPreview1" class="my-5">
+                        <bi:supplier_payment_cheque billItems="#{supplierPaymentController.current.billItems}" bill="#{supplierPaymentController.current}" acPayeeOnly="#{supplierPaymentController.acPayeeOnly}" />
+                    </h:panelGroup>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

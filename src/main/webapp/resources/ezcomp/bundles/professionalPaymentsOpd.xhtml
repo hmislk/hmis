@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -42,9 +42,9 @@
 
                 <f:facet name="header">
                     <h:outputText value="#{cc.attrs.bundle.name}" />
-                    <p:commandButton 
+                    <p:commandButton
                         action="#{billSearch.navigateToViewOpdProfessionalPaymentsDone()}"
-                        rendered="#{cc.attrs.bundle.bundleType eq 'ProfessionalPaymentsOPD'}" 
+                        rendered="#{cc.attrs.bundle.bundleType eq 'ProfessionalPaymentsOPD'}"
                         value="View Details" class="m-1"></p:commandButton>
                 </f:facet>
 

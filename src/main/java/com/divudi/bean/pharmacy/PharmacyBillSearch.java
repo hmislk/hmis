@@ -12,10 +12,10 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.WebUserController;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.store.StoreBillSearch;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 
@@ -23,32 +23,35 @@ import com.divudi.ejb.EjbApplication;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.StockBill;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.StockBill;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -63,10 +66,15 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
+import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.StreamedContent;
+import org.primefaces.model.file.UploadedFile;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -79,6 +87,8 @@ public class PharmacyBillSearch implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private StaffService staffBean;
+    @EJB
+    BillService billService;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
@@ -98,10 +108,12 @@ public class PharmacyBillSearch implements Serializable {
     private EjbApplication ejbApplication;
     @EJB
     private BillFeePaymentFacade billFeePaymentFacade;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     SessionController sessionController;
+    @Inject
+    GrnController grnController;
     @Inject
     private WebUserController webUserController;
     @Inject
@@ -114,9 +126,9 @@ public class PharmacyBillSearch implements Serializable {
     PharmacyRequestForBhtController pharmacyRequestForBhtController;
     @Inject
     PharmacyCalculation pharmacyCalculation;
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
-    private CommonFunctions commonFunctions;
+    private UploadedFile file;
     private boolean printPreview = false;
     private double refundAmount;
     private String txtSearch;
@@ -140,9 +152,9 @@ public class PharmacyBillSearch implements Serializable {
     private List<BillItem> tempbillItems;
     private List<Bill> searchRetaiBills;
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Navigation Methods">
     public String navigateToCancelPharmacyDirectIssueToInpatients() {
         if (bill == null) {
@@ -150,6 +162,18 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
+    }
+
+    public String navigateToImportBillsFromJson() {
+        return "/pharmacy/admin/import_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacyDirectIssueForInpatientBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return null;
+        }
+        return "/inward/pharmacy_reprint_bill_sale_bht?faces-redirect=true";
     }
 
     public String navigateToCancelPharmacyRetailSale() {
@@ -165,11 +189,52 @@ public class PharmacyBillSearch implements Serializable {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
 
+    public String navigateToViewPharmacyTransferReqest() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
+    }
+
     public String navigatePharmacyReprintRetailBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill Selected");
         }
         return "/pharmacy/pharmacy_reprint_bill_sale?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacyRetailCancellationBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return null;
+        }
+
+        return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
+    }
+
+    public String navigateToViewPharmacyRetailCancellationPreBill() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("No Bill Type");
+            return null;
+        }
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE) {
+            JsfUtil.addErrorMessage("Wrong Bill Type");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_retail_cancelltion_bill?faces-redirect=true";
     }
 
     public String navigateToReprintPharmacyTransferIssue() {
@@ -196,13 +261,29 @@ public class PharmacyBillSearch implements Serializable {
         return "/pharmacy/pharmacy_reprint_transfer_request?faces-redirect=true";
     }
 
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Functions">
-    // </editor-fold>  
+    public StreamedContent exportAsJson() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return null;
+        }
+
+        String json = billService.convertBillToJson(bill);
+        InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+
+        return DefaultStreamedContent.builder()
+                .name("bill_" + bill.getDeptId() + ".json")
+                .contentType("application/json")
+                .stream(() -> stream)
+                .build();
+    }
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    // </editor-fold>  
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Inner Classes">
-    // </editor-fold>  
+    // </editor-fold>
     //////////////////
     ///////////////////
     public String editInwardPharmacyRequestBill() {
@@ -255,6 +336,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String cancelPharmacyTransferRequestBill() {
+        if (comment == null || comment.isEmpty()) {
+            JsfUtil.addErrorMessage("Please Provide a comment to cancel the bill");
+            return "";
+        }
         if (bill == null) {
             JsfUtil.addErrorMessage("Not Bill Found !");
             return "";
@@ -266,6 +351,15 @@ public class PharmacyBillSearch implements Serializable {
         bill.setCancelledBill(cb);
         billFacade.edit(bill);
         return "/pharmacy/pharmacy_transfer_request_list?faces-redirect=true";
+    }
+
+    public String navigateToCancelBhtRequest() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("Nothing to cancel");
+            return "";
+        }
+
+        return "/inward/bht_bill_cancel?faces-redirect=true;";
     }
 
     public void markAsChecked() {
@@ -324,7 +418,7 @@ public class PharmacyBillSearch implements Serializable {
             return;
         }
 
-        if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
+        if (getBill().getComments() == null || getBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please Enter Comments ");
             return;
         }
@@ -409,7 +503,6 @@ public class PharmacyBillSearch implements Serializable {
         bill.setForwardReferenceBill(c);
         bill.setCancelled(true);
         bill.setCancelledBill(c);
-        bill.setReferenceBill(c);
         getBillFacade().edit(bill);
     }
 
@@ -724,7 +817,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public void editBillItem2(BillItem billItem) {
         getBillItemFacede().edit(billItem);
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - billItem.getQty()));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - billItem.getQty());
         getPharmaceuticalBillItemFacade().edit(billItem.getPharmaceuticalBillItem());
 
         calTotalAndUpdate2(billItem.getBill());
@@ -790,7 +883,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select Bills");
             return "";
         }
-        if (getComment() == null || getComment().trim().equals("")) {
+        if (getComment() == null || getComment().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return "";
         }
@@ -903,7 +996,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public boolean calculateRefundTotal() {
-        Double d = 0.0;
+        double d = 0.0;
         //billItems=null;
         tempbillItems = null;
         for (BillItem i : getRefundingItems()) {
@@ -939,7 +1032,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getBillsOwn() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.OpdBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), getSessionController().getInstitution(), BillType.OpdBill);
@@ -1013,7 +1106,6 @@ public class PharmacyBillSearch implements Serializable {
 //        billFees
         lazyBills = null;
         billComponents = null;
-        billForRefund = null;
         filteredBill = null;
         billItems = null;
         bills = null;
@@ -1078,7 +1170,7 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("Please select a payment scheme.");
             return true;
         }
-        if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
+        if (getBill().getComments() == null || getBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -1133,7 +1225,7 @@ public class PharmacyBillSearch implements Serializable {
             }
         }
 
-        if (getBill().getComments() == null || getBill().getComments().trim().equals("")) {
+        if (getBill().getComments() == null || getBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;
         }
@@ -1219,6 +1311,28 @@ public class PharmacyBillSearch implements Serializable {
 
         cb.setPaymentScheme(getBill().getPaymentScheme());
         //cb.setPaymentMethod(paymentMethod);
+        cb.setBalance(0.0);
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+
+        cb.setDepartment(getSessionController().getLoggedUser().getDepartment());
+        cb.setInstitution(getSessionController().getInstitution());
+
+        cb.setComments(getComment());
+        cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+
+        return cb;
+    }
+
+    private CancelledBill createPharmacyRetailSaleCancellationBill(Bill originalBill) {
+        CancelledBill cb = new CancelledBill();
+
+        cb.setBilledBill(originalBill);
+        cb.copy(originalBill);
+        cb.setReferenceBill(originalBill.getReferenceBill());
+        cb.invertAndAssignValuesFromOtherBill(originalBill);
+
+        cb.setPaymentScheme(originalBill.getPaymentScheme());
         cb.setBalance(0.0);
         cb.setCreatedAt(new Date());
         cb.setCreater(getSessionController().getLoggedUser());
@@ -1628,57 +1742,55 @@ public class PharmacyBillSearch implements Serializable {
         pharmacyCancelBillItems(can, payments);
     }
 
-    private void pharmacyCancelBillItems(CancelledBill can, List<Payment> ps) {
-        for (BillItem nB : getBill().getBillItems()) {
-            BillItem b = nB;
-            b.setBill(can);
-//            b.copy(nB);
-            b.invertValue(nB);
+    private void pharmacyCancelBillItems(CancelledBill newlyCreatedCancellingBill, List<Payment> ps) {
+        for (BillItem originalBillItem : getBill().getBillItems()) {
+            BillItem newlyCreatedReturningItem = new BillItem();
+            newlyCreatedReturningItem.copy(originalBillItem);
+            newlyCreatedReturningItem.setBill(newlyCreatedCancellingBill);
+            newlyCreatedReturningItem.invertValue(originalBillItem);
 
-            if (can.getBillType() == BillType.PharmacyGrnBill || can.getBillType() == BillType.PharmacyGrnReturn) {
-                b.setReferanceBillItem(nB.getReferanceBillItem());
+            if (newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnBill || newlyCreatedCancellingBill.getBillType() == BillType.PharmacyGrnReturn) {
+                newlyCreatedReturningItem.setReferanceBillItem(originalBillItem.getReferanceBillItem());
             } else {
-                b.setReferanceBillItem(nB);
+                newlyCreatedReturningItem.setReferanceBillItem(originalBillItem);
             }
 
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
+            newlyCreatedReturningItem.setCreatedAt(new Date());
+            newlyCreatedReturningItem.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(nB.getPharmaceuticalBillItem());
-            ph.invertValue(nB.getPharmaceuticalBillItem());
+            PharmaceuticalBillItem newlyCreatedReturningPharmaceuticalBillItem = new PharmaceuticalBillItem();
+            newlyCreatedReturningPharmaceuticalBillItem.copy(originalBillItem.getPharmaceuticalBillItem());
+            newlyCreatedReturningPharmaceuticalBillItem.invertValue(originalBillItem.getPharmaceuticalBillItem());
 
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
+            // No need to create billItem and pharmaceuticalBillItem sepeately as there is a relationship with persistsAll
+//            if (newlyCreatedReturningPharmaceuticalBillItem.getId() == null) {
+//                getPharmaceuticalBillItemFacade().create(newlyCreatedReturningPharmaceuticalBillItem);
+//            }
+//
+//            newlyCreatedReturningItem.setPharmaceuticalBillItem(newlyCreatedReturningPharmaceuticalBillItem);
+//
+//            if (newlyCreatedReturningItem.getId() == null) {
+//                getBillItemFacede().create(newlyCreatedReturningItem);
+//            }
+            newlyCreatedReturningItem.setPharmaceuticalBillItem(newlyCreatedReturningPharmaceuticalBillItem);
+            newlyCreatedReturningPharmaceuticalBillItem.setBillItem(newlyCreatedReturningItem);
 
-            b.setPharmaceuticalBillItem(ph);
+            getBillItemFacede().create(newlyCreatedReturningItem);
 
-            if (b.getId() == null) {
-                getBillItemFacede().create(b);
-            }
-
-            ph.setBillItem(b);
-            getPharmaceuticalBillItemFacade().edit(ph);
-
-            getBillItemFacede().edit(b);
-
-            //get billfees from using cancel billItem
-            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + nB.getId();
-            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
-            cancelBillFee(can, b, tmp);
-
-            //create BillFeePayments For cancel
-            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + b.getId();
-            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
+            //get billfees from using cancel billItem  >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
+//            String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + originalBillItem.getId();
+//            List<BillFee> tmp = getBillFeeFacade().findByJpql(sql);
+//            cancelBillFee(can, newlyCreatedReturningItem, tmp);
+            //create BillFeePayments For cancel >> This feature of BillFee for Bill Items is NOT used in pharmacy related transactions
+//            sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + newlyCreatedReturningItem.getId();
+//            List<BillFee> tmpC = getBillFeeFacade().findByJpql(sql);
 //            calculateBillfeePaymentsForCancelRefundBill(tmpC, p);
             //
-
-            can.getBillItems().add(b);
+            newlyCreatedCancellingBill.getBillItems().add(newlyCreatedReturningItem);
 
         }
 
-        getBillFacade().edit(can);
+        getBillFacade().edit(newlyCreatedCancellingBill);
     }
 
     private void cancelBillFee(Bill can, BillItem bt, List<BillFee> tmp) {
@@ -1709,7 +1821,6 @@ public class PharmacyBillSearch implements Serializable {
 //            setBillFeePaymentAndPayment(bf, p);
 //        }
 //    }
-
 //    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
 //        BillFeePayment bfp = new BillFeePayment();
 //        bfp.setBillFee(bf);
@@ -1724,7 +1835,6 @@ public class PharmacyBillSearch implements Serializable {
 //        bfp.setPayment(p);
 //        getBillFeePaymentFacade().create(bfp);
 //    }
-
     private void pharmacyCancelReturnBillItems(Bill can) {
         for (PharmaceuticalBillItem nB : getPharmacyBillItems()) {
             BillItem b = new BillItem();
@@ -1893,7 +2003,7 @@ public class PharmacyBillSearch implements Serializable {
 //
 //            ph.setBillItem(b);
 //            getPharmaceuticalBillItemFacade().edit(ph);
-//   
+//
 //            getBillItemFacede().edit(b);
 //
 //            can.getBillItems().add(b);
@@ -1947,6 +2057,7 @@ public class PharmacyBillSearch implements Serializable {
             getBillFacade().edit(getBill());
 
             if (getBill().getReferenceBill() != null) {
+                getBill().getReferenceBill().setCancelled(true);
                 getBill().getReferenceBill().setReferenceBill(null);
                 getBillFacade().edit(getBill().getReferenceBill());
             }
@@ -2011,53 +2122,50 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
 
-//            if (calculateNumberOfBillsPerOrder(getBill().getReferenceBill())) {
-//                return;
-//            } before
-            ////System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
-            ////System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
-            ////System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
             if (checkDepartment(getBill())) {
                 return;
             }
 
-            getPharmacyBean().reAddToStock(getBill().getReferenceBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
-            CancelledBill cb = pharmacyCreateCancelBill();
+            Bill newlyCreatedRetailSaleCancellationBillPre = getPharmacyBean().createPreBillForRetailSaleCancellation(getBill().getReferenceBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment());
+
+            CancelledBill newlyCreatedRetailSaleCancellationBill = createPharmacyRetailSaleCancellationBill(getBill());
 
             String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
-            cb.setDeptId(deptId);
-            cb.setInsId(deptId);
+            newlyCreatedRetailSaleCancellationBill.setDeptId(deptId);
+            newlyCreatedRetailSaleCancellationBill.setInsId(deptId);
 
-            if (cb.getId() == null) {
-                getBillFacade().create(cb);
+            if (newlyCreatedRetailSaleCancellationBill.getId() == null) {
+                getBillFacade().create(newlyCreatedRetailSaleCancellationBill);
             }
 
             //for Payment,billFee and BillFeepayment
-            List<Payment> newlyCreatedCancellationPayments = pharmacySaleController.createPaymentForRetailSaleCancellation(cb, paymentMethod);
+            List<Payment> newlyCreatedCancellationPayments = pharmacySaleController.createPaymentForRetailSaleCancellation(newlyCreatedRetailSaleCancellationBill, paymentMethod);
             drawerController.updateDrawerForOuts(newlyCreatedCancellationPayments);
-            pharmacyCancelBillItems(cb, newlyCreatedCancellationPayments);
+            pharmacyCancelBillItems(newlyCreatedRetailSaleCancellationBill, newlyCreatedCancellationPayments);
 
             getBill().setCancelled(true);
-            getBill().setCancelledBill(cb);
+            getBill().setCancelledBill(newlyCreatedRetailSaleCancellationBill);
             getBillFacade().edit(getBill());
 
-//            if (getBill().getReferenceBill() != null) {
-//                getBill().getReferenceBill().setReferenceBill(null);
-//                getBillFacade().edit(getBill().getReferenceBill());
-//            }
-//            getCashTransactionBean().saveBillCashOutTransaction(cb, getSessionController().getLoggedUser());
+            newlyCreatedRetailSaleCancellationBillPre.setReferenceBill(getBill());
+            getBillFacade().edit(newlyCreatedRetailSaleCancellationBillPre);
+
             JsfUtil.addSuccessMessage("Cancelled");
-            //   ////System.out.println("going to cancel staff payments");
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
-                    //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");
-                    cb.setFromStaff(getBill().getToStaff());
-                    getBillFacade().edit(cb);
+                    newlyCreatedRetailSaleCancellationBill.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
+                }
+            }
+            if (getBill().getPaymentMethod() == PaymentMethod.Staff_Welfare) {
+                if (getBill().getToStaff() != null) {
+                    getStaffBean().updateStaffWelfare(getBill().getToStaff(), 0 - getBill().getNetTotal());
+                    JsfUtil.addSuccessMessage("Staff Welfare Updated");
+                    newlyCreatedRetailSaleCancellationBill.setFromStaff(getBill().getToStaff());
+                    getBillFacade().edit(newlyCreatedRetailSaleCancellationBill);
                 }
             }
 
@@ -2115,7 +2223,7 @@ public class PharmacyBillSearch implements Serializable {
                 return;
             }
             for (BillItem i : getBill().getBillItems()) {
-                i.getPharmaceuticalBillItem().setQty((double) (double) i.getQty());
+                i.getPharmaceuticalBillItem().setQty(i.getQty());
                 if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                     continue;
                 }
@@ -2174,8 +2282,50 @@ public class PharmacyBillSearch implements Serializable {
         newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
         newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         newlyCreatedCancellationBill.setDeptId(deptId);
-
+        newlyCreatedCancellationBill.setReferenceBill(getBill());
         getBillFacade().edit(newlyCreatedCancellationBill);
+        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
+
+        getBill().setCancelled(true);
+        getBill().setCancelledBill(newlyCreatedCancellationBill);
+        getBillFacade().edit(getBill());
+        JsfUtil.addSuccessMessage("Cancelled");
+
+        printPreview = true;
+
+    }
+
+    public void cancelPharmacyRequestIssueToBht() {
+        if (getBill() == null) {
+            JsfUtil.addErrorMessage("No Bill Found");
+            return;
+        }
+        if (getBill().getBillType() != BillType.PharmacyBhtPre) {
+            return;
+        }
+        if (getBill().getPatientEncounter().isPaymentFinalized()) {
+            JsfUtil.addErrorMessage("This Bill Already Discharged");
+            return;
+        }
+        if (getBill().getCheckedBy() != null) {
+            JsfUtil.addErrorMessage("Checked Bill. Can not cancel");
+            return;
+        }
+        if (getBill().checkActiveReturnBhtIssueBills()) {
+            JsfUtil.addErrorMessage("There some return Bill for this please cancel that bills first");
+            return;
+        }
+        if (checkDepartment(getBill())) {
+            return;
+        }
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        Bill newlyCreatedCancellationBill = getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PHISSCAN);
+        newlyCreatedCancellationBill.setForwardReferenceBill(getBill().getForwardReferenceBill());
+        newlyCreatedCancellationBill.setBillTypeAtomic(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        newlyCreatedCancellationBill.setDeptId(deptId);
+        newlyCreatedCancellationBill.setReferenceBill(getBill());
+        getBillFacade().edit(newlyCreatedCancellationBill);
+        billService.createBillFinancialDetailsForPharmacyBill(newlyCreatedCancellationBill);
 
         getBill().setCancelled(true);
         getBill().setCancelledBill(newlyCreatedCancellationBill);
@@ -2538,6 +2688,8 @@ public class PharmacyBillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTICAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
+            cb.setReferenceBill(getBill());
+            cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE_CANCELLED);
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
@@ -2582,7 +2734,8 @@ public class PharmacyBillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
-
+            cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            cb.setReferenceBill(getBill());
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
             }
@@ -2626,6 +2779,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PURCAN));
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PURCAN));
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            cb.setReferenceBill(getBill());
 
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
@@ -2743,7 +2897,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getBills() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.OpdBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.OpdBill);
@@ -2758,7 +2912,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getColBills() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.LabBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.LabBill);
@@ -2773,7 +2927,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getPos() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyOrder);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyOrder);
@@ -2787,7 +2941,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getSales() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacySale);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacySale);
@@ -2860,7 +3014,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getRequests() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyTransferRequest);
@@ -2874,7 +3028,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getGrns() {
         if (bills == null) {
-            if (txtSearch == null || txtSearch.trim().equals("")) {
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
                 bills = getBillBean().billsForTheDay(getFromDate(), getToDate(), BillType.PharmacyGrnBill);
             } else {
                 bills = getBillBean().billsFromSearch(txtSearch, getFromDate(), getToDate(), BillType.PharmacyGrnBill);
@@ -2890,26 +3044,24 @@ public class PharmacyBillSearch implements Serializable {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
+            if (txtSearch == null || txtSearch.trim().isEmpty()) {
+                sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
+
+            } else {
+                sql = "select b from BilledBill b where b.retired=false and"
+                        + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
+                        + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
+            }
+
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("type", BillType.PaymentBill);
+            temMap.put("btp", BillType.ChannelPaid);
+            temMap.put("btp2", BillType.ChannelCredit);
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
+
             if (bills == null) {
-                if (txtSearch == null || txtSearch.trim().equals("")) {
-                    sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) and b.billType=:type and b.createdAt between :fromDate and :toDate order by b.id";
-
-                } else {
-                    sql = "select b from BilledBill b where b.retired=false and"
-                            + " b.id in(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType!=:btp and bt.referenceBill.billType!=:btp2) "
-                            + "and b.billType=:type and b.createdAt between :fromDate and :toDate and ((b.staff.person.name) like '%" + txtSearch.toUpperCase() + "%'  or (b.staff.person.phone) like '%" + txtSearch.toUpperCase() + "%'  or (b.insId) like '%" + txtSearch.toUpperCase() + "%') order by b.id desc  ";
-                }
-
-                temMap.put("toDate", getToDate());
-                temMap.put("fromDate", getFromDate());
-                temMap.put("type", BillType.PaymentBill);
-                temMap.put("btp", BillType.ChannelPaid);
-                temMap.put("btp2", BillType.ChannelCredit);
-                bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
-
-                if (bills == null) {
-                    bills = new ArrayList<>();
-                }
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -2920,22 +3072,20 @@ public class PharmacyBillSearch implements Serializable {
         if (bills == null) {
             String sql;
             Map temMap = new HashMap();
+            sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.id in"
+                    + "(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType=:btp"
+                    + " or bt.referenceBill.billType=:btp2) and b.billType=:type and b.createdAt "
+                    + "between :fromDate and :toDate order by b.id";
+
+            temMap.put("toDate", getToDate());
+            temMap.put("fromDate", getFromDate());
+            temMap.put("type", BillType.PaymentBill);
+            temMap.put("btp", BillType.ChannelPaid);
+            temMap.put("btp2", BillType.ChannelCredit);
+            bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
+
             if (bills == null) {
-                sql = "SELECT b FROM BilledBill b WHERE b.retired=false and b.id in"
-                        + "(Select bt.bill.id From BillItem bt Where bt.referenceBill.billType=:btp"
-                        + " or bt.referenceBill.billType=:btp2) and b.billType=:type and b.createdAt "
-                        + "between :fromDate and :toDate order by b.id";
-
-                temMap.put("toDate", getToDate());
-                temMap.put("fromDate", getFromDate());
-                temMap.put("type", BillType.PaymentBill);
-                temMap.put("btp", BillType.ChannelPaid);
-                temMap.put("btp2", BillType.ChannelCredit);
-                bills = getBillFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP, 100);
-
-                if (bills == null) {
-                    bills = new ArrayList<>();
-                }
+                bills = new ArrayList<>();
             }
         }
         return bills;
@@ -2959,7 +3109,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public List<Bill> getOpdBills() {
-        if (txtSearch == null || txtSearch.trim().equals("")) {
+        if (txtSearch == null || txtSearch.trim().isEmpty()) {
             bills = getBillBean().billsForTheDay(fromDate, toDate, BillType.OpdBill);
         } else {
             bills = getBillBean().billsFromSearch(txtSearch, fromDate, toDate, BillType.OpdBill);
@@ -3010,7 +3160,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public List<BillItem> getBillItems() {
-        String sql = "";
+        String sql;
         if (getBill() != null) {
             if (getBill().getRefundedBill() == null) {
                 sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
@@ -3219,8 +3369,8 @@ public class PharmacyBillSearch implements Serializable {
         if (bill != null) {
             switch (bill.getBillType()) {
                 case PharmacyPre:
-                    return "pharmacy_reprint_bill_sale";
                 case PharmacyBhtPre:
+                case PharmacyWholesalePre:
                     return "pharmacy_reprint_bill_sale";
                 case PharmacyIssue:
                     return "pharmacy_reprint_bill_unit_issue";
@@ -3238,8 +3388,6 @@ public class PharmacyBillSearch implements Serializable {
                     return "pharmacy_reprint_purchase_return";
                 case PharmacyAdjustment:
                     return "pharmacy_reprint_adjustment";
-                case PharmacyWholesalePre:
-                    return "pharmacy_reprint_bill_sale";
                 default:
                     return "pharmacy_reprint_bill_sale";
             }
@@ -3295,7 +3443,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -3308,7 +3456,7 @@ public class PharmacyBillSearch implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -3317,14 +3465,6 @@ public class PharmacyBillSearch implements Serializable {
         resetLists();
         this.fromDate = fromDate;
 
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public BillBeanController getBillBean() {
@@ -3383,6 +3523,38 @@ public class PharmacyBillSearch implements Serializable {
         return searchRetaiBills;
     }
 
+    public String importBill() {
+        if (file == null || file.getSize() == 0) {
+            JsfUtil.addErrorMessage("No JSON file selected.");
+            return null;
+        }
+
+        String jsonString;
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
+            jsonString = reader.lines().collect(Collectors.joining("\n"));
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error reading file: " + e.getMessage());
+            return null;
+        }
+
+        bill = billService.convertJsonToBill(jsonString);
+        if (bill == null || bill.getBillTypeAtomic() == null) {
+            JsfUtil.addErrorMessage("Invalid JSON structure.");
+            return null;
+        }
+
+        if (Objects.requireNonNull(bill.getBillTypeAtomic()) == BillTypeAtomic.PHARMACY_GRN) {
+            return importGrnBill(bill);
+        }
+        JsfUtil.addErrorMessage("Bill Type does NOT support import.");
+        return null;
+    }
+
+    public String importGrnBill(Bill importGrnBill) {
+        return grnController.navigateToResiveFromImportGrn(importGrnBill);
+    }
+
     public void setSearchRetaiBills(List<Bill> searchRetaiBills) {
         this.searchRetaiBills = searchRetaiBills;
     }
@@ -3420,6 +3592,14 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public UploadedFile getFile() {
+        return file;
+    }
+
+    public void setFile(UploadedFile file) {
+        this.file = file;
     }
 
 }

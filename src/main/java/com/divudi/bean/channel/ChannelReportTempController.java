@@ -9,34 +9,34 @@ import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.hr.StaffController;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.ChannelBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSessionLeave;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.AgentReferenceBookFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ServiceSessionLeaveFacade;
-import com.divudi.facade.SpecialityFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSessionLeave;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.AgentReferenceBookFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ServiceSessionLeaveFacade;
+import com.divudi.core.facade.SpecialityFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
@@ -85,7 +85,6 @@ public class ChannelReportTempController implements Serializable {
     @EJB
     ChannelBean channelBean;
 
-    CommonFunctions commonFunctions;
     //
     @Inject
     SessionController sessionController;
@@ -114,7 +113,7 @@ public class ChannelReportTempController implements Serializable {
     boolean sessoinDate;
     boolean paid;
     boolean scan;
-    
+
 
     /**
      * Creates a new instance of ChannelReportTempController
@@ -229,8 +228,8 @@ public class ChannelReportTempController implements Serializable {
 
     public List<Institution> fetchBillsAgencys() {
 
-        Date fd = commonFunctions.getStartOfMonth(fromDate);
-        Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
+        Date fd = CommonFunctions.getStartOfMonth(fromDate);
+        Date td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(toDate));
 
         String sql;
         Map m = new HashMap();
@@ -305,8 +304,8 @@ public class ChannelReportTempController implements Serializable {
 
     public List<Speciality> fetchBillsSpecilitys() {
 
-        Date fd = commonFunctions.getStartOfMonth(fromDate);
-        Date td = commonFunctions.getEndOfMonth(commonFunctions.getStartOfMonth(toDate));
+        Date fd = CommonFunctions.getStartOfMonth(fromDate);
+        Date td = CommonFunctions.getEndOfMonth(CommonFunctions.getStartOfMonth(toDate));
 
         String sql;
         Map m = new HashMap();
@@ -429,7 +428,7 @@ public class ChannelReportTempController implements Serializable {
         bills = fetchBills(bts, classes, fromDate, toDate, getSessionController().getLoggedUser().getInstitution(), null);
 
     }
-    
+
     public void createCollectingCenterPaymentTable() {
         bills = new ArrayList<>();
         BillType[] bts = {BillType.CollectingCentrePaymentReceiveBill};
@@ -538,15 +537,15 @@ public class ChannelReportTempController implements Serializable {
             Date fd;
             Date td;
             if (byDate) {
-                fd = commonFunctions.getStartOfDay(nowDate);
-                td = commonFunctions.getEndOfDay(nowDate);
+                fd = CommonFunctions.getStartOfDay(nowDate);
+                td = CommonFunctions.getEndOfDay(nowDate);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM dd");
                 formatedDate = df.format(fd);
 
             } else {
-                fd = commonFunctions.getStartOfMonth(nowDate);
-                td = commonFunctions.getEndOfMonth(nowDate);
+                fd = CommonFunctions.getStartOfMonth(nowDate);
+                td = CommonFunctions.getEndOfMonth(nowDate);
 
                 DateFormat df = new SimpleDateFormat("yyyy MMMM");
                 formatedDate = df.format(fd);
@@ -741,7 +740,7 @@ public class ChannelReportTempController implements Serializable {
 
         agencies = getInstitutionFacade().findByJpql(sql, m);
     }
-    
+
     public void createCollectingcenterBalanceTable() {
         String sql;
         HashMap m = new HashMap();
@@ -965,7 +964,7 @@ public class ChannelReportTempController implements Serializable {
         this.channelBean = channelBean;
     }
 
-   
+
     public SessionController getSessionController() {
         return sessionController;
     }

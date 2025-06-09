@@ -13,12 +13,12 @@
             <h:panelGroup rendered="#{!storePurchaseReturnController.printPreview}" styleClass="alignTop" >
                 <p:panel>
 
-                    <f:facet name="header" >      
+                    <f:facet name="header" >
 
                         <h:panelGrid columns="15"  >
                             <h:outputLabel value="Supplier :#{storePurchaseReturnController.returnBill.fromInstitution.name} GRN" />
                             <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{storePurchaseReturnController.returnBill.paymentMethod}">                                                                     
+                            <p:selectOneMenu   id="cmbPs" value="#{storePurchaseReturnController.returnBill.paymentMethod}">
                                 <f:selectItems value="#{enumController.paymentMethods}"/>
                                 <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef bank lblSlipRef txtSlipRef slipBank" event="change" />
 
@@ -42,7 +42,7 @@
 
                             <p:commandButton  value="Return" action="#{storePurchaseReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
-                            <p:outputLabel  value="Recievable Amount" /> 
+                            <p:outputLabel  value="Recievable Amount" />
                             <p:outputLabel id="total"  value="#{storePurchaseReturnController.returnBill.total}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
@@ -52,51 +52,51 @@
 
                 <p:dataTable var="ph" value="#{storePurchaseReturnController.billItems}"
                              scrollable="true" scrollHeight="250"
-                             id="itemList" >  
+                             id="itemList" >
 
-                    <f:facet name="header">  
-                        Returning Item 
-                    </f:facet>  
+                    <f:facet name="header">
+                        Returning Item
+                    </f:facet>
 
-                    <p:column headerText="Item Name"  style="width:50px;" >  
-                        <h:outputLabel value="#{ph.item.name}"/>                                        
-                    </p:column>  
+                    <p:column headerText="Item Name"  style="width:50px;" >
+                        <h:outputLabel value="#{ph.item.name}"/>
+                    </p:column>
 
-                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />                   
-                    </p:column>  
+                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;">
+                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
+                    </p:column>
 
-                    <p:column headerText="Purchase Rate" style="width:25px!important;"> 
+                    <p:column headerText="Purchase Rate" style="width:25px!important;">
                         <h:panelGroup id="purchase" >
                             <h:outputText  value="#{ph.pharmaceuticalBillItem.purchaseRate}"  >
                                   <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
-                            <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.entity.pharmacy.Ampp'}" />    
+                            <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                         </h:panelGroup>
-                    </p:column>                 
-
-
-                    <p:column headerText="Batch No" style="width:25px!important;">                       
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />                        
-                    </p:column>  
-
-                    <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" /> 
                     </p:column>
 
 
-                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
+                    <p:column headerText="Batch No" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                    </p:column>
+
+                    <p:column headerText="Date of Expirey" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" />
+                    </p:column>
+
+
+                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">
                         <p:inputText autocomplete="off" value="#{ph.qty}" >
                             <f:ajax event="keyup" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId} "  listener="#{storePurchaseReturnController.onEdit(ph)}" ></f:ajax>
                         </p:inputText>
-                    </p:column>  
+                    </p:column>
 
-                </p:dataTable>  
+                </p:dataTable>
                 <p:spacer height="50"/>
-               
+
             </h:panelGroup>
 
-            <p:panel rendered="#{storePurchaseReturnController.printPreview}">                
+            <p:panel rendered="#{storePurchaseReturnController.printPreview}">
                 <p:commandButton value="Print" ajax="false" action="#" >
                     <p:printer target="gpBillPreview" ></p:printer>
                 </p:commandButton>
@@ -108,6 +108,6 @@
             </p:panel>
 
         </h:form>
-    </ui:define>  
+    </ui:define>
 
 </ui:composition>

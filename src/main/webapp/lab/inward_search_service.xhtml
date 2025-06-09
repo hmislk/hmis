@@ -36,7 +36,7 @@
                                 </p:calendar>
                                 <p:commandButton 
                                     ajax="false" 
-                                    action="#{searchController.createInwardServiceTablebyLoggedDepartment()}" 
+                                    action="#{searchController.createInwardServiceTableForLab()}" 
                                     value="Search" 
                                     icon="fa fa-search"
                                     class="mb-3 mt-2 w-100 ui-button-warning">
@@ -62,13 +62,18 @@
                                     id="tblBills" 
                                     value="#{searchController.bills}" 
                                     var="bill"
+                                    rows="20"
+                                    rowIndexVar="i"
                                     paginatorPosition="bottom"
                                     paginator="true"
                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                    rowsPerPageTemplate="5,10,15"
+                                    rowsPerPageTemplate="20,50,100"
                                     >    
-
-                                    <p:column headerText="Bill No">   
+                                    <p:column headerText="#" style="padding: 10px; width: 3em;">  
+                                        <h:outputLabel value="#{i+1}"  ></h:outputLabel>   
+                                    </p:column>
+                                    
+                                    <p:column headerText="Bill No" style="padding: 10px;">   
                                         <p:commandLink
                                             value="#{bill.deptId}"
                                             ajax="false"
@@ -77,47 +82,44 @@
                                         </p:commandLink>                              
                                     </p:column>
 
-                                    <p:column headerText="Bht No">                              
+                                    <p:column headerText="BHT No" style="padding: 10px; width: 6em;">                              
                                         <h:outputLabel value="#{bill.patientEncounter.bhtNo}"  ></h:outputLabel>                                    
                                     </p:column>
 
-                                    <p:column headerText="Bill Date" >
+                                    <p:column headerText="Bill Date" style="padding: 10px;">
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
                                         <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled at " />
+                                        <h:panelGroup rendered="#{bill.cancelled}">
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.createdAt}" >
                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </h:panelGroup>        
                                     </p:column>
+                                    
+                                    <p:column headerText="Billed Dept" style="padding: 10px; width: 8em;">  
+                                        <h:outputLabel value="#{bill.department.name}" ></h:outputLabel>                                   
+                                    </p:column>
 
-                                    <p:column headerText="Billed By">  
+
+                                    <p:column headerText="Billed By" style="padding: 10px;">  
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>                                  
                                         <br/>
-                                        <h:panelGroup rendered="#{bill.cancelled}" >
-                                            <h:outputLabel style="color: red;" value="Cancelled By " />
+                                        <h:panelGroup rendered="#{bill.cancelled}">
                                             <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
 
-                                    <p:column headerText="Client">                              
+                                    <p:column headerText="Patient" style="padding: 10px; width: 20vw">                              
                                         <h:outputLabel value="#{bill.patientEncounter.patient.person.nameWithTitle}" ></h:outputLabel>
 
                                     </p:column>   
-                                    <p:column headerText="Comments" >                                
+                                    <p:column headerText="Comments" style="padding: 10px;">                                
                                         <h:outputLabel  rendered="#{bill.cancelledBill ne null}" value="#{bill.cancelledBill.comments}" >
                                         </h:outputLabel>
-                                    </p:column>
-                                    <p:column headerText="BHT Total Value">
-                                         <h:outputLabel value="#{bill.patientEncounter.finalBill.netTotal}" >
-                                             <f:convertNumber pattern="###,#00.00"/>
-                                         </h:outputLabel>
-                                        
                                     </p:column>
                                 </p:dataTable>
                             </div>

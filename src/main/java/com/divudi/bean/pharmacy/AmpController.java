@@ -9,29 +9,28 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.CategoryController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
-//import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.ItemSupplierPrices;
-import com.divudi.data.ItemType;
-import com.divudi.data.SymanticType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.ItemSupplierPrices;
+import com.divudi.core.data.ItemType;
+import com.divudi.core.data.SymanticType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.entity.pharmacy.Vtm;
-import com.divudi.entity.pharmacy.VirtualProductIngredient;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.VmpFacade;
-import com.divudi.facade.VirtualProductIngredientFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.VirtualProductIngredient;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.VmpFacade;
+import com.divudi.core.facade.VirtualProductIngredientFacade;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -65,12 +64,20 @@ import java.util.Iterator;
 public class AmpController implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    @Inject
-    SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private AmpFacade ejbFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    private VmpFacade vmpFacade;
+    @EJB
+    private VirtualProductIngredientFacade vivFacade;
+    @EJB
+    PharmacyBean pharmacyBean;
+    @EJB
+    StockFacade stockFacade;
+
     List<Amp> selectedItems;
     private Amp current;
     private Vtm vtm;
@@ -80,15 +87,14 @@ public class AmpController implements Serializable {
     private VirtualProductIngredient addingVtmInVmp;
     private Vmp currentVmp;
 
-    @EJB
-    private VmpFacade vmpFacade;
-    @EJB
-    private VirtualProductIngredientFacade vivFacade;
     List<Amp> itemsByCode = null;
     List<Amp> listToRemove = null;
     Department department;
     List<Amp> itemList;
     List<ItemSupplierPrices> itemSupplierPrices;
+
+    @Inject
+    SessionController sessionController;
     @Inject
     ItemsDistributorsController itemDistributorsController;
     @Inject
@@ -97,6 +103,11 @@ public class AmpController implements Serializable {
     VmpController vmpController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private ItemController itemController;
+
+    private boolean duplicateCode;
+
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -187,10 +198,6 @@ public class AmpController implements Serializable {
     }
 
     public void fillItemsForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         List<Amp> amps = getLongCodeItems();
         itemSupplierPrices = new ArrayList<>();
         for (Amp a : amps) {
@@ -209,14 +216,9 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
-
     }
 
     public void fillPricesForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
 //        List<Amp> amps = getLongCodeItems();
 //        itemSupplierPrices = new ArrayList<>();
 //        for (Amp a : amps) {
@@ -233,18 +235,12 @@ public class AmpController implements Serializable {
 //        for (ItemSupplierPrices p : itemSupplierPrices) {
 //            p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
 //        }
-
     }
 
     public void fillSuppliersForItemSupplierPrices() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         for (ItemSupplierPrices p : itemSupplierPrices) {
             p.setSupplier(itemDistributorsController.getDistributor(p.getAmp()));
         }
-
     }
 
     public List<Amp> getListToRemove() {
@@ -266,9 +262,6 @@ public class AmpController implements Serializable {
         this.billNumberBean = billNumberBean;
     }
 
-    @EJB
-    PharmacyBean pharmacyBean;
-
     public PharmacyBean getPharmacyBean() {
         return pharmacyBean;
     }
@@ -276,9 +269,6 @@ public class AmpController implements Serializable {
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
     }
-
-    @EJB
-    StockFacade stockFacade;
 
     public StockFacade getStockFacade() {
         return stockFacade;
@@ -325,10 +315,6 @@ public class AmpController implements Serializable {
     }
 
     public void createMedicineList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         m.put("dep", DepartmentType.Pharmacy);
         String sql = "select c from PharmaceuticalItem c "
@@ -338,14 +324,9 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findByJpql(sql, m);
-
     }
 
     public void createItemList() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         m.put("dep", DepartmentType.Pharmacy);
         String sql = "select c from Amp c "
@@ -355,7 +336,6 @@ public class AmpController implements Serializable {
                 + " order by c.name";
 
         items = getFacade().findByJpql(sql, m);
-
     }
 
     public void createItemListPharmacy() {
@@ -400,35 +380,19 @@ public class AmpController implements Serializable {
     }
 
     public void pharmacyDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotItem(false, DepartmentType.Store);
-
     }
 
     public void pharmacyNoDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotItem(true, DepartmentType.Store);
-
     }
 
     public void storeDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotStoreItem(false, DepartmentType.Store);
-
     }
 
     public void storeNoDeleteItem() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         itemList = deleteOrNotStoreItem(true, DepartmentType.Store);
-
     }
 
     public void onTabChange(TabChangeEvent event) {
@@ -436,7 +400,7 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> getSelectedItems() {
-        if (selectText.trim().equals("")) {
+        if (selectText.trim().isEmpty()) {
             selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false order by c.name");
         } else {
             selectedItems = getFacade().findByJpql("select c from Amp c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
@@ -463,6 +427,14 @@ public class AmpController implements Serializable {
     }
     List<Amp> ampList = null;
 
+    public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
+        List<Item> a = new ArrayList<>();
+        a.addAll(completeAmp(qry));
+        a.addAll(itemController.completeStoreItemOnly(qry));
+
+        return a;
+    }
+
     public List<Amp> completeAmpByName(String qry) {
 
         Map m = new HashMap();
@@ -474,7 +446,6 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "((c.name) like :n ) order by c.name", m, 30);
-            //////// // System.out.println("a size is " + a.size());
         }
         if (ampList == null) {
             ampList = new ArrayList<>();
@@ -485,7 +456,7 @@ public class AmpController implements Serializable {
     public Amp findAmpByName(String name) {
         Map m = new HashMap();
         m.put("n", name);
-        if (name == null || name.trim().equals("")) {
+        if (name == null || name.trim().isEmpty()) {
             return null;
         }
         String jpql = "select c "
@@ -511,7 +482,6 @@ public class AmpController implements Serializable {
                     + " (c.departmentType is null"
                     + " or c.departmentType!=:dep )and "
                     + "((c.name) like :n ) order by c.name", m, 30);
-            //////// // System.out.println("a size is " + a.size());
         }
         return vmps;
     }
@@ -529,7 +499,6 @@ public class AmpController implements Serializable {
 //            ampList = getFacade().findByJpql("select c from Amp c where "
 //                    + " c.retired=false and (c.departmentType is null or c.departmentType!=:dep) and "
 //                    + "((c.code) like :n ) order by c.code", m, 30);
-//            //////// // System.out.println("a size is " + a.size());
 //        }
 //        if (ampList == null) {
 //            ampList = new ArrayList<>();
@@ -544,21 +513,15 @@ public class AmpController implements Serializable {
 //        String sql = "select c from Amp c where "
 //                + " c.retired=false and c.departmentType!=:dep and "
 //                + "((c.barcode) like :n ) order by c.barcode";
-//        //   ////// // System.out.println("sql = " + sql);
-//        //   ////// // System.out.println("m = " + m);
 //
 //        if (qry != null) {
 //            ampList = getFacade().findByJpql(sql, m, 30);
-//            //   ////// // System.out.println("a = " + a);
-//            //////// // System.out.println("a size is " + a.size());
 //        }
 //        if (ampList == null) {
 //            ampList = new ArrayList<>();
 //        }
 //        return ampList;
 //    }
-    @EJB
-    BillNumberGenerator billNumberBean;
 
     public void prepareAdd() {
         current = new Amp();
@@ -567,7 +530,7 @@ public class AmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
-        if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().equals("")) {
+        if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().isEmpty()) {
             getCurrent().getCategory().setDescription(getCurrent().getName());
         }
 
@@ -586,12 +549,11 @@ public class AmpController implements Serializable {
         Amp amp = getFacade().findFirstByJpql(sql, m);
 
         DecimalFormat df = new DecimalFormat("0000");
-        if (amp != null && !amp.getCode().equals("")) {
-            //// // System.out.println("amp.getCode() = " + amp.getCode());
+        if (amp != null && !amp.getCode().isEmpty()) {
 
             String s = amp.getCode().substring(2);
 
-            int i = Integer.valueOf(s);
+            int i = Integer.parseInt(s);
             i++;
             if (getCurrent().getId() != null) {
                 Amp selectedAmp = getFacade().find(getCurrent().getId());
@@ -635,13 +597,13 @@ public class AmpController implements Serializable {
             return true;
         }
 
-        if (getTabId().toString().equals("tabVmp")) {
+        if (getTabId().equals("tabVmp")) {
             if (getCurrent().getVmp() == null) {
                 JsfUtil.addErrorMessage("Please Select VMP");
                 return true;
             }
         }
-        if (getCurrent().getCode() == null || getCurrent().getCode().equals("")) {
+        if (getCurrent().getCode() == null || getCurrent().getCode().isEmpty()) {
             JsfUtil.addErrorMessage("Code Empty.You Can't Save Item without Code.");
             return true;
         }
@@ -685,7 +647,7 @@ public class AmpController implements Serializable {
     }
 
     public String createAmpName() {
-        if (getTabId().toString().equals("tabGen")) {
+        if (getTabId().equals("tabGen")) {
             return getCurrentVmp().getName();
         } else {
             return getCurrent().getVmp().getName();
@@ -693,7 +655,7 @@ public class AmpController implements Serializable {
     }
 
     private void saveVmp() {
-        if (currentVmp.getName() == null || currentVmp.getName().equals("")) {
+        if (currentVmp.getName() == null || currentVmp.getName().isEmpty()) {
             currentVmp.setName(createVmpName());
         }
 
@@ -707,26 +669,29 @@ public class AmpController implements Serializable {
 
     public void save() {
         if (current == null) {
-            JsfUtil.addErrorMessage("Nothuing selected");
-            return;
-        }
-        if (current.getName() == null || current.getName().equals("")) {
-            JsfUtil.addErrorMessage("No Name");
+            JsfUtil.addErrorMessage("No AMP is selected");
             return;
         }
         
+        if(current.getId() != null){
+            if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
+                JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
+                return;
+            }
+        }
+        
+        if (current.getName() == null || current.getName().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add a name to AMP");
+            return;
+        }
+
         int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
-        
-        System.out.println("maxCodeLeanth = " + maxCodeLeanth);
-        System.out.println("Current Code length = " + current.getCode().trim().length());
-        
-        System.out.println(current.getCode().trim().length() < maxCodeLeanth);
-        
+
         if (current.getCode().trim().length() < maxCodeLeanth){
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }
-        
+
         if (checkItemCode(current.getCode(), current)) {
             JsfUtil.addErrorMessage("This Code has Already been Used.");
             return;
@@ -738,6 +703,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
         }
+     
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
@@ -753,6 +719,8 @@ public class AmpController implements Serializable {
         }
 
         if (getCurrent().getId() != null) {
+            getCurrent().setEditedAt(new Date());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -779,11 +747,109 @@ public class AmpController implements Serializable {
         }
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
-        if (amp == null) {
-            return false;
-        } else {
-            return true;
+        return amp != null;
+    }
+
+    public void checkCodeDuplicate() {
+        duplicateCode = checkItemCode(current.getCode(), current);
+        if (duplicateCode) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
         }
+    }
+
+    public void generateCode() {
+        int length = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+        String code = "";
+        if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_NUMERIC_ONLY")) {
+            code = generateNumericCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_CHARACTERS_ONLY")) {
+            code = generateCharacterCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_ALPHANUMERIC")) {
+            code = generateAlphaNumericCode(length);
+        }
+        current.setCode(code);
+        checkCodeDuplicate();
+    }
+
+    private String generateNumericCode(int length) {
+        long max = 0;
+        List<Amp> all = findItems();
+        for (Amp a : all) {
+            try {
+                long val = Long.parseLong(a.getCode());
+                if (val > max) {
+                    max = val;
+                }
+            } catch (Exception e) {
+            }
+        }
+        long next = max + 1;
+        String format = "%0" + length + "d";
+        String code = String.format(format, next);
+        while (checkItemCode(code, current)) {
+            next++;
+            code = String.format(format, next);
+        }
+        return code;
+    }
+
+    private String generateCharacterCode(int length) {
+        String base = generateShortCode(current.getName());
+        if (base.isEmpty()) {
+            base = "AMP"; // Default fallback
+        }
+        if (base.length() > length) {
+            base = base.substring(0, length);
+        }
+        String code = base.toUpperCase();
+        int index = 1;
+        while (checkItemCode(code, current)) {
+            String suffix = String.valueOf(index);
+            int cut = Math.max(0, length - suffix.length());
+            String prefix = base.length() > cut ? base.substring(0, cut) : base;
+            code = (prefix + suffix).toUpperCase();
+            index++;
+        }
+        if (code.length() > length) {
+            code = code.substring(0, length);
+        }
+        return code;
+    }
+
+    private String generateAlphaNumericCode(int length) {
+        String base = generateShortCode(current.getName()).toUpperCase();
+        if (base.length() >= length) {
+            base = base.substring(0, length - 1);
+        }
+        int digits = Math.max(1, length - base.length());
+        long index = 1;
+        String code;
+        String format = "%0" + digits + "d";
+        code = base + String.format(format, index);
+        while (checkItemCode(code, current)) {
+            index++;
+            code = base + String.format(format, index);
+        }
+        return code;
+    }
+
+    private String generateShortCode(String name) {
+        StringBuilder sc = new StringBuilder();
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        String[] words = name.split(" ");
+        if (words.length == 1 && words[0].length() >= 3) {
+            sc = new StringBuilder(words[0].substring(0, 3).toLowerCase());
+        } else {
+            for (String w : words) {
+                if (!w.isEmpty()) {
+                    sc.append(w.charAt(0));
+                }
+            }
+            sc = new StringBuilder(sc.toString().toLowerCase());
+        }
+        return sc.toString();
     }
 
     public void saveSelected() {
@@ -807,7 +873,7 @@ public class AmpController implements Serializable {
 //            getCurrent().setVmp(currentVmp);
 //        }
 
-        if (current.getName() == null || current.getName().equals("")) {
+        if (current.getName() == null || current.getName().isEmpty()) {
             current.setName(createAmpName());
         }
 
@@ -1012,6 +1078,14 @@ public class AmpController implements Serializable {
         this.configOptionApplicationController = configOptionApplicationController;
     }
 
+    public boolean isDuplicateCode() {
+        return duplicateCode;
+    }
+
+    public void setDuplicateCode(boolean duplicateCode) {
+        this.duplicateCode = duplicateCode;
+    }
+
     /**
      *
      */
@@ -1020,7 +1094,7 @@ public class AmpController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AmpController controller = (AmpController) facesContext.getApplication().getELResolver().
@@ -1029,19 +1103,17 @@ public class AmpController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key = 0l;
+            long key;
             try {
-                key = Long.valueOf(value);
+                key = Long.parseLong(value);
             } catch (Exception e) {
-                key = 0l;
+                key = 0L;
             }
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -1058,13 +1130,4 @@ public class AmpController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
 }

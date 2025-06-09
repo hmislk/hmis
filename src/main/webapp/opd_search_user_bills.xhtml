@@ -11,56 +11,114 @@
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-<h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>                 
+                    <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                     <p:panel header="Search User Bills" >
-                        
-                        <h:panelGroup >
-                            <h:panelGrid columns="2" style="min-width: 100%;">
-                                <h:inputText autocomplete="off" id="txtSearch" value="#{billSearch.txtSearch}" >
-                                    <f:ajax render="tblBills" execute="txtSearch" event="keyup" />
-                                </h:inputText>
-                                <p:commandButton  value="Export as Excel" ajax="false" styleClass="noPrintButton" style="float:right;">
-                                    <p:dataExporter type="xlsx" target="tblBills" fileName="Report by Referring Doctor"
-                                                   
-                                                        
-                                                   />
-                                </p:commandButton>
-                            </h:panelGrid>
-                            
-                            
-                            <h:panelGrid columns="5">
-
-                                <h:panelGrid columns="2" >
-                                    <h:outputLabel value="From Date"/>
-                                    <p:calendar id="fromDate" value="#{billSearch.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        <f:ajax event="dateSelect" execute="tblBills  cmbUser"  render="tblBills toDate fromDate"/>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;" styleClass="fa ml-5" />
+                                        <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            id="fromDate"
+                                            value="#{billSearch.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    >
+                                        <f:ajax event="dateSelect" execute="@this"  render="tblBills"/>
                                     </p:calendar>
-                                </h:panelGrid>
 
-                                <h:panelGrid columns="2" >
-                                    <h:outputLabel value="To Date"/>                                
-                                    <p:calendar id="toDate" value="#{billSearch.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >
-                                        <f:ajax event="dateSelect" execute="tblBills cmbUser"  render="tblBills toDate fromDate"/>
+                                    <p:spacer width="50" height="60" ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                        <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:calendar
+                                            styleClass="w-100"
+                                            inputStyleClass="w-100 form-control"
+                                            id="toDate"
+                                            value="#{billSearch.toDate}"
+                                            navigator="false"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    >
+                                        <f:ajax event="dateSelect" execute="@this"  render="tblBills"/>
                                     </p:calendar>
+
+                                    <p:spacer width="50" ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                        <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                            id="cmbIns"
+                                            styleClass="w-100 form-control"
+                                            value="#{billSearch.institution}"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Institutions" />
+                                        <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                        <p:ajax process="cmbIns" update="cmbDept" />
+                                    </p:selectOneMenu>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                        <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu
+                                            id="cmbDept"
+                                            styleClass="w-100 form-control"
+                                            value="#{billSearch.department}"
+                                            filter="true">
+                                        <f:selectItem itemLabel="All Departments" />
+                                        <f:selectItems value="#{departmentController.getInsDepartments(billSearch.institution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                    </p:selectOneMenu>
+
+                                    <p:spacer ></p:spacer>
+
+                                    <h:panelGroup layout="block" styleClass="form-group">
+                                        <h:outputText styleClass="fas fa-user mr-2" />
+                                        <h:outputLabel value="User" class="mx-3"/>
+                                    </h:panelGroup>
+                                    <p:selectOneMenu class="w-100" filter="true" value="#{billSearch.user}" id="acIx">
+                                        <f:selectItem itemLabel="Select a user"/>
+                                        <f:selectItems value="#{webUserController.items}" var="st" itemLabel="#{st.name}" itemValue="#{st}"/>
+                                        <f:ajax event="change" execute="@this" render="tblBills"/>
+                                    </p:selectOneMenu>
+
+                                </h:panelGrid>
+                                <h:panelGrid columns="5" styleClass="mt-3">
+                                    <p:commandButton
+                                            id="btnList" class="m-1 ui-button-danger"
+                                            icon="fas fa-list"
+                                            ajax="false" value="View List"
+                                            action="#{test.test}" />
+
+                                    <p:commandButton id="btnPdf" class="m-1 ui-button-info"
+                                                     ajax="false"
+                                                     rendered="false"
+                                                     icon="fas fa-file-pdf"
+                                                     value="Export as PDF">
+                                        <p:dataExporter type="pdf" target="tblBills" fileName="user_bills" />
+                                    </p:commandButton>
+                                    <p:commandButton id="btnPrint" class="m-1 ui-button-primary"
+                                                     icon="fas fa-print"
+                                                     ajax="false"
+                                                     value="Print Table">
+                                        <p:printer target="tblBills" />
+                                    </p:commandButton>
+
+                                    <p:commandButton id="btnExcel" class="m-1 ui-button-success"
+                                                     icon="fas fa-file-excel"
+                                                     ajax="false" value="Export to Excel">
+                                        <p:dataExporter type="xlsx" target="tblBills" fileName="user_bills" />
+                                    </p:commandButton>
                                 </h:panelGrid>
 
-
-                                <h:panelGrid columns="2" >
-                                    <h:outputLabel value="User Name"/>
-                                    <p:autoComplete id="cmbUser"  
-                                                    forceSelection="true"
-                                                    completeMethod="#{webUserController.completeUser}" styleClass="noPrintButton"
-                                                    var="w" itemLabel="#{w.webUserPerson.name}" itemValue="#{w}"
-                                                    value="#{billSearch.user}" >
-                                        <f:ajax event="itemSelect" execute="@this"  render="tblBills toDate fromDate"/>
-                                    </p:autoComplete>
-                                </h:panelGrid>
-
-
-                            </h:panelGrid>
-
-
-                        </h:panelGroup>
+                            </div>
+                        </div>
 
                         <br/><br/>
 
