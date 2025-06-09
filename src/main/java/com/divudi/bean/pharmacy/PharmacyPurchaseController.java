@@ -427,7 +427,7 @@ public class PharmacyPurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void calSaleRte() {
+    public void calculateSaleRate() {
         saleRate = 0.0;
         double categoryMarginPercentage = 0;
         if (getCurrentBillItem() == null || getCurrentBillItem().getItem() == null) {
