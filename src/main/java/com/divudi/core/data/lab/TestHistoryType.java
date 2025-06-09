@@ -1,15 +1,12 @@
 /*
  * By
- * Dr M H B Ariyaratne
- * buddhika.ari@gmail.com
- * amd
- * H.K. Damitha Deshan | hkddrajapaksha@gmail.com
+ * Dr M H B Ariyaratne | <buddhika.ari@gmail.com>
+ * H.K. Damitha Deshan | <hkddrajapaksha@gmail.com>
  */
 package com.divudi.core.data.lab;
 
 /**
- * Enum representing different stages of laboratory test history.
- * ChatGPT contributed.
+ * Enum representing different stages of laboratory test history. ChatGPT contributed.
  */
 public enum TestHistoryType {
     ORDERED,
@@ -27,5 +24,14 @@ public enum TestHistoryType {
     REPORT_APPROVED,
     REPORT_CORRECTED,
     REPORT_VIEWED,
-    REPORT_DISPATCHED
+    REPORT_DISPATCHED;
+    
+    public String getLabel() {
+        switch (this) {
+            case ORDERED:
+                return "Bill Created";
+            default:
+                return "";
+        }
+    }
 }
