@@ -259,11 +259,19 @@ public abstract class AbstractFacade<T> {
     public void createAndFlush(T entity) {
         getEntityManager().persist(entity);
         getEntityManager().flush(); // Immediately write to the database
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        if (id != null) {
+            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+        }
     }
 
     public void editAndFlush(T entity) {
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
     }
 
     public void refresh(T entity) {
@@ -313,8 +321,11 @@ public abstract class AbstractFacade<T> {
     }
 
     public void editAndCommit(T entity) {
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
-        getEntityManager().flush(); // Immediately write to the database
+        getEntityManager().flush(); // Write to DB immediately
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
     }
 
     public void remove(T entity) {
