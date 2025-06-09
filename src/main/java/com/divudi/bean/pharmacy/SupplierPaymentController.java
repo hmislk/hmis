@@ -768,7 +768,9 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void removeselected(BillItem billItem) {
-        getSelectedBillItems().remove(billItem); // removes by object, not by index
+        if (selectedBillItems != null) {
+            selectedBillItems.remove(billItem); // removes by object, not by index
+        }
         calTotalWithResetingIndexSelected();
         calculateTotalBySelectedBillItems();
     }
