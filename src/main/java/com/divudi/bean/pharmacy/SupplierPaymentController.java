@@ -770,9 +770,9 @@ public class SupplierPaymentController implements Serializable {
     public void removeselected(BillItem billItem) {
         if (selectedBillItems != null) {
             selectedBillItems.remove(billItem); // removes by object, not by index
+            calTotalWithResetingIndexSelected();
+            calculateTotalBySelectedBillItems();
         }
-        calTotalWithResetingIndexSelected();
-        calculateTotalBySelectedBillItems();
     }
 
     public void removeFromCurrent(BillItem billItem) {
@@ -1217,14 +1217,14 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillSettledCreditPharmacyBills() {
         BillTypeAtomic[] billTypesArrayBilled = {
-            BillTypeAtomic.PHARMACY_GRN, 
-            BillTypeAtomic.PHARMACY_GRN_CANCELLED, 
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_GRN_CANCELLED,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED,
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, 
-            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, 
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
