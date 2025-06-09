@@ -1053,7 +1053,6 @@ public class SupplierPaymentController implements Serializable {
         BillTypeAtomic[] billTypesArrayBilled = {
             BillTypeAtomic.PHARMACY_GRN,
             BillTypeAtomic.PHARMACY_GRN_CANCELLED,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
@@ -1220,8 +1219,6 @@ public class SupplierPaymentController implements Serializable {
             BillTypeAtomic.PHARMACY_GRN,
             BillTypeAtomic.PHARMACY_GRN_CANCELLED,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
-            BillTypeAtomic.PHARMACY_GRN_RETURN,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED,
             BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
@@ -1287,7 +1284,6 @@ public class SupplierPaymentController implements Serializable {
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
             BillTypeAtomic.PHARMACY_GRN_REFUND,
             BillTypeAtomic.STORE_GRN,
@@ -1315,7 +1311,13 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillSettledCreditBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, 
+            BillTypeAtomic.STORE_GRN, 
+            BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;
