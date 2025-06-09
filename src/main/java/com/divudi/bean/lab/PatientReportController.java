@@ -2180,6 +2180,22 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
+        
+        LabTestHistory approvelHistory = new LabTestHistory();
+        approvelHistory.setPatientInvestigation(currentPatientReport.getPatientInvestigation());
+        approvelHistory.setPatientReport(currentPatientReport);
+        approvelHistory.setInstitution(sessionController.getInstitution());
+        approvelHistory.setDepartment(sessionController.getDepartment());
+        approvelHistory.setFromDepartment(sessionController.getDepartment());
+        approvelHistory.setToDepartment(sessionController.getDepartment());
+        approvelHistory.setStaff(sessionController.getLoggedUser().getStaff());
+        approvelHistory.setTestHistoryType(TestHistoryType.REPORT_APPROVED);
+        approvelHistory.setCreatedAt(new Date());
+        approvelHistory.setCreatedBy(sessionController.getLoggedUser());
+        labTestHistoryFacade.create(approvelHistory);
+        
+        System.out.println("Test History Added for = " + currentPatientReport.getPatientInvestigation().getBillItem().getItem().getName() + " -> " + currentPatientReport.getSampleIDs());
+        
 
         JsfUtil.addSuccessMessage("Approved");
 
