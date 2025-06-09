@@ -183,8 +183,8 @@ public class AgentAndCcApplicationController {
 
             agentHistoryFacade.create(agentHistory);
 
-//            collectingCentre.setBallance(balanceAfterTx);
-//            institutionFacade.edit(collectingCentre);
+            collectingCentre.setBallance(balanceAfterTx);
+            institutionFacade.editAndCommit(collectingCentre);
         } finally {
             lock.unlock();
         }
