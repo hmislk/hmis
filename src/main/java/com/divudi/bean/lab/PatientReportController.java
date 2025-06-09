@@ -1225,8 +1225,23 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
+        
+        LabTestHistory ReportDataEnteredHistory = new LabTestHistory();
+        ReportDataEnteredHistory.setPatientInvestigation(currentPtIx);
+        ReportDataEnteredHistory.setPatientReport(currentPatientReport);
+        ReportDataEnteredHistory.setInstitution(sessionController.getInstitution());
+        ReportDataEnteredHistory.setDepartment(sessionController.getDepartment());
+        ReportDataEnteredHistory.setFromDepartment(sessionController.getDepartment());
+        ReportDataEnteredHistory.setToDepartment(sessionController.getDepartment());
+        ReportDataEnteredHistory.setStaff(sessionController.getLoggedUser().getStaff());
+        ReportDataEnteredHistory.setTestHistoryType(TestHistoryType.DATA_ENTERED);
+        ReportDataEnteredHistory.setCreatedAt(new Date());
+        ReportDataEnteredHistory.setCreatedBy(sessionController.getLoggedUser());
+        labTestHistoryFacade.create(ReportDataEnteredHistory);
 
-        //JsfUtil.addSuccessMessage("Saved");
+        System.out.println("Test History Added for = " + currentPtIx.getBillItem().getItem().getName() + " -> " + currentPatientReport.getSampleIDs());
+
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void removePatientReport() {
@@ -2939,6 +2954,7 @@ public class PatientReportController implements Serializable {
         
         LabTestHistory ReportCreateHistory = new LabTestHistory();
         ReportCreateHistory.setPatientInvestigation(pi);
+        ReportCreateHistory.setPatientReport(newlyCreatedReport);
         ReportCreateHistory.setInstitution(sessionController.getInstitution());
         ReportCreateHistory.setDepartment(sessionController.getDepartment());
         ReportCreateHistory.setFromDepartment(sessionController.getDepartment());
