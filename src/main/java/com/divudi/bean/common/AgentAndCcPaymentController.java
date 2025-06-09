@@ -357,7 +357,6 @@ public class AgentAndCcPaymentController implements Serializable {
         }
 
         updateBallance(current.getFromInstitution(), current.getNetTotal(), HistoryType.AgentBalanceUpdateBill, current);
-        System.out.println(current.getFromInstitution().getBallance());
         saveBillItem();
 
         List<Payment> p = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);

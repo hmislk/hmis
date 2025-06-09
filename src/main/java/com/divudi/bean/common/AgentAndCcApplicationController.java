@@ -257,8 +257,6 @@ public class AgentAndCcApplicationController {
             double balanceBeforeTx = collectingCentre.getBallance();
             double balanceAfterTx = balanceBeforeTx + Math.abs(hospitalFee);
 
-            System.out.println("Before Balance = " + collectingCentre.getBallance());
-            System.out.println("Refund Value = " + hospitalFee);
 
             agentHistory.setBalanceBeforeTransaction(
                     CommonFunctions.roundToTwoDecimalsBigDecimal(balanceBeforeTx)
@@ -272,7 +270,6 @@ public class AgentAndCcApplicationController {
             collectingCentre.setBallance(balanceAfterTx);
             institutionFacade.editAndCommit(collectingCentre);
 
-            System.out.println("After Balance = " + collectingCentre.getBallance());
 
         } finally {
             lock.unlock();
