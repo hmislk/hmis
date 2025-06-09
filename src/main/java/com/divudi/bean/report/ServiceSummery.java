@@ -5,38 +5,41 @@
  */
 package com.divudi.bean.report;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ServiceSubCategoryController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.BillItemWithFee;
-import com.divudi.data.table.String1Value5;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.BillItemWithFee;
+import com.divudi.core.data.table.String1Value5;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceCategory;
-import com.divudi.entity.ServiceSubCategory;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.InvestigationCategory;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceCategory;
+import com.divudi.core.entity.ServiceSubCategory;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.lab.InvestigationCategory;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -61,67 +64,91 @@ import javax.persistence.TemporalType;
 @SessionScoped
 public class ServiceSummery implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    CommonController commonController;
-    // private List<DailyCash> dailyCashs;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date fromDate;
-    @Temporal(TemporalType.TIMESTAMP)
-    private Date toDate;
-    private Item service;
-    private Category category;
-    double count;
-    double value;
-    private double proFeeTotal;
-    private double hosFeeTotal;
-    double hosFeeGrossValueTotal;
-    double hosFeeDisTotal;
-    double hosFeeMarginTotal;
-    private double outSideFeeTotoal;
-    double outSideFeeGrossTotal;
-    double outSideFeeDiscountTotal;
-    double outSideFeeMarginTotal;
-    double reagentFeeTotal;
-
-    double proFeeTotalC;
-    double hosFeeTotalC;
-    double reagentFeeTotalC;
-    double outSideFeeTotoalC;
-
-    double proFeeTotalR;
-    double hosFeeTotalR;
-    double reagentFeeTotalR;
-    double outSideFeeTotoalR;
-
-    double proFeeTotalGT;
-    double hosFeeTotalGT;
-    double reagentFeeTotalGT;
-    double outSideFeeTotoalGT;
-
-    double vatFeeTotal;
-
-    boolean onlyInwardBills;
-    boolean credit = false;
-
-    List<String1Value5> string1Value5;
-
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
+    @EJB
+    private BillService billService;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
     @EJB
-    ItemFeeFacade itemFeeFacade;
+    private ItemFeeFacade itemFeeFacade;
     @EJB
-    FeeFacade feeFacade;
-
-    List<BillItem> billItems;
-
-    List<Staff> staffs;
+    private FeeFacade feeFacade;
     @EJB
-    StaffFacade staffFacade;
+    private StaffFacade staffFacade;
+    @EJB
+    private BillFacade billFacade;
+    @EJB
+    private PaymentFacade paymentFacade;
+// </editor-fold>  
 
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private SessionController sessionController;
+    // </editor-fold>  
+
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date fromDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date toDate;
+
+    private Item service;
+    private Category category;
+    private Staff staff;
+
+    private boolean onlyInwardBills;
+    private boolean credit = false;
+
+    private List<BillItem> billItems;
+    private List<Payment> payments;
+    private List<Staff> staffs;
+    private List<Bill> bills;
+    private List<String1Value5> string1Value5;
+
+    private double count;
+    private double value;
+
+    private double proFeeTotal;
+    private double hosFeeTotal;
+    private double hosFeeGrossValueTotal;
+    private double hosFeeDisTotal;
+    private double hosFeeMarginTotal;
+
+    private double outSideFeeTotoal;
+    private double outSideFeeGrossTotal;
+    private double outSideFeeDiscountTotal;
+    private double outSideFeeMarginTotal;
+
+    private double reagentFeeTotal;
+
+    private double proFeeTotalC;
+    private double hosFeeTotalC;
+    private double reagentFeeTotalC;
+    private double outSideFeeTotoalC;
+
+    private double proFeeTotalR;
+    private double hosFeeTotalR;
+    private double reagentFeeTotalR;
+    private double outSideFeeTotoalR;
+
+    private double proFeeTotalGT;
+    private double hosFeeTotalGT;
+    private double reagentFeeTotalGT;
+    private double outSideFeeTotoalGT;
+
+    private double vatFeeTotal;
+
+    private double totalBill;
+    private double discountBill;
+    private double netTotalBill;
+
+    private Department department;
+    private Institution institution;
+    private PaymentMethod paymentMethod;
+
+    // </editor-fold>  
     public double getCount() {
         return count;
     }
@@ -149,15 +176,17 @@ public class ServiceSummery implements Serializable {
         Date fromDate = null;
         Date toDate = null;
 
-        String sql;
-        sql = "select s from Staff s where "
-                + " s.retired=false "
-                + " and s.annualWelfareQualified>0 "
-                + " order by s.codeInterger ";
+        Map<String, Object> parameters = new HashMap<>();
+        StringBuilder sql = new StringBuilder();
+        sql.append("select s from Staff s where s.retired=false  and s.annualWelfareQualified>0 ");
 
-        staffs = getStaffFacade().findByJpql(sql);
+        if (staff != null) {
+            sql.append(" and s.person.name =:name ");
+            parameters.put("name", staff.getPerson().getName());
+        }
+        sql.append(" order by s.codeInterger ");
 
-        
+        staffs = getStaffFacade().findByJpql(sql.toString(), parameters);
 
     }
 
@@ -819,8 +848,6 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
-
     }
 
     public void createInvestigationSummery() {
@@ -842,15 +869,15 @@ public class ServiceSummery implements Serializable {
         outSideFeeTotoal = calServiceTot(BillType.OpdBill, FeeType.OtherInstitution, false);
         vatFeeTotal = calServiceTotVat(BillType.OpdBill, false);
 
-        
     }
 
-    List<Bill> bills;
-    @EJB
-    BillFacade billFacade;
+    public double getNetTotalBill() {
+        return netTotalBill;
+    }
 
-    double totalBill;
-    double discountBill;
+    public void setNetTotalBill(double netTotalBill) {
+        this.netTotalBill = netTotalBill;
+    }
 
     public double getDiscountBill() {
         return discountBill;
@@ -876,54 +903,108 @@ public class ServiceSummery implements Serializable {
         this.bills = bills;
     }
 
+    @Deprecated // use opdPharmacyStaffWelfarePayments
     public void opdPharmacyStaffWelfarebills() {
-        Date startTime = new Date();
-
         String sql;
         Map m = new HashMap();
-
         sql = " select b from Bill b where "
                 + " b.retired=false "
                 + " and b.toStaff is not null "
                 + " and b.createdAt between :fd and :td "
                 + " and (b.billType=:bt1 or b.billType=:bt2) "
                 + " order by b.id ";
-
         m.put("fd", fromDate);
         m.put("td", toDate);
         m.put("bt1", BillType.PharmacySale);
         m.put("bt2", BillType.OpdBill);
-
         bills = billFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
-        ////// // System.out.println("bills = " + bills);
-
         calTotal(bills);
+    }
 
-        
+    /**
+     * Loads all valid staff welfare payments related to OPD and Pharmacy Retail
+     * Sale bills within the specified date range. Filters are applied to
+     * ensure: - Payments are not retired. - Payment method is 'Staff Welfare'.
+     * - The associated bill is not retired. - The bill is for a staff member
+     * (i.e., b.toStaff is not null). - The bill type is among valid OPD and
+     * Pharmacy retail sale types. The method then calculates totals
+     * proportionally from payments.
+     */
+    public void opdPharmacyStaffWelfarePayments() {
+        String jpql;
+        Map<String, Object> m = new HashMap<>();
 
+        jpql = " select p "
+                + " from Payment p join p.bill b "
+                + " where p.retired = false "
+                + " and p.paymentMethod = :pm "
+                + " and b.retired = false "
+                + " and b.toStaff is not null "
+                + " and b.createdAt between :fd and :td "
+                + " and b.billTypeAtomic in :btas "
+                + " order by b.id ";
+
+        m.put("fd", fromDate);
+        m.put("td", toDate);
+        m.put("pm", PaymentMethod.Staff_Welfare);
+
+        List<BillTypeAtomic> btas = billService.fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills();
+        m.put("btas", btas);
+
+        payments = paymentFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
+        calculateTotalsForPayments(payments);
     }
 
     public void calTotal(List<Bill> bills) {
         totalBill = 0.0;
         discountBill = 0.0;
+        netTotalBill = 0.0;
         for (Bill bill : bills) {
-            totalBill += bill.getNetTotal();
+            totalBill += bill.getTotal();
             discountBill += bill.getDiscount();
+            netTotalBill += bill.getNetTotal();
 
         }
     }
 
-    Department department;
-    Institution institution;
-    PaymentMethod paymentMethod;
+    /**
+     * Calculates total, discount, and net values based on individual
+     * payments.Since discount is only stored at bill level, it is
+     * proportionally distributed across payments according to the payment's
+     * contribution to the bill's net total.
+     *
+     * @param payments
+     */
+    public void calculateTotalsForPayments(List<Payment> payments) {
+        totalBill = 0.0;
+        discountBill = 0.0;
+        netTotalBill = 0.0;
 
+        for (Payment payment : payments) {
+            Bill bill = payment.getBill();
+            if (bill == null || payment.getPaidValue() == 0.0 || bill.getNetTotal() == 0.0) { // both are double, not Double, so null checks NOT necessary
+                continue; // Skip invalid entries to avoid divide-by-zero or nulls
+            }
 
-    CommonFunctions commonFunctions;
+            double paidValue = payment.getPaidValue();
+            double billTotal = bill.getTotal();
+            double billDiscount = bill.getDiscount();
+            double billNetTotal = bill.getNetTotal();
+
+            // Calculate the proportion of this payment relative to the bill's net total
+            double proportion = paidValue / billNetTotal;
+
+            // Proportionally allocate total and discount
+            totalBill += billTotal * proportion;
+            discountBill += billDiscount * proportion;
+            netTotalBill += paidValue; // The payment amount is already the proportional net
+        }
+    }
 
     public void createServiceSummeryLab() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -993,14 +1074,12 @@ public class ServiceSummery implements Serializable {
 //            reagentFeeTotal+=bf.getFeeValue();
 //            ////// // System.out.println("reagentFeeTotal = " + reagentFeeTotal);
 //        }
-        
-
     }
 
     public void createServiceSummeryLabNew() {
         Date startTime = new Date();
 
-        long lng = commonFunctions.getDayCount(getFromDate(), getToDate());
+        long lng = CommonFunctions.getDayCount(getFromDate(), getToDate());
 
         if (Math.abs(lng) > 2) {
             JsfUtil.addErrorMessage("Date Range is too Long");
@@ -1046,7 +1125,6 @@ public class ServiceSummery implements Serializable {
             reagentFeeTotalGT += svItem.getValue4();
         }
 
-        
     }
 
     public void createSummaryTable(Bill bill) {
@@ -1101,7 +1179,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, false);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, false);
 
-        
     }
 
     public void createServiceSummeryInwardAddedDate() {
@@ -1126,8 +1203,6 @@ public class ServiceSummery implements Serializable {
         reagentFeeTotal = calServiceTot(BillType.InwardBill, FeeType.Chemical);
         hosFeeMarginTotal = calMarginTot(BillType.InwardBill, FeeType.OwnInstitution);
 
-        
-
     }
 
     public void createServiceSummeryInwardDischarged() {
@@ -1147,7 +1222,6 @@ public class ServiceSummery implements Serializable {
         hosFeeTotal = calServiceTot(BillType.InwardBill, FeeType.OwnInstitution, true);
         outSideFeeTotoal = calServiceTot(BillType.InwardBill, FeeType.OtherInstitution, true);
 
-        
     }
 
     List<BillItemWithFee> serviceSummery;
@@ -1354,8 +1428,6 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
-
     }
 
     public void createInvestigationCategorySummery() {
@@ -1403,7 +1475,6 @@ public class ServiceSummery implements Serializable {
         calCountTotalCategory(BillType.OpdBill, false);
         calServiceTot1(BillType.OpdBill, false);
 
-        
     }
 
     private void calServiceTot1(BillType billType, boolean discharged) {
@@ -1451,8 +1522,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, false);
         calServiceTot(BillType.InwardBill, false);
-
-        
 
     }
 
@@ -1534,8 +1603,6 @@ public class ServiceSummery implements Serializable {
 
         calCountTotalCategory(BillType.InwardBill, true);
         //calServiceTot(BillType.InwardBill, true);
-
-        
 
     }
 
@@ -1818,7 +1885,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctions.getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1829,7 +1896,7 @@ public class ServiceSummery implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctions.getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1972,14 +2039,6 @@ public class ServiceSummery implements Serializable {
 
     public void setReagentFeeTotal(double reagentFeeTotal) {
         this.reagentFeeTotal = reagentFeeTotal;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public List<BillItemWithFee> getServiceSummeryBill() {
@@ -2126,14 +2185,6 @@ public class ServiceSummery implements Serializable {
         this.staffFacade = staffFacade;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public boolean isOnlyInwardBills() {
         return onlyInwardBills;
     }
@@ -2156,6 +2207,22 @@ public class ServiceSummery implements Serializable {
 
     public void setCredit(boolean credit) {
         this.credit = credit;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
     }
 
 }

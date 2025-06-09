@@ -15,62 +15,62 @@ import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.ApplicationInstitution;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillType;
-import com.divudi.data.FeeType;
-import com.divudi.data.HistoryType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.PersonInstitutionType;
-import com.divudi.data.channel.ChannelScheduleEvent;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.ApplicationInstitution;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.PersonInstitutionType;
+import com.divudi.core.data.channel.ChannelScheduleEvent;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.entity.channel.ArrivalRecord;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.entity.membership.MembershipScheme;
-import com.divudi.entity.membership.PaymentSchemeDiscount;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.FingerPrintRecordFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.entity.Fee;
-import com.divudi.entity.Payment;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.channel.ArrivalRecord;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.membership.MembershipScheme;
+import com.divudi.core.entity.membership.PaymentSchemeDiscount;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.FingerPrintRecordFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.entity.Fee;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -255,9 +255,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return output;
     }
 
-    
-
-  
     public void fillFees() {
         selectedItemFees = new ArrayList<>();
         sessionFees = new ArrayList<>();
@@ -608,10 +605,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
         return false;
     }
-
-   
-   
-
 
     public void updateSerial() {
         if (errorCheckForSerial()) {
@@ -1419,10 +1412,12 @@ public class PastBookingController implements Serializable, ControllerWithPatien
                 + " From BillSession bs "
                 + " where bs.retired=false"
                 + " and bs.bill.billType in :bts"
+                + " and bs.bill.billTypeAtomic <> :bta"
                 + " and type(bs.bill)=:class "
                 + " and bs.sessionInstance=:ss "
                 + " order by bs.serialNo ";
         HashMap<String, Object> hh = new HashMap<>();
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
         hh.put("bts", bts);
         hh.put("class", BilledBill.class);
         hh.put("ss", getSelectedSessionInstance());
@@ -1618,7 +1613,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
 
     }
 
-  
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -2117,7 +2111,6 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         return bi;
     }
 
- 
     private String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
@@ -2167,16 +2160,37 @@ public class PastBookingController implements Serializable, ControllerWithPatien
         getServiceSessionFacade().edit(tmp);
     }
 
+    public String navigatePastBookingFromChannelBookingByDate(SessionInstance session) {
+        if (session != null) {
+            if (session.getStaff() != null) {
+                this.speciality = session.getStaff().getSpeciality();
+                listnerStaffListForRowSelect();
+            }
+            if (session.getStaff() != null) {
+                this.staff = session.getStaff(); 
+            }
+            
+            this.date = session.getSessionDate();
+            fillSessionInstance();
+            this.selectedSessionInstance = session;
+            fillBillSessions();
+        }
+
+        return "/channel/past_channel_booking?faces-redirect=true";
+    }
+
     public void listnerStaffListForRowSelect() {
         getSelectedConsultants();
         setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {
         getSelectedConsultants();
         setSelectedServiceSession(null);
+        billSessions = null;
         serviceSessionLeaveController.setSelectedServiceSession(null);
         serviceSessionLeaveController.setCurrentStaff(staff);
     }

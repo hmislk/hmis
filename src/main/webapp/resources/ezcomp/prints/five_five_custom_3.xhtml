@@ -8,12 +8,12 @@
       xmlns:p="http://primefaces.org/ui">
 
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="refunded" type="java.lang.Boolean" default="false"/>
         <cc:attribute name="payments" type="java.lang.Integer"></cc:attribute>
     </cc:interface>
-    
+
     <h:head>
         <!-- Include the custom CSS for styling -->
         <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
@@ -29,16 +29,143 @@
 
         <!-- Composite Component Implementation -->
         <cc:implementation>
-            <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+            <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3.css" />
+                <style>
+                    /* Print Styles */
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 2.5cm!important;
+                            font-family: sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
 
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
+            </h:panelGroup>
+            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}" >
+                <h:outputStylesheet library="css" name="sale_bill_five_five_custom_3_without_header.css" />
+                <style>
+                    @font-face {
+                        font-family: 'OCR-B';
+                        src: url('../../fonts/OCR-B.ttf') format('truetype');
+                        /* Add other font properties like font-weight, font-style if necessary */
+                    }
+
+                    @media print {
+                        .receipt-container {
+                            border: none;
+                            width: 10cm!important;
+                            height: 9.5cm!important;
+                            margin-left: 0cm!important;
+                            margin-right: 2.5cm!important;
+                            margin-bottom: 1.0cm!important;
+                            margin-top: 0.7cm!important;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            padding-left: 0.25cm;
+                            /*        font-family: sans-serif !important;
+                                    border: none;
+                                    width: 11cm!important;
+                                    height: 14cm!important;
+                                    margin-left: 0cm!important;
+                                    margin-right: 1.5cm!important;
+                                    margin-top: 1cm!important;
+                                    margin-bottom: 0cm!important;
+                                    padding: 2px!important;
+                                    line-height: 1.2!important;*/
+                        }
+
+                        .hospital-name {
+                            font-size: 12px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .hospital-details {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .receipt-table th,
+                        .receipt-table td {
+                            padding: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                        
+                        .total-table th,
+                        .total-table td {
+                            font-family: "Trebuchet MS", sans-serif !important;
+                        }
+
+                        .separator {
+                            margin: 2px;
+                            font-family: "Trebuchet MS", sans-serif !important;
+                            line-height: 1.2;
+                        }
+                    }
+                </style>
+            </h:panelGroup>
 
             <div class="receipt-container">
+                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD Custom 3 Bill Header')}">
+                    <div class="hospital-name" >
+                        <h:outputLabel value="#{cc.attrs.bill.institution.name}" />
+                    </div>
+                    <div class="hospital-details" >
+                        <div>
+                            <h:outputLabel value="#{cc.attrs.bill.department.address}"/>
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.telephone2} / #{cc.attrs.bill.department.telephone2}"/>
+                            <!--                    <h:outputLabel value="/" style="width: 10px; text-align: center;"/>
+                                                <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>-->
+                        </div>
+                        <div >
+                            <h:outputLabel value="#{cc.attrs.bill.department.email}" />
+                        </div>
+                    </div>
+                    <div class="separator"></div>
+                </h:panelGroup>
                 <!-- Header Section -->
                 <div class="hospital-name">
                     <h:outputLabel value="#{cc.attrs.bill.department.name}"/>
                     <br/>
-                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                    <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                    <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
                 </div>
 
                 <!-- Separator Line -->
@@ -49,19 +176,28 @@
                     <h:panelGroup rendered="#{cc.attrs.bill.patient ne null}" >
                         <tr>
                             <td style="padding: 2px;">Name :</td>
-                            <td style="padding: 2px;" >
+                            <td style="padding: 2px;" colspan="4">
                                 <h:outputLabel value="#{cc.attrs.bill.patient.person.nameWithTitle}"/>
                             </td>
-                            <td style="padding: 2px;" class="spacer"></td>
-                            <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
-                                <td  style="padding: 2px;">Age/Sex :</td>
-                                <td style="padding: 2px;" >
-                                    <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
-                                </td>
-                            </h:panelGroup>
                         </tr>
                     </h:panelGroup>
-                    
+
+                    <tr>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patient.person.ageAsShortString ne null}" >
+                            <td  style="padding: 2px;">Age/Sex :</td>
+                            <td style="padding: 2px;" >
+                                <h:outputLabel value="#{cc.attrs.bill.patient.person.ageAsShortString} / #{cc.attrs.bill.patient.person.sex.label}"/>
+                            </td>
+                        </h:panelGroup>
+                        <td style="padding: 2px;" class="spacer"></td>
+                        <td style="padding: 2px;">Mobile :</td>
+                        <td style="padding: 2px;">
+                            <h:outputLabel value="#{cc.attrs.bill.patient.person.phone}" >
+                                <f:convertDateTime pattern="HH:mm a" />
+                            </h:outputLabel>
+                        </td>
+                    </tr>
+
                     <tr>
                         <td  style="padding: 2px;">Bill Date:</td>
                         <td  style="padding: 2px;">
@@ -77,13 +213,34 @@
                             </h:outputLabel>
                         </td>
                     </tr>
+
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
                         <td style="padding: 2px;" class="spacer"></td>
-                        <td style="padding: 2px;" ><h:outputLabel value="BHT No : " rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
-                        <td style="padding: 2px;" ><h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" rendered="#{cc.attrs.bill.patientEncounter ne null}"/></td>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null}" >
+                            <td style="padding: 2px;">Payment :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/>
+                            </td>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                            <td style="padding: 2px;">BHT No : </td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}"/>
+                            </td>
+                        </h:panelGroup>
                     </tr>
+
+                    <h:panelGroup rendered="#{cc.attrs.bill.referredBy ne null}" >
+                        <tr>
+                            <td style="padding: 2px;">Ref. Doctor :</td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                 </table>
 
                 <!-- Separator Line -->
@@ -99,7 +256,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
+                        <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
                             <tr>
                                 <!-- Display the item number across all items -->
                                 <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
@@ -186,7 +343,7 @@
                             </table>
                         </td>
                     </tr>
-                </table> 
+                </table>
 
                 <h:panelGroup rendered="#{cc.attrs.duplicate eq true}" >
                     <table >
@@ -202,7 +359,7 @@
                                 </h:outputLabel>
                             </td>
                         </tr>
-                    </table> 
+                    </table>
                 </h:panelGroup>
 
             </div>

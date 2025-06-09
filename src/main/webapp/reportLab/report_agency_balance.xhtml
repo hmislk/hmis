@@ -22,14 +22,14 @@
                 </f:facet>
                 <h:panelGrid>
                     <h:panelGrid columns="3" >
-                        <p:commandButton value="Fill" action="#{channelReportTempController.createCollectingcenterBalanceTable()}" ajax="false" ></p:commandButton> 
+                        <p:commandButton value="Fill" action="#{channelReportTempController.createCollectingcenterBalanceTable()}" ajax="false" ></p:commandButton>
                         <p:commandButton ajax="false" value="Print" styleClass="noPrintButton">
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
                         <p:commandButton  ajax="false" value="Excel" styleClass="noPrintButton">
                             <p:dataExporter type="xlsx" target="tbl1" fileName="channel_report_agent_balance"  />
                         </p:commandButton>
-                    </h:panelGrid> 
+                    </h:panelGrid>
                 </h:panelGrid>
                 <p:panel id="reportPrint" styleClass="summeryBorder noBorder">
                     <p:dataTable value="#{channelReportTempController.agencies}" var="a" id="tbl1" rowIndexVar="i">
@@ -39,7 +39,7 @@
                             <p:outputLabel value="Agency Current Balance" />
                             <br></br>
                             <p:outputLabel value="Print Time" />
-                            <p:outputLabel value="#{commonController.currentDateTime}" >
+                            <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                 <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a" />
                             </p:outputLabel>
                         </f:facet>

@@ -102,12 +102,6 @@
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:inputText autocomplete="off" id="txtName" value="#{roomFacilityChargeController.current.name}" class="w-100 ml-2"  ></p:inputText>
 
-                                    <h:outputLabel value="Facilitiy"/>
-                                    <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
-                                    <p:selectManyCheckbox  value="#{roomFacilityChargeController.current.roomFacilities}" class="w-100 mt-2 mb-2">
-                                        <f:selectItems value="#{roomFacilityChargeController.roomFacilitys}"/>
-                                    </p:selectManyCheckbox>
-
                                     <h:outputLabel value="Room"/>
                                     <p:outputLabel value=": " style="width: 30px; text-align: center; " ></p:outputLabel>
                                     <p:selectOneMenu value="#{roomFacilityChargeController.current.room}" class="w-100 ml-2">

@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billController" type="com.divudi.bean.pharmacy.DealorPaymentBillSearch" />
         <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
@@ -35,7 +35,7 @@
             </div>
 
             <div class="row" >
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Payee : " />
                         <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"/>
@@ -57,13 +57,13 @@
                         </h:outputLabel>
                     </h:panelGrid>
                 </div>
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Prepaired By : " />
                         <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" >
                         </h:outputLabel>
                         <h:outputLabel value="Comments : " />
-                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        <h:outputLabel value="#{cc.attrs.bill.paymentGenerationComments}" >
                         </h:outputLabel>
                         <h:outputLabel value="Prepaired at :"  />
                         <h:outputLabel value="#{cc.attrs.bill.createdAt}"  >
@@ -72,7 +72,22 @@
                     </h:panelGrid>
                 </div>
 
-                <div class="col-md-4 p-1" >
+                <div class="col-md-3 p-1" >
+                    <h:panelGrid columns="2" columnClasses="text-start, text-end" >
+                        <h:outputLabel value="Checked By : " />
+                        <h:outputLabel value="#{cc.attrs.bill.completedBy.webUserPerson.name}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Comments : " />
+                        <h:outputLabel value="#{cc.attrs.bill.comments}" >
+                        </h:outputLabel>
+                        <h:outputLabel value="Prepaired at :"  />
+                        <h:outputLabel value="#{cc.attrs.bill.completedAt}"  >
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </div>
+
+                <div class="col-md-3 p-1" >
                     <h:panelGrid columns="2" columnClasses="text-start, text-end" >
                         <h:outputLabel value="Approved By : " />
                         <h:outputLabel value="#{cc.attrs.bill.paymentApprovedBy.webUserPerson.name}" >
@@ -91,44 +106,44 @@
 
 
 
-            <p:dataTable  
+            <p:dataTable
                 value="#{cc.attrs.bill.billItems}"
-                var="b" 
-                id="itms" 
+                var="b"
+                id="itms"
                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                 rowIndexVar="n"
                 rowKey="#{b.searialNo}" >
-                <p:column width="3em">  
+                <p:column width="3em">
                     <f:facet name="header">
-                        <h:outputLabel value="No"/>                                  
-                    </f:facet>      
+                        <h:outputLabel value="No"/>
+                    </f:facet>
                     <p:outputLabel value="#{n+1}"/>
-                </p:column> 
-                <p:column  >  
+                </p:column>
+                <p:column  >
                     <f:facet name="header">
-                        <h:outputLabel value="GRN No"/>                                  
-                    </f:facet>      
+                        <h:outputLabel value="GRN No"/>
+                    </f:facet>
                     <p:outputLabel value="#{b.referenceBill.deptId}"/>
-                </p:column> 
-                <p:column  >  
+                </p:column>
+                <p:column  >
                     <f:facet name="header">
-                        <h:outputLabel value="Invoice No"/>                                  
-                    </f:facet>       
+                        <h:outputLabel value="Invoice No"/>
+                    </f:facet>
                     <p:outputLabel value="#{b.referenceBill.invoiceNumber}"></p:outputLabel>
-                </p:column> 
+                </p:column>
                 <p:column headerText="GRN Amount" class="text-end">
                     <p:outputLabel value="#{b.referenceBill.netTotal}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>
                 <p:column headerText="GRN Return Amount" class="text-end">
-                    <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                    <p:outputLabel value="#{b.referenceBill.refundAmount}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>
                 <p:column headerText="Paying Amount" class="text-end">
-                    <p:outputLabel 
-                        value="#{b.netValue}">    
+                    <p:outputLabel
+                        value="#{b.netValue}">
                         <f:convertNumber pattern="#,##0.00" />
                     </p:outputLabel>
                 </p:column>

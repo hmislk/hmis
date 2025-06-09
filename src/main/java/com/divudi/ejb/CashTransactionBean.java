@@ -5,15 +5,15 @@
  */
 package com.divudi.ejb;
 
-import com.divudi.entity.Bill;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.CashTransactionFacade;
-import com.divudi.facade.CashTransactionHistoryFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.WebUserFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.CashTransactionFacade;
+import com.divudi.core.facade.CashTransactionHistoryFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.WebUserFacade;
 import java.util.ArrayList;
 import java.util.List;
 import javax.ejb.EJB;

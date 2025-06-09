@@ -15,11 +15,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{!(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving'))}" >
                 <na:not_authorize />
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
                     <h:form >
 
@@ -289,6 +289,23 @@
                                         <p:column headerText="Status" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
                                             <h:outputLabel value="#{patientInvestigation.status}"/>
+                                            <br/>
+                                            <br/>
+                                            <p:badge 
+                                                value="Item Refunded" 
+                                                severity="info"
+                                                style="width: 200px;"
+                                                rendered="#{patientInvestigation.billItem.refunded}"
+                                                styleClass="ui-badge-warning" >
+                                            </p:badge>
+                                            
+                                                <p:badge 
+                                                    value="Bill Cancel" 
+                                                    severity="info"
+                                                    rendered="#{patientInvestigation.billItem.bill.cancelled}"
+                                                    style="width: 200px;"
+                                                    styleClass="ui-badge-danger" >
+                                                </p:badge>
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
@@ -330,7 +347,7 @@
                                         <!-- Actions Column -->
                                         <p:column headerText="Actions" style="width: 6em; vertical-align: top;">
 
-                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true}">
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled ne true and patientInvestigation.billItem.refunded ne true}">
                                                 <div class="row">
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
@@ -384,18 +401,85 @@
                                                 </div>
 
                                             </h:panelGroup>
-                                            
-                                            <div class="d-flex justify-content-center mt-5">
+
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.bill.cancelled}" class="d-flex justify-content-center mt-5">
                                                 <p:badge 
                                                     value="Bill Cancel" 
                                                     severity="info"
                                                     size="large"
                                                     style="width: 200px;"
-                                                    styleClass="ui-badge-danger" 
-                                                    rendered="#{patientInvestigation.billItem.bill.cancelled}" >
+                                                    styleClass="ui-badge-danger" >
                                                 </p:badge>
-                                            </div>
-                                            
+                                            </h:panelGroup>
+
+                                            <h:panelGroup rendered="#{patientInvestigation.billItem.refunded}">
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
+                                                    <div class="row">
+                                                        <p:commandButton 
+                                                            icon="fa fa-file-text"
+                                                            value="To Worksheet" 
+                                                            class="ui-button-info"
+                                                            ajax="false" 
+                                                            id="btnPrintWorksheetsForRefund" 
+                                                            disabled="#{patientInvestigation.sampleAccepted ne true}" 
+                                                            action="/lab/single_worksheet?faces-redirect=true"
+                                                            >
+                                                            <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                        </p:commandButton>
+                                                    </div>
+                                                    <div class="row">
+                                                        <p:commandButton 
+                                                            icon="fa fa-file-text"
+                                                            value="Create a New Report" 
+                                                            id="btnNewReportForRefund"
+                                                            disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                            action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
+                                                            class="ui-button-danger mt-2"
+                                                            onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                                        return false;"
+                                                            ajax="false">
+                                                        </p:commandButton>
+                                                    </div>
+
+                                                    <div class="row ">
+                                                        <p:commandButton 
+                                                            icon="fa fa-file-text"
+                                                            value="Upload New Report" 
+                                                            id="btnNewUploadForRefund"
+                                                            rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
+                                                            disabled="#{patientInvestigation.sampleSentAt eq null}"
+                                                            action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
+                                                            class="ui-button-warning mt-2"
+                                                            onclick="if (!confirm('Are you sure you want to New Patient Report?'))
+                                                                        return false;"
+                                                            ajax="false">
+                                                        </p:commandButton>
+                                                    </div>
+
+                                                    <div class="row">
+                                                        <p:commandButton 
+                                                            icon="fa fa-file-text"
+                                                            value="To Reports" 
+                                                            class="ui-button-success mt-2"
+                                                            ajax="false" 
+                                                            action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
+                                                        </p:commandButton>
+                                                    </div>
+
+                                                </h:panelGroup>
+
+                                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Creating a new laboratory patient report for a refunded BillItem.',true)}">
+                                                    <div class="d-flex justify-content-center mt-5">
+                                                        <p:badge 
+                                                            value="Item Refunded" 
+                                                            severity="info"
+                                                            size="large"
+                                                            style="width: 200px;"
+                                                            styleClass="ui-badge-warning" >
+                                                        </p:badge>
+                                                    </div>
+                                                </h:panelGroup>
+                                            </h:panelGroup>
                                         </p:column>
                                     </p:dataTable>
 
@@ -506,11 +590,11 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{!b.cancelled}">
                                                 <h:outputLabel value="#{b.status.label}" />
                                             </h:panelGroup>
-                                            
+
                                         </p:column>
 
                                         <p:column headerText="Actions" width="8em">
@@ -580,6 +664,15 @@
                                                     <p:selectBooleanButton id="cheindbar" onIcon="pi pi-check" offIcon="pi pi-times" value="#{patientInvestigationController.printIndividualBarcodes}">
                                                         <p:ajax process="cheindbar" update="test barcode" event="change"></p:ajax>
                                                     </p:selectBooleanButton>
+                                                    <div class="d-flex gap-3">
+                                                        <p:commandButton 
+                                                            icon="fa-solid fa-flask-vial"
+                                                            value="To Samples" 
+                                                            class="ui-button-warning"
+                                                            ajax="false"
+                                                            action="#{patientInvestigationController.navigateToSamplesFromSelectedBill(patientInvestigationController.currentBill)}" >
+                                                        </p:commandButton>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </f:facet>
@@ -659,13 +752,13 @@
                                                                             orientation="0"></p:barcode>
                                                                     </h:panelGroup>
                                                                 </div>
-                                                                 <div class="patient-info">
+                                                                <div class="patient-info">
                                                                     <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
                                                                         <span class="sample-id">
                                                                             #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
                                                                         </span>
                                                                     </h:panelGroup>
-                                                                 </div>
+                                                                </div>
                                                             </div>
                                                         </ui:repeat>
 
@@ -743,7 +836,14 @@
                                                                                 width="#{configOptionApplicationController.getShortTextValueByKey('Sample Sticker - Barcode Width in Pixles','280')}"
                                                                                 orientation="0"></p:barcode>
                                                                         </h:panelGroup>
-                                                                    </div>
+                                                                    </div> 
+                                                                </div>
+                                                                <div class="patient-info">
+                                                                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Print Bill No in Sample Stickers', true)}">
+                                                                        <span class="sample-id">
+                                                                            #{psc.patientSample.bill.deptId}&nbsp;&nbsp;
+                                                                        </span>
+                                                                    </h:panelGroup>
                                                                 </div>
                                                             </h:panelGroup>
 
@@ -875,11 +975,11 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
                                                 <h:outputLabel value=" #{ps.status}" />
                                             </h:panelGroup>
-                                           
+
                                         </p:column>
 
                                         <!-- Status Details Column  -->
@@ -1038,11 +1138,11 @@
 
                                         <!-- Status Column -->
                                         <p:column headerText="Status" width="5em" style="vertical-align: top;">
-                                            
+
                                             <h:panelGroup rendered="#{!dpr.patientInvestigation.billItem.bill.cancelled}">
                                                 <h:outputLabel value="#{dpr.patientInvestigation.status}" />
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}">
                                                 <div class="d-flex justify-content-center mt-4">
                                                     <p:badge 
@@ -1055,7 +1155,7 @@
                                                     </p:badge>
                                                 </div>
                                             </h:panelGroup>
-                                            
+
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
@@ -1252,20 +1352,13 @@
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
                                         class="w-100" 
-                                        maxResults="10"
-                                        inputStyleClass="w-100"
+                                        maxResults="50"
+                                        inputStyleClass="form-control"
                                         itemLabel="#{mys.person.name}" 
                                         panelStyleClass="custom-dropdown-panel"
                                         itemValue="#{mys}">
-                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">
-                                            <h:outputText value="#{mys.person.nameWithTitle}" />
-                                        </p:column>
-                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">
-                                            <h:outputText value="#{mys.code}" />
-                                        </p:column>
-                                        <p:column headerText="Name" style="padding: 6px; width: 20px;">
-                                            <h:outputText value="#{mys.epfNo}" />
-                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
                                     </p:autoComplete>
 
                                     <p:commandButton 

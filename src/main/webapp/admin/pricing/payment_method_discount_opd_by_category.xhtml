@@ -16,33 +16,33 @@
                     <p:panel header="OPD Payment Discount Matrix" id="reportPrint">
 
                         <p:panel header="Add new Matrix" >
-                            <p:panelGrid columns="2" >                              
+                            <p:panelGrid columns="2" >
                                 <h:outputLabel value="Category/Subcategory" ></h:outputLabel>
-                                <p:autoComplete value="#{opdMemberShipDiscountController.category}" 
+                                <p:autoComplete value="#{opdMemberShipDiscountController.category}"
                                                 forceSelection="true"
                                                 completeMethod="#{categoryController.completeCategoryServiceInvestigation}"
-                                             
+
                                                 var="cat" itemLabel="#{cat.name} #{cat.parentCategory}" itemValue="#{cat}" >
                                     <p:column headerText="Category">
                                         <h:outputLabel value="#{cat.name}"/>
                                     </p:column>
                                     <p:column headerText="Parent Category">
                                         <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="TYPE">
-                                        <h:outputLabel value="Parent Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                        <h:outputLabel value="Child Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                        <h:outputLabel value="Investigation Category" 
-                                                       rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                    </p:column> 
+                                        <h:outputLabel value="Parent Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                        <h:outputLabel value="Child Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                                        <h:outputLabel value="Investigation Category"
+                                                       rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
+                                    </p:column>
                                 </p:autoComplete>
 
                                 <h:outputLabel value="Payment Method"/>
                                 <p:selectOneMenu   value="#{opdMemberShipDiscountController.paymentMethod}"  >
-                                    <f:selectItem itemLabel="Select" />                           
-                                    <f:selectItems value="#{enumController.paymentMethods}" />                                    
+                                    <f:selectItem itemLabel="Select" />
+                                    <f:selectItems value="#{enumController.paymentMethods}" />
                                 </p:selectOneMenu>
                                 <h:outputLabel value="Discount" ></h:outputLabel>
                                 <p:inputText autocomplete="off" value="#{opdMemberShipDiscountController.margin}" />
@@ -53,11 +53,11 @@
 
                                 <p:defaultCommand target="btnAdd"/>
                             </p:panelGrid>
-                            <p:panelGrid columns="3" >   
-                            
+                            <p:panelGrid columns="3" >
+
                             <p:commandButton ajax="false" value="Fill"
                                             action="#{opdMemberShipDiscountController.createItemsCategoryOpdPaymentMethod()}" />
-                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >                                         
+                            <p:commandButton ajax="false" value="Print" styleClass="noPrintButton" >
                                 <p:printer target="reportPrint"/>
                             </p:commandButton>
                             <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
@@ -74,26 +74,26 @@
 
 
                                 <p:column headerText="Category Name" filterBy="#{a.category.name}" filterMatchMode="contains">
-                                         
-                                         
-                                     
+
+
+
                                     <p:autoComplete forceSelection="true" value="#{a.category}"
                                                     completeMethod="#{categoryController.completeCategoryInvestigation}"                                                     var="cat" itemLabel="#{cat.name}" itemValue="#{cat}" >
                                         <p:column>
                                             <h:outputLabel value="#{cat.name}"/>
-                                         
+
                                         </p:column>
                                         <p:column>
                                             <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                        </p:column> 
+                                        </p:column>
                                         <p:column headerText="TYPE">
-                                            <h:outputLabel value="Parent Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                            <h:outputLabel value="Child Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
-                                            <h:outputLabel value="Investigation Category" 
-                                                           rendered="#{cat.categoryClass eq 'class com.divudi.entity.InventoryCategory'}"/>
-                                        </p:column> 
+                                            <h:outputLabel value="Parent Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                            <h:outputLabel value="Child Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
+                                            <h:outputLabel value="Investigation Category"
+                                                           rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.InventoryCategory'}"/>
+                                        </p:column>
                                     </p:autoComplete>
                                 </p:column>
 
@@ -102,8 +102,8 @@
                                     <h:outputLabel value="Payment Method"  />
                                 </f:facet>
                                     <p:selectOneMenu  value="#{a.paymentMethod}"  >
-                                        <f:selectItem itemLabel="Select" />                           
-                                        <f:selectItems value="#{enumController.paymentMethods}" />                                    
+                                        <f:selectItem itemLabel="Select" />
+                                        <f:selectItems value="#{enumController.paymentMethods}" />
                                     </p:selectOneMenu>
                                      <h:inputHidden value="#{a.paymentMethod}">   </h:inputHidden>
                                 </p:column>
@@ -117,7 +117,7 @@
                                     </h:inputText>
                                 </p:column>
                                 <p:column exportable="false">
-                                    <p:commandButton ajax="false" value="Update" action="#{opdMemberShipDiscountController.onEdit(a)}"/> 
+                                    <p:commandButton ajax="false" value="Update" action="#{opdMemberShipDiscountController.onEdit(a)}"/>
                                 </p:column>
                                 <p:column exportable="false">
                                     <p:commandButton value="Delete" action="#{opdMemberShipDiscountController.deleteCategoryOpdPaymentMethod}">

@@ -7,70 +7,68 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
-import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.ControllerWithMultiplePayments;
 import com.divudi.bean.common.ControllerWithPatient;
 import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.TokenType;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
-import com.divudi.data.inward.InwardChargeType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.TokenType;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.Staff;
-import com.divudi.entity.Token;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.TokenFacade;
-import com.divudi.facade.UserStockContainerFacade;
-import com.divudi.facade.UserStockFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Token;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -113,8 +111,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     @Inject
     StockController stockController;
     @Inject
-    ConfigOptionController configOptionController;
-    @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DrawerController drawerController;
@@ -122,9 +118,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     SessionController sessionController;
     @Inject
     SearchController searchController;
-
-    @Inject
-    CommonController commonController;
 
     @Inject
     TokenController tokenController;
@@ -199,7 +192,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     List<Stock> replaceableStocks;
     //List<BillItem> billItems;
     List<Item> itemsWithoutStocks;
-    /////////////////////////   
+    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -382,7 +375,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
         return getPreBill().getTotal();
     }
-    
+
     public void recieveRemainAmountAutomatically() {
         double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -473,7 +466,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
 
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -487,7 +480,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
 
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -506,7 +499,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
 
         bi.setQty(editingQty);
-        bi.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - editingQty));
+        bi.getPharmaceuticalBillItem().setQtyInUnit(0 - editingQty);
         calculateBillItemForEditing(bi);
 
         calTotal();
@@ -514,7 +507,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     }
 
     private Patient savePatient() {
-        if (!getPatient().getPerson().getName().trim().equals("")) {
+        if (!getPatient().getPerson().getName().trim().isEmpty()) {
             getPatient().setCreater(getSessionController().getLoggedUser());
             getPatient().setCreatedAt(new Date());
             getPatient().getPerson().setCreater(getSessionController().getLoggedUser());
@@ -776,7 +769,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
             handleSelectAction();
-        } else if (!qry.trim().equals("") && qry.length() > 4) {
+        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
         }
         return items;
@@ -824,7 +817,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 //        } else {
 //            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
 //        }
-//        
+//
 //        sql = "select i from Amp i "
 //                + "where i.retired=false and "
 //                + "(i.name) like :n and "
@@ -874,7 +867,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         String sql;
         Map m = new HashMap();
         double d = 0.0;
-        Amp amp = (Amp) ampIn;
+        Amp amp = ampIn;
         m.put("d", getSessionController().getLoggedUser().getDepartment());
         m.put("s", d);
         m.put("vmp", amp.getVmp());
@@ -939,7 +932,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         //Rates
         //Values
@@ -981,12 +974,12 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             }
             bi.setDiscountRate(calculateBillItemDiscountRate(bi));
             bi.setNetRate(bi.getRate() - bi.getDiscountRate());
-            
-            
+
+
             bi.setGrossValue(bi.getRate() * bi.getQty());
             bi.setDiscount(bi.getDiscountRate() * bi.getQty());
             bi.setNetValue(bi.getGrossValue() - bi.getDiscount());
-            
+
         }
     }
 
@@ -1027,7 +1020,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             JsfUtil.addErrorMessage("Please select an Item Batch to Dispense ??");
             return addedQty;
         }
-        if (getStock().getItemBatch().getDateOfExpire().before(commonController.getCurrentDateTime())) {
+        if (getStock().getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
             return addedQty;
         }
@@ -1063,7 +1056,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             return addedQty;
         }
         addedQty = qty;
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -1168,11 +1161,15 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
                 return;
             }
         }
+        if(addedQty < requestedQty){
+            errorMessage = "Quantity is not Enough...!";
+            JsfUtil.addErrorMessage("Only " + String.format("%.0f", addedQty) +" is Available form the Requested Quantity");
+        }
 
     }
 
     private void addSingleStock() {
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
@@ -1621,7 +1618,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         } else if (getPatient().getPerson().getName() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
-        } else if (getPatient().getPerson().getName().trim().equals("")) {
+        } else if (getPatient().getPerson().getName().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please select a patient");
             return;
         } else {
@@ -1651,7 +1648,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
             JsfUtil.addErrorMessage("No Items added to bill to sale");
             return;
         }
-        
+
         if (!getPreBill().getBillItems().isEmpty()) {
             for (BillItem bi : getPreBill().getBillItems()) {
                 if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), getSessionController().getLoggedUser())) {
@@ -1683,10 +1680,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         calculateAllRates();
 
         Patient pt = savePatient();
-        List<BillItem> tmpBillItems = new ArrayList<>();
-        for (BillItem i : getPreBill().getBillItems()) {
-            tmpBillItems.add(i);
-        }
+        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
         getPreBill().setBillItems(null);
 
         savePreBillFinallyForRetailSaleForCashier(pt);
@@ -1723,7 +1717,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         t.setCompleted(false);
         tokenController.save(t);
     }
-    
+
     private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -1862,7 +1856,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     public List<Payment> createPaymentsForBill(Bill b) {
         return createMultiplePayments(b, b.getPaymentMethod());
     }
-    
+
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
@@ -1948,7 +1942,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         }
         return ps;
     }
-    
+
     public void settleBillWithPay() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -2090,7 +2084,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 //        if (checkAllBillItem()) {
 //            return;
 //        }
-        
+
         calculateAllRates();
 
         getPreBill().setPaidAmount(getPreBill().getTotal());
@@ -2133,7 +2127,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         billPreview = true;
 
     }
-    
+
     private void savePreBillFinallyForRetailSale(Patient pt) {
         if (getPreBill().getId() == null) {
             getBillFacade().create(getPreBill());
@@ -2331,7 +2325,7 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         billItem.setQty(qty);
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         //Values
         billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
     }
@@ -2563,7 +2557,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
         preBill = null;
         saleBill = null;
         patient = null;
-        patient = null;
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
@@ -2597,9 +2590,9 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
-        calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
+        calDateOfExpiry.setTime(CommonFunctions.getEndOfDay(date));
         Calendar cal = Calendar.getInstance();
-        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        cal.setTime(CommonFunctions.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;
@@ -2968,14 +2961,6 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
 
     public void setBillFeePaymentFacade(BillFeePaymentFacade billFeePaymentFacade) {
         this.billFeePaymentFacade = billFeePaymentFacade;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     @Override

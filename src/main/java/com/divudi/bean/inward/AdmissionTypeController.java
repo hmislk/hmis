@@ -10,11 +10,11 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.CategoryItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.CategoryItem;
-import com.divudi.entity.Item;
-import com.divudi.entity.inward.AdmissionType;
-import com.divudi.facade.AdmissionTypeFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.CategoryItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.facade.AdmissionTypeFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -40,27 +40,27 @@ public class AdmissionTypeController implements Serializable {
     SessionController sessionController;
     @Inject
     CategoryItemController categoryItemController;
-    
+
     @EJB
     private AdmissionTypeFacade ejbFacade;
-    
-    
+
+
     private static final long serialVersionUID = 1L;
-    
-    
+
+
     List<AdmissionType> selectedItems;
     private AdmissionType current;
     private Item currentItem;
     private List<CategoryItem> categoryItemList;
     private List<AdmissionType> items = null;
     String selectText = "";
-    
-    
-    
+
+
+
     public String navigateToManageAdmissionTypes(){
         return "/inward/inward_admission_type?faces-redirect=true;";
     }
-    
+
      public String navigateToManageAdmissionItemsAndFees(){
         return "/inward/inward_admission_items_and_fees?faces-redirect=true;";
     }
@@ -73,7 +73,7 @@ public class AdmissionTypeController implements Serializable {
     public void prepareAdd() {
         current = new AdmissionType();
     }
-    
+
     public void addItemForAdmissionType(){
         if(current==null){
             JsfUtil.addErrorMessage("No Admission Type");
@@ -154,7 +154,7 @@ public class AdmissionTypeController implements Serializable {
     public void fillCategoryItems(){
         categoryItemList = categoryItemController.fillCategoryItems(current);
     }
-    
+
     public void delete() {
 
         if (getCurrent() != null) {
@@ -175,8 +175,8 @@ public class AdmissionTypeController implements Serializable {
     private AdmissionTypeFacade getFacade() {
         return ejbFacade;
     }
-    
-    
+
+
 
     public List<AdmissionType> getItems() {
         if (items == null) {
@@ -205,8 +205,8 @@ public class AdmissionTypeController implements Serializable {
     public void setCategoryItemList(List<CategoryItem> categoryItemList) {
         this.categoryItemList = categoryItemList;
     }
-    
-    
+
+
 
     /**
      *

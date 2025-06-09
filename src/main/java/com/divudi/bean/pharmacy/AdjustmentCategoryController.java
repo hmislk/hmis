@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.pharmacy;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.pharmacy.AdjustmentCategory;
-import com.divudi.facade.AdjustmentCategoryFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.pharmacy.AdjustmentCategory;
+import com.divudi.core.facade.AdjustmentCategoryFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -141,7 +141,7 @@ public class AdjustmentCategoryController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             AdjustmentCategoryController controller = (AdjustmentCategoryController) facesContext.getApplication().getELResolver().
@@ -150,15 +150,13 @@ public class AdjustmentCategoryController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override

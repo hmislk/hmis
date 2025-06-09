@@ -6,35 +6,34 @@
 package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.dataStructure.DepartmentBillItems;
-import com.divudi.data.inward.PatientEncounterComponentType;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.dataStructure.DepartmentBillItems;
+import com.divudi.core.data.inward.PatientEncounterComponentType;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -87,8 +86,6 @@ public class SurgeryBillController implements Serializable {
     private SessionController sessionController;
     @Inject
     InwardTimedItemController inwardTimedItemController;
-    @Inject
-    CommonController commonController;
     @Inject
     private BillBeanController billBean;
     @Inject
@@ -457,10 +454,10 @@ public class SurgeryBillController implements Serializable {
         JsfUtil.addSuccessMessage("Surgery Detail Added");
         bhtSummeryController.setPatientEncounter(getSurgeryBill().getPatientEncounter());
         resetSurgeryBillValues();
-        
+
         return bhtSummeryController.navigateToInpatientProfile();
     }
-    
+
     public void edit(){
         Date startTime = new Date();
         Date fromDate = null;
@@ -775,7 +772,8 @@ public class SurgeryBillController implements Serializable {
 
     public List<DepartmentBillItems> getDepartmentBillItems() {
         if (departmentBillItems == null) {
-            departmentBillItems = getInwardBean().createDepartmentBillItems(getSurgeryBill().getPatientEncounter(), getSurgeryBill());
+            List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(getSurgeryBill().getPatientEncounter());
+            departmentBillItems = getInwardBean().createDepartmentBillItems(getSurgeryBill().getPatientEncounter(), getSurgeryBill(),cpts);
         }
         return departmentBillItems;
     }
@@ -790,14 +788,6 @@ public class SurgeryBillController implements Serializable {
 
     public void setPharmacyIssues(List<BillItem> pharmacyIssues) {
         this.pharmacyIssues = pharmacyIssues;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public void setSurgeryBill(Bill surgeryBill) {

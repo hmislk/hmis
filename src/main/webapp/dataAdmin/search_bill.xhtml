@@ -13,48 +13,64 @@
                     <p:panel class="mt-1 ">
                         <f:facet name="header">
                             <i class="fa fa-search"/>
-                            <h:outputLabel value="Search Any Bills" class="mx-2"/>
+                            <h:outputLabel value="Search Any Bill" class="mx-2"/>
                         </f:facet>
 
-                      
-                            <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-4,col-4,col-4">
-                                <!-- First Row -->
-                                <h:outputLabel for="insId" value="Bill No (Ins ID)" />
-                                <p:inputText id="insId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
-                                <p:commandButton id="btnSearchInsId" ajax="false" value="Search by Ins ID"
-                                                 action="#{searchController.searchByInsId()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <!-- Second Row -->
-                                <h:outputLabel for="deptId" value="Bill No (Dept ID)" />
-                                <p:inputText id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
-                                <p:commandButton id="btnSearchDeptId" ajax="false" value="Search by Dept ID"
-                                                 action="#{searchController.searchByDeptId()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
+                        <p:panelGrid columns="3" styleClass="ui-grid ui-grid-responsive" columnClasses="col-2,col-8,col-2">
 
-                                <!-- Third Row -->
-                                <h:outputLabel for="bhtNo" value="BHT No" />
-                                <p:inputText id="bhtNo" autocomplete="off" value="#{searchController.searchKeyword.bhtNo}" />
-                                <p:commandButton id="btnSearchBhtNo" ajax="false" value="Search by BHT No"
-                                                 action="#{searchController.searchByBhtNo()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
 
-                                <!-- Fourth Row -->
-                                <h:outputLabel for="refBillNo" value="Bill ID" />
-                                <p:inputText id="refBillNo" autocomplete="off" value="#{searchController.searchKeyword.refBillNo}" />
-                                <p:commandButton id="btnSearchRefBillNo" ajax="false" value="Search by Bill ID"
-                                                 action="#{searchController.searchByRefBillNo()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
+                            <!-- Second Row -->
+                            <h:outputLabel for="deptId" value="Bill No" />
+                            <p:inputText class="w-100"
+                                         id="deptId" autocomplete="off" value="#{searchController.searchKeyword.deptId}" />
+                            <p:commandButton 
+                                class="w-100"
+                                id="btnSearchDeptId" ajax="false" value="Search by Dept ID"
+                                action="#{searchController.searchByDeptId()}"
+                                icon="fa fa-search" styleClass="ui-button-primary w-100" />
 
-                                <!-- Fifth Row -->
-                                <h:outputLabel for="searchAny" value="Search from Any" />
-                                <!-- Empty column for alignment -->
-                                <h:outputLabel value="" />
-                                <p:commandButton id="btnSearchAny" ajax="false" value="Search"
-                                                 action="#{searchController.createSearchBill()}"
-                                                 icon="fa fa-search" styleClass="ui-button-primary" />
-                            </p:panelGrid>
-                       
+
+                            <!-- Fourth Row -->
+                            <h:outputLabel for="txtId" value="Bill ID" />
+                            <p:inputText class="w-100"
+                                         id="txtId" autocomplete="off" value="#{searchController.searchKeyword.id}" />
+                            <p:commandButton 
+                                class="w-100"
+                                id="btnSearchRefBillNo" ajax="false" value="Search by Bill ID"
+                                action="#{searchController.searchById()}"
+                                icon="fa fa-search" styleClass="ui-button-primary w-100" />
+
+                            <!-- Third Row -->
+                            <h:outputLabel for="bhtNo" value="BHT No" />
+                            <p:inputText class="w-100"
+                                         id="bhtNo" autocomplete="off" value="#{searchController.searchKeyword.bhtNo}" />
+                            <p:commandButton 
+                                class="w-100"
+                                id="btnSearchBhtNo" ajax="false" value="Search by BHT No"
+                                action="#{searchController.searchByBhtNumber()}"
+                                icon="fa fa-search" styleClass="ui-button-primary w-100" />
+
+                            <!-- First Row -->
+                            <h:outputLabel for="insId" value="Bill No (Ins ID)" />
+                            <p:inputText 
+                                class="w-100"
+                                id="insId" autocomplete="off" value="#{searchController.searchKeyword.insId}" />
+                            <p:commandButton 
+                                class="w-100"
+                                id="btnSearchInsId" ajax="false" value="Search by Ins ID"
+                                action="#{searchController.searchByInsId()}"
+                                icon="fa fa-search" styleClass="ui-button-primary w-100" />
+
+                            <!-- Fifth Row -->
+                            <h:outputLabel for="searchAny" value="Search from Any" />
+                            <!-- Empty column for alignment -->
+                            <h:outputLabel value="" />
+                            <p:commandButton id="btnSearchAny" ajax="false" value="Search"
+                                             action="#{searchController.createSearchBill()}"
+                                             icon="fa fa-search" styleClass="ui-button-primary w-100" />
+                        </p:panelGrid>
+
 
 
                         <p:commandButton 
@@ -105,6 +121,14 @@
 
                             <p:column headerText="Class">
                                 <h:outputLabel  value="#{bill.billClassType}" ></h:outputLabel>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Atomic Type"
+                                sortBy="#{bill.billTypeAtomic}"
+                                filterBy="#{bill.billTypeAtomic}"
+                                filterMatchMode="contains">
+                                <h:outputLabel  value="#{bill.billTypeAtomic}" ></h:outputLabel>
                             </p:column>
 
                             <p:column headerText="Ins ID" >                              
@@ -189,40 +213,50 @@
                                     <h:outputLabel style="color: red;" value="#{bill.paidBill.creater.webUserPerson.name}" >
                                     </h:outputLabel>
                                 </h:panelGroup>
-
                             </p:column>    
-                            <p:column headerText="Payment Method" >                              
-                                <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>                                   
-                            </p:column>
-                            <p:column headerText="Gross Value"  >                              
-                                <h:outputLabel value="#{bill.total}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                   
-                            </p:column>
-                            <p:column headerText="Discount" >                             
-                                <h:outputLabel value="#{bill.discount}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="Margin" >                             
-                                <h:outputLabel value="#{bill.margin}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                    
-                            </p:column>
-                            <p:column headerText="Net Value" >                                
-                                <h:outputLabel value="#{bill.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputLabel>                                  
-                            </p:column>
                             <p:column headerText="Action" exportable="false">
+
+
                                 <p:commandButton 
+                                    title="View" 
+                                    icon="fa fa-eye" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    title="Manage" 
+                                    icon="fa fa-tools" 
+                                    class="m-1 ui-button-warning" 
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToManageBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    title="Admin" 
+                                    icon="fa fa-shield-alt" 
+                                    class="m-1 ui-button-danger" 
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                                    ajax="false" 
+                                    rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    rendered="false"
                                     id="viewBill"
                                     icon="fa fa-fw fa-file-invoice-dollar"
                                     action="bill_summery" 
                                     ajax="false">
                                     <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
                                 </p:commandButton>
-                                <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+
                             </p:column>
                         </p:dataTable>
                     </p:panel>

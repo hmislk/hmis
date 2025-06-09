@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billItems" />
     </cc:interface>
 
@@ -18,7 +18,7 @@
         <div style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher CSS')}" >
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header Text')}" escape="false" ></h:outputText>
             </div>
 
 
@@ -49,9 +49,9 @@
 
                         <p:column headerText="Po Approve">
                             <p:outputLabel value="#{bi.referenceBill.referenceBill.createdAt}" style="text-align: center;">
-                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>                                
+                                <f:convertDateTime pattern="dd/mm/yyyy hh:mm a"/>
                             </p:outputLabel>
-                        </p:column>                   
+                        </p:column>
 
 
                         <p:column headerText="Grn Date">
@@ -89,13 +89,13 @@
 
                 <div>
                     <br></br>
-                    <h:outputLabel value="Prepared By :" /> 
+                    <h:outputLabel value="Prepared By :" />
                     <h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.nameWithTitle}" style="text-align: right!important;text-decoration: underline; text-decoration-style: dotted;"/>
-                    <br></br>                
-                    <br></br>         
+                    <br></br>
+                    <br></br>
                     <h:outputLabel value="Approved By :"/>
                     <h:outputLabel value="#{cc.attrs.bill.referenceBill.creater.webUserPerson.nameWithTitle}"/>
-                    <br></br>                                      
+                    <br></br>
                     <br></br>
                     <h:outputLabel value="Authorized By :"/>
                     <h:outputLabel value="................................................................"/>
@@ -109,7 +109,7 @@
                     <h:outputLabel value="...................................................................."/>
                     <h:outputLabel value="Amount  : Rs. #{0-cc.attrs.bill.netTotal} " style="position: absolute; left: 70%;"/>
                     <br></br>
-                    <br></br>                    
+                    <br></br>
                     <h:outputLabel value="Received with thanks sum of Rupees  .................................................................................................................................................. #{sessionController.loggedUser.institution.name} "/>
                     <br></br>
 
@@ -190,8 +190,8 @@
                 </div>
             </div>
 
-            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Header CSS')}" >
-                <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text')}" escape="false" ></h:outputText>
+            <div  style="#{configOptionApplicationController.getLongTextValueByKey('Supplier Payment Footer Header CSS')}" >
+                <h:outputText value="#{supplierPaymentController.fillFooterDataOfPaymentVoucher(configOptionApplicationController.getLongTextValueByKey('Supplier Payment Voucher Footer Text'), cc.attrs.bill)}" escape="false" ></h:outputText>
             </div>
         </div>
     </cc:implementation>

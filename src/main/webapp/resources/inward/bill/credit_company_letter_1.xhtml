@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
@@ -8,10 +8,10 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
     <!-- INTERFACE -->
-    <cc:interface>      
-        <cc:attribute name="bill" />  
+    <cc:interface>
+        <cc:attribute name="bill" />
         <cc:attribute name="duplicate" />
-        <cc:attribute name="hosCopy" />        
+        <cc:attribute name="hosCopy" />
         <cc:attribute name="showProfessional" />
         <cc:attribute name="id" />
             </cc:interface>
@@ -27,7 +27,7 @@
 
                     <p:spacer height="50px"></p:spacer>
                     <div>
-                        <h:outputLabel value="#{commonController.currentDateTime}">
+                        <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                             <f:convertDateTime pattern="dd-MMM-yy" />
                         </h:outputLabel>
                     </div>
@@ -92,7 +92,7 @@
                                                     <td>
                                                         <h:outputLabel value="" />
                                                     </td>
-                        
+
                                                 </tr>-->
 
                     </table>
@@ -110,7 +110,7 @@
                     </div>
                     <p:spacer height="15px"></p:spacer>
                     <div style="font-size: 13px;">
-                        <h:outputLabel value ="Settlement of Hospital Charges Against Bill No"/>  
+                        <h:outputLabel value ="Settlement of Hospital Charges Against Bill No"/>
                         <h:outputLabel value =":"/>
                         <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;"/>
                         <b> <h:outputLabel value="#{cc.attrs.bill.deptId}" style="text-align: 55px" /></b>

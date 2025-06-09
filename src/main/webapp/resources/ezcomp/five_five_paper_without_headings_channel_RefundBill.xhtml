@@ -10,8 +10,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData"/>
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
@@ -24,18 +24,18 @@
 
             <div style="font-weight: bold;text-align: left;font-size: 10pt" class="row mt-2 d-flex align-items-center">
                 <div class="col-5">
-                    <div class="d-flex"> 
-                        <h:outputLabel value="REFUND &nbsp;" rendered="#{cc.attrs.bill.refunded}" /> 
+                    <div class="d-flex">
+                        <h:outputLabel value="REFUND &nbsp;" rendered="#{cc.attrs.bill.refunded}" />
                         <h:outputLabel value="RECEIPT"/>
                     </div>
                 </div>
 
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -171,10 +171,10 @@
                 </table>
             </div>
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
-        
-           
+
+
             <h:panelGroup style="font-weight: bold;text-align: left;font-size: 14pt" >
                 <div >
                     <div style="width: 100%;text-align: center;font-size: 15px;font-weight: bolder" class="mt-2">
@@ -187,7 +187,7 @@
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"
                                    />
                     </div>
                 </div>
@@ -197,8 +197,8 @@
             </div>
             <!--            <div>
                             <table style="margin-left: 6%">
-            
-            
+
+
                                 <tr>
                                     <td>
                                         <b>
@@ -218,7 +218,7 @@
                                             </ui:repeat>
                                         </b>
                                     </td>
-            
+
                                 </tr>
                             </table>
                         </div>-->
@@ -324,8 +324,8 @@
 
             <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card' }" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
                 </h:panelGroup>
             </ui:repeat>

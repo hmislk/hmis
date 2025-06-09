@@ -10,7 +10,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
-                    <p:panel header="Search Sale Pre Bill">
+                    <p:panel header="Search Sale For Cashier Bills">
                         <div class="row">
                             <div class="col-md-2">
 
@@ -69,11 +69,12 @@
                                     >
                                     <p:column headerText="Bill No" > 
                                         <p:commandLink 
-                                            action="pharmacy_reprint_prebill_sale" 
+                                            action="pharmacy_reprint_prebill_sale?faces-redirect=true" 
                                             value="#{bill.deptId}" 
-                                            disabled="#{bill.referenceBill eq null}"
+                                            disabled="#{bill.referenceBill eq null}"                                            
                                             >
                                             <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/> 
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.paymentMethod}" target="#{pharmacyBillSearch.paymentMethod}"/> 
                                         </p:commandLink>
                                     </p:column>
                                     
@@ -188,7 +189,7 @@
                                         <h:outputLabel value="#{bill.toInstitution.name}" />
                                     </p:column>
 
-                                    <p:column headerText="Payment Method">
+                                    <p:column headerText="Payment Method" filterBy="#{bill.paymentMethod} #{bill.paymentScheme.name}" filterMatchMode="contains">
                                         <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                         <h:outputLabel value="#{bill.paymentScheme.name}" />
                                     </p:column>

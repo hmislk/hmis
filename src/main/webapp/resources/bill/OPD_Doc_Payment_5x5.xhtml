@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
         <cc:attribute name="controller" ></cc:attribute>
@@ -25,9 +25,9 @@
         <h:outputStylesheet library="css" name="opd_five_five.css" ></h:outputStylesheet>
         <div class="fiveinchbill" style="page-break-after: always" >
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="PAYMENT VOUCHER"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="PAYMENT VOUCHER"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
@@ -56,7 +56,7 @@
                     <div class="col-3"><h:outputLabel value="#{cc.attrs.bill.paymentMethod}"/></div>
                 </div>
 
-            </div>   
+            </div>
 
             <div class="billline">
                 <p:spacer height="5px" />
@@ -79,9 +79,9 @@
                     <ui:repeat value="#{cc.attrs.bill.billItems}" var="billItem"   >
                         <tr class="billDetailsFiveFive">
                             <td  style="width:30%!important; column-span: 3; font-weight: 600;" >
-                                <h:outputLabel value="#{billItem.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{billItem.bill.patientEncounter eq null}" style="font-size:  10pt!important;"  />                                    
-                                <h:outputLabel value="#{billItem.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" 
-                                               style="font-size:  10pt!important;"   /> 
+                                <h:outputLabel value="#{billItem.referanceBillItem.bill.patient.person.nameWithTitle}" rendered="#{billItem.bill.patientEncounter eq null}" style="font-size:  10pt!important;"  />
+                                <h:outputLabel value="#{billItem.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
+                                               style="font-size:  10pt!important;"   />
                             </td>
                         </tr>
                         <tr class="billDetailsFiveFive">
@@ -101,7 +101,7 @@
                     </ui:repeat>
                 </table>
             </div>
-            
+
             <div class="billline">
                 <p:spacer height="5px" />
             </div>
@@ -149,7 +149,7 @@
                 <div class="col-1"><h:outputLabel value=":"/></div>
                 <div class="col-9"><h:outputLabel value="#{cc.attrs.bill.staff.person.nameWithTitle}"/></div>
             </div>
-            
+
             <div class="d-flex justify-content-end mt-3" style="font-weight: 600; font-size: 14px; margin-left: 5%; width: 90%">
                 <div class="col-12 d-flex justify-content-end"><h:outputLabel value="----------------------------------------"/></div>
             </div>

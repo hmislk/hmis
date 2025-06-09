@@ -13,7 +13,7 @@
                     <p:panel>
                         <f:facet name="header" >
                             <h:outputText styleClass="fas fa-search" />
-                            <h:outputLabel value="Opd Bill Payment Search " class="mx-4"/>                          
+                            <h:outputLabel value="Opd Bill Payment Search " class="mx-4"/>
                         </f:facet>
 
                         <div class="row">
@@ -21,31 +21,31 @@
                                 <div class="form d-flex flex-column" >
                                     <h:panelGroup id="searchKeyword">
                                         <h:outputLabel value="From Date"/>
-                                        <p:calendar id="fromDate" 
-                                                    value="#{opdBillController.fromDate}" 
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                                    
-                                                    class="w-100" 
+                                        <p:calendar id="fromDate"
+                                                    value="#{opdBillController.fromDate}"
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+
+                                                    class="w-100"
                                                     inputStyleClass="form-control"
-                                                    maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
                                         <h:outputLabel value="To Date"/>
                                         <p:calendar id="toDate"
                                                     value="#{opdBillController.toDate}"
-                                                    navigator="false" 
-                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                                    navigator="false"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                                                     class="w-100"
                                                     inputStyleClass="form-control"
-                                                    >                                                                              
+                                                    >
                                         </p:calendar>
                                         <p:spacer height="10" width="5" ></p:spacer>
 
 
                                         <h:outputLabel value="Institution"/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdFromInstitution"
                                             value="#{opdBillController.institution}"
                                             filter="true"
@@ -62,10 +62,10 @@
                                         </p:selectOneMenu>
 
                                         <h:outputLabel value="Department"/><br/>
-                                        <p:selectOneMenu 
+                                        <p:selectOneMenu
                                             id="cmdFromDepartment"
                                             placeholder="Ordering Department"
-                                            value="#{opdBillController.department}" 
+                                            value="#{opdBillController.department}"
                                             filter="true"
                                             class="w-100">
                                             <f:selectItem itemLabel="All" ></f:selectItem>
@@ -75,25 +75,25 @@
                                                            itemValue="#{d}" ></f:selectItems>
                                         </p:selectOneMenu>
 
-                                        
-                                        
+
+
 
 
                                     </h:panelGroup>
                                     <div class="d-grid gap-2 mt-2">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             icon="fas fa-search"
-                                            id="btnSearch" 
-                                            ajax="false" 
-                                            value="Search" 
+                                            id="btnSearch"
+                                            ajax="false"
+                                            value="Search"
                                             class="ui-button-warning"
                                             action="#{opdBillController.searchOpdPayments()}" />
 
-                                        <p:commandButton 
+                                        <p:commandButton
                                             id="btnClear"
                                             icon="fas fa-eraser"
-                                            value="Clear" 
-                                            class="my-2 ui-button-danger" 
+                                            value="Clear"
+                                            class="my-2 ui-button-danger"
                                             action="#{opdBillController.clearOpdBillSearchData}"
                                             process="btnClear"
                                             update="searchKeyword"/>
@@ -104,12 +104,12 @@
 
                             <div class="col-md-10">
                                 <p:defaultCommand target="btnSearch" />
-                                <p:dataTable rowIndexVar="i" 
-                                             id="tblBills" 
-                                             value="#{opdBillController.payments}" 
+                                <p:dataTable rowIndexVar="i"
+                                             id="tblBills"
+                                             value="#{opdBillController.payments}"
                                              rowStyleClass="#{payment.bill.cancelled ? 'text-danger' : payment.bill.refunded ? 'text-warning' : ''}"
-                                             var="payment"  
-                                             style="min-width: 100%;"  
+                                             var="payment"
+                                             style="min-width: 100%;"
                                              rows ="10"
                                              paginator="true"
                                              paginatorPosition="bottom"
@@ -121,10 +121,10 @@
                                               styleClass="alignTop" width="15">
                                         <h:outputLabel value="#{payment.id}"/>
                                     </p:column>
-                                    <p:column headerText="Ins Bill No" sortBy="#{payment.bill.deptId}" filterBy="#{payment.bill.deptId}" >                                
-                                        <p:commandLink id="billNo" 
-                                                       ajax="false" 
-                                                       value="#{payment.bill.deptId}" 
+                                    <p:column headerText="Ins Bill No" sortBy="#{payment.bill.deptId}" filterBy="#{payment.bill.deptId}" >
+                                        <p:commandLink id="billNo"
+                                                       ajax="false"
+                                                       value="#{payment.bill.deptId}"
                                                        action="#{opdBillController.navigateToViewOpdBatchBill()}">
                                             <f:setPropertyActionListener value="#{payment.bill}" target="#{opdBillController.bill}"/>
                                         </p:commandLink>
@@ -132,29 +132,29 @@
                                     <p:column headerText="Dep Bill No" sortBy="#{payment.bill.deptId}" filterBy="#{payment.bill.deptId}">
                                         <h:commandLink action="#{billSearch.navigateToViewOpdBill()}" value="#{payment.bill.deptId}">
                                             <f:setPropertyActionListener value="#{payment.bill}" target="#{billSearch.bill}"/>
-                                        </h:commandLink>  
+                                        </h:commandLink>
                                     </p:column>
-                                                               
+
                                     <p:column headerText="Billed At"  sortBy="#{payment.createdAt}"  >
-                                        <p:outputLabel id="paymentTime" value="#{payment.createdAt}">                                       
+                                        <p:outputLabel id="paymentTime" value="#{payment.createdAt}">
                                               <f:convertDateTime pattern="dd-MMMM-yyyy"></f:convertDateTime>
                                         </p:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Remarks"   >                              
+                                    <p:column headerText="Remarks"   >
                                         <h:outputLabel value="#{payment.bill.cancelled?'Cancelled':''}" class="#{payment.bill.cancelled?'text-danger':''}" />
                                         <h:outputLabel value="#{payment.bill.refunded ?'Refunded':''}" />
                                     </p:column>
-                                    <p:column headerText="Billed For" sortBy="#{payment.bill.toDepartment.name}" 
-                                              filterBy="#{payment.bill.toDepartment.name}" filterMatchMode="contains" >                                
+                                    <p:column headerText="Billed For" sortBy="#{payment.bill.toDepartment.name}"
+                                              filterBy="#{payment.bill.toDepartment.name}" filterMatchMode="contains" >
                                         <h:outputLabel id="insDep" value="#{payment.bill.toDepartment.name}" />
                                     </p:column>
 
                                     <p:column headerText="Payment Mode"  sortBy="#{payment.paymentMethod.label}" filterBy="#{payment.paymentMethod.label}" >
-                                        <h:outputLabel value="#{payment.paymentMethod.label}" >                                      
+                                        <h:outputLabel value="#{payment.paymentMethod.label}" >
                                         </h:outputLabel>
-                                    </p:column> 
-                                    <p:column headerText="Client"  sortBy="#{payment.bill.patient.person.name}" 
-                                              filterBy="#{payment.bill.patient.person.name}" >                               
+                                    </p:column>
+                                    <p:column headerText="Client"  sortBy="#{payment.bill.patient.person.name}"
+                                              filterBy="#{payment.bill.patient.person.name}" >
                                         <h:panelGroup id="pt">
                                             <h:commandLink  value="#{payment.bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                                 <f:setPropertyActionListener value="#{payment.bill.patient}" target="#{patientController.current}"/>
@@ -163,15 +163,15 @@
                                             </h:outputLabel>
                                         </h:panelGroup>
                                     </p:column>
-                                    
-                                    <p:column headerText="Cash Total"  
+
+                                    <p:column headerText="Cash Total"
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{payment.bill.cashPaid}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Bill Total" sortBy="#{payment.bill.total}" 
+                                    <p:column headerText="Bill Total" sortBy="#{payment.bill.total}"
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{payment.bill.total}" >
                                             <f:convertNumber pattern="#,##0.00"/>
@@ -182,12 +182,12 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column headerText="Net Value" sortBy="#{payment.bill.netTotal}" 
+                                    <p:column headerText="Net Value" sortBy="#{payment.bill.netTotal}"
                                               styleClass="averageNumericColumn">
                                         <h:outputLabel value="#{payment.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column>                         
+                                    </p:column>
                                 </p:dataTable>
                             </div>
                         </div>

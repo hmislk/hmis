@@ -1,13 +1,13 @@
 package com.divudi.service;
 
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeValue;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.ItemFee;
-import com.divudi.facade.FeeValueFacade;
-import com.divudi.facade.ItemFeeFacade;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeValue;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.facade.FeeValueFacade;
+import com.divudi.core.facade.ItemFeeFacade;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -49,8 +49,8 @@ public class ItemFeeService {
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
-    
-    
+
+
      public void updateFeeValue(Item item, Department dept, Double feeValueForLocals, Double feeValueForForeigners) {
         FeeValue feeValue = getFeeValue(item, dept);
         if (feeValue == null) {
@@ -77,7 +77,7 @@ public class ItemFeeService {
         save(feeValue);
     }
 
-    
+
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
             return;
@@ -89,7 +89,7 @@ public class ItemFeeService {
             feeValueFacade.create(feeValue);
         }
     }
-    
+
     public FeeValue getFeeValue(Item item, Department department) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :department";
         Map<String, Object> params = new HashMap<>();
@@ -124,5 +124,5 @@ public class ItemFeeService {
 
         return feeValueFacade.findFirstByJpql(jpql, params);
     }
-    
+
 }

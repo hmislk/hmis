@@ -5,7 +5,7 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui"       
+                xmlns:p="http://primefaces.org/ui"
                 xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashier"
                 xmlns:ez="http://xmlns.jcp.org/jsf/composite/ezcomp"
 
@@ -23,15 +23,15 @@
                             <h:outputLabel value="From Date" class="mx-2"/></h:panelGroup>
 
                         <p:calendar  class=" mx-4 d-flex" inputStyleClass="w-100" id="frmDate" value="#{opdPreBillReportController.fromDate}" navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                     maxdate="#{commonController.endOfDayOnCurrentDate}">
+                                     maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                         </p:calendar>
 
-                        <h:panelGroup>  
+                        <h:panelGroup>
                             <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                             <h:outputLabel value="To Date" class="mx-2"/></h:panelGroup>
 
                         <p:calendar class=" mx-4 d-flex" inputStyleClass="w-100"  id="toDate" value="#{opdPreBillReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >
+                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                         </p:calendar>
                         <h:panelGroup>
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2" />
@@ -58,18 +58,18 @@
                     <h:panelGrid columns="6" class="my-3" >
                         <p:commandButton style="width: 150px" id="btnRefresh" ajax="false" value="Process"
                                          class="ui-button-warning" icon="fas fa-refresh"
-                                         action="#{opdPreBillReportController.createCashierTableByUser()}" />  
+                                         action="#{opdPreBillReportController.createCashierTableByUser()}" />
                         <p:defaultCommand target="btnRefresh"/>
 
                         <p:commandButton style="width: 150px" ajax="false" value="Print" class="ui-button-info mx-2" icon="fas fa-print" >
                             <p:printer target="reportPrint"  />
                         </p:commandButton>
 
-                        <p:commandButton 
-                            ajax="false" 
-                            value="Excel" 
+                        <p:commandButton
+                            ajax="false"
+                            value="Excel"
                             style="width: 150px"
-                            icon="fas fa-file-excel" 
+                            icon="fas fa-file-excel"
                             class="ui-button-success mx-2"
                             >
                             <p:dataExporter fileName="report_cashier_summery_by_user" target="" type="xlsx" ></p:dataExporter>

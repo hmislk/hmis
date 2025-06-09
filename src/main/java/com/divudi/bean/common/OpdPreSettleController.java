@@ -6,53 +6,54 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.cashTransaction.DrawerController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.ComponentDetail;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
 import com.divudi.service.StaffService;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillFeePayment;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.Payment;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.Staff;
-import com.divudi.entity.Token;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillFeePaymentFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.TokenFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillFeePayment;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Token;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillFeePaymentFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.text.DecimalFormat;
@@ -61,6 +62,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -122,6 +124,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     StaffService staffBean;
     @EJB
     private StaffFacade staffFacade;
+    @EJB
+    BillService billService;
 
 /////////////////////////
     Item selectedAlternative;
@@ -1625,32 +1629,33 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         getBillFeePaymentFacade().create(bfp);
     }
 
-    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
-            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
-            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
-        } else {
-            bfp.setInstitution(getSessionController().getInstitution());
-            bfp.setDepartment(getSessionController().getDepartment());
-        }
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
-    }
-
+//    public void setBillFeePaymentAndPayment(BillFee bf, Payment p) {
+//        BillFeePayment bfp = new BillFeePayment();
+//        bfp.setBillFee(bf);
+//        bfp.setAmount(bf.getSettleValue());
+//        if (bf.getBillItem() != null && bf.getBillItem().getItem() != null) {
+//            bfp.setInstitution(bf.getBillItem().getItem().getInstitution());
+//            bfp.setDepartment(bf.getBillItem().getItem().getDepartment());
+//        } else {
+//            bfp.setInstitution(getSessionController().getInstitution());
+//            bfp.setDepartment(getSessionController().getDepartment());
+//        }
+//        bfp.setCreater(getSessionController().getLoggedUser());
+//        bfp.setCreatedAt(new Date());
+//        bfp.setPayment(p);
+//        getBillFeePaymentFacade().create(bfp);
+//    }
     public double calBillPaidValue(Bill b) {
-        String sql;
+        String jpql = "select sum(bfp.amount) "
+                + " from BillFeePayment bfp "
+                + " where bfp.retired = :ret "
+                + " and bfp.billFee.bill.id = :bid";
 
-        sql = "select sum(bfp.amount) from BillFeePayment bfp where "
-                + " bfp.retired=false "
-                + " and bfp.billFee.bill.id=" + b.getId();
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bid", b.getId());
 
-        double d = getBillFeePaymentFacade().findDoubleByJpql(sql);
-
+        double d = getBillFeePaymentFacade().findDoubleByJpql(jpql, params);
         return d;
     }
 
@@ -1682,16 +1687,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         }
     }
 
-    public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, Payment p) {
-        for (BillFee bf : billFees) {
-            setBillFeePaymentAndPayment(bf, p);
-        }
-    }
-
-    public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, Payment p) {
-        calculateBillfeePaymentsForCancelRefundBill(billFees, p);
-    }
-
+//    public void calculateBillfeePaymentsForCancelRefundBill(List<BillFee> billFees, List<Payment> ps) {
+//        for (BillFee bf : billFees) {
+//            setBillFeePaymentAndPayment(bf, ps);
+//        }
+//    }
+//    public void createOpdCancelRefundBillFeePayment(Bill bill, List<BillFee> billFees, List<Payment> ps) {
+//        calculateBillfeePaymentsForCancelRefundBill(billFees, ps);
+//    }
     public Payment createPaymentForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
@@ -1727,13 +1730,79 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             //System.out.println("Staff Credit Updated");
         }
 
-        //System.out.println("001");  
+        //System.out.println("001");
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");  
+        //System.out.println("End Payment");
         return p;
+    }
+
+    public List<Payment> createPaymentsForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
+        System.out.println("createPaymentsForCancellationsforOPDBill");
+        System.out.println("bill = " + bill);
+        System.out.println("pm = " + pm);
+        List<Payment> ps = new ArrayList<>();
+        if (pm == null) {
+            Bill originalIndividualBill = bill.getBilledBill();
+            if (originalIndividualBill == null) {
+                return ps;
+            }
+            Bill originalBathcBill = billService.fetchBatchBillOfIndividualBill(originalIndividualBill);
+            if (originalBathcBill == null) {
+                return ps;
+            }
+            List<Payment> originalBillPayments = billService.fetchBillPayments(originalBathcBill);
+            if (originalBillPayments == null || originalBillPayments.isEmpty()) {
+                return ps;
+            }
+            for (Payment originalBillPayment : originalBillPayments) {
+                Payment p = originalBillPayment.clonePaymentForNewBill();
+                p.invertValues();
+                p.setReferancePayment(originalBillPayment);
+                p.setBill(bill);
+                p.setInstitution(getSessionController().getInstitution());
+                p.setDepartment(getSessionController().getDepartment());
+                p.setCreatedAt(new Date());
+                p.setCreater(getSessionController().getLoggedUser());
+                paymentFacade.create(p);
+                ps.add(p);
+            }
+            bill.setPaymentMethod(PaymentMethod.MultiplePaymentMethods);
+            billFacade.edit(bill);
+        } else {
+            Payment p = new Payment();
+            p.setBill(bill);
+            double valueToSet = 0 - Math.abs(bill.getNetTotal());
+            p.setPaidValue(valueToSet);
+
+            p.setInstitution(getSessionController().getInstitution());
+            p.setDepartment(getSessionController().getDepartment());
+            p.setCreatedAt(new Date());
+            p.setCreater(getSessionController().getLoggedUser());
+            p.setPaymentMethod(pm);
+
+            if (pm == PaymentMethod.PatientDeposit) {
+                if (bill.getPatient().getRunningBalance() == null) {
+                    bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
+                } else {
+                    bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
+                }
+                patientFacade.edit(bill.getPatient());
+            }
+
+            if (pm == PaymentMethod.Staff) {
+                bill.getToStaff().setCurrentCreditValue(bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
+                staffFacade.edit(bill.getToStaff());
+            }
+            if (p.getId() == null) {
+                getPaymentFacade().create(p);
+            }
+            getPaymentFacade().edit(p);
+            ps.add(p);
+        }
+        return ps;
     }
 
     public Payment createPaymentForCollectingCenterBill(Bill bill) {
@@ -1751,7 +1820,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");  
+        //System.out.println("End Payment");
         return p;
     }
 

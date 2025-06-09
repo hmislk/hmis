@@ -14,8 +14,6 @@
             <h:form class="w-100">
                 <p:panel header="External Laboratory Workload Report" class="w-100">
                     <h:panelGrid columns="8" class="w-100 ">
-
-
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf133;" styleClass="fa mr-2"/>
                             <p:outputLabel value="From Date" class="m-3">
@@ -174,19 +172,18 @@
                             <h:outputText value="&#xf491;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Laboratory" for="cmbCat" class="m-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu
-                                class="w-100"
-                                id="cmbCat"
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{reportsController.category}">
-                            <f:selectItem itemLabel="Please select a Laboratory"/>
-                            <f:selectItems
-                                    value="#{investigationCategoryController.items}"
-                                    var="cat"
-                                    itemLabel="#{cat.name}"
-                                    itemValue="#{cat}"/>
-                        </p:selectOneMenu>
+                        <p:autoComplete
+                                completeMethod="#{categoryController.completeCategory}"
+                                var="pta"
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}"
+                                forceSelection="true"
+                                value="#{reportsController.category}"
+                                inputStyleClass="w-100"
+                                class="w-100 m-1"
+                                maxResults="20"
+                                id="cat">
+                        </p:autoComplete>
 
                         <p:spacer width="20"/>
 
@@ -310,9 +307,26 @@
                             style="width: 150px"
                             icon="fas fa-print"
                             ajax="false"
-                            value="Print">
-                        <p:printer target="tblExport"/>
+                            value="Print"
+                            onclick="hidePaginatorBeforePrint()">
+                        <p:printer target="tblExport" oncomplete="restorePaginatorAfterPrint()"/>
                     </p:commandButton>
+
+                    <h:outputScript>
+                        function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                        }
+
+                        function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                        }
+
+                        window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                        };
+                    </h:outputScript>
 
                     <p:commandButton
                             class="ui-button-success my-4 mx-2"
@@ -320,7 +334,9 @@
                             icon="fas fa-file-excel"
                             ajax="false"
                             value="Excel">
-                        <p:dataExporter type="xlsx" target="tblExport" fileName="external_laboratary_workload.xlsx"/>
+                        <p:dataExporter type="xlsx"
+                                        target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                        fileName="external_laboratary_workload.xlsx"/>
                     </p:commandButton>
 
                     <p:commandButton
@@ -329,134 +345,151 @@
                             icon="fas fa-file-pdf"
                             ajax="false"
                             value="PDF">
-                        <p:dataExporter type="pdf" target="tblExport" fileName="external_laboratary_workload.pdf"/>
+                        <p:dataExporter type="pdf"
+                                        target="#{reportsController.reportType eq 'detail' ? 'tblExport1' : 'tblExport2'}"
+                                        fileName="external_laboratary_workload.pdf"/>
                     </p:commandButton>
 
-                    <!--table 1 / report type - details-->
-                    <p:dataTable
-                            id="tblExport"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            rows="10"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            var="row"
-                            rendered="#{reportsController.reportType eq 'detail'}"
-                            rowIndexVar="b"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
+                    <h:panelGroup id="tblExport" class="w-100">
+                        <!--table 1 / report type - details-->
+                        <p:dataTable
+                                id="tblExport1"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                var="row"
+                                rendered="#{reportsController.reportType eq 'detail'}"
+                                rowIndexVar="b"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
 
-                        <f:facet name="header">
-                            <h:outputText value="Report Type - Detail"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
+                            <f:facet name="header">
+                                <h:outputText value="Report Type - Detail"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
 
-                        <p:column headerText="Sample ID" width="8rem">
-                            <h:outputText
-                                    value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(row.billItem.patientInvestigation)}"/>
-                        </p:column>
-                        <p:column headerText="Invoice No" width="14rem">
-                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                            <p:column headerText="Sample ID" width="8rem">
+                                <h:outputText
+                                        value="#{patientInvestigationController.getPatientSamplesByInvestigationAsString(row.billItem.patientInvestigation)}"/>
+                            </p:column>
+                            <p:column headerText="Invoice No" width="14rem">
+                                <h:outputText value="#{row.billItem.patientEncounter != null ?
                                                     row.billItem.patientEncounter.finalBill.deptId :
                                                     row.billItem.bill.deptId}"/>
-                        </p:column>
-                        <p:column headerText="MRN" width="8rem">
-                            <h:outputText value="#{row.billItem.bill.patient.phn}"/>
-                        </p:column>
-                        <p:column headerText="Name" width="8rem">
-                            <h:outputText value="#{row.billItem.bill.patient.person.name}"/>
-                        </p:column>
-                        <p:column headerText="Age" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.patient.person.ageAsString}"/>
-                        </p:column>
-                        <p:column headerText="Gender" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.patient.person.sex}"/>
-                        </p:column>
-                        <p:column headerText="Investigation" width="6rem">
-                            <h:outputText value="#{row.billItem.item.name}"/>
-                        </p:column>
-                        <p:column headerText="Lab Department" width="5rem">
-                            <h:outputText value="#{row.billItem.item.department.name}"/>
-                        </p:column>
-                        <p:column headerText="CC" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
-                            <h:outputText value="#{row.billItem.bill.collectingCentre.name}"/>
-                        </p:column>
-                        <p:column headerText="CC Route" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
-                            <h:outputText value="#{row.billItem.bill.collectingCentre.route.name}"/>
-                        </p:column>
-                        <p:column headerText="Invoiced Date" width="5rem">
-                            <h:outputText value="#{row.billItem.patientEncounter != null ?
+                            </p:column>
+                            <p:column headerText="MRN" width="8rem">
+                                <h:outputText value="#{row.billItem.bill.patient.phn}"/>
+                            </p:column>
+                            <p:column headerText="Name" width="8rem">
+                                <h:outputText value="#{row.billItem.bill.patient.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Age" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.patient.person.ageAsString}"/>
+                            </p:column>
+                            <p:column headerText="Gender" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.patient.person.sex}"/>
+                            </p:column>
+                            <p:column headerText="Investigation" width="6rem">
+                                <h:outputText value="#{row.billItem.item.name}"/>
+                            </p:column>
+                            <p:column headerText="Lab Department" width="5rem">
+                                <h:outputText value="#{row.billItem.item.department.name}"/>
+                            </p:column>
+                            <p:column headerText="CC" width="5rem" rendered="#{reportsController.visitType eq 'CC'}">
+                                <h:outputText value="#{row.billItem.bill.collectingCentre.name}"/>
+                            </p:column>
+                            <p:column headerText="CC Route" width="5rem"
+                                      rendered="#{reportsController.visitType eq 'CC'}">
+                                <h:outputText value="#{row.billItem.bill.collectingCentre.route.name}"/>
+                            </p:column>
+                            <p:column headerText="Invoiced Date" width="5rem">
+                                <h:outputText value="#{row.billItem.patientEncounter != null ?
                                                     row.billItem.patientEncounter.finalBill.createdAt :
                                                     row.billItem.bill.createdAt}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Invoiced By" width="5rem">
-                            <h:outputText value="#{row.billItem.patientEncounter != null ?
-                                                    row.billItem.patientEncounter.finalBill.creater.webUserPerson.name :
-                                                    row.billItem.bill.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Received Date" width="5rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.receivedAt}">
-                                <f:convertDateTime
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                            </h:outputText>
-                        </p:column>
-                        <p:column headerText="Recieved By" width="5rem">
-                            <h:outputText value="#{row.billItem.patientInvestigation.creater.webUserPerson.name}"/>
-                        </p:column>
-                        <p:column headerText="Remarks" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.comments}"/>
-                        </p:column>
-                        <p:column headerText="Patient Source" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
-                        </p:column>
-                        <p:column headerText="Patient Type" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.paymentMethod.name()}"/>
-                        </p:column>
-                        <p:column headerText="Referring Doctor" width="5rem">
-                            <h:outputText value="#{row.billItem.bill.referredBy.person.nameWithTitle}"/>
-                        </p:column>
-                        <p:column headerText="Item Value" width="5rem">
-                            <h:outputText value="#{row.billItem.netValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{reportsController.bundle.total}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Invoiced By" width="5rem">
+                                <h:outputText value="#{row.billItem.patientEncounter != null ?
+                                                    row.billItem.patientEncounter.finalBill.creater.webUserPerson.nameWithTitle :
+                                                    row.billItem.bill.creater.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Received Date" width="5rem">
+                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Received By" width="5rem">
+                                <h:outputText
+                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Remarks" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.comments}"/>
+                            </p:column>
+                            <p:column headerText="Patient Source" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.ipOpOrCc}"/>
+                            </p:column>
+                            <p:column headerText="Patient Type" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.paymentMethod.name()}"
+                                              rendered="#{reportsController.visitType ne 'IP'}"/>
+                                <h:outputText value="#{row.billItem.bill.patientEncounter.paymentMethod}"
+                                              rendered="#{reportsController.visitType eq 'IP'}"/>
+                            </p:column>
+                            <p:column headerText="Referring Doctor" width="5rem">
+                                <h:outputText value="#{row.billItem.bill.referredBy.person.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Item Value" width="5rem">
+                                <h:outputText value="#{row.billItem.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
-                    </p:dataTable>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
 
-                    <!--table 2 / report type - summary-->
-                    <p:dataTable
-                            id="tblExport2"
-                            paginator="true"
-                            paginatorPosition="bottom"
-                            rows="10"
-                            value="#{reportsController.bundle.reportTemplateRows}"
-                            rendered="#{reportsController.reportType eq 'summary'}"
-                            var="row"
-                            rowIndexVar="b"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="10,25,50">
-                        <f:facet name="header">
-                            <h:outputText value="Report Type - Summary"
-                                          style="font-weight: bold; text-align: left; display: block;"/>
-                        </f:facet>
-                        <p:column headerText="Sl. No." width="1rem">
-                            <h:outputText value="#{b+1}"/>
-                        </p:column>
-                        <p:column headerText="Test Name" width="5rem">
-                            <h:outputText value="#{row.categoryName}"/>
-                        </p:column>
-                        <p:column headerText="Total Tests Performed" width="1rem">
-                            <h:outputText value="#{row.rowValue}">
-                                <f:convertNumber pattern="#,##0.0"/>
-                            </h:outputText>
-                        </p:column>
-                    </p:dataTable>
+                        <!--table 2 / report type - summary-->
+                        <p:dataTable
+                                id="tblExport2"
+                                paginator="true"
+                                paginatorPosition="bottom"
+                                rows="10"
+                                value="#{reportsController.bundle.reportTemplateRows}"
+                                rendered="#{reportsController.reportType eq 'summary'}"
+                                var="row"
+                                rowIndexVar="b"
+                                paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                rowsPerPageTemplate="10,25,50">
+                            <f:facet name="header">
+                                <h:outputText value="Report Type - Summary"
+                                              style="font-weight: bold; text-align: left; display: block;"/>
+                            </f:facet>
+                            <p:column headerText="Sl. No." width="1rem">
+                                <h:outputText value="#{b+1}"/>
+                            </p:column>
+                            <p:column headerText="Test Name" width="5rem">
+                                <h:outputText value="#{row.categoryName}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total Test Performed"/>
+                                </f:facet>
+                            </p:column>
+                            <p:column headerText="Total Test Performed" width="1rem">
+                                <h:outputText value="#{row.rowValue}">
+                                    <f:convertNumber pattern="#,##0.0"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{reportsController.bundle.total}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+                        </p:dataTable>
+                    </h:panelGroup>
                 </p:panel>
             </h:form>
         </ui:define>

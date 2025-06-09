@@ -8,6 +8,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill"
       xmlns:bill="http://xmlns.jcp.org/jsf/composite/bill"
       xmlns:emr="http://xmlns.jcp.org/jsf/composite/ezcomp/emr"
+      xmlns:print="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:in="http://xmlns.jcp.org/jsf/composite/inward">
 
 
@@ -19,67 +20,92 @@
                 <h:form>
                     <p:panel  header="Service Reprint">
                         <f:facet name="header">
-                        <div class=" d-flex align-items-center justify-content-between m-1">
-                            <div >
-                                <h:outputLabel value="Service Reprint" />
+                            <div class=" d-flex align-items-center justify-content-between m-1">
+                                <div >
+                                    <h:outputLabel value="Service Reprint" />
+                                </div>
+                                <div >
+
+                                    <p:commandButton 
+                                        value="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-raised mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(inwardSearch.bill)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="ui-button-info mx-2" 
+                                        icon="fas fa-print" 
+                                        value="Reprint" 
+                                        ajax="false" 
+                                        action="#"  >
+                                        <p:printer target="gpBillPreview" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        class="ui-button-info" 
+                                        icon="fas fa-print" 
+                                        value="Reprint(Cancel/Refund)" 
+                                        ajax="false" 
+                                        action="#" 
+                                        rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
+                                        <p:printer target="gpBillPreview2" ></p:printer>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Cancel" 
+                                        icon="fa fa-ban"
+                                        action="inward_cancel_bill_service?faces-redirect=true"
+                                        disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
+                                        class="m-2 ui-button-danger">                           
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Return" 
+                                        icon="fa fa-undo"
+                                        actionListener="#{billSearch.recreateModel()}"
+                                        action="inward_bill_service_refund?faces-redirect=true"
+                                        disabled="#{inwardSearch.bill.cancelled}"
+                                        class="m-2 "
+                                        >    
+                                        <f:setPropertyActionListener  
+                                            value="#{inwardSearch.bill}" 
+                                            target="#{billSearch.bill}"  />
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Checked"
+                                        icon="fa fa-check-square"
+                                        action="#{inwardSearch.markAsChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
+                                        class="m-2 ui-button-success"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Mark As Uncheck"
+                                        icon="fa fa-square"
+                                        action="#{inwardSearch.markAsUnChecked()}"
+                                        rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
+                                        class="m-2 ui-button-warning"/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To View" 
+                                        icon="fa fa-backward"
+                                        action="/inward/inward_edit_bill_item_view?faces-redirect=true"  
+                                        class="m-2 "/>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Back To Interim" 
+                                        icon="fa fa-arrow-circle-left"
+                                        action="/inward/inward_bill_intrim?faces-redirect=true" 
+                                        actionListener="#{bhtSummeryController.createTables()}"
+                                        class="m-2 ui-button-warning"/>
+                                </div>
+
                             </div>
-                            <div >
-
-                                <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Reprint" ajax="false" action="#"  >
-                                    <p:printer target="gpBillPreview" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint(Cancel/Refund)" ajax="false" action="#" rendered="#{inwardSearch.bill.refundBills.size()>0 or inwardSearch.bill.cancelled}" >
-                                    <p:printer target="gpBillPreview2" ></p:printer>
-                                </p:commandButton>
-
-                                <p:commandButton ajax="false" 
-                                                 value="Cancel" 
-                                                 icon="fa fa-ban"
-                                                 action="inward_cancel_bill_service"
-                                                 disabled="#{inwardSearch.bill.cancelled or inwardSearch.bill.refunded }"  
-                                                 class="m-2 ui-button-danger">                           
-                                </p:commandButton>
-                                <p:commandButton ajax="false" 
-                                                 value="Return" 
-                                                 icon="fa fa-undo"
-                                                 actionListener="#{billSearch.recreateModel()}"
-                                                 action="inward_bill_service_refund"
-                                                 disabled="#{inwardSearch.bill.cancelled}"
-                                                 class="m-2 "
-                                                 >    
-                                    <f:setPropertyActionListener  
-                                        value="#{inwardSearch.bill}" 
-                                        target="#{billSearch.bill}"  />
-                                </p:commandButton>
-                                
-                                <p:commandButton ajax="false" 
-                                                 value="Mark As Checked"
-                                                 icon="fa fa-check-square"
-                                                 action="#{inwardSearch.markAsChecked()}"
-                                                 rendered="#{webUserController.hasPrivilege('InwardCheck')}"  
-                                                 class="m-2 ui-button-success"/>
-                                <p:commandButton ajax="false" 
-                                                 value="Mark As Uncheck"
-                                                 icon="fa fa-square"
-                                                 action="#{inwardSearch.markAsUnChecked()}"
-                                                 rendered="#{webUserController.hasPrivilege('InwardUnCheck')}"  
-                                                 class="m-2 ui-button-warning"/>
-                                <p:commandButton ajax="false" 
-                                                 value="Back To View" 
-                                                 icon="fa fa-backward"
-                                                 action="/inward/inward_edit_bill_item_view"  
-                                                 class="m-2 "/>
-                                <p:commandButton ajax="false" 
-                                                 value="Back To Interim" 
-                                                 icon="fa fa-arrow-circle-left"
-                                                 action="/inward/inward_bill_intrim" 
-                                                 actionListener="#{bhtSummeryController.createTables()}"
-                                                 class="m-2 ui-button-warning"/>
-                            </div>
-
-                        </div>
-                            </f:facet>
+                        </f:facet>
                         <div class="col-12">
                             <div class="row  d-flex justify-content-center m-1">
                                 <div class="col-3 ">
@@ -169,7 +195,7 @@
 
                     <div class="printingOnly" >
 
-                       <p:panel id="gpBillPreview" class="m-3">
+                        <h:panelGroup id="gpBillPreview" class="m-3">
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill}" var="bill">
                                     <bill:inwardBillPrintPos bill="#{bill}" duplicate="false"/>
@@ -180,8 +206,21 @@
                                     <bill:inwardBillPrintFiveFive bill="#{b}" dup="false"/>                        
                                 </ui:repeat>  
                             </h:panelGroup>
-                        </p:panel>
-                        
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveFiveCustom3'}" >
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:five_five_custom_3_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
+                                <ui:repeat value="#{inwardSearch.bill}" var="pp">
+                                    <print:five_eight_opd_bill bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <br/>
+                                </ui:repeat>
+                            </h:panelGroup>
+                        </h:panelGroup>
+
                         <p:panel id="gpBillPreview2" class="m-3">
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'PosPaper'}">
                                 <ui:repeat value="#{inwardSearch.bill.refundBills}" var="bill" rendered="#{!inwardSearch.bill.cancelled}">

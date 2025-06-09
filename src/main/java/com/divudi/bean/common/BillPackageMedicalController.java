@@ -9,48 +9,47 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.Title;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.YearMonthDay;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.AuditEvent;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.MedicalPackage;
-import com.divudi.entity.Packege;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PaymentScheme;
-import com.divudi.entity.Person;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.AuditEvent;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillComponent;
+import com.divudi.core.entity.BillEntry;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.MedicalPackage;
+import com.divudi.core.entity.Packege;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,8 +82,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    private CommonController commonController;
 
     @Inject
     private AuditEventApplicationController auditEventApplicationController;
@@ -122,7 +119,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     @Inject
     private BillBeanController billBean;
 
-    CommonFunctions commonFunctions;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -239,14 +235,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
         this.bills = bills;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     private void savePatient() {
         if (getPatientTabId().equals("tabNewPt")) {
             getPatient().setCreater(getSessionController().getLoggedUser());
@@ -309,7 +297,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
                 if (Objects.equals(e.getBillItem().getItem().getDepartment().getId(), d.getId())) {
                     getBillBean().saveBillItem(myBill, e, getSessionController().getLoggedUser());
-                    // getBillBean().calculateBillItem(myBill, e);                
+                    // getBillBean().calculateBillItem(myBill, e);
                     tmp.add(e);
                 }
             }
@@ -415,7 +403,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     private Bill saveBill(Department bt, BilledBill temp) {
 
-        //getCurrent().setCashBalance(cashBalance); 
+        //getCurrent().setCashBalance(cashBalance);
         //getCurrent().setCashPaid(cashPaid);
         //  temp.setBillType(bt);
         temp.setBillType(BillType.OpdBill);
@@ -468,19 +456,19 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     }
 
     private boolean errorCheck() {
-        if (getPatientTabId().toString().equals("tabNewPt")) {
+        if (getPatientTabId().equals("tabNewPt")) {
 
-            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("") || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
+            if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().isEmpty() || getPatient().getPerson().getSex() == null || getPatient().getPerson().getDob() == null) {
                 JsfUtil.addErrorMessage("Can not bill without Patient Name, Age or Sex.");
                 return true;
             }
 
-            if (!com.divudi.java.CommonFunctions.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
+            if (!Person.checkAgeSex(getPatient().getPerson().getDob(), getPatient().getPerson().getSex(), getPatient().getPerson().getTitle())) {
                 JsfUtil.addErrorMessage("Check Title,Age,Sex");
                 return true;
             }
 
-            if (getPatient().getPerson().getPhone().length() < 1) {
+            if (getPatient().getPerson().getPhone().isEmpty()) {
                 JsfUtil.addErrorMessage("Phone Number is Required it should be fill");
                 return true;
             }
@@ -732,7 +720,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new MedicalPackage());
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -790,7 +778,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBillItems(new Packege());
 
-        
+
 
     }
 
@@ -825,7 +813,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
         createBills(new Packege());
 
-        
+
         Date endTime = new Date();
         duration = endTime.getTime() - startTime.getTime();
         auditEvent.setEventDuration(duration);
@@ -1300,8 +1288,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
     }
 
     public void dateChangeListen() {
-        getPatient().getPerson().setDob(getCommonFunctions().guessDob(yearMonthDay));
-
+        getPatient().getPerson().setDob(CommonFunctions.guessDob(yearMonthDay));
     }
 
     public Integer getIndex() {
@@ -1408,7 +1395,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }
@@ -1419,7 +1406,7 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
@@ -1450,14 +1437,6 @@ public class BillPackageMedicalController implements Serializable, ControllerWit
 
     public void setServiceItem(Item ServiceItem) {
         this.ServiceItem = ServiceItem;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     @Override

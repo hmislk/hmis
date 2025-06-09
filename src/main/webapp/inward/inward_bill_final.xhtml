@@ -1,5 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
                 template="/resources/template/template.xhtml"
                 xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
@@ -10,112 +11,202 @@
                 xmlns:credit="http://xmlns.jcp.org/jsf/composite/inward/creditCompany">
 
 
+    <ui:define name="content">
 
-    <ui:define name="content" >
+        <h:head>
+            <h:outputStylesheet>
+                .top-aligned-grid td {
+                vertical-align: top !important;
+                padding-top: 0 !important;
+                }
+                .top-aligned-panel {
+                margin-top: 0 !important;
+                padding-top: 0 !important;
+                }
+            </h:outputStylesheet>
+        </h:head>
 
-        <h:panelGroup >
-            <h:form  >
-                <p:panel rendered="#{!bhtSummeryController.printPreview}" >
-                    <f:facet name="header" >
+        <h:panelGroup>
+            <h:form>
+                <p:panel rendered="#{!bhtSummeryController.printPreview}">
+                    <f:facet name="header">
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
-                                <h:outputLabel value="Inward Final Bill" /> 
+                                <h:outputText styleClass="fas fa-file-invoice-dollar" />
+                                <h:outputLabel value="Inward Final Bill" class="mx-2"/>
                             </div>
                             <div>
-                                <p:commandButton update="dList tot" value="Process"
+                                <p:commandButton update="dList tot @all settle saveProvisional" 
+                                                 value="Process"
                                                  actionListener="#{bhtSummeryController.updateTotal()}"
+                                                 process="@this"
+                                                 class="ui-button-warning mx-1" 
+                                                 icon="fas fa-cog"
+                                                 style="width: 150px; padding: 1px; margin: auto;"
+                                                 rendered="#{!configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" />
+                                <p:commandButton class="ui-button-warning mx-2"
+                                                 icon="fas fa-cogs"
+                                                 value="Process Bill"
+                                                 process="@this"
+                                                 update="dList tot settle saveProvisional @all printTempBill"
+                                                 action="#{bhtSummeryController.createTempBill()}" 
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Show an Intermediate Bill on Final Bill Edit',false)}" />
+                                <p:commandButton class="ui-button-info"
+                                                 icon="fas fa-print"
+                                                 value="Check Final Bill"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Print Button For Intermediate Bill on Final Bill Edit',false)}">
+                                    <p:printer target="printTempBill" />
+                                </p:commandButton>
+                                <p:commandButton value="Save Provisional Bill" 
+                                                 action="#{bhtSummeryController.saveProvisionalBill()}"
+                                                 id="saveProvisional"
                                                  ajax="false"
-                                                 class="ui-button-warning" icon="fas fa-cog"
-                                                 style="width: 150px; padding: 1px; margin: auto;" />
-                                <p:commandButton  value="Settle" action="#{bhtSummeryController.settle}" 
-                                                  id="settle"
-                                                  ajax="false"
-                                                  disabled="#{bhtSummeryController.changed}"
-                                                  class="ui-button-success"
-                                                  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
+                                                 disabled="#{bhtSummeryController.changed}"
+                                                 class="ui-button-warning mx-1"
+                                                 icon="fa fa-save"
+                                                 style="width: 200px; padding: 1px; margin: auto;"
+                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Save Provisional on Final Bill Edit',false)}">
 
-                                </p:commandButton>  
+                                </p:commandButton>
+                                <p:commandButton value="Settle" 
+                                                 action="#{bhtSummeryController.settle}"
+                                                 id="settle"
+                                                 ajax="false"
+                                                 disabled="#{bhtSummeryController.changed}"
+                                                 class="ui-button-success mx-1"
+                                                 icon="fa fa-check"
+                                                 style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+
+                                </p:commandButton>
                             </div>
                         </div>
-                    </f:facet>       
+                    </f:facet>
 
-                    <h:panelGrid columns="3">
-                        <h:panelGroup id="panSearch2">
-                            <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}"/>
-                        </h:panelGroup>  
-                        <h:panelGroup>
-                            <h:panelGroup id="crd" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
-                                <credit:outputCredit  patientEncounter="#{bhtSummeryController.patientEncounter}"/>
+                    <div class="row">
+                        <h:panelGrid columns="3" class="w-100 top-aligned-grid">
+                            <!-- First Column -->
+                            <h:panelGroup id="panSearch2" class="mx-1">
+                                <p:panel class="mx-1 top-aligned-panel">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Admission Details"/>
+                                    </f:facet>
+                                    <in:bhtDetail admission="#{bhtSummeryController.patientEncounter}"/>
+                                </p:panel>
+                                <p:panel class="my-2">
+                                    <f:facet name="header">
+                                        <p:outputLabel value="Admission Duration Details" />
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputText value="Date and Time of Admission" />
+                                        <p:outputLabel value=" :    " />
+                                        <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfAdmission}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                        </p:outputLabel>
+                                        <h:outputText value="Date and Time of Discharge" />
+                                        <p:outputLabel value=" :    " />
+                                        <p:outputLabel value="#{bhtSummeryController.patientEncounter.dateOfDischarge}">
+                                            <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                                        </p:outputLabel>
+                                        <p:outputLabel value="Duration" />
+                                        <p:outputLabel value=" :    " />
+                                        <h:outputText value="#{bhtSummeryController.duration}" rendered="#{not empty bhtSummeryController.duration}" style="font-size: 1.2em; font-weight: 600" />
+                                    </h:panelGrid>
+                                </p:panel>
                             </h:panelGroup>
-                            <p:panelGrid columns="2" id="tot" style="min-width: 100%;">
-                                <h:outputLabel  value="Total Charges" style="font-weight: bold"/>
-                                <h:outputLabel value="#{bhtSummeryController.grantTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Discount" style="font-weight: bold"/>
-                                <h:outputLabel  value="#{bhtSummeryController.discount}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Net Charges" style="font-weight: bold"/>
-                                <h:outputLabel  value="#{bhtSummeryController.grantTotal-bhtSummeryController.discount}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Paid By Patient" style="font-weight: bold"/>
-                                <h:outputLabel value="#{bhtSummeryController.paidByPatient}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Paid by Credit Company" style="font-weight: bold"/>
-                                <h:outputLabel value="#{bhtSummeryController.paidByCompany}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Paid " style="font-weight: bold"/>
-                                <h:outputLabel value="#{bhtSummeryController.paid}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Due " style="font-weight: bold"
-                                               rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
-                                                           and bhtSummeryController.due > 0 }"/>
-                                <h:outputLabel value="#{bhtSummeryController.due}"
-                                               rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' 
-                                                           and bhtSummeryController.due > 0 }">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Adjusted Total " style="font-weight: bold" />
-                                <h:outputLabel id="claim" value="#{bhtSummeryController.adjustedTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                                <h:outputLabel value="Different With Actual and Adjusted " style="font-weight: bold" />
-                                <h:outputLabel value="#{bhtSummeryController.grantTotal-bhtSummeryController.adjustedTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </p:panelGrid>      
-                        </h:panelGroup>
-                        <h:panelGrid columns="2">
-                            <h:outputLabel value="Printing Admission Time"/>
-                            <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" 
-                                        id="printingAdmissionTimeStamp"
-                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
-                            </p:calendar>     
-                            <h:outputLabel value="Printing Discharge Time"/>
-                            <p:calendar 
-                                value="#{bhtSummeryController.patientEncounter.printingDischargeTime}"
-                                id="printingDischargeTimeStamp"
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >                               
-                            </p:calendar>    
-                        </h:panelGrid>
-                    </h:panelGrid>
 
-                    <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true" scrollHeight="300">
-                        <p:column headerText="Inward Charge Type" >
-                            <h:outputLabel  value="#{c.inwardChargeType.label}"  />
+                            <!-- Second Column -->
+                            <h:panelGroup class="mx-1">
+                                <p:panel class="mx-1 top-aligned-panel">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Edit Basic Details"/>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Printing Admission Time" class="my-3"/>
+                                        <h:outputLabel value=" :    "/>
+                                        <p:calendar value="#{bhtSummeryController.patientEncounter.printingAdmissionTime}" id="printingAdmissionTimeStamp" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                        <h:outputLabel value="Printing Discharge Time" class="my-3"/>
+                                        <h:outputLabel value=" :    "/>
+                                        <p:calendar value="#{bhtSummeryController.patientEncounter.printingDischargeTime}" id="printingDischargeTimeStamp" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                    </h:panelGrid>
+                                </p:panel>
+                                <p:panel style="min-height: 100%" class="mx-1 my-3">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Discount Details"/>
+                                    </f:facet>
+                                    <h:panelGrid columns="3" class="w-100">
+                                        <h:outputLabel value="Discount Amount           "/>
+                                        <h:outputLabel value=" :     "/>
+                                        <p:inputText value="#{bhtSummeryController.discount}">
+                                            <p:ajax process="@this" update="@all" event="change" listener="#{bhtSummeryController.listnerDiscontAmmountChanged()}"/>
+                                        </p:inputText>
+                                    </h:panelGrid>
+                                </p:panel>
+                            </h:panelGroup>
+
+                            <!-- Third Column -->
+                            <h:panelGroup class="m-1">
+                                <p:panel class="m-1 top-aligned-panel" id="paymentOverview">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Charges Overview"/>
+                                    </f:facet>
+                                    <h:panelGroup id="crd" rendered="#{bhtSummeryController.patientEncounter.paymentMethod eq 'Credit'}">
+                                        <credit:outputCredit patientEncounter="#{bhtSummeryController.patientEncounter}"/>
+                                    </h:panelGroup>
+                                    <p:panelGrid columns="2" id="tot" style="min-width: 100%;">
+                                        <h:outputLabel value="Total Charges" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.grantTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Discount" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Net Charges" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.grantTotal-bhtSummeryController.discount}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paid By Patient" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.paidByPatient}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paid by Credit Company" style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.paidByCompany}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Paid " style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.paid}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Due " style="font-weight: bold" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }"/>
+                                        <h:outputLabel value="#{bhtSummeryController.due}" rendered="#{bhtSummeryController.patientEncounter.paymentMethod ne 'Credit' and bhtSummeryController.due > 0 }">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Adjusted Total " style="font-weight: bold"/>
+                                        <h:outputLabel id="claim" value="#{bhtSummeryController.adjustedTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                        <h:outputLabel value="Different With Actual and Adjusted " style="font-weight: bold"/>
+                                        <h:outputLabel value="#{bhtSummeryController.grantTotal-bhtSummeryController.adjustedTotal}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputLabel>
+                                    </p:panelGrid>
+                                </p:panel>
+                            </h:panelGroup>
+                        </h:panelGrid>
+                    </div>
+
+                    <p:dataTable id="dList" value="#{bhtSummeryController.chargeItemTotals}" var="c" scrollable="true"
+                                 scrollHeight="300" >
+                        <p:column headerText="Inward Charge Type" filterBy="#{c.inwardChargeType.name}" filterMatchMode="contains">
+                            <h:outputLabel value="#{c.inwardChargeType.name}"/>
                         </p:column>
-                        <p:column headerText="Total">
-                            <h:outputLabel value="#{c.total}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>                            
+                        <p:column headerText="Total" sortBy="#{c.total}">
+                            <h:outputLabel value="#{c.total}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
                         </p:column>
                         <p:column headerText="Discount">
-                            <p:inputText autocomplete="off" id="catDiscount" value="#{c.discount}"  disabled="#{c.inwardChargeType eq 'RoomCharges' 
+                            <p:inputText autocomplete="off" id="catDiscount" value="#{c.discount}" disabled="#{c.inwardChargeType eq 'RoomCharges'
                                                                                       or c.inwardChargeType eq 'MOCharges'
                                                                                       or c.inwardChargeType eq 'MaintainCharges'
                                                                                       or c.inwardChargeType eq 'NursingCharges'
@@ -124,21 +215,24 @@
                                                                                       or c.inwardChargeType eq 'AdministrationCharge'
                                                                                       or c.inwardChargeType eq 'ProfessionalCharge'
                                                                                       or c.inwardChargeType eq 'MedicalCare' 
-                                                                                      or c.total eq 0}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                                <p:ajax process="@this" update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}  "  event="blur"
+                                                                                      or c.total eq 0}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                                <p:ajax process="@this"
+                                        update="@this catNetTotal :#{p:resolveFirstComponentWithId('tot',view).clientId}  "
+                                        event="blur"
                                         listener="#{bhtSummeryController.changeDiscountListener(c)}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}"
+                                <p:ajax process="@this" event="keyup"
+                                        update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
                                         listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
                         <p:column headerText="NetTotal">
                             <h:outputLabel id="catNetTotal" value="#{c.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
+                                <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column >
-                            <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedTotal}" 
+                        <p:column>
+                            <p:inputText autocomplete="off" id="catAdj" value="#{c.adjustedTotal}"
                                          disabled="#{c.inwardChargeType eq 'RoomCharges' 
                                                      or c.inwardChargeType eq 'MOCharges'
                                                      or c.inwardChargeType eq 'MaintainCharges'
@@ -147,117 +241,132 @@
                                                      or c.inwardChargeType eq 'MedicalCareICU'
                                                      or c.inwardChargeType eq 'AdministrationCharge'
                                                      or c.inwardChargeType eq 'ProfessionalCharge'}">
-                                <f:convertNumber pattern="#,##0.00" />
-                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "  event="blur"
+                                <f:convertNumber pattern="#,##0.00"/>
+                                <p:ajax process="@this" update=":#{p:resolveFirstComponentWithId('tot',view).clientId} "
+                                        event="blur"
                                         listener="#{bhtSummeryController.updateTotal()}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:ajax process="@this" event="keyup"
+                                        update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                        listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
-                    </p:dataTable>  
+                    </p:dataTable>
 
                     <p:spacer height="100"/>
-
 
 
                     <p:tabView id="tabView">
 
                         <p:tab title="Room Name">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}" >                                  
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column>      
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
                                 <p:column headerText="Printing Room">
                                     <p:autoComplete forceSelection="true"
-                                                    value="#{b.printRoomFacilityCharge}" 
+                                                    value="#{b.printRoomFacilityCharge}"
                                                     completeMethod="#{roomFacilityChargeController.completeRoomChargeAll}"
-                                                    var="rf" itemLabel="#{rf.name}" itemValue="#{rf}" >
-                                        <p:ajax event="itemSelect" process="@this" listener="#{patientRoomController.edit(b)}"/>
-                                    </p:autoComplete>                                        
-                                </p:column>                                                                          
+                                                    var="rf" itemLabel="#{rf.name}" itemValue="#{rf}">
+                                        <p:ajax event="itemSelect" process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
+                                    </p:autoComplete>
+                                </p:column>
                                 <p:column headerText="AdmittedAt">
-                                    <p:calendar navigator="true"  
+                                    <p:calendar navigator="true"
                                                 id="printingRoomAdmittedTimeStamp"
-                                                value="#{b.printAdmittedAt}" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                        <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
+                                                value="#{b.printAdmittedAt}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        <p:ajax event="change" process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
                                 </p:column>
-                                <p:column headerText="DischargeAt" >                                      
-                                    <p:calendar navigator="true"  
+                                <p:column headerText="DischargeAt">
+                                    <p:calendar navigator="true"
                                                 id="printingRoomDischargeTimeStamp"
-                                                value="#{b.printDischargeAt}" 
-                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                        <p:ajax event="change" process="@this" listener="#{patientRoomController.edit(b)}"/>
+                                                value="#{b.printDischargeAt}"
+                                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                                        <p:ajax event="change" process="@this"
+                                                listener="#{patientRoomController.edit(b)}"/>
                                     </p:calendar>
 
-                                </p:column>                   
+                                </p:column>
                             </p:dataTable>
                         </p:tab>
 
                         <p:tab title="Room Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">   
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
 
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated" >                                      
-                                    <p:outputLabel value="#{b.calculatedRoomCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedRoomCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column  headerText="Discount">                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountRoomCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                           
-                                        <p:ajax event="blur" process="@this"  update="chargeNet" 
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountRoomCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this" update="chargeNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomRoomCharge(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="chargeNet" value="#{b.calculatedRoomCharge-b.discountRoomCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="chargeNet"
+                                                   value="#{b.calculatedRoomCharge-b.discountRoomCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted">                                      
-                                    <p:inputText autocomplete="off" id="chargeAdj" value="#{b.adjustedRoomCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                        
-                                        <p:ajax event="blur" process="@this" 
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="chargeAdj" value="#{b.adjustedRoomCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueRoomCharge(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
 
                         <p:tab title="Maintain Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">   
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated">                                      
-                                    <p:outputLabel value="#{b.calculatedMaintainCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedMaintainCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount" >
-                                    <p:inputText autocomplete="off" value="#{b.discountMaintainCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                        
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountMaintainCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                         <p:ajax event="blur" process="@this" update="mainNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMaintain(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="mainNet" value="#{b.calculatedMaintainCharge-b.discountMaintainCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="mainNet"
+                                                   value="#{b.calculatedMaintainCharge-b.discountMaintainCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted" >                                      
-                                    <p:inputText autocomplete="off" id="mainAdj" value="#{b.adjustedMaintainCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                           
-                                        <p:ajax event="blur" process="@this" 
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="mainAdj" value="#{b.adjustedMaintainCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueMaintain(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
 
@@ -265,35 +374,39 @@
                         </p:tab>
 
                         <p:tab title="MO Charge">
-                            <p:dataTable  var="b" value="#{bhtSummeryController.patientRooms}">                                  
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated" >                                      
-                                    <p:outputLabel value="#{b.calculatedMoCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedMoCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount" >                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountMoCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                          
-                                        <p:ajax event="blur" process="@this"  update="moNet"
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountMoCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this" update="moNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMo(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="moNet" value="#{b.calculatedMoCharge-b.discountMoCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="moNet" value="#{b.calculatedMoCharge-b.discountMoCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted" >                                      
-                                    <p:inputText autocomplete="off" id="moAdj" value="#{b.adjustedMoCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />        
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="moAdj" value="#{b.adjustedMoCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this" 
+                                        <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueMo(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -301,143 +414,166 @@
                         </p:tab>
 
                         <p:tab title="Nursing Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">   
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
 
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated">                                      
-                                    <p:outputLabel value="#{b.calculatedNursingCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedNursingCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount" >                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountNursingCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />     
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountNursingCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this"  update="nurNet" 
+                                        <p:ajax event="blur" process="@this" update="nurNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomNursing(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="nurNet" value="#{b.calculatedNursingCharge-b.discountNursingCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="nurNet"
+                                                   value="#{b.calculatedNursingCharge-b.discountNursingCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted">                                      
-                                    <p:inputText autocomplete="off" id="nurAdj" value="#{b.ajdustedNursingCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />    
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="nurAdj" value="#{b.ajdustedNursingCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
                                         <p:ajax event="blur" process="@this"
                                                 listener="#{bhtSummeryController.changeAdjustedValueNursing(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
 
                         <p:tab title="Administration Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">   
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
 
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated">                                      
-                                    <p:outputLabel value="#{b.calculatedAdministrationCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedAdministrationCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column  headerText="Discount" >                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountAdministrationCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />     
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountAdministrationCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this"  update="admNet" 
+                                        <p:ajax event="blur" process="@this" update="admNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomAdministration(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="admNet" value="#{b.calculatedAdministrationCharge-b.discountAdministrationCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="admNet"
+                                                   value="#{b.calculatedAdministrationCharge-b.discountAdministrationCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted">                                      
-                                    <p:inputText autocomplete="off" id="admAdj" value="#{b.ajdustedAdministrationCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />   
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="admAdj"
+                                                 value="#{b.ajdustedAdministrationCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this" listener="#{bhtSummeryController.changeAdjustedValueAdministration(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax event="blur" process="@this"
+                                                listener="#{bhtSummeryController.changeAdjustedValueAdministration(b)}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
 
                         <p:tab title="Madicare Care Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">                         
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated">                                      
-                                    <p:outputLabel value="#{b.calculatedMedicalCareCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedMedicalCareCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount" >                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountMedicalCareCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountMedicalCareCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this"  update="medNet" 
+                                        <p:ajax event="blur" process="@this" update="medNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomMedicalCare(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="medNet" value="#{b.calculatedMedicalCareCharge-b.discountMedicalCareCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="medNet"
+                                                   value="#{b.calculatedMedicalCareCharge-b.discountMedicalCareCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted">                                      
-                                    <p:inputText autocomplete="off" id="medAdj" value="#{b.ajdustedMedicalCareCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />   
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="medAdj" value="#{b.ajdustedMedicalCareCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueMedicalCare(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax event="blur" process="@this"
+                                                listener="#{bhtSummeryController.changeAdjustedValueMedicalCare(b)}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
                         </p:tab>
 
                         <p:tab title="Linen Charge">
-                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">   
+                            <p:dataTable var="b" value="#{bhtSummeryController.patientRooms}">
 
                                 <p:column headerText="Actual Room">
-                                    <h:outputLabel value="#{b.roomFacilityCharge.name}" />                                
-                                </p:column> 
-                                <p:column headerText="Calculated">                                      
-                                    <p:outputLabel value="#{b.calculatedLinenCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel value="#{b.roomFacilityCharge.name}"/>
+                                </p:column>
+                                <p:column headerText="Calculated">
+                                    <p:outputLabel value="#{b.calculatedLinenCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Discount" >                                      
-                                    <p:inputText autocomplete="off" value="#{b.discountLinenCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Discount">
+                                    <p:inputText autocomplete="off" value="#{b.discountLinenCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
 
-                                        <p:ajax event="blur" process="@this"  update="linNet"
+                                        <p:ajax event="blur" process="@this" update="linNet"
                                                 listener="#{bhtSummeryController.changeDiscountListenerPatientRoomLinen(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
-                                <p:column headerText="Net" >                                      
-                                    <p:outputLabel id="linNet" value="#{b.calculatedLinenCharge-b.discountLinenCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />
+                                <p:column headerText="Net">
+                                    <p:outputLabel id="linNet" value="#{b.calculatedLinenCharge-b.discountLinenCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
                                     </p:outputLabel>
                                 </p:column>
-                                <p:column headerText="Adjusted">                                      
-                                    <p:inputText autocomplete="off" id="linAdj" value="#{b.ajdustedLinenCharge}" >
-                                        <f:convertNumber pattern="#,##0.00" />                                             
-                                        <p:ajax event="blur" process="@this"  listener="#{bhtSummeryController.changeAdjustedValueLinen(b)}"/>
-                                        <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:column headerText="Adjusted">
+                                    <p:inputText autocomplete="off" id="linAdj" value="#{b.ajdustedLinenCharge}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                        <p:ajax event="blur" process="@this"
+                                                listener="#{bhtSummeryController.changeAdjustedValueLinen(b)}"/>
+                                        <p:ajax process="@this" event="keyup"
+                                                update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                                listener="#{bhtSummeryController.changeIsMade()}"/>
                                     </p:inputText>
                                 </p:column>
                             </p:dataTable>
@@ -458,126 +594,213 @@
                         </p:column>
                         <p:column headerText="Adjusted Value" style="text-align: right;">
                             <p:inputText autocomplete="off" value="#{pf.feeAdjusted}">
-                                <f:convertNumber pattern="#,##0.00"/>                               
-                                <p:ajax event="blur" process="@this" 
-                                        update=":#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"  
+                                <f:convertNumber pattern="#,##0.00"/>
+                                <p:ajax event="blur" process="@this"
+                                        update=":#{p:resolveFirstComponentWithId('dList',view).clientId} :#{p:resolveFirstComponentWithId('tot',view).clientId}"
                                         listener="#{bhtSummeryController.changeAdjustedProValue(pf)}"/>
-                                <p:ajax process="@this" event="keyup" update=":#{p:resolveFirstComponentWithId('settle',view).clientId}" listener="#{bhtSummeryController.changeIsMade()}"/>
+                                <p:ajax process="@this" event="keyup"
+                                        update=":#{p:resolveFirstComponentWithId('settle',view).clientId} :#{p:resolveFirstComponentWithId('saveProvisional',view).clientId}"
+                                        listener="#{bhtSummeryController.changeIsMade()}"/>
                             </p:inputText>
                         </p:column>
 
                     </p:dataTable>
+                    
+                    <h:panelGroup id="printTempBill">
+                        <bi:finalBill
+                            bill="#{bhtSummeryController.tempBill}"
+                                        hosCopy="true"/>
+                    </h:panelGroup>
 
                 </p:panel>
 
 
-
                 <p:panel rendered="#{bhtSummeryController.printPreview}">
+                    <p:panel>
+                        <f:facet name="header">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Final Bill" class="mt-2"/>
+                                </div>
+                                <div style="text-align: center!important;">
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <p:outputLabel value="CLAIMABLE"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:outputLabel value="CLAIMABLE"/>
+                                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:outputLabel value="Not Claimable"/>
+                                    </h:panelGroup>
+                                </div>
 
+                                <div>
+                                    <p:selectBooleanCheckbox value="#{bhtSummeryController.showOrginalBill}"
+                                                             label="Show Original Bill" itemLabel="Show Original Bill"
+                                                             class="mx-2">
+                                        <p:ajax process="@this" update="@all"/>
+                                    </p:selectBooleanCheckbox>
 
-                    <h:panelGrid columns="2">
-                        <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
-                            <h:panelGrid columns="1">
-                                <p:commandButton value="Print Patient Copy" ajax="false">
-                                    <p:printer target="claimablePatientCopy" ></p:printer>
-                                </p:commandButton>                               
-                                <p:commandButton value="Print Duplicate Copy" ajax="false" >
-                                    <p:printer target="claimableDuplicate" ></p:printer>
-                                </p:commandButton> 
-                                <p:commandButton value="Check Interim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" >
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
-                            <h:panelGrid columns="1">
-                                <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false">
-                                    <p:printer target="professionalAndFinaBill" ></p:printer>
-                                </p:commandButton> 
-                                <p:commandButton value="Check Interim " ajax="false" action="inward_bill_intrim" actionListener="#{bhtSummeryController.prepareNewBill()}"  styleClass="noPrintButton" >
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                        <!--                        <p:panel header="Not Claimable" >
-                                                    <h:panelGrid columns="1">
-                                                        <p:commandButton value="Patient Copy without Professional" ajax="false" >
-                                                            <p:printer target="notClaimablePatientCopy" ></p:printer>
-                                                        </p:commandButton>                              
-                                                        <p:commandButton value="Duplicate wihout Professional" ajax="false" >
-                                                            <p:printer target="notClaimableDuplicate" ></p:printer>
-                                                        </p:commandButton>  
-                                                        <p:commandButton value="Professional Fees" ajax="false" >
-                                                            <p:printer target="professional" ></p:printer>
-                                                        </p:commandButton>
-                                                    </h:panelGrid>
-                                                </p:panel>-->
-                        <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                            
-                            <h:panelGrid columns="1">
-                                <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false">
-                                    <p:printer target="finalBillGreenSheetWithoutProAndProfsional" ></p:printer>
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel header="CLAIMABLE" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                            
-                            <h:panelGrid columns="1">
-                                <p:commandButton ajax="false" value="Green Sheet Print" >
-                                    <p:printer target="finalBillGreenSheet" ></p:printer>
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                        <p:panel header="Not Claimable" rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
-                            <h:panelGrid columns="1">
-                                <p:commandButton ajax="false" value="Green Sheet Print Without Professional"  >
-                                    <p:printer target="finalBillGreenSheetWithoutPro" ></p:printer>
-                                </p:commandButton>
-                                <p:commandButton value="Professional Fees" ajax="false" >
-                                    <p:printer target="professional" ></p:printer>
-                                </p:commandButton>
-                            </h:panelGrid>
-                        </p:panel>
-                    </h:panelGrid>
+                                    <p:commandButton value="Final Bill" ajax="false"
+                                                     class="ui-button-info mx-1" icon="fas fa-print">
+                                        <p:printer target="finalBillOnly"/>
+                                    </p:commandButton>
 
-                    <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder" 
-                                  rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}"> 
-                        <bi:finalBill  bill="#{bhtSummeryController.current}" hosCopy="true" />
-                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}" hosCopy="true"  />
-                        <bi:finalBill_1 bill="#{bhtSummeryController.current}" hosCopy="true"/>
-                    </h:panelGroup>
-                    <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">                  
-                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="false"/>
-                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}" />
-                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:commandButton value="Print Patient Copy" class="ui-button-info mx-1"
+                                                         icon="fas fa-print" ajax="false">
+                                            <p:printer target="claimablePatientCopy"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Print Duplicate Copy" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="claimableDuplicate"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Check Interim " ajax="false" action="inward_bill_intrim"
+                                                         actionListener="#{bhtSummeryController.prepareNewBill()}"
+                                                         styleClass="noPrintButton" class="ui-button-info mx-1"
+                                                         icon="fas fa-print">
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
-                    <h:panelGroup id="claimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
-                        <bi:finalBill   bill="#{bhtSummeryController.current}" showProfessional="true"/>
-                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum ne 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <p:commandButton value="Final Bill &amp; Profesional Bill" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="professionalAndFinaBill"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Check Interim " ajax="false" action="inward_bill_intrim"
+                                                         actionListener="#{bhtSummeryController.prepareNewBill()}"
+                                                         styleClass="noPrintButton" class="ui-button-info mx-1"
+                                                         icon="fas fa-print">
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
-                    <h:panelGroup id="claimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                    
-                        <bi:finalBill duplicate="true"   showProfessional="true"                            
-                                      bill="#{bhtSummeryController.current}" />
-                    </h:panelGroup>
+                                    <!--                        <p:panel header="Not Claimable" >
+                                                                <h:panelGrid columns="1">
+                                                                    <p:commandButton value="Patient Copy without Professional" ajax="false" >
+                                                                        <p:printer target="notClaimablePatientCopy" ></p:printer>
+                                                                    </p:commandButton>
+                                                                    <p:commandButton value="Duplicate wihout Professional" ajax="false" >
+                                                                        <p:printer target="notClaimableDuplicate" ></p:printer>
+                                                                    </p:commandButton>
+                                                                    <p:commandButton value="Professional Fees" ajax="false" >
+                                                                        <p:printer target="professional" ></p:printer>
+                                                                    </p:commandButton>
+                                                                </h:panelGrid>
+                                                            </p:panel>-->
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                                        <p:commandButton value="Green Sheet Print &amp; Professional Fees" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="finalBillGreenSheetWithoutProAndProfsional"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
-                    <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
-                        <bi:finalBill  bill="#{bhtSummeryController.current}" />
-                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:commandButton ajax="false" value="Green Sheet Print"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="finalBillGreenSheet"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
-                    <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                
-                        <bi:finalBill duplicate="true" bill="#{bhtSummeryController.current}" />
-                    </h:panelGroup>
+                                    <h:panelGroup
+                                        rendered="#{bhtSummeryController.patientEncounter.admissionType.admissionTypeEnum eq 'DayCase' and sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                                        <p:commandButton ajax="false" value="Green Sheet Print Without Professional"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="finalBillGreenSheetWithoutPro"/>
+                                        </p:commandButton>
+                                        <p:commandButton value="Professional Fees" ajax="false"
+                                                         class="ui-button-info mx-1" icon="fas fa-print">
+                                            <p:printer target="professional"/>
+                                        </p:commandButton>
+                                    </h:panelGroup>
 
+                                </div>
+                            </div>
+                        </f:facet>
 
+                        <h:panelGroup id="professionalAndFinaBill" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                            <div style="page-break-before: always;">
+                                <h:panelGroup id="finalBillOnly">
+                                    <bi:finalBill
+                                        bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                        hosCopy="true"/>
+                                </h:panelGroup>
+                            </div>
 
-                    <h:panelGroup id="professional" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">       
-                        <bi:finalProfessionalBill bill="#{bhtSummeryController.current}"  />
-                    </h:panelGroup>
+                            <div style="page-break-before: always;">
+                                <bi:finalProfessionalBill
+                                    bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                    hosCopy="true"/>
+                            </div>
 
-                    <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
-                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" showProfessional="true"/>
-                    </h:panelGroup>
+                            <div style="page-break-before: always;">
+                                <bi:finalBill_1
+                                    bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill : bhtSummeryController.current}"
+                                    hosCopy="true"/>
+                            </div>
+                        </h:panelGroup>
 
-                    <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder" rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">                  
-                        <bi:finalBillGreenSheet  bill="#{bhtSummeryController.current}" />
-                    </h:panelGroup>
+                        <h:panelGroup id="finalBillGreenSheetWithoutProAndProfsional" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution eq 'Ruhuna'}">
+                            <bi:finalBillGreenSheet
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"
+                                showProfessional="false"/>
+                            <bi:finalProfessionalBill
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
 
+                        <h:panelGroup id="claimablePatientCopy" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBill
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"
+                                showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="claimableDuplicate" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBill duplicate="true" showProfessional="true"
+                                          bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="notClaimablePatientCopy" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBill
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="notClaimableDuplicate" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBill duplicate="true"
+                                          bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="professional" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalProfessionalBill
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="finalBillGreenSheet" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBillGreenSheet
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"
+                                showProfessional="true"/>
+                        </h:panelGroup>
+
+                        <h:panelGroup id="finalBillGreenSheetWithoutPro" styleClass="noBorder"
+                                      rendered="#{sessionController.userPreference.applicationInstitution ne 'Ruhuna'}">
+                            <bi:finalBillGreenSheet
+                                bill="#{bhtSummeryController.showOrginalBill ? bhtSummeryController.current.referenceBill :bhtSummeryController.current}"/>
+                        </h:panelGroup>
+
+                    </p:panel>
                 </p:panel>
             </h:form>
 

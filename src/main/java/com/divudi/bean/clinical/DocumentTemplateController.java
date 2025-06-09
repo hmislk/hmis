@@ -2,11 +2,11 @@ package com.divudi.bean.clinical;
 
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.clinical.DocumentTemplateType;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.clinical.DocumentTemplate;
-import com.divudi.facade.DocumentTemplateFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.clinical.DocumentTemplateType;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.clinical.DocumentTemplate;
+import com.divudi.core.facade.DocumentTemplateFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;

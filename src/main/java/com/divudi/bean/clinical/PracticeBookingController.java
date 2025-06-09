@@ -8,44 +8,43 @@ import com.divudi.bean.channel.ChannelBillController;
 import com.divudi.bean.channel.ChannelReportController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.common.BillController;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.PatientController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.bean.pharmacy.PharmacySaleController;
-import com.divudi.data.BillType;
-import com.divudi.data.inward.PatientEncounterType;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.inward.PatientEncounterType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.ServiceSessionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Doctor;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.Person;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DoctorFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionNumberGeneratorFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Doctor;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Person;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DoctorFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
 import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -92,8 +91,6 @@ public class PracticeBookingController implements Serializable {
     private ChannelSearchController channelSearchController;
     @Inject
     private PatientController patientController;
-    @Inject
-    CommonController commonController; 
     @Inject
     private OpdBillController opdBillController;
     ///////////////////
@@ -320,6 +317,7 @@ public class PracticeBookingController implements Serializable {
         getPharmacySaleController().setPatient(opdVisit.getPatient());
         getPharmacySaleController().setOpdEncounterComments(opdVisit.getComments());
         getPharmacySaleController().setFromOpdEncounter(true);
+        getPharmacySaleController().setBillSettlingStarted(false);
         getPatientEncounterController().fillEncounterMedicines(opdVisit);
         for(ClinicalFindingValue cli :patientEncounterController.getEncounterMedicines()){
         }
@@ -582,7 +580,7 @@ public class PracticeBookingController implements Serializable {
         lst = getServiceSessionFacade().findByJpql(jpql, m);
         return lst;
     }
-    
+
     public void listCompleteAndToCompleteBillSessions() {
         Date startTime = new Date();
         Date fromDate = null;
@@ -590,15 +588,15 @@ public class PracticeBookingController implements Serializable {
 
         listCompletedBillSessions();
         listToCompleteBillSessions();
-        
-        
+
+
     }
 
     List<PatientEncounter> encounters;
 
     public void listPatientEncounters() {
         Date startTime = new Date();
-        
+
         String sql = "Select pe From PatientEncounter pe "
                 + " where pe.retired=false "
                 + " and pe.patientEncounterType=:t "
@@ -611,8 +609,8 @@ public class PracticeBookingController implements Serializable {
         PatientEncounter pe = new PatientEncounter();
 //        pe.getBillSession().getSessionDate();
         encounters = patientEncounterFacade.findByJpql(sql, hh, TemporalType.DATE);
-        
-        
+
+
     }
 
     public List<PatientEncounter> getEncounters() {
@@ -698,7 +696,7 @@ public class PracticeBookingController implements Serializable {
         }
         return selectedServiceSession;
     }
-    
+
     public void addToQueue() {
         if (getPatientController().getCurrent() == null || getPatientController().getCurrent().getId() == null) {
             JsfUtil.addErrorMessage("Please select a patient");
@@ -717,7 +715,7 @@ public class PracticeBookingController implements Serializable {
         listBillSessions();
         JsfUtil.addSuccessMessage("Added to the queue");
     }
-    
+
     private BillItem addToBilledItem(Bill b) {
         BillItem bi = new BillItem();
         bi.setCreatedAt(new Date());
@@ -962,14 +960,6 @@ public class PracticeBookingController implements Serializable {
 
     public void setPharmacySaleController(PharmacySaleController pharmacySaleController) {
         this.pharmacySaleController = pharmacySaleController;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public OpdBillController getOpdBillController() {

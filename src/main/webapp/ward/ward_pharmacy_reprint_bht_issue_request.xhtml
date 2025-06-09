@@ -23,15 +23,16 @@
                         class="ui-button-warning mx-1"
                         style="float: right;"
                         icon="fas fa-pen"
-                        value="Edit Request" 
+                        value="Edit Request"
+                        disabled="#{not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
                         action="#{pharmacyBillSearch.editInwardPharmacyRequestBill()}"
                         ajax="false">
                     </p:commandButton>
-                  
+
                     <p:commandButton 
                         class="ui-button-danger mx-1"
                         style="float: right;"
-                        disabled="#{not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                        disabled="#{not webUserController.hasPrivilege('InwardPharmacyIssueRequestCancel') or (not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded)}"
                         icon="fas fa-cancel"
                         value="Cancel Request" 
                         onclick="PF('confirmationDialog').show();"
@@ -54,10 +55,10 @@
                             <p:commandButton 
                                 value="No"
                                 onclick="PF('confirmationDialog').hide();" />
-                         </f:facet>
+                        </f:facet>
                     </p:dialog>
 
-                   
+
 
                 </f:facet>
                 <p:panel>
@@ -85,13 +86,13 @@
                                     <p:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
                                     <p:outputLabel value="Net Total" ></p:outputLabel>
                                     <p:outputLabel value=":" ></p:outputLabel>
-                                    <p:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00" /></p:outputLabel>
+                                    <p:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></p:outputLabel>
                                 </h:panelGrid>
                             </p:panel>
                         </div>
                         <div class="col-8">
                             <p:panel header="Bill" style="height: 100%">
-                                 <div class="d-flex justify-content-end gap-2" >
+                                <div class="d-flex justify-content-end gap-2" >
                                     <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
                                     <p:selectOneMenu value="#{sessionController.departmentPreference.inwardServiceBillPaperType}" class="" style="width: 13em;">
                                         <f:selectItem itemLabel="Please Select Paper Type" />
@@ -146,6 +147,12 @@
                                 </p:outputLabel>
                             </p:column>
                         </p:dataTable>
+                    </p:panel>
+                    <p:panel class="w-100 my-2">
+                        <f:facet name="header">
+                            <h:outputLabel value="Comment" />
+                        </f:facet>
+                        <p:inputText value="#{pharmacyBillSearch.bill.comments}" class="w-70" styleClass="w-70" size="100" />
                     </p:panel>
                 </p:panel>
             </p:panel>

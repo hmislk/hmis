@@ -11,7 +11,7 @@
         <h:form>
             <p:panel>
 
-                <p:panel header="Item Report">   
+                <p:panel header="Item Report">
 
                     <h:panelGrid columns="4" class="my-2">
 
@@ -30,31 +30,31 @@
                                 <f:ajax event="dateSelect"   render="tbl" execute="@this fromDate" listener="#{mdInwardReportController.makeBillNull}"/>
                             </p:calendar>
                             <h:outputLabel value="Institute"/>
-                            <p:autoComplete id="ins" 
+                            <p:autoComplete id="ins"
                                             class="mx-4"
                                             value="#{mdInwardReportController.institution}"
                                             completeMethod="#{institutionController.completeIns}"
-                                            var="ix" 
-                                            itemLabel="#{ix.name}" 
+                                            var="ix"
+                                            itemLabel="#{ix.name}"
                                             itemValue="#{ix}">
                                 <p:column>
                                     #{ix.name}
                                 </p:column>
                             </p:autoComplete>
                             <h:outputLabel value="Department"/>
-                            <p:autoComplete 
+                            <p:autoComplete
                                 class="mx-4"
-                                id="dept" 
-                                completeMethod="#{departmentController.completeDept}" 
-                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                forceSelection="true" 
+                                id="dept"
+                                completeMethod="#{departmentController.completeDept}"
+                                var="dept" itemLabel="#{dept.name}" itemValue="#{dept}"
+                                forceSelection="true"
                                 value="#{mdInwardReportController.dept}"  >
                             </p:autoComplete>
                             <h:outputLabel value="Category"/>
-                            <p:autoComplete value="#{mdInwardReportController.category}" id="ct" 
+                            <p:autoComplete value="#{mdInwardReportController.category}" id="ct"
                                             forceSelection="true"
                                             completeMethod="#{categoryController.completeCategoryService}"
-                                            var="cat" itemLabel="#{cat.name}" 
+                                            var="cat" itemLabel="#{cat.name}"
                                             itemValue="#{cat}"
                                             class="mx-4">
                                 <p:column headerText="Category">
@@ -62,18 +62,18 @@
                                 </p:column>
                                 <p:column headerText="Parent Category">
                                     <h:outputLabel value="#{cat.parentCategory.name}"/>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="TYPE">
-                                    <h:outputLabel value="Parent Category" 
-                                                   rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceCategory'}"/>
-                                    <h:outputLabel value="Child Category" 
-                                                   rendered="#{cat.categoryClass eq 'class com.divudi.entity.ServiceSubCategory'}"/>
+                                    <h:outputLabel value="Parent Category"
+                                                   rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceCategory'}"/>
+                                    <h:outputLabel value="Child Category"
+                                                   rendered="#{cat.categoryClass eq 'class com.divudi.core.entity.ServiceSubCategory'}"/>
 
-                                </p:column> 
+                                </p:column>
 
                             </p:autoComplete>
                             <h:outputLabel value="Item"/>
-                            <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true" 
+                            <p:autoComplete  widgetVar="aIx" id="acIx" forceSelection="true"
                                              value="#{mdInwardReportController.item}"
                                              completeMethod="#{itemController.completeAllServicesAndInvestigationsCategory}"
                                              var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" class="mx-4"
@@ -83,48 +83,48 @@
                                 </p:column>
                                 <p:column>
                                     <h:outputLabel value="#{ix.department.name}"/>
-                                </p:column>  
+                                </p:column>
                                 <p:column>
-                                    <h:outputLabel value="#{ix.total}" 
+                                    <h:outputLabel value="#{ix.total}"
                                                    rendered="#{ix.chargesVisibleForInward or (webUserController.hasPrivilege('ShowInwardFee'))}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </p:column>  
+                                </p:column>
                                 <p:ajax event="itemSelect" process="acIx ct" update="@all" />
                                 <p:ajax event="focus" process="ct"/>
                             </p:autoComplete>
-                            
+
                         </h:panelGrid>
-                    </h:panelGrid>              
+                    </h:panelGrid>
                     <h:panelGrid columns="12" class="my-4" >
                         <p:commandButton ajax="false"
-                                         value="Process by Bill Created Date" 
+                                         value="Process by Bill Created Date"
                                          action="#{mdInwardReportController.createItemWithFeeWithBillByBillDate}"
                                          icon="fas fa-cogs"
                                          class="w-100 ui-button-warning "
                                          />
-                        <p:commandButton ajax="false" 
-                                         value="Process by Discharge Date" 
+                        <p:commandButton ajax="false"
+                                         value="Process by Discharge Date"
                                          icon="fas fa-cogs"
-                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByDischargeDate}"
                                          class="w-100 my-2 ui-button-warning"    />
-                        
-                        <p:commandButton ajax="false" 
-                                         value="Process by Added Date" 
+
+                        <p:commandButton ajax="false"
+                                         value="Process by Added Date"
                                          icon="fas fa-cogs"
                                          class="ui-button-warning w-100"
-                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}" 
+                                         action="#{mdInwardReportController.createItemWithFeeWithBillByAddedDate}"
                                          />
-                        
-                        <p:commandButton ajax="false" 
-                                         value="Print" 
+
+                        <p:commandButton ajax="false"
+                                         value="Print"
                                          icon="fas fa-print"
                                          class="w-100 my-2 ui-button-info"   >
                             <p:printer target="reportPrint"/>
                         </p:commandButton>
-                    </h:panelGrid>  
+                    </h:panelGrid>
 
-                </p:panel>   
+                </p:panel>
 
                 <p:panel id="reportPrint" styleClass="noBorder summeryBorder" >
                     <p:dataTable id="tbl" value="#{mdInwardReportController.billWithBillFeeses}" var="bwf">
@@ -142,19 +142,19 @@
                         </f:facet>
                         <p:columnGroup type="header">
                             <p:row>
-                                <p:column headerText="BHT No">                                    
+                                <p:column headerText="BHT No">
                                 </p:column>
-                                <p:column headerText="Department">                                    
+                                <p:column headerText="Department">
                                 </p:column>
-                                <p:column headerText="Bill Time">                                    
+                                <p:column headerText="Bill Time">
                                 </p:column>
-                                <p:column headerText="Categoy">                                    
+                                <p:column headerText="Categoy">
                                 </p:column>
-                                <p:column headerText="Name">                                    
+                                <p:column headerText="Name">
                                 </p:column>
-                                <p:column headerText="Comment">                                    
+                                <p:column headerText="Comment">
                                 </p:column>
-                                <p:column headerText="Hospital Fee">                                    
+                                <p:column headerText="Hospital Fee">
                                 </p:column>
                             </p:row>
                         </p:columnGroup>
@@ -174,7 +174,7 @@
                                     <p:outputLabel value="Department" />
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.item.department.name}"/>
-                            </p:column>    
+                            </p:column>
                             <p:column headerText="Bill Time" >
                                 <f:facet name="header">
                                     <p:outputLabel value="Bill Time" />
@@ -182,13 +182,13 @@
                                 <h:outputLabel value="#{i.billItem.billTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                 </h:outputLabel>
-                            </p:column>   
+                            </p:column>
                             <p:column headerText="Categoy" >
                                 <f:facet name="header">
                                     <p:outputLabel value="Categoy" />
                                 </f:facet>
                                 <h:outputLabel value="#{i.billItem.item.category.name}"/>
-                            </p:column>   
+                            </p:column>
                             <p:column headerText="Name" >
                                 <f:facet name="header">
                                     <p:outputLabel value="Name" />

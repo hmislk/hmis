@@ -7,7 +7,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="billController"  />
         <cc:attribute name="dup" type="java.lang.Boolean" />
     </cc:interface>
@@ -21,11 +21,11 @@
 
                     <h:outputStylesheet name="printing.css" library="css" />
                     <div class="d-flex justify-content-end">
-                        <p:commandButton 
-                            style="width: 100px" 
-                            value="Print" 
-                            ajax="false" 
-                            action="#"  
+                        <p:commandButton
+                            style="width: 100px"
+                            value="Print"
+                            ajax="false"
+                            action="#"
                             class="ui-button-info mb-2"
                             icon="fa fa-print">
                             <p:printer target="gpBillPreview" ></p:printer>
@@ -41,7 +41,7 @@
 
                             <div style="position: absolute!important;left: 45%!important; font-weight: bold!important;
                                  top: 0%!important;font-size: 15px!important; text-decoration: underline!important;">
-                                <h:outputLabel value="Receipt"   />                           
+                                <h:outputLabel value="Receipt"   />
                             </div>
 
                             <div style="position: absolute;
@@ -59,12 +59,12 @@
                             <div style="position: absolute;
                                  left: 25%!important;
                                  top: 7%!important;
-                                 font-size: 12px!important;">                                                 
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"  
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/> 
-                                <h:outputLabel value="#{cc.attrs.bill.deptId}" 
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>  
-                                <h:outputLabel value="  **Duplicate" 
+                                 font-size: 12px!important;">
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.deptId} **Cancelled"
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"/>
+                                <h:outputLabel value="#{cc.attrs.bill.deptId}"
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId eq null}"/>
+                                <h:outputLabel value="  **Duplicate"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId eq null and cc.attrs.dup eq true }" />
                             </div>
 
@@ -83,11 +83,11 @@
                             <div style="position: absolute;
                                  left: 84%!important;
                                  top: 7%!important;
-                                 font-size: 12px!important;" >                  
+                                 font-size: 12px!important;" >
                                 <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billDate}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}"  >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                </h:outputLabel>                      
+                                </h:outputLabel>
                                 <h:outputLabel value="#{cc.attrs.bill.billDate}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
@@ -109,10 +109,10 @@
                             <div style="position: absolute;
                                  left: 25%;
                                  top: 11%;
-                                 font-size:12px!important;" >                    
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" 
-                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />                        
-                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" 
+                                 font-size:12px!important;" >
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}"
+                                               rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}" />
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }"/>
                             </div>
 
@@ -131,12 +131,12 @@
                             <div style="position: absolute;
                                  left: 84%;
                                  top: 11%;
-                                 font-size:12px!important;" >                                                 
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"  
+                                 font-size:12px!important;" >
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.billTime}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId ne null}">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
-                                </h:outputLabel>                        
-                                <h:outputLabel value="#{cc.attrs.bill.billTime}" 
+                                </h:outputLabel>
+                                <h:outputLabel value="#{cc.attrs.bill.billTime}"
                                                rendered="#{cc.attrs.bill.cancelledBill.deptId eq null }">
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortTimeFormat}" />
                                 </h:outputLabel>
@@ -157,7 +157,7 @@
                             <div style="position: absolute;
                                  left: 25%;
                                  top: 15%;
-                                 font-size:15px!important;" >                    
+                                 font-size:15px!important;" >
                                 <p:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" />
                             </div>
 
@@ -187,15 +187,15 @@
                                  position: absolute;
                                  left: 10%;
                                  top: 25%;" >
-                                <h:dataTable value="#{cc.attrs.bill.billItems}" var="b" >                                               
-                                    <p:column >                                                     
+                                <h:dataTable value="#{cc.attrs.bill.billItems}" var="b" >
+                                    <p:column >
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.patientEncounter.bhtNo} - " rendered="#{b.patientEncounter ne null}"/>
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.referenceBill.deptId}" rendered="#{b.patientEncounter eq null}"/>
                                     </p:column>
                                     <p:column headerText="Patient Name">
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.referenceBill.patient.person.name}" rendered="#{b.patientEncounter eq null}"/>
                                         <p:outputLabel style="font-size: 10px!important" value="#{b.patientEncounter.patient.person.name}" rendered="#{b.patientEncounter ne null}"/>
-                                    </p:column>                                              
+                                    </p:column>
                                 </h:dataTable>
                                 <p:spacer height="5px;"></p:spacer>
                                 <table style="min-width:100%;">

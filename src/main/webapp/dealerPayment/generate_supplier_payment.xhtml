@@ -78,10 +78,12 @@
 
                             <p:outputLabel value="Description"/>
                             <p:inputTextarea
+                                required="false"
+                                requiredMessage="Need a comment"
                                 class="w-100"
                                 style="min-width: 20em;"
                                 rows="5"
-                                value="#{supplierPaymentController.current.comments}"/>                                                         
+                                value="#{supplierPaymentController.current.paymentGenerationComments}"/>                                                         
 
 
 
@@ -118,7 +120,7 @@
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="GRN Return Amount" class="text-end">
-                                <p:outputLabel value="#{b.referenceBill.tmpReturnTotal}">
+                                <p:outputLabel value="#{b.referenceBill.refundAmount}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </p:outputLabel>
                             </p:column>
@@ -151,9 +153,10 @@
                                 <p:commandButton 
                                     value="View" 
                                     icon="pi pi-eye"
+                                    immediate="true"
                                     style="width: 6em;"
                                     class="ui-button-primary mx-1"
-                                    action="#{supplierPaymentController.navigateToViewProcurementBill(b)}" 
+                                    action="#{supplierPaymentController.navigateToViewProcurementBill(b.referenceBill)}" 
                                     ajax="false" >
                                 </p:commandButton>
                                 <p:commandButton 
@@ -161,7 +164,7 @@
                                     class="ui-button-danger mx-1"
                                     icon="pi pi-trash"
                                     style="width: 7em;"
-                                    action="#{supplierPaymentController.remove(b)}" 
+                                    action="#{supplierPaymentController.removeselected(b)}" 
                                     value="Remove">
                                 </p:commandButton>
 

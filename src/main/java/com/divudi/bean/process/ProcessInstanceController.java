@@ -1,11 +1,10 @@
 package com.divudi.bean.process;
 
-import com.divudi.entity.process.ProcessInstance;
-import com.divudi.facade.ProcessInstanceFacade;
+import com.divudi.core.entity.process.ProcessInstance;
+import com.divudi.core.facade.ProcessInstanceFacade;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
-import java.util.HashMap;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.faces.application.FacesMessage;

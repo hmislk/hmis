@@ -94,14 +94,21 @@
 
                                     <p:column width="18em" class="text-center" headerText="Actions" >
                                         <p:commandButton
-                                            value="To Approve Payment" 
+                                            value="To Check" 
+                                            disabled="#{b.completed}"
+                                            action="#{supplierPaymentController.navigateToCheckSupplierPayment(b)}" 
+                                            ajax="false"
+                                            class="ui-button-info mx-1"
+                                            icon="pi pi-search">
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            value="To Approve" 
+                                            disabled="#{not b.completed}"
                                             action="#{supplierPaymentController.navigateToApproveSupplierPayment(b)}" 
                                             ajax="false"
-                                            style="width:16em;"
-                                            class="ui-button-warning"
-                                            icon="pi pi-thumbs-up">
+                                            class="ui-button-success mx-1"
+                                            icon="pi pi-check">
                                         </p:commandButton>
-
                                     </p:column>
                                 </p:dataTable>
 

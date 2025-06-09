@@ -1,0 +1,53 @@
+name: Restart Individual Servers
+
+on:
+  workflow_dispatch:
+    inputs:
+      selectedAction:
+        description: 'Action'
+        required: true
+        type: choice
+        options:
+          - Reload NGINX
+          - Restart Payara Service
+          - Restart VM
+      selectedServer:
+        description: 'Select Server'
+        required: true
+        type: choice
+        options:
+          - Development(4.240.39.63)
+          - QA(4.240.43.211)
+          - Shared01(52.172.158.159)
+          - Shared02(20.204.129.229)
+          - D01(4.213.180.217)
+
+jobs:
+  run_script_remote_server:
+    name: Run Script on Remote Server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Map Selected Action
+        id: action_map
+        run: |
+          if [[ "${{ inputs.selectedAction }}" == "Reload NGINX" ]]; then
+            echo "SELECTED_ACTION=NGINX" >> $GITHUB_ENV
+          elif [[ "${{ inputs.selectedAction }}" == "Restart VM" ]]; then
+            echo "SELECTED_ACTION=VM" >> $GITHUB_ENV
+          elif [[ "${{ inputs.selectedAction }}" == "Restart Payara Service" ]]; then
+            echo "SELECTED_ACTION=PAYARA" >> $GITHUB_ENV
+          fi
+
+      - name: Run Script Remote Server
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          SELECTED_SERVER: ${{ inputs.selectedServer }}
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            /home/azureuser/utils/server_utils/restart_individual_servers.sh \"$SELECTED_ACTION\" \"$SELECTED_SERVER\"
+          "
+          rm private_key.pem

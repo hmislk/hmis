@@ -1,81 +1,96 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
-    <!-- INTERFACE -->
-    <cc:interface>
-        <cc:attribute name="patientEncounter" />
-    </cc:interface>
+<!-- INTERFACE -->
+<cc:interface>
+    <cc:attribute name="patientEncounter"/>
+</cc:interface>
 
-    <!-- IMPLEMENTATION -->
-    <cc:implementation>
-        <div class="row my-2">
-            <div class="col-6">
-                <h:panelGroup id="gpDetails">
-                    <h:panelGrid columns="1" >
-                        <h:outputLabel value="Company Name  " style="min-width: 100px;"  />  
-                        <p:autoComplete class="w-100" inputStyleClass="w-100" id="acCreditCompany" forceSelection="true" style="text-align: right;"
-                                        value="#{admissionController.encounterCreditCompany.institution}"  
-                                        completeMethod="#{creditCompanyController.completeCredit}" 
-                                        var="ix" itemLabel="#{ix.name}" 
-                                        itemValue="#{ix}" size="30" >  
-                            <f:ajax event="itemSelect" execute="@this" render=":#{p:resolveFirstComponentWithId('panelCompanyDesc',view).clientId}" ></f:ajax>
-                        </p:autoComplete>
-                        <h:outputLabel value="Credit Limit  " style="min-width: 100px;" />
-                        <p:inputText class="w-100" id="creditLimit" autocomplete="off" value="#{admissionController.encounterCreditCompany.creditLimit}" />
-                        <h:outputLabel value="Description "  rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" />                            
-                        <h:outputText class="w-100" id="panelCompanyDesc"  
-                                      rendered="#{cc.attrs.patientEncounter.creditCompany ne null}" 
-                                      value="#{admissionController.encounterCreditCompany.institution.descreption}" />
-                        <h:outputLabel value="Ploicy Number  " style="min-width: 100px;" />
-                        <p:inputText class="w-100" id="pno" autocomplete="off" value="#{admissionController.encounterCreditCompany.policyNo}" />
-                        <h:outputLabel value="Referance Number  " style="min-width: 100px;" />
-                        <p:inputText class="w-100" id="rno" autocomplete="off" value="#{admissionController.encounterCreditCompany.referanceNo}" />
-
-                                                                                                                        <p:commandButton 
+<!-- IMPLEMENTATION -->
+<cc:implementation>
+    <div class="row my-2">
+        <div class="col-6">
+            <h:panelGroup id="gpDetails">
+                <h:panelGrid columns="1">
+                    <h:outputLabel value="Company Name  " style="min-width: 100px;"/>
+                    <p:autoComplete class="w-100" inputStyleClass="w-100" id="acCreditCompany" forceSelection="true"
+                                    style="text-align: right;"
+                                    value="#{admissionController.encounterCreditCompany.institution}"
+                                    completeMethod="#{creditCompanyController.completeCredit}"
+                                    var="ix" itemLabel="#{ix.name}"
+                                    itemValue="#{ix}" size="30">
+                        <f:ajax event="itemSelect" execute="@this"
+                                render=":#{p:resolveFirstComponentWithId('panelCompanyDesc',view).clientId}"/>
+                    </p:autoComplete>
+                    <h:outputLabel value="Credit Limit  " style="min-width: 100px;"/>
+                    <p:inputText class="w-100" id="creditLimit" autocomplete="off"
+                                 value="#{admissionController.encounterCreditCompany.creditLimit}">
+                    </p:inputText>
+                    <p:message for="creditLimit" style="color: red;" />
+                    <h:outputLabel value="Description " rendered="#{cc.attrs.patientEncounter.creditCompany ne null}"/>
+                    <h:outputText class="w-100" id="panelCompanyDesc"
+                                  rendered="#{cc.attrs.patientEncounter.creditCompany ne null}"
+                                  value="#{admissionController.encounterCreditCompany.institution.descreption}"/>
+                    <h:outputLabel value="Ploicy Number  " style="min-width: 100px;"/>
+                    <p:inputText class="w-100" id="pno" autocomplete="off"
+                                 value="#{admissionController.encounterCreditCompany.policyNo}"/>
+                    <h:outputLabel value="Referance Number  " style="min-width: 100px;"/>
+                    <p:inputText class="w-100" id="rno" autocomplete="off"
+                                 value="#{admissionController.encounterCreditCompany.referanceNo}"/>
+                    <p:growl id="growl" showDetail="true" />
+                    <p:commandButton
                             id="btnAdd"
                             process="btnAdd gpDetails"
                             update="tblCom gpDetails"
-                            value="Add Credit Company" 
+                            value="Add Credit Company"
                             class="w-100 ui-button-success"
                             action="#{admissionController.addCreditCompnay}"
-                            ></p:commandButton>
-                    </h:panelGrid>
-                </h:panelGroup>
-            </div>
-            <div class="col-6">
-                <p:dataTable id="tblCom" value="#{admissionController.encounterCreditCompanies}" var="ecc" rowIndexVar="index" >
-                    <f:facet name="header">
-                        <h:outputText value="Companies" />
-                    </f:facet>
-                    <p:column style="font-weight:bolder;" >
-                        <h:outputText value="#{index + 1}" ></h:outputText>
-                    </p:column>
-                    <p:column style="font-weight:bolder;" >
-                        <h:outputText value="#{ecc.institution.name}" ></h:outputText>
-                    </p:column>
-                    <p:column style="font-weight:bolder;" >
-                        <h:outputText value="#{ecc.creditLimit}" ></h:outputText>
-                    </p:column>                    
-                    <p:column style="text-align: right;font-weight: bolder" >
-                       
-                        <p:commandButton
+                    />
+                </h:panelGrid>
+            </h:panelGroup>
+        </div>
+        <div class="col-6">
+            <p:dataTable id="tblCom" value="#{admissionController.encounterCreditCompanies}" var="ecc"
+                         rowIndexVar="index">
+                <f:facet name="header">
+                    <h:outputText value="Companies"/>
+                </f:facet>
+                <p:column style="font-weight:bolder;">
+                    <h:outputText value="#{index + 1}" />
+                </p:column>
+                <p:column style="font-weight:bolder;">
+                    <h:outputText value="#{ecc.institution.name}" />
+                </p:column>
+                <p:column style="font-weight:bolder;" headerText="Credit Limit">
+                    <p:inputText value="#{ecc.creditLimit}" />
+                </p:column>
+                <p:column style="font-weight:bolder;" headerText="Policy No">
+                    <p:inputText value="#{ecc.policyNo}" />
+                </p:column>
+                <p:column style="font-weight:bolder;" headerText="Reference No">
+                    <p:inputText value="#{ecc.referanceNo}" />
+                </p:column>
+                <p:column style="text-align: right;font-weight: bolder">
+
+                    <p:commandButton
                             id="btnRemove"
                             process="btnRemove"
                             update="tblCom"
-                             icon="pi pi-times" 
-                            styleClass="rounded-button ui-button-danger" 
+                            icon="pi pi-times"
+                            styleClass="rounded-button ui-button-danger"
                             action="#{admissionController.removeCreditCompany(ecc)}"
-                            >
-                        </p:commandButton>
-                    </p:column>
-                </p:dataTable>
-            </div>
+                    >
+                    </p:commandButton>
+                </p:column>
+            </p:dataTable>
         </div>
+    </div>
 
-    </cc:implementation>
+</cc:implementation>
 </html>

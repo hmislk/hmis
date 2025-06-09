@@ -5,39 +5,47 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.PharmacyStockRow;
-import com.divudi.data.dataStructure.StockReportRecord;
-import com.divudi.data.hr.ReportKeyWord;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.CancelledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.Staff;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.Vmp;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
+import com.divudi.bean.report.CommonReport;
+import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.PharmacyStockRow;
+import com.divudi.core.data.dataStructure.StockReportRecord;
+import com.divudi.core.data.hr.ReportKeyWord;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.RefundBill;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -79,10 +87,47 @@ public class ReportsStock implements Serializable {
     double totalPurchaseValue;
     double totalRetailSaleRate;
     double totalRetailSaleValue;
+    private double totalGrnCashPurchaseValue;
+    private double totalGrnCashRetailValue;
+    private double totalGrnCreditPurchaseValue;
+    private double totalGrnCreditRetailValue;
+    private double totalDirectPurchasePurchaseValue;
+    private double totalDirectPurchaseRetailValue;
+    private double totalGrnReturnPurchaseValue;
+    private double totalGrnReturnRetailValue;
+    private double totalGrnFreeQtyPurchaseValue;
+    private double totalGrnFreeQtyRetailValue;
+    private double totalRetailSaleCashValue;
+    private double totalPurchaseSaleCashValue;
+    private double totalRetailSaleCreditValue;
+    private double totalPurchaseSaleCreditValue;
+    private double startingPurchaseValue;
+    private double startingSaleValue;
+    private double purchaseValueAfterGrn;
+    private double saleValueAfterGrn;
+    private double purchaseValueAfterGrnReturnAndFreeQty;
+    private double saleValueAfterGrnReturnAndFreeQty;
+    private double purchaseValueAfterSale;
+    private double saleValueAfterSale;
+    private double purchaseValueAfterDisbursement;
+    private double saleValueAfterDisbursement;
+    private double finalTotalPurchaseValue;
+    private double finalTotalSaleValue;
+    
+    private int fromRecord;
+    private int toRecord;
     Vmp vmp;
     BillType[] billTypes;
     ReportKeyWord reportKeyWord;
     private List<BillItem> billItems;
+    @Inject
+    private ReportTimerController reportTimerController;
+    @Inject
+    ReportsTransfer reportsTransfer;
+    @Inject
+    CommonReport commonReport;
+    @Inject
+    PharmacySummaryReportController pharmacySummaryReportController;
     /**
      * Managed Beans
      */
@@ -90,8 +135,6 @@ public class ReportsStock implements Serializable {
     DealerController dealerController;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
     /**
      * EJBs
      */
@@ -99,15 +142,95 @@ public class ReportsStock implements Serializable {
     StockFacade stockFacade;
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    BillFacade billFacade;
+
+    public String navigateToPharmacyReportDepartmentStockByItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyReportDepartmentStockByItemOrderByVmp() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
+    }
+
+    public String navigateToStockReportByBatch() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
+    }
+
+    public String navigateToStockReportByBatchForExport() {
+        stocks = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_batch_for_export?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyStockOverviewReport() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_overview?faces-redirect=true";
+    }
 
     /**
      * Methods
      */
     public void fillDepartmentStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("fillDepartmentStocks");
+            Date startedAt = new Date();
+            System.out.println("startedAt = " + startedAt);
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map<String, Object> m = new HashMap<>();
+            String sql = "select s from Stock s "
+                    + " where s.department=:d "
+                    + " and s.stock > 0 ";
+            m.put("d", department);
+            Date beforeJpql = new Date();
+            System.out.println("beforeJpql = " + beforeJpql);
+            stocks = getStockFacade().findByJpql(sql, m);
 
+            Date afterJpql = new Date();
+            System.out.println("afterJpql = " + afterJpql);
+            stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
+
+            Date beforeCal = new Date();
+            System.out.println("beforeCal = " + beforeCal);
+            stockPurchaseValue = stocks.stream()
+                    .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
+                    .sum();
+
+            stockSaleValue = stocks.stream()
+                    .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
+                    .sum();
+            Date afterCal = new Date();
+            System.out.println("afterCal = " + afterCal);
+        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentStocksForDownload() {
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("fillDepartmentStocks");
+            Date startedAt = new Date();
+            System.out.println("startedAt = " + startedAt);
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map<String, Object> m = new HashMap<>();
+            String sql = "select s from Stock s "
+                    + " where s.department=:d "
+                    + " and s.stock > 0 "
+                    + " order by s.id";
+            m.put("d", department);
+            Date beforeJpql = new Date();
+            System.out.println("beforeJpql = " + beforeJpql);
+            stocks = getStockFacade().findByJpql(sql, m, fromRecord, toRecord);
+        }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentStocksOfMedicines() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -136,10 +259,6 @@ public class ReportsStock implements Serializable {
     }
 
     public String fillDepartmentNonEmptyStocksByVmp() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         String sql;
 
@@ -147,16 +266,14 @@ public class ReportsStock implements Serializable {
             sql = "select s from Stock s join TREAT(s.itemBatch.item as Amp) amp "
                     + "where s.stock>:z and amp.vmp=:vmp "
                     + "order by s.itemBatch.item.name";
-            m.put("z", 0.0);
-            m.put("vmp", vmp);
         } else {
             sql = "select s from Stock s join TREAT(s.itemBatch.item as Amp) amp "
                     + "where s.stock>:z and s.department=:d and amp.vmp=:vmp "
                     + "order by s.itemBatch.item.name";
             m.put("d", department);
-            m.put("z", 0.0);
-            m.put("vmp", vmp);
         }
+        m.put("z", 0.0);
+        m.put("vmp", vmp);
         //System.err.println("");
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
@@ -171,14 +288,10 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentNonEmptyProductStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         Map m = new HashMap();
         String sql;
         if (department == null) {
-            sql = "select new com.divudi.data.dataStructure.PharmacyStockRow(vmp, sum(s.stock), "
+            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow(vmp, sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), sum(s.itemBatch.retailsaleRate * s.stock))  "
                     + "from Stock s join s.itemBatch.item as amp join amp.vmp as vmp "
                     + "where s.stock>:z  "
@@ -186,7 +299,7 @@ public class ReportsStock implements Serializable {
                     + "order by vmp.name";
             m.put("z", 0.0);
         } else {
-            sql = "select new com.divudi.data.dataStructure.PharmacyStockRow(vmp, sum(s.stock), "
+            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow(vmp, sum(s.stock), "
                     + "sum(s.itemBatch.purcahseRate * s.stock), sum(s.itemBatch.retailsaleRate * s.stock))  "
                     + "from Stock s join s.itemBatch.item as amp join amp.vmp as vmp "
                     + "where s.stock>:z and s.department=:d "
@@ -209,26 +322,267 @@ public class ReportsStock implements Serializable {
 
     }
 
-    public void fillDepartmentNonEmptyItemStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
+    public void generateDepartmentStockOverviewReport() {
+        
+        startingPurchaseValue = 0.0;
+        startingSaleValue = 0.0;
+        
+        //ALL GRN
+        commonReport.setFromDate(findStartOfMonth(toDate));
+        commonReport.setToDate(findEndofMonth(toDate));
+        commonReport.setDepartment(department);
+        commonReport.setDepartmentId("");
+        commonReport.createGrnDetailTable();
 
+        //GRN - Cash
+        totalGrnCashPurchaseValue = 0.0;
+        totalGrnCashRetailValue = 0.0;
+        totalGrnCashPurchaseValue = commonReport.getGrnBilled().getCash() + commonReport.getGrnCancelled().getCash();
+        totalGrnCashRetailValue = commonReport.getGrnBilled().getSaleCash() + commonReport.getGrnCancelled().getSaleCash();
+
+        //GRN - Credit
+        totalGrnCreditPurchaseValue = 0.0;
+        totalGrnCreditRetailValue = 0.0;
+        totalGrnCreditPurchaseValue = commonReport.getGrnBilled().getCredit() + commonReport.getGrnCancelled().getCredit();
+        totalGrnCreditRetailValue = commonReport.getGrnBilled().getSaleCredit() + commonReport.getGrnCancelled().getSaleCredit();
+
+        //Direct Purchase
+        totalDirectPurchasePurchaseValue = 0.0;
+        totalDirectPurchaseRetailValue = 0.0;
+        calDirectPurchaseTotalsForOverViewReport();
+        
+        //Totals After GRN
+        purchaseValueAfterGrn = Math.abs(totalGrnCashPurchaseValue) + Math.abs(totalGrnCreditPurchaseValue) + Math.abs(totalDirectPurchasePurchaseValue);
+        saleValueAfterGrn = Math.abs(totalGrnCashRetailValue) + Math.abs(totalGrnCreditRetailValue) + Math.abs(totalDirectPurchaseRetailValue);
+        
+
+        //GRN Return
+        totalGrnReturnPurchaseValue = 0.0;
+        totalGrnReturnRetailValue = 0.0;
+        totalGrnReturnPurchaseValue = (commonReport.getGrnReturn().getCash() + commonReport.getGrnReturn().getCredit()) + (commonReport.getGrnReturnCancel().getCash() + commonReport.getGrnReturnCancel().getCredit());
+        totalGrnReturnRetailValue = (commonReport.getGrnReturn().getSaleCash() + commonReport.getGrnReturn().getSaleCredit()) + (commonReport.getGrnReturnCancel().getSaleCash() + commonReport.getGrnReturnCancel().getSaleCredit());
+
+        //Free Qty
+        totalGrnFreeQtyPurchaseValue = 0.0;
+        totalGrnFreeQtyRetailValue = 0.0;
+        calFreeQtyTotalsForOverViewReport();
+        
+        //Total After Free Qty and Returns
+        purchaseValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnPurchaseValue)) + Math.abs(totalGrnFreeQtyPurchaseValue);
+        saleValueAfterGrnReturnAndFreeQty = (0 - Math.abs(totalGrnReturnRetailValue)) + Math.abs(totalGrnFreeQtyRetailValue);
+
+        //Sale
+        saleTotalsForOverViewReport();
+        
+        //TotalAfterSales
+        purchaseValueAfterSale = Math.abs(totalPurchaseSaleCashValue) + Math.abs(totalPurchaseSaleCreditValue);
+        saleValueAfterSale = Math.abs(totalRetailSaleCashValue) + Math.abs(totalRetailSaleCreditValue);
+
+        //Disbursment
+        reportsTransfer.fetchBillTotalByToDepartment(findStartOfMonth(toDate), findEndofMonth(toDate), department, BillType.PharmacyTransferIssue);
+        
+        //TotalsAfterDisbursment
+        purchaseValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalPurchaseValues());
+        saleValueAfterDisbursement = Math.abs(reportsTransfer.getNetTotalSaleValues());
+        
+        
+        //Final Count
+        finalTotalPurchaseValue = startingPurchaseValue + purchaseValueAfterGrn + purchaseValueAfterGrnReturnAndFreeQty - (purchaseValueAfterSale + purchaseValueAfterDisbursement);
+        finalTotalSaleValue = startingSaleValue + saleValueAfterGrn + saleValueAfterGrnReturnAndFreeQty - (saleValueAfterSale + saleValueAfterDisbursement);
+    }
+
+    public void calDirectPurchaseTotalsForOverViewReport() {
+        String jpql;
+        Map temMap = new HashMap();
+
+        jpql = "select b"
+                + " FROM Bill b "
+                + " where b.department=:dept "
+                + " and  b.billType= :bt "
+                + " and (b.cancelled = false or b.refunded = false)"
+                + " and  b.createdAt between :fromDate and :toDate ";
+        temMap.put("toDate", findEndofMonth(toDate));
+        temMap.put("fromDate", findStartOfMonth(toDate));
+        temMap.put("dept", department);
+        temMap.put("bt", BillType.PharmacyPurchaseBill);
+
+        List<Bill> bills = billFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+
+        if (!bills.isEmpty()) {
+            for (Bill b : bills) {
+                totalDirectPurchasePurchaseValue += b.getNetTotal();
+                totalDirectPurchaseRetailValue += b.getSaleValue();
+            }
+        }
+
+    }
+
+    public void calFreeQtyTotalsForOverViewReport() {
+        String jpql;
+        Map temMap = new HashMap();
+
+        jpql = "select bi"
+                + " FROM BillItem bi "
+                + " where bi.bill.department=:dept "
+                + " and  bi.bill.billType in :bts "
+                + " and (bi.bill.cancelled = false or bi.bill.refunded = false)"
+                + " and  bi.bill.createdAt between :fromDate and :toDate ";
+        temMap.put("toDate", findEndofMonth(toDate));
+        temMap.put("fromDate", findStartOfMonth(toDate));
+        temMap.put("dept", department);
+        List<BillType> bts = new ArrayList<>();
+        bts.add(BillType.PharmacyGrnBill);
+        bts.add(BillType.PharmacyPurchaseBill);
+        temMap.put("bts", bts);
+
+        List<BillItem> billitems = billItemFacade.findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
+
+        if (!billitems.isEmpty()) {
+            for (BillItem bi : billitems) {
+                totalGrnFreeQtyPurchaseValue += (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
+                totalGrnFreeQtyRetailValue += (bi.getPharmaceuticalBillItem().getFreeQty() * bi.getPharmaceuticalBillItem().getRetailRate());
+            }
+        }
+
+    }
+
+    public void saleTotalsForOverViewReport() {
+        String jpql;
+        Map<String, Object> temMap = new HashMap<>();
+
+        // Define the BillTypeAtomics you want to consider
+        List<BillTypeAtomic> btas = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED,
+                BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_REFUND,
+                BillTypeAtomic.PHARMACY_WHOLESALE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_PRE,
+                BillTypeAtomic.PHARMACY_WHOLESALE_REFUND,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+        );
+
+        // Define the credit bill types
+        List<BillTypeAtomic> creditBillTypeAtomics = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_INWARD,
+                BillTypeAtomic.ACCEPT_RETURN_MEDICINE_THEATRE
+        );
+        
+        List<PaymentMethod> creditPaymentMethod = Arrays.asList(
+                PaymentMethod.Credit,
+                PaymentMethod.Staff);
+
+        // The optimized JPQL using SUM and CASE WHEN
+        jpql = "SELECT "
+                + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
+                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
+                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END), "
+                + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
+                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
+                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END) "
+                + "FROM BillItem bi "
+                + "JOIN bi.bill b "
+                + "JOIN bi.pharmaceuticalBillItem pbi "
+                + "WHERE b.department = :dept "
+                + "AND b.billTypeAtomic IN :btas "
+                + "AND (b.cancelled = false OR b.refunded = false) "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate";
+
+        // Set parameters
+        temMap.put("toDate", findEndofMonth(toDate));
+        temMap.put("fromDate", findStartOfMonth(toDate));
+        temMap.put("dept", department);
+        temMap.put("btas", btas);
+        temMap.put("creditTypes", creditBillTypeAtomics);
+        temMap.put("credit", creditPaymentMethod);
+
+        // Run the query and retrieve results
+        Object[] results = (Object[]) billItemFacade.findSingleAggregate(jpql, temMap, TemporalType.TIMESTAMP);
+
+        // Assign results with null checks
+        totalPurchaseSaleCreditValue = results[0] != null ? (Double) results[0] : 0.0;
+        totalRetailSaleCreditValue = results[1] != null ? (Double) results[1] : 0.0;
+        totalPurchaseSaleCashValue = results[2] != null ? (Double) results[2] : 0.0;
+        totalRetailSaleCashValue = results[3] != null ? (Double) results[3] : 0.0;
+    }
+
+    public void fillDepartmentNonEmptyItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map m = new HashMap();
+            String sql;
+            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
+                    + "(s.itemBatch.item.code, "
+                    + "s.itemBatch.item.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
+                    + "from Stock s where s.stock>:z and s.department=:d "
+                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
+                    + "order by s.itemBatch.item.name";
+            m.put("d", department);
+            m.put("z", 0.0);
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (PharmacyStockRow r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
+
+            }
+            pharmacyStockRows = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentStockByItemOrderByVmp() {
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
         }
         Map m = new HashMap();
         String sql;
-        sql = "select new com.divudi.data.dataStructure.PharmacyStockRow"
-                + "(s.itemBatch.item.code, "
+        sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
+                + "(s.itemBatch.item.vmp.name, "
+                + "s.itemBatch.item.code, "
                 + "s.itemBatch.item.name, "
                 + "sum(s.stock), "
                 + "sum(s.itemBatch.purcahseRate * s.stock), "
                 + "sum(s.itemBatch.retailsaleRate * s.stock))  "
                 + "from Stock s where s.stock>:z and s.department=:d "
-                + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                + "order by s.itemBatch.item.name";
+                + "group by s.itemBatch.item "
+                + "order by s.itemBatch.item.vmp.name, s.itemBatch.item.name";
         m.put("d", department);
         m.put("z", 0.0);
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
@@ -267,10 +621,6 @@ public class ReportsStock implements Serializable {
     }
 
     public void fillDepartmentStocksMinus() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -346,7 +696,6 @@ public class ReportsStock implements Serializable {
             double calculatedStk = 0;
             boolean flg = false;
             if (sh != null) {
-                //   ////System.out.println("Previuos Stock " + sh.getStockQty());
                 calculatedStk = (sh.getStockQty() + sh.getPbItem().getQtyInUnit() + sh.getPbItem().getFreeQtyInUnit());
                 flg = true;
             } else if (phi != null) {
@@ -354,27 +703,15 @@ public class ReportsStock implements Serializable {
                 flg = true;
             }
 
-            //   ////System.out.println("calculated History Qty " + calculatedStk);
-            if (flg == true && b.getStockHistory().getStockQty() != calculatedStk) {
+            if (flg && b.getStockHistory().getStockQty() != calculatedStk) {
                 stockSet.add(b.getStock());
-                //   ////System.out.println("TRUE");
             }
-
-            //   ////System.out.println("#########");
         }
 
-        stocks = new ArrayList<>();
-        for (Stock s : stockSet) {
-            stocks.add(s);
-        }
-
+        stocks = new ArrayList<>(stockSet);
     }
 
     public void fillDepartmentStocksError2() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null) {
             JsfUtil.addErrorMessage("Please select a department");
             return;
@@ -461,13 +798,6 @@ public class ReportsStock implements Serializable {
                 if (calcualtedQty != curHistory) {
                     st.setCalculated(calculatedStock);
                     tmpStockList.add(st);
-                } else {
-                    //   ////System.out.println("Itm " + ph.getBillItem().getItem().getName());
-                    //   ////System.out.println("Prv History Qty " + preHistoryQty);
-                    //   ////System.out.println("Prv Qty " + previousPh.getQtyInUnit());
-                    //   ////System.out.println("Prv Free Qty " + previousPh.getFreeQtyInUnit());
-                    //   ////System.out.println("History " + curHistory);
-                    //   ////System.out.println("######");
                 }
 
                 previousPh = ph;
@@ -475,53 +805,44 @@ public class ReportsStock implements Serializable {
 
         }
 
-        List<Stock> stk = new ArrayList<>();
-        for (Stock st : tmpStockList) {
-            stk.add(st);
-        }
-
-        stocks = stk;
-
+        stocks = new ArrayList<>(tmpStockList);
     }
 
     private Date date;
 
     public void fillDepartmentExpiaryStocks() {
-        Date startTime = new Date();
-
-        if (department == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return;
-        }
-        Map m = new HashMap();
-        String sql;
-        sql = "select s "
-                + " from Stock s "
-                + " where s.stock > :st "
-                + " and s.department=:d "
-                + " and s.itemBatch.dateOfExpire "
-                + " between :fd and :td "
-                + " order by s.itemBatch.dateOfExpire";
-        m.put("d", department);
-        m.put("fd", getFromDate());
-        m.put("td", getToDate());
-        m.put("st", 0.0);
-        stocks = getStockFacade().findByJpql(sql, m);
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        for (Stock ts : stocks) {
-            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
-            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
-        }
-
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map m = new HashMap();
+            String sql;
+            sql = "select s "
+                    + " from Stock s "
+                    + " where s.stock > :st "
+                    + " and s.department=:d "
+                    + " and s.itemBatch.dateOfExpire "
+                    + " between :fd and :td "
+                    + " order by s.itemBatch.dateOfExpire";
+            m.put("d", department);
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
+            m.put("st", 0.0);
+            stocks = getStockFacade().findByJpql(sql, m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (Stock ts : stocks) {
+                stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+                stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            }
+        }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
 
     public void addComment(Stock st) {
         if (st != null) {
             getStockFacade().edit(st);
             JsfUtil.addSuccessMessage("Edit Successful");
-        } else {
-            return;
         }
     }
 
@@ -587,6 +908,12 @@ public class ReportsStock implements Serializable {
 
         Collections.sort(items);
 
+        Map<String, Object> h = new HashMap<>();
+        String jpql = "select s from Stock s "
+                + "where s.itemBatch.item in :items "
+                + " and s.stock > 0 ";
+        h.put("items", items);
+        stocks = getStockFacade().findByJpql(jpql, h);
     }
 
     public void fillStaffStocks() {
@@ -685,10 +1012,6 @@ public class ReportsStock implements Serializable {
     }
 
     public String fillDistributorStocks() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (department == null || institution == null) {
             JsfUtil.addErrorMessage("Please select a department && Dealor");
             return "";
@@ -719,6 +1042,39 @@ public class ReportsStock implements Serializable {
         }
 
         return "/pharmacy/pharmacy_report_supplier_stock_by_batch";
+    }
+
+    public String fillSupplierStocks() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return "";
+        }
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+
+        m = new HashMap();
+
+        m.put("dep", department);
+        m.put("st", 0.0);
+        sql = "select s "
+                + " from Stock s "
+                + " where s.department=:dep "
+                + " and s.stock > :st ";
+
+        if (institution != null) {
+            sql += "and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution =:ins";
+            m.put("ins", institution);
+        }
+        stocks = getStockFacade().findByJpql(sql, m);
+        stockPurchaseValue = 0.0;
+        stockSaleValue = 0.0;
+        for (Stock ts : stocks) {
+            stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
+            stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+        }
+
+        return "/pharmacy/pharmacy_report_stock_report_with_supplier?faces-redirect=true";
     }
 
     public void fillCategoryStocks() {
@@ -830,7 +1186,23 @@ public class ReportsStock implements Serializable {
                 }
                 ib.setItem(i);
                 s.setItemBatch(ib);
+
                 s.setStock(d);
+
+                if (i != null) {
+                    s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
+                    s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
+                    String code = i.getCode();
+                    Long longCode = CommonFunctions.stringToLong(code);
+                    s.setLongCode(longCode);
+                    s.setDateOfExpire(ib.getDateOfExpire());
+                    s.setRetailsaleRate(ib.getRetailsaleRate());
+                } else {
+                    s.setItemName("UNKNOWN");
+                    s.setBarcode("");
+                    s.setLongCode(0L);
+                }
+
                 stocks.add(s);
                 totalQty += d;
             }
@@ -918,6 +1290,45 @@ public class ReportsStock implements Serializable {
             sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
                     + " from Stock s where s.department=:d and s.itemBatch.item.id in (select item.id from ItemsDistributors id join id.item as item where id.retired=false and id.institution=:ins)"
                     + " ";
+            Object[] objs = getStockFacade().findSingleAggregate(sql, m);
+
+            if (objs[0] != null && (Double) objs[0] > 0) {
+                StockReportRecord r = new StockReportRecord();
+                ////////System.out.println("objs = " + objs);
+                r.setInstitution(i);
+                r.setQty((Double) objs[0]);
+                r.setPurchaseValue((Double) objs[1]);
+                r.setRetailsaleValue((Double) objs[2]);
+                records.add(r);
+                stockPurchaseValue = stockPurchaseValue + r.getPurchaseValue();
+                stockSaleValue = stockSaleValue + r.getRetailsaleValue();
+            }
+        }
+
+    }
+
+    public void fillAllSuppliersStocks() {
+
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        Map m;
+        String sql;
+        records = new ArrayList<>();
+        List<Institution> dealers = getDealerController().getItems();
+        stockSaleValue = 0.0;
+        stockPurchaseValue = 0.0;
+        for (Institution i : dealers) {
+            ////////System.out.println("i = " + i);
+            m = new HashMap();
+            m.put("ins", i);
+            m.put("d", department);
+            sql = "select sum(s.stock),sum(s.stock * s.itemBatch.purcahseRate),sum(s.stock * s.itemBatch.retailsaleRate)"
+                    + " from Stock s "
+                    + " where s.department=:d "
+                    + " and s.itemBatch.lastPurchaseBillItem.bill.fromInstitution =:ins";
             Object[] objs = getStockFacade().findSingleAggregate(sql, m);
 
             if (objs[0] != null && (Double) objs[0] > 0) {
@@ -1072,7 +1483,7 @@ public class ReportsStock implements Serializable {
         toDate = c.getTime();
         fillDepartmentExpiaryStocks();;
     }
-    
+
     public void fillThreeMonthsExpiaryOfSupplier() {
         fromDate = Calendar.getInstance().getTime();
         Calendar c = Calendar.getInstance();
@@ -1128,6 +1539,14 @@ public class ReportsStock implements Serializable {
         fromDateE = c.getTime();
         fillDepartmentNonmovingStocks();
 
+    }
+
+    public Date findStartOfMonth(Date date) {
+        return CommonFunctions.getStartOfMonth(date);
+    }
+
+    public Date findEndofMonth(Date date) {
+        return CommonFunctions.getEndOfMonth(date);
     }
 
     public void setToDate(Date toDate) {
@@ -1286,14 +1705,6 @@ public class ReportsStock implements Serializable {
         this.billTypes = billTypes;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public ReportKeyWord getReportKeyWord() {
         if (reportKeyWord == null) {
             reportKeyWord = new ReportKeyWord();
@@ -1311,6 +1722,230 @@ public class ReportsStock implements Serializable {
 
     public void setBills(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public int getFromRecord() {
+        return fromRecord;
+    }
+
+    public void setFromRecord(int fromRecord) {
+        this.fromRecord = fromRecord;
+    }
+
+    public int getToRecord() {
+        return toRecord;
+    }
+
+    public void setToRecord(int toRecord) {
+        this.toRecord = toRecord;
+    }
+
+    public double getTotalGrnCashPurchaseValue() {
+        return totalGrnCashPurchaseValue;
+    }
+
+    public void setTotalGrnCashPurchaseValue(double totalGrnCashPurchaseValue) {
+        this.totalGrnCashPurchaseValue = totalGrnCashPurchaseValue;
+    }
+
+    public double getTotalGrnCashRetailValue() {
+        return totalGrnCashRetailValue;
+    }
+
+    public void setTotalGrnCashRetailValue(double totalGrnCashRetailValue) {
+        this.totalGrnCashRetailValue = totalGrnCashRetailValue;
+    }
+
+    public double getTotalGrnCreditPurchaseValue() {
+        return totalGrnCreditPurchaseValue;
+    }
+
+    public void setTotalGrnCreditPurchaseValue(double totalGrnCreditPurchaseValue) {
+        this.totalGrnCreditPurchaseValue = totalGrnCreditPurchaseValue;
+    }
+
+    public double getTotalGrnCreditRetailValue() {
+        return totalGrnCreditRetailValue;
+    }
+
+    public void setTotalGrnCreditRetailValue(double totalGrnCreditRetailValue) {
+        this.totalGrnCreditRetailValue = totalGrnCreditRetailValue;
+    }
+
+    public double getTotalGrnReturnPurchaseValue() {
+        return totalGrnReturnPurchaseValue;
+    }
+
+    public void setTotalGrnReturnPurchaseValue(double totalGrnReturnPurchaseValue) {
+        this.totalGrnReturnPurchaseValue = totalGrnReturnPurchaseValue;
+    }
+
+    public double getTotalGrnReturnRetailValue() {
+        return totalGrnReturnRetailValue;
+    }
+
+    public void setTotalGrnReturnRetailValue(double totalGrnReturnRetailValue) {
+        this.totalGrnReturnRetailValue = totalGrnReturnRetailValue;
+    }
+
+    public double getTotalDirectPurchasePurchaseValue() {
+        return totalDirectPurchasePurchaseValue;
+    }
+
+    public void setTotalDirectPurchasePurchaseValue(double totalDirectPurchasePurchaseValue) {
+        this.totalDirectPurchasePurchaseValue = totalDirectPurchasePurchaseValue;
+    }
+
+    public double getTotalDirectPurchaseRetailValue() {
+        return totalDirectPurchaseRetailValue;
+    }
+
+    public void setTotalDirectPurchaseRetailValue(double totalDirectPurchaseRetailValue) {
+        this.totalDirectPurchaseRetailValue = totalDirectPurchaseRetailValue;
+    }
+
+    public double getTotalGrnFreeQtyPurchaseValue() {
+        return totalGrnFreeQtyPurchaseValue;
+    }
+
+    public void setTotalGrnFreeQtyPurchaseValue(double totalGrnFreeQtyPurchaseValue) {
+        this.totalGrnFreeQtyPurchaseValue = totalGrnFreeQtyPurchaseValue;
+    }
+
+    public double getTotalGrnFreeQtyRetailValue() {
+        return totalGrnFreeQtyRetailValue;
+    }
+
+    public void setTotalGrnFreeQtyRetailValue(double totalGrnFreeQtyRetailValue) {
+        this.totalGrnFreeQtyRetailValue = totalGrnFreeQtyRetailValue;
+    }
+
+    public double getTotalRetailSaleCashValue() {
+        return totalRetailSaleCashValue;
+    }
+
+    public void setTotalRetailSaleCashValue(double totalRetailSaleCashValue) {
+        this.totalRetailSaleCashValue = totalRetailSaleCashValue;
+    }
+
+    public double getTotalPurchaseSaleCashValue() {
+        return totalPurchaseSaleCashValue;
+    }
+
+    public void setTotalPurchaseSaleCashValue(double totalPurchaseSaleCashValue) {
+        this.totalPurchaseSaleCashValue = totalPurchaseSaleCashValue;
+    }
+
+    public double getTotalRetailSaleCreditValue() {
+        return totalRetailSaleCreditValue;
+    }
+
+    public void setTotalRetailSaleCreditValue(double totalRetailSaleCreditValue) {
+        this.totalRetailSaleCreditValue = totalRetailSaleCreditValue;
+    }
+
+    public double getTotalPurchaseSaleCreditValue() {
+        return totalPurchaseSaleCreditValue;
+    }
+
+    public void setTotalPurchaseSaleCreditValue(double totalPurchaseSaleCreditValue) {
+        this.totalPurchaseSaleCreditValue = totalPurchaseSaleCreditValue;
+    }
+    
+    public double getStartingPurchaseValue() {
+        return startingPurchaseValue;
+    }
+
+    public void setStartingPurchaseValue(double startingPurchaseValue) {
+        this.startingPurchaseValue = startingPurchaseValue;
+    }
+
+    public double getStartingSaleValue() {
+        return startingSaleValue;
+    }
+
+    public void setStartingSaleValue(double startingSaleValue) {
+        this.startingSaleValue = startingSaleValue;
+    }
+
+    public double getPurchaseValueAfterGrn() {
+        return purchaseValueAfterGrn;
+    }
+
+    public void setPurchaseValueAfterGrn(double purchaseValueAfterGrn) {
+        this.purchaseValueAfterGrn = purchaseValueAfterGrn;
+    }
+
+    public double getSaleValueAfterGrn() {
+        return saleValueAfterGrn;
+    }
+
+    public void setSaleValueAfterGrn(double saleValueAfterGrn) {
+        this.saleValueAfterGrn = saleValueAfterGrn;
+    }
+
+    public double getPurchaseValueAfterGrnReturnAndFreeQty() {
+        return purchaseValueAfterGrnReturnAndFreeQty;
+    }
+
+    public void setPurchaseValueAfterGrnReturnAndFreeQty(double purchaseValueAfterGrnReturnAndFreeQty) {
+        this.purchaseValueAfterGrnReturnAndFreeQty = purchaseValueAfterGrnReturnAndFreeQty;
+    }
+
+    public double getSaleValueAfterGrnReturnAndFreeQty() {
+        return saleValueAfterGrnReturnAndFreeQty;
+    }
+
+    public void setSaleValueAfterGrnReturnAndFreeQty(double saleValueAfterGrnReturnAndFreeQty) {
+        this.saleValueAfterGrnReturnAndFreeQty = saleValueAfterGrnReturnAndFreeQty;
+    }
+
+    public double getPurchaseValueAfterSale() {
+        return purchaseValueAfterSale;
+    }
+
+    public void setPurchaseValueAfterSale(double purchaseValueAfterSale) {
+        this.purchaseValueAfterSale = purchaseValueAfterSale;
+    }
+
+    public double getSaleValueAfterSale() {
+        return saleValueAfterSale;
+    }
+
+    public void setSaleValueAfterSale(double saleValueAfterSale) {
+        this.saleValueAfterSale = saleValueAfterSale;
+    }
+
+    public double getPurchaseValueAfterDisbursement() {
+        return purchaseValueAfterDisbursement;
+    }
+
+    public void setPurchaseValueAfterDisbursement(double purchaseValueAfterDisbursement) {
+        this.purchaseValueAfterDisbursement = purchaseValueAfterDisbursement;
+    }
+
+    public double getSaleValueAfterDisbursement() {
+        return saleValueAfterDisbursement;
+    }
+
+    public void setSaleValueAfterDisbursement(double saleValueAfterDisbursement) {
+        this.saleValueAfterDisbursement = saleValueAfterDisbursement;
+    }
+
+    public double getFinalTotalPurchaseValue() {
+        return finalTotalPurchaseValue;
+    }
+
+    public void setFinalTotalPurchaseValue(double finalTotalPurchaseValue) {
+        this.finalTotalPurchaseValue = finalTotalPurchaseValue;
+    }
+
+    public double getFinalTotalSaleValue() {
+        return finalTotalSaleValue;
+    }
+
+    public void setFinalTotalSaleValue(double finalTotalSaleValue) {
+        this.finalTotalSaleValue = finalTotalSaleValue;
     }
 
 }

@@ -1,7 +1,7 @@
 package com.divudi.service;
 
-import com.divudi.entity.Patient;
-import com.divudi.facade.PatientFacade;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.facade.PatientFacade;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

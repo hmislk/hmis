@@ -83,6 +83,24 @@
                     </h:panelGrid>
                 </div>
                 </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter ne null}" >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value=" BHT No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.bhtNo}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter.currentPatientRoom ne null}" >
+                <div>
+                    <h:panelGrid columns="3">
+                        <h:outputLabel value="Room No" class="billDetails1"/>
+                        <h:outputLabel style="margin: 2%" value=":" class="billDetails1"/>
+                        <h:outputLabel value="#{cc.attrs.bill.patientEncounter.currentPatientRoom.roomFacilityCharge.name}" class="billDetails1" />
+                    </h:panelGrid>
+                </div>
+                </h:panelGroup>
                 <h:panelGroup rendered="#{cc.attrs.bill.toStaff ne null}" >
                 <div>
                     <h:panelGrid columns="3">
@@ -201,10 +219,10 @@
 
                     <tr>
                         <td class="totalsBlock1" style="text-align: left; width: 60%;">
-                            <h:outputLabel value="Total" />
+                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="Total" />
                         </td>
                         <td  class="totalsBlock1" style="text-align: right!important; width: 40%;">
-                            <h:outputLabel value="#{cc.attrs.bill.total}" >
+                            <h:outputLabel rendered="#{cc.attrs.bill.discount ne 0.0}" value="#{cc.attrs.bill.total}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
@@ -221,10 +239,10 @@
                     </tr>
                     <tr>
                         <td  class="totalsBlock1" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="Net Total" />
+                            <h:outputLabel    value="Net Total" />
                         </td>
                         <td  class="totalsBlock1" style="text-align: right!important;font-weight: bold; ;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.netTotal}">
+                            <h:outputLabel    value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>                          
                         </td>                        
@@ -233,11 +251,11 @@
                     <tr>
 
                         <td  class="totalsBlock1" style="text-align: left;">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}" value="Discount Percent" style="font-weight: bolder!important;"/>
                         </td>
 
                         <td  class="totalsBlock1" style="text-align: right!important;font-weight: bold; ; ">
-                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
+                            <h:outputLabel  rendered="#{cc.attrs.bill.discountPercentPharmacy ne 0.0 and cc.attrs.bill.discount ne 0.0}"    value="#{cc.attrs.bill.discountPercentPharmacy} %">
                                 <f:convertNumber pattern="#,##0.0" />
                             </h:outputLabel>
 
@@ -245,7 +263,7 @@
                         </td>
                     </tr>
 
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale'}">
+                    <h:panelGroup rendered="#{(configOptionApplicationController.getBooleanValueByKey('Allow Tendered Amount for pharmacy sale for cashier') or cc.attrs.bill.billType eq 'PharmacySale' or cc.attrs.bill.billType eq 'PharmacyWholeSale') and cc.attrs.bill.paymentMethod eq 'Cash'}">
                         <tr >
                             <td  class="totalsItemBlock1" style="text-align: left;">
                                 <h:outputLabel   value="Tendered" />
@@ -282,10 +300,10 @@
                     
                     <tr>
                         <td  class="totalsItemBlock1" style="text-align: left;">
-                            <h:outputLabel   value="Payment Method" />
+                            <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod ne null}"  value="Payment Method" />
                         </td>
                         <td  class="totalsItemBlock1" style="text-align: right; ">
-                            <h:outputLabel   value="#{cc.attrs.bill.paymentMethod}">
+                            <h:outputLabel rendered="#{cc.attrs.bill.paymentMethod ne null}"  value="#{cc.attrs.bill.paymentMethod}">
                             </h:outputLabel>
                         </td>
                     </tr>

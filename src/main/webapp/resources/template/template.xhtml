@@ -9,6 +9,19 @@
     <h:head >
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1"></meta>
+
+        <script async="async" src="https://www.googletagmanager.com/gtag/js?id=#{configOptionApplicationController.getShortTextValueByKey('Google Analytics Measurement ID', 'G-XXXXXXXXXX')}"></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+
+            gtag('config', '#{configOptionApplicationController.getShortTextValueByKey('Google Analytics Measurement ID', 'G-XXXXXXXXXX')}');
+        </script>
+
+
         <ui:insert name="title" >
             <title>
                 <h:panelGroup rendered="#{sessionController.logged}" >

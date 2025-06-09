@@ -8,13 +8,12 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.InstitutionType;
-import com.divudi.entity.Institution;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.facade.InstitutionFacade;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -42,8 +41,7 @@ public class DealerController implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     SessionController sessionController;
-    @Inject
-    CommonController commonController;
+
     @EJB
     private InstitutionFacade ejbFacade;
     private Institution current;
@@ -67,7 +65,7 @@ public class DealerController implements Serializable {
 
         return institutionList;
     }
-    
+
     public List<Institution> findAllDealors() {
 
         String sql;
@@ -82,17 +80,17 @@ public class DealerController implements Serializable {
 
         return institutionList;
     }
-    
+
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     public void generateCodeForDealor(){
         String prefix = configOptionApplicationController.getLongTextValueByKey("Prefix for supplier code generation", "Prefix/");
         List<Institution> allDealors = findAllDealors();
-        
+
         long number = allDealors.size();
         String formattedNumber = String.format("%04d", number);
-        
+
         for(Institution i: allDealors){
             if(i.getInstitutionCode().equalsIgnoreCase(prefix+formattedNumber)){
                 number++;
@@ -116,7 +114,7 @@ public class DealerController implements Serializable {
             JsfUtil.addErrorMessage("Please add name of the supplier.");
             return;
         }
-        
+
         if(current.getInstitutionCode() == null || current.getInstitutionCode().isEmpty()){
             JsfUtil.addErrorMessage("Please add code of the supplier.");
             return;
@@ -193,8 +191,8 @@ public class DealerController implements Serializable {
                 + " order by i.name";
         m.put("tp", InstitutionType.Dealer);
         dealor = getEjbFacade().findByJpql(sql, m);
-        
-        
+
+
 
     }
 
@@ -231,7 +229,7 @@ public class DealerController implements Serializable {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
-            if (value == null || value.length() == 0) {
+            if (value == null || value.isEmpty()) {
                 return null;
             }
             DealerController controller = (DealerController) facesContext.getApplication().getELResolver().
@@ -240,15 +238,13 @@ public class DealerController implements Serializable {
         }
 
         java.lang.Long getKey(String value) {
-            java.lang.Long key;
-            key = Long.valueOf(value);
+            long key;
+            key = Long.parseLong(value);
             return key;
         }
 
         String getStringKey(java.lang.Long value) {
-            StringBuilder sb = new StringBuilder();
-            sb.append(value);
-            return sb.toString();
+            return String.valueOf(value);
         }
 
         @Override
@@ -265,14 +261,4 @@ public class DealerController implements Serializable {
             }
         }
     }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-    
-    
 }

@@ -182,20 +182,6 @@ th.align-right-header .ui-column-title {
     filter: brightness(50%); /* Dim the image for unmarked activities */
 }
 
-.compact-datatable .ui-datatable-data tr td {
-    padding: 2px 5px; /* Reduced padding */
-    font-size: 0.8rem; /* Smaller font size */
-}
-
-.compact-datatable th {
-    padding: 4px 5px; /* Reduced padding in headers */
-    font-size: 0.8rem; /* Smaller font size in headers */
-}
-
-.compact-datatable .ui-paginator {
-    padding: 1px !important; /* Reduced padding in paginator */
-    font-size: 0.8rem  !important; /* Smaller font size in paginator */
-}
 
 
 .compact-listbox .ui-selectlistbox-listcontainer {
@@ -287,46 +273,122 @@ th.align-right-header .ui-column-title {
     width: 58%;
 }
 
-.compact-datatable {
-    --content-padding: 0.0rem; /* Reduced from 1rem */
-    --inline-spacing: 0.0rem; /* Reduced from 0.5rem */
-    --border-radius: 0px; /* Reduced from 4px */
+.custom-col-28 {
+    width: 38%;
 }
-.compact-datatable .ui-datatable-data tr td {
-    margin: 0 !important;
-    padding: 2px !important;  /* Minimal padding */
-    line-height: 1.2; /* Reduce line spacing */
+
+.custom-col-68 {
+    width: 58%;
 }
-.compact-datatable .ui-datatable-header,
-.compact-datatable .ui-datatable-footer,
-.compact-datatable .ui-column-title,
-.compact-datatable .ui-datatable-footer .ui-datatable-footer-table,
-.compact-datatable .ui-datatable-footer .ui-datatable-footer-tablewrapper,
-.compact-datatable .ui-datatable-footer table,
-.compact-datatable .ui-datatable-footer td,
-.compact-datatable .ui-datatable-footer td.ui-state-default,
-.compact-datatable .ui-datatable-footer td:empty,
-.compact-datatable .ui-datatable-footer .ui-datatable-footer-tablewrapper table {
+
+.custom-col-25 {
+    width: 25%;
+}
+
+.custom-col-50 {
+    width: 50%;
+}
+
+.custom-col-20 {
+    width: 20%;
+}
+
+.custom-col-40 {
+    width: 58%;
+}
+
+.compact-panelgrid.ui-panelgrid,
+.compact-panelgrid.ui-panelgrid tr,
+.compact-panelgrid.ui-panelgrid td,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-cell,
+.compact-panelgrid.ui-panelgrid .ui-panelgrid-header {
     margin: 0 !important;
     padding: 2px !important;
+    border: none !important; /* optional, if you want minimal borders */
+}
+
+/* Example: set a background to verify it’s applied */
+.compact-panelgrid.ui-panelgrid {
+    background-color: #eef !important;
+}
+
+
+
+.compact-column-borders {
+    --content-padding: 0.0rem; /* Remove padding */
+    --inline-spacing: 0.0rem; /* Remove spacing */
+    --border-radius: 0px; /* No border rounding */
+    border-collapse: collapse; /* Ensures borders align properly */
+    width: 100%;
+}
+
+.compact-column-borders td,
+.compact-column-borders th {
+    border-left: 1px solid black;
+    border-right: 1px solid black;
+    padding: 1px !important; /* Minimal padding */
+    margin: 0 !important;
+    line-height: 1; /* Remove extra spacing */
+    text-align: left;
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Show "..." for cut-off text */
+    max-width: 10em; /* Adjust based on column width */
+}
+
+.compact-column-borders th {
+    font-weight: bold;
+    text-align: center;
+    background: #f8f8f8;
+}
+
+.compact-column-borders tr {
+    height: auto !important; /* Prevent row height increase */
+    border-bottom: none !important; /* Remove row borders */
+    border-top: none !important; /* Remove row borders */
+}
+
+.compact-column-borders th:first-child,
+.compact-column-borders td:first-child {
+    border-left: none; /* Remove left border for first column */
+}
+
+.compact-column-borders th:last-child,
+.compact-column-borders td:last-child {
+    border-right: none; /* Remove right border for last column */
+}
+
+/* Bold footer text */
+.compact-column-borders tfoot td {
+    font-weight: bold !important;
+    border-top: 1px solid black !important; /* Add border above footer */
+}
+
+.compact-column-borders .ui-datatable-header,
+.compact-column-borders .ui-datatable-footer {
+    margin: 0 !important;
+    padding: 1px !important;
     line-height: 1.1;
 }
-.compact-datatable .ui-datatable-footer td:empty {
-    display: none; /* Hide empty cells completely */
+
+/* Hide empty footer cells */
+.compact-column-borders .ui-datatable-footer td:empty {
+    display: none;
 }
-.compact-datatable .ui-datatable-footer,
-.compact-datatable tfoot.ui-widget-content,
-.compact-datatable .ui-datatable-footer td,
-.compact-datatable .ui-datatable-footer td.ui-state-default {
-    margin: 0 !important;
-    padding: 0.1rem !important;
-    line-height: 1;
-    font-size: 0.8rem;
-}
-.compact-datatable .ui-state-default {
+
+.compact-column-borders .ui-state-default {
     margin: 0 !important;
     padding: 0 !important;
 }
+
+/* Border below header */
+.compact-column-borders thead {
+    border-bottom: 1px solid black !important;
+}
+
+
+
+
 
 .light-grey-background {
     background-color: #e2e3e5; /* Slightly darker grey than before */
@@ -338,12 +400,7 @@ th.align-right-header .ui-column-title {
     background-color: #e2e3e5; /* Slightly darker grey than before */
     color: #343a40; /* Dark grey text, ensuring good contrast */
 }
-.compact-datatable .light-grey-background,
-.compact-datatable .ui-datatable thead th.light-grey-background,
-.compact-datatable .ui-datatable tfoot td.light-grey-background {
-    background-color: #e2e3e5; /* Slightly darker grey */
-    color: #343a40; /* Dark grey text for contrast */
-}
+
 
 
 @media print {
@@ -598,13 +655,23 @@ th.align-right-header .ui-column-title {
     }
 }
 
-@media screen {
-    .printingOnly{
+@media print {
+    .printingOnly {
+        display: block !important;
+    }
+    .screenOnly {
         display: none !important;
-
     }
 }
 
+@media screen {
+    .printingOnly {
+        display: none !important;
+    }
+    .screenOnly {
+        display: block !important;
+    }
+}
 
 
 /* Adjust the size of the autocomplete dropdown panel */
@@ -629,3 +696,90 @@ th.align-right-header .ui-column-title {
     color: #000; /* Optional: Change text color */
 }
 
+
+.compact-datatable {
+    --content-padding: 0em; /* No padding */
+    --inline-spacing: 0em; /* No spacing */
+    --border-radius: 0px; /* No rounded corners */
+}
+
+/* Remove row borders */
+.compact-datatable .ui-datatable-tablewrapper table {
+    border-collapse: collapse;
+}
+
+.compact-datatable .ui-datatable-data tr,
+.compact-datatable .ui-datatable-data tr td {
+    border: none !important;
+}
+
+/* Table cells - Minimal padding and prevent wrapping */
+.compact-datatable .ui-datatable-data tr td {
+    margin: 0 !important;
+    padding: 2px 5px !important; /* Minimal padding */
+    line-height: 1.2;
+    font-size: 0.8em; /* Normal text size */
+    white-space: nowrap; /* Prevent text wrapping */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Cut text beyond column width */
+}
+
+/* Header cells - Minimal padding */
+.compact-datatable th {
+    padding: 4px 5px;
+    font-size: 0.8em;
+    white-space: nowrap;
+}
+
+/* Footer text same as normal text */
+.compact-datatable .ui-datatable-footer,
+.compact-datatable tfoot.ui-widget-content,
+.compact-datatable .ui-datatable-footer td {
+    padding: 2px 5px !important;
+    line-height: 1.2;
+    font-size: 0.8em; /* Same as normal text */
+    font-weight: normal;
+}
+
+/* Hide empty footer cells */
+.compact-datatable .ui-datatable-footer td:empty {
+    display: none;
+}
+
+/* Light grey background for specific columns */
+.compact-datatable .light-grey-background,
+.compact-datatable .ui-datatable thead th.light-grey-background,
+.compact-datatable .ui-datatable tfoot td.light-grey-background {
+    background-color: #e2e3e5;
+    color: #343a40;
+}
+
+/* Paginator adjustments */
+.compact-datatable .ui-paginator {
+    padding: 1px !important;
+    font-size: 0.8em !important;
+}
+
+/* Ensure footer text is normal size and weight */
+.compact-datatable .ui-datatable-footer td,
+.compact-datatable tfoot.ui-widget-content td,
+.compact-datatable .ui-datatable-footer td.ui-state-default {
+    font-size: 0.8em !important; /* Match normal text */
+    font-weight: normal !important; /* Remove bold */
+    padding: 2px 5px !important;
+    line-height: 1.2;
+    background: transparent !important;
+}
+
+/* Override PrimeFaces default styles */
+.compact-datatable .ui-state-default {
+    font-size: 0.8em !important; /* Ensure all .ui-state-default follows this */
+    font-weight: normal !important;
+}
+
+/* Target only footer-specific .ui-state-default */
+.compact-datatable .ui-datatable-footer .ui-state-default {
+    font-size: 0.8em !important;
+    font-weight: normal !important;
+    padding: 2px 5px !important;
+}

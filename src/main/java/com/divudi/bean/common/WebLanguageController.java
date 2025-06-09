@@ -8,9 +8,9 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.entity.WebLanguage;
-import com.divudi.facade.WebLanguageFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.WebLanguage;
+import com.divudi.core.facade.WebLanguageFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,9 +43,9 @@ public class WebLanguageController implements Serializable {
     private List<WebLanguage> items = null;
     String page;
 
-    
-    
-    
+
+
+
     public String toHome() {
         page = "/index";
         return page;
@@ -250,8 +250,8 @@ public class WebLanguageController implements Serializable {
 
     }
 
-    
-    
+
+
     public void listItems() {
         String j;
         j = "select a "
@@ -311,5 +311,5 @@ public class WebLanguageController implements Serializable {
         }
     }
 
-    
+
 }

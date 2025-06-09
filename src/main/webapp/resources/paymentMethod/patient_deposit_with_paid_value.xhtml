@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData" />
         <cc:attribute name="valueRequired" type="boolean" />
     </cc:interface>
 
@@ -24,12 +24,12 @@
                 </div>
                 <div class="d-flex gap-3 mt-2">
                     <h:outputText value="Paid Value : " class="mt-2" ></h:outputText>
-                    <p:inputText 
+                    <p:inputText
                         id="txtMpPd"
-                        autocomplete="off"   
+                        autocomplete="off"
                         onfocus="this.select();"
-                        value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}" 
-                        style="width: 7em!important;" 
+                        value="#{cc.attrs.paymentMethodData.patient_deposit.totalValue}"
+                        style="width: 7em!important;"
                         class="w-100"  >
                         <f:convertNumber pattern="#,##0.00" />
                         <p:ajax event="keyup" process="txtMpPd" ></p:ajax>

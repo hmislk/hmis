@@ -84,7 +84,7 @@
                     <f:setPropertyActionListener value="true" target="#{supplierPaymentController.printPreview}"/>
                 </h:commandLink>
             </p:column>
-            <p:column headerText="Billed at"  >
+            <p:column headerText="Billed At"  >
                 <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.createdAt}">
                     <h:outputLabel value="#{bill.createdAt}" >
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
@@ -107,14 +107,14 @@
                     </h:outputLabel>
                 </h:panelGroup>
             </p:column>                 
-            <p:column headerText="Billed by" >
+            <p:column headerText="Billed By" >
                 <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.creater}">
                     <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>
                     <f:setPropertyActionListener value="true" target="#{supplierPaymentController.printPreview}"/>
                 </h:commandLink>
             </p:column>               
-            <p:column headerText="Paymentmethod"  >
+            <p:column headerText="Payment Method"  >
                 <h:commandLink action="/dealerPayment/bill_dealor_all" value="#{bill.paymentMethod}">
                     <f:setPropertyActionListener value="#{bill}" target="#{supplierPaymentController.current}"/>
                     <f:setPropertyActionListener value="#{bill.billItems}" target="#{supplierPaymentController.billItems}"/>

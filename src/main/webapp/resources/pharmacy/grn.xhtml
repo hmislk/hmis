@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -31,16 +31,16 @@
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Fax :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
                 <div  class="d-flex justify-content-center gap-2">
                     <h:outputLabel value="Email : "/>
-                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.email}"/>
                 </div>
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>                           
+                <h:outputLabel value="Goods Received Note" style="text-decoration: underline;"/>
             </div>
 
             <div style="min-width: 90%; margin-left: 5%; margin-right: 5%; font-size: 15px;" class="row justify-content-center" >
@@ -129,12 +129,18 @@
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Purchase Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
                         </tr>
-                    </thead> 
+                    </thead>
 
                     <tbody style="font-size: 11px;">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
                             <tr>
-                                <td style="text-align: left;">#{bip.item.name}</td>
+                                <td style="text-align: left;">
+                                    <h:outputText value="#{bip.item.name}">
+                                    </h:outputText>
+
+                                    <h:outputText rendered="#{not empty bip.item.code}" value=" - #{bip.item.code}">
+                                    </h:outputText>
+                                </td>
                                 <!--                                <td style="text-align: right;">
                                                                     <h:outputText value="#{bip.item.code}">
                                                                     </h:outputText>
@@ -169,7 +175,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">                  
+                                <td style="text-align: right;">
                                     <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
                                         <f:convertNumber pattern="0.0" ></f:convertNumber>
                                     </h:outputText>
@@ -187,11 +193,12 @@
                             </tr>
                         </ui:repeat>
                     </tbody>
-
-
+                </table>
+                
+                <table class="my-3">
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left; ">Sale Value</td>
+                        <td colspan="9" style="text-align: left; ">Total Sale Value</td>
                         <td colspan="2" style="text-align: right; ">
 
                             <h:outputText value="#{cc.attrs.bill.saleValue}">
@@ -202,18 +209,27 @@
                     </tr>
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                        <td colspan="9" style="text-align: left;">Total Purchase Value</td>
                         <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
+                            <h:outputText value="#{0-cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Total</td>
+                        <td colspan="9" style="text-align: left;">Free Quantity (Sale Value) </td>
                         <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{0-cc.attrs.bill.total}">
+                            <h:outputText value="#{grnController.calFreeQuantitySaleValue(cc.attrs.bill)}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
+                        <td colspan="2" style="text-align: right;">
+                            <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -268,7 +284,7 @@
                                 <th style="width: 20%; font-weight: bold!important;">Description</th>
                                 <th style="width: 20%; text-align: right!important; font-weight: bold!important;">Value</th>
                             </tr>
-                        </thead> 
+                        </thead>
                         <h:panelGroup rendered="#{cc.attrs.bill.billExpenses ne null}">
                             <tbody style="font-size: 11px" >
                                 <ui:repeat value="#{cc.attrs.bill.billExpenses}" var="be">
@@ -311,12 +327,12 @@
             <div class="row my-5">
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>
-                    <h:outputLabel value="Prepared By. " /> 
+                    <h:outputLabel value="Prepared By. " />
                 </div>
 
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>
-                    <h:outputLabel value="Authorized By. " /> 
+                    <h:outputLabel value="Authorized By. " />
                 </div>
 
             </div>
@@ -339,13 +355,13 @@
                 </div>
                 <div>
                     <br></br>
-                    <h:outputLabel value="Prepared By :" /> 
+                    <h:outputLabel value="Prepared By :" />
                     <h:outputLabel value="................................................................."/>
-                    <br></br>                
-                    <br></br>         
+                    <br></br>
+                    <br></br>
                     <h:outputLabel value="Approved By :"/>
                     <h:outputLabel value="................................................................."/>
-                    <br></br>                                      
+                    <br></br>
                     <br></br>
                     <h:outputLabel value="Authorized By :"/>
                     <h:outputLabel value="................................................................"/>

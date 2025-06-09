@@ -439,6 +439,16 @@
                                                     class=" mx-1 ui-button-success my-2"
                                                     action="#{billPackageController.addToBill()}" >
                                                 </p:commandButton>
+
+                                                <p:commandButton 
+                                                    id="btnRefresh" 
+                                                    title="Refresh" 
+                                                    ajax="false"
+                                                    icon="fas fa-refresh"
+                                                    style="float: right;"
+                                                    class=" mx-1 ui-button-danger my-2"
+                                                    action="#{billPackageController.reloadPackages()}" >
+                                                </p:commandButton>
                                             </f:facet>
                                             <p:selectOneListbox 
                                                 id="advanced" 
@@ -485,7 +495,7 @@
                                     <p:panel class="w-100">
 
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-list" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-list" /> 
                                             <h:outputText value="Added Items" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <p:tabView id="tblBillItem" >
@@ -613,7 +623,7 @@
                                     <div>
                                         <p:panel class="mt-1">
                                             <f:facet name="header" >
-                                                <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                                <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                                 <h:outputText value="Payment Details" class="mx-4"></h:outputText>
                                             </f:facet>
                                             <div class="row">
@@ -814,7 +824,7 @@
 
                                     <p:panel class="w-100 mt-1" >
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-stethoscope" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-stethoscope" /> 
                                             <h:outputText value="Referral Details" class="mx-4"></h:outputText>
                                         </f:facet>
 
@@ -833,13 +843,14 @@
                                                 itemLabel="#{ri.name}" 
                                                 itemValue="#{ri}"
                                                 size="10"
+                                                maxResults="15"
                                                 minQueryLength="4"
                                                 inputStyleClass="form-control"
                                                 placeholder="Type at least 4 letters to search"
                                                 class="w-100 my-1">
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
-                                                <p:column headerText="Referring Institution Name">#{ri.name}</p:column>
-                                                <p:column headerText="Code">#{ri.institutionCode}</p:column>
+                                                <p:column headerText="Referring Institution Name" style="padding: 5px;">#{ri.name}</p:column>
+                                                <p:column headerText="Code" style="padding: 5px;">#{ri.institutionCode}</p:column>
                                             </p:autoComplete>
 
                                             <h:panelGroup class="w-100">
@@ -893,15 +904,16 @@
                                                 completeMethod="#{doctorController.completeDoctor}" var="ix" 
                                                 minQueryLength="4"
                                                 placeholder="Type at least 4 letters to search"
-                                                itemLabel="#{ix.person.name}" 
+                                                itemLabel="#{ix.person.nameWithTitle}" 
                                                 itemValue="#{ix}" 
+                                                maxResults="15"
                                                 inputStyleClass="form-control"
                                                 class="w-100 my-1" 
                                                 size="10">
-                                                <p:column headerText="Name" >
+                                                <p:column headerText="Name" style="padding: 6px;">
                                                     <h:outputText value="#{ix.person.nameWithTitle}" ></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Code" >
+                                                <p:column headerText="Code" style="padding: 6px;" >
                                                     <h:outputText value="#{ix.code}" ></h:outputText>
                                                 </p:column>
                                             </p:autoComplete>
@@ -925,15 +937,16 @@
                                                 placeholder="Type at least 4 letters to search"
                                                 inputStyleClass="form-control"
                                                 minQueryLength="4"
+                                                maxResults="15"
                                                 itemLabel="#{ix.name}" 
                                                 itemValue="#{ix}" 
                                                 size="10"
                                                 >
                                                 <f:ajax  event="itemSelect" execute="creditCom"  />
-                                                <p:column headerText="Collecting Centre Name">
+                                                <p:column headerText="Collecting Centre Name" style="padding: 6px;">
                                                     <h:outputText value="#{ix.name}" ></h:outputText>
                                                 </p:column>
-                                                <p:column headerText="Code">
+                                                <p:column headerText="Code" style="padding: 6px;">
                                                     <h:outputText value="#{ix.institutionCode}" ></h:outputText>
                                                 </p:column>
 
@@ -948,7 +961,7 @@
                                 <div>
                                     <p:panel id="pBillDetails" class="w-100 mt-1">
                                         <f:facet name="header" >
-                                            <h:outputText styleClass="fa fa-money-bill-wave" /> <!-- FontAwesome Icon -->
+                                            <h:outputText styleClass="fa fa-money-bill-wave" /> 
                                             <h:outputText value="Bill Details" class="mx-4"></h:outputText>
                                         </f:facet>
                                         <div class="row">
@@ -1040,8 +1053,7 @@
                     </div>
 
                     <div class="row mt-3">
-                        <div class="col-1"/>
-                        <div class="col-5">
+                        <div class="col-4">
                             <p:panel>
                                 <f:facet name="header">
                                     <div class="d-flex justify-content-between">
@@ -1077,7 +1089,7 @@
                                 </h:panelGroup>
                             </p:panel>
                         </div>
-                        <div class="col-5">
+                        <div class="col-4">
                             <div class="row">
                                 <p:panel>
                                     <f:facet name="header">
@@ -1125,7 +1137,86 @@
                                 </p:panel>
                             </div>
                         </div>
-                        <div class="col-1"/>
+                        <div class="col-4">
+                            <p:dataTable 
+                                value="#{billPackageController.bills}" 
+                                var="b" 
+                                resizeMode="expand"
+                                reflow="true"
+                                class="w-100 mt-3" 
+                                rowStyleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                <f:facet name="header" >
+                                    <h:outputLabel value="Individual Bills" style="font-size: 18px; font-weight: 800;" ></h:outputLabel>
+                                </f:facet>
+                                <p:column headerText="Bill No" width="280px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <h:outputText value="#{b.deptId}"  class="w-100 m-1" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Gross Total" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.total}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Discount" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.discount}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Net Total" 
+                                          styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}"
+                                          class="text-end">
+                                    <h:outputText value="#{b.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column  headerText="Actions" width="95px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
+                                    <!-- To Bill Details Button -->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        rendered="false"
+                                        title="View Bill"
+                                        class="ui-button-success m-1"
+                                        icon="fa fa-file-invoice"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false"
+                                        title="Manage Bill"
+                                        class="ui-button-warning m-1"
+                                        icon="fa fa-file-invoice"
+                                        action="#{billSearch.navigateToManageBillByAtomicBillType()}">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        title="To Sample Management" 
+                                        icon="fas fa-flask"
+                                        class="ui-button-raised mx-1"
+                                        action="#{patientInvestigationController.navigateToSampleManagementFromOPDBatchBillView(b)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <!-- To Cancel Button -->
+                                    <p:commandButton 
+                                        ajax="false"
+                                        rendered="false"
+                                        title="To Cancel Bill"
+                                        action="#{billSearch.navigateToCancelOpdBill()}"
+                                        disabled="#{b.cancelled or b.refunded}"
+                                        class="ui-button-danger m-1"
+                                        icon="fa fa-times">
+                                        <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
+                                    </p:commandButton>
+
+                                </p:column>
+                            </p:dataTable>
+
+                           
+                        </div>
                     </div>
 
                 </p:panel>

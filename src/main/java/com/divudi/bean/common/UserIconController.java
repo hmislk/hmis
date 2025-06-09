@@ -8,12 +8,12 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.data.Icon;
-import com.divudi.entity.Department;
-import com.divudi.entity.UserIcon;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.UserIconFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.data.Icon;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.UserIcon;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.facade.UserIconFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,6 +22,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -65,6 +66,19 @@ public class UserIconController implements Serializable {
         }
         if (user == null) {
             JsfUtil.addErrorMessage("Program Error. Cannot have this page without a user. Create an issue in GitHub");
+            return;
+        }
+
+        // Check for an existing icon for the same user and department
+        Map<String, Object> params = new HashMap<>();
+        params.put("u", user);
+        params.put("i", icon);
+        params.put("d", department);
+        params.put("ret", false);
+        String jpql = "select ui from UserIcon ui where ui.webUser=:u and ui.icon=:i and ui.department=:d and ui.retired=:ret";
+        UserIcon duplicate = getFacade().findFirstByJpql(jpql, params);
+        if (duplicate != null) {
+            JsfUtil.addErrorMessage("Icon already added for this department");
             return;
         }
 
@@ -244,9 +258,26 @@ public class UserIconController implements Serializable {
 
     public List<Icon> getIcons() {
         if (icons == null) {
-            icons = Arrays.asList(Icon.values());
+            icons = Arrays.stream(Icon.values())
+                    .sorted(Comparator.comparing(Icon::getLabel))
+                    .collect(Collectors.toList());
         }
         return icons;
+    }
+
+    public List<Icon> getFilteredIcons(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return Arrays.asList(Icon.values()); // Return all if no input
+        }
+
+        String[] keywords = query.toLowerCase().split("\\s+"); // Split by spaces
+
+        return Arrays.stream(Icon.values())
+                .filter(icon -> {
+                    String label = icon.getLabel().toLowerCase();
+                    return Arrays.stream(keywords).allMatch(label::contains);
+                })
+                .collect(Collectors.toList());
     }
 
     public WebUser getUser() {
@@ -255,7 +286,7 @@ public class UserIconController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
-        userIcons = fillUserIcons(user, department);
+        fillDepartmentIcon();
     }
 
     public List<UserIcon> getUserIcons() {
@@ -283,6 +314,7 @@ public class UserIconController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+        fillDepartmentIcon();
     }
 
     public List<Department> getDepartments() {

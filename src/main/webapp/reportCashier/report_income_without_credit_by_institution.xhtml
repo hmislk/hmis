@@ -5,7 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      
+
       xmlns:au="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -19,7 +19,7 @@
 
                 <h:form>
                     <p:panel header="Handover Reports" >
-                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet> 
+                        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
                         <p:panel  styleClass="tem nonPrintBlock" >
                             <h:panelGrid columns="2" class="my-2" >
 
@@ -29,10 +29,10 @@
 
                                 <h:outputLabel   value="To Date" />
                                 <p:calendar class="w-100 mx-4 mt-2" inputStyleClass="w-100" value="#{institutionLabSumeryController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                                </p:calendar>  
+                                </p:calendar>
 
                                 <h:outputLabel   value="Institution" />
-                                <p:selectOneMenu class="w-100 mx-4" autoWidth="false"  value="#{institutionLabSumeryController.institution}"                                    
+                                <p:selectOneMenu class="w-100 mx-4" autoWidth="false"  value="#{institutionLabSumeryController.institution}"
                                                  requiredMessage="You must select a institution" >
                                     <f:selectItem itemLabel="Select Institution"/>
                                     <f:selectItems value="#{institutionController.companies}" var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" />
@@ -46,20 +46,20 @@
 
                                 <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
                                     <p:printer target="panelReport" />
-                                </p:commandButton>             
+                                </p:commandButton>
 
                                 <p:commandButton class="ui-button-success" icon="fas fa-file-excel" value="Excel" ajax="false">
                                     <p:dataExporter type="xlsx" target="tbl,sum" fileName="Hand_Over_Ins"
-                                                   
-                                                   
-                                                     
+
+
+
                                                   />
                                 </p:commandButton>
                                 <p:commandButton class="ui-button-danger mx-2" icon="fas fa-file-pdf" value="PDF" ajax="false">
                                     <p:dataExporter type="pdf" target="tbl,sum" fileName="33" />
                                 </p:commandButton>
                             </h:panelGrid>
-                            
+
                         </p:panel>
                         <p:panel id="panelReport" styleClass="noBorder summeryBorder">
 
@@ -155,68 +155,68 @@
                                 <!--
                                                             <p:summaryRow >
                                                                 <p:column colspan="3" >
-                                                                    <h:outputLabel value="Billed Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}"/>                                   
-                                                                    <h:outputLabel value="Cancelled Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}"/>                                 
-                                                                    <h:outputLabel value="Refund Bill Totals" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}"/>
+                                                                    <h:outputLabel value="Billed Bill Totals" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}"/>
+                                                                    <h:outputLabel value="Cancelled Bill Totals" rendered="#{b.billClass eq 'class com.divudi.core.entity.CancelledBill'}"/>
+                                                                    <h:outputLabel value="Refund Bill Totals" rendered="#{b.billClass eq 'class com.divudi.core.entity.RefundBill'}"/>
                                                                 </p:column>
-                                
-                                                                <p:column  >                                    
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" style="text-align: right;" >
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
-                                                                        <f:convertNumber pattern="#,##0.00" />
-                                                                    </h:outputLabel>                                    
-                                                                </p:column>
-                                
+
                                                                 <p:column  >
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotB}"  rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotB}" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" style="text-align: right;" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}">
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotC}" rendered="#{b.billClass eq 'class com.divudi.core.entity.CancelledBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotR}" rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.hosTotR}" rendered="#{b.billClass eq 'class com.divudi.core.entity.RefundBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>
-                                
+
                                                                 <p:column  >
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotB}"  rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotC}" rendered="#{b.billClass eq 'class com.divudi.core.entity.CancelledBill'}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}">
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.disTotR}" rendered="#{b.billClass eq 'class com.divudi.core.entity.RefundBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>
-                                
+
                                                                 <p:column  >
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotB}" rendered="#{b.billClass eq 'class com.divudi.entity.BilledBill'}" >
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotB}" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotC}" rendered="#{b.billClass eq 'class com.divudi.entity.CancelledBill'}" >
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotC}" rendered="#{b.billClass eq 'class com.divudi.core.entity.CancelledBill'}" >
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
-                                
-                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotR}"  rendered="#{b.billClass eq 'class com.divudi.entity.RefundBill'}" >
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.profTotR}"  rendered="#{b.billClass eq 'class com.divudi.core.entity.RefundBill'}">
                                                                         <f:convertNumber pattern="#,##0.00" />
                                                                     </h:outputLabel>
                                                                 </p:column>
-                                
+
+                                                                <p:column  >
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotB}" rendered="#{b.billClass eq 'class com.divudi.core.entity.BilledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotC}" rendered="#{b.billClass eq 'class com.divudi.core.entity.CancelledBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+
+                                                                    <h:outputLabel value="#{institutionLabSumeryController.netTotR}"  rendered="#{b.billClass eq 'class com.divudi.core.entity.RefundBill'}" >
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputLabel>
+                                                                </p:column>
+
                                                             </p:summaryRow>-->
 
                             </p:dataTable>

@@ -112,7 +112,8 @@
                                     </p:column>
 
                                     <p:column headerText="Action" width="100px;">
-                                        <p:commandButton ajax="false" value="View Bill" action="inward_reprint_bill_payment"  >
+                                        <p:commandButton ajax="false" value="View Bill"
+                                                         action="inward_reprint_bill_payment?faces-redirect=true">
                                             <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>
                                         </p:commandButton>
                                     </p:column>

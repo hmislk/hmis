@@ -10,26 +10,22 @@ package com.divudi.bean.inward;
 
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.*;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.RefundBill;
-import com.divudi.entity.WebUser;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
+import com.divudi.core.entity.*;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.service.PaymentService;
+
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -51,6 +47,8 @@ public class InwardRefundController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private BillFeeFacade billFeeFacade;
+    @EJB
+    PaymentService paymentService;
     @Inject
     private SessionController sessionController;
     private double paidAmount;
@@ -111,8 +109,13 @@ public class InwardRefundController implements Serializable {
         }
 
         saveBill();
+        getCurrent().setBillTypeAtomic(BillTypeAtomic.INWARD_DEPOSIT_REFUND);
+        getBillFacade().edit(getCurrent());
         saveBillItem();
         printPreview = true;
+
+        List<Payment> payments = paymentService.createPayment(getCurrent(), paymentMethodData);
+        paymentService.updateBalances(payments);
 
         getBillBean().updateInwardDipositList(getCurrent().getPatientEncounter(), getCurrent());
 

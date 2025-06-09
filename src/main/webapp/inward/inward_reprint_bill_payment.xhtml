@@ -7,6 +7,7 @@
       xmlns:in="http://xmlns.jcp.org/jsf/composite/inward"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:bill="http://xmlns.jcp.org/jsf/composite/inward/bill/payment"
+      xmlns:prints="http://xmlns.jcp.org/jsf/composite/ezcomp/prints"
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/inward/bill">
 
     <h:body>
@@ -23,7 +24,7 @@
                                     <p:commandButton ajax="false" value="To Cancel"
                                                      class="ui-button-danger"
                                                      icon="fa fa-ban"
-                                                     action="inward_cancel_bill_payment" 
+                                                     action="#{inwardSearch.navigateToPaymentBillCancellation()}"
                                                      disabled="#{inwardSearch.bill.cancelled}"  >                           
                                     </p:commandButton>
 
@@ -108,6 +109,18 @@
                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'A4Paper'}" >
                                         <bill:A4PaperPaymentBill bill="#{inwardSearch.bill}" duplicate="true"/>                        
                                     </h:panelGroup>
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFivePaper'}" >
+                                        <bill:FiveFivePaymentBill bill="#{inwardSearch.bill}" duplicate="true" />    
+                                    </h:panelGroup> 
+
+                                    <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'PosPaper'}" style="align-items: center;">
+                                        <bill:posPaperPaymentBill bill="#{inwardSearch.bill}"/> 
+                                    </h:panelGroup>
+                                    
+                                     <h:panelGroup rendered="#{sessionController.departmentPreference.inwardDepositPaymentBillPaper eq 'FiveFiveCustom3'}" >
+                                         <prints:five_five_custom_3_inward_payments bill="#{inwardSearch.bill}" duplicate="true" />
+                                </h:panelGroup>
 
                                 </h:panelGroup>
                             </div>

@@ -7,10 +7,10 @@
  * (94) 71 5812399
  */
 package com.divudi.bean.common;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.DepartmentType;
-import com.divudi.entity.Department;
-import com.divudi.facade.DepartmentFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.entity.Department;
+import com.divudi.core.facade.DepartmentFacade;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -39,7 +39,7 @@ public class KitchenController implements Serializable {
     String selectText = "";
 
     public List<Department> getSelectedItems() {
-        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
+        selectedItems = getFacade().findByJpql("select c from Department c where c.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Kitchen and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
 
@@ -134,11 +134,11 @@ public class KitchenController implements Serializable {
 
     public List<Department> getItems() {
         if (items == null) {
-            String j = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.data.DepartmentType.Kitchen order by i.name";
+            String j = "SELECT i FROM Department i where i.retired=false and i.departmentType = com.divudi.core.data.DepartmentType.Kitchen order by i.name";
             items = getEjbFacade().findByJpql(j);
         }
         return items;
     }
 
-    
+
 }

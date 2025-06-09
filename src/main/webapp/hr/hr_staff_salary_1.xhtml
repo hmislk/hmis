@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/resources/template/template.xhtml" 
+                template="/resources/template/template.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
@@ -15,16 +15,16 @@
                     <p:commandButton ajax="false" value="Fill All Staff" action="#{staffController.createActiveStaffTable(staffSalaryController.salaryCycle.salaryFromDate)}" />
                     <h:panelGrid columns="2">
                         <h:outputLabel value="Salary Cycle : "/>
-                        <p:selectOneMenu id="advanced" 
-                                         value="#{staffSalaryController.salaryCycle}"                                 
-                                         var="t" 
-                                         filter="true" 
+                        <p:selectOneMenu id="advanced"
+                                         value="#{staffSalaryController.salaryCycle}"
+                                         var="t"
+                                         filter="true"
                                          filterMatchMode="startsWith"  >
 
                             <f:selectItem itemLabel="Slect Cycle"/>
-                            <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                           var="theme" 
-                                           itemLabel="#{theme.name}" 
+                            <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                           var="theme"
+                                           itemLabel="#{theme.name}"
                                            itemValue="#{theme}" ></f:selectItems>
 
                             <p:column style="width:10%" headerText="Name">
@@ -47,18 +47,18 @@
                         <h:outputLabel value="Designation : "/>
                         <hr:completeDesignation value="#{staffController.reportKeyWord.designation}"/>
                         <h:outputLabel value="Roster : "/>
-                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>                      
+                        <hr:completeRoster value="#{staffController.reportKeyWord.roster}"/>
                     </h:panelGrid>
 
-                    <p:dataTable  value="#{staffController.staffWithCode}" 
-                                  var="s" filteredValue="#{staffController.filteredStaff}"  
-                                  rowKey="#{s.id}" 
+                    <p:dataTable  value="#{staffController.staffWithCode}"
+                                  var="s" filteredValue="#{staffController.filteredStaff}"
+                                  rowKey="#{s.id}"
                                   selection="#{staffController.selectedList}"
                                   rowIndexVar="i"
                                   selectionMode="multiple"
                                   scrollable="true" rowStyleClass="#{((s.dateJoined eq staffSalaryController.salaryCycle.salaryFromDate)or(s.dateJoined gt staffSalaryController.salaryCycle.salaryFromDate)) and ((s.dateJoined eq staffSalaryController.salaryCycle.salaryToDate)or (s.dateJoined lt staffSalaryController.salaryCycle.salaryToDate)) ? 'greenText':''}"
                                   scrollHeight="250">
-                        <p:column   >                            
+                        <p:column   >
                         </p:column>
                         <p:column >
                             #{i+1}
@@ -83,14 +83,14 @@
                         </p:column>
                         <p:column headerText="Designation" filterBy="#{s.designation.name}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.designation.name}"/>
-                        </p:column>                         
+                        </p:column>
                         <p:column headerText="Code" filterBy="#{s.codeInterger}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.codeInterger}"/>
                         </p:column>
                         <p:column headerText="Name" filterBy="#{s.person.nameWithTitle}"  filterMatchMode="contains">
                             <h:outputLabel value="#{s.person.nameWithTitle}"/>
                         </p:column>
-                    </p:dataTable> 
+                    </p:dataTable>
                 </p:tab>
                 <p:tab title="Pay Role">
     <!--                    <p:commandButton value="Print" ajax="false" action="#" styleClass="noPrintButton" >
@@ -102,7 +102,7 @@
                     <h:outputScript library="js" name="excellentexport.js" ></h:outputScript>
 
                     <a download="staff_payroll.xls" href="#" onclick="return ExcellentExport.excel(this, 'tbl', 'Sheet1');"
-                       style="padding: .3em 1em;  background: #D7D0C0; " 
+                       style="padding: .3em 1em;  background: #D7D0C0; "
                        styleClass="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only ui-button-text ui-c noPrintButton" >Export to Excel</a>
                     <br></br>
                     <br></br>
@@ -126,7 +126,7 @@
 
                     <table id="tbl" border="1"  style="border: 1px solid black;" >
                         <thead>
-                            <tr>  
+                            <tr>
                                 <th>Code</th>
                                 <th>EPF</th>
                                 <th>Join</th>
@@ -157,7 +157,7 @@
                                 <th>ETF Company</th>
                             </tr>
                         </thead>
-                        <tbody>                   
+                        <tbody>
                             <ui:repeat value="#{salaryCycleController.staffSalarys}" var="scc">
                                 <tr >
                                     <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.codeInterger}" /></td>
@@ -166,11 +166,11 @@
                                             <f:convertDateTime pattern="dd MM yy" />
                                         </h:outputLabel>
                                     </td>
-                                    <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.person.name}" /></td>                                
-                                    <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.designation.name}" /></td>  
+                                    <td style="white-space: nowrap;" ><h:outputLabel value="#{scc.staff.person.name}" /></td>
+                                    <td style="white-space: nowrap;;" ><h:outputLabel value="#{scc.staff.designation.name}" /></td>
                                     <td style="text-align: right;;" ><h:outputText value="#{scc.basicValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>                                   
+                                        </h:outputText>
                                     </td>
                                     <td style="text-align: right;;"><h:outputText value="#{scc.merchantileAllowanceValue}" >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -286,7 +286,7 @@
                                     <h:outputText value="#{salaryCycleController.tranGrossSal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </td>                             
+                                </td>
                                 <td style="text-align: right;;">
                                     <h:outputText value="#{salaryCycleController.noPayBasic}" >
                                         <f:convertNumber pattern="#,##0.00" />
@@ -296,7 +296,7 @@
                                     <h:outputText value="#{salaryCycleController.epfDeduct}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
-                                </td>                            
+                                </td>
                                 <ui:repeat value="#{salaryCycleController.footerAdd}" var="f">
                                     <td style="text-align: right;;">
                                         <h:outputLabel value="#{f}" >
@@ -330,14 +330,14 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </td>
-                                <ui:repeat value="#{salaryCycleController.footerSub}" var="ff">                               
+                                <ui:repeat value="#{salaryCycleController.footerSub}" var="ff">
                                     <td style="text-align: right;;">
                                         <h:outputLabel value="#{ff}" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>
                                 </ui:repeat>
-                                <td style="text-align: right;;">                                
+                                <td style="text-align: right;;">
                                     <h:outputLabel value="#{salaryCycleController.transTotDeduct-(salaryCycleController.noPayBasic+salaryCycleController.noPayValAll)}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
@@ -362,7 +362,7 @@
                             <tr>
                                 <td colspan="5">
                                     <h:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - Print At : "/>
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                     <h:outputLabel value=" - This System Generated Report Does Not Carry A Signature."/>
@@ -374,7 +374,7 @@
             </p:tabView>
 
 
-        </h:form>        
+        </h:form>
     </ui:define>
 
 </ui:composition>

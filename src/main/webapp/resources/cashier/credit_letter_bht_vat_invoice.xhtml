@@ -20,11 +20,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:95%!important;
-             width:95%!important; 
+             width:95%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:2px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:2px!important;
              padding: 5px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -118,17 +118,17 @@
                         <td></td>
                         <td></td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="10" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
-                    
+
                     <tr>
                         <td>
                             <!--<h:outputLabel value="Date : " />-->
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />
                             </h:outputLabel>
                         </td>
@@ -232,7 +232,7 @@
                     <tr>
                         <td colspan="3" width="100%">
                             <p:panel>
-                                <p:dataTable id="safrin" value="#{cc.attrs.patientEncounters}" var="p" rowIndexVar="i" >  
+                                <p:dataTable id="safrin" value="#{cc.attrs.patientEncounters}" var="p" rowIndexVar="i" >
                                     <p:column>
                                         <f:facet name="header">
                                             <p:outputLabel value="No" style="float: left;"/>
@@ -251,7 +251,7 @@
                                         </f:facet>
                                         <h:outputLabel value="#{p.patient.person.nameWithTitle}"/>
                                     </p:column>
-                                    <p:column style="text-align: right;"> 
+                                    <p:column style="text-align: right;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Non-Taxable Value" />
                                         </f:facet>
@@ -259,7 +259,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column style="text-align: right;"> 
+                                    <p:column style="text-align: right;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Vat Liable Value" />
                                         </f:facet>
@@ -267,7 +267,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column style="text-align: right;"> 
+                                    <p:column style="text-align: right;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Vat" />
                                         </f:facet>
@@ -275,7 +275,7 @@
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
                                     </p:column>
-                                    <p:column style="text-align: right;"> 
+                                    <p:column style="text-align: right;">
                                         <f:facet name="header">
                                             <p:outputLabel value="Net Value" />
                                         </f:facet>
@@ -291,7 +291,7 @@
                                                                                     </f:facet>
                                                                                 </p:column>
                                                                                 <p:column footerText="#{cc.attrs.con.total}" style=" text-align: right">
-                                    
+
                                                                                 </p:column>
                                                                             </p:row>
                                                                         </p:columnGroup>-->
@@ -301,7 +301,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Non-Taxable Total : 
+                                                   Non-Taxable Total :
                                                    " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.total-cc.attrs.con.totalVatCalculatedValue-cc.attrs.con.totalVat}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -310,7 +310,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Vat Liable Total : 
+                                                   Vat Liable Total :
                                                    " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.totalVatCalculatedValue}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -319,7 +319,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Vat Total : 
+                                                   Vat Total :
                                                    " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.totalVat}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -328,7 +328,7 @@
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                                   Net Total : 
+                                                   Net Total :
                                                    " style="font-weight: bold;"/>
                                     <h:outputLabel value="#{cc.attrs.con.total-(cc.attrs.con.paid+cc.attrs.con.creditPaid)}" style="font-weight: bold;float: right;">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -366,7 +366,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                * Please note that prevailing bank overdraft interest rate will be applied for all 
+                                * Please note that prevailing bank overdraft interest rate will be applied for all
                                 overdue debts *
                             </p>
                         </td>
@@ -381,7 +381,7 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                If you have any Questions about this invoice, please contact 
+                                If you have any Questions about this invoice, please contact
                                 #{sessionController.loggedUser.staff.person.nameWithTitle} (Tel : 091-7212897).
                             </p>
                         </td>
@@ -467,14 +467,14 @@
                         </td>
                         <td></td>
                     </tr>
-                    
+
                     <tr>
                         <td><p:spacer height="40" /></td>
                         <td><h:outputLabel value=" "/></td>
                         <td><h:outputLabel value=" "/></td>
                     </tr>
 
-                    
+
 
                 </table>
 

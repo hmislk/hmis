@@ -9,56 +9,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import javax.inject.Named;
 import javax.enterprise.context.RequestScoped;
+
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.data.ReportTemplateRowBundle;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import javax.inject.Inject;
-import com.divudi.data.InvestigationItemType;
-import com.divudi.data.InvestigationItemValueType;
-import com.divudi.data.ReportItemType;
-import static com.divudi.data.ReportItemType.ApprovedAt;
-import static com.divudi.data.ReportItemType.AutherizedCode;
-import static com.divudi.data.ReportItemType.AutherizedPosition;
-import static com.divudi.data.ReportItemType.AutherizedQualification;
-import static com.divudi.data.ReportItemType.BHT;
-import static com.divudi.data.ReportItemType.BillNo;
-import static com.divudi.data.ReportItemType.BilledDate;
-import static com.divudi.data.ReportItemType.BilledTime;
-import static com.divudi.data.ReportItemType.BillingDepartment;
-import static com.divudi.data.ReportItemType.BillingInstitution;
-import static com.divudi.data.ReportItemType.CollectedOn;
-import static com.divudi.data.ReportItemType.CollectingCenter;
-import static com.divudi.data.ReportItemType.DepartmentBillNo;
-import static com.divudi.data.ReportItemType.InvestigationName;
-import static com.divudi.data.ReportItemType.MRN;
-import static com.divudi.data.ReportItemType.PatientAge;
-import static com.divudi.data.ReportItemType.PatientAgeOnBillDate;
-import static com.divudi.data.ReportItemType.PatientAgeandGender;
-import static com.divudi.data.ReportItemType.PatientName;
-import static com.divudi.data.ReportItemType.PatientSex;
-import static com.divudi.data.ReportItemType.PerformDepartment;
-import static com.divudi.data.ReportItemType.PerformInstitution;
-import static com.divudi.data.ReportItemType.Phn;
-import static com.divudi.data.ReportItemType.Phone;
-import static com.divudi.data.ReportItemType.PrintedAt;
-import static com.divudi.data.ReportItemType.ReceivedAt;
-import static com.divudi.data.ReportItemType.ReceivedOn;
-import static com.divudi.data.ReportItemType.ReferringDoctor;
-import static com.divudi.data.ReportItemType.ReportedDate;
-import static com.divudi.data.ReportItemType.ReportedTime;
-import static com.divudi.data.ReportItemType.SampledAt;
-import static com.divudi.data.ReportItemType.SampledDate;
-import static com.divudi.data.ReportItemType.SampledID;
-import static com.divudi.data.ReportItemType.SampledTime;
-import static com.divudi.data.ReportItemType.Speciman;
-import static com.divudi.data.ReportItemType.VisitType;
-import com.divudi.data.ReportTemplateRow;
-import com.divudi.entity.Category;
-import com.divudi.entity.lab.CommonReportItem;
-import com.divudi.entity.lab.InvestigationItem;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.lab.PatientSampleComponant;
+import com.divudi.core.data.InvestigationItemType;
+import com.divudi.core.data.InvestigationItemValueType;
+import com.divudi.core.data.ReportItemType;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.entity.Category;
+import com.divudi.core.entity.lab.CommonReportItem;
+import com.divudi.core.entity.lab.InvestigationItem;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.lab.PatientSampleComponant;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.Objects;
@@ -109,8 +75,6 @@ public class PdfController {
     PatientInvestigationController patientInvestigationController;
     @Inject
     SearchController searchController;
-    @Inject
-    CommonFunctionsController commonFunctionsController;
 
     /**
      * Creates a new instance of PdfController
@@ -223,7 +187,7 @@ public class PdfController {
             System.out.println("Patient report item values are null.");
         }
 
-        // </editor-fold>  
+        // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Report Labels">
         System.out.println("Processing report items (Labels)...");
         if (report.getItem() != null && report.getItem().getReportItems() != null) {
@@ -309,7 +273,7 @@ public class PdfController {
             System.out.println("Report items are null.");
         }
 
-        // </editor-fold>  
+        // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Common Report Items">
         Category commonReportFormat = report.getReportFormat(); // Adjust as per your code
 
@@ -401,7 +365,7 @@ public class PdfController {
                             break;
                         case SampledTime:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getSampledAt(), "hh:mm a") : "";
                             break;
                         case CollectingCenter:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
@@ -412,16 +376,16 @@ public class PdfController {
                         case BilledDate:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "dd/MM/yyyy") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "dd/MM/yyyy") : "";
                             break;
                         case BilledTime:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
                                     && report.getPatientInvestigation().getBillItem().getBill() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getBillItem().getBill().getCreatedAt(), "hh:mm a") : "";
                             break;
                         case SampledDate:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy") : "";
                             break;
                         case BillNo:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
@@ -434,10 +398,10 @@ public class PdfController {
                                     ? report.getPatientInvestigation().getBillItem().getBill().getDeptId() : "";
                             break;
                         case ReportedDate:
-                            value = (report.getCreatedAt() != null) ? CommonController.formatDate(report.getCreatedAt(), "dd/MM/yyyy") : "";
+                            value = (report.getCreatedAt() != null) ? CommonFunctions.formatDate(report.getCreatedAt(), "dd/MM/yyyy") : "";
                             break;
                         case ReportedTime:
-                            value = (report.getCreatedAt() != null) ? CommonController.formatDate(report.getCreatedAt(), "hh:mm a") : "";
+                            value = (report.getCreatedAt() != null) ? CommonFunctions.formatDate(report.getCreatedAt(), "hh:mm a") : "";
                             break;
                         case ReferringDoctor:
                             value = (report.getPatientInvestigation() != null && report.getPatientInvestigation().getBillItem() != null
@@ -448,23 +412,23 @@ public class PdfController {
                             break;
                         case SampledAt:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getSampledAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case ApprovedAt:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getApproveAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getApproveAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case ReceivedAt:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case ReceivedOn:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getReceivedAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case PrintedAt:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getPrintingAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getPrintingAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case AutherizedCode:
                             value = (report.getApproveUser() != null && report.getApproveUser().getStaff() != null)
@@ -516,7 +480,7 @@ public class PdfController {
                             break;
                         case CollectedOn:
                             value = (report.getPatientInvestigation() != null)
-                                    ? CommonController.formatDate(report.getPatientInvestigation().getSampleCollectedAt(), "dd/MM/yyyy hh:mm a") : "";
+                                    ? CommonFunctions.formatDate(report.getPatientInvestigation().getSampleCollectedAt(), "dd/MM/yyyy hh:mm a") : "";
                             break;
                         case SampledID:
                             List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(report.getPatientInvestigation());
@@ -590,7 +554,7 @@ public class PdfController {
             }
         }
 
-        // </editor-fold>  
+        // </editor-fold>
         document.close();
         System.out.println("Document closed.");
 
@@ -846,7 +810,7 @@ public class PdfController {
         // Optionally, add spacing or a separator between tables
         document.add(new Paragraph("\n"));
     }
- 
+
     private void populateTableForCreditCards(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle.getReportTemplateRows() == null || addingBundle.getReportTemplateRows().isEmpty()) {
             // If no data, add a paragraph stating this
@@ -1230,7 +1194,7 @@ public class PdfController {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{55, 20, 25, 25, 25, 25, 25});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1275,7 +1239,7 @@ public class PdfController {
         if (addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
 
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{55, 20, 25, 25, 25, 25});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1317,7 +1281,7 @@ public class PdfController {
     private void populateTableForItemizedSalesReportWithProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10, 10});
             table.setWidth(UnitValue.createPercentValue(100));
@@ -1345,7 +1309,7 @@ public class PdfController {
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(row.getBillItem() != null && row.getBillItem().getBill() != null && row.getBillItem().getBill().getPatient() != null && row.getBillItem().getBill().getPatient().getPerson() != null ? row.getBillItem().getBill().getPatient().getPerson().getNameWithTitle() : "")));
 
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemHospitalFee() != null ? row.getItemHospitalFee() : 0))));
-                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemProfessionalFee())))); // Format as string     
+                table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemProfessionalFee())))); // Format as string
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemDiscountAmount() != null ? row.getItemDiscountAmount() : 0))));
                 table.addCell(new com.itextpdf.layout.element.Cell().add(new Paragraph(String.format("%.2f", row.getItemNetTotal() != null ? row.getItemNetTotal() : 0))));
             }
@@ -1369,7 +1333,7 @@ public class PdfController {
     private void populateTableForItemizedSalesReportWithoutProfessionalFee(Document document, ReportTemplateRowBundle addingBundle) {
         if (addingBundle != null && addingBundle.getReportTemplateRows() != null && !addingBundle.getReportTemplateRows().isEmpty()) {
             document.add(new Paragraph(addingBundle.getName()));
-            document.add(new Paragraph(commonFunctionsController.getDateTimeFormat(searchController.getFromDate()) + " to " + commonFunctionsController.getDateTimeFormat(searchController.getToDate())));
+            document.add(new Paragraph(CommonFunctions.getDateTimeFormat(searchController.getFromDate()) + " to " + CommonFunctions.getDateTimeFormat(searchController.getToDate())));
 
             Table table = new Table(new float[]{40, 10, 60, 10, 20, 20, 10, 10, 10});
             table.setWidth(UnitValue.createPercentValue(100));

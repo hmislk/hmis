@@ -15,18 +15,49 @@
     <!-- IMPLEMENTATION -->
     <cc:implementation>
 
-        <h1>Bill Items</h1>
-        <p:dataTable value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
-            <p:column >
+        <p:commandButton value="Download" ajax="false">
+            <p:dataExporter fileName="bill_items" target="tblBillItems" type="xlsx" ></p:dataExporter>
+        </p:commandButton>
+
+        <p:dataTable 
+            id="tblBillItems"
+            value="#{cc.attrs.billItems}" var="bi" rowKey="#{bi.id}" >
+            <f:facet name="header" >
+                <h:outputText value="Bill Items" ></h:outputText>
+            </f:facet>
+            <p:column headerText="Item" >
                 <h:outputText value="#{bi.id}" class="w-100 m-1"></h:outputText>
             </p:column>
-            <p:column >
+            <p:column headerText="Item Name">
                 <h:outputText value="#{bi.item.name}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Referance Bill Item ID">
+                <h:outputText value="#{bi.referanceBillItem.id}" ></h:outputText>
+            </p:column>
+            <p:column headerText="Pharmaceutical Bill Item ID">
+                <h:outputText value="#{bi.pharmaceuticalBillItem.id}" ></h:outputText>
             </p:column>
             <p:column headerText="Quantity" class="text-end">
                 <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <p:outputLabel value="#{bi.qty}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
+            <p:column headerText="Rate" class="text-end">
+                <p:inputText value="#{bi.rate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.rate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Discount Rate" class="text-end">
+                <p:inputText value="#{bi.discountRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.discountRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Margin Rate" class="text-end">
+                <p:inputText value="#{bi.marginRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.marginRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Net Rate" class="text-end">
+                <p:inputText value="#{bi.netRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.netRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+
             <p:column headerText="Hospital Fee" class="text-end">
                 <p:inputText value="#{bi.hospitalFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <h:outputText value="#{bi.hospitalFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
@@ -50,6 +81,10 @@
             <p:column headerText="Discount" class="text-end">
                 <p:inputText value="#{bi.discount}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <h:outputText value="#{bi.discount}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Service Charge" class="text-end">
+                <p:inputText value="#{bi.marginValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <h:outputText value="#{bi.marginValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
             <p:column headerText="Net Value" class="text-end">
                 <p:inputText value="#{bi.netValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />

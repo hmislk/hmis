@@ -186,28 +186,20 @@
                         <h:outputLabel 
                             value="#{billItem.bill.deptId}" >
                         </h:outputLabel>
-                        <p:commandLink 
-                            ajax="false" 
-                            title="View Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
-                        <p:commandButton 
-                            value="Admin" 
-                            icon="fa fa-shield-alt" 
-                            class="m-1 ui-button-danger" 
-                            style="width: 100px;"
-                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
-                            ajax="false" 
-                            rendered="#{webUserController.hasPrivilege('Developers')}">
-                            <f:setPropertyActionListener 
-                                value="#{billItem.bill}" 
-                                target="#{billSearch.bill}" />
-                        </p:commandButton>
+                    </p:column>
+
+                    <!-- Bill Item ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" >
+                        <h:outputLabel 
+                            value="#{billItem.id}" >
+                        </h:outputLabel>
+                    </p:column>
+
+                    <!-- Bill ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="BILL ID" >
+                        <h:outputLabel 
+                            value="#{billItem.bill.id}" >
+                        </h:outputLabel>
                     </p:column>
 
                     <!-- Bill Date Column -->
@@ -224,9 +216,9 @@
                     </p:column>
 
                     <!-- Investigation Name Column -->
-                    <p:column headerText="Investigation" filterBy="#{billItem.patientInvestigation.investigation.name}" 
-                              sortBy="#{billItem.patientInvestigation.investigation.name}">
-                        <h:outputLabel value="#{billItem.patientInvestigation.investigation.name}" />
+                    <p:column headerText="Investigation" filterBy="#{billItem.item.name}" 
+                              sortBy="#{billItem.item.name}">
+                        <h:outputLabel value="#{billItem.item.name}" />
                     </p:column>
 
                     <!-- Status Column -->
@@ -268,7 +260,7 @@
 
 
                     <!-- Hospital Fee Column -->
-                    <p:column headerText="Hospital Fee">
+                    <p:column class="text-end" headerText="Hospital Fee">
                         <h:outputLabel value="#{billItem.hospitalFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -280,7 +272,7 @@
                     </p:column>
 
                     <!-- Collecting Centre Fee Column -->
-                    <p:column headerText="CC Fee">
+                    <p:column  class="text-end" headerText="CC Fee">
                         <h:outputLabel value="#{billItem.collectingCentreFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -292,7 +284,7 @@
                     </p:column>
 
                     <!-- Hospital Fee Column -->
-                    <p:column headerText="Staff Fee">
+                    <p:column  class="text-end" headerText="Staff Fee">
                         <h:outputLabel value="#{billItem.staffFee}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -304,7 +296,7 @@
                     </p:column>
 
                     <!-- Gross Total Column -->
-                    <p:column headerText="Gross Total">
+                    <p:column  class="text-end" headerText="Gross Total">
                         <h:outputLabel value="#{billItem.grossValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -316,7 +308,7 @@
                     </p:column>
 
                     <!-- Discount Column -->
-                    <p:column headerText="Discount">
+                    <p:column  class="text-end" headerText="Discount">
                         <h:outputLabel value="#{billItem.discount}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -328,7 +320,7 @@
                     </p:column>
 
                     <!-- Net Total Column -->
-                    <p:column headerText="Net Total" sortBy="#{billItem.netValue}">
+                    <p:column  class="text-end" headerText="Net Total" sortBy="#{billItem.netValue}">
                         <h:outputLabel value="#{billItem.netValue}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
@@ -341,7 +333,7 @@
 
 
                     <!-- Bill Date Column -->
-                    <p:column headerText="Cancellation">
+                    <p:column headerText="Cancellation" >
                         <h:outputLabel 
                             class="mx-3 ui-message-error"
                             rendered="#{billItem.bill.cancelled}" 
@@ -352,18 +344,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        <p:commandLink 
-                            class="mx-3 ui-message-error"
-                            ajax="false" 
-                            rendered="#{billItem.bill.cancelled}" 
-                            title="View Cancel Bill Details"
-                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
-                            <h:outputText 
-                                value="&#xf06e;" 
-                                escape="false"  
-                                styleClass="fa"/>
-                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
-                        </p:commandLink>
+
                     </p:column>
 
                     <p:column headerText="Refunded">
@@ -377,6 +358,43 @@
                             rendered="#{billItem.refunded}" 
                             value="#{billItem.referanceBillItem}">
                         </h:outputLabel>
+                    </p:column>
+
+                    <p:column 
+                        headerText="Actions"
+                        exportable="false">
+                        <p:commandButton 
+                            ajax="false" 
+                            value="View"
+                            icon="fa fa-eye" 
+                            class="mx-1 ui-button-primary" 
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                            <f:setPropertyActionListener value="#{billItem.bill}" target="#{billSearch.bill}"/>
+                        </p:commandButton>
+                        <p:commandButton 
+                            value="Admin" 
+                            icon="fa fa-shield-alt" 
+                            class="mx-1 ui-button-danger" 
+                            style="width: 100px;"
+                            action="#{billSearch.navigateToAdminBillByAtomicBillType()}" 
+                            ajax="false" 
+                            rendered="#{webUserController.hasPrivilege('Developers')}">
+                            <f:setPropertyActionListener 
+                                value="#{billItem.bill}" 
+                                target="#{billSearch.bill}" />
+                        </p:commandButton>
+                        <p:commandLink 
+                            class="mx-3 ui-message-error"
+                            ajax="false" 
+                            rendered="#{billItem.bill.cancelled}" 
+                            title="View Cancel Bill Details"
+                            action="#{billSearch.navigateToViewBillByAtomicBillType()}">
+                            <h:outputText 
+                                value="&#xf06e;" 
+                                escape="false"  
+                                styleClass="fa"/>
+                            <f:setPropertyActionListener value="#{billItem.bill.cancelledBill}" target="#{billSearch.bill}"/>
+                        </p:commandLink>
                     </p:column>
 
                 </p:dataTable>

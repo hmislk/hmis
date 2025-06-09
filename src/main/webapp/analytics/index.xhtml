@@ -12,12 +12,21 @@
 
                 <p:panel header="Reports">
                     <div class="row" >
-                        <div class="col-md-3" >
+                        <div class="col-md-2" >
                             <h:form>
                                 <p:accordionPanel activeIndex="#{searchController.manageListIndex}">
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Summaries">
                                         <div class="d-grid gap-2">
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Income Bill Counts" 
+                                                icon="fa fa-chart-bar"
+                                                action="#{reportController.navigateToIncomeBillCountReport()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Shift End Summaries" 
@@ -45,7 +54,7 @@
                                                 action="#{searchController.navigateToBillTypeList()}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
 
                                             <p:commandButton 
                                                 ajax="false" 
@@ -54,6 +63,13 @@
                                                 class="w-100">
                                             </p:commandButton>
 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Bill Count List"
+                                                action="#{searchController.navigateToBillCountList()}"
+                                                actionListener="#{searchController.resetAllFiltersExceptDateRange}"
+                                                class="w-100">
+                                            </p:commandButton>
 
                                             <p:commandButton 
                                                 ajax="false" 
@@ -77,6 +93,43 @@
                                                 class="w-100">
                                             </p:commandButton>
 
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Pharmaceutical Bill Item List" 
+                                                action="#{searchController.navigateToPharmaceuticalBillItemList()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Patient Investigation List" 
+                                                action="#{searchController.navigateToPatientInvestigationList()}"
+                                                class="w-100 mx-2"/>
+
+                                        </div>
+
+                                    </p:tab>
+
+
+                                    <p:tab title="Additional Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Cancellation Bill List" 
+                                                action="#{searchController.navigateToCancellationBillList}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Return Bill List" 
+                                                action="#{searchController.navigateToReturnBillList()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Downloads">
+                                        <div class="d-grid gap-2">
 
 
                                             <p:commandButton 
@@ -173,6 +226,16 @@
                                             </p:commandButton>
                                         </div>
                                     </p:tab>
+                                    <p:tab title="Performance">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Daily Bill Type Counts" 
+                                                action="#{analysisController.navigateToDailyBillTypeCounts()}"
+                                                class="w-100">
+                                            </p:commandButton>
+                                        </div>
+                                    </p:tab>
                                     <p:tab title="OPD Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
@@ -180,14 +243,13 @@
                                                 value="OPD Bill List" 
                                                 action="#{searchController.navigateToOpdBillList()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="OPD Summary by Item"
-                                                action="#{searchController.navigateToOpdSummaryByItem()}" 
-                                                ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Cancelled Bill List" action="#" ></p:commandButton>
-                                            <p:commandButton ajax="false" value="Returned Bill List" action="#" ></p:commandButton>
+                                                action="#{searchController.navigateToOpdSummaryByItem()}">
+                                            </p:commandButton>
+
 
                                         </div>
                                     </p:tab>
@@ -247,13 +309,38 @@
                                             <p:commandButton ajax="false" value="Referral Test List" action="#"  ></p:commandButton>
                                         </div>
                                     </p:tab>
-                                    <p:tab title="SMS Reports">
+                                    <p:tab title="SMS">
                                         <div class="d-grid gap-2">
                                             <p:commandButton ajax="false" value="SMS List" action="#{searchController.navigateToSmsList()}"></p:commandButton>
                                             <p:commandButton ajax="false" value="SMS Failed List" action="#{searchController.navigateToFailedSmsList()}"  ></p:commandButton>
                                             <p:commandButton ajax="false" value="Sent SMS" action="#{searchController.navigateToSendSms()}"  ></p:commandButton>
                                         </div>
                                     </p:tab>  
+                                    <p:tab title="Email">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-list" 
+                                                value="Email List" 
+                                                styleClass="ui-button-info" 
+                                                action="#{emailController.navigateToEmailList()}" />
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-times-circle" 
+                                                value="Failed Emails" 
+                                                styleClass="ui-button-danger" 
+                                                action="#{emailController.navigateToFailedEmailList()}" />
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                icon="pi pi-send" 
+                                                value="Send Email" 
+                                                styleClass="ui-button-success" 
+                                                action="#{emailController.navigateToSendEmail()}" />
+                                        </div>
+                                    </p:tab>
+
                                     <p:tab title="Audit Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
@@ -267,7 +354,7 @@
                                 </p:accordionPanel>
                             </h:form>
                         </div>
-                        <div class="col-md-9" >
+                        <div class="col-md-10" >
                             <ui:insert name="report">
                             </ui:insert>
                         </div>

@@ -6,23 +6,22 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.dataStructure.PaymentMethodData;
-import com.divudi.data.dataStructure.SearchKeyword;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
 
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -73,7 +72,6 @@ public class PurchaseOrderController implements Serializable {
     // List<PharmaceuticalBillItem> pharmaceuticalBillItems;
     //////////
 
-    private CommonFunctions commonFunctions;
     private LazyDataModel<Bill> searchBills;
 
     private PaymentMethodData paymentMethodData;
@@ -116,14 +114,14 @@ public class PurchaseOrderController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = getCommonFunctions().getEndOfDay(new Date());
+            toDate = CommonFunctions.getEndOfDay(new Date());
         }
         return toDate;
     }
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -142,30 +140,24 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("Please add bill items");
             return "";
         }
-
         calTotal();
-
         saveBill();
-        
         totalBillItemsCount = 0;
         saveBillComponent();
         if (totalBillItemsCount == 0){
             JsfUtil.addErrorMessage("Please add item quantities for the bill");
             return "";
         }
-        
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
- 
         getAprovedBill().setDeptId(deptId);
         getAprovedBill().setInsId(deptId);
-        
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
         //Update Requested Bill Reference
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
-        
+
 //      clearList();
         printPreview = true;
         return "";
@@ -220,9 +212,9 @@ public class PurchaseOrderController implements Serializable {
         getAprovedBill().setCreatedAt(Calendar.getInstance().getTime());
 
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
-        
-        
-        
+
+
+
         try {
             if (getAprovedBill().getId() == null) {
                 getBillFacade().create(getAprovedBill());
@@ -240,8 +232,8 @@ public class PurchaseOrderController implements Serializable {
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
-            
-            double qty = 0.0;
+
+            double qty;
             qty = i.getTmpQty() + i.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 i.setRetired(true);
@@ -383,14 +375,6 @@ public class PurchaseOrderController implements Serializable {
 
     public void setToDate(Date toDate) {
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public void setFromDate(Date fromDate) {

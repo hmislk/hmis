@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header" >
-                            <h:outputLabel value="Credit Payment Bills with OPD Bill "/>                          
+                            <h:outputLabel value="Credit Payment Bills with OPD Bill "/>
                         </f:facet>
 
                         <div class="row">
@@ -22,16 +22,16 @@
                                         <h:outputLabel value="From Date"/>
                                         <p:calendar styleClass="dateTimePicker"
                                                     id="fromDate"
-                                                    class="w-100" 
+                                                    class="w-100"
                                                     inputStyleClass="form-control"
                                                     value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >      
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                                         </p:calendar>
                                         <h:outputLabel value="To Date"/>
-                                        <p:calendar styleClass="dateTimePicker" 
-                                                    class="w-100" 
+                                        <p:calendar styleClass="dateTimePicker"
+                                                    class="w-100"
                                                     inputStyleClass="form-control" id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                                    maxdate="#{commonController.endOfDayOnCurrentDate}" >                                                                              
+                                                    maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}" >
                                         </p:calendar>
                                     </h:panelGroup>
 
@@ -62,10 +62,10 @@
                                             <p:outputLabel value="Bill Total - #{wb.b.total}" style="float: right; padding-right: 50%;"></p:outputLabel>
                                             <p:outputLabel value="Frist Paid - #{wb.b.cashPaid} &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" style="float: right;"></p:outputLabel>
                                         </f:facet>
-                                        <p:column headerText="Bill No" >                                
+                                        <p:column headerText="Bill No" >
                                             <h:outputLabel   value="#{bill.deptId}"/>
-                                        </p:column>                            
-                                        <p:column headerText="Billed For"  >                                
+                                        </p:column>
+                                        <p:column headerText="Billed For"  >
                                             <h:outputLabel value="#{bill.referenceBill.deptId}" />
                                         </p:column>
                                         <p:column headerText="Billed At"  >
@@ -80,14 +80,14 @@
                                                 </h:outputLabel>
                                             </h:panelGroup>
 
-                                        </p:column>  
+                                        </p:column>
                                         <p:column headerText="Billed By" >
-                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" >
                                             </h:outputLabel>
                                             <br/>
                                             <h:panelGroup rendered="#{bill.cancelled}" >
                                                 <h:outputLabel style="color: red;" value="Cancelled By " />
-                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >                                       
+                                                <h:outputLabel style="color: red;" rendered="#{bill.cancelled}" value="#{bill.cancelledBill.creater.webUserPerson.name}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bill.refunded}" >
@@ -95,8 +95,8 @@
                                                 <h:outputLabel style="color: red;" rendered="#{bill.refunded}" value="#{bill.refundedBill.creater.webUserPerson.name}" >
                                                 </h:outputLabel>
                                             </h:panelGroup>
-                                        </p:column>    
-                                        <p:column headerText="Payment Method" >                                
+                                        </p:column>
+                                        <p:column headerText="Payment Method" >
                                             <h:outputLabel value="#{bill.paymentMethod}" /><br/>
                                             <h:outputLabel value="#{bill.paymentScheme.name}" />
                                         </p:column>

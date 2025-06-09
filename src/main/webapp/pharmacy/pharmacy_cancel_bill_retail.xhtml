@@ -163,6 +163,10 @@
                             </h:panelGroup>
 
                         </h:panelGroup>
+                        
+                        <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                            <phi:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}"></phi:saleBill_Header_Cancel>
+                        </h:panelGroup>
 
 
                         <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 

@@ -10,19 +10,17 @@
                 xmlns:p="http://primefaces.org/ui">
     <ui:define name="item">
 
-     
-
-        <div class="container-fluid" >
-            <div class="card" >
-                <div class="card-header" >
+        <div class="container-fluid">
+            <div class="card">
+                <div class="card-header">
                     <h2>Upload and Add Professional Fees</h2>
                 </div>
-                <div class="card-body" >
-                    <p>This is for the logged department only. Make sure to log to the relevant department.</p>
-                    <p>New Items will NOT be created. Make sure to spell the item correctly.</p>
-                    <p>This will add to existing set of fees.</p>
-                    <p>No specialities will be created. Make sure to spell the speciality correctly.</p>
-                    <p>No doctors will be created. Make sure to spell the doctor correctly.</p>
+                <div class="card-body">
+                    <p>This process updates professional fees for the logged-in department only.</p>
+                    <p>Ensure you are logged into the correct department before proceeding.</p>
+                    <p>Items must be referenced by their code. Names are still displayed but not used for searching.</p>
+                    <p>No new items, specialities, or doctors will be created.</p>
+                    <p>Ensure correct spelling and accuracy before uploading.</p>
 
                     <h:form enctype="multipart/form-data">
                         <p:fileUpload value="#{dataUploadController.file}"
@@ -33,10 +31,6 @@
                             value="Upload"
                             action="#{dataUploadController.uploadAddProfessionalFees()}"
                             ajax="false"/>
-
-
-
-
                     </h:form>
 
                     <table class="table">
@@ -50,45 +44,54 @@
                         <tbody>
                             <tr>
                                 <td>A</td>
-                                <td>Name</td>
-                                <td>Name. Required</td>
+                                <td>Item Code</td>
+                                <td>Required. Used for searching items.</td>
                             </tr>
                             <tr>
                                 <td>B</td>
-                                <td>Speciality</td>
-                                <td>Speciality. Optional.</td>
+                                <td>Name</td>
+                                <td>Displayed only. Not used for searching.</td>
                             </tr>
                             <tr>
                                 <td>C</td>
-                                <td>Staff Name</td>
-                                <td>Staff Name (without title). Optional</td>
+                                <td>Speciality</td>
+                                <td>Optional.</td>
                             </tr>
                             <tr>
                                 <td>D</td>
+                                <td>Staff Name</td>
+                                <td>Without title. Optional.</td>
+                            </tr>
+                            <tr>
+                                <td>E</td>
                                 <td>Professional Fee Value</td>
                                 <td>Mandatory.</td>
                             </tr>
-
-
+                            <tr>
+                                <td>F</td>
+                                <td>Professional Fee Value for Foreigners</td>
+                                <td>Mandatory.</td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-
-
-        <p:dataTable id="tbl" value="#{dataUploadController.itemFees}" var="item" >
-            <p:column >
-                #{item.name}
+        <p:dataTable id="tbl" value="#{dataUploadController.itemFees}" var="item">
+            <p:column headerText="Item Code">
+                #{item.item.code}
             </p:column>
-            <p:column >
+            <p:column headerText="Name">
+                #{item.item.name}
+            </p:column>
+            <p:column headerText="Fee">
                 #{item.fee}
             </p:column>
-
+            <p:column headerText="Foreigner Fee">
+                #{item.ffee}
+            </p:column>
         </p:dataTable>
-
-
 
     </ui:define>
 </ui:composition>

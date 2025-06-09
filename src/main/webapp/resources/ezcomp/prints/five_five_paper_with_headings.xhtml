@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
@@ -37,18 +37,18 @@
                     <h:outputLabel value="#{cc.attrs.bill.department.telephone2}"/>
                 </div>
                 <div >
-                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>                                                 
+                    <h:outputLabel value="#{cc.attrs.bill.department.fax}"/>
                 </div>
             </div>
 
             <div class="headingBillFiveFive" style="text-align: center;font-weight: bold;">
-                <h:outputLabel value="RECEIPT"   />    
-                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
-                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
+                <h:outputLabel value="RECEIPT"   />
+                <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" />
+                <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" />
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
             <div class="billDetailsFiveFive" >
@@ -211,7 +211,7 @@
             <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                 <div class="billline">
                     <div style="width: 100%;text-align: center;font-size: 10px;">
-                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                        <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"
                                    />
                     </div>
                 </div>
@@ -384,7 +384,7 @@
                 <h:outputLabel value="Cashier : #{cc.attrs.bill.creater.webUserPerson.name}"/>
                 <h:outputLabel value="Original Bill : #{cc.attrs.bill.deptId}" rendered="#{cc.attrs.bill.cancelled and configOptionApplicationController.getBooleanValueByKey('Package Billing - Display the Original Bill Number in Canceled Bill',false)}"/>
             </div>
-            
+
             <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Card'}" style="margin-top: 10px;font-size: 8pt">
                 <h:outputLabel value="Payments : #{cc.attrs.bill.paymentMethod.label}"/>
                 <ui:repeat value="#{cc.attrs.payments}" var="p">
@@ -416,7 +416,7 @@
                     </h:outputLabel>
                 </div>
             </h:panelGroup>
-            
+
             <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
                 <div class="d-flex gap-2" style="font-size: 12px;">
                     <h:outputLabel value="Remark :"/>

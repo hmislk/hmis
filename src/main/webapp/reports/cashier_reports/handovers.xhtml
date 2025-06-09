@@ -1,0 +1,183 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+        <ui:composition  template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel 
+                        header="My Handovers" 
+                        class="m-1"
+                        >
+                        <h:panelGrid
+                            columns="7"
+                            class="m-1 gap-5 p-5">
+                            <p:outputLabel value="From" class="me-2"></p:outputLabel>
+                            <p:datePicker 
+                                value="#{financialTransactionController.fromDate}"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:datePicker>
+                            <p:spacer width="5em" ></p:spacer>
+
+                            <p:outputLabel value="To" class="me-2" ></p:outputLabel>
+                            <p:datePicker 
+                                value="#{financialTransactionController.toDate}"
+                                showTime="true"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
+                            </p:datePicker>
+                            <p:spacer width="5em" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="acStaff" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:autoComplete
+                                completeMethod="#{webUserController.completeUser}"
+                                class="w-100"
+                                id="acStaff" 
+                                inputStyleClass="w-100"
+                                value="#{financialTransactionController.user}" 
+                                var="user"
+                                scrollHeight="450"
+                                itemLabel="#{user.webUserPerson.name}" 
+                                itemValue="#{user}" >
+                                <p:column headerText="Username" >
+                                    <h:outputText value="#{user.name}" ></h:outputText>
+                                </p:column>
+                                <p:column headerText="Name" >
+                                    <h:outputText value="#{user.webUserPerson.name}" ></h:outputText>
+                                </p:column>
+                            </p:autoComplete>
+
+                            <p:commandButton 
+                                class="ui-button-info mx-2" 
+                                ajax="false" 
+                                value="List My Handovers" 
+                                action="#{financialTransactionController.fillHandovers()}" ></p:commandButton>
+
+                        </h:panelGrid>
+
+
+                        <p:dataTable
+                            id="tblbill"
+                            value="#{financialTransactionController.currentBills}" 
+                            var="bp" 
+                            rowKey="#{bp.id}"
+                            selectionMode="single"
+                            selection="#{financialTransactionController.selectedBill}">
+
+                            <p:column headerText="ID" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{bp.id}" />
+                            </p:column>
+
+
+                            <p:column headerText="Shift Number">
+                                <h:outputText value="#{bp.referenceBill.deptId}" />
+                            </p:column>
+
+
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift Start">
+                                <h:outputText value="#{bp.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Shift End">
+                                <h:outputText value="#{bp.referenceBill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Handover Number">
+                                <h:outputText value="#{bp.insId}" />
+                            </p:column>
+                            <p:column headerText="Handover Time">
+                                <h:outputText value="#{bp.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column 
+                                headerText="Accept Number">
+                                <h:outputText value="#{bp.backwardReferenceBill.deptId}" />
+                            </p:column>
+                            <p:column 
+                                width="10em"
+                                class="text-center"
+                                headerText="Accept At">
+                                <h:outputText value="#{bp.backwardReferenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Value" 
+                                class="text-end"
+                                width="8em">
+                                <h:outputText value="#{bp.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column 
+                                headerText="Status" 
+                                width="10em"
+                                class="text-center">
+                                <p:badge value="&nbsp;&nbsp;Awaiting" severity="info" icon="pi pi-hourglass" 
+                                         rendered="#{not bp.completed and not bp.cancelled}" ></p:badge>
+                                <p:badge value="&nbsp;&nbsp;Rejected" severity="danger" icon="pi pi-times" 
+                                         rendered="#{bp.cancelled}" ></p:badge>
+                                <p:badge value="&nbsp;&nbsp;Completed" severity="success" icon="pi pi-check" 
+                                         rendered="#{bp.completed and not bp.cancelled}" ></p:badge>
+                            </p:column>
+
+
+                            <p:column 
+                                headerText="Actions"
+                                width="12em"      >
+                                <p:commandButton 
+                                    value="View"
+                                    action="#{financialTransactionController.navigateToViewHandoverBill()}"
+                                    ajax="false"
+                                    class="m-1 ui-button-success"
+                                    icon="pi pi-times-circle">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    rendered="#{not bp.completed and not bp.cancelled}"
+                                    value="Recall"
+                                    action="#{financialTransactionController.recallMyHandoverBill()}"
+                                    ajax="false"
+                                    onclick="if (!confirm('Are you sure you want to Reject this record?'))
+                                                return false;" 
+                                    class="m-1 ui-button-danger"
+                                    icon="pi pi-times-circle">
+                                    <f:setPropertyActionListener value="#{bp}" target="#{financialTransactionController.selectedBill}"></f:setPropertyActionListener>
+                                </p:commandButton>
+
+                            </p:column>
+
+
+
+
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>

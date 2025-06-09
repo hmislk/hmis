@@ -1,6 +1,6 @@
 package com.divudi.bean.common;
 
-import com.divudi.entity.Patient;
+import com.divudi.core.entity.Patient;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import javax.inject.Named;

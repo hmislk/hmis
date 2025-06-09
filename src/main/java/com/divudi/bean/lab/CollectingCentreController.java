@@ -7,22 +7,22 @@ package com.divudi.bean.lab;
 import com.divudi.bean.common.AgentAndCcApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.CollectingCentrePaymentMethod;
-import com.divudi.data.HistoryType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.dto.AgentHistoryDTO;
-import com.divudi.entity.AgentHistory;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Payment;
-import com.divudi.entity.channel.AgentReferenceBook;
-import com.divudi.facade.AgentHistoryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.InstitutionFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.CollectingCentrePaymentMethod;
+import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dto.AgentHistoryDTO;
+import com.divudi.core.entity.AgentHistory;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.channel.AgentReferenceBook;
+import com.divudi.core.facade.AgentHistoryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.service.AgentHistoryService;
 import com.divudi.service.AuditService;
 import java.io.Serializable;
@@ -183,12 +183,12 @@ public class CollectingCentreController implements Serializable {
         auditDataBefore = null;
     }
 
-    
+
     public void processCollectingCentreBookWiseDetail(){
         //TO DO - Add Logic
         bills = new ArrayList<>();
     }
-    
+
     public String saveAgentHistoryAndNavigateBackToCcStatement() {
         if (agentHistory == null) {
             JsfUtil.addErrorMessage("Nothing selected");
@@ -304,7 +304,7 @@ public class CollectingCentreController implements Serializable {
 //            double transactionValue,
 //            HistoryType historyType,
 //            Bill bill
-//        
+//
         collectingCentreApplicationController.updateCcBalance(
                 collectingCentre,
                 0,
@@ -348,7 +348,7 @@ public class CollectingCentreController implements Serializable {
         }
 
 //        selectedItems = getFacade().findByJpql("select c from Institution c where c.retired=false "
-//                + "and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre  "
+//                + "and i.institutionType = com.divudi.core.data.InstitutionType.CollectingCentre  "
 //                + "and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
         return selectedItems;
     }
@@ -367,12 +367,14 @@ public class CollectingCentreController implements Serializable {
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
-                + " and ah.createdAt between :fd and :td ";
+                + " and ah.createdAt between :fd and :td "
+                + " and ah.historyType <> :ht ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc ";
@@ -563,7 +565,7 @@ public class CollectingCentreController implements Serializable {
 
     public List<Institution> getItems() {
         if (items == null) {
-            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.data.InstitutionType.CollectingCentre order by i.name";
+            String sql = "SELECT i FROM Institution i where i.retired=false and i.institutionType = com.divudi.core.data.InstitutionType.CollectingCentre order by i.name";
             items = getEjbFacade().findByJpql(sql);
         }
         return items;
@@ -708,7 +710,7 @@ public class CollectingCentreController implements Serializable {
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
-    
-    
+
+
 
 }

@@ -22,11 +22,11 @@
         <div style="position: relative!important;
              /*padding-left: 0.5%!important;*/
              height:95%!important;
-             width:95%!important; 
+             width:95%!important;
              /*             overflow:hidden!important; */
-             font-family: Times New Roman!important; 
-             font-size: 10px!important; 
-             margin:2px!important; 
+             font-family: Times New Roman!important;
+             font-size: 10px!important;
+             margin:2px!important;
              padding: 5px!important;
              /*             background-size: 100% auto!important;*/
              letter-spacing: 0px;
@@ -44,7 +44,7 @@
                     <tr>
                         <td>
                             <h:outputLabel value="Date : " />
-                            <h:outputLabel value="#{commonController.currentDateTime}">
+                            <h:outputLabel value="#{commonFunctionsProxy.currentDateTime}">
                                 <f:convertDateTime pattern="dd-MMM-yy" />
                             </h:outputLabel>
                         </td>
@@ -182,12 +182,12 @@
                     <tr>
                         <td colspan="3">
                             <p>
-                                We are enclosing herewith a #{cc.attrs.bank.name} Cheque bearing No. ............................ For 
-                                Rs. 
+                                We are enclosing herewith a #{cc.attrs.bank.name} Cheque bearing No. ............................ For
+                                Rs.
                                 <p:outputLabel value="#{-cc.attrs.total}" >
                                     <f:convertNumber pattern="#,###,##0.00" />
                                 </p:outputLabel>
-                                being payment of #{cc.attrs.component.name}. Kindly acknowledge the receipt. 
+                                being payment of #{cc.attrs.component.name}. Kindly acknowledge the receipt.
                             </p>
                         </td>
                     </tr>

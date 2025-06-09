@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bundle" type="com.divudi.data.ReportTemplateRowBundle" />
+        <cc:attribute name="bundle" type="com.divudi.core.data.ReportTemplateRowBundle" />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -80,8 +80,8 @@
                                     <h:panelGroup rendered="#{row.category ne null}" >
                                         <td colspan="2">
                                             <h:outputText value="#{row.category.name}" />
-                                            <h:commandLink rendered="#{row.category ne null}" 
-                                                           action="#{searchController.navigateToOpdBillItemList(row)}" 
+                                            <h:commandLink rendered="#{row.category ne null}"
+                                                           action="#{searchController.navigateToOpdBillItemList(row)}"
                                                            styleClass="btn btn-link mx-2 no-print">
                                                 <h:outputText title="View Category Details" value="&#xf02d;" styleClass="fa mr-2" />
                                             </h:commandLink>

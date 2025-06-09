@@ -1,7 +1,7 @@
 package com.divudi.bean.common;
 
-import com.divudi.data.ItemLight;
-import com.divudi.facade.ItemFacade;
+import com.divudi.core.data.ItemLight;
+import com.divudi.core.facade.ItemFacade;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class ItemApplicationController {
     }
 
     public List<ItemLight> fillAllItems() {
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "i.id, "
                 + "CASE WHEN d.name IS NULL THEN 'No Department' ELSE d.name END, "
                 + "i.name, i.code, i.total, "
@@ -111,7 +111,7 @@ public class ItemApplicationController {
     }
 
     private List<ItemLight> fillPackages() {
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
                 + "d.name, d.id, s.name, s.id, "
@@ -133,7 +133,7 @@ public class ItemApplicationController {
     }
 
     private List<ItemLight> fillInvestigations() {
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
                 + "d.name, d.id, s.name, s.id, "
@@ -157,7 +157,7 @@ public class ItemApplicationController {
     }
 
     private List<ItemLight> fillServices() {
-        String jpql = "SELECT new com.divudi.data.ItemLight("
+        String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "i.id, i.orderNo, i.isMasterItem, i.hasReportFormat, "
                 + "c.name, c.id, ins.name, ins.id, "
                 + "d.name, d.id, s.name, s.id, "

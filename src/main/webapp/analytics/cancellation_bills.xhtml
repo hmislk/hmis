@@ -1,0 +1,320 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/analytics/index.xhtml">
+            <ui:define name="report">
+                <h:form >
+                    <p:panel>
+                        <f:facet name="header" >
+                            <h:outputLabel value="CANCELLATION BILL LIST"/>                          
+                        </f:facet>
+
+                        <h:panelGrid columns="8" styleClass="w-100" >
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="From" for="fromDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{searchController.fromDate}" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" /> <!-- FontAwesome calendar icon -->
+                                <h:outputLabel value="To" for="toDate" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{searchController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="50" ></p:spacer>
+
+                            <!-- New Doctor Field with Icon -->
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="User" for="user" class="mx-3" />
+                            </h:panelGroup>
+                            <p:autoComplete 
+                                forceSelection="true"
+                                value="#{searchController.webUser}"
+                                placeholder="Select User"
+                                completeMethod="#{webUserController.completeUser}" 
+                                id="user"
+                                var="u" 
+                                itemLabel="#{u.webUserPerson.name}" 
+                                itemValue="#{u}"
+                                class="w-100"
+                                inputStyleClass="w-100"
+                                >
+                            </p:autoComplete>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf19c;" styleClass="fa mr-2" /> <!-- FontAwesome building icon -->
+                                <h:outputLabel value="Institution" for="cmbIns" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbIns"
+                                styleClass="w-100 form-control" 
+                                value="#{searchController.institution}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="cmbIns" update="cmbDept" />
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf3c5;" styleClass="fa mr-2" /> <!-- FontAwesome map marker icon -->
+                                <h:outputLabel value="Site" for="siteMenu" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="siteMenu"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.site}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="siteMenu" update="cmbDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer ></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0e8;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
+                                <h:outputLabel value="Department" for="cmbDept" class="mx-3"/>
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                styleClass="w-100 form-control"  
+                                value="#{searchController.department}" 
+                                filter="true">
+                                <f:selectItem itemLabel="All Departments" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(searchController.institution, searchController.site)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                            </p:selectOneMenu>
+
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Bill Type (Atomic)" for="billTypeAtomic" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu
+                                filter="true"
+                                filterMatchMode="contains"
+                                id="billTypeAtomic" 
+                                class="w-100"
+                                value="#{searchController.billTypeAtomic}" >
+                                <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billTypeAtomic"
+                                    itemLabel="#{billTypeAtomic}"           
+                                    itemValue="#{billTypeAtomic}" 
+                                    value="#{enumController.billTypesAtomic}" ></f:selectItems>
+                            </p:selectOneMenu>
+
+                            <p:spacer ></p:spacer>
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf0f0;" styleClass="fa mr-2" /> 
+                                <h:outputLabel value="Bill Type" for="billType" class="mx-3" />
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="billType" 
+                                class="w-100" 
+                                filter="true"
+                                filterMatchMode="contains"
+                                value="#{searchController.billType}" >
+                                <f:selectItem itemLabel="All Types" ></f:selectItem>
+                                <f:selectItems 
+                                    var="billType"
+                                    itemLabel="#{billType.label}"           
+                                    itemValue="#{billType}" 
+                                    value="#{enumController.billTypes}" ></f:selectItems>
+                            </p:selectOneMenu>
+                            <p:spacer ></p:spacer>
+
+                            <p:spacer ></p:spacer>
+                            <p:spacer ></p:spacer>
+
+                        </h:panelGrid>
+
+
+                        <h:panelGrid columns="6" class="my-2" >
+                            <p:commandButton 
+                                class="ui-button-success" 
+                                icon="fas fa-magnifying-glass" 
+                                id="btnSearch"
+                                ajax="false" 
+                                value="List" 
+                                action="#{searchController.listCancellationBills()}"/>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" id="btnExcel" ajax="false" value="Excel" >
+                                <p:dataExporter fileName="Cancellation Bills" type="xlsx" target="tblBills" ></p:dataExporter>
+                            </p:commandButton>
+                        </h:panelGrid>
+
+
+
+                        <p:dataTable 
+                            rowIndexVar="i"
+                            id="tblBills"
+                            value="#{searchController.bills}"
+                            var="bill"
+                            scrollable="true"
+                            rows="10"
+                            paginator="true"
+                            paginatorAlwaysVisible="false"
+                            paginatorPosition="top"
+                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15,50,100,500,1000,5000">
+
+                            <p:column
+                                width="5em"
+                                headerText="Cancellation Bill ID" 
+                                sortBy="#{bill.id}" 
+                                filterBy="#{bill.id}" 
+                                filterMatchMode="contains" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{bill.id}" />
+                            </p:column>
+
+                            <p:column 
+                                width="5em"
+                                headerText="Original Bill ID" 
+                                sortBy="#{bill.billedBill.id}"
+                                filterBy="#{bill.billedBill.id}" 
+                                filterMatchMode="contains" 
+                                rendered="#{webUserController.hasPrivilege('Developers')}">
+                                <h:outputText value="#{bill.billedBill.id}" />
+                            </p:column>
+
+                            <p:column 
+                                width="10em"
+                                headerText="Cancellation Bill No" 
+                                sortBy="#{bill.deptId}" 
+                                filterBy="#{bill.deptId}" 
+                                filterMatchMode="contains">
+                                <h:outputText value="#{bill.deptId}" />
+                            </p:column>
+
+                            <p:column  
+                                width="10em"
+                                headerText="Original Bill No" 
+                                sortBy="#{bill.billedBill.deptId}" 
+                                filterBy="#{bill.billedBill.deptId}"
+                                filterMatchMode="contains">
+                                <h:outputText value="#{bill.billedBill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Cancellation Bill Type" width="19em">
+                                <h:outputText value="#{bill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Original Bill Type" width="19em">
+                                <h:outputText value="#{bill.billedBill.billTypeAtomic}" />
+                            </p:column>
+
+                            <p:column headerText="Patient Name" sortBy="#{bill.patient.person.nameWithTitle}" filterBy="#{bill.patient.person.nameWithTitle}" filterMatchMode="contains" width="12em">
+                                <h:outputText value="#{bill.patient.person.nameWithTitle}" />
+                            </p:column>
+
+                            <p:column headerText="Cancellation Date/Time" sortBy="#{bill.createdAt}" width="12em">
+                                <h:outputText value="#{bill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Original Bill Date/Time" sortBy="#{bill.billedBill.createdAt}" width="12em">
+                                <h:outputText value="#{bill.billedBill.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cancelled By" sortBy="#{bill.creater.name}" width="10em">
+                                <h:outputText value="#{bill.creater.name}" />
+                            </p:column>
+
+                            <p:column headerText="Billed By" sortBy="#{bill.billedBill.creater.name}" width="10em">
+                                <h:outputText value="#{bill.billedBill.creater.name}" />
+                            </p:column>
+
+                            <p:column headerText="Gross Value" sortBy="#{bill.total}" width="7em" styleClass="text-end">
+                                <h:outputText value="#{bill.total}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Discount" sortBy="#{bill.discount}" width="7em" styleClass="text-end">
+                                <h:outputText value="#{bill.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.discount}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Net Value" sortBy="#{bill.netTotal}" width="7em" styleClass="text-end">
+                                <h:outputText value="#{bill.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{searchController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Actions" width="12em" exportable="false">
+                                <p:commandButton title="View Original" icon="fa fa-file-invoice" styleClass="ui-button-primary m-1" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false">
+                                    <f:setPropertyActionListener value="#{bill.billedBill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton title="View Cancellation" icon="fa fa-file-invoice-dollar" styleClass="ui-button-primary m-1" action="#{billSearch.navigateToViewBillByAtomicBillType()}" ajax="false">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton title="Admin Billed" icon="fa fa-user-shield" styleClass="ui-button-danger m-1" action="#{billSearch.navigateToAdminBillByAtomicBillType()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:setPropertyActionListener value="#{bill.billedBill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                                <p:commandButton title="Admin Cancelled" icon="fa fa-user-shield" styleClass="ui-button-danger m-1" action="#{billSearch.navigateToAdminBillByAtomicBillType()}" ajax="false" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{billSearch.bill}" />
+                                </p:commandButton>
+                            </p:column>
+
+                        </p:dataTable>
+
+
+
+                    </p:panel>
+                </h:form>
+
+
+
+            </ui:define>
+
+        </ui:composition>
+    </h:body>
+</html>

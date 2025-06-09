@@ -10,8 +10,8 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
-        <cc:attribute name="paymentMethodData"  type="com.divudi.data.dataStructure.PaymentMethodData"/>
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="paymentMethodData"  type="com.divudi.core.data.dataStructure.PaymentMethodData"/>
         <cc:attribute name="duplicate" type="java.lang.Boolean"/>
         <cc:attribute name="payments" ></cc:attribute>
     </cc:interface>
@@ -33,7 +33,7 @@
                     </div>
                     <!--                    <div class="d-flex  align-items-center justify-content-center">
                                             <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
-                                                <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
+                                                <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4>
                                             </div>
                                         </div>-->
 
@@ -41,7 +41,7 @@
                 <!--                <div class="col-7">
                                     <div class="">
                                         <div style="width: 50px;height: 50px;border: 1px solid black;border-radius: 50%" class="d-flex justify-content-center align-items-center">
-                                            <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4> 
+                                            <h4 class="mx-5">#{cc.attrs.bill.sessionId}</h4>
                                         </div>
                                     </div>
                                 </div>-->
@@ -49,7 +49,7 @@
             </div>
 
             <div class="billline">
-                <hr></hr>   
+                <hr/>
             </div>
 
 
@@ -163,14 +163,14 @@
                         </td>
 
                         <td>
-                            <h:outputLabel 
+                            <h:outputLabel
                                 rendered="#{cc.attrs.bill.referredBy ne null}"
-                                value="#{cc.attrs.bill.referredBy.person.nameWithTitle}" 
+                                value="#{cc.attrs.bill.referredBy.person.nameWithTitle}"
                                 class="billDetailsFiveFive">
                             </h:outputLabel>
-                            <h:outputLabel 
+                            <h:outputLabel
                                 rendered="#{cc.attrs.bill.referredBy eq null}"
-                                value="Self Referral" 
+                                value="Self Referral"
                                 class="billDetailsFiveFive">
                             </h:outputLabel>
                         </td>
@@ -209,7 +209,7 @@
                         <h:panelGroup  rendered="#{sessionController.loggedPreference.printBarcodeInOpdBill}" >
                             <div class="billline">
                                 <div style="width: 100%;text-align: center;font-size: 10px;">
-                                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false" 
+                                    <p:barcode value="#{cc.attrs.bill.idStr}" type="code39" cache="false"
                                                />
                                 </div>
                             </div>
@@ -244,8 +244,8 @@
                     <tr>
                         <td colspan="2" style="text-align: center;" class="billline">
                             <hr/>
-                        </td> 
-                    </tr> 
+                        </td>
+                    </tr>
 
                     <h:panelGroup rendered="#{cc.attrs.bill.margin > 0? 'false':'true'}">
                         <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip"   >
@@ -405,8 +405,8 @@
 
 <!--            <ui:repeat value="#{cc.attrs.payments}" var="ps">
                 <h:panelGroup rendered="#{ps.paymentMethod eq 'Card'}" >
-                    <h:outputText 
-                        style="font-size: 8pt"  
+                    <h:outputText
+                        style="font-size: 8pt"
                         value="Paid by : Credit Card:#{ps.paidValue} (Card Last 4 Digits:#{ps.creditCardRefNo})"/>
                 </h:panelGroup>
             </ui:repeat>-->

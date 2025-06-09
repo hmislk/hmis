@@ -72,28 +72,51 @@
                         </div>
 
                         <div class="col-7">
-                            <p:panel class="w-100">
-                                <p:panelGrid id="gpDetail" columns="2" class="w-100">
+                            <p:panel class="w-100" id="gpDetail">
+                                <p:panelGrid 
+                                    rendered="#{categoryController.current ne null}"
+                                    columns="2" class="w-100">
 
-                                    <h:outputText id="lblName" value="Name" ></h:outputText>
+                                    <h:outputText id="lblName" value="Name" />
                                     <h:inputText 
-                                        autocomplete="off" id="txtName" value="#{categoryController.current.name}"  class="form-control"></h:inputText>
-                                    <h:outputText id="lblNameIn" value="Income Name" ></h:outputText>
-                                    <h:inputText autocomplete="off" id="txtNameIn" value="#{categoryController.current.description}" class="form-control w-100" ></h:inputText>
-                                    <f:facet name="footer" >
+                                        autocomplete="off" 
+                                        id="txtName" 
+                                        value="#{categoryController.current.name}"  
+                                        class="form-control" />
+
+                                    <h:outputText id="lblType" value="Category Type" />
+                                    <p:selectOneMenu 
+                                        id="ddlCategoryType" 
+                                        value="#{categoryController.current.categoryType}" 
+                                        required="true"
+                                        requiredMessage="Please select a category type"
+                                        filter="true" 
+                                        filterMatchMode="contains" 
+                                        styleClass="form-control w-100">
+                                        <f:selectItem itemLabel="Select" itemValue="#{null}" />
+                                        <f:selectItems value="#{enumController.categoryTypes}" var="ct" itemLabel="#{ct.label}" itemValue="#{ct}" />
+                                    </p:selectOneMenu>
+
+                                    <h:outputText id="lblNameIn" value="Income Name" />
+                                    <h:inputText 
+                                        autocomplete="off" 
+                                        id="txtNameIn" 
+                                        value="#{categoryController.current.description}" 
+                                        class="form-control w-100" />
+
+                                    <f:facet name="footer">
                                         <p:commandButton 
                                             id="btnSave" 
                                             value="Save" 
                                             action="#{categoryController.saveSelected()}" 
                                             class="ui-button-warning"
                                             update="lstSelect selectFocus"
-                                            process="btnSave gpDetail"
-                                            >
-                                        </p:commandButton>                                    
+                                            process="btnSave txtName ddlCategoryType txtNameIn" />
                                         <p:defaultCommand target="btnSave"/>
                                     </f:facet>
 
                                 </p:panelGrid>
+
                             </p:panel>
                         </div>
                     </div>

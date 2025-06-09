@@ -5,14 +5,14 @@
  */
 package com.divudi.bean.pharmacy;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.UserStockContainerFacade;
-import com.divudi.facade.UserStockFacade;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Date;
@@ -37,8 +37,8 @@ public class UserStockController implements Serializable {
     UserStockContainerFacade userStockContainerFacade;
     @EJB
     StockFacade stockFacade;
-    
-    
+
+
      //check Is there any other user added same stock & exceedintg qty than need for current user
     //ONLY CHECK Within 30 min transaction
     //Checked
@@ -81,7 +81,7 @@ public class UserStockController implements Serializable {
             return true;
         }
     }
-    
+
        public void retireUserStock(UserStockContainer userStockContainer, WebUser webUser) {
 
         if (userStockContainer.getUserStocks().size() == 0) {
@@ -155,8 +155,8 @@ public class UserStockController implements Serializable {
 
     }
 
-   
-    
+
+
     public void updateUserStock(UserStock userStock, double qty) {
         if (userStock == null) {
             return;
@@ -221,8 +221,8 @@ public class UserStockController implements Serializable {
         this.stockFacade = stockFacade;
     }
 
-    
-    
+
+
     /**
      * Creates a new instance of PharmacySessionScoped
      */

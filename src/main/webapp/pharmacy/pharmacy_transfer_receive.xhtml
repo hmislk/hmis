@@ -14,84 +14,89 @@
                 <p:panel>
 
                     <f:facet name="header" >                                  
-                                              
-                            <p:outputLabel value="Staff : &nbsp;#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                            <p:commandButton  
-                                value="Recieve" 
-                                icon="fas fa-check"
-                                style="float: right;"
-                                class="ui-button-success mx-2"
-                                action="#{transferReceiveController.settle}" 
-                                ajax="false" >
-                            </p:commandButton>
+                        <p:outputLabel class="mx-4" value="Staff : &nbsp;#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
 
-                      
+                        <p:commandButton  
+                            value="Recieve" 
+                            icon="fas fa-check"
+                            style="float: right;"
+                            class="ui-button-success mx-2"
+                            action="#{transferReceiveController.settle}" 
+                            ajax="false" >
+                        </p:commandButton>
+
+                        <h:panelGroup rendered="#{transferReceiveController.issuedBill.comments ne null and not empty transferReceiveController.issuedBill.comments}">
+                            <p:outputLabel class="mx-4 text-break" value="Note :  #{transferReceiveController.issuedBill.comments}" />
+                   
+                        </h:panelGroup>
+
+
                     </f:facet>
-                
-
-                <p:panel>
-                    <f:facet name="header">
-                        <h:outputLabel styleClass="fas fa-list" />
-                        <h:outputLabel value="Requested Item " class="mx-4" />
-                    </f:facet>
-                    <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.billItems}" 
-                                 id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
-                                 editable="true">  
-
-                        <p:ajax event="rowEdit" listener="#{transferReceiveController.onEdit}" />  
-                        <p:ajax event="rowEditCancel" listener="#{transferReceiveController.onEdit}"/> 
 
 
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel styleClass="fas fa-list" />
+                            <h:outputLabel value="Requested Item " class="mx-4" />
+                        </f:facet>
+                        <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.billItems}" 
+                                     id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
+                                     editable="true">  
+
+                            <p:ajax event="rowEdit" listener="#{transferReceiveController.onEdit}" />  
+                            <p:ajax event="rowEditCancel" listener="#{transferReceiveController.onEdit}"/> 
 
 
-                        <p:column headerText="Item Name"  style="width:25px!important;">  
-                            <h:outputText id="item" value="#{ph.item.name}" >                                   
-                            </h:outputText>
-                        </p:column>  
-                        
-                        <p:column headerText="Batch No"  style="width:25px!important;">  
-                            <h:outputText id="batchNo" value="#{ph.pharmaceuticalBillItem.itemBatch.batchNo}" >                                   
-                            </h:outputText>
-                        </p:column>  
-                        
-                        <p:column headerText="Purchase Rate"  style="width:25px!important;">  
-                            <h:outputText id="purchasePrice" value="#{ph.pharmaceuticalBillItem.itemBatch.purcahseRate}" >                                   
-                            </h:outputText>
-                        </p:column> 
-                        
-                        <p:column headerText="Sale Rate"  style="width:25px!important;">  
-                            <h:outputText id="retailPrice" value="#{ph.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >                                   
-                            </h:outputText>
-                        </p:column> 
-                        
-                        <p:column headerText="Expiry Date"  style="width:25px!important;">  
-                            <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                            </h:outputText>
-                        </p:column>  
 
-                        <p:column style="width:6%">  
-                            <p:rowEditor />  
-                        </p:column>
 
-                        <p:column headerText="Qty" style="width:25px!important;">                      
-                            <p:cellEditor>  
-                                <f:facet name="output">  
-                                    <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
-                                </f:facet>                        
-                                <f:facet name="input">  
-                                    <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
-                                    </p:inputText>
-                                </f:facet>
-                            </p:cellEditor>
-                        </p:column>  
+                            <p:column headerText="Item Name"  style="width:25px!important;">  
+                                <h:outputText id="item" value="#{ph.item.name}" >                                   
+                                </h:outputText>
+                            </p:column>  
 
-                    </p:dataTable>  
-                </p:panel>
+                            <p:column headerText="Batch No"  style="width:25px!important;">  
+                                <h:outputText id="batchNo" value="#{ph.pharmaceuticalBillItem.itemBatch.batchNo}" >                                   
+                                </h:outputText>
+                            </p:column>  
 
-                <ph:history/>
+                            <p:column headerText="Purchase Rate"  style="width:25px!important;">  
+                                <h:outputText id="purchasePrice" value="#{ph.pharmaceuticalBillItem.itemBatch.purcahseRate}" >                                   
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column headerText="Sale Rate"  style="width:25px!important;">  
+                                <h:outputText id="retailPrice" value="#{ph.pharmaceuticalBillItem.itemBatch.retailsaleRate}" >                                   
+                                </h:outputText>
+                            </p:column> 
+
+                            <p:column headerText="Expiry Date"  style="width:25px!important;">  
+                                <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                </h:outputText>
+                            </p:column>  
+
+                            <p:column style="width:6%">  
+                                <p:rowEditor />  
+                            </p:column>
+
+                            <p:column headerText="Qty" style="width:25px!important;">                      
+                                <p:cellEditor>  
+                                    <f:facet name="output">  
+                                        <h:outputLabel value="#{ph.pharmaceuticalBillItem.qtyInUnit}" />                               
+                                    </f:facet>                        
+                                    <f:facet name="input">  
+                                        <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
+                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
+                                        </p:inputText>
+                                    </f:facet>
+                                </p:cellEditor>
+                            </p:column>  
+
+                        </p:dataTable>  
+                    </p:panel>
+
+                    <ph:history/>
                 </p:panel>
             </p:panel>
             <p:panel rendered="#{transferReceiveController.printPreview}">

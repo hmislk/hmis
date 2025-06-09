@@ -8,36 +8,35 @@
  */
 package com.divudi.bean.store;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.SessionController;
-import com.divudi.data.BillType;
-import com.divudi.data.InstitutionType;
-import com.divudi.data.dataStructure.DepartmentSale;
-import com.divudi.data.dataStructure.DepartmentStock;
-import com.divudi.data.dataStructure.InstitutionSale;
-import com.divudi.data.dataStructure.InstitutionStock;
-import com.divudi.data.dataStructure.StockAverage;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.dataStructure.DepartmentSale;
+import com.divudi.core.data.dataStructure.DepartmentStock;
+import com.divudi.core.data.dataStructure.InstitutionSale;
+import com.divudi.core.data.dataStructure.InstitutionStock;
+import com.divudi.core.data.dataStructure.StockAverage;
 
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.pharmacy.Ampp;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.facade.AmpFacade;
-import com.divudi.facade.AmppFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -63,8 +62,6 @@ public class StoreController1 implements Serializable {
     private static final long serialVersionUID = 1L;
     @Inject
     private SessionController sessionController;
-    @Inject
-    CommonController commonController;
     //////////
     @EJB
     AmppFacade AmppFacade;
@@ -79,7 +76,6 @@ public class StoreController1 implements Serializable {
     @EJB
     private BillFacade billFacade;
 
-    private CommonFunctions commonFunctions;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
@@ -89,14 +85,14 @@ public class StoreController1 implements Serializable {
     // private double grantStock;
     private Date fromDate;
     private Date toDate;
-    
+
     ////////
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
-    
+
      private int manageStoreReportIndex;
 
     public void makeNull() {
@@ -679,8 +675,8 @@ public class StoreController1 implements Serializable {
     public void setInstitutionBhtIssue(List<InstitutionSale> institutionBhtIssue) {
         this.institutionBhtIssue = institutionBhtIssue;
     }
-    
-    
+
+
 
     public void createInstitutionBhtIssue() {
         List<Institution> insList = getCompany();
@@ -890,7 +886,7 @@ public class StoreController1 implements Serializable {
 
     public void createTable() {
         Date startTime = new Date();
-        
+
         createGrnTable();
         createPoTable();
         createDirectPurchaseTable();
@@ -900,7 +896,7 @@ public class StoreController1 implements Serializable {
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
         createInstitutionIssue();
-        
+
 
     }
 
@@ -1053,7 +1049,7 @@ public class StoreController1 implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = getCommonFunctions().getStartOfDay(new Date());
+            fromDate = CommonFunctions.getStartOfDay(new Date());
         }
         return fromDate;
     }
@@ -1073,14 +1069,6 @@ public class StoreController1 implements Serializable {
     public void setToDate(Date toDate) {
         makeNull();
         this.toDate = toDate;
-    }
-
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
     }
 
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
@@ -1255,14 +1243,6 @@ public class StoreController1 implements Serializable {
         this.AmppFacade = AmppFacade;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public int getManageStoreReportIndex() {
         return manageStoreReportIndex;
     }
@@ -1271,5 +1251,5 @@ public class StoreController1 implements Serializable {
         this.manageStoreReportIndex = manageStoreReportIndex;
     }
 
-    
+
 }

@@ -39,9 +39,9 @@
                                             <f:ajax event="change" render="acStock" execute="@this" />
                                         </p:selectOneMenu>
                                         <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}" 
+                                        <p:autoComplete forceSelection="true" id="acStock" value="#{pharmacyAdjustmentController.item}"
                                                         class="w-100" inputStyleClass="w-100"
-                                                        completeMethod="#{pharmacyController.completeAllStockItems}" var="i" 
+                                                        completeMethod="#{pharmacyController.completeAllStockItems}" var="i"
                                                         itemLabel="#{i.name}" itemValue="#{i}" >
                                             <p:column headerText="Item">
                                                 <h:outputLabel value="#{i.name}" ></h:outputLabel>
@@ -52,7 +52,7 @@
                                             <f:ajax event="itemSelect" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerItemSelect}"/>
                                         </p:autoComplete>
                                         <h:outputLabel value="New Quantity" ></h:outputLabel>
-                                        <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}" 
+                                        <p:inputText id="input" autocomplete="off" value="#{pharmacyAdjustmentController.qty}"
                                                      disabled="#{pharmacyAdjustmentController.manualAdjust}" class="w-100" >
                                             <f:ajax event="keyup" execute="@this" render="det" listener="#{pharmacyAdjustmentController.listnerChangeAdjustedStock}"/>
                                         </p:inputText>
@@ -65,7 +65,7 @@
                                     </h:panelGrid>
                                     <div class="row my-1">
                                         <div class="col-md-6">
-                                            <p:commandButton id="btnClear" value="Clear" ajax="false" 
+                                            <p:commandButton id="btnClear" value="Clear" ajax="false"
                                                              icon="fa-solid fa-ban" class="ui-button-danger w-100"
                                                              action="#{pharmacyAdjustmentController.newBill()}" ></p:commandButton>
                                         </div>
@@ -87,7 +87,7 @@
                                         <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                         <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}" 
+                                    <p:dataTable id="det" value="#{pharmacyAdjustmentController.stocks}"
                                                  var="s" editable="true" >
                                         <p:ajax event="rowEdit" listener="#{pharmacyAdjustmentController.onEdit}" update=":#{p:resolveFirstComponentWithId('input',view).clientId}" />
                                         <p:column>
@@ -134,8 +134,8 @@
                                             <f:facet name="header">
                                                 <p:outputLabel value="Date Of Expiry" style="float: right;"/>
                                             </f:facet>
-                                            <p:outputLabel value="#{s.itemBatch.dateOfExpire}" style="#{commonController.currentDateTime > s.itemBatch.dateOfExpire ?'color: red; ': 
-                                                                    commonController.dateAfterThreeMonthsCurrentDateTime > s.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
+                                            <p:outputLabel value="#{s.itemBatch.dateOfExpire}" style="#{commonFunctionsProxy.currentDateTime > s.itemBatch.dateOfExpire ?'color: red; ':
+                                                                    commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > s.itemBatch.dateOfExpire ?'color: red; background-color: yellow;':''}" >
                                                 <f:convertDateTime pattern="yyyy MMM dd" />
                                             </p:outputLabel>
                                         </p:column>

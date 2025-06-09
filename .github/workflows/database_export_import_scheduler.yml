@@ -1,0 +1,107 @@
+name: Database Export and Import Scheduler
+
+on:
+  workflow_dispatch:
+    inputs:
+      fromEnv:
+        description: 'Select Environment to Export'
+        required: true
+        type: choice
+        options:
+          - COOP_Dev
+          - COOP_Prod
+          - Ruhunu_Prod
+          - MP_Prod
+          - RMH_Prod
+          - SLH_Prod
+      toEnv:
+        description: 'Select Environment to Import'
+        required: true
+        type: choice
+        options:
+          - QA1
+          - QA2
+      date:
+        description: 'Select Scheduling Date (YYYY-MM-DD)'
+        required: true
+
+jobs:
+  schedule_export_import:
+    name: Schedule Export & Import
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Scheduler on Remote Server
+        id: scheduler
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+          DATE: ${{ inputs.date }}
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          UTC_TIME=$(date -d "${DATE}T02:00:00+05:30" -u "+%H:%M %Y-%m-%d")
+
+          HOUR=$(echo "$UTC_TIME" | awk '{print $1}' | cut -d':' -f1)
+          MINUTE=$(echo "$UTC_TIME" | awk '{print $1}' | cut -d':' -f2)
+          UTC_DATE=$(echo "$UTC_TIME" | awk '{print $2}')
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            echo '/home/azureuser/utils/db_utils/db_export_import_scheduler.sh $FROM_ENV $TO_ENV' | at $HOUR:$MINUTE $UTC_DATE
+          "
+          
+          rm private_key.pem
+
+      - name: Send Success Email from Remote Server
+        if: success()
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+          DATE: ${{ inputs.date }}
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            curl -X POST 'http://localhost:8081/messenger/api/email/send' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              \"subject\": \"✅ Database Export and Import Scheduled Successfully\",
+              \"body\": \"The database export from $FROM_ENV to $TO_ENV has been successfully scheduled for 2.00AM on $DATE.\",
+              \"recipients\": $RECIPIENT_EMAILS,
+              \"isHtml\": false
+            }'
+          "
+          
+          rm private_key.pem
+
+      - name: Send Failure Email from Remote Server
+        if: failure()
+        env:
+          SERVER_IP: ${{ secrets.OBSERVABILITY_SERVER_IP }}
+          SERVER_SSH_KEY: ${{ secrets.OBSERVABILITY_SSH_PRIVATE_KEY }}
+          FROM_ENV: ${{ inputs.fromEnv }}
+          TO_ENV: ${{ inputs.toEnv }}
+          DATE: ${{ inputs.date }}
+          RECIPIENT_EMAILS: '["imeshranawella00@gmail.com", "geeth.gsm@gmail.com", "deshanipubudu0415@gmail.com", "iranimadushika28@gmail.com"]'
+        run: |
+          echo "$SERVER_SSH_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          
+          ssh -o StrictHostKeyChecking=no -i private_key.pem azureuser@$SERVER_IP "
+            curl -X POST 'http://localhost:8081/messenger/api/email/send' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              \"subject\": \"❌ Database Export and Import Failed\",
+              \"body\": \"The database export from $FROM_ENV to $TO_ENV scheduled for $DATE has failed. Please check the logs for details.\",
+              \"recipients\": $RECIPIENT_EMAILS,
+              \"isHtml\": false
+            }'
+          "
+          
+          rm private_key.pem

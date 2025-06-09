@@ -15,7 +15,9 @@
                     <div class="col-md-3">
                         <h:form >
 
-                            <p:accordionPanel class="w-100 m-1" activeIndex="#{investigationCategoryController.manageItemIndex}" >
+                            <p:accordionPanel 
+                                class="w-100 m-1" 
+                                activeIndex="#{investigationCategoryController.manageItemIndex}" >
                                 <p:ajax process="@this" ></p:ajax>
 
                                 <p:tab title="Manage Processes" disabled="false" >
@@ -51,7 +53,7 @@
                                             icon="fa fa-money-bill-wave" />
                                     </div>
                                 </p:tab>
-                                
+
                                 <p:tab title="Analysis Report Templates" disabled="false" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton 
@@ -124,8 +126,19 @@
                                     </div>
                                 </p:tab>
 
+                                <p:tab title="Data" disabled="false">
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  
+                                            value="Historical Record List"
+                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}" 
+                                            ajax="false"
+                                            styleClass="w-100 ui-button-success"
+                                            icon="fa fa-database" />
+                                    </div>
+                                </p:tab>
 
-                                <p:tab title="Lists"  >
+
+                                <p:tab title="Search &amp; Lists"  >
 
                                     <div class="d-grid gap-2">
 
@@ -135,6 +148,15 @@
                                             class="w-100 "
                                             icon="fa fa-search"
                                             action="#{searchController.toSearchBills}" 
+                                            rendered="#{webUserController.hasPrivilege('Search')}">
+                                        </p:commandButton>
+
+                                        <p:commandButton 
+                                            value="Bills with Errors" 
+                                            ajax="false"
+                                            class="w-100 "
+                                            icon="fa fa-search"
+                                            action="#{searchController.navigateToListBillsWithErrors}" 
                                             rendered="#{webUserController.hasPrivilege('Search')}">
                                         </p:commandButton>
 
@@ -190,15 +212,34 @@
                                     </div>
                                 </p:tab>
 
+                                <p:tab title="Audit" disabled="false" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton  
+                                            ajax="false"  
+                                            action="/audit/items_and_fees?faces-redirect=true;" 
+                                            value="Items &amp; Fees" 
+                                            icon="fa fa-comments" >
+                                        </p:commandButton>    
+                                    </div>
+                                </p:tab>
+
                                 <p:tab title="System Administrator Functions" disabled="false" >
                                     <div class="d-grid gap-2">
                                         <p:commandButton
                                             ajax="false" 
                                             action="#{dataAdministrationController.navigateToCheckMissingFields()}" 
-                                            value="Check Missing Fields"  
+                                            value="Update Database Structure"  
                                             class="w-100 m-1"
                                             />
-                                         <p:commandButton
+                                        
+                                        <p:commandButton
+                                            ajax="false" 
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}" 
+                                            value="To Download Log Files"  
+                                            class="w-100 m-1"
+                                            />
+                                        
+                                        <p:commandButton
                                             ajax="false" 
                                             action="#{dataAdministrationController.navigateToNameToCode()}" 
                                             value="Name To Code"  
@@ -208,8 +249,15 @@
                                             ajax="false" 
                                             action="admin_functions?faces-redirect=true" 
                                             value="Admin Functions"  
-                                            class="w-100 m-1"
+                                            class="m-1 w-100"
                                             />
+
+                                        <p:commandButton 
+                                            value="Test Error Handling"
+                                            action="#{dataAdministrationController.causeError}"
+                                            ajax="false"
+                                            styleClass="ui-button-danger w-100 m-1" />
+
                                     </div>
                                 </p:tab>
 

@@ -27,33 +27,16 @@
                             </div>
                         </f:facet>
 
-                        <p:tabView class="w-100">
-                            <p:tab title="Person Details" >
-                                <h:panelGrid columns="2" class="w-100">
+                        <p:tabView class="w-100 m-1">
+                            <p:tab title="Personal Details" >
+                                <p:panelGrid layout="tabular" columns="2" class="w-100">
 
                                     <p:outputLabel value="Name"></p:outputLabel>
                                     <p:inputText class="form-control" value="#{staffController.current.person.name}"></p:inputText>
 
-                                    <p:outputLabel value="Description"></p:outputLabel>
-                                    <p:inputTextarea  class="form-control" value="#{staffController.current.person.description}"></p:inputTextarea>
 
                                     <p:outputLabel value="NIC / Passport"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.person.nic}"></p:inputText>
-
-                                    <p:outputLabel value="Address"></p:outputLabel>
-                                    <p:inputTextarea  class="form-control" value="#{staffController.current.person.address}"></p:inputTextarea>
-
-                                    <p:outputLabel value="Fax"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.person.fax}"></p:inputText>
-
-                                    <p:outputLabel value="Email"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.person.email}"></p:inputText>
-
-                                    <p:outputLabel value="Mobile"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.person.mobile}"></p:inputText>
-
-                                    <p:outputLabel value="Phone"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.person.phone}"></p:inputText>
 
                                     <p:outputLabel value="Full Name"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.person.fullName}"></p:inputText>
@@ -71,22 +54,41 @@
                                     <p:inputText  class="form-control" value="#{staffController.current.person.lastName}"></p:inputText>
 
                                     <p:outputLabel value="Date of Birth"></p:outputLabel>
-                                    <p:calendar navigator="true"  class="form-control" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                                    <p:calendar navigator="true"  class="w-100" inputStyleClass="w-100" value="#{staffController.current.person.dob}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
 
-                                </h:panelGrid>
+                                    <p:outputLabel value="Details"></p:outputLabel>
+                                    <p:inputTextarea  class="form-control" value="#{staffController.current.person.description}"></p:inputTextarea>
+
+
+                                </p:panelGrid>
+                            </p:tab>
+                            <p:tab title="Contact Details" >
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
+                                    <p:outputLabel value="Address"></p:outputLabel>
+                                    <p:inputTextarea  class="form-control" value="#{staffController.current.person.address}"></p:inputTextarea>
+
+                                    <p:outputLabel value="Fax"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.person.fax}"></p:inputText>
+
+                                    <p:outputLabel value="Email"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.person.email}"></p:inputText>
+
+                                    <p:outputLabel value="Mobile"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.person.mobile}"></p:inputText>
+
+                                    <p:outputLabel value="Phone"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.person.phone}"></p:inputText>
+                                </p:panelGrid>
                             </p:tab>
 
-                            <p:tab title="Staff Details" >
-                                <h:panelGrid columns="2" class="w-100">
+                            <p:tab title="Employment Details" >
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
 
                                     <p:outputLabel value="Registration"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.registration}"></p:inputText>
 
                                     <p:outputLabel value="Qualification"></p:outputLabel>
                                     <p:inputTextarea  class="form-control" value="#{staffController.current.qualification}"></p:inputTextarea>
-
-                                    <p:outputLabel value="Code"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.code}"></p:inputText>
 
                                     <p:outputLabel value="Designation"></p:outputLabel>
                                     <p:autoComplete   forceSelection="true" id="designation"
@@ -113,7 +115,7 @@
 
 
                                     <p:outputLabel value="Order Number"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.orderNo}" type="number"></p:inputText>
+                                    <p:inputText  class="form-control" value="#{staffController.current.orderNo}" ></p:inputText>
 
                                     <p:outputLabel value="Description"></p:outputLabel>
                                     <p:inputTextarea  class="form-control" value="#{staffController.current.description}"></p:inputTextarea>
@@ -154,6 +156,62 @@
                                             />
                                     </p:selectOneMenu>
 
+
+
+                                </p:panelGrid>
+
+                            </p:tab>
+
+                            <p:tab title="Welfare" >
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
+
+                                    <p:outputLabel value="Credit Limit Qualified"></p:outputLabel>
+                                    <p:inputText  class="form-control text-end" value="#{staffController.current.creditLimitQualified}" ></p:inputText>
+
+                                    <p:outputLabel value="Current Credit Value"></p:outputLabel>
+                                    <p:inputText 
+                                        readonly="true" 
+                                        class="form-control text-danger text-end" 
+                                        value="#{staffController.current.currentCreditValue}" ></p:inputText>
+
+                                    <p:outputLabel value="Annual Welfare Qualified"></p:outputLabel>
+                                    <p:inputText  class="form-control text-end" value="#{staffController.current.annualWelfareQualified}" ></p:inputText>
+
+                                    <p:outputLabel value="Annual Welfare Utilized"></p:outputLabel>
+                                    <p:inputText  readonly="true" 
+                                        class="form-control text-danger text-end"  value="#{staffController.current.annualWelfareUtilized}" ></p:inputText>
+
+                                    
+
+                                </p:panelGrid>
+
+                            </p:tab>
+
+                            <p:tab title="Leave" >
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
+
+                                    <p:outputLabel value="Working Time for Overtime per Week"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForOverTimePerWeek}" ></p:inputText>
+
+                                    <p:outputLabel value="Working Time for No Pay per Week"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForNoPayPerWeek}" ></p:inputText>
+
+                                    <p:outputLabel value="Allowed Late In Leave"></p:outputLabel>
+                                    <p:selectBooleanCheckbox value="#{staffController.current.allowedLateInLeave}"></p:selectBooleanCheckbox>
+
+                                    <p:outputLabel value="Allowed Early Out Leave"></p:outputLabel>
+                                    <p:selectBooleanCheckbox value="#{staffController.current.allowedEarlyOutLeave}"></p:selectBooleanCheckbox>
+
+                                </p:panelGrid>
+
+                            </p:tab>
+
+
+
+                            <p:tab title="EPF ETF Details" >
+                                <p:panelGrid columns="2" class="w-100" layout="tabular">
+
+
                                     <p:outputLabel value="Staff Code"></p:outputLabel>
                                     <p:inputText class="form-control" value="#{staffController.current.staffCode}"></p:inputText>
 
@@ -162,6 +220,8 @@
                                         <f:selectItems  value="#{bankController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                     </p:selectOneMenu>
 
+                                    <p:outputLabel value="AC No"></p:outputLabel>
+                                    <p:inputText  class="form-control" value="#{staffController.current.acNo}"></p:inputText>
 
                                     <p:outputLabel value="EPF Account No"></p:outputLabel>
                                     <p:inputText  class="form-control"  value="#{staffController.current.epfAccountNo}"></p:inputText>
@@ -172,36 +232,12 @@
                                     <p:outputLabel value="EPF No"></p:outputLabel>
                                     <p:inputText  class="form-control" value="#{staffController.current.epfNo}"></p:inputText>
 
-                                    <p:outputLabel value="AC No"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.acNo}"></p:inputText>
 
-                                    <p:outputLabel value="Credit Limit Qualified"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.creditLimitQualified}" type="number"></p:inputText>
 
-                                    <p:outputLabel value="Current Credit Value"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.currentCreditValue}" type="number"></p:inputText>
-
-                                    <p:outputLabel value="Annual Welfare Qualified"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.annualWelfareQualified}" type="number"></p:inputText>
-
-                                    <p:outputLabel value="Annual Welfare Utilized"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.annualWelfareUtilized}" type="number"></p:inputText>
-
-                                    <p:outputLabel value="Working Time for Overtime per Week"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForOverTimePerWeek}" type="number"></p:inputText>
-
-                                    <p:outputLabel value="Working Time for No Pay per Week"></p:outputLabel>
-                                    <p:inputText  class="form-control" value="#{staffController.current.workingTimeForNoPayPerWeek}" type="number"></p:inputText>
-
-                                    <p:outputLabel value="Allowed Late In Leave"></p:outputLabel>
-                                    <p:selectBooleanCheckbox value="#{staffController.current.allowedLateInLeave}"></p:selectBooleanCheckbox>
-
-                                    <p:outputLabel value="Allowed Early Out Leave"></p:outputLabel>
-                                    <p:selectBooleanCheckbox value="#{staffController.current.allowedEarlyOutLeave}"></p:selectBooleanCheckbox>
-
-                                </h:panelGrid>
+                                </p:panelGrid>
 
                             </p:tab>
+
                         </p:tabView>
 
                     </p:panel>

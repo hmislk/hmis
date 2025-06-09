@@ -192,7 +192,7 @@
                                         <p:commandButton 
                                             ajax="false" 
                                             value="View Bill" 
-                                            action="inward_reprint_bill_final" 
+                                            action="inward_reprint_bill_final?faces-redirect=true" 
                                             actionListener="#{inwardSearch.refreshFinalBillBackwordReferenceBills}" 
                                             >
                                             <f:setPropertyActionListener value="#{bb}" target="#{inwardSearch.bill}"/>

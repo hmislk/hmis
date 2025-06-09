@@ -10,7 +10,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="dup" />
     </cc:interface>
 
@@ -33,10 +33,10 @@
                         <h:outputLabel value="#{cc.attrs.bill.department.telephone2}" rendered="#{!empty cc.attrs.bill.department.telephone2}"/>
                     </div>
                     <div >
-                        <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>                                                 
+                        <h:outputLabel value="Fax : #{cc.attrs.bill.department.fax}" rendered="#{!empty cc.attrs.bill.department.fax}"/>
                     </div>
                     <div >
-                        <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>                                                 
+                        <h:outputLabel value="Email : #{cc.attrs.bill.department.email}"/>
                     </div>
                 </div>
 
@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="billline">
-                    <hr></hr>   
+                    <hr/>
                 </div>
 
 
@@ -93,7 +93,7 @@
                             <td width="" ><h:outputLabel value="Cancellation Payment Method" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" class="billDetailsFiveFive" />                        
+                                <h:outputLabel value="#{cc.attrs.bill.cancelledBill.paymentMethod}" class="billDetailsFiveFive" />
                             </td>
                         </tr>
                         <tr>
@@ -128,7 +128,7 @@
                             <td width="" ><h:outputLabel value="Billing Payment Method" class="billDetailsFiveFive" ></h:outputLabel></td>
                             <td style="text-align: center;" >:</td>
                             <td width="">
-                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive" />                        
+                                <h:outputLabel value="#{cc.attrs.bill.paymentMethod}" class="billDetailsFiveFive" />
                             </td>
                         </tr>
 
@@ -164,36 +164,36 @@
                             <f:facet name="header" >
                                 <h:outputLabel value="" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="&emsp;" 
+                            <h:outputLabel value="&emsp;"
                                            style="font-size:10px!important;" />
                         </p:column>
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Bill No"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}" 
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.deptId}"
                                            style="font-size:10pt!important;" />
                         </p:column>
                         <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <h:outputLabel value="Investigation/Service"  ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.item.name}" 
+                            <h:outputLabel value="#{bip.referanceBillItem.item.name}"
                                            style="font-size:10pt!important;" />
                         </p:column>
                         <h:column   >
                             <f:facet name="header" >
                                 <h:outputLabel value="Patient Name" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />                                    
-                            <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}" 
-                                           style="margin: 4px; font-size:  10pt!important;"   />                                                                                
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.patient.person.name}" rendered="#{bf.bill.patientEncounter eq null}" style="margin: 4px;font-size:  10pt!important;"  />
+                            <h:outputLabel value="#{bip.referanceBillItem.bill.patientEncounter.patient.person.nameWithTitle}"
+                                           style="margin: 4px; font-size:  10pt!important;"   />
                         </h:column>
                         <h:column>
                             <f:facet name="header" >
                                 <h:outputLabel value="Value" ></h:outputLabel>
                             </f:facet>
-                            <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end" 
+                            <h:outputLabel value="#{bip.netValue}" class="d-flex justify-content-end"
                                            style="font-size:  10pt!important; text-align: right!important;" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
@@ -208,7 +208,7 @@
 
                 <div  >
 
-                    <table style="width: 100%;"> 
+                    <table style="width: 100%;">
 
 
                         <tr>
@@ -258,7 +258,7 @@
                         </tr>
 
 
-                    </table> 
+                    </table>
                 </div>
 
                 <div class="billline">

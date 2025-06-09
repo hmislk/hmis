@@ -18,31 +18,31 @@
                         <div class="row">
                             <div class="col-md-2">
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control" maxdate="#{commonController.endOfDayOnCurrentDate}">      
+                                <p:calendar styleClass="dateTimePicker" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                 </p:calendar>
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control" maxdate="#{commonController.endOfDayOnCurrentDate}">                                                                              
+                                <p:calendar id="toDate" value="#{searchController.toDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" class="w-100" inputStyleClass="form-control" maxdate="#{commonFunctionsProxy.endOfDayOnCurrentDate}">
                                 </p:calendar>
 
-                                <p:commandButton 
-                                    id="btnSearch" 
-                                    class="ui-button-warning w-100 mt-2 mb-3" 
-                                    icon="fas fa-search" 
-                                    ajax="false" 
-                                    value="Search" 
+                                <p:commandButton
+                                    id="btnSearch"
+                                    class="ui-button-warning w-100 mt-2 mb-3"
+                                    icon="fas fa-search"
+                                    ajax="false"
+                                    value="Search"
                                     action="#{searchController.collectingCentreBillSearch}">
                                 </p:commandButton>
 
                                 <h:outputLabel value="Collecting Center Name"/>
-                                <p:autoComplete 
-                                    converter="deal" 
-                                    value="#{searchController.institution}" 
-                                    forceSelection="true" 
+                                <p:autoComplete
+                                    converter="deal"
+                                    value="#{searchController.institution}"
+                                    forceSelection="true"
                                     id="acColl"
-                                    completeMethod="#{institutionController.completeCollectingCenter}" 
-                                    var="vt" 
-                                    itemLabel="#{vt.name}" 
-                                    itemValue="#{vt}" 
+                                    completeMethod="#{institutionController.completeCollectingCenter}"
+                                    var="vt"
+                                    itemLabel="#{vt.name}"
+                                    itemValue="#{vt}"
                                     maxResults="20"
                                     class="w-100 mb-1"
                                     inputStyleClass="form-control">
@@ -63,12 +63,12 @@
 
                             </div>
                             <div class="col-md-10">
-                                <p:dataTable 
-                                    rowIndexVar="i" 
-                                    id="tblBills" 
-                                    value="#{searchController.bills}" 
-                                    var="bill"  
-                                    style="min-width: 100%;"  
+                                <p:dataTable
+                                    rowIndexVar="i"
+                                    id="tblBills"
+                                    value="#{searchController.bills}"
+                                    var="bill"
+                                    style="min-width: 100%;"
                                     paginator="true"
                                     rows="10"
                                     paginatorPosition="bottom"
@@ -78,29 +78,32 @@
                                     <p:column headerText="No" styleClass="alignTop" style="width: 20px;">
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
-                                    <p:column headerText="Billed No"  >                                
+                                    <p:column headerText="Billed No"  >
                                         <h:outputLabel value="#{bill.deptId}" />
                                     </p:column>
-                                    <p:column headerText="Collecting Centre"  >                                
+                                     <p:column headerText="Collecting Centre Code"  >
+                                         <h:outputLabel value="#{bill.collectingCentre.code}" />
+                                    </p:column>
+                                    <p:column headerText="Collecting Centre"  >
                                         <h:outputLabel value="#{bill.collectingCentre.name}" />
                                     </p:column>
                                     <p:column headerText="Billed At"  >
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                    </p:column> 
-                                    <p:column headerText="Patient">  
+                                    </p:column>
+                                    <p:column headerText="Patient">
                                         <h:outputLabel value="#{bill.patient.person.name}" rendered="#{!webUserController.hasPrivilege('OpdBillSearchEdit')}"/>
                                         <h:commandLink value="#{bill.patient.person.name}" action="#{patientController.navigateToOpdPatientEdit()}" rendered="#{webUserController.hasPrivilege('OpdBillSearchEdit')}">
                                             <f:setPropertyActionListener value="#{bill.patient}" target="#{patientController.current}"/>
                                         </h:commandLink>
                                     </p:column>
 
-                                    <p:column headerText="Patient Phone No">                              
+                                    <p:column headerText="Patient Phone No">
                                         <h:outputLabel value="#{bill.patient.person.phone}" />
                                     </p:column>
 
-                                    <p:column headerText="Billed By">                              
+                                    <p:column headerText="Billed By">
                                         <h:outputLabel value="#{bill.creater.name}" />
                                     </p:column>
 
@@ -118,29 +121,29 @@
                                         <h:outputLabel value="#{bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
                                     <p:column headerText="Comments" styleClass="averageNumericColumn">
-                                        <h:outputLabel value="Cancelled" 
+                                        <h:outputLabel value="Cancelled"
                                                        rendered="#{bill.cancelled}">
                                         </h:outputLabel>
-                                        <h:outputLabel value="Refunded" 
+                                        <h:outputLabel value="Refunded"
                                                        rendered="#{bill.refunded}">
                                         </h:outputLabel>
-                                    </p:column> 
+                                    </p:column>
 
                                     <p:column headerText="View" width="5em;">
                                         <div class="d-flex gap-2">
-                                            <p:commandButton 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                ajax="false"
                                                 icon="fa fa-cog"
-                                                title="Manage Bill" 
+                                                title="Manage Bill"
                                                 action="#{billSearch.navigateToManageCollectingCentreBill()}">
                                                 <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
                                             </p:commandButton>
-                                            <p:commandButton 
-                                                ajax="false" 
+                                            <p:commandButton
+                                                ajax="false"
                                                 icon="fa fa-file"
-                                                title="View Bill" 
+                                                title="View Bill"
                                                 action="#{billSearch.navigateToViewBillByAtomicBillType()}">
                                                 <f:setPropertyActionListener target="#{billSearch.bill}" value="#{bill}"/>
                                             </p:commandButton>

@@ -11,28 +11,27 @@ package com.divudi.bean.inward;
 import com.divudi.bean.common.BillBeanController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Item;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.inward.EncounterComponent;
-import com.divudi.entity.inward.TimedItem;
-import com.divudi.entity.inward.TimedItemFee;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.EncounterComponentFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.TimedItemFeeFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFee;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PatientItem;
+import com.divudi.core.entity.inward.EncounterComponent;
+import com.divudi.core.entity.inward.TimedItem;
+import com.divudi.core.entity.inward.TimedItemFee;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.EncounterComponentFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.TimedItemFeeFacade;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -74,7 +73,6 @@ public class InwardTimedItemController implements Serializable {
     @EJB
     private TimedItemFeeFacade timedItemFeeFacade;
 
-    private CommonFunctions commonFunctions;
     @Inject
     private InwardBeanController inwardBean;
     @Inject
@@ -346,9 +344,9 @@ public class InwardTimedItemController implements Serializable {
             patientItem.setRetiredAt(new Date());
             patientItem.setRetired(true);
             getPatientItemFacade().edit(patientItem);
-            
+
             createPatientItems();
-            
+
             JsfUtil.addSuccessMessage("Removed successfully.");
         }
     }
@@ -521,21 +519,23 @@ public class InwardTimedItemController implements Serializable {
 
     public String navigateToAddInwardTimedServicesFromMenu() {
         makeNull();
-        return "/inward/inward_timed_service_consume";
+        return "/inward/inward_timed_service_consume?faces-redirect=true";
     }
 
-    public String navigateToAddInwardTimedServicesFromInpatientProfile() {
-        return "/inward/inward_timed_service_consume";
+    public String navigateToAddInwardTimedServicesFromInpatientProfile(PatientEncounter pe) {
+        makeNull();
+        getCurrent().setPatientEncounter(pe);
+        return "/inward/inward_timed_service_consume?faces-redirect=true";
     }
 
     public String navigateToAddInwardTimedServiceForTheatreFromMenu() {
         makeNull();
-        return "/theater/inward_timed_service_consume_surgery";
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
     public String navigateToAddInwardTimedServiceForTheatreFromInpatientProfile() {
         makeNull();
-        return "/theater/inward_timed_service_consume_surgery";
+        return "/theater/inward_timed_service_consume_surgery?faces-redirect=true";
     }
 
     private boolean errorCheck() {
@@ -560,7 +560,14 @@ public class InwardTimedItemController implements Serializable {
         }
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
-        getCurrent().setServiceValue(count * timedItemFee.getFee());
+        System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
+
+        if (getCurrent().getPatientEncounter().isForiegner()) {
+            getCurrent().setServiceValue(count * timedItemFee.getFfee());
+        } else {
+            getCurrent().setServiceValue(count * timedItemFee.getFee());
+        }
+
         getCurrent().setCreater(getSessionController().getLoggedUser());
         getCurrent().setCreatedAt(Calendar.getInstance().getTime());
         if (getCurrent().getId() == null) {
@@ -574,7 +581,7 @@ public class InwardTimedItemController implements Serializable {
         current.setItem(null);
 
         createPatientItems();
-        
+
         JsfUtil.addSuccessMessage("Added Successfully.");
 
     }
@@ -608,12 +615,21 @@ public class InwardTimedItemController implements Serializable {
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
         double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
 
-        pic.setServiceValue(count * timedItemFee.getFee());
+        System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
+
+        if (pic.getPatientEncounter().isForiegner()) {
+            System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
+            pic.setServiceValue(count * timedItemFee.getFfee());
+        } else {
+            System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
+            pic.setServiceValue(count * timedItemFee.getFee());
+        }
+        System.out.println("pic.getServiceValue() = " + pic.getServiceValue());
 
         getPatientItemFacade().edit(pic);
 
         createPatientItems();
-        
+
         JsfUtil.addSuccessMessage("Updated Successfully.");
 
     }
@@ -632,7 +648,12 @@ public class InwardTimedItemController implements Serializable {
         for (PatientItem pi : items) {
             TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) pi.getItem());
             double count = getInwardBean().calCount(timedItemFee, pi.getFromTime(), pi.getToTime());
-            pi.setServiceValue(count * timedItemFee.getFee());
+            if (getCurrent().getPatientEncounter().isForiegner()) {
+                pi.setServiceValue(count * timedItemFee.getFfee());
+            } else {
+                pi.setServiceValue(count * timedItemFee.getFee());
+            }
+
         }
     }
 
@@ -677,14 +698,6 @@ public class InwardTimedItemController implements Serializable {
         this.timedItemFeeFacade = timedItemFeeFacade;
     }
 
-    public CommonFunctions getCommonFunctions() {
-        return commonFunctions;
-    }
-
-    public void setCommonFunctions(CommonFunctions commonFunctions) {
-        this.commonFunctions = commonFunctions;
-    }
-
     public InwardBeanController getInwardBean() {
         return inwardBean;
     }
@@ -695,7 +708,7 @@ public class InwardTimedItemController implements Serializable {
 
     public Date getFrmDate() {
         if (frmDate == null) {
-            frmDate = com.divudi.java.CommonFunctions.getStartOfMonth(new Date());
+            frmDate = com.divudi.core.util.CommonFunctions.getStartOfMonth(new Date());
         }
         return frmDate;
     }

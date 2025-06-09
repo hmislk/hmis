@@ -5,7 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      
+
       xmlns:hr="http://xmlns.jcp.org/jsf/composite/autocomplete">
 
     <h:body>
@@ -20,11 +20,11 @@
                         </f:facet>
                         <h:panelGrid columns="2" >
                             <h:outputLabel value="Salary Cycle"/>
-                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}" 
+                            <p:selectOneMenu value="#{hrReportController.reportKeyWord.salaryCycle}"
                                              var="t">
-                                <f:selectItems value="#{salaryCycleController.salaryCycles}" 
-                                               var="theme" 
-                                               itemLabel="#{theme.name}" 
+                                <f:selectItems value="#{salaryCycleController.salaryCycles}"
+                                               var="theme"
+                                               itemLabel="#{theme.name}"
                                                itemValue="#{theme}" ></f:selectItems>
 
                                 <p:column style="width:10%" headerText="Name">
@@ -39,7 +39,7 @@
                                 </p:column>
                             </p:selectOneMenu>
                             <h:outputLabel value="Institution : "/>
-                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>  
+                            <hr:institution value="#{hrReportController.reportKeyWord.institution}"/>
                             <h:outputLabel value="Department : "/>
                             <hr:department value="#{hrReportController.reportKeyWord.department}"/>
                             <h:outputLabel value="Employee : "/>
@@ -62,12 +62,12 @@
                         <p:commandButton value="Print" ajax="false" action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
-                        <p:panel id="gpBillPreview"   styleClass="noBorder summeryBorder"  >                     
+                        <p:panel id="gpBillPreview"   styleClass="noBorder summeryBorder"  >
                             <p:dataTable id="tb1" value="#{hrReportController.staffSalarys}" var="ss">
                                 <f:facet name="header">
 
                                     <h:outputLabel value="  No Pay And Late No Pay  Report " />
-                                    <br/>                                   
+                                    <br/>
                                     <h:panelGroup rendered="#{hrReportController.reportKeyWord.institution ne null}" >
 
                                         <h:outputLabel value="#{hrReportController.reportKeyWord.institution.name}" />
@@ -96,13 +96,13 @@
                                         <h:outputLabel value="EPF NO"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.epfNo}"></p:outputLabel>
-                                </p:column>    
+                                </p:column>
                                 <p:column headerText="Emp Name">
                                     <f:facet name="header">
                                         <h:outputLabel value="Emp Name"  />
                                     </f:facet>
                                     <p:outputLabel value="#{ss.staff.person.nameWithTitle}"></p:outputLabel>
-                                </p:column>                              
+                                </p:column>
                                 <p:column headerText="Merchantile Amount" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Merchantile Amount"  />
@@ -177,7 +177,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.lateNoPayAllovanceValueTotal-hrReportController.lateNoPayBasicValueTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.lateNoPayAllovanceValueTotal-hrReportController.lateNoPayBasicValueTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -193,7 +193,7 @@
                                         <h:outputLabel value="#{hrReportController.noPayValueAllowanceTotal
                                                                 +hrReportController.noPayValueBasicTotal
                                                                 -hrReportController.lateNoPayAllovanceValueTotal
-                                                                +hrReportController.lateNoPayBasicValueTotal}">                                            
+                                                                +hrReportController.lateNoPayBasicValueTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -207,7 +207,7 @@
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{(hrReportController.noPayValueAllowanceTotal
-                                                                +hrReportController.noPayValueBasicTotal)}">                                            
+                                                                +hrReportController.noPayValueBasicTotal)}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -220,7 +220,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.noPayValueBasicTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.noPayValueBasicTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -233,7 +233,7 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.noPayValueAllowanceTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.noPayValueAllowanceTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -246,11 +246,11 @@
                                     <p:outputLabel value="#{ss.lateNoPayCount}">
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.lateNoPayCountTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.lateNoPayCountTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
-                                </p:column>                                
+                                </p:column>
                                 <p:column headerText="No Pay Count" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="No Pay Count"  />
@@ -259,7 +259,7 @@
                                     </p:outputLabel>
                                     <f:facet name="footer">
                                         <p:outputLabel value="#{hrReportController.noPayCountTotal
-                                                                -hrReportController.lateNoPayCountTotal}">                                            
+                                                                -hrReportController.lateNoPayCountTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -268,10 +268,10 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Total"  />
                                     </f:facet>
-                                    <p:outputLabel value="#{ss.noPayCount}">                                          
+                                    <p:outputLabel value="#{ss.noPayCount}">
                                     </p:outputLabel>
                                     <f:facet name="footer">
-                                        <p:outputLabel value="#{hrReportController.noPayCountTotal}">                                            
+                                        <p:outputLabel value="#{hrReportController.noPayCountTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:outputLabel>
                                     </f:facet>
@@ -279,7 +279,7 @@
                                 <f:facet name="footer">
                                     <p:outputLabel value="Print By : #{sessionController.loggedUser.webUserPerson.name} - " />
                                     <p:outputLabel value="Print At : " />
-                                    <p:outputLabel value="#{commonController.currentDateTime}" >
+                                    <p:outputLabel value="#{commonFunctionsProxy.currentDateTime}" >
                                         <f:convertDateTime pattern="yyyy MMMM dd hh:mm:ss a " />
                                     </p:outputLabel>
                                 </f:facet>

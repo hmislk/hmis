@@ -9,13 +9,12 @@
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
 
     <h:body>
-
         <ui:composition template="/resources/template/template.xhtml">
-
             <ui:define name="content">
                 <h:form >
-
-                    <p:panel rendered="#{!pharmacyPreSettleController.billPreview}">
+                    <p:panel 
+                        rendered="#{!pharmacyPreSettleController.billPreview}"
+                        class="w-100 m-1">
                         <f:facet name="header" >
                             <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel> 
                             <p:commandButton 
@@ -26,115 +25,310 @@
                                 action="pharmacy_search_pre_bill"/>
                         </f:facet>
 
-                        <h:panelGrid columns="20"  >
-                            <h:outputLabel value="Pharmacy Retail Bill" />
-                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   
-                                id="cmbPs" 
-                                class="w-100"
-                                value="#{pharmacyPreSettleController.preBill.paymentMethod}"  
-                                disabled="#{!sessionController.loggedPreference.allowtoChangePaymentMethodDuringPayment}">                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}" />
-                                <p:ajax 
-                                    process="cmbPs" 
-                                    update="creditCard cheque slip multiplePaymentMethods" 
-                                    event="change" />
-                            </p:selectOneMenu>
+                        <div class="row">
+                            <div class="col-6">
+                                <p:panel header="Pharmacy Retail Bill">
+                                    <f:facet name="header" >
+                                        <h:outputText value="Accept Payment for Pharmacy Bill" ></h:outputText>
+                                        <p:commandButton 
+                                            ajax= "true"
+                                            id="refresh"
+                                            update="pBillDetails"
+                                            style="float:right;"
+                                            class="ui-button-warning mx-1"
+                                            title="Refresh Balancce"
+                                            icon="pi pi-refresh"                                                             
+                                            action="#{pharmacyPreSettleController.checkAndUpdateBalance()}" />
+
+                                        <p:commandButton
+                                            ajax= "false"
+                                            value="Settle and Accept Payment"
+                                            id="settle"
+                                            style="float:right;"
+                                            class="ui-button-success mx-1"
+                                            icon="fa-solid fa-check"                                                             
+                                            action="#{pharmacyPreSettleController.settleBillWithPay2}" />
+
+                                        <p:defaultCommand target="settle"/>
+
+                                    </f:facet>
+
+                                    <div class="row my-3" >
+                                        <div class="col-6" >
+                                            <p:outputLabel 
+                                                value="Payment Method" 
+                                                class="form-label"
+                                                for="cmbPs" ></p:outputLabel>
+
+                                            <p:selectOneMenu 
+                                                id="cmbPs"  
+                                                class="w-100"
+                                                filter="true"
+                                                filterMatchMode="contains"
+                                                value="#{pharmacyPreSettleController.preBill.paymentMethod}" > 
+                                                <f:selectItem itemLabel="Select Payment"></f:selectItem>
+                                                <f:selectItems value="#{enumController.paymentMethodsForPharmacyBilling}" />
+                                                <p:ajax 
+                                                    process="cmbPs" 
+                                                    listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}"
+                                                    update="panelPaymentDetails pBillDetails discountScheme" 
+                                                    event="change" />
+                                            </p:selectOneMenu>
+                                        </div>
+                                        <div class="col-6" >
+                                            <p:outputLabel 
+                                                value="Discount Scheme" 
+                                                class="form-label"
+                                                for="discountScheme" ></p:outputLabel>
+                                            <p:selectOneMenu 
+                                                class="w-100"
+                                                id="discountScheme" 
+                                                value="#{pharmacyPreSettleController.preBill.paymentScheme}">   
+                                                <f:selectItem itemLabel="No Discount Scheme"/>
+                                                <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
+                                                <p:ajax process="@this pay " 
+                                                        update="panelPaymentDetails pBillDetails" 
+                                                        event="change"  
+                                                        listener="#{pharmacyPreSettleController.updateTotals()}"/>
+                                            </p:selectOneMenu>
+                                        </div>
+
+                                    </div>
 
 
-                            <h:panelGroup id="creditCard" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
+                                    <div class="row">
+                                        <div style="col-12">
+                                            <h:panelGroup id="panelPaymentDetails" >
+                                                <h:panelGroup
+                                                    id="credit"
+                                                    class="row"
+                                                    layout="block" 
+                                                    rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Credit'}"
+                                                    >
+                                                    <div class="my-1" >
+                                                        <div class="row">
+                                                            <div class="col-12 d-flex ">
+                                                                <p:autoComplete 
+                                                                    id="creditCompany" 
+                                                                    class="w-100 -mx-2"
+                                                                    inputStyleClass="form-control"
+                                                                    forceSelection="true"
+                                                                    value="#{pharmacyPreSettleController.toInstitution}"  
+                                                                    completeMethod="#{institutionController.completeCreditCompany}" 
+                                                                    var="ix"
+                                                                    minQueryLength="2"
+                                                                    placeholder="Company (Type at least 4 letters to search)"
+                                                                    itemLabel="#{ix.name}" 
+                                                                    itemValue="#{ix}" 
+                                                                    size="10"  >
+                                                                    <f:ajax  
+                                                                        event="itemSelect" 
+                                                                        listener="#{pharmacyPreSettleController.updateTotals()}"
+                                                                        execute="@this" 
+                                                                        render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
+                                                                </p:autoComplete> 
+                                                                <p:commandLink 
+                                                                    id="btnAddNewCreditCom" 
+                                                                    value="(+)"
+                                                                    class="mx-3 mt-1"
+                                                                    title="Add New Credit Company"
+                                                                    ajax="false" 
+                                                                    action="#{navigationController.navigateToCreditCompany()}"
+                                                                    actionListener="#{creditCompanyController.prepareAdd()}" />  
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </h:panelGroup>
 
-                            <h:panelGroup id="cheque" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
+                                                <h:panelGroup id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}">
+                                                    <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
 
-                            <h:panelGroup id="slip" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
+                                                <h:panelGroup id="staff" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff'}">
+                                                    <pa:staff_credit paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
 
-                            <h:panelGroup id="eWallet" style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'ewallet' ? 'none' : 'block'} ;">
-                                <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
+                                                <h:panelGroup id="staff_welfare" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Staff_Welfare'}">
+                                                    <pa:staff_welfare_asOnlyPayment
+                                                        controllerWithMultiplePayments="#{pharmacyPreSettleController}"
+                                                        paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
 
-                            <p:commandButton ajax= "false"
-                                             value="Settle and Accept Payment"
-                                             id="settle"
-                                             class="ui-button-success"
-                                             icon="fa-solid fa-check"
-                                             action="#{pharmacyPreSettleController.settleBillWithPay2}" />
+                                                <h:panelGroup id="cheque" class="w-100" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
+                                                    <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
 
-                            <p:defaultCommand target="settle"/>
-                        </h:panelGrid>
-                        <h:panelGroup
-                            class="row my-2 w-50"
-                            layout="block" 
-                            id="multiplePaymentMethods"  style="display:#{pharmacyPreSettleController.preBill.paymentMethod ne 'MultiplePaymentMethods' ? 'none' : 'block'} ;" 
-                            >
-                            <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" class="w-100"/>
-                        </h:panelGroup>
+                                                <h:panelGroup id="slip" class="w-100" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Slip'}">
+                                                    <pa:slipDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="eWallet" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}">
+                                                    <pa:ewalletDetailsAsOnlyPayment paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup
+                                                    class="row my-2 w-100"
+                                                    layout="block" 
+                                                    id="multiplePaymentMethods"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'MultiplePaymentMethods'}" 
+                                                    >
+                                                    <pa:multiple_payment_methods controller="#{pharmacyPreSettleController}" paymentMethods="#{enumController.PaymentMethodsForPharmacyRetailSale()}" class="w-100"/>
+                                                    <p:ajax event="keyup" process="@this" listener="#{pharmacyPreSettleController.checkAndUpdateBalance()}" update="pBillDetails"/>
+                                                </h:panelGroup>
+
+                                            </h:panelGroup>
+
+                                        </div>
+                                    </div>
+
+                                </p:panel>
+                            </div>
+
+                            <div class="col-2">
+                                <p:panel header="Payment Details" id="pBillDetails">
+                                    <div style="overflow-x: auto; max-width: 100%;">
+                                        <h:panelGrid columns="3" style="width: 100%; " columnClasses="numberCol, textCol"  >
+                                            <h:outputLabel value="Total" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel id="total" value="#{pharmacyPreSettleController.preBill.total}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Discount" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel id="dis" value="#{pharmacyPreSettleController.preBill.discount}" >
+                                                <f:convertNumber pattern="#,##0.00" />                                          
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Net Total" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel id="netTotal" value="#{pharmacyPreSettleController.preBill.netTotal}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Tendered" ></h:outputLabel>
+                                            <h:outputLabel style=" width: 40px; text-align: center"  value=":" ></h:outputLabel>
+                                            <p:inputText autocomplete="off"  id="paid" class="w-100" disabled="#{pharmacyPreSettleController.preBill.paymentMethod ne 'Cash'}" value="#{pharmacyPreSettleController.cashPaid}" onfocus="this.select()">
+                                                <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
+                                            </p:inputText>
+                                            <h:outputLabel  value="Balance " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel id="balance" value="#{-pharmacyPreSettleController.checkAndUpdateBalance()}" >
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            
+                                        </h:panelGrid>
+
+                                        <div style="height: 115px">
+
+                                        </div>
+
+                                    </div>
+
+                                </p:panel>
+                            </div>
+
+                            <div class="col-2">
+                                <p:panel header="Bill Detail">
+                                    <div style="overflow-x: auto; max-width: 100%;">
+                                        <h:panelGrid columns="3" style="width: 100%">
+                                            <h:outputLabel value="Bill No " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Billed Date " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Billed Time " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.createdAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Billed By " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.creater.name}" ></h:outputLabel>
+                                            <h:outputLabel value="Reffered By " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.referredBy}" ></h:outputLabel>
+                                            <h:outputLabel value="Comments " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.comments}" ></h:outputLabel>
+                                            
+                                        </h:panelGrid>
+                                        
+                                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}">
+                                            <div style="height: 105px">
+
+                                            </div>
+                                        </h:panelGroup>
+                                        
+                                        <h:panelGrid rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" columns="3" style="width: 100%">
+                                            <h:outputLabel value="Token" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenNumber}" ></h:outputLabel>
+                                            <h:outputLabel value="Token Date" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                            <h:outputLabel value="Token Time" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.findTokenFromBill(pharmacyPreSettleController.preBill).tokenAt}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" ></f:convertDateTime>
+                                            </h:outputLabel>
+                                        </h:panelGrid>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-2">
+                                <p:panel header="Customer Detail">
+                                    <div style="overflow-x: auto; max-width: 100%;">
+                                        <h:panelGrid columns="3" class="pb-5" style="width: 100%">
+                                            <h:outputLabel value="Name" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.name}" ></h:outputLabel>    
+                                            <h:outputLabel value="Gender" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.sex}" ></h:outputLabel> 
+                                            <h:outputLabel value="Date of Birth" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.dob}" >
+                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            </h:outputLabel> 
+                                            <h:outputLabel value="Age" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.ageAsString}" ></h:outputLabel> 
+                                            <h:outputLabel value="Mobile No" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.mobile}" ></h:outputLabel> 
+                                            <h:outputLabel value="Phone No. " ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.phone}" ></h:outputLabel> 
+                                            <h:outputLabel value="Email" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.email}" ></h:outputLabel> 
+                                            <h:outputLabel value="National ID No." ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.nic}" ></h:outputLabel> 
+                                            <h:outputLabel value="Address" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.address}" ></h:outputLabel> 
+                                            <h:outputLabel value="Area" ></h:outputLabel>
+                                            <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
+                                            <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.area.name}" ></h:outputLabel> 
+                                        </h:panelGrid>
+                                    </div>
+                                </p:panel>
+                            </div>
+
+                        </div>
 
                         <div class="row mt-2">
-                            <div class="col-5">
-                                <p:panel header="Customer Detail">
-                                    <h:panelGrid columns="3">
-                                        <h:outputLabel value="Name" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.patient.person.name}" ></h:outputLabel>                                        
-                                    </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="col-3">
-                                <p:panel header="Bill Detail">
-                                    <h:panelGrid columns="3">
-                                        <h:outputLabel value="Bill No " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
-                                        <h:outputLabel value="Total " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.total}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                        <h:outputLabel value="Discount " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.discount}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                        <h:outputLabel value="Net Total " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
-                                    </h:panelGrid>
-                                </p:panel>
-                            </div>
-                            <div class="col-4">
-                                <p:panel header="Bill Details" id="pBillDetails"  >
-                                    <h:panelGrid columns="3" columnClasses="numberCol, textCol"  >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel id="total" value="#{pharmacyPreSettleController.preBill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel id="dis" value="#{pharmacyPreSettleController.preBill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />                                          
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel id="netTotal" value="#{pharmacyPreSettleController.preBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Tendered" ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <p:inputText autocomplete="off"  id="paid" class="w-100" value="#{pharmacyPreSettleController.cashPaid}" onfocus="this.select()">
-                                            <p:ajax process="total dis netTotal paid" update="balance netTotal" event="keyup"/>
-                                        </p:inputText>
-                                        <h:outputLabel  value="Balance " ></h:outputLabel>
-                                        <h:outputLabel value=":" style="width: 40px; text-align: center"></h:outputLabel>
-                                        <h:outputLabel id="balance" value="#{pharmacyPreSettleController.cashPaid-pharmacyPreSettleController.preBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                    </h:panelGrid>
 
-                                </p:panel>
-                            </div>
                         </div>
 
                         <p:panel header="Bill Item Detail" class="mt-2">
@@ -170,12 +364,16 @@
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
+                                
                                 <p:commandButton class="mx-1 ui-button-info" icon="fas fa-print" ajax="false" value="Print" >
                                     <p:printer target="gpBillPreview" />
                                 </p:commandButton>
                             </div>
                             <div>
+                                <p:commandButton ajax="false" icon="fas fa-search" class="ui-button-warning mx-2" value="Back to token bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill">
+                                    <f:actionListener rendered="#{!configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashier()}"></f:actionListener>
+                                    <f:actionListener rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}" binding="#{searchController.fillPharmacyPreBillsToAcceptAtCashierInTokenSystem()}"></f:actionListener>
+                                </p:commandButton>
                                 <p:commandButton 
                                     value="New Pharmacy Token"
                                     ajax="false" 
@@ -184,7 +382,23 @@
                             </div>
                         </div>
                         <h:panelGroup id="gpBillPreview" >
-                            <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>
+                            
+                            <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier bill with Items is PosPaper',true)}">
+                                <div style="page-break-inside: avoid;">
+                                    <ph:saleBill bill="#{pharmacyPreSettleController.bill}"></ph:saleBill>
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is FiveFiveCustom3',false)}"> 
+                                <div>
+                                    <ph:sale_for_cashier_bill_five_five_custom_3_ bill="#{pharmacyPreSettleController.bill}"/>
+                                </div>
+                            </h:panelGroup>
+                            
+                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy accept payment for sale for cashier Bill is PosHeaderPaper',true)}">
+                                <ph:saleBill_Header bill="#{pharmacyPreSettleController.bill}"></ph:saleBill_Header>
+                            </h:panelGroup>
+                            
                         </h:panelGroup>
                     </p:panel>
 

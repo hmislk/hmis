@@ -8,11 +8,11 @@
  */
 package com.divudi.bean.common;
 
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.clinical.ClinicalFindingValueType;
-import com.divudi.entity.Patient;
-import com.divudi.entity.clinical.ClinicalFindingValue;
-import com.divudi.facade.ClinicalFindingValueFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.clinical.ClinicalFindingValueType;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.facade.ClinicalFindingValueFacade;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
@@ -115,7 +115,7 @@ public class ClinicalFindingValueController implements Serializable {
     public List<ClinicalFindingValue> getItems() {
         return items;
     }
-    
+
     public List<ClinicalFindingValue> findClinicalFindingValues(Patient pt, ClinicalFindingValueType type) {
         if (items == null) {
             String j;

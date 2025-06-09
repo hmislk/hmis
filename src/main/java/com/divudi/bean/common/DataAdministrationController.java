@@ -6,111 +6,86 @@
 package com.divudi.bean.common;
 
 import com.divudi.bean.lab.InvestigationController;
-import com.divudi.data.BillType;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.dataStructure.BillListWithTotals;
-import com.divudi.data.dataStructure.SearchKeyword;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.dataStructure.BillListWithTotals;
+import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.BillEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillFee;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.BillNumber;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.Category;
-import com.divudi.entity.Department;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Item;
-import com.divudi.entity.Service;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.Staff;
-import com.divudi.entity.lab.Investigation;
-import com.divudi.entity.lab.PatientInvestigation;
-import com.divudi.entity.lab.PatientReport;
-import com.divudi.entity.lab.PatientReportItemValue;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.ItemBatch;
-import com.divudi.entity.pharmacy.PharmaceuticalItemCategory;
-import com.divudi.facade.BillComponentFacade;
-import com.divudi.facade.BillEntryFacade;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.BillNumberFacade;
-import com.divudi.facade.CategoryFacade;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.InstitutionFacade;
-import com.divudi.facade.ItemBatchFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientInvestigationFacade;
-import com.divudi.facade.PatientInvestigationItemValueFacade;
-import com.divudi.facade.PatientReportFacade;
-import com.divudi.facade.PatientReportItemValueFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.PharmaceuticalItemCategoryFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.*;
+import com.divudi.core.entity.lab.Investigation;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.lab.PatientReport;
+import com.divudi.core.entity.lab.PatientReportItemValue;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItemCategory;
+import com.divudi.core.facade.BillComponentFacade;
+import com.divudi.core.facade.BillEntryFacade;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.BillNumberFacade;
+import com.divudi.core.facade.CategoryFacade;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.InstitutionFacade;
+import com.divudi.core.facade.ItemBatchFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
+import com.divudi.core.facade.PatientInvestigationItemValueFacade;
+import com.divudi.core.facade.PatientReportFacade;
+import com.divudi.core.facade.PatientReportItemValueFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.PharmaceuticalItemCategoryFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.ejb.BillNumberGenerator;
-import com.divudi.entity.BillComponent;
-import com.divudi.entity.BillEntry;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Family;
-import com.divudi.entity.FamilyMember;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientDeposit;
-import com.divudi.entity.PatientDepositHistory;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PatientFlag;
-import com.divudi.entity.PatientItem;
-import com.divudi.entity.Payment;
-import com.divudi.entity.Person;
-import com.divudi.entity.WebUser;
-import com.divudi.entity.cashTransaction.CashBook;
-import com.divudi.entity.cashTransaction.CashBookEntry;
-import com.divudi.entity.cashTransaction.CashTransaction;
-import com.divudi.entity.cashTransaction.CashTransactionHistory;
-import com.divudi.entity.cashTransaction.Drawer;
-import com.divudi.entity.cashTransaction.DrawerEntry;
-import com.divudi.entity.inward.PatientRoom;
-import com.divudi.entity.lab.PatientSample;
-import com.divudi.entity.lab.PatientSampleComponant;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.StockHistory;
-import com.divudi.entity.pharmacy.StockVarientBillItem;
-import com.divudi.entity.pharmacy.UserStock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.AbstractFacade;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.CashBookEntryFacade;
-import com.divudi.facade.CashBookFacade;
-import com.divudi.facade.CashTransactionFacade;
-import com.divudi.facade.CashTransactionHistoryFacade;
-import com.divudi.facade.DrawerEntryFacade;
-import com.divudi.facade.DrawerFacade;
-import com.divudi.facade.FamilyFacade;
-import com.divudi.facade.FamilyMemberFacade;
-import com.divudi.facade.PatientDepositFacade;
-import com.divudi.facade.PatientDepositHistoryFacade;
-import com.divudi.facade.PatientEncounterFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PatientFlagFacade;
-import com.divudi.facade.PatientItemFacade;
-import com.divudi.facade.PatientRoomFacade;
-import com.divudi.facade.PatientSampleComponantFacade;
-import com.divudi.facade.PatientSampleFacade;
-import com.divudi.facade.PaymentFacade;
-import com.divudi.facade.PharmaceuticalItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
-import com.divudi.facade.StockVarientBillItemFacade;
-import com.divudi.facade.UserStockContainerFacade;
-import com.divudi.facade.UserStockFacade;
-import com.divudi.java.CommonFunctions;
-import java.io.Serializable;
+import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.cashTransaction.CashBookEntry;
+import com.divudi.core.entity.cashTransaction.CashTransaction;
+import com.divudi.core.entity.cashTransaction.CashTransactionHistory;
+import com.divudi.core.entity.cashTransaction.Drawer;
+import com.divudi.core.entity.cashTransaction.DrawerEntry;
+import com.divudi.core.entity.inward.PatientRoom;
+import com.divudi.core.entity.lab.PatientSample;
+import com.divudi.core.entity.lab.PatientSampleComponant;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.pharmacy.StockVarientBillItem;
+import com.divudi.core.entity.pharmacy.UserStock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.AbstractFacade;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.CashBookEntryFacade;
+import com.divudi.core.facade.CashBookFacade;
+import com.divudi.core.facade.CashTransactionFacade;
+import com.divudi.core.facade.CashTransactionHistoryFacade;
+import com.divudi.core.facade.DrawerEntryFacade;
+import com.divudi.core.facade.DrawerFacade;
+import com.divudi.core.facade.FamilyFacade;
+import com.divudi.core.facade.FamilyMemberFacade;
+import com.divudi.core.facade.PatientDepositFacade;
+import com.divudi.core.facade.PatientDepositHistoryFacade;
+import com.divudi.core.facade.PatientEncounterFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientFlagFacade;
+import com.divudi.core.facade.PatientItemFacade;
+import com.divudi.core.facade.PatientRoomFacade;
+import com.divudi.core.facade.PatientSampleComponantFacade;
+import com.divudi.core.facade.PatientSampleFacade;
+import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.PharmaceuticalItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
+import com.divudi.core.facade.StockVarientBillItemFacade;
+import com.divudi.core.facade.UserStockContainerFacade;
+import com.divudi.core.facade.UserStockFacade;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.LogFileService;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -124,11 +99,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.Entity;
 import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
@@ -138,6 +111,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.reflections.Reflections;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.*;
+import java.time.*;
+import java.util.*;
+import javax.ejb.EJB;
+import javax.inject.Named;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -231,7 +213,7 @@ public class DataAdministrationController implements Serializable {
     @Inject
     InstitutionController institutionController;
     @Inject
-    CommonFunctionsController commonFunctionsController;
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     ItemFacade itemFacade;
@@ -271,6 +253,9 @@ public class DataAdministrationController implements Serializable {
     @EJB
     BillEjb billEjb;
 
+    @EJB
+    private LogFileService logService;
+
     List<Bill> bills;
     List<Bill> selectedBills;
     List<Institution> institutions;
@@ -304,6 +289,7 @@ public class DataAdministrationController implements Serializable {
     private int manageCheckEnteredDataIndex;
     private String errors;
     private String suggestedSql;
+    private String allCreateStetements;
     private String createdSql;
     private String alterSql;
     private String executionFeedback;
@@ -315,11 +301,50 @@ public class DataAdministrationController implements Serializable {
     private String code;
 
     private int tabIndex;
+    private int tabIndexMissingFields;
 
     private int progress;
     private String progressMessage;
     int processedRecords = 0;
     int totalRecords = 0;
+
+    private List<Path> logs;
+    private Path selected;
+    private Path logDir;
+
+    private Path findLogDir(String p) {
+        return Paths.get(p.trim()).normalize();
+    }
+
+    public void refresh() {
+        try {
+            String configuredPath = getPayaraLogLocation();
+            if (configuredPath == null || configuredPath.trim().isEmpty()) {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Payara log location is not configured.");
+                return;
+            }
+            logDir = findLogDir(configuredPath);
+
+            if (Files.isDirectory(logDir)) {
+                logs = logService.list(logDir, fromDate, toDate);
+            } else {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Log directory not found. Please set the configuration option for Payara Log File Path");
+            }
+        } catch (IOException e) {
+            logs = Collections.emptyList();
+            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
+        }
+    }
+
+    public StreamedContent downloadFile(Path file) throws IOException {
+        return logService.download(file);
+    }
+
+    private static LocalDate toLocalDate(Date d) {
+        return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
 
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
@@ -388,10 +413,13 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public String getPayaraLogLocation() {
+        return configOptionApplicationController.getLongTextValueByKey("Location of the Payara Log", "/opt/payara/logs/app/");
+    }
+
     public void retireAllPharmacyRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for pharmacy-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -413,7 +441,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No pharmacy-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -429,13 +456,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for pharmacy-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllBillRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for bill-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -469,7 +494,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No bill-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -495,13 +519,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for bill-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllMembershipData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
         String jpql = "Select f from Family f where f.retired=:ret";
         Map params = new HashMap();
         params.put("ret", false);
@@ -556,7 +578,6 @@ public class DataAdministrationController implements Serializable {
     public void retireAllPatientInvestigationRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -590,7 +611,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -612,7 +632,6 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process completed.";
-        System.out.println(progressMessage);
     }
 
     private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, AbstractFacade<T> facade) {
@@ -629,8 +648,6 @@ public class DataAdministrationController implements Serializable {
                 retirable.setRetireComments(uuid);
                 facade.edit(entity); // Use the specific facade passed as a parameter
             } else {
-                System.out.println("Entity that does not implement retirable");
-                System.out.println("entity = " + entity);
             }
             processedRecords++;
             updateProgress();
@@ -644,7 +661,6 @@ public class DataAdministrationController implements Serializable {
 
     private void updateProgress() {
         progress = (processedRecords * 100) / totalRecords;
-        System.out.println("Progress: " + progress + "%");
     }
 
     public void detectWholeSaleBills() {
@@ -673,7 +689,16 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String navigateToCheckMissingFields() {
+        allCreateStetements = "";
+        executionFeedback = "";
+        errors = "";
+        createdSql = "";
+        suggestedSql = "";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
+    }
+
+    public String navigateToDownloadLogFiles() {
+        return "/dataAdmin/download_log_files?faces-redirect=true";
     }
 
     public String navigateToNameToCode() {
@@ -733,12 +758,26 @@ public class DataAdministrationController implements Serializable {
 
     public void checkMissingFields() {
         suggestedSql = "";
-        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingTableErrors = new ArrayList<>();
 
         for (Class<?> entityClass : findEntityClassNames()) {
+            // Get root entity class name (skip base classes like Item if needed)
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+
+            // Skip subclasses so we only evaluate root-level entities
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
             String entityName = entityClass.getSimpleName();
             EntityFieldError entityFieldError = new EntityFieldError(entityName);
             String jpql = "SELECT e FROM " + entityName + " e";
+
             try {
                 itemFacade.executeQueryFirstResult(entityClass, jpql);
             } catch (Exception e) {
@@ -748,31 +787,57 @@ public class DataAdministrationController implements Serializable {
                 }
                 if (cause != null) {
                     String message = cause.getMessage();
-                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
-                    while (matcher.find()) {
-                        String missingColumn = matcher.group(1);
+
+                    // Check for missing table
+                    Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
+                    Matcher tableMatcher = tablePattern.matcher(message);
+                    if (tableMatcher.find()) {
+                        String missingTable = tableMatcher.group(1);
+                        entityFieldError.addMissingField("Table not found: " + missingTable);
+                        missingTableErrors.add(entityFieldError);
+                        continue;
+                    }
+
+                    // Check for missing fields
+                    Pattern columnPattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher columnMatcher = columnPattern.matcher(message);
+                    while (columnMatcher.find()) {
+                        String missingColumn = columnMatcher.group(1);
                         entityFieldError.addMissingField(missingColumn);
                     }
-                    if (!entityFieldError.missingFields.isEmpty()) {
-                        entityFieldErrors.add(entityFieldError);
+
+                    if (!entityFieldError.getMissingFields().isEmpty()) {
+                        missingFieldErrors.add(entityFieldError);
                     }
                 }
             }
         }
 
-        // Convert the list of EntityFieldError objects to a string
-        StringBuilder errorsBuilder = new StringBuilder();
-        for (EntityFieldError error : entityFieldErrors) {
-            errorsBuilder.append(error.toString()).append("\n");
+        StringBuilder outputBuilder = new StringBuilder();
+
+        if (!missingTableErrors.isEmpty()) {
+            outputBuilder.append("=== Missing Tables ===\n");
+            for (EntityFieldError error : missingTableErrors) {
+                for (String field : error.getMissingFields()) {
+                    outputBuilder.append("Entity: ").append(error.getEntityName())
+                            .append(", ").append(field).append("\n");
+                }
+            }
         }
 
-        errors = errorsBuilder.toString();
+        if (!missingFieldErrors.isEmpty()) {
+            outputBuilder.append("\n=== Missing Fields ===\n");
+            for (EntityFieldError error : missingFieldErrors) {
+                outputBuilder.append(error.toString()).append("\n");
+            }
+        }
+
+        errors = outputBuilder.toString().trim();
     }
 
     public List<Class<?>> findEntityClassNames() {
         List<Class<?>> lst = new ArrayList<>();
-        Reflections reflections = new Reflections("com.divudi.entity");
+        Reflections reflections = new Reflections("com.divudi.core.entity");
         Set<Class<?>> annotated = reflections.getTypesAnnotatedWith(Entity.class);
         lst.addAll(annotated);
         return lst;
@@ -838,20 +903,44 @@ public class DataAdministrationController implements Serializable {
         int end = sql.lastIndexOf(")");
         String columnsSection = sql.substring(start + 1, end);
 
-        String[] definitions = columnsSection.split(",");
-        for (String def : definitions) {
-            def = def.trim();
-            // Skip constraints
-            if (def.toUpperCase().startsWith("PRIMARY KEY")
-                    || def.toUpperCase().startsWith("FOREIGN KEY")
-                    || def.toUpperCase().startsWith("CONSTRAINT")
-                    || def.toUpperCase().startsWith("UNIQUE")
-                    || def.toUpperCase().startsWith("CHECK")) {
-                continue;
+        StringBuilder current = new StringBuilder();
+        int parens = 0;
+
+        for (char c : columnsSection.toCharArray()) {
+            if (c == '(') {
+                parens++;
+            } else if (c == ')') {
+                parens--;
             }
-            columns.add(def);
+
+            if (c == ',' && parens == 0) {
+                String def = current.toString().trim();
+                if (!isConstraintDefinition(def)) {
+                    columns.add(def);
+                }
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
         }
+
+        if (current.length() > 0) {
+            String def = current.toString().trim();
+            if (!isConstraintDefinition(def)) {
+                columns.add(def);
+            }
+        }
+
         return columns;
+    }
+
+    private boolean isConstraintDefinition(String def) {
+        String upper = def.toUpperCase();
+        return upper.startsWith("PRIMARY KEY")
+                || upper.startsWith("FOREIGN KEY")
+                || upper.startsWith("CONSTRAINT")
+                || upper.startsWith("UNIQUE")
+                || upper.startsWith("CHECK");
     }
 
     private List<String> extractConstraintDefinitions(String sql) {
@@ -889,6 +978,80 @@ public class DataAdministrationController implements Serializable {
     private String generateAlterConstraintStatement(String tableName, String constraintDef) {
         // Handle constraints such as PRIMARY KEY, FOREIGN KEY, UNIQUE, etc.
         return String.format("ALTER TABLE %s ADD %s;", tableName, constraintDef);
+    }
+
+    public void createTablesAndFieldsForAllCreateStatements() {
+        StringBuilder executionResults = new StringBuilder();
+
+        String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
+        int counter = 0;
+
+        for (String part : rawParts) {
+            part = part.trim();
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            String createStatement = "CREATE TABLE " + part;
+
+            try {
+                // First execute the CREATE TABLE
+                try {
+                    itemFacade.executeNativeSql(createStatement);
+                    executionResults.append("<br/>Successfully executed: ").append(createStatement);
+                } catch (Exception e) {
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
+                }
+
+                // Proceed with ALTER logic
+                String tableName = extractTableName(createStatement);
+                if (tableName == null || tableName.isEmpty()) {
+                    executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
+                    continue;
+                }
+
+                String alterSql = generateAlterStatements(createStatement);
+
+                String[] sqlStatements = alterSql.split(";");
+                for (String sql : sqlStatements) {
+                    sql = sql.trim();
+                    if (sql.isEmpty()) {
+                        continue;
+                    }
+
+                    try {
+                        if (isValidSqlStatement(sql)) {
+                            itemFacade.executeNativeSql(sql);
+                            executionResults.append("<br/>Successfully executed: ").append(sql);
+                        } else {
+                            executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
+                        }
+                    } catch (Exception e) {
+                        executionResults.append("<br/>Failed to execute: ").append(sql);
+                        executionResults.append("<br/>Error: ").append(e.getMessage());
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
+            }
+        }
+
+        executionFeedback = executionResults.toString();
+
+    }
+
+    // Add this method to validate SQL statements
+    private boolean isValidSqlStatement(String sql) {
+        sql = sql.trim().toLowerCase();
+        // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
+        return (sql.startsWith("create table")
+                || sql.startsWith("alter table")
+                || sql.startsWith("set foreign_key_checks"))
+                && !sql.contains("drop")
+                && !sql.contains("truncate")
+                && !sql.contains("delete")
+                && !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
@@ -1104,7 +1267,7 @@ public class DataAdministrationController implements Serializable {
 //        m.put("bts", BillType.PharmacyTransferIssue);
 //        m.put("bts", BillType.PharmacyTransferReceive);
 //        m.put("bts", BillType.PharmacyTransferRequest);
-//        
+//
         bills = getBillFacade().findByJpql(j, m);
 
         for (Bill b : bills) {
@@ -1757,6 +1920,10 @@ public class DataAdministrationController implements Serializable {
         fillPharmacyCategory();
     }
 
+    public void causeError() {
+        throw new RuntimeException("This is a test exception to verify error handling.");
+    }
+
     public void deActveSelectedCategories() {
         if (selectedPharmaceuticalItemCategorys.isEmpty()) {
             JsfUtil.addErrorMessage("Please Select Category");
@@ -2134,7 +2301,7 @@ public class DataAdministrationController implements Serializable {
 
     public Date getFromDate() {
         if (fromDate == null) {
-            fromDate = commonFunctionsController.getStartOfMonth(new Date());
+            fromDate = CommonFunctions.getStartOfMonth(new Date());
         }
         return fromDate;
     }
@@ -2145,7 +2312,7 @@ public class DataAdministrationController implements Serializable {
 
     public Date getToDate() {
         if (toDate == null) {
-            toDate = commonFunctionsController.getEndOfMonth(new Date());
+            toDate = CommonFunctions.getEndOfMonth(new Date());
         }
         return toDate;
     }
@@ -2293,6 +2460,38 @@ public class DataAdministrationController implements Serializable {
 
     public void setProgressMessage(String progressMessage) {
         this.progressMessage = progressMessage;
+    }
+
+    public String getAllCreateStetements() {
+        return allCreateStetements;
+    }
+
+    public void setAllCreateStetements(String allCreateStetements) {
+        this.allCreateStetements = allCreateStetements;
+    }
+
+    public int getTabIndexMissingFields() {
+        return tabIndexMissingFields;
+    }
+
+    public void setTabIndexMissingFields(int tabIndexMissingFields) {
+        this.tabIndexMissingFields = tabIndexMissingFields;
+    }
+
+    public List<Path> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Path> logs) {
+        this.logs = logs;
+    }
+
+    public Path getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Path selected) {
+        this.selected = selected;
     }
 
     public class EntityFieldError {

@@ -139,6 +139,10 @@
                                 <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is FiveFiveCustom3',true)}"> 
                                     <phi:inward_direct_issue_cancellation_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill.cancelledBill}"/>
                                 </h:panelGroup>
+                                
+                                 <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Inward Direct Issue Bill is PosHeaderPaper',true)}"> 
+                                     <phi:saleBill_Header_Cancel bill="#{pharmacyBillSearch.bill.cancelledBill}" ></phi:saleBill_Header_Cancel>
+                            </h:panelGroup>
 
                             </h:panelGroup>
 

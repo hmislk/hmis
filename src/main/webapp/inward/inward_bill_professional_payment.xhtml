@@ -106,7 +106,7 @@
                                 paginatorPosition="bottom"
                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                 currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
-                                rowsPerPageTemplate="{ShowAll|'All'}"
+                                rowsPerPageTemplate="10,20,50,{ShowAll|'All'}"
                                 var="bf" 
                                 rowKey="#{bf.id}" >
 
@@ -138,7 +138,7 @@
                                     <h:outputLabel value="#{bf.bill.patientEncounter.patient.person.nameWithTitle}"/>                                    
                                 </p:column>
 
-                                <p:column headerText="BHT No" >
+                                <p:column headerText="BHT No" filterBy="#{bf.bill.patientEncounter.bhtNo}" filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="BHT No"/>
                                     </f:facet>                                        
@@ -249,7 +249,7 @@
                         </h:form>
 
                     </p:panel>
-                    
+
                 </h:panelGroup>
 
                 <h:form>
@@ -279,7 +279,13 @@
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview">
-                            <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                            <h:panelGroup  rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a A4 paper.', true)}">
+                                <bi:staffBill bill="#{inwardStaffPaymentBillController.current}" dup="false" />
+                            </h:panelGroup>
+
+                            <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Doctor payment bill is a five five paper.',false)}">
+                                <bi:staff_payment_five_five_paper_with_headings controller="#{inwardStaffPaymentBillController}" bill="#{inwardStaffPaymentBillController.current}" />
+                            </h:panelGroup>
                         </h:panelGroup>
 
                     </p:panel>

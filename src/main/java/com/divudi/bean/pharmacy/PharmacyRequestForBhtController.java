@@ -6,63 +6,57 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.BillBeanController;
-import com.divudi.bean.common.CommonController;
-import com.divudi.bean.common.CommonFunctionsController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.PriceMatrixController;
-import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.inward.InwardBeanController;
 import com.divudi.bean.membership.PaymentSchemeController;
-import com.divudi.data.BillClassType;
-import com.divudi.data.BillNumberSuffix;
-import com.divudi.data.BillType;
-import com.divudi.data.BillTypeAtomic;
-import com.divudi.data.DepartmentType;
-import com.divudi.data.PaymentMethod;
-import com.divudi.data.Sex;
-import com.divudi.data.StockQty;
-import com.divudi.data.Title;
-import com.divudi.data.inward.InwardChargeType;
-import com.divudi.data.inward.SurgeryBillType;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.Sex;
+import com.divudi.core.data.StockQty;
+import com.divudi.core.data.Title;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BillItem;
-import com.divudi.entity.Department;
-import com.divudi.entity.Item;
-import com.divudi.entity.Patient;
-import com.divudi.entity.PatientEncounter;
-import com.divudi.entity.PreBill;
-import com.divudi.entity.PriceMatrix;
-import com.divudi.entity.pharmacy.Amp;
-import com.divudi.entity.pharmacy.PharmaceuticalBillItem;
-import com.divudi.entity.pharmacy.Stock;
-import com.divudi.entity.pharmacy.UserStockContainer;
-import com.divudi.facade.BillFacade;
-import com.divudi.facade.BillFeeFacade;
-import com.divudi.facade.BillItemFacade;
-import com.divudi.facade.ItemFacade;
-import com.divudi.facade.PatientFacade;
-import com.divudi.facade.PersonFacade;
-import com.divudi.facade.PharmaceuticalBillItemFacade;
-import com.divudi.facade.StockFacade;
-import com.divudi.facade.StockHistoryFacade;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.PriceMatrix;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillFeeFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.StockHistoryFacade;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+
+import com.divudi.core.util.CommonFunctions;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 
@@ -84,11 +78,8 @@ public class PharmacyRequestForBhtController implements Serializable {
     @Inject
     SessionController sessionController;
     @Inject
-    CommonController commonController;
-    @Inject
     PharmacyCalculation pharmacyCalculation;
-    @Inject
-    SearchController searchController;
+
 ////////////////////////
     @EJB
     private BillFacade billFacade;
@@ -139,16 +130,13 @@ public class PharmacyRequestForBhtController implements Serializable {
     private BillBeanController billBean;
     @Inject
     NotificationController notificationController;
+    private String comment;
 
     public void selectSurgeryBillListener() {
         patientEncounter = getBatchBill().getPatientEncounter();
     }
 
     public void settleSurgeryBhtIssue() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBatchBill() == null) {
             return;
         }
@@ -276,7 +264,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     private void onEditCalculation(BillItem tmp) {
         tmp.setGrossValue(tmp.getQty() * tmp.getRate());
-        tmp.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - tmp.getQty()));
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 
         calculateBillItemForEditing(tmp);
 
@@ -384,7 +372,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         String sql;
         Map m = new HashMap();
         double d = 0.0;
-        Amp amp = (Amp) ampIn;
+        Amp amp = ampIn;
         m.put("d", getDepartment());
         m.put("s", d);
         m.put("vmp", amp.getVmp());
@@ -927,11 +915,13 @@ public class PharmacyRequestForBhtController implements Serializable {
         Bill bill = getBillFacade().find(getPreBill().getId());
         bill.setBillTypeAtomic(bta);
         bill.setBillType(bt);
+        bill.setComments(comment);
 
         billFacade.edit(bill);
         notificationController.createNotification(bill);
         clearBill();
         clearBillItem();
+        comment = "";
         billPreview = true;
 
     }
@@ -1026,7 +1016,7 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
-            if (bItem.getPharmaceuticalBillItem().getStock().getId() == getBillItem().getPharmaceuticalBillItem().getStock().getId()) {
+            if (Objects.equals(bItem.getPharmaceuticalBillItem().getStock().getId(), getBillItem().getPharmaceuticalBillItem().getStock().getId())) {
                 return true;
             }
         }
@@ -1052,7 +1042,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             return;
         }
 
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
@@ -1135,7 +1125,7 @@ public class PharmacyRequestForBhtController implements Serializable {
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
-        billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
+        billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         //Rates
         //Values
@@ -1219,7 +1209,7 @@ public class PharmacyRequestForBhtController implements Serializable {
             replaceableStocks = new ArrayList<>();
             itemsWithoutStocks = new ArrayList<>();
             handleSelectAction();
-        } else if (!qry.trim().equals("") && qry.length() > 4) {
+        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
             itemsWithoutStocks = completeRetailSaleItems(qry, department);
             if (itemsWithoutStocks != null && !itemsWithoutStocks.isEmpty()) {
                 fillReplaceableStocksForAmp((Amp) itemsWithoutStocks.get(0));
@@ -1259,7 +1249,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 }
                 billItem = new BillItem();
                 billItem.setPharmaceuticalBillItem(new PharmaceuticalBillItem());
-                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
+                billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
                 billItem.getPharmaceuticalBillItem().setStock(sq.getStock());
                 billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
@@ -1271,7 +1261,7 @@ public class PharmacyRequestForBhtController implements Serializable {
                 billItem.getPharmaceuticalBillItem().setDoe(sq.getStock().getItemBatch().getDateOfExpire());
                 billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
                 billItem.getPharmaceuticalBillItem().setItemBatch(sq.getStock().getItemBatch());
-                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (sq.getQty()));
+                billItem.getPharmaceuticalBillItem().setQtyInUnit(sq.getQty());
 //                billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - sq.getQty()));
 
                 billItem.setGrossValue(sq.getStock().getItemBatch().getRetailsaleRate() * sq.getQty());
@@ -1360,9 +1350,9 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
         Calendar calDateOfExpiry = Calendar.getInstance();
-        calDateOfExpiry.setTime(CommonFunctionsController.getEndOfDay(date));
+        calDateOfExpiry.setTime(CommonFunctions.getEndOfDay(date));
         Calendar cal = Calendar.getInstance();
-        cal.setTime(CommonFunctionsController.getEndOfDay(new Date()));
+        cal.setTime(CommonFunctions.getEndOfDay(new Date()));
         cal.add(Calendar.DATE, 31);
         if (cal.getTimeInMillis() <= calDateOfExpiry.getTimeInMillis()) {
             return false;
@@ -1611,14 +1601,6 @@ public class PharmacyRequestForBhtController implements Serializable {
         this.billBean = billBean;
     }
 
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
-    }
-
     public Department getDepartment() {
         return department;
     }
@@ -1673,6 +1655,14 @@ public class PharmacyRequestForBhtController implements Serializable {
 
     public void setItem(Item item) {
         this.item = item;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
 }

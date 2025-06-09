@@ -10,120 +10,180 @@
 
     <ui:define name="content">
         <h:form>
-            <h:panelGroup rendered="#{!saleReturnController.printPreview}" styleClass="alignTop" >
-                <p:panel >
+            <h:panelGroup rendered="#{!saleReturnController.printPreview}"  >
+                <p:panel class="w-100">
                     <f:facet name="header" >
-                        <div class="d-flex justify-content-between" > 
-                            <div class="d-flex">
-                                <p:selectOneMenu  
-                                    id="cmbPs"   
-                                    style="width: 15em"
-                                    value="#{saleReturnController.returnPaymentMethod}">     
-                                    <f:selectItems 
-                                        value="#{enumController.paymentMethods}"  />
-                                    <p:ajax 
-                                        process="cmbPs" 
-                                        update="creditCard cheque slip" 
-                                        event="change" />
-                                </p:selectOneMenu>
-
-                                <p:inputText value="#{saleReturnController.returnBillcomment}" class="mx-2" id="comment"/>
-
-                                <p:commandButton
-                                    value="Return"
-                                    action="#{saleReturnController.settle}"
-                                    icon="fa-solid fa-rotate-left"
-                                    ajax="false"
-                                    class="w-25">
-                                </p:commandButton>
-
-                            </div>
-
-                            <div class="d-flex mt-2" style="float: right;">
-                                <p:outputLabel  value="Recievable Amount" /> 
-                                <p:outputLabel  value=":" style="width: 30px; text-align: center;" /> 
-                                <p:outputLabel id="total"  value="#{saleReturnController.returnBill.total}" style="min-width: 30px; text-align: right;">
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </p:outputLabel> 
-                            </div>
-
-                        </div>
-
-                        <div class="float-left w-25">
-                            <h:panelGroup id="creditCard" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{saleReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{saleReturnController.paymentMethodData}"/>
-                            </h:panelGroup>
-                        </div>
+                        <h:outputText value="Accept Return Items &amp; Repay" ></h:outputText>
                     </f:facet>
-                    <p:dataTable 
-                        var="ph" 
-                        value="#{saleReturnController.billItems}"
-                        scrollable="true" 
-                        scrollHeight="250"
 
-                        id="itemList" >  
+                    <div class="row" >
+                        <div class="col-8" >
+                            <p:dataTable 
+                                var="ph" 
+                                value="#{saleReturnController.billItems}"
+                                scrollable="true" 
+                                scrollHeight="250"
 
-                        <f:facet name="header">  
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h:outputLabel value="Returning Item"></h:outputLabel>
-                                <p:commandButton  
-                                    value="Fill All" 
-                                    action="#{saleReturnController.fillReturningQty}" 
-                                    process="@this"
-                                    update="itemList :#{p:resolveFirstComponentWithId('total',view).clientId}"
-                                    class="ui-button-warning"
-                                    icon="fa-solid fa-fill">
-                                </p:commandButton>
-                            </div>
-                        </f:facet> 
+                                id="itemList" >  
 
-                        <p:column headerText="Item Name" style="width:50px!important;">  
+                                <f:facet name="header">  
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h:outputLabel value="Returning Item"></h:outputLabel>
+                                        <p:commandButton  
+                                            value="Fill All" 
+                                            action="#{saleReturnController.fillReturningQty}" 
+                                            process="@this"
+                                            update="itemList :#{p:resolveFirstComponentWithId('totalPanel',view).clientId}"
+                                            class="ui-button-warning"
+                                            icon="fa-solid fa-fill">
+                                        </p:commandButton>
+                                    </div>
+                                </f:facet> 
 
-                            <h:outputText value="#{ph.item.name}"  />                     
+                                <p:column headerText="Item Name" >  
+                                    <h:outputText value="#{ph.item.name}"  />                     
+                                </p:column>  
 
-                        </p:column>  
+                                <p:column headerText="Balance" class="text-end"> 
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
+                                </p:column>  
 
-                        <p:column headerText="Balance Qty in Unit" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.qty}" />                   
-                        </p:column>  
+                                <p:column headerText="Rate" class="text-end"> 
+                                    <h:outputText value="#{ph.rate}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>                        
+                                </p:column> 
 
-                        <p:column headerText="Purchase Rate" style="width:25px!important;"> 
-                            <h:outputText value="#{ph.rate}"  >
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>                        
-                        </p:column>                 
+                                <p:column headerText="Discount Rate" class="text-end"> 
+                                    <h:outputText value="#{ph.discountRate}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>                        
+                                </p:column> 
+
+                                <p:column headerText="Net Rate" class="text-end"> 
+                                    <h:outputText value="#{ph.netRate}"  >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>                        
+                                </p:column> 
+
+                                <p:column headerText="Batch No" class="text-end">                       
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                           
+                                </p:column>  
+
+                                <p:column headerText="Date of Expirey" class="text-end">                     
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>  
+                                </p:column>
 
 
-                        <p:column headerText="Batch No" style="width:25px!important;">                       
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" />                           
-                        </p:column>  
+                                <p:column headerText="Returning Qty" class="text-end">    
+                                    <p:inputText
+                                        converter="javax.faces.Double"
+                                        converterMessage="It should be a number"
+                                        autocomplete="off" value="#{ph.qty}" onfocus="this.select();" class="text-end w-100">
+                                        <p:ajax 
+                                            event="blur"
+                                            delay="500"
+                                            update=":#{p:resolveFirstComponentWithId('totalPanel',view).clientId} :#{p:resolveFirstComponentWithId('msgs',view).clientId}"  
+                                            process="@this" 
+                                            listener="#{saleReturnController.onEdit(ph)}" ></p:ajax>
+<!--                                        <f:validateDoubleRange
+                                            minimum="0"
+                                            maximum="#{ph.pharmaceuticalBillItem.qty}" />
+                                            CAN NOT Use Client Side Validation. It involves complex logic. Have to dynamically calculate the remaining qty by going through all the previous return bills. Removing the validator
+-->
+                                    </p:inputText>
+                                </p:column>  
 
-                        <p:column headerText="Date of Expirey" style="width:25px!important;">                     
-                            <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
-                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                            </h:outputText>  
-                        </p:column>
+                            </p:dataTable>  
+                        </div>
+                        <div class="col-4" >
 
 
-                        <p:column headerText="Returning Qty in Unit" style="width:25px!important;">                     
-                            <p:inputText autocomplete="off" value="#{ph.qty}" onfocus="this.select();">
-                                <f:ajax 
-                                    event="blur"
-                                    render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  
-                                    execute="@this" 
-                                    listener="#{saleReturnController.onEdit(ph)}" ></f:ajax>
-                            </p:inputText>
-                        </p:column>  
 
-                    </p:dataTable>  
+                            <p:panel header="Repayment" id="totalPanel">
+                                <div class="mb-2">
+                                    <p:outputLabel class="form-label" value="Gross Amount" />
+                                    <p:outputLabel id="grossTotal"
+                                                   value="#{saleReturnController.returnBill.total}"
+                                                   class="form-control w-100 text-end fw-bold bg-light">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p:outputLabel class="form-label" value="Discount Receivable" />
+                                    <p:outputLabel id="discount"
+                                                   value="#{saleReturnController.returnBill.discount}"
+                                                   class="form-control w-100 text-end fw-bold bg-light">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p:outputLabel class="form-label" value="Recievable Amount" />
+                                    <p:outputLabel 
+                                        value="#{saleReturnController.returnBill.netTotal}"
+                                        class="form-control w-100 text-end fw-bold bg-light">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </p:outputLabel>
+                                </div>
+
+                                <div class="mb-2">
+                                    <p:outputLabel value="Comments" for="comment" class="form-label">
+                                        <i class="fa fa-comment me-1"></i>
+                                    </p:outputLabel>
+                                    <p:inputTextarea id="comment"
+                                                     class="form-control"
+                                                     value="#{saleReturnController.returnBillcomment}" />
+                                </div>
+
+                                <div class="mb-2">
+                                    <p:outputLabel class="form-label" for="cmbPs" value="Returning Payment Method">
+                                        <i class="fa fa-credit-card me-1"></i>
+                                    </p:outputLabel>
+                                    <p:selectOneMenu id="cmbPs"
+                                                     class="form-select"
+                                                     required="true"
+                                                     value="#{saleReturnController.returnPaymentMethod}">
+                                        <f:selectItems value="#{enumController.paymentMethods}" />
+                                        <p:ajax process="@this" update="paymentDetails" event="change" />
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <h:panelGroup id="paymentDetails">
+                                    <h:panelGroup id="creditCard" rendered="#{saleReturnController.returnPaymentMethod eq 'Card'}">
+                                        <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="cheque" rendered="#{saleReturnController.returnPaymentMethod eq 'Cheque'}">
+                                        <pa:chequeDetailsAsOnlyPayment paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                    </h:panelGroup>
+
+                                    <h:panelGroup id="slip" rendered="#{saleReturnController.returnPaymentMethod eq 'Slip'}">
+                                        <pa:slip paymentMethodData="#{saleReturnController.paymentMethodData}" />
+                                    </h:panelGroup>
+                                </h:panelGroup>
+
+                                <p:commandButton value="Return"
+                                                 action="#{saleReturnController.settle}"
+                                                 icon="fa fa-undo"
+                                                 ajax="false"
+                                                 class="ui-button-warning w-100 mt-2" />
+
+
+                            </p:panel>
+
+                        </div>
+                    </div>
+
+                    <div class="row" >
+                        <div class="col-12" >
+                            <p:messages id="msgs" ></p:messages>
+                        </div>
+                    </div>
+
                 </p:panel>
 
             </h:panelGroup>
@@ -173,6 +233,10 @@
                         <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" > 
                             <ph:saleBill_five_five bill="#{saleReturnController.returnBill}"></ph:saleBill_five_five>
                         </h:panelGroup>
+                    </h:panelGroup>
+
+                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}"> 
+                        <ph:saleBill_Header_Return bill="#{saleReturnController.returnBill}"></ph:saleBill_Header_Return>
                     </h:panelGroup>
 
                     <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 

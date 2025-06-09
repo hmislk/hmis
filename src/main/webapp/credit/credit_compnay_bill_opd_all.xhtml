@@ -147,19 +147,23 @@
                                     <p:commandButton 
                                         ajax="false" 
                                         action="#{cashRecieveBillController.removeAll()}" 
-                                        value="Remove Selected"                                   
+                                        value="Remove Selected"
+                                        icon="fa fa-trash"
                                         class="ui-button-danger mx-2"/>
-
-                                    <h:outputLabel value="Paying Institution : "/>
+                                    <br />
+                                    <h:outputLabel style="margin-left: 10px" value="Paying Institution : "/>
                                     <p:outputLabel value="#{cashRecieveBillController.institution.name}" id="ins"/>
+                                    <br />
+                                    <h:outputLabel style="margin-left: 10px" value="Cashier: "/>
+                                    <p:outputLabel value="#{cashierReportController.currentCashier.name}" id="cash"/>
 
-
-                                </f:facet>       
+                                </f:facet>
 
                                 <p:dataTable value="#{cashRecieveBillController.billItems}" 
                                              rowIndexVar="rowIndex"   var="b" id="items"
                                              rowKey="#{b.searialNo}" selection="#{cashRecieveBillController.selectedBillItems}"
                                              selectionMode="multiple"
+
                                              >
 
 

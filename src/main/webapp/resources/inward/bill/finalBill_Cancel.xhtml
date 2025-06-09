@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"    
+<html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
@@ -9,7 +9,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.entity.Bill" /> />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" /> />
     </cc:interface>
 
     <!-- IMPLEMENTATION -->
@@ -24,14 +24,14 @@
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') ne ''}">
                         <div class="row">
                             <div class="col-12">
-                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}" 
+                                <h:outputText value="#{inwardSearch.fillDataForInpatientsFinalBillHeader(configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template').toString() , cc.attrs.bill)}"
                                               escape="false"
                                               >
                                 </h:outputText>
                             </div>
                         </div>
                     </h:panelGroup>
-                    
+
                     <h:panelGroup rendered="#{configOptionApplicationController.getLongTextValueByKey('Inward Final Bill Header Template') eq ''}">
                         <div>
                             <div class="col-12 text-center">
@@ -46,7 +46,7 @@
                     </h:panelGroup>
 
                     <div class="d-flex justify-content-center">
-                        <h:outputLabel class="mark " value="**Cancel Bill**"/>
+                        <h:outputLabel class="mark " style="font-size: 18px;" value="**Cancel Bill**"/>
                     </div>
 
 
@@ -86,7 +86,7 @@
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100 text-left">
-                                                    <h:outputLabel value="Bill NO" />
+                                                    <h:outputLabel value="Bill No" />
                                                 </div>
                                                 <div class="w-100 text-right">
                                                     <h:outputLabel value=":" />
@@ -98,7 +98,7 @@
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100 text-left">
-                                                    <h:outputLabel value="Payment Method" />  
+                                                    <h:outputLabel value="Payment Method" />
                                                 </div>
                                                 <div class="text-right w-100 ">
                                                     <h:outputLabel value=":" />
@@ -110,7 +110,7 @@
 
                                             <div class="d-flex justify-content-between w-100">
                                                 <div class="w-100 text-left">
-                                                    <h:outputLabel value="Patient Name" />  
+                                                    <h:outputLabel value="Patient Name" />
                                                 </div>
                                                 <div class="text-right w-100 ">
                                                     <h:outputLabel value=":" />
@@ -137,7 +137,7 @@
                                     </div>
                                 </tr>
                             </h:panelGroup>
-                        </table> 
+                        </table>
                     </div>
 
                     <table class="headingPrinting tableheader">
@@ -145,11 +145,11 @@
                                                     <td colspan="4" class="bg-danger">
                                                         <div class="d-flex justify-content-between bg-primary">
                                                             <div class="d-flex justify-content-between w-100 px-4">
-                        
+
                                                                 <div class="d-flex">
-                                                                    
+
                                                                 </div>
-                        
+
                                                                 <div class="d-flex">
                                                                     <h:outputLabel value="BILL NO" />
                                                                     <h:outputLabel class="mx-4" value=":" />
@@ -164,7 +164,7 @@
                     <table class="tbl" width="90%" style="margin-left: 5%; margin-right: 5%; width: 90%"  >
                         <tr style="t">
                             <td style="text-align: left; font-weight: bold;">
-                                <h:outputLabel value="Discription" />
+                                <h:outputLabel value="Description" />
                             </td>
                             <td>
                                 <h:outputLabel value="" />
@@ -179,7 +179,7 @@
                                                       (bip.adjustedValue!=0 and cc.attrs.showProfessional eq true and bip.inwardChargeType eq 'ProfessionalCharge')}">
                                 <tr style="width: 100%;"  >
                                     <td style="text-align: left;font-size: 13px!important;">
-                                        <h:outputLabel   value="#{bip.inwardChargeType.label}" style="margin: 4px;" >
+                                        <h:outputLabel   value="#{bip.inwardChargeType.name}" style="margin: 4px;" >
                                         </h:outputLabel>
                                     </td>
                                     <td>
@@ -189,15 +189,15 @@
                                                 &nbsp;
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{bip.inwardChargeType eq 'ProfessionalCharge' }">
-                                                <table>                                        	 
+                                                <table>
                                                     <ui:repeat value="#{bip.proFees}" var="fe">
                                                         <h:panelGroup rendered="#{fe.feeAdjusted ne 0
                                                                                   and fe.bill.cancelled eq false
-                                                                                  and fe.bill.billClass eq 'class com.divudi.entity.BilledBill'}" style="">
+                                                                                  and fe.bill.billClass eq 'class com.divudi.core.entity.BilledBill'}" style="">
                                                             <tr>
 
                                                                 <td style="text-align: left;font-size: 8px!important;">
-                                                                    <h:panelGroup>                  	 
+                                                                    <h:panelGroup>
                                                                         #{fe.staff.person.nameWithTitle}
                                                                     </h:panelGroup>
                                                                 </td>
@@ -210,11 +210,11 @@
                                                                 </td>
                                                             </tr>
                                                         </h:panelGroup>
-                                                    </ui:repeat>   
+                                                    </ui:repeat>
                                                 </table>
                                             </h:panelGroup>
                                             <h:panelGroup rendered="sessionController.userPreference.applicationInstitution ne 'Ruhuna'">
-                                                <table>                                          	 
+                                                <table>
                                                     <ui:repeat value="#{bip.billFees}" var="fe">
                                                         <h:panelGroup >
                                                             <tr>
@@ -248,12 +248,12 @@
                                                                 </td>
                                                             </tr>
                                                         </h:panelGroup>
-                                                    </ui:repeat>   
+                                                    </ui:repeat>
                                                 </table>
                                             </h:panelGroup>
-                                        </h:panelGroup>                                	 
+                                        </h:panelGroup>
                                     </td>
-                                    <td  style="width: 30%;text-align: right;font-size: 13px!important;">                                   	 
+                                    <td  style="width: 30%;text-align: right;font-size: 13px!important;">
                                         <h:outputLabel  value="#{bip.adjustedValue}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
@@ -271,7 +271,7 @@
                                 <td style="text-align: right;"><h:outputLabel value="-------------------" /></td>
                             </tr>
 
-                            <h:panelGroup >                        	 
+                            <h:panelGroup >
                                 <tr style="width: 100%;">
                                     <td style="text-align: left; font-size: 13px!important;font-weight: bold!important;">
                                         <h:outputLabel value="Total"/>
@@ -281,10 +281,10 @@
 
                                         <h:outputLabel value="#{cc.attrs.bill.netTotal}" >
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>  
+                                        </h:outputLabel>
                                     </td>
                                 </tr>
-                            </h:panelGroup>                      	 
+                            </h:panelGroup>
 
                         </h:panelGroup>
 
@@ -293,7 +293,7 @@
                     <div class="d-flex justify-content-between px-4 mt-4">
                         <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.name}">
                         </h:outputLabel>
-                        
+
                     </div>
 
                     <p:spacer></p:spacer>

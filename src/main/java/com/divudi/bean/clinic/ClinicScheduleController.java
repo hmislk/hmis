@@ -1,7 +1,6 @@
 package com.divudi.bean.clinic;
 
 import com.divudi.bean.channel.*;
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.ConfigOptionController;
 import com.divudi.bean.common.DoctorSpecialityController;
@@ -9,43 +8,43 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.FeeChangeType;
-import com.divudi.data.FeeType;
-import com.divudi.entity.BillSession;
-import com.divudi.entity.Department;
-import com.divudi.entity.FeeChange;
-import com.divudi.entity.ItemFee;
-import com.divudi.entity.ServiceSession;
-import com.divudi.entity.SessionNumberGenerator;
-import com.divudi.entity.Speciality;
-import com.divudi.entity.Staff;
-import com.divudi.facade.DepartmentFacade;
-import com.divudi.facade.FeeChangeFacade;
-import com.divudi.facade.FeeFacade;
-import com.divudi.facade.ItemFeeFacade;
-import com.divudi.facade.ServiceSessionFacade;
-import com.divudi.facade.SessionNumberGeneratorFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.bean.common.util.JsfUtil;
-import com.divudi.data.BillType;
-import com.divudi.data.MessageType;
-import com.divudi.data.OptionScope;
-import com.divudi.data.channel.ChannelScheduleEvent;
+import com.divudi.core.data.FeeChangeType;
+import com.divudi.core.data.FeeType;
+import com.divudi.core.entity.BillSession;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.FeeChange;
+import com.divudi.core.entity.ItemFee;
+import com.divudi.core.entity.ServiceSession;
+import com.divudi.core.entity.SessionNumberGenerator;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.facade.DepartmentFacade;
+import com.divudi.core.facade.FeeChangeFacade;
+import com.divudi.core.facade.FeeFacade;
+import com.divudi.core.facade.ItemFeeFacade;
+import com.divudi.core.facade.ServiceSessionFacade;
+import com.divudi.core.facade.SessionNumberGeneratorFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.BillType;
+import com.divudi.core.data.MessageType;
+import com.divudi.core.data.OptionScope;
+import com.divudi.core.data.channel.ChannelScheduleEvent;
 import com.divudi.ejb.ChannelBean;
 import com.divudi.ejb.SmsManagerEjb;
-import com.divudi.entity.Bill;
-import com.divudi.entity.BilledBill;
-import com.divudi.entity.DoctorSpeciality;
-import com.divudi.entity.Item;
-import com.divudi.entity.Sms;
-import com.divudi.entity.channel.SessionInstance;
-import com.divudi.entity.lab.ItemForItem;
-import com.divudi.facade.BillSessionFacade;
-import com.divudi.facade.DoctorSpecialityFacade;
-import com.divudi.facade.ItemForItemFacade;
-import com.divudi.facade.SessionInstanceFacade;
-import com.divudi.facade.SmsFacade;
-import com.divudi.java.CommonFunctions;
+import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.DoctorSpeciality;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.channel.SessionInstance;
+import com.divudi.core.entity.lab.ItemForItem;
+import com.divudi.core.facade.BillSessionFacade;
+import com.divudi.core.facade.DoctorSpecialityFacade;
+import com.divudi.core.facade.ItemForItemFacade;
+import com.divudi.core.facade.SessionInstanceFacade;
+import com.divudi.core.facade.SmsFacade;
+import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -69,7 +68,7 @@ import org.primefaces.model.ScheduleModel;
 /**
  *
  * @author Dr M H B Ariyaratne
- * 
+ *
  */
 @Named
 @SessionScoped
@@ -372,8 +371,8 @@ public class ClinicScheduleController implements Serializable {
         ServiceSession ss = b.getSingleBillSession().getSessionInstance().getOriginatingSession();
         String s;
 
-        String sessionTime = CommonController.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
-        String sessionDate = CommonController.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
+        String sessionTime = CommonFunctions.getDateFormat(si.getStartingTime(), sessionController.getApplicationPreference().getShortTimeFormat());
+        String sessionDate = CommonFunctions.getDateFormat(si.getSessionDate(), sessionController.getApplicationPreference().getLongDateFormat());
         String doc = bs.getStaff().getPerson().getNameWithTitle();
         String patientName = b.getPatient().getPerson().getNameWithTitle();
 

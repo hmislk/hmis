@@ -12,11 +12,11 @@
 
     <ui:define name="content">
         <h:form id="form">
-            <p:growl id="inpatientDashboardGrowl" ></p:growl>
+            <p:growl id="inpatientDashboardGrowl"/>
             <p:panel >
                 <f:facet name="header" >
-                    <h:outputText styleClass="fa fa-id-card"></h:outputText>
-                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2" ></p:outputLabel>
+                    <h:outputText styleClass="fa fa-id-card"/>
+                    <p:outputLabel value="&nbsp;&nbsp;&nbsp;Inpatient Dashboard" class="m-2"/>
                     <p:commandButton 
                         value="Back to Search Admission" 
                         action="#{admissionController.navigateToSearchAdmissions()}" 
@@ -31,7 +31,7 @@
                             <common:patient_details searchable="false" controller="#{admissionController}" class="w-100"/>
                         </div>
                         <div class="m-1" >
-                            <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"></common:admission_details>
+                            <common:admission_details admission="#{admissionController.current}" class="w-100 m-1"/>
                         </div>
                     </div>
 
@@ -66,7 +66,7 @@
                                         value="#{admissionController.current}" 
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     value="Add Baby Admission" 
                                     disabled="#{admissionController.current.discharged eq true}"
@@ -77,7 +77,7 @@
                                         value="#{admissionController.current}" 
                                         target="#{roomChangeController.current}" />
                                 </p:commandButton>
-                                
+
                                 <p:commandButton 
                                     value="List Baby Admission" 
                                     disabled="#{admissionController.current.discharged eq true}"
@@ -85,16 +85,25 @@
                                     icon="fa fa-baby-carriage"
                                     class="w-100">
                                 </p:commandButton>
-                                
-                                <p:commandButton 
-                                    rendered="#{not admissionController.current.discharged and not admissionController.current.paymentFinalized}" 
+                                <p:commandButton
+                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and not bhtSummeryController.patientEncounterHasProvisionalBill}"
                                     action="#{bhtSummeryController.navigateToIntrimBillFromPatientProfile()}"
                                     value="Interim Bill" 
                                     class="w-100"
                                     icon="fa fa-file">
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
+                                        value="#{admissionController.current}"
+                                        target="#{bhtSummeryController.patientEncounter}"/>
+                                </p:commandButton>
+                                <p:commandButton
+                                    rendered="#{(not admissionController.current.discharged or not admissionController.current.paymentFinalized) and bhtSummeryController.patientEncounterHasProvisionalBill}"
+                                    action="#{inwardSearch.navigateToProvisionalBillForAdmission()}"
+                                    value="Provisional Bill" 
+                                    class="w-100"
+                                    icon="fa fa-file">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}"
+                                        target="#{inwardSearch.admission}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Estimated Bill" 
@@ -102,19 +111,19 @@
                                     action="#{bhtSummeryController.navigateToIntrimBillEstimate}"
                                     class="w-100">
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{bhtSummeryController.patientEncounter}" ></f:setPropertyActionListener>
+                                        value="#{admissionController.current}"
+                                        target="#{bhtSummeryController.patientEncounter}"/>
                                 </p:commandButton>
-                                <p:commandButton 
-                                    rendered="#{admissionController.current.discharged}" 
+                                <p:commandButton
+                                    rendered="#{admissionController.current.discharged and admissionController.current.paymentFinalized}"
                                     value="Final Bill" 
                                     action="#{inwardSearch.navigateToFinalBillForAdmission}"
                                     icon="fa fa-file"
                                     class="w-100"
                                     ajax="false">
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardSearch.admission}" ></f:setPropertyActionListener>
+                                        value="#{admissionController.current}"
+                                        target="#{inwardSearch.admission}"/>
                                 </p:commandButton>
                                 <p:commandButton
                                     value="Payments" 
@@ -122,8 +131,8 @@
                                     icon="fa fa-file"
                                     class="w-100">
                                     <f:setPropertyActionListener 
-                                        value="#{admissionController.current}" 
-                                        target="#{inwardPaymentController.current.patientEncounter}" ></f:setPropertyActionListener>
+                                        value="#{admissionController.current}"
+                                        target="#{inwardPaymentController.current.patientEncounter}"/>
                                 </p:commandButton>
                             </div>
 
@@ -151,7 +160,7 @@
                                 </p:commandButton>
                                 <p:commandButton 
                                     value="Add Professional Fees" 
-                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile()}" 
+                                    action="#{inwardProfessionalBillController.navigateToAddProfessionalFeesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-user-md"
                                     class="w-100">
                                     <f:setPropertyActionListener 
@@ -170,7 +179,7 @@
 
                                 <p:commandButton 
                                     value="Add Timed Services" 
-                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile()}" 
+                                    action="#{inwardTimedItemController.navigateToAddInwardTimedServicesFromInpatientProfile(admissionController.current)}" 
                                     icon="fa fa-clock"
                                     class="w-100">
                                     <f:setPropertyActionListener 
@@ -186,24 +195,24 @@
                     <div class="col-3"> 
                         <p:panel  class="m-1">
                             <f:facet name="header">
-                                <h:outputText value="Surgeries"></h:outputText>
+                                <h:outputText value="Surgeries"/>
                             </f:facet>
                             <div class="d-grid gap-3"> 
                                 <ui:repeat value="#{bhtSummeryController.surgeryBills}" var="s">
                                     <div class="d-flex align-items-center justify-content-between w-100">
                                         <div>
-                                           <h:outputText value="#{s.procedure.item.name}" ></h:outputText> 
+                                            <h:outputText value="#{s.procedure.item.name}"/>
                                         </div>
                                         <div>
                                             <p:commandButton icon="fas fa-eye" title="view Surgeries" class="ui-button-info" ajax="false" action="/theater/inward_bill_surgery_view?faces-redirect=true">
-                                                    <f:setPropertyActionListener 
-                                                            value="#{s}" 
-                                                            target="#{surgeryBillController.surgeryBill}" />
+                                                <f:setPropertyActionListener 
+                                                    value="#{s}" 
+                                                    target="#{surgeryBillController.surgeryBill}" />
                                             </p:commandButton>
                                         </div>
                                     </div>
                                 </ui:repeat>
-                                
+
                                 <p:commandButton 
                                     value="Add Surgeries" 
                                     icon="fa fa-clock"
@@ -431,6 +440,19 @@
                                     value="Pharmacy Issue Summary" 
                                     action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemList}" 
                                     icon="fa fa-prescription-bottle-alt"
+                                    class="w-100">
+                                    <f:setPropertyActionListener 
+                                        value="#{admissionController.current}" 
+                                        target="#{inwardReportControllerBht.patientEncounter}" />
+                                    <f:setPropertyActionListener 
+                                        value="#{null}" 
+                                        target="#{inwardReportControllerBht.department}" />
+                                </p:commandButton>
+                                <p:commandButton 
+                                    value="Lab Bill Summary" 
+                                    action="#{inwardReportControllerBht.navigateToInpatientLabItemList}" 
+                                    icon="fa fa-flask"
+
                                     class="w-100">
                                     <f:setPropertyActionListener 
                                         value="#{admissionController.current}" 

@@ -4,23 +4,22 @@
  */
 package com.divudi.bean.hr;
 
-import com.divudi.bean.common.CommonController;
 import com.divudi.bean.common.SessionController;
 
-import com.divudi.data.hr.PaysheetComponentType;
-import com.divudi.data.hr.ReportKeyWord;
+import com.divudi.core.data.hr.PaysheetComponentType;
+import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.ejb.HumanResourceBean;
-import com.divudi.entity.Institution;
-import com.divudi.entity.Staff;
-import com.divudi.entity.hr.PaysheetComponent;
-import com.divudi.entity.hr.StaffBasics;
-import com.divudi.entity.hr.StaffEmployment;
-import com.divudi.entity.hr.StaffPaysheetComponent;
-import com.divudi.facade.PaysheetComponentFacade;
-import com.divudi.facade.StaffEmploymentFacade;
-import com.divudi.facade.StaffFacade;
-import com.divudi.facade.StaffPaysheetComponentFacade;
-import com.divudi.bean.common.util.JsfUtil;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.hr.PaysheetComponent;
+import com.divudi.core.entity.hr.StaffBasics;
+import com.divudi.core.entity.hr.StaffEmployment;
+import com.divudi.core.entity.hr.StaffPaysheetComponent;
+import com.divudi.core.facade.PaysheetComponentFacade;
+import com.divudi.core.facade.StaffEmploymentFacade;
+import com.divudi.core.facade.StaffFacade;
+import com.divudi.core.facade.StaffPaysheetComponentFacade;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -67,8 +66,6 @@ public class StaffBasicController implements Serializable {
     private Date toDate;
     private ReportKeyWord reportKeyWord;
     Institution staffInstitution;
-    @Inject
-    CommonController commonController;
 
     public void removeAll() {
         for (StaffPaysheetComponent spc : getSelectedStaffComponent()) {
@@ -194,7 +191,7 @@ public class StaffBasicController implements Serializable {
 
     private void createComponent() {
 
-        //////// // System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());     
+        //////// // System.out.println("ceate D :" + getCurrent().getStaff().getStaffEmployment());
         StaffBasics tmp = new StaffBasics();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
@@ -383,7 +380,7 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-        
+
 
     }
 
@@ -603,14 +600,6 @@ public class StaffBasicController implements Serializable {
 
     public void setDate(Date date) {
         this.date = date;
-    }
-
-    public CommonController getCommonController() {
-        return commonController;
-    }
-
-    public void setCommonController(CommonController commonController) {
-        this.commonController = commonController;
     }
 
     public int getHrAdminMenuIndex() {
