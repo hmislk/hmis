@@ -43,17 +43,20 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.ReportType;
 import com.divudi.core.data.UploadType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
+import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.entity.clinical.ClinicalFindingValue;
+import com.divudi.core.entity.lab.LabTestHistory;
 import com.divudi.core.entity.lab.PatientReportGroup;
 import com.divudi.core.entity.lab.PatientSample;
 import com.divudi.core.entity.lab.PatientSampleComponant;
 import com.divudi.core.entity.lab.ReportFormat;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
 import com.divudi.core.facade.UploadFacade;
+import com.divudi.core.facade.lab.LabTestHistoryFacade;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -2282,7 +2285,7 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("all checks ok");
-        
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
@@ -2300,7 +2303,7 @@ public class PatientReportController implements Serializable {
         getEmailFacade().create(email);
 
         System.out.println("email = " + email);
-        
+
         try {
             boolean success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
@@ -2933,8 +2936,21 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
-
         
+        LabTestHistory ReportCreateHistory = new LabTestHistory();
+        ReportCreateHistory.setPatientInvestigation(pi);
+        ReportCreateHistory.setInstitution(sessionController.getInstitution());
+        ReportCreateHistory.setDepartment(sessionController.getDepartment());
+        ReportCreateHistory.setFromDepartment(sessionController.getDepartment());
+        ReportCreateHistory.setToDepartment(sessionController.getDepartment());
+        ReportCreateHistory.setStaff(sessionController.getLoggedUser().getStaff());
+        ReportCreateHistory.setTestHistoryType(TestHistoryType.REPORT_CREATED);
+        ReportCreateHistory.setCreatedAt(new Date());
+        ReportCreateHistory.setCreatedBy(sessionController.getLoggedUser());
+        labTestHistoryFacade.create(ReportCreateHistory);
+
+        System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + newlyCreatedReport.getSampleIDs());
+
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
@@ -2942,6 +2958,9 @@ public class PatientReportController implements Serializable {
 
         return "/lab/patient_report?faces-redirect=true";
     }
+    
+    @EJB
+    LabTestHistoryFacade labTestHistoryFacade;
 
     private List<ReportFormat> avalilableReportFormats;
 
@@ -3081,7 +3100,7 @@ public class PatientReportController implements Serializable {
     }
 
     public String getReceipientEmail() {
-        if(receipientEmail==null){
+        if (receipientEmail == null) {
             updateRecipientEmail();
         }
         return receipientEmail;
