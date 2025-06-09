@@ -964,6 +964,22 @@ public class PatientReportController implements Serializable {
                 System.err.println("e = " + e.getMessage());
             }
         }
+        
+        LabTestHistory calculateHistory = new LabTestHistory();
+        calculateHistory.setPatientInvestigation(currentPatientReport.getPatientInvestigation());
+        calculateHistory.setPatientReport(currentPatientReport);
+        calculateHistory.setInstitution(sessionController.getInstitution());
+        calculateHistory.setDepartment(sessionController.getDepartment());
+        calculateHistory.setFromDepartment(sessionController.getDepartment());
+        calculateHistory.setToDepartment(sessionController.getDepartment());
+        calculateHistory.setStaff(sessionController.getLoggedUser().getStaff());
+        calculateHistory.setTestHistoryType(TestHistoryType.REPORT_CORRECTED);
+        calculateHistory.setCreatedAt(new Date());
+        calculateHistory.setCreatedBy(sessionController.getLoggedUser());
+        labTestHistoryFacade.create(calculateHistory);
+        
+        System.out.println("Test History Added for = " + currentPatientReport.getPatientInvestigation().getBillItem().getItem().getName() + " -> " + currentPatientReport.getSampleIDs());
+        
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
