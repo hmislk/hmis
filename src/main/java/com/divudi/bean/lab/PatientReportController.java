@@ -2943,7 +2943,7 @@ public class PatientReportController implements Serializable {
             return null;
         }
         
-        labTestHistoryController.addApprovelCancelHistory(currentPtIx, currentPatientReport);
+        labTestHistoryController.addCreateReportHistory(currentPtIx, currentPatientReport);
         
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());

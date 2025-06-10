@@ -55,16 +55,13 @@ import com.divudi.core.data.lab.PatientSampleWrapper;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SampleTubeLabel;
 import com.divudi.core.data.lab.SearchDateType;
-import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Route;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.lab.InvestigationTube;
-import com.divudi.core.entity.lab.LabTestHistory;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.Sample;
-import com.divudi.core.facade.lab.LabTestHistoryFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.ws.lims.Lims;
 import com.divudi.ws.lims.LimsMiddlewareController;
@@ -160,6 +157,9 @@ public class PatientInvestigationController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     LaboratoryManagementController laboratoryManagementController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
+
     /**
      * Class Variables
      */
@@ -1572,19 +1572,7 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                LabTestHistory sampleCollectHistory = new LabTestHistory();
-                sampleCollectHistory.setPatientInvestigation(pi);
-                sampleCollectHistory.setPatientSample(ps);
-                sampleCollectHistory.setInstitution(sessionController.getInstitution());
-                sampleCollectHistory.setDepartment(sessionController.getDepartment());
-                sampleCollectHistory.setFromDepartment(sessionController.getDepartment());
-                sampleCollectHistory.setToDepartment(sessionController.getDepartment());
-                sampleCollectHistory.setTestHistoryType(TestHistoryType.SAMPLE_COLLECTED);
-                sampleCollectHistory.setCreatedAt(new Date());
-                sampleCollectHistory.setCreatedBy(sessionController.getLoggedUser());
-                labTestHistoryFacade.create(sampleCollectHistory);
-                
-                System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + ps.getId());
+                labTestHistoryController.addSampleCollectHistory(pi, ps);
             }
         }
 
@@ -1644,20 +1632,7 @@ public class PatientInvestigationController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                LabTestHistory sampleSentHistory = new LabTestHistory();
-                sampleSentHistory.setPatientInvestigation(pi);
-                sampleSentHistory.setPatientSample(ps);
-                sampleSentHistory.setInstitution(sessionController.getInstitution());
-                sampleSentHistory.setDepartment(sessionController.getDepartment());
-                sampleSentHistory.setFromDepartment(sessionController.getDepartment());
-                sampleSentHistory.setToDepartment(sessionController.getDepartment());
-                sampleSentHistory.setStaff(sampleTransportedToLabByStaff);
-                sampleSentHistory.setTestHistoryType(TestHistoryType.SAMPLE_SENT);
-                sampleSentHistory.setCreatedAt(new Date());
-                sampleSentHistory.setCreatedBy(sessionController.getLoggedUser());
-                labTestHistoryFacade.create(sampleSentHistory);
-
-                System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + ps.getId());
+                labTestHistoryController.addSampleSentHistory(pi, ps,sampleTransportedToLabByStaff);
             }
         }
 
@@ -1728,20 +1703,7 @@ public class PatientInvestigationController implements Serializable {
         
         for (PatientSample ps : selectedPatientSamples) {
             for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                LabTestHistory sampleReceiveHistory = new LabTestHistory();
-                sampleReceiveHistory.setPatientInvestigation(pi);
-                sampleReceiveHistory.setPatientSample(ps);
-                sampleReceiveHistory.setInstitution(sessionController.getInstitution());
-                sampleReceiveHistory.setDepartment(sessionController.getDepartment());
-                sampleReceiveHistory.setFromDepartment(sessionController.getDepartment());
-                sampleReceiveHistory.setToDepartment(sessionController.getDepartment());
-                sampleReceiveHistory.setStaff(sampleTransportedToLabByStaff);
-                sampleReceiveHistory.setTestHistoryType(TestHistoryType.SAMPLE_RECEIVED);
-                sampleReceiveHistory.setCreatedAt(new Date());
-                sampleReceiveHistory.setCreatedBy(sessionController.getLoggedUser());
-                labTestHistoryFacade.create(sampleReceiveHistory);
-
-                System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + ps.getId());
+                labTestHistoryController.addSampleReceiveHistory(pi, ps,sampleTransportedToLabByStaff);
             }
         }
 
@@ -5622,19 +5584,7 @@ public class PatientInvestigationController implements Serializable {
                 System.out.println("componants = " + componants);
 
                 for (PatientSampleComponant psc : componants) {
-                    LabTestHistory sampleHistory = new LabTestHistory();
-                    sampleHistory.setPatientInvestigation(pi);
-                    sampleHistory.setPatientSample(psc.getPatientSample());
-                    sampleHistory.setInstitution(sessionController.getInstitution());
-                    sampleHistory.setDepartment(sessionController.getDepartment());
-                    sampleHistory.setFromDepartment(sessionController.getDepartment());
-                    sampleHistory.setToDepartment(sessionController.getDepartment());
-                    sampleHistory.setTestHistoryType(TestHistoryType.BARCODE_PRINTED);
-                    sampleHistory.setCreatedAt(new Date());
-                    sampleHistory.setCreatedBy(sessionController.getLoggedUser());
-                    labTestHistoryFacade.create(sampleHistory);
-
-                    System.out.println("Test History Added for = " + pi.getBillItem().getItem().getName() + " -> " + psc.getPatientSample().getId());
+                    labTestHistoryController.addBarcodeGenerateHistory(pi, psc.getPatientSample());
                 }
 
             }
@@ -5646,9 +5596,6 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSample> rPatientSamples = new ArrayList<>(rPatientSamplesMap.values());
         return rPatientSamples;
     }
-
-    @EJB
-    LabTestHistoryFacade labTestHistoryFacade;
 
     public void prepareSampleCollectionByBillsForPhlebotomyRoom(BillBarcode b) {
         String j = "";
