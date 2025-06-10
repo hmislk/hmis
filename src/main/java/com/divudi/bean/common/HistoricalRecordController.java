@@ -96,7 +96,7 @@ public class HistoricalRecordController implements Serializable {
 
     public void processHistoricalRecordList() {
         items = historicalRecordService.findRecords(
-                variableName,
+                historicalRecordType,
                 institution,
                 site,
                 department,
