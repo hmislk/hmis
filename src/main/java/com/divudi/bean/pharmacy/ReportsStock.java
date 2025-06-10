@@ -5,6 +5,7 @@
  */
 package com.divudi.bean.pharmacy;
 
+import com.divudi.bean.common.ControllerWithReportFilters;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.report.CommonReport;
@@ -32,6 +33,9 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.StockHistory;
+import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -64,7 +68,7 @@ import javax.persistence.TemporalType;
  */
 @Named(value = "reportsStock")
 @SessionScoped
-public class ReportsStock implements Serializable {
+public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     /**
      * Bean Variables
@@ -72,6 +76,11 @@ public class ReportsStock implements Serializable {
     Department department;
     Staff staff;
     Institution institution;
+    Institution site;
+    private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
     private Category category;
     List<Stock> stocks;
     double stockSaleValue;
@@ -178,18 +187,23 @@ public class ReportsStock implements Serializable {
             System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
             System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
             Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 ";
-            m.put("d", department);
-            Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m);
+            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
+
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+
+           Date beforeJpql = new Date();
+           System.out.println("beforeJpql = " + beforeJpql);
+            stocks = getStockFacade().findByJpql(sql.toString(), m);
 
             Date afterJpql = new Date();
             System.out.println("afterJpql = " + afterJpql);
@@ -214,19 +228,22 @@ public class ReportsStock implements Serializable {
             System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
             System.out.println("startedAt = " + startedAt);
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
-                return;
-            }
             Map<String, Object> m = new HashMap<>();
-            String sql = "select s from Stock s "
-                    + " where s.department=:d "
-                    + " and s.stock > 0 "
-                    + " order by s.id";
-            m.put("d", department);
+            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            sql.append(" order by s.id");
             Date beforeJpql = new Date();
             System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql, m, fromRecord, toRecord);
+            stocks = getStockFacade().findByJpql(sql.toString(), m, fromRecord, toRecord);
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
@@ -1351,6 +1368,7 @@ public class ReportsStock implements Serializable {
      *
      * @return
      */
+    @Override
     public Department getDepartment() {
         if (department == null) {
             department = sessionController.getDepartment();
@@ -1358,14 +1376,17 @@ public class ReportsStock implements Serializable {
         return department;
     }
 
+    @Override
     public void setDepartment(Department department) {
         this.department = department;
     }
 
+    @Override
     public Institution getInstitution() {
         return institution;
     }
 
+    @Override
     public void setInstitution(Institution institution) {
         this.institution = institution;
     }
@@ -1440,6 +1461,7 @@ public class ReportsStock implements Serializable {
         this.category = category;
     }
 
+    @Override
     public Date getFromDate() {
         if (fromDate == null) {
             fromDate = Calendar.getInstance().getTime();
@@ -1447,10 +1469,12 @@ public class ReportsStock implements Serializable {
         return fromDate;
     }
 
+    @Override
     public void setFromDate(Date fromDate) {
         this.fromDate = fromDate;
     }
 
+    @Override
     public Date getToDate() {
         if (toDate == null) {
             Calendar c = Calendar.getInstance();
@@ -1549,6 +1573,7 @@ public class ReportsStock implements Serializable {
         return CommonFunctions.getEndOfMonth(date);
     }
 
+    @Override
     public void setToDate(Date toDate) {
         this.toDate = toDate;
     }
@@ -1946,6 +1971,54 @@ public class ReportsStock implements Serializable {
 
     public void setFinalTotalSaleValue(double finalTotalSaleValue) {
         this.finalTotalSaleValue = finalTotalSaleValue;
+    }
+
+    @Override
+    public Institution getSite() {
+        return site;
+    }
+
+    @Override
+    public void setSite(Institution site) {
+        this.site = site;
+    }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    @Override
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
     }
 
 }
