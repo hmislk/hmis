@@ -128,8 +128,12 @@ public class HistoricalRecordController implements Serializable {
             return null;
         }
         switch (type) {
-            case PHARMACY_STOCK_VALUE:
-                return generatePharmacyStockValue();
+            case PHARMACY_STOCK_VALUE_PURCHASE_RATE:
+                return generatePharmacyStockValuePurchaseRate();
+            case PHARMACY_STOCK_VALUE_RETAIL_RATE:
+                return generatePharmacyStockValueRetailRate();
+            case PHARMACY_STOCK_VALUE_COST_RATE:
+                return generatePharmacyStockValueCostRate();
             case COLLECTION_CENTRE_BALANCE:
                 return generateCollectionCentreBalance();
             case CREDIT_COMPANY_BALANCE:
@@ -153,8 +157,22 @@ public class HistoricalRecordController implements Serializable {
     }
 
 
-    private HistoricalRecord generatePharmacyStockValue() {
-        HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE);
+    private HistoricalRecord generatePharmacyStockValuePurchaseRate() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE);
+        // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
+    }
+
+    private HistoricalRecord generatePharmacyStockValueRetailRate() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_RETAIL_RATE);
+        // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
+    }
+
+    private HistoricalRecord generatePharmacyStockValueCostRate() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_COST_RATE);
         // TODO: implement generation logic
         historicalRecordService.createHistoricalRecord(rec);
         return rec;
