@@ -65,11 +65,11 @@
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf02d;" styleClass="fa mr-2" />
-                                <h:outputLabel value="Variable" for="variableName" class="mx-3"/>
+                                <h:outputLabel value="Variable" for="historicalRecordType" class="mx-3"/>
                             </h:panelGroup>
-                            <p:selectOneMenu id="variableName" value="#{historicalRecordController.variableName}" styleClass="w-100 form-control" filter="true">
+                            <p:selectOneMenu id="historicalRecordType" value="#{historicalRecordController.historicalRecordType}" styleClass="w-100 form-control" filter="true">
                                 <f:selectItem itemLabel="All Variables" itemValue="#{null}"/>
-                                <f:selectItems value="#{historicalRecordController.variableNames}" var="v" itemLabel="#{v}" itemValue="#{v}" />
+                                <f:selectItems value="#{historicalRecordController.historicalRecordTypes}" var="v" itemLabel="#{v.label}" itemValue="#{v}" />
                             </p:selectOneMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
@@ -109,7 +109,7 @@
                             </p:column>
 
                             <p:column headerText="Variable">
-                                <h:outputText value="#{rec.variableName}" />
+                                <h:outputText value="#{rec.historicalRecordType != null ? rec.historicalRecordType.label : rec.variableName}" />
                             </p:column>
 
                             <p:column headerText="Value">

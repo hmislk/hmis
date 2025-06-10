@@ -6,6 +6,7 @@ package com.divudi.bean.common;
 
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.facade.HistoricalRecordFacade;
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.service.HistoricalRecordService;
@@ -44,53 +45,53 @@ public class HistoricalRecordController implements Serializable {
 
     private HistoricalRecord current;
     private List<HistoricalRecord> items = null;
-    private List<String> variableNames;
+    private List<HistoricalRecordType> historicalRecordTypes;
 
     private Date fromDate;
     private Date toDate;
     private Institution institution;
     private Institution site;
     private Department department;
-    private String variableName;
+    private HistoricalRecordType historicalRecordType;
 
     public String navigateToHistoricalRecordList() {
         recreateModel();
         return "/dataAdmin/historical_record_list?faces-redirect=true";
     }
 
-    public List<String> getVariableNames() {
-        if (variableNames == null) {
-            variableNames = historicalRecordService.fetchVariableNames();
+    public List<HistoricalRecordType> getHistoricalRecordTypes() {
+        if (historicalRecordTypes == null) {
+            historicalRecordTypes = historicalRecordService.fetchHistoricalRecordTypes();
         }
-        return variableNames;
+        return historicalRecordTypes;
     }
 
     public HistoricalRecordController() {
     }
 
-    public HistoricalRecord findRecord(String variableName, Date recordDate) {
-        if (variableName == null || recordDate == null) {
+    public HistoricalRecord findRecord(HistoricalRecordType historicalRecordType, Date recordDate) {
+        if (historicalRecordType == null || recordDate == null) {
             return null;
         }
-        return findRecord(variableName, null, null, null, recordDate);
+        return findRecord(historicalRecordType, null, null, null, recordDate);
     }
 
-    public HistoricalRecord findRecord(String variableName, Institution institution, Date recordDate) {
-        if (variableName == null || recordDate == null) {
+    public HistoricalRecord findRecord(HistoricalRecordType historicalRecordType, Institution institution, Date recordDate) {
+        if (historicalRecordType == null || recordDate == null) {
             return null;
         }
-        return findRecord(variableName, institution, null, null, recordDate);
+        return findRecord(historicalRecordType, institution, null, null, recordDate);
     }
 
-    public HistoricalRecord findRecord(String variableName, Institution institution, Department department, Date recordDate) {
-        if (variableName == null || recordDate == null) {
+    public HistoricalRecord findRecord(HistoricalRecordType historicalRecordType, Institution institution, Department department, Date recordDate) {
+        if (historicalRecordType == null || recordDate == null) {
             return null;
         }
-        return findRecord(variableName, institution, null, department, recordDate);
+        return findRecord(historicalRecordType, institution, null, department, recordDate);
     }
 
-    public HistoricalRecord findRecord(String variableName, Institution institution, Institution site, Department department, Date recordDate) {
-        return historicalRecordService.findRecord(variableName, institution, site, department, recordDate);
+    public HistoricalRecord findRecord(HistoricalRecordType historicalRecordType, Institution institution, Institution site, Department department, Date recordDate) {
+        return historicalRecordService.findRecord(historicalRecordType, institution, site, department, recordDate);
     }
 
     public void processHistoricalRecordList() {
@@ -183,12 +184,12 @@ public class HistoricalRecordController implements Serializable {
         this.department = department;
     }
 
-    public String getVariableName() {
-        return variableName;
+    public HistoricalRecordType getHistoricalRecordType() {
+        return historicalRecordType;
     }
 
-    public void setVariableName(String variableName) {
-        this.variableName = variableName;
+    public void setHistoricalRecordType(HistoricalRecordType historicalRecordType) {
+        this.historicalRecordType = historicalRecordType;
     }
 
     @FacesConverter(forClass = HistoricalRecord.class)
