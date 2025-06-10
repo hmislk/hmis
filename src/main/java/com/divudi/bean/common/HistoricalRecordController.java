@@ -10,6 +10,7 @@ import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.service.HistoricalRecordService;
+import com.divudi.core.data.StockValueRow;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
@@ -25,6 +26,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.persistence.TemporalType;
+import com.divudi.service.StockService;
 
 /**
  *
@@ -43,6 +45,8 @@ public class HistoricalRecordController implements Serializable {
     private HistoricalRecordFacade ejbFacade;
     @EJB
     HistoricalRecordService historicalRecordService;
+    @EJB
+    StockService stockService;
 
     private HistoricalRecord current;
     private HistoricalRecord selected;
@@ -159,7 +163,10 @@ public class HistoricalRecordController implements Serializable {
 
     private HistoricalRecord generatePharmacyStockValuePurchaseRate() {
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE);
-        // TODO: implement generation logic
+        StockValueRow result = stockService.calculateStockValues(institution, site, department);
+        if (result != null) {
+            rec.setRecordValue(result.getPurchaseValue());
+        }
         historicalRecordService.createHistoricalRecord(rec);
         return rec;
     }
