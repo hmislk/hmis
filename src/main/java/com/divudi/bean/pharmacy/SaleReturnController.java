@@ -515,8 +515,8 @@ public class SaleReturnController implements Serializable {
 
         }
         getReturnBill().setDiscount(discount);
-        getReturnBill().setTotal(grossTotal - discount);
-        getReturnBill().setNetTotal(grossTotal);
+        getReturnBill().setTotal(grossTotal);
+        getReturnBill().setNetTotal(grossTotal - discount);
 
         //  return grossTotal;
     }
