@@ -91,11 +91,15 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable 
-                            rowIndexVar="i" 
-                            id="tblRecords" 
-                            value="#{historicalRecordController.items}" 
-                            var="rec" 
+                        <p:dataTable
+                            rowIndexVar="i"
+                            id="tblRecords"
+                            value="#{historicalRecordController.items}"
+                            var="rec"
+                            selectionMode="single"
+                            selection="#{historicalRecordController.selected}"
+                            rowKey="#{rec.id}"
+                            rowStyleClass="#{rec eq historicalRecordController.selected ? 'highLight' : null}"
                             scrollable="true"
                             rows="10"
                             paginatorAlwaysVisible="false"

@@ -109,13 +109,13 @@ public class HistoricalRecordService {
         return java.util.Arrays.asList(HistoricalRecordType.values());
     }
 
-    public void createHistoricalRecord(HistoricalRecordType historicalRecordType,
+    public HistoricalRecord createHistoricalRecord(HistoricalRecordType historicalRecordType,
             Institution institution,
             Institution site,
             Department department) {
 
         if (historicalRecordType == null) {
-            return;
+            return null;
         }
 
         HistoricalRecord hr = new HistoricalRecord();
@@ -128,6 +128,7 @@ public class HistoricalRecordService {
         hr.setRecordValue(0.0);
 
         historicalRecordFacade.create(hr);
+        return hr;
     }
 
 }
