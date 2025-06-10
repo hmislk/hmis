@@ -131,4 +131,12 @@ public class HistoricalRecordService {
         return hr;
     }
 
+    public HistoricalRecord createHistoricalRecord(HistoricalRecord rec) {
+        if (rec == null) {
+            return null;
+        }
+        historicalRecordFacade.createAndFlush(rec);
+        return rec;
+    }
+
 }
