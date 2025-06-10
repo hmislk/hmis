@@ -3205,7 +3205,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String convertToWord(Double d) {
-        return CommonFunctions.convertToWord(d);
+        return d == null ? "" : CommonFunctions.convertToWord(d);
     }
 
     public Payment findPaymentFromBill(Bill b) {
