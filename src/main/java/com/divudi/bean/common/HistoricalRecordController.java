@@ -118,49 +118,67 @@ public class HistoricalRecordController implements Serializable {
             return null;
         }
 
-        handleGeneration(historicalRecordType);
-
-        selected = historicalRecordService.createHistoricalRecord(historicalRecordType, institution, site, department);
+        selected = handleGeneration(historicalRecordType);
 
         return navigateToHistoricalRecordList();
     }
 
-    private void handleGeneration(HistoricalRecordType type) {
+    private HistoricalRecord handleGeneration(HistoricalRecordType type) {
         if (type == null) {
-            return;
+            return null;
         }
         switch (type) {
             case PHARMACY_STOCK_VALUE:
-                generatePharmacyStockValue();
-                break;
+                return generatePharmacyStockValue();
             case COLLECTION_CENTRE_BALANCE:
-                generateCollectionCentreBalance();
-                break;
+                return generateCollectionCentreBalance();
             case CREDIT_COMPANY_BALANCE:
-                generateCreditCompanyBalance();
-                break;
+                return generateCreditCompanyBalance();
             case DRAWER_BALANCE:
-                generateDrawerBalance();
-                break;
+                return generateDrawerBalance();
             default:
-                break;
+                return null;
         }
     }
-
-    private void generatePharmacyStockValue() {
-        // TODO: implement generation logic
+    private HistoricalRecord buildRecord(HistoricalRecordType type) {
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(type);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setRecordDate(new Date());
+        hr.setRecordDateTime(new Date());
+        hr.setRecordValue(0.0);
+        return hr;
     }
 
-    private void generateCollectionCentreBalance() {
+
+    private HistoricalRecord generatePharmacyStockValue() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE);
         // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
     }
 
-    private void generateCreditCompanyBalance() {
+    private HistoricalRecord generateCollectionCentreBalance() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.COLLECTION_CENTRE_BALANCE);
         // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
     }
 
-    private void generateDrawerBalance() {
+    private HistoricalRecord generateCreditCompanyBalance() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.CREDIT_COMPANY_BALANCE);
         // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
+    }
+
+    private HistoricalRecord generateDrawerBalance() {
+        HistoricalRecord rec = buildRecord(HistoricalRecordType.DRAWER_BALANCE);
+        // TODO: implement generation logic
+        historicalRecordService.createHistoricalRecord(rec);
+        return rec;
     }
 
     public HistoricalRecord getCurrent() {
