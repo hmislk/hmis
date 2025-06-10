@@ -85,6 +85,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     List<Stock> stocks;
     double stockSaleValue;
     double stockPurchaseValue;
+    double stockCostValue;
     List<PharmacyStockRow> pharmacyStockRows;
     List<StockReportRecord> records;
     Date fromDate;
@@ -218,6 +219,13 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             stockSaleValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getRetailsaleRate() * s.getStock())
                     .sum();
+
+            stockCostValue = stocks.stream()
+                    .mapToDouble(s -> {
+                        Double cr = s.getItemBatch().getCostRate();
+                        return (cr == null ? 0.0 : cr) * s.getStock();
+                    })
+                    .sum();
             Date afterCal = new Date();
             System.out.println("afterCal = " + afterCal);
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
@@ -268,9 +276,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate()==null?0:ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -295,9 +305,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate()==null?0:ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
         return "pharmacy_report_department_stock_by_single_product";
@@ -649,9 +661,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         stocks = getStockFacade().findByJpql(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
+        stockCostValue = 0.0;
         for (Stock ts : stocks) {
             stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
             stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+            stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate()==null?0:ts.getItemBatch().getCostRate()) * ts.getStock());
         }
 
     }
@@ -849,9 +863,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             stocks = getStockFacade().findByJpql(sql, m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
+            stockCostValue = 0.0;
             for (Stock ts : stocks) {
                 stockPurchaseValue = stockPurchaseValue + (ts.getItemBatch().getPurcahseRate() * ts.getStock());
                 stockSaleValue = stockSaleValue + (ts.getItemBatch().getRetailsaleRate() * ts.getStock());
+                stockCostValue = stockCostValue + ((ts.getItemBatch().getCostRate()==null?0:ts.getItemBatch().getCostRate()) * ts.getStock());
             }
         }, PharmacyReports.STOCK_REPORT_BY_EXPIRY, sessionController.getLoggedUser());
     }
@@ -1427,6 +1443,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setStockPurchaseValue(double stockPurchaseValue) {
         this.stockPurchaseValue = stockPurchaseValue;
+    }
+
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
     }
 
     public Staff getStaff() {
