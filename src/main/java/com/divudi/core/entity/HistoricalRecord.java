@@ -43,6 +43,9 @@ public class HistoricalRecord implements Serializable {
     @Temporal(TemporalType.DATE)
     private Date recordDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date recordDateTime;
+
     private Boolean retired = false;
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -57,6 +60,8 @@ public class HistoricalRecord implements Serializable {
     @ManyToOne
     private WebUser retiredBy;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -176,6 +181,14 @@ public class HistoricalRecord implements Serializable {
 
     public void setRetiredBy(WebUser retiredBy) {
         this.retiredBy = retiredBy;
+    }
+
+    public Date getRecordDateTime() {
+        return recordDateTime;
+    }
+
+    public void setRecordDateTime(Date recordDateTime) {
+        this.recordDateTime = recordDateTime;
     }
 
 }

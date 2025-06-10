@@ -93,6 +93,17 @@ public class HistoricalRecordController implements Serializable {
         return historicalRecordService.findRecord(variableName, institution, site, department, recordDate);
     }
 
+    public void processHistoricalRecordList() {
+        items = historicalRecordService.findRecords(
+                variableName,
+                institution,
+                site,
+                department,
+                fromDate,
+                toDate
+        );
+    }
+
     public HistoricalRecord getCurrent() {
         if (current == null) {
             current = new HistoricalRecord();
