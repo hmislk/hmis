@@ -10,6 +10,7 @@ import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.service.HistoricalRecordService;
+import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -44,6 +45,7 @@ public class HistoricalRecordController implements Serializable {
     HistoricalRecordService historicalRecordService;
 
     private HistoricalRecord current;
+    private HistoricalRecord selected;
     private List<HistoricalRecord> items = null;
     private List<HistoricalRecordType> historicalRecordTypes;
 
@@ -110,8 +112,55 @@ public class HistoricalRecordController implements Serializable {
         );
     }
 
-    public void processCreateHistoricalRecord() {
-        historicalRecordService.createHistoricalRecord(historicalRecordType, institution, site, department);
+    public String processCreateHistoricalRecord() {
+        if (historicalRecordType == null) {
+            JsfUtil.addErrorMessage("Please select a variable");
+            return null;
+        }
+
+        handleGeneration(historicalRecordType);
+
+        selected = historicalRecordService.createHistoricalRecord(historicalRecordType, institution, site, department);
+
+        return navigateToHistoricalRecordList();
+    }
+
+    private void handleGeneration(HistoricalRecordType type) {
+        if (type == null) {
+            return;
+        }
+        switch (type) {
+            case PHARMACY_STOCK_VALUE:
+                generatePharmacyStockValue();
+                break;
+            case COLLECTION_CENTRE_BALANCE:
+                generateCollectionCentreBalance();
+                break;
+            case CREDIT_COMPANY_BALANCE:
+                generateCreditCompanyBalance();
+                break;
+            case DRAWER_BALANCE:
+                generateDrawerBalance();
+                break;
+            default:
+                break;
+        }
+    }
+
+    private void generatePharmacyStockValue() {
+        // TODO: implement generation logic
+    }
+
+    private void generateCollectionCentreBalance() {
+        // TODO: implement generation logic
+    }
+
+    private void generateCreditCompanyBalance() {
+        // TODO: implement generation logic
+    }
+
+    private void generateDrawerBalance() {
+        // TODO: implement generation logic
     }
 
     public HistoricalRecord getCurrent() {
@@ -123,6 +172,14 @@ public class HistoricalRecordController implements Serializable {
 
     public void setCurrent(HistoricalRecord current) {
         this.current = current;
+    }
+
+    public HistoricalRecord getSelected() {
+        return selected;
+    }
+
+    public void setSelected(HistoricalRecord selected) {
+        this.selected = selected;
     }
 
     private HistoricalRecordFacade getFacade() {
