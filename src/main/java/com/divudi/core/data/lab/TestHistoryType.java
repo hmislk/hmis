@@ -1,14 +1,15 @@
-/*
- * By
- * Dr M H B Ariyaratne | <buddhika.ari@gmail.com>
- * H.K. Damitha Deshan | <hkddrajapaksha@gmail.com>
- */
 package com.divudi.core.data.lab;
 
 /**
- * Enum representing different stages of laboratory test history. ChatGPT
- * contributed.
+ *
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan <hkddrajapaksha@gmail.com>
+ *
  */
+
+/**
+ * Enum representing different stages of laboratory test history. ChatGPT contributed.
+ */
+
 public enum TestHistoryType {
     ORDERED,
     BARCODE_GENARATE,
