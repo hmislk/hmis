@@ -135,6 +135,7 @@ public enum Privileges {
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
     LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
