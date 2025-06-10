@@ -135,7 +135,7 @@ public class HistoricalRecordService {
         if (rec == null) {
             return null;
         }
-        historicalRecordFacade.createAndFlush(rec);
+        historicalRecordFacade.create(rec);
         return rec;
     }
 
