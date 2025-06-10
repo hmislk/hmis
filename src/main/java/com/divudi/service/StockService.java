@@ -27,6 +27,7 @@ public class StockService {
 
     // ChatGPT contributed - 2025-05
     @Asynchronous
+    @Deprecated // Now these details are NOT recorded in the Stock. Instead have to take from Item Batch as it used to be
     public void addItemNamesToAllStocksAsync() {
         int batchSize = 500;
         int start = 0;
@@ -53,6 +54,7 @@ public class StockService {
     }
 
 // ChatGPT contributed - 2025-05
+    @Deprecated // Now these details are NOT recorded in the Stock. Instead have to take from Item Batch as it used to be
     public void addItemNamesToAllStocks() {
         System.out.println("addItemNamesToAllStocks");
         List<Stock> allStocks = stockFacade.findByJpql("SELECT s FROM Stock s");
