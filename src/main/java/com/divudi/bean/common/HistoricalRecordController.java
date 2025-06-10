@@ -59,6 +59,11 @@ public class HistoricalRecordController implements Serializable {
         return "/dataAdmin/historical_record_list?faces-redirect=true";
     }
 
+    public String navigateToHistoricalRecordGenerate() {
+        recreateModel();
+        return "/dataAdmin/historical_record_generate?faces-redirect=true";
+    }
+
     public List<HistoricalRecordType> getHistoricalRecordTypes() {
         if (historicalRecordTypes == null) {
             historicalRecordTypes = historicalRecordService.fetchHistoricalRecordTypes();
@@ -103,6 +108,10 @@ public class HistoricalRecordController implements Serializable {
                 fromDate,
                 toDate
         );
+    }
+
+    public void processCreateHistoricalRecord() {
+        historicalRecordService.createHistoricalRecord(historicalRecordType, institution, site, department);
     }
 
     public HistoricalRecord getCurrent() {

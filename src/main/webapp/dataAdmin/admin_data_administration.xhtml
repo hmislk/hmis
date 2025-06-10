@@ -138,9 +138,15 @@
 
                                 <p:tab title="Data" disabled="false">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  
+                                        <p:commandButton
+                                            value="Generate Historical Record"
+                                            action="#{historicalRecordController.navigateToHistoricalRecordGenerate()}"
+                                            ajax="false"
+                                            styleClass="w-100 ui-button-warning"
+                                            icon="fa fa-cogs" />
+                                        <p:commandButton
                                             value="Historical Record List"
-                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}" 
+                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}"
                                             ajax="false"
                                             styleClass="w-100 ui-button-success"
                                             icon="fa fa-database" />
