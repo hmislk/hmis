@@ -55,6 +55,7 @@ import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -306,7 +307,7 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.Pharmacy_Stock_Value, null, null, department, fromDate);
         if (openingBalance != null) {
             dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
         }
@@ -332,7 +333,7 @@ public class PharmacySummaryReportController implements Serializable {
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.Pharmacy_Stock_Value, null, null, department, toDate);
         if (closingBalance != null) {
             dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
         }
