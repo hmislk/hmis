@@ -109,4 +109,25 @@ public class HistoricalRecordService {
         return java.util.Arrays.asList(HistoricalRecordType.values());
     }
 
+    public void createHistoricalRecord(HistoricalRecordType historicalRecordType,
+            Institution institution,
+            Institution site,
+            Department department) {
+
+        if (historicalRecordType == null) {
+            return;
+        }
+
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(historicalRecordType);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setRecordDate(new Date());
+        hr.setRecordDateTime(new Date());
+        hr.setRecordValue(0.0);
+
+        historicalRecordFacade.create(hr);
+    }
+
 }
