@@ -173,14 +173,20 @@ public class HistoricalRecordController implements Serializable {
 
     private HistoricalRecord generatePharmacyStockValueRetailRate() {
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_RETAIL_RATE);
-        // TODO: implement generation logic
+        StockValueRow result = stockService.calculateStockValues(institution, site, department);
+        if (result != null) {
+            rec.setRecordValue(result.getRetailValue());
+        }
         historicalRecordService.createHistoricalRecord(rec);
         return rec;
     }
 
     private HistoricalRecord generatePharmacyStockValueCostRate() {
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_COST_RATE);
-        // TODO: implement generation logic
+        StockValueRow result = stockService.calculateStockValues(institution, site, department);
+        if (result != null) {
+            rec.setRecordValue(result.getCostValue());
+        }
         historicalRecordService.createHistoricalRecord(rec);
         return rec;
     }
