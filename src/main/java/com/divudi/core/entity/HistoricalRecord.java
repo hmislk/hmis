@@ -6,9 +6,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.validation.constraints.NotNull;
@@ -19,12 +17,6 @@ import javax.validation.constraints.Size;
  * @author Buddhika & OpenAI ChatGPT
  */
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_historical_record_variable_record_date", columnList = "variableName,recordDate"),
-    @Index(name = "idx_historical_record_institution", columnList = "institution"),
-    @Index(name = "idx_historical_record_site", columnList = "site"),
-    @Index(name = "idx_historical_record_department", columnList = "department")
-})
 public class HistoricalRecord implements Serializable {
 
     private static final long serialVersionUID = 1L;
