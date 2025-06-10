@@ -154,6 +154,8 @@ public class PatientReportController implements Serializable {
     PatientReportUploadController patientReportUploadController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     //Class Variables
     String selectText = "";
@@ -961,6 +963,8 @@ public class PatientReportController implements Serializable {
                 System.err.println("e = " + e.getMessage());
             }
         }
+        
+        labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1222,8 +1226,10 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
+        
+        labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
 
-        //JsfUtil.addSuccessMessage("Saved");
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void removePatientReport() {
@@ -2146,7 +2152,9 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
-
+        
+        labTestHistoryController.addApprovelHistory(currentPtIx, currentPatientReport);
+        
         JsfUtil.addSuccessMessage("Approved");
 
     }
@@ -2282,7 +2290,7 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("all checks ok");
-        
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
@@ -2300,7 +2308,7 @@ public class PatientReportController implements Serializable {
         getEmailFacade().create(email);
 
         System.out.println("email = " + email);
-        
+
         try {
             boolean success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
@@ -2380,9 +2388,10 @@ public class PatientReportController implements Serializable {
 
         } catch (Exception e) {
         }
-
+        
+        labTestHistoryController.addApprovelCancelHistory(currentPtIx, currentPatientReport);
     }
-
+    
     public void printPatientReport() {
         //////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
@@ -2933,7 +2942,8 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
-
+        
+        labTestHistoryController.addCreateReportHistory(currentPtIx, currentPatientReport);
         
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
@@ -2942,7 +2952,7 @@ public class PatientReportController implements Serializable {
 
         return "/lab/patient_report?faces-redirect=true";
     }
-
+    
     private List<ReportFormat> avalilableReportFormats;
 
     public List<ReportFormat> fillReportFormats(PatientReport patientReport) {
@@ -3081,7 +3091,7 @@ public class PatientReportController implements Serializable {
     }
 
     public String getReceipientEmail() {
-        if(receipientEmail==null){
+        if (receipientEmail == null) {
             updateRecipientEmail();
         }
         return receipientEmail;

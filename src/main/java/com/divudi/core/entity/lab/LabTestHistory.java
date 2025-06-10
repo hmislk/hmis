@@ -2,9 +2,12 @@ package com.divudi.core.entity.lab;
 
 import com.divudi.core.data.lab.Analyzer;
 import com.divudi.core.data.lab.TestHistoryType;
+import com.divudi.core.entity.AppEmail;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Sms;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import java.io.Serializable;
 import java.util.Date;
@@ -75,6 +78,18 @@ public class LabTestHistory implements Serializable {
 
     @ManyToOne
     private Category analyzer;
+    
+    @ManyToOne
+    private Staff staff;
+    
+    @ManyToOne
+    private Sms sms;
+    
+    @ManyToOne
+    private AppEmail email;
+    
+    @ManyToOne
+    private PatientSampleComponant sampleComponant;
 
     public Long getId() {
         return id;
@@ -84,8 +99,6 @@ public class LabTestHistory implements Serializable {
         this.id = id;
     }
     
-    
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -237,6 +250,38 @@ public class LabTestHistory implements Serializable {
 
     public void setAnalyzer(Category analyzer) {
         this.analyzer = analyzer;
+    }
+
+    public Staff getStaff() {
+        return staff;
+    }
+
+    public void setStaff(Staff staff) {
+        this.staff = staff;
+    }
+
+    public PatientSampleComponant getSampleComponant() {
+        return sampleComponant;
+    }
+
+    public void setSampleComponant(PatientSampleComponant sampleComponant) {
+        this.sampleComponant = sampleComponant;
+    }
+
+    public Sms getSms() {
+        return sms;
+    }
+
+    public void setSms(Sms sms) {
+        this.sms = sms;
+    }
+
+    public AppEmail getEmail() {
+        return email;
+    }
+
+    public void setEmail(AppEmail email) {
+        this.email = email;
     }
     
 }
