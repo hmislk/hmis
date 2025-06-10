@@ -70,7 +70,7 @@ public class StockHistoryService {
     }
 
     public double fetchOpeningStockQuantity(Department department, Date date) {
-        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.Pharmacy_Stock_Value, null, null, department, date);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE, null, null, department, date);
         if (openingBalance != null) {
             return openingBalance.getRecordValue();
         } else {

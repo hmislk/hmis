@@ -307,7 +307,7 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.Pharmacy_Stock_Value, null, null, department, fromDate);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE, null, null, department, fromDate);
         if (openingBalance != null) {
             dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
         }
@@ -333,7 +333,7 @@ public class PharmacySummaryReportController implements Serializable {
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.Pharmacy_Stock_Value, null, null, department, toDate);
+        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE, null, null, department, toDate);
         if (closingBalance != null) {
             dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
         }
