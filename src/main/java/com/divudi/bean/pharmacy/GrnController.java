@@ -36,7 +36,6 @@ import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.core.util.CommonFunctions;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -89,8 +88,6 @@ public class GrnController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
-    @EJB
-    PharmacyCostingService pharmacyCostingService;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
     @Inject
@@ -671,7 +668,6 @@ public class GrnController implements Serializable {
         getGrnBill().setBillExpenses(billExpenses);
         getGrnBill().setExpenseTotal(calExpenses());
         calGrossTotal();
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
 
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
