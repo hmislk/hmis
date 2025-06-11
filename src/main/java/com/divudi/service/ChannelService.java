@@ -580,6 +580,31 @@ public class ChannelService {
         return deptId;
     }
 
+    public List<Bill> fetchOnlineBookingsAgentPaidToHospitalBills(Date fromDate, Date toDate, Institution hospital, Institution agent) {
+        String sql = "select bill from Bill bill "
+                + " where bill.billType = :type"
+                + " and bill.retired = :ret "
+                + " and bill.toInstitution = :toIns"
+                + " and bill.createdAt between :fromDate and :toDate";
+
+        Map params = new HashMap();
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("toIns", hospital);
+        params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospital);
+
+        if (agent != null) {
+            sql += " and bill.fromInstitution = :fromIns";
+            params.put("fromIns", agent);
+        }
+
+        sql += " order by bill.createdAt desc";
+        
+        return getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status) {
         String sql = "Select ob from OnlineBooking ob"
                 + " where ob.onlineBookingStatus = :status "

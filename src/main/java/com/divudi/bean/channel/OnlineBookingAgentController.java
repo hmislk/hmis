@@ -301,9 +301,9 @@ public class OnlineBookingAgentController implements Serializable {
         Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
         paidBill.setCreater(getSessionController().getLoggedUser());
-        paidBill.setToInstitution(agentForBookings);
-        paidBill.setFromDepartment(getSessionController().getDepartment());
-        paidBill.setFromInstitution(getSessionController().getInstitution());
+        paidBill.setToInstitution(getSessionController().getInstitution());
+        paidBill.setToDepartment(getSessionController().getDepartment());
+        paidBill.setFromInstitution(agentForBookings);
         paidBill.setCreditCompany(agentForBookings);
         paidBill.setTotal(createTotalAmountToPay());
         paidBill.setBalance(0d);
@@ -481,6 +481,35 @@ public class OnlineBookingAgentController implements Serializable {
 
         if (bookingList != null) {
             onlineBookingList = bookingList;
+        }
+    }
+    
+    private List<Bill> agentPaidToHospitalBills;
+
+    public List<Bill> getAgentPaidToHospitalBills() {
+        return agentPaidToHospitalBills;
+    }
+
+    public void setAgentPaidToHospitalBills(List<Bill> agentPaidToHospitalBills) {
+        this.agentPaidToHospitalBills = agentPaidToHospitalBills;
+    }
+    
+    public void fetchAgentPaidToHospitalBills(){
+        
+        if (institutionForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select Hospital.");
+            return;
+        }
+
+        if (agentForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select the Agent.");
+            return;
+        }
+        
+        List<Bill> bills = channelService.fetchOnlineBookingsAgentPaidToHospitalBills(fromDate, toDate, institutionForBookings, agentForBookings);
+       
+        if(bills != null){
+            agentPaidToHospitalBills = bills;
         }
     }
 
