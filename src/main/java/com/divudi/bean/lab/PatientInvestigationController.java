@@ -1707,7 +1707,7 @@ public class PatientInvestigationController implements Serializable {
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : selectedPatientSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                    labTestHistoryController.addSampleReceiveHistory(pi, ps, sampleTransportedToLabByStaff);
+                    labTestHistoryController.addSampleReceiveHistory(pi, ps);
                 }
             }
         }
