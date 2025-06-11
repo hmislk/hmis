@@ -170,6 +170,14 @@ public class GrnCostingController implements Serializable {
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
 
+    public String navigateToResiveCosting() {
+        clear();
+        createGrn();
+        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
+        return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
+    }
+
     public String navigateToResiveFromImportGrn(Bill importGrn) {
         clear();
         saveImportBill(importGrn);
