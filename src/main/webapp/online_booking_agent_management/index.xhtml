@@ -26,7 +26,7 @@
                                                              action="/online_booking_agent_management/OB_agent_management?faces-redirect=true"
                                                              actionListener="#{onlineBookingAgentController.prepareAdd()}"
                                                              class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="Online Booking Payments"
+                                            <p:commandButton icon="fa fa-search" ajax="false" value="Online Booking Agent Payments "
                                                              action="/online_booking_agent_management/OB_payment_handle?faces-redirect=true"
                                                              actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
                                                              class="w-100 m-1"/>
@@ -36,8 +36,8 @@
                                                              actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
                                                              class="w-100 m-1"/>
                                             
-                                            <p:commandButton icon="fa fa-search" ajax="false" value="View Bills"
-                                                             action="/online_booking_agent_management/OB_payment_handle?faces-redirect=true"
+                                            <p:commandButton icon="fa fa-search" ajax="false" value="View Agent Payment Bills"
+                                                             action="/online_booking_agent_management/OB_payment_bill_search?faces-redirect=true"
                                                              actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
                                                              class="w-100 m-1"/>
 <!--                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Agency Books"
