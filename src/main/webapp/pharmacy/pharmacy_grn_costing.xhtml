@@ -6,7 +6,8 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill"
-                xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+                xmlns:ph="http://xmlns.jcp.org/jsf/composite/ezcomp/pharmacy"
+                xmlns:pha="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <ui:define name="content">
         <h:form>
@@ -428,7 +429,7 @@
                 <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
-                        <ph:grn bill="#{grnCostingController.grnBill}"/>
+                        <pha:grn bill="#{grnCostingController.grnBill}"/>
                     </h:panelGroup>
 
                 </h:panelGroup>
