@@ -1,5 +1,22 @@
 # Development Notes
 
+## Branch Naming Convention
+
+All development branches must be created based on the related GitHub issue when the issue name is available. The naming convention is as follows:
+
+- Begin with the issue number.
+- Follow with a hyphen `-` and the issue title in lowercase.
+- Replace all spaces in the title with hyphens `-`.
+- Use only hyphens and underscores; avoid other special characters.
+### Examples
+
+- `12875-implement-full-lab-workflow-history-tracking`
+- `11964-implement-scheduled-historical-record-processing-and-recording-framework`
+- `12881-refactor-calsalerte-method-in-pharmacydirectpurchasecontroller-for-better-maintainability`
+- `12790-incorrect-retail-rate-and-sale-value-displayed-for-pack-purchases-in-direct-purchase-with-costing`
+- `12888-need-to-display-consultant-name-and-credit-company-name`
+- `12746-return-item-only-with-discount-accept-pharmacy-refund-updated-incorrect-in-pharmacy-income-report`
+
 ## Adding User Icons
 
 1. Add a new constant to `src/main/java/com/divudi/core/data/Icon.java`. The value should be the label displayed to users.
