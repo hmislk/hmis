@@ -257,6 +257,7 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
         reportViewTypes = Arrays.asList(
                 ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_ITEM
         );
         reportViewType = ReportViewType.BY_ITEM;
@@ -561,6 +562,9 @@ public class PharmacySummaryReportController implements Serializable {
             switch (reportViewType) {
                 case BY_BILL:
                     processMovementOutWithStocksReportByBill();
+                    break;
+                case BY_BILL_TYPE:
+                    processMovementOutWithStockReportByBillType();
                     break;
                 case BY_ITEM:
                     processMovementOutWithStockReportByItem();
