@@ -80,6 +80,8 @@ public class StockService {
 
     // ChatGPT contributed - 2025-06
     public StockValueRow calculateStockValues(Institution institution, Institution site, Department department) {
+        System.out.println("calculateStockValues");
+        System.out.println("department = " + department);
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         jpql.append("select sum(s.stock * s.itemBatch.purcahseRate), "
@@ -99,7 +101,9 @@ public class StockService {
         }
 
         Object[] obj = stockFacade.findAggregateModified(jpql.toString(), params, TemporalType.TIMESTAMP);
-
+        
+        System.out.println("obj = " + obj);
+        
         StockValueRow row = new StockValueRow();
         row.setInstitution(institution);
         row.setSite(site);
@@ -115,6 +119,7 @@ public class StockService {
                 row.setCostValue((Double) obj[2]);
             }
         }
+        System.out.println("row = " + row);
         return row;
     }
 

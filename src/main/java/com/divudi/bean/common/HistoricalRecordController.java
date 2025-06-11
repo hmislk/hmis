@@ -7,10 +7,13 @@ package com.divudi.bean.common;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.facade.HistoricalRecordFacade;
 import com.divudi.core.data.HistoricalRecordType;
+import com.divudi.core.data.ReportViewType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.core.data.StockValueRow;
+import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.Date;
@@ -34,7 +37,7 @@ import com.divudi.service.StockService;
  */
 @Named
 @SessionScoped
-public class HistoricalRecordController implements Serializable {
+public class HistoricalRecordController implements Serializable, ControllerWithReportFilters {
 
     private static final long serialVersionUID = 1L;
 
@@ -59,6 +62,10 @@ public class HistoricalRecordController implements Serializable {
     private Institution site;
     private Department department;
     private HistoricalRecordType historicalRecordType;
+    private AdmissionType admissionType;
+    private PaymentScheme paymentScheme;
+    private ReportViewType reportViewType;
+    private List<ReportViewType> reportViewTypes;
 
     public String navigateToHistoricalRecordList() {
         recreateModel();
@@ -117,17 +124,21 @@ public class HistoricalRecordController implements Serializable {
     }
 
     public String processCreateHistoricalRecord() {
+        System.out.println("processCreateHistoricalRecord");
+        System.out.println("historicalRecordType = " + historicalRecordType);
         if (historicalRecordType == null) {
             JsfUtil.addErrorMessage("Please select a variable");
             return null;
         }
 
         selected = handleGeneration(historicalRecordType);
-
+        System.out.println("selected = " + selected);
         return navigateToHistoricalRecordList();
     }
 
     private HistoricalRecord handleGeneration(HistoricalRecordType type) {
+        System.out.println("handleGeneration");
+        System.out.println("type = " + type);
         if (type == null) {
             return null;
         }
@@ -148,6 +159,7 @@ public class HistoricalRecordController implements Serializable {
                 return null;
         }
     }
+
     private HistoricalRecord buildRecord(HistoricalRecordType type) {
         HistoricalRecord hr = new HistoricalRecord();
         hr.setHistoricalRecordType(type);
@@ -160,10 +172,12 @@ public class HistoricalRecordController implements Serializable {
         return hr;
     }
 
-
     private HistoricalRecord generatePharmacyStockValuePurchaseRate() {
+        System.out.println("generatePharmacyStockValuePurchaseRate");
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE);
+        System.out.println("rec = " + rec);
         StockValueRow result = stockService.calculateStockValues(institution, site, department);
+        System.out.println("result = " + result);
         if (result != null) {
             rec.setRecordValue(result.getPurchaseValue());
         }
@@ -306,6 +320,46 @@ public class HistoricalRecordController implements Serializable {
     public void setHistoricalRecordType(HistoricalRecordType historicalRecordType) {
         this.historicalRecordType = historicalRecordType;
     }
+
+    @Override
+    public AdmissionType getAdmissionType() {
+        return admissionType;
+    }
+
+    @Override
+    public void setAdmissionType(AdmissionType admissionType) {
+        this.admissionType = admissionType;
+    }
+
+    @Override
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    @Override
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    @Override
+    public ReportViewType getReportViewType() {
+        return reportViewType;
+    }
+
+    @Override
+    public void setReportViewType(ReportViewType reportViewType) {
+        this.reportViewType = reportViewType;
+    }
+
+    public List<ReportViewType> getReportViewTypes() {
+        return reportViewTypes;
+    }
+
+    public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
+        this.reportViewTypes = reportViewTypes;
+    }
+
+
 
     @FacesConverter(forClass = HistoricalRecord.class)
     public static class HistoricalRecordConverter implements Converter {

@@ -108,7 +108,7 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15,50">
 
-                            <p:column headerText="No" exportable="false">
+                            <p:column headerText="No" exportable="false" width="3em">
                                 <h:outputText value="#{i+1}" />
                             </p:column>
 
@@ -116,24 +116,26 @@
                                 <h:outputText value="#{rec.historicalRecordType != null ? rec.historicalRecordType.label : rec.variableName}" />
                             </p:column>
 
-                            <p:column headerText="Value">
-                                <h:outputText value="#{rec.recordValue}" />
+                            <p:column headerText="Value" width="7em" class="text-end">
+                                <h:outputText value="#{rec.recordValue}" class="w-100 text-end">
+                                    <f:convertNumber pattern="#,##0.##" ></f:convertNumber>
+                                </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Institution">
-                                <h:outputText value="#{rec.institution == null ? 'N/A' : rec.institution.name}" />
+                            <p:column headerText="Institution" width="8em">
+                                <h:outputText value="#{rec.institution == null ? 'All' : rec.institution.name}" />
                             </p:column>
 
-                            <p:column headerText="Site">
-                                <h:outputText value="#{rec.site == null ? 'N/A' : rec.site.name}" />
+                            <p:column headerText="Site" width="8em">
+                                <h:outputText value="#{rec.site == null ? 'All' : rec.site.name}" />
                             </p:column>
 
-                            <p:column headerText="Department">
-                                <h:outputText value="#{rec.department == null ? 'N/A' : rec.department.name}" />
+                            <p:column headerText="Department" width="8em">
+                                <h:outputText value="#{rec.department == null ? 'All' : rec.department.name}" />
                             </p:column>
 
-                            <p:column headerText="Record Date">
-                                <h:outputText value="#{rec.recordDate}">
+                            <p:column headerText="Record Date" width="8em">
+                                <h:outputText value="#{rec.recordDateTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>

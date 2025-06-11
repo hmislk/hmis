@@ -63,32 +63,29 @@ public class HistoricalRecordService {
     public List<HistoricalRecord> findRecords(HistoricalRecordType historicalRecordType, Institution institution, Institution site, Department department, Date fromDate, Date toDate) {
         String jpql = "select hr "
                 + " from HistoricalRecord hr "
-                + " where hr.retired=false "
-                + " and hr.historicalRecordType=:vn ";
+                + " where hr.retired=false ";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("vn", historicalRecordType);
+
+        if (historicalRecordType != null) {
+            jpql += " and hr.historicalRecordType=:vn ";
+            parameters.put("vn", historicalRecordType);
+        }
 
         if (institution != null) {
             jpql += " and hr.institution=:ins ";
             parameters.put("ins", institution);
-        } else {
-            jpql += " and hr.institution is null ";
-        }
+        } 
 
         if (site != null) {
             jpql += " and hr.site=:site ";
             parameters.put("site", site);
-        } else {
-            jpql += " and hr.site is null ";
-        }
+        } 
 
         if (department != null) {
             jpql += " and hr.department=:dep ";
             parameters.put("dep", department);
-        } else {
-            jpql += " and hr.department is null ";
-        }
+        } 
 
         if (fromDate != null) {
             jpql += " and hr.recordDate >= :fd ";
