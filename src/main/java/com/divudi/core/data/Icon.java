@@ -108,6 +108,7 @@ public enum Icon {
     pharmacy_generate_report("Pharmacy - Generate Report"),
     pharmacy_summary_views("Pharmacy - Summary Views"),
     pharmacy_analytics("Pharmacy - Analytics"),
+    Goods_Receipt_Costing("Goods Receipt Costing"),
     Goods_Receipt_With_Approval("Goods Receipt With Approval"),
     Pharmacy_Order_Cancellation("Pharmacy Order Cancellation"),
     Optician_EMR("Optician - EMR Management"),
