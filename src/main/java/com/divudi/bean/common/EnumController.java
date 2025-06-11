@@ -6,6 +6,7 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.ScheduledProcess;
 import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.hr.*;
@@ -277,6 +278,10 @@ public class EnumController implements Serializable {
 
     public List<HistoryType> getHistoryTypes() {
         return Arrays.asList(HistoryType.values());
+    }
+
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
     }
 
     public Dashboard[] getDashboardTypes() {

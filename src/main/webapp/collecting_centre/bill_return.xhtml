@@ -141,6 +141,8 @@
                                             ajax="false"
                                             class="ui-button-warning"
                                             action="#{billReturnController.settleCCReturnBill()}"
+                                            onclick="if (!confirm('Are you sure you want to Return Selected Items ?'))
+                                                        return false;"
                                             oncomplete="PF('dlg').hide();" >
                                         </p:commandButton>
                                     </p:panelGrid>
