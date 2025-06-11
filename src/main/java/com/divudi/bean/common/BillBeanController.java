@@ -155,6 +155,8 @@ public class BillBeanController implements Serializable {
     SessionController sessionController;
     @Inject
     LabTestHistoryController labTestHistoryController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -4256,7 +4258,9 @@ public class BillBeanController implements Serializable {
             getPatientInvestigationFacade().create(ptIx);
         }
         
-        labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+        }
 
     }
 

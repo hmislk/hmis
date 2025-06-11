@@ -1569,9 +1569,11 @@ public class PatientInvestigationController implements Serializable {
             billFacade.edit(tb);
         }
 
-        for (PatientSample ps : selectedPatientSamples) {
-            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                labTestHistoryController.addSampleCollectHistory(pi, ps);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample ps : selectedPatientSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleCollectHistory(pi, ps);
+                }
             }
         }
 
@@ -1629,9 +1631,11 @@ public class PatientInvestigationController implements Serializable {
             sampleBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
 
-        for (PatientSample ps : selectedPatientSamples) {
-            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                labTestHistoryController.addSampleSentHistory(pi, ps,sampleTransportedToLabByStaff);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample ps : selectedPatientSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleSentHistory(pi, ps, sampleTransportedToLabByStaff);
+                }
             }
         }
 
@@ -1699,10 +1703,12 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(tptix);
             receivedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
-        
-        for (PatientSample ps : selectedPatientSamples) {
-            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                labTestHistoryController.addSampleReceiveHistory(pi, ps,sampleTransportedToLabByStaff);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample ps : selectedPatientSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleReceiveHistory(pi, ps, sampleTransportedToLabByStaff);
+                }
             }
         }
 
@@ -1750,10 +1756,12 @@ public class PatientInvestigationController implements Serializable {
             getFacade().edit(tptix);
             affectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
         }
-        
-        for (PatientSample ps : selectedPatientSamples) {
-            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
-                labTestHistoryController.addSampleRejectHistory(pi, ps);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample ps : selectedPatientSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleRejectHistory(pi, ps);
+                }
             }
         }
 
@@ -5571,29 +5579,30 @@ public class PatientInvestigationController implements Serializable {
         if (barcodeBill.getStatus() == PatientInvestigationStatus.ORDERED) {
             barcodeBill.setStatus(PatientInvestigationStatus.SAMPLE_GENERATED);
 
-            for (PatientInvestigation pi : pis) {
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                for (PatientInvestigation pi : pis) {
 
-                String jpql = "select ps from PatientSampleComponant ps "
-                        + " where ps.patientInvestigation=:ptix "
-                        + " and ps.retired=:ret";
-                Map params = new HashMap();
-                params.put("ret", false);
-                params.put("ptix", pi);
+                    String jpql = "select ps from PatientSampleComponant ps "
+                            + " where ps.patientInvestigation=:ptix "
+                            + " and ps.retired=:ret";
+                    Map params = new HashMap();
+                    params.put("ret", false);
+                    params.put("ptix", pi);
 
-                List<PatientSampleComponant> componants = patientSampleComponantFacade.findByJpql(jpql, params);
+                    List<PatientSampleComponant> componants = patientSampleComponantFacade.findByJpql(jpql, params);
 
-                if (componants == null) {
-                    continue;
+                    if (componants == null) {
+                        continue;
+                    }
+
+                    System.out.println("componants = " + componants);
+
+                    for (PatientSampleComponant psc : componants) {
+                        labTestHistoryController.addBarcodeGenerateHistory(pi, psc.getPatientSample());
+                    }
+
                 }
-
-                System.out.println("componants = " + componants);
-
-                for (PatientSampleComponant psc : componants) {
-                    labTestHistoryController.addBarcodeGenerateHistory(pi, psc.getPatientSample());
-                }
-
             }
-
         }
 
         billFacade.edit(barcodeBill);

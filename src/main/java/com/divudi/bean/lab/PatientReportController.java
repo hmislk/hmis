@@ -963,8 +963,10 @@ public class PatientReportController implements Serializable {
                 System.err.println("e = " + e.getMessage());
             }
         }
-        
-        labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
+        }
+
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1226,8 +1228,10 @@ public class PatientReportController implements Serializable {
 
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
-        
-        labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
+        }
 
         JsfUtil.addSuccessMessage("Saved");
     }
@@ -2152,9 +2156,11 @@ public class PatientReportController implements Serializable {
                 getSmsFacade().create(e);
             }
         }
-        
-        labTestHistoryController.addApprovelHistory(currentPtIx, currentPatientReport);
-        
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addApprovelHistory(currentPtIx, currentPatientReport);
+        }
+
         JsfUtil.addSuccessMessage("Approved");
 
     }
@@ -2239,8 +2245,10 @@ public class PatientReportController implements Serializable {
             Boolean sent = smsManager.sendSms(e);
             e.setSentSuccessfully(sent);
             getSmsFacade().edit(e);
-            
-            labTestHistoryController.addReportSentSMSHistory(currentPtIx, currentPatientReport, e);
+
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportSentSMSHistory(currentPtIx, currentPatientReport, e);
+            }
 
         }
 
@@ -2310,8 +2318,10 @@ public class PatientReportController implements Serializable {
         getEmailFacade().create(email);
 
         System.out.println("email = " + email);
-        
-        labTestHistoryController.addReportSentEmailHistory(currentPtIx, currentPatientReport, email);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addReportSentEmailHistory(currentPtIx, currentPatientReport, email);
+        }
 
         try {
             boolean success = emailManagerEjb.sendEmail(
@@ -2392,10 +2402,13 @@ public class PatientReportController implements Serializable {
 
         } catch (Exception e) {
         }
-        
-        labTestHistoryController.addApprovelCancelHistory(currentPtIx, currentPatientReport);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addApprovelCancelHistory(currentPtIx, currentPatientReport);
+        }
+
     }
-    
+
     public void printPatientReport() {
         //////System.out.println("going to save as printed");
         if (currentPatientReport == null) {
@@ -2946,9 +2959,11 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Error");
             return null;
         }
-        
-        labTestHistoryController.addCreateReportHistory(currentPtIx, currentPatientReport);
-        
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addCreateReportHistory(currentPtIx, currentPatientReport);
+        }
+
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
@@ -2956,7 +2971,7 @@ public class PatientReportController implements Serializable {
 
         return "/lab/patient_report?faces-redirect=true";
     }
-    
+
     private List<ReportFormat> avalilableReportFormats;
 
     public List<ReportFormat> fillReportFormats(PatientReport patientReport) {
