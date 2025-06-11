@@ -140,17 +140,17 @@
                                 <p:tag rendered="#{bill.cancelled eq true }" value="Cancelled" style="color: red; font-weight: bold"></p:tag>
                                 <p:tag rendered="#{bill.refunded ne true}" value="Refunded" style="color: yellow; font-weight: bold"></p:tag>
                             </p:column>
-                            
+
                             <p:column headerText="From Agent">
                                 <h:outputText value="#{bill.fromInstitution}">
                                 </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Bill proccesed By">
                                 <h:outputText value="#{bill.creater.name}">
                                 </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Payment Method">
                                 <h:outputText value="#{bill.paymentMethod}">
                                 </h:outputText>
@@ -164,31 +164,44 @@
                                 </h:outputText>
                             </p:column>
 
-<!--                            <p:column headerText="Agent Fee">
-                                <f:facet name="footer">
-                                    <h:outputText styleClass="totalAgentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
-                                </f:facet>
-                                <h:outputText styleClass="calAgentValues" value="#{ob.onlineBookingPayment}"><f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
+                            <p:column headerText="Action" width="50px">
+                                <p:commandButton 
+                                    id="btnViewBill"
+                                    ajax="false" 
+                                    icon="fas fa-file-invoice"
+                                    action="OB_agent_paid_bill_reprint?faces-redirect=true">
+                                    <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>                                     
+                                </p:commandButton>
+
+                                <p:tooltip for="btnViewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
+
                             </p:column>
 
-                            <p:column headerText="Net Total">
-                                <f:facet name="footer">
-                                    <h:outputText styleClass="totalNetFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
-                                </f:facet>
-                                <h:outputText styleClass="calNetValues" value="#{ob.netTotalForOnlineBooking}"><f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Agent">
-                                <h:outputText value="#{ob.agency.name}">
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Paid to Hospital">
-                                <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
-                                </h:outputText>
-                            </p:column>-->
+                            <!--                            <p:column headerText="Agent Fee">
+                                                            <f:facet name="footer">
+                                                                <h:outputText styleClass="totalAgentFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                                            </f:facet>
+                                                            <h:outputText styleClass="calAgentValues" value="#{ob.onlineBookingPayment}"><f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </p:column>
+                            
+                                                        <p:column headerText="Net Total">
+                                                            <f:facet name="footer">
+                                                                <h:outputText styleClass="totalNetFee" value=""><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                                            </f:facet>
+                                                            <h:outputText styleClass="calNetValues" value="#{ob.netTotalForOnlineBooking}"><f:convertNumber pattern="#,##0.00" />
+                                                            </h:outputText>
+                                                        </p:column>
+                            
+                                                        <p:column headerText="Agent">
+                                                            <h:outputText value="#{ob.agency.name}">
+                                                            </h:outputText>
+                                                        </p:column>
+                            
+                                                        <p:column headerText="Paid to Hospital">
+                                                            <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
+                                                            </h:outputText>
+                                                        </p:column>-->
 
                         </p:dataTable>
                     </p:panel>

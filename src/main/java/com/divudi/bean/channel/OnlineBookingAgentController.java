@@ -94,6 +94,7 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
     private OnlineBookingStatus onlineBookingStatus;
+    private Bill printBill;
 
     @EJB
     private PaymentFacade paymentFacade;
@@ -690,6 +691,14 @@ public class OnlineBookingAgentController implements Serializable {
 
     public void setChannelService(ChannelService channelService) {
         this.channelService = channelService;
+    }
+
+    public Bill getPrintBill() {
+        return printBill;
+    }
+
+    public void setPrintBill(Bill printBill) {
+        this.printBill = printBill;
     }
 
 }
