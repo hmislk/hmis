@@ -4,9 +4,8 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/channel">
 
     <h:body>
 
@@ -34,25 +33,12 @@
                                 <p:commandButton 
                                     value="Reprint" 
                                     icon="fa fa-print"
-                                    rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
                                     class="ui-button-info"
                                     ajax="false" >
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    id="btnLabelPrint" 
-                                    value="Print Labels"
-                                    disabled="#{pharmacyBillSearch.bill.cancelled}"
-                                    style="width: 10em;"
-                                    oncomplete="PF('PrintLables').show()"
-                                    class="ui-button-info mx-1"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}"
-                                    >
-
-                                </p:commandButton>
-
-                                <p:dialog 
+<!--                                <p:dialog 
                                     id="PrintLableSectionAfterSettleBill" 
                                     widgetVar="PrintLables" 
                                     resizable="false"
@@ -85,7 +71,7 @@
                                         <p:printer target="printLabelSectionAfterSettle"></p:printer>
 
                                     </p:commandButton>
-                                </p:dialog>
+                                </p:dialog>-->
 
 
                                 <p:commandButton 
@@ -101,25 +87,25 @@
 
                         </f:facet>
 
-                        <div class="d-flex justify-content-end gap-1">
+<!--                        <div class="d-flex justify-content-end gap-1">
                             <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
                             <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
                                 <f:selectItem itemLabel="Please Select Paper Type" />
                                 <f:selectItems value="#{enumController.paperTypes}" />
                             </p:selectOneMenu>
                             <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        </div>
+                        </div>-->
 
                         <h:panelGroup   id="gpBillPreview"  > 
 
                             <h:panelGroup id="gpBillPreviewDouble" 
                                           rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
 
-                                <ph:saleBill bill="#{pharmacyBillSearch.bill}" ></ph:saleBill>
+                                <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="true" ></ph:agentPaidToHospitalBill>
 
                             </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
+<!--                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
                             </h:panelGroup>
                             
@@ -129,7 +115,7 @@
 
                             <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}"> 
                                 <ph:sale_bill_five_five_custom_3 bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                            </h:panelGroup>
+                            </h:panelGroup>-->
 
                         </h:panelGroup>
                     </p:panel>
