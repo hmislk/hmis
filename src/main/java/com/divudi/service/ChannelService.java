@@ -619,7 +619,6 @@ public class ChannelService {
         params.put("retire", false);
         params.put("from", fromDate);
         params.put("to", toDate);
-        params.put("paid", paid);
 
         if (agent != null) {
             sql += " and ob.agency = :agent";

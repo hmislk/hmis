@@ -63,7 +63,7 @@
                             <h:outputLabel value="Booking Status"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.onlineBookingStatus}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
-                                <f:selectItems value="#{onlineBookingAgentController.onlineBookingStatusList}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <f:selectItems value="#{onlineBookingAgentController.onlineBookingStatusList}" var="ins" itemLabel="#{ins}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
                             
@@ -73,8 +73,8 @@
                             <h:outputLabel value="Paid Status"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.paidStatus}" filter="true" >
                                 <f:selectItem itemLabel="All" itemValue="#{null}"></f:selectItem>
-                                <f:selectItem itemLabel="Paid" itemValue="true"></f:selectItem>
-                                <f:selectItem itemLabel="Non-Paid" itemValue="false"></f:selectItem>
+                                <f:selectItem itemLabel="Paid" itemValue="#{true}"></f:selectItem>
+                                <f:selectItem itemLabel="Non-Paid" itemValue="#{false}"></f:selectItem>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
@@ -85,7 +85,7 @@
                             <p:commandButton  
                                 value="Process" 
                                 ajax="false"
-                                action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
+                                action="#{onlineBookingAgentController.fetchAllOnlineBookings()}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
