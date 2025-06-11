@@ -1,8 +1,15 @@
 package com.divudi.service;
 
+import com.divudi.core.data.HistoricalRecordType;
+import com.divudi.core.data.ScheduledFrequency;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ScheduledProcessConfiguration;
 import com.divudi.core.facade.ScheduledProcessConfigurationFacade;
-import com.divudi.core.data.ScheduledFrequency;
+import com.divudi.service.HistoricalRecordService;
+import com.divudi.service.StockService;
+import com.divudi.core.data.StockValueRow;
 import java.util.Calendar;
 import java.util.Date;
 import javax.ejb.Asynchronous;
@@ -14,6 +21,12 @@ public class ScheduledProcessService {
 
     @EJB
     private ScheduledProcessConfigurationFacade configFacade;
+
+    @EJB
+    private HistoricalRecordService historicalRecordService;
+
+    @EJB
+    private StockService stockService;
 
     @Asynchronous
     public void executeScheduledProcess(ScheduledProcessConfiguration config) {
@@ -30,7 +43,7 @@ public class ScheduledProcessService {
         // Placeholder switch for future implementations
         switch (config.getScheduledProcess()) {
             case Record_Pharmacy_Stock_Values:
-                // TODO: implement process
+                recordPharmacyStockValues(config);
                 break;
             case All_Drawer_Balances:
                 // TODO: implement process
@@ -49,6 +62,48 @@ public class ScheduledProcessService {
         config.setLastRunEnded(new Date());
         config.setLastProcessCompleted(true);
         configFacade.edit(config);
+    }
+
+    private void recordPharmacyStockValues(ScheduledProcessConfiguration config) {
+        if (config == null) {
+            return;
+        }
+        Institution ins = config.getInstitution();
+        Department dep = config.getDepartment();
+        Institution site = null;
+        if (dep != null) {
+            site = dep.getSite();
+            if (ins == null) {
+                ins = dep.getInstitution();
+            }
+        }
+
+        StockValueRow values = stockService.calculateStockValues(ins, site, dep);
+
+        createHistoricalRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE,
+                values != null ? values.getPurchaseValue() : 0.0,
+                ins, site, dep);
+
+        createHistoricalRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_RETAIL_RATE,
+                values != null ? values.getRetailValue() : 0.0,
+                ins, site, dep);
+
+        createHistoricalRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_COST_RATE,
+                values != null ? values.getCostValue() : 0.0,
+                ins, site, dep);
+    }
+
+    private void createHistoricalRecord(HistoricalRecordType type, Double value,
+            Institution institution, Institution site, Department department) {
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(type);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setRecordDate(new Date());
+        hr.setRecordDateTime(new Date());
+        hr.setRecordValue(value);
+        historicalRecordService.createHistoricalRecord(hr);
     }
 
     public Date calculateNextSupposedAt(ScheduledFrequency frequency, Date from) {
