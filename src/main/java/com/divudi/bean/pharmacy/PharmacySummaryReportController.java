@@ -838,10 +838,12 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStockReportByItem() {
-        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
-        List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        pharmacyBundle = new PharmacyBundle(pbis);
-        pharmacyBundle.groupSaleDetailsByItems();
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            pharmacyBundle = new PharmacyBundle(pbis);
+            pharmacyBundle.groupSaleDetailsByItems();
+        }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
