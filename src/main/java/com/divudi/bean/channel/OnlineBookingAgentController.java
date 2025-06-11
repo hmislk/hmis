@@ -50,6 +50,7 @@ import javax.faces.context.FacesContext;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -95,12 +96,21 @@ public class OnlineBookingAgentController implements Serializable {
     private double paidToHospitalTotal;
     private OnlineBookingStatus onlineBookingStatus;
     private Bill printBill;
+    private PaymentMethod cancelPaymentMethod;
 
     @EJB
     private PaymentFacade paymentFacade;
 
     @Inject
     private DrawerController drawerController;
+
+    public PaymentMethod getCancelPaymentMethod() {
+        return cancelPaymentMethod;
+    }
+
+    public void setCancelPaymentMethod(PaymentMethod cancelPaymentMethod) {
+        this.cancelPaymentMethod = cancelPaymentMethod;
+    }
 
     public List<OnlineBookingStatus> getOnlineBookingStatusList() {
         if (onlineBookingStatusList == null || onlineBookingStatusList.isEmpty()) {
@@ -203,6 +213,24 @@ public class OnlineBookingAgentController implements Serializable {
                     throw new AssertionError();
             }
         }
+    }
+    
+    public void fetchOnlineBookingsFromAgentPaidBill(Bill bill){
+        if(bill == null){
+            return;
+        }
+        
+        String sql = "Select ob from OnlineBooking ob "
+                + " where ob.bill = :bill "
+                + " and ob.retired = :ret "
+                + " and ob.onlineBookingStatus <> :status";
+
+        Map params = new HashMap();
+        params.put("bill", bill);
+        params.put("ret", false);
+        params.put("status", OnlineBookingStatus.PENDING);
+        
+        onlineBookingList = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {

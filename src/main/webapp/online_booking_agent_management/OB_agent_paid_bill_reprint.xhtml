@@ -5,6 +5,7 @@
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:ph="http://xmlns.jcp.org/jsf/composite/channel">
 
     <h:body>
@@ -38,63 +39,152 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
 
-<!--                                <p:dialog 
-                                    id="PrintLableSectionAfterSettleBill" 
-                                    widgetVar="PrintLables" 
-                                    resizable="false"
-                                    closable="true"
-                                    modal="true" 
-                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
-
-                                    >
-                                    <p:outputLabel for="@next" value="Select Bill Item : " class="m-2"/>
-                                    <p:selectOneMenu id="group" value="#{pharmacySaleController.billItem}">
-                                        <f:selectItem itemLabel="Select One" itemValue=""/>
-                                        <f:selectItems value="#{pharmacyBillSearch.bill.billItems}" var="item" itemLabel="#{item.pharmaceuticalBillItem.itemBatch.item.name}" itemValue="#{item}"/>
-
-                                        <p:ajax event="change" process="group" update="printLabelSectionAfterSettle"></p:ajax>
-
-                                    </p:selectOneMenu>
-
-                                    <h:panelGroup id="printLabelSectionAfterSettle" class="my-3" rendered="#{pharmacySaleController.billItem ne null}">
-                                        <phi:pharmacy_instruction_label billItem="#{pharmacySaleController.billItem}" controller="#{pharmacySaleController}"/>
-                                    </h:panelGroup>
-
-                                    <p:commandButton value="Print Label"
-                                                     class="ui-button-info w-100 my-4"
-                                                     action="#{pharmacySaleController.enableLabelPrint(pharmacySaleController.billItem.prescription)}"
-                                                     ajax="false"
-                                                     update="PrintLableSectionAfterSettleBill"
-                                                     oncomplete="PF('printLabelSectionView').show()"
-                                                     process="@this"
-                                                     >
-                                        <p:printer target="printLabelSectionAfterSettle"></p:printer>
-
-                                    </p:commandButton>
-                                </p:dialog>-->
-
-
                                 <p:commandButton 
                                     ajax="false" 
                                     value="To Cancel"
                                     icon="fa fa-cancel"
                                     class="ui-button-danger"
-                                    action="#{pharmacyBillSearch.navigateToCancelPharmacyRetailSale()}" 
-                                    disabled="#{pharmacyBillSearch.bill.cancelled}"
+                                    oncomplete="PF('billToCancel').show()" 
+                                    actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(onlineBookingAgentController.printBill)}"
+                                    disabled="#{onlineBookingAgentController.printBill.cancelled}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                 </p:commandButton>
                             </div>
 
+                            <p:dialog 
+                                widgetVar="payementSettle" 
+                                modal="true" 
+                                closable="false"
+                                id="payementSettleDlg"
+                                resizable="false" 
+                                draggable="false" 
+                                height="400"
+                                width="800">
+
+                                <p:ajax event="close" update="onlineBookings"></p:ajax>
+
+                                <f:facet name="header">
+                                    <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                        <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.paidToHospitalList ? 'No Selected' : onlineBookingAgentController.paidToHospitalList.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name}" ></h:outputText>
+                                        <a href="#" onclick="PF('payementSettle').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click" update="onlineBookings"></p:ajax></a> 
+                                    </h:panelGroup>
+
+                                    <p:panel class="my-1">
+                                        <f:facet name="header" >
+                                            <h:panelGroup class="d-flex align-items-center justify-content-between">
+                                                <h:outputLabel value="Paid To Hospital List" />
+                                                <h:panelGroup id="totalToPay">
+                                                    <h:outputLabel value="Total :" />
+                                                    <h:outputLabel value="#{onlineBookingAgentController.paidToHospitalTotal}" />
+                                                </h:panelGroup>
+                                                <p:commandButton  
+                                                    value="Settle" 
+                                                    ajax="false"
+                                                    action="#{onlineBookingAgentController.createPaymentForHospital()}"
+                                                    update="onlineBookings"
+                                                    class="ui-button-success" icon="fas fa-cogs">
+                                                </p:commandButton>
+                                            </h:panelGroup>
+
+                                        </f:facet>
+
+                                        <h:panelGrid columns="2" columnClasses="label-column, input-column" style="width:100%" >
+                                            <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                            <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.cancelPaymentMethod}" style="width:200px">
+                                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                                <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}"/>
+                                            </p:selectOneMenu>
+
+                                            <p:outputLabel value="Value" ></p:outputLabel>
+                                            <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.paidToHospitalBill.netTotal}" id="txtNetTotal" style="width:200px">
+                                                <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}" update="gpPaymentDetails"></p:ajax>
+                                            </p:inputText>
+
+                                            <p:outputLabel class="my-2" value="Comments" ></p:outputLabel>
+                                            <p:inputText value="#{onlineBookingAgentController.paidToHospitalBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+
+                                        </h:panelGrid>
+
+                                        <div class="d-flex flex-wrap w-100 gap-2">
+                                            <h:panelGroup id="gpPaymentDetails" >
+                                                <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Card'}">
+                                                    <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+                                                <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cheque'}" >
+                                                    <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Slip'}" >
+                                                    <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
+                                                </h:panelGroup>
+
+                                                <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'ewallet'}" >
+                                                    <pa:ewallet_collect paymentMethodData="#{onlineBookingAgentController.paymentMethodData}" />
+                                                </h:panelGroup>
+                                            </h:panelGroup>
+
+
+                                        </div>
+
+                                    </p:panel>
+
+                                </f:facet>
+
+                                <h:panelGroup id="dialogContentForPayment">
+                                    <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 
+                                                 var="ob" 
+                                                 scrollable="true"
+                                                 selection="false" 
+                                                 rowKey="#{s.id}">
+
+                                        <p:column width="5em" headerText="Name">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Ref No" ></h:outputText>
+                                            </f:facet>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText value="#{ob.referenceNo}" /> 
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Name">
+                                            <f:facet name="header" >
+                                                <h:outputText value="Patient Name" ></h:outputText>
+                                            </f:facet>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <h:outputText value="#{ob.title}. #{ob.patientName}" /> 
+                                            </div>
+                                        </p:column>
+
+                                        <p:column headerText="Date" >
+                                            <h:outputText value="#{ob.createdAt}">
+                                                <f:convertDateTime pattern="dd MMM"/>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Agent">
+                                            <h:outputText value="#{ob.agency.name}">
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Appoinment Fee" >
+                                            <h:outputText value="#{ob.appoinmentTotalAmount}">
+                                            </h:outputText>
+                                        </p:column>
+
+                                    </p:dataTable>
+                                </h:panelGroup>
+                            </p:dialog>
+
                         </f:facet>
 
-<!--                        <div class="d-flex justify-content-end gap-1">
-                            <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
-                            <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
-                                <f:selectItem itemLabel="Please Select Paper Type" />
-                                <f:selectItems value="#{enumController.paperTypes}" />
-                            </p:selectOneMenu>
-                            <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
-                        </div>-->
+                        <!--                        <div class="d-flex justify-content-end gap-1">
+                                                    <p:outputLabel value="Paper Type" class="mt-2"></p:outputLabel>
+                                                    <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" style="width: 13em;">
+                                                        <f:selectItem itemLabel="Please Select Paper Type" />
+                                                        <f:selectItems value="#{enumController.paperTypes}" />
+                                                    </p:selectOneMenu>
+                                                    <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button m-1" title="Redraw Bill"></p:commandButton>
+                                                </div>-->
 
                         <h:panelGroup   id="gpBillPreview"  > 
 
