@@ -6,9 +6,8 @@ All development branches must be created based on the related GitHub issue when 
 
 - Begin with the issue number.
 - Follow with a hyphen `-` and the issue title in lowercase.
-- Replace all spaces in the title with underscores `_`.
+- Replace all spaces in the title with hyphens `-`.
 - Use only hyphens and underscores; avoid other special characters.
-
 ### Examples
 
 - `12875-implement-full-lab-workflow-history-tracking`
