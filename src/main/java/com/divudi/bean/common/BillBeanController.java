@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -71,6 +72,7 @@ import com.divudi.core.facade.PackageItemFacade;
 import com.divudi.core.facade.PackegeFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.lab.LabTestHistoryFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
@@ -134,6 +136,15 @@ public class BillBeanController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @EJB
+    LabTestHistoryFacade labTestHistoryFacade;
+    @EJB
+    StaffService staffBean;
+    @EJB
+    BillService billService;
+    @EJB
+    DepartmentResolver departmentResolver;
+    
     @Inject
     DepartmentController departmentController;
     @Inject
@@ -142,13 +153,9 @@ public class BillBeanController implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     SessionController sessionController;
-    @EJB
-    StaffService staffBean;
-    @EJB
-    BillService billService;
-    @EJB
-    DepartmentResolver departmentResolver;
-
+    @Inject
+    LabTestHistoryController labTestHistoryController;
+    
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
                 + " where s.retired=false "
@@ -1916,7 +1923,7 @@ public class BillBeanController implements Serializable {
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
     }
-    
+
     public List<Object[]> fetchBilledDepartmentBillItem(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
         String sql;
         Map temMap = new HashMap();
@@ -3771,7 +3778,6 @@ public class BillBeanController implements Serializable {
             billItem.setMarginValue(billItemMargin);
             billItem.setNetValue(billItemNet);
             billItem.setVat(billItemVat);
-            
 
 // Fix rates based on quantity
             double qty = billItem.getQty() != null && billItem.getQty() > 0.0 ? billItem.getQty() : 1.0;
@@ -3780,8 +3786,7 @@ public class BillBeanController implements Serializable {
             billItem.setDiscountRate(billItemDiscount / qty);
             billItem.setNetRate(billItemNet / qty);
             billItem.setMarginRate((billItemMargin) / qty);
-            
-            
+
             System.out.println("BillItem ID: " + billItem.getId());
             System.out.println("  Rate         : " + billItemGross);
             System.out.println("  Qty          : " + billItem.getQty());
@@ -4250,6 +4255,8 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
+        
+        labTestHistoryController.addBillingHistory(ptIx,prformingDept);
 
     }
 

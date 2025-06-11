@@ -188,6 +188,22 @@
                                         </h:panelGroup>
                                     </h:panelGrid>
 
+                                    <h:panelGrid columns="1" class="w-100" rendered="false">
+                                        <h:outputLabel class="w-100" value=""/>
+                                        <h:panelGroup>
+                                            <p:selectBooleanButton 
+                                                value="#{patientInvestigationController.showLoggedInstitutionSample}"
+                                                onLabel="Logged Institution Samples Only" 
+                                                offLabel="Any Samples"
+                                                onIcon="pi pi-check" 
+                                                class="w-100"
+                                                offIcon="pi pi-times" >
+                                            </p:selectBooleanButton>
+                                        </h:panelGroup>
+                                    </h:panelGrid>
+
+
+
                                 </h:panelGrid>
                             </div>
                             <div class="col-2">
@@ -298,14 +314,14 @@
                                                 rendered="#{patientInvestigation.billItem.refunded}"
                                                 styleClass="ui-badge-warning" >
                                             </p:badge>
-                                            
-                                                <p:badge 
-                                                    value="Bill Cancel" 
-                                                    severity="info"
-                                                    rendered="#{patientInvestigation.billItem.bill.cancelled}"
-                                                    style="width: 200px;"
-                                                    styleClass="ui-badge-danger" >
-                                                </p:badge>
+
+                                            <p:badge 
+                                                value="Bill Cancel" 
+                                                severity="info"
+                                                rendered="#{patientInvestigation.billItem.bill.cancelled}"
+                                                style="width: 200px;"
+                                                styleClass="ui-badge-danger" >
+                                            </p:badge>
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
@@ -1335,6 +1351,81 @@
                                     </p:commandButton>
 
                                     <hr/>
+
+                                    <h:panelGrid columns="1" class="w-100" rendered="#{webUserController.hasPrivilege('Developers')}">
+                                        <p:commandButton 
+                                            value="Send to Out Lab " 
+                                            type="button"
+                                            styleClass="m-1 w-100 ui-button-primary" 
+                                            icon="fa fa-paper-plane" 
+                                            onclick="PF('dlg2').show()">
+                                        </p:commandButton>
+
+                                        <hr/>
+                                        
+                                    </h:panelGrid>
+
+                                    <p:dialog 
+                                        header="Send Out Lab Sample" 
+                                        widgetVar="dlg2" 
+                                        minHeight="450" 
+                                        width="850" 
+                                        showEffect="fade" 
+                                        modal="true" 
+                                        closeOnEscape="true">
+
+                                        <div>
+                                            <div class="d-flex gap-3">
+                                                <h:outputLabel class="w-50" value="Sending Institution"/>
+                                                <p:autoComplete 
+                                                    class="w-100" 
+                                                    id="sendSampleIns" 
+                                                    value="#{patientInvestigationController.outLabInstitution}"
+                                                    inputStyleClass="w-100"
+                                                    completeMethod="#{institutionController.completeIns}" 
+                                                    var="oi" 
+                                                    maxResults="15"
+                                                    itemLabel="#{oi.name}" 
+                                                    itemValue="#{oi}">
+                                                    <p:column style="padding: 4px;">#{oi.institutionCode}</p:column>
+                                                    <p:column style="padding: 4px;">#{oi.name}</p:column>
+                                                    <p:ajax process="sendSampleIns" update="sendSampleDept" ></p:ajax>
+                                                </p:autoComplete>
+                                            </div>
+                                            <div class="d-flex gap-3 my-2">
+                                                <h:outputLabel class="w-50" value="Sending Department"/>
+                                                <p:selectOneMenu
+                                                    filter="true"
+                                                    value="#{patientInvestigationController.outLabDepartment}"
+                                                    filterMatchMode="contains"
+                                                    id="sendSampleDept"
+                                                    class="w-100">
+                                                    <f:selectItem itemLabel="Any"></f:selectItem>
+                                                    <f:selectItems 
+                                                        value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" 
+                                                        var="odpt" 
+                                                        itemLabel="#{odpt.name}" 
+                                                        itemValue="#{odpt}">
+                                                    </f:selectItems>
+                                                </p:selectOneMenu>
+                                            </div>
+
+                                            <div >
+                                                <p:commandButton
+                                                    id="sendSamples"
+                                                    style="float: right;"
+                                                    value="Send Samples"
+                                                    ajax="false"
+                                                    action="#{patientInvestigationController.sendToOutLabSample()}"
+                                                    title="Send Samples"
+                                                    icon="fa fa-paper-plane"
+                                                    styleClass="m-1 ui-button-info" >
+                                                </p:commandButton>
+                                            </div>
+
+                                        </div>
+
+                                    </p:dialog>
 
                                     <style>
                                         .custom-dropdown-panel {
