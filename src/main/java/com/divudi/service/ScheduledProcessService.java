@@ -108,7 +108,6 @@ public class ScheduledProcessService {
 
     private void processScheduledTask(ScheduledProcessConfiguration config) {
         if (config.getScheduledProcess() == null) {
-            log.warning("ScheduledProcess is null for config id=" + config.getId());
             return;
         }
         switch (config.getScheduledProcess()) {
@@ -125,9 +124,6 @@ public class ScheduledProcessService {
                 // TODO: implement process
                 break;
             default:
-                log.warning("Unhandled scheduled process: " + config.getScheduledProcess());
-                // Optionally throw to surface the mis-configuration
-                // throw new IllegalArgumentException("Unsupported scheduled process " + config.getScheduledProcess());
         }
     }
 
