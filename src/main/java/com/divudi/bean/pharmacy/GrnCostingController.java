@@ -97,6 +97,12 @@ public class GrnCostingController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    public static final String CFG_SHOW_PROFIT_IN_GRN_BILL = "Show Profit % in GRN Bill";
+
+    public boolean isShowProfitInGrnBill() {
+        return configOptionApplicationController.getBooleanValueByKey(CFG_SHOW_PROFIT_IN_GRN_BILL, true);
+    }
     /////////////////
     private Institution dealor;
     private Bill approveBill;
