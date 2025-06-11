@@ -14,10 +14,8 @@ public class ScheduledProcessServiceTest {
 
     private final ScheduledProcessService service = new ScheduledProcessService();
 
-    static {
-        // Ensure consistent timezone
-        TimeZone.setDefault(TimeZone.getTimeZone("UTC"));
-    }
+    // per-test timezone constant instead of mutating JVM-wide default
+    private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 
     @Test
     public void hourlyAddsOneHour() {
