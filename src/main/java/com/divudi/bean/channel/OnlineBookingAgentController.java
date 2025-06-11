@@ -412,7 +412,41 @@ public class OnlineBookingAgentController implements Serializable {
     }
     
     public void paidToHospitalBillCancellation(){
+        if(printBill != null){
+            return;
+        }
+        prepareCancellationAgentPaidToHospitalBills();
+        if(bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()){
+            return;
+        }
         
+        double totalToCancel = 0;
+        
+        for(OnlineBooking ob : bookinsToAgenHospitalPayementCancellation){
+            totalToCancel += ob.getAppoinmentTotalAmount();
+        }
+        
+        if(getCancelBill().getNetTotal() != totalToCancel){
+            JsfUtil.addErrorMessage("Bill total and value is different.");
+            return;
+        }
+        
+    }
+    
+    public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel){
+        Bill bill = getCancelBill();
+        bill.setNetTotal(totalToCancel);
+        bill.setCreatedAt(new Date());
+        bill.setCreater(getSessionController().getLoggedUser());
+        bill.setReferenceBill(printBill);
+        
+        if(bill.getId() == null){
+            getBillFacade().create(bill);
+        }else{
+            getBillFacade().edit(bill);
+        }
+        
+        return bill;
     }
 
     public void createPaymentForHospital() {
@@ -523,6 +557,7 @@ public class OnlineBookingAgentController implements Serializable {
         cancelBill = null;
         paymentMethodData = null;
         printBill = null;
+        agentPaidToHospitalBills = null;
 
     }
 
