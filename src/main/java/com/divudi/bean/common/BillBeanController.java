@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -20,7 +21,6 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.core.data.inward.SurgeryBillType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
-import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.Bill;
@@ -51,7 +51,6 @@ import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.inward.EncounterComponent;
 import com.divudi.core.entity.lab.Investigation;
-import com.divudi.core.entity.lab.LabTestHistory;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.membership.AllowedPaymentMethod;
 import com.divudi.core.entity.membership.PaymentSchemeDiscount;
@@ -154,6 +153,8 @@ public class BillBeanController implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     SessionController sessionController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
     
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
@@ -4255,16 +4256,7 @@ public class BillBeanController implements Serializable {
             getPatientInvestigationFacade().create(ptIx);
         }
         
-        LabTestHistory billHistory = new LabTestHistory();
-        billHistory.setPatientInvestigation(ptIx);
-        billHistory.setInstitution(sessionController.getInstitution());
-        billHistory.setDepartment(sessionController.getDepartment());
-        billHistory.setFromDepartment(sessionController.getDepartment());
-        billHistory.setToDepartment(prformingDept);
-        billHistory.setTestHistoryType(TestHistoryType.ORDERED);
-        billHistory.setCreatedAt(new Date());
-        billHistory.setCreatedBy(sessionController.getLoggedUser());
-        labTestHistoryFacade.create(billHistory);
+        labTestHistoryController.addBillingHistory(ptIx,prformingDept);
 
     }
 

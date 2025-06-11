@@ -64,7 +64,9 @@ public class LabTestHistoryController implements Serializable {
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Function">
-    
+    public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment){
+        addNewHistory(TestHistoryType.ORDERED,null,toDepartment, patientInvestigation, null,null,null,null,null,null,null);
+    }
     // <editor-fold defaultstate="collapsed" desc="Billing">
     
     // </editor-fold>
@@ -91,6 +93,10 @@ public class LabTestHistoryController implements Serializable {
             addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
         }
         addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,sampleTransporter,null,null,null,null);
+    }
+    
+    public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
+        addNewHistory(TestHistoryType.SAMPLE_REJECTED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
     }
     
     // </editor-fold>

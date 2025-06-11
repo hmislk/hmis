@@ -13,7 +13,6 @@ import com.divudi.core.data.lab.SampleRequestType;
 import com.divudi.core.data.lab.SysMexOld;
 import com.divudi.core.data.lab.SysMexAdf1;
 import com.divudi.core.data.lab.SysMexAdf2;
-
 import com.divudi.core.data.reports.LaboratoryReport;
 import com.divudi.ejb.SmsManagerEjb;
 import com.divudi.core.entity.Bill;
@@ -1750,6 +1749,12 @@ public class PatientInvestigationController implements Serializable {
             tptix.setStatus(PatientInvestigationStatus.SAMPLE_REJECTED);
             getFacade().edit(tptix);
             affectedBills.putIfAbsent(tptix.getBillItem().getBill().getId(), tptix.getBillItem().getBill());
+        }
+        
+        for (PatientSample ps : selectedPatientSamples) {
+            for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                labTestHistoryController.addSampleRejectHistory(pi, ps);
+            }
         }
 
         // Update bills status accordingly
