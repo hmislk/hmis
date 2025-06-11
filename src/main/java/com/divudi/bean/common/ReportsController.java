@@ -4116,10 +4116,10 @@ public class ReportsController implements Serializable {
             parameters.put("cc", collectingCentre);
         }
 
-//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-//            jpql += "AND bill.referenceNumber LIKE :cbn ";
-//            parameters.put("cbn", "%" + cashBookNumber + "%");
-//        }
+        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+            jpql += "AND bill.referenceNumber LIKE :cbn ";
+            parameters.put("cbn", "%" + cashBookNumber + "%");
+        }
 
         if (!withoutDateRange) {
             if (fromDate != null && toDate != null) {
@@ -4133,14 +4133,14 @@ public class ReportsController implements Serializable {
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            rs = rs.stream()
-                    .filter(r -> {
-                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
-                        return bookNumber != null && bookNumber.contains(cashBookNumber);
-                    })
-                    .collect(Collectors.toList());
-        }
+//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+//            rs = rs.stream()
+//                    .filter(r -> {
+//                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
+//                        return bookNumber != null && bookNumber.contains(cashBookNumber);
+//                    })
+//                    .collect(Collectors.toList());
+//        }
 
         Map<String, AgentReferenceBook> agentReferenceBooks = getAgentReferenceBookMapByReportTemplateRows(rs);
 
