@@ -25,7 +25,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
-    
+
 //    class level variables
     private String patientName;
     private String nic;
@@ -51,14 +51,17 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private boolean paidToHospital;
     private Date paidToHospitalDate;
     private WebUser paidToHospitalProcessedBy;
-    
+
     @OneToOne(fetch = FetchType.EAGER)
     private Bill paidToHospitalBill;
-    
+
+    @OneToOne(fetch = FetchType.EAGER)
+    private Bill paidToHospitalCancelledBill;
+
     private WebUser paidToHospitalBillCancelledBy;
     private Date paidToHospitalBillCancelledAt;
     private String comment;
-    
+
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     private Date editedAt;
 
@@ -72,21 +75,29 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     @ManyToOne
     private WebUser retirer;
     private String retireComments;
-    
+
     @ManyToOne
     private Institution agency;
-    
+
     @ManyToOne
     private Department department;
-    
+
     @ManyToOne
     private Institution hospital;
-    
+
     @OneToOne(mappedBy = "onlineBooking", fetch = FetchType.EAGER)
     private Bill bill;
-    
+
     @Enumerated(EnumType.STRING)
     private OnlineBookingStatus onlineBookingStatus;
+
+    public Bill getPaidToHospitalCancelledBill() {
+        return paidToHospitalCancelledBill;
+    }
+
+    public void setPaidToHospitalCancelledBill(Bill paidToHospitalCancelledBill) {
+        this.paidToHospitalCancelledBill = paidToHospitalCancelledBill;
+    }
 
     public boolean isPaidToHospital() {
         return paidToHospital;
@@ -143,7 +154,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     public void setComment(String comment) {
         this.comment = comment;
     }
-    
+
     public String getEmail() {
         return email;
     }
@@ -263,7 +274,6 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     public void setHospital(Institution hospital) {
         this.hospital = hospital;
     }
-
 
     @Override
     public int hashCode() {

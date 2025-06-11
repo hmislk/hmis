@@ -431,6 +431,22 @@ public class OnlineBookingAgentController implements Serializable {
             return;
         }
         
+        Bill cancelBill = createCancelBillForAgentPaidToHospitalCancellation(totalToCancel);
+        
+        Bill paidBill = getPrintBill();
+        
+        paidBill.setCancelled(true);
+        paidBill.setCancelledBill(cancelBill);
+        
+        for(OnlineBooking ob : bookinsToAgenHospitalPayementCancellation){
+            ob.setPaidToHospitalBillCancelledAt(new Date());
+            ob.setPaidToHospital(false);
+            ob.setPaidToHospitalBill(null);
+            ob.setPaidToHospitalBillCancelledBy(getSessionController().getLoggedUser());
+        }
+        
+        
+        
     }
     
     public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel){
