@@ -23,6 +23,7 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
@@ -97,6 +98,7 @@ public class OnlineBookingAgentController implements Serializable {
     private OnlineBookingStatus onlineBookingStatus;
     private Bill printBill;
     private PaymentMethod cancelPaymentMethod;
+    private Bill cancelBill;
 
     @EJB
     private PaymentFacade paymentFacade;
@@ -106,6 +108,18 @@ public class OnlineBookingAgentController implements Serializable {
 
     public PaymentMethod getCancelPaymentMethod() {
         return cancelPaymentMethod;
+    }
+
+    public Bill getCancelBill() {
+        if(cancelBill == null){
+            cancelBill = new CancelledBill();
+            cancelBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+        }
+        return cancelBill;
+    }
+
+    public void setCancelBill(Bill cancelBill) {
+        this.cancelBill = cancelBill;
     }
 
     public void setCancelPaymentMethod(PaymentMethod cancelPaymentMethod) {
@@ -408,6 +422,9 @@ public class OnlineBookingAgentController implements Serializable {
         paidToHospitalTotal = 0;
         paidToHospitalList = null;
         onlineBookingList = null;
+        cancelBill = null;
+        paymentMethodData = null;
+        printBill = null;
 
     }
 
