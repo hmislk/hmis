@@ -111,7 +111,7 @@ public class LabTestHistoryController implements Serializable {
     }
     
     public void addCalculateHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){
-        addNewHistory(TestHistoryType.REPORT_CORRECTED,null,null, patientInvestigation, patientReport,null,null,null,null,null,null);
+        addNewHistory(TestHistoryType.REPORT_CALCULATED,null,null, patientInvestigation, patientReport,null,null,null,null,null,null);
     }
     
     public void addApprovelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){

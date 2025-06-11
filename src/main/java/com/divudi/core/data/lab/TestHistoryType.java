@@ -28,7 +28,7 @@ public enum TestHistoryType {
     DATA_ENTERED,
     REPORT_UPLOADED,
     REMOVED_UPLOADED_REPORT,
-    REPORT_CORRECTED,
+    REPORT_CALCULATED,
     REPORT_APPROVED,
     REPORT_APPROVED_CANCEL,
     REPORT_VIEWED,
@@ -73,7 +73,7 @@ public enum TestHistoryType {
             return "Report Uploaded";
         case REMOVED_UPLOADED_REPORT:
             return "Uploaded Report Removed";
-        case REPORT_CORRECTED:
+        case REPORT_CALCULATED:
             return "Report Corrected";
         case REPORT_APPROVED:
             return "Report Approved";
