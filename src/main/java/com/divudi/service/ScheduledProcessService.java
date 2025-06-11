@@ -50,11 +50,20 @@ public class ScheduledProcessService {
 
     @Asynchronous
     public void executeScheduledProcessManual(ScheduledProcessConfiguration config) {
+        executeScheduledProcessManual(config, false);
+    }
+
+    @Asynchronous
+    public void executeScheduledProcessManual(ScheduledProcessConfiguration config, boolean runNext) {
         if (config == null) {
             return;
         }
         config.setLastProcessCompleted(false);
         config.setLastRunStarted(new Date());
+        if (runNext) {
+            config.setLastSupposedAt(config.getNextSupposedAt());
+            config.setNextSupposedAt(calculateNextSupposedAt(config.getScheduledFrequency(), config.getNextSupposedAt()));
+        }
         configFacade.edit(config);
 
         processScheduledTask(config);
