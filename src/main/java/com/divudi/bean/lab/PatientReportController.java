@@ -2239,6 +2239,8 @@ public class PatientReportController implements Serializable {
             Boolean sent = smsManager.sendSms(e);
             e.setSentSuccessfully(sent);
             getSmsFacade().edit(e);
+            
+            labTestHistoryController.addReportSentSMSHistory(currentPtIx, currentPatientReport, e);
 
         }
 

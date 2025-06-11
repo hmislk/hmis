@@ -112,7 +112,13 @@ public class LabTestHistoryController implements Serializable {
     }
     // </editor-fold>
     
-   
+    // <editor-fold defaultstate="collapsed" desc="Report Sent">
+    public void addReportSentSMSHistory(PatientInvestigation patientInvestigation, PatientReport patientReport,Sms sms){
+        addNewHistory(TestHistoryType.SENT_SMS_MANUAL,null,null, patientInvestigation, patientReport,null,null,sms,null,null,null);
+    }
+    
+    
+    // </editor-fold>
     public void addNewHistory(
             TestHistoryType testHistoryType,
             Department fromDepartment,
@@ -152,14 +158,14 @@ public class LabTestHistoryController implements Serializable {
         try {
             if (current.getId() != null) {
                 getFacade().edit(current);
-                JsfUtil.addSuccessMessage("Updated Successfully.");
+                //JsfUtil.addSuccessMessage("Updated Successfully.");
             } else {
                 current.setInstitution(sessionController.getInstitution());
                 current.setDepartment(sessionController.getDepartment());
                 current.setCreatedAt(new Date());
                 current.setCreatedBy(getSessionController().getLoggedUser());
                 getFacade().create(current);
-                JsfUtil.addSuccessMessage("Saved Successfully");
+                //JsfUtil.addSuccessMessage("Saved Successfully");
             }
             items = null;
         } catch (Exception e) {
