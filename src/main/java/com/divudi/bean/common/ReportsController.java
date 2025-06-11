@@ -4129,7 +4129,7 @@ public class ReportsController implements Serializable {
             }
         }
 
-        jpql += "GROUP BY bill";
+//        jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
