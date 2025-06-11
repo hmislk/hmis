@@ -40,23 +40,7 @@ public class ScheduledProcessService {
         config.setNextSupposedAt(calculateNextSupposedAt(config.getScheduledFrequency(), config.getNextSupposedAt()));
         configFacade.edit(config);
 
-        // Placeholder switch for future implementations
-        switch (config.getScheduledProcess()) {
-            case Record_Pharmacy_Stock_Values:
-                recordPharmacyStockValues(config);
-                break;
-            case All_Drawer_Balances:
-                // TODO: implement process
-                break;
-            case All_Collection_Centre_Balances:
-                // TODO: implement process
-                break;
-            case All_Credit_Company_Balances:
-                // TODO: implement process
-                break;
-            default:
-                break;
-        }
+        processScheduledTask(config);
 
         // Mark end
         config.setLastRunEnded(new Date());
@@ -73,22 +57,7 @@ public class ScheduledProcessService {
         config.setLastRunStarted(new Date());
         configFacade.edit(config);
 
-        switch (config.getScheduledProcess()) {
-            case Record_Pharmacy_Stock_Values:
-                recordPharmacyStockValues(config);
-                break;
-            case All_Drawer_Balances:
-                // TODO: implement process
-                break;
-            case All_Collection_Centre_Balances:
-                // TODO: implement process
-                break;
-            case All_Credit_Company_Balances:
-                // TODO: implement process
-                break;
-            default:
-                break;
-        }
+        processScheduledTask(config);
 
         config.setLastRunEnded(new Date());
         config.setLastProcessCompleted(true);
@@ -135,6 +104,25 @@ public class ScheduledProcessService {
         hr.setRecordDateTime(new Date());
         hr.setRecordValue(value);
         historicalRecordService.createHistoricalRecord(hr);
+    }
+
+    private void processScheduledTask(ScheduledProcessConfiguration config) {
+        switch (config.getScheduledProcess()) {
+            case Record_Pharmacy_Stock_Values:
+                recordPharmacyStockValues(config);
+                break;
+            case All_Drawer_Balances:
+                // TODO: implement process
+                break;
+            case All_Collection_Centre_Balances:
+                // TODO: implement process
+                break;
+            case All_Credit_Company_Balances:
+                // TODO: implement process
+                break;
+            default:
+                break;
+        }
     }
 
     public Date calculateNextSupposedAt(ScheduledFrequency frequency, Date from) {
