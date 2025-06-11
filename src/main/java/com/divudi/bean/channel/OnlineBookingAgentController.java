@@ -72,6 +72,7 @@ public class OnlineBookingAgentController implements Serializable {
     private Institution agentForBookings;
     private Boolean paidStatus;
     private List<OnlineBooking> paidToHospitalList;
+    private List<OnlineBookingStatus> onlineBookingStatusList;
 
     @EJB
     private InstitutionFacade institutionFacade;
@@ -99,6 +100,17 @@ public class OnlineBookingAgentController implements Serializable {
 
     @Inject
     private DrawerController drawerController;
+
+    public List<OnlineBookingStatus> getOnlineBookingStatusList() {
+        if (onlineBookingStatusList == null || onlineBookingStatusList.isEmpty()) {
+            onlineBookingStatusList = fetchAllOnlineBookingStatus();
+        }
+        return onlineBookingStatusList;
+    }
+
+    public void setOnlineBookingStatusList(List<OnlineBookingStatus> onlineBookingStatusList) {
+        this.onlineBookingStatusList = onlineBookingStatusList;
+    }
 
     public OnlineBookingStatus getOnlineBookingStatus() {
         return onlineBookingStatus;
@@ -344,7 +356,6 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public void onRowSelect(SelectEvent<OnlineBooking> event) {
-        System.out.println("line 151");
         OnlineBooking selected = event.getObject();
 
         if (selected.isPaidToHospital()) {
@@ -352,7 +363,6 @@ public class OnlineBookingAgentController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection is not allowed", "This Booking is already paid."));
             paidToHospitalList.remove(selected); // manually remove it
         } else {
-            System.out.println("line 158");
             paidToHospitalList.add(selected);
         }
 
@@ -368,6 +378,7 @@ public class OnlineBookingAgentController implements Serializable {
         paidToHospitalPaymentMethod = null;
         paidToHospitalTotal = 0;
         paidToHospitalList = null;
+        onlineBookingList = null;
 
     }
 
@@ -399,7 +410,7 @@ public class OnlineBookingAgentController implements Serializable {
         this.paidToHospitalList = paidToHospitalList;
     }
 
-    public Boolean isPaidStatus() {
+    public Boolean getPaidStatus() {
         return paidStatus;
     }
 
@@ -456,6 +467,20 @@ public class OnlineBookingAgentController implements Serializable {
         if (agentForBookings == null) {
             JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
+        }
+
+        List<OnlineBookingStatus> statusToSearch = new ArrayList();
+
+        if (onlineBookingStatus == null) {
+            statusToSearch = fetchAllOnlineBookingStatus();
+        } else {
+            statusToSearch.add(onlineBookingStatus);
+        }
+
+        List<OnlineBooking> bookingList = channelService.fetchAllOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, paidStatus, statusToSearch);
+
+        if (bookingList != null) {
+            onlineBookingList = bookingList;
         }
     }
 
