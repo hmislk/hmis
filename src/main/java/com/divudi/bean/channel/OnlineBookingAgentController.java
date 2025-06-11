@@ -93,13 +93,12 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
     private OnlineBookingStatus onlineBookingStatus;
-    
-     @EJB
+
+    @EJB
     private PaymentFacade paymentFacade;
-    
+
     @Inject
     private DrawerController drawerController;
-
 
     public OnlineBookingStatus getOnlineBookingStatus() {
         return onlineBookingStatus;
@@ -143,8 +142,8 @@ public class OnlineBookingAgentController implements Serializable {
     public PaymentMethod getPaidToHospitalPaymentMethod() {
         return paidToHospitalPaymentMethod;
     }
-    
-    public List fetchAllOnlineBookingStatus(){
+
+    public List fetchAllOnlineBookingStatus() {
         return Arrays.stream(OnlineBookingStatus.values())
                 .filter(status -> status != OnlineBookingStatus.PENDING)
                 .collect(Collectors.toList());
@@ -192,7 +191,7 @@ public class OnlineBookingAgentController implements Serializable {
             }
         }
     }
-    
+
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
@@ -324,8 +323,8 @@ public class OnlineBookingAgentController implements Serializable {
         }
 
         Bill paidBill = createHospitalPaymentBill(paidToHospitalList);
-        
-        if(paidBill != null){
+
+        if (paidBill != null) {
             List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod);
             drawerController.updateDrawerForIns(payments);;
         }
@@ -409,7 +408,6 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public List<OnlineBooking> getOnlineBookingList() {
-        System.out.println("line 202");
         if (onlineBookingList == null) {
             onlineBookingList = new ArrayList<>();
         }
@@ -447,6 +445,18 @@ public class OnlineBookingAgentController implements Serializable {
     public void prepareAdd() {
         current = new Institution();
         current.setInstitutionType(InstitutionType.OnlineBookingAgent);
+    }
+
+    public void fetchAllOnlineBookings() {
+        if (institutionForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select Hospital.");
+            return;
+        }
+
+        if (agentForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select the Agent.");
+            return;
+        }
     }
 
     public void fetchOnlineBookingsForManagement() {

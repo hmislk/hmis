@@ -579,32 +579,63 @@ public class ChannelService {
 
         return deptId;
     }
-    
-    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status){
+
+    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status) {
         String sql = "Select ob from OnlineBooking ob"
                 + " where ob.onlineBookingStatus = :status "
                 + " and ob.retired = :retire "
                 + " and ob.paidToHospital = :paid "
                 + " and ob.createdAt between :from and :to";
-        
+
         Map params = new HashMap<>();
         params.put("status", status);
         params.put("retire", false);
         params.put("from", fromDate);
         params.put("to", toDate);
         params.put("paid", paid);
-        
-        if(agent != null){
+
+        if (agent != null) {
             sql += " and ob.agency = :agent";
             params.put("agent", agent);
         }
-        if(hospital != null){
+        if (hospital != null) {
             sql += " and ob.hospital = :hospital";
             params.put("hospital", hospital);
         }
-        
+
         sql += " order by ob.createdAt desc";
-       
+
+        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<OnlineBooking> fetchAllOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, Boolean paid, List<OnlineBookingStatus> status) {
+        String sql = "Select ob from OnlineBooking ob"
+                + " where ob.onlineBookingStatus in :status "
+                + " and ob.retired = :retire "
+                + " and ob.createdAt between :from and :to";
+
+        Map params = new HashMap<>();
+        params.put("status", status);
+        params.put("retire", false);
+        params.put("from", fromDate);
+        params.put("to", toDate);
+        params.put("paid", paid);
+
+        if (agent != null) {
+            sql += " and ob.agency = :agent";
+            params.put("agent", agent);
+        }
+        if (hospital != null) {
+            sql += " and ob.hospital = :hospital";
+            params.put("hospital", hospital);
+        }
+        if (paid != null) {
+            sql += " and ob.paidToHospital = :paid ";
+            params.put("paid", paid);
+        }
+
+        sql += " order by ob.createdAt desc";
+
         return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 
