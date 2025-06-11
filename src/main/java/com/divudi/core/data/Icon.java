@@ -128,6 +128,9 @@ public enum Icon {
     Search_Admissions("Search Admissions"),
     Investigation_Trace("Trace Investigations"),
     Manage_Shift_Fund_Bills("Manage Shift Fund Bills"),
+    Financial_Transaction_Manager("Financial Transaction Manager"),
+    Channel_Booking_by_Dates("Channel Booking by Dates"),
+    Channel_Scheduling("Channel Scheduling"),
     // icons for cashier
     Cashier_Drawer("Logged User Drawer");
 
