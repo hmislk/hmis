@@ -1024,11 +1024,21 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt'}">
                     <h:form>
                         <p:tooltip for="Goods_Receipt" value="Goods Receipt"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:commandLink
                             id="Goods_Receipt"
-                            ajax="false" 
+                            ajax="false"
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
-                            styleClass="svg-link" >
+                            styleClass="svg-link"
+                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
+                            <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
+                            <h:outputText style="display: none;" value="Goods Receipt" />
+                        </p:commandLink>
+                        <p:commandLink
+                            id="Goods_Receipt_Costing"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_grn_costing?faces-redirect=true"
+                            styleClass="svg-link"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
                         </p:commandLink>
