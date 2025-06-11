@@ -56,6 +56,20 @@ public class ScheduledProcessConfiguration implements Serializable {
 
     private String retireComments;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date nextSupposedAt;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastSupposedAt;
+
+    private Boolean lastProcessCompleted;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastRunStarted;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastRunEnded;
+
     public Long getId() {
         return id;
     }
@@ -142,6 +156,46 @@ public class ScheduledProcessConfiguration implements Serializable {
 
     public void setRetireComments(String retireComments) {
         this.retireComments = retireComments;
+    }
+
+    public Date getNextSupposedAt() {
+        return nextSupposedAt;
+    }
+
+    public void setNextSupposedAt(Date nextSupposedAt) {
+        this.nextSupposedAt = nextSupposedAt;
+    }
+
+    public Date getLastSupposedAt() {
+        return lastSupposedAt;
+    }
+
+    public void setLastSupposedAt(Date lastSupposedAt) {
+        this.lastSupposedAt = lastSupposedAt;
+    }
+
+    public Boolean getLastProcessCompleted() {
+        return lastProcessCompleted;
+    }
+
+    public void setLastProcessCompleted(Boolean lastProcessCompleted) {
+        this.lastProcessCompleted = lastProcessCompleted;
+    }
+
+    public Date getLastRunStarted() {
+        return lastRunStarted;
+    }
+
+    public void setLastRunStarted(Date lastRunStarted) {
+        this.lastRunStarted = lastRunStarted;
+    }
+
+    public Date getLastRunEnded() {
+        return lastRunEnded;
+    }
+
+    public void setLastRunEnded(Date lastRunEnded) {
+        this.lastRunEnded = lastRunEnded;
     }
 
     @Override
