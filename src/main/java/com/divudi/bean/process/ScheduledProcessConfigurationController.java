@@ -4,6 +4,7 @@ import com.divudi.core.entity.ScheduledProcessConfiguration;
 import com.divudi.core.facade.ScheduledProcessConfigurationFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.common.SessionController;
+import com.divudi.service.ScheduledProcessService;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,6 +31,9 @@ public class ScheduledProcessConfigurationController implements Serializable {
 
     @Inject
     private SessionController sessionController;
+
+    @EJB
+    private ScheduledProcessService scheduledProcessService;
 
     private List<ScheduledProcessConfiguration> items;
     private ScheduledProcessConfiguration current;
@@ -94,6 +98,24 @@ public class ScheduledProcessConfigurationController implements Serializable {
         fillItems();
         current = null;
         editable = false;
+    }
+
+    public void runLastScheduled() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        scheduledProcessService.executeScheduledProcessManual(current);
+        JsfUtil.addSuccessMessage("Process executed for last schedule");
+    }
+
+    public void runNextScheduled() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return;
+        }
+        scheduledProcessService.executeScheduledProcessManual(current);
+        JsfUtil.addSuccessMessage("Process executed for next schedule");
     }
 
     public List<ScheduledProcessConfiguration> getItems() {

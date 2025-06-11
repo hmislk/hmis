@@ -64,6 +64,37 @@ public class ScheduledProcessService {
         configFacade.edit(config);
     }
 
+    @Asynchronous
+    public void executeScheduledProcessManual(ScheduledProcessConfiguration config) {
+        if (config == null) {
+            return;
+        }
+        config.setLastProcessCompleted(false);
+        config.setLastRunStarted(new Date());
+        configFacade.edit(config);
+
+        switch (config.getScheduledProcess()) {
+            case Record_Pharmacy_Stock_Values:
+                recordPharmacyStockValues(config);
+                break;
+            case All_Drawer_Balances:
+                // TODO: implement process
+                break;
+            case All_Collection_Centre_Balances:
+                // TODO: implement process
+                break;
+            case All_Credit_Company_Balances:
+                // TODO: implement process
+                break;
+            default:
+                break;
+        }
+
+        config.setLastRunEnded(new Date());
+        config.setLastProcessCompleted(true);
+        configFacade.edit(config);
+    }
+
     private void recordPharmacyStockValues(ScheduledProcessConfiguration config) {
         if (config == null) {
             return;
