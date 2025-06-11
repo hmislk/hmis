@@ -103,6 +103,13 @@ public class GrnCostingController implements Serializable {
     public boolean isShowProfitInGrnBill() {
         return configOptionApplicationController.getBooleanValueByKey(CFG_SHOW_PROFIT_IN_GRN_BILL, true);
     }
+
+    /**
+     * Wrapper for PharmacyCostingService.calcProfitMargin to be used in JSF.
+     */
+    public double calcProfitMargin(BillItem bi) {
+        return pharmacyCostingService.calcProfitMargin(bi);
+    }
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -168,6 +175,14 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
         getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
         return "/pharmacy/pharmacy_grn?faces-redirect=true";
+    }
+
+    public String navigateToResiveCosting() {
+        clear();
+        createGrn();
+        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
+        getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
+        return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
     }
 
     public String navigateToResiveFromImportGrn(Bill importGrn) {

@@ -199,4 +199,46 @@ public class PharmacyCostingService {
             f.setNetRate(f.getLineNetRate());
         }
     }
+
+    /**
+     * Calculate the profit margin percentage for a BillItem based on its
+     * finance details. Returns 0.0 if values are missing.
+     */
+    public double calcProfitMargin(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return 0.0;
+        }
+
+        Item item = bi.getItem();
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+
+        BigDecimal qtyInUnits = Optional.ofNullable(f.getTotalQuantityByUnits()).orElse(BigDecimal.ZERO);
+        if (qtyInUnits.compareTo(BigDecimal.ZERO) == 0) {
+            return 0.0;
+        }
+
+        BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO);
+
+        BigDecimal costRatePerUnit;
+        if (item instanceof Ampp) {
+            double unitsPerPackDouble = item.getDblValue();
+            BigDecimal unitsPerPack = unitsPerPackDouble > 0 ? BigDecimal.valueOf(unitsPerPackDouble) : BigDecimal.ONE;
+            BigDecimal packCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+            costRatePerUnit = packCostRate.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
+        } else {
+            costRatePerUnit = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
+        }
+
+        BigDecimal retailTotal = retailRate.multiply(qtyInUnits);
+        BigDecimal costTotal = costRatePerUnit.multiply(qtyInUnits);
+
+        if (retailTotal.compareTo(BigDecimal.ZERO) == 0) {
+            return 0.0;
+        }
+
+        return retailTotal.subtract(costTotal)
+                .divide(retailTotal, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .doubleValue();
+    }
 }
