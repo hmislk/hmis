@@ -57,6 +57,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.google.common.collect.HashBiMap;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -580,10 +581,10 @@ public class ChannelService {
         return deptId;
     }
 
-    public List<Bill> fetchOnlineBookingsAgentPaidToHospitalBills(Date fromDate, Date toDate, Institution hospital, Institution agent) {
+    public List<Bill> fetchOnlineBookingsAgentPaidToHospitalBills(Date fromDate, Date toDate, Institution hospital, Institution agent, String billStatus) {
+
         String sql = "select bill from Bill bill "
-                + " where bill.billType = :type"
-                + " and bill.retired = :ret "
+                + " where bill.retired = :ret "
                 + " and bill.toInstitution = :toIns"
                 + " and bill.createdAt between :fromDate and :toDate";
 
@@ -593,15 +594,33 @@ public class ChannelService {
         params.put("toDate", toDate);
         params.put("ret", false);
         params.put("toIns", hospital);
-        params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospital);
 
         if (agent != null) {
             sql += " and bill.fromInstitution = :fromIns";
             params.put("fromIns", agent);
         }
+        if (billStatus != null && !billStatus.isEmpty()) {
+            switch (billStatus) {
+                case "Completed":
+                    sql += " and bill.billType = :type";
+                    params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospital);
+                    break;
+
+                case "Cancelled":
+                    sql += " and bill.billType = :type";
+                    params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+                    break;
+
+                default:
+                    sql += " and bill.billType in :type";
+                    BillType[] bts = {BillType.ChannelOnlineBookingAgentPaidToHospital, BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation};
+                    params.put("type", Arrays.asList(bts));
+                    break;
+            }
+        }
 
         sql += " order by bill.createdAt desc";
-        
+
         return getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 

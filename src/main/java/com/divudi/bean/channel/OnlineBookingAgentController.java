@@ -100,12 +100,21 @@ public class OnlineBookingAgentController implements Serializable {
     private Bill printBill;
     private PaymentMethod cancelPaymentMethod;
     private Bill cancelBill;
-
+    private String billStatus;
+    
     @EJB
     private PaymentFacade paymentFacade;
 
     @Inject
     private DrawerController drawerController;
+
+    public String getBillStatus() {
+        return billStatus;
+    }
+
+    public void setBillStatus(String billStatus) {
+        this.billStatus = billStatus;
+    }
 
     public List<OnlineBooking> getBookinsToAgenHospitalPayementCancellation() {
         if (bookinsToAgenHospitalPayementCancellation == null) {
@@ -113,6 +122,8 @@ public class OnlineBookingAgentController implements Serializable {
         }
         return bookinsToAgenHospitalPayementCancellation;
     }
+
+    
 
     public void setBookinsToAgenHospitalPayementCancellation(List<OnlineBooking> bookinsToAgenHospitalPayementCancellation) {
         this.bookinsToAgenHospitalPayementCancellation = bookinsToAgenHospitalPayementCancellation;
@@ -410,59 +421,59 @@ public class OnlineBookingAgentController implements Serializable {
         return paidBill;
 
     }
-    
-    public void paidToHospitalBillCancellation(){
-        if(printBill != null){
+
+    public void paidToHospitalBillCancellation() {
+        if (printBill != null) {
             return;
         }
         prepareCancellationAgentPaidToHospitalBills();
-        if(bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()){
+        if (bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()) {
             return;
         }
-        
+
         double totalToCancel = 0;
-        
-        for(OnlineBooking ob : bookinsToAgenHospitalPayementCancellation){
+
+        for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             totalToCancel += ob.getAppoinmentTotalAmount();
         }
-        
-        if(getCancelBill().getNetTotal() != totalToCancel){
+
+        if (getCancelBill().getNetTotal() != totalToCancel) {
             JsfUtil.addErrorMessage("Bill total and value is different.");
             return;
         }
-        
+
         Bill cancelBill = createCancelBillForAgentPaidToHospitalCancellation(totalToCancel);
-        
+
         Bill paidBill = getPrintBill();
-        
+
         paidBill.setCancelled(true);
         paidBill.setCancelledBill(cancelBill);
-        
-        for(OnlineBooking ob : bookinsToAgenHospitalPayementCancellation){
+
+        for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             ob.setPaidToHospitalBillCancelledAt(new Date());
             ob.setPaidToHospital(false);
             ob.setPaidToHospitalBill(null);
             ob.setPaidToHospitalBillCancelledBy(getSessionController().getLoggedUser());
             ob.setPaidToHospitalCancelledBill(cancelBill);
         }
-        
+
         JsfUtil.addSuccessMessage("Bill cancellation is Successful.");
-        
+
     }
-    
-    public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel){
+
+    public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel) {
         Bill bill = getCancelBill();
         bill.setNetTotal(totalToCancel);
         bill.setCreatedAt(new Date());
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setReferenceBill(printBill);
-        
-        if(bill.getId() == null){
+
+        if (bill.getId() == null) {
             getBillFacade().create(bill);
-        }else{
+        } else {
             getBillFacade().edit(bill);
         }
-        
+
         return bill;
     }
 
@@ -702,7 +713,7 @@ public class OnlineBookingAgentController implements Serializable {
             return;
         }
 
-        List<Bill> bills = channelService.fetchOnlineBookingsAgentPaidToHospitalBills(fromDate, toDate, institutionForBookings, agentForBookings);
+        List<Bill> bills = channelService.fetchOnlineBookingsAgentPaidToHospitalBills(fromDate, toDate, institutionForBookings, agentForBookings, billStatus);
 
         if (bills != null) {
             agentPaidToHospitalBills = bills;
