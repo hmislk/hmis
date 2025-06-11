@@ -414,13 +414,14 @@
                             </p:column>
 
                             <p:column headerText="Dis. Rate"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRatePerUnit}">
+                                <h:outputLabel 
+                                    value="#{ph.billItemFinanceDetails.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>

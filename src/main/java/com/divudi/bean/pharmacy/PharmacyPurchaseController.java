@@ -238,8 +238,10 @@ public class PharmacyPurchaseController implements Serializable {
         if (currentBillItem == null || currentBillItem.getPharmaceuticalBillItem() == null || currentBillItem.getPharmaceuticalBillItem().getRetailRate() == 0) {
             return;
         }
-        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / 1.15);
-        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * 1.08);
+        double retailToPurchase = configOptionApplicationController.getDoubleValueByKey("Retail to Purchase Factor", 1.15);
+        double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        currentBillItem.getPharmaceuticalBillItem().setPurchaseRate(currentBillItem.getPharmaceuticalBillItem().getRetailRate() / retailToPurchase);
+        currentBillItem.getPharmaceuticalBillItem().setWholesaleRate(currentBillItem.getPharmaceuticalBillItem().getPurchaseRate() * wholesaleFactor);
     }
 
     public List<PharmacyStockRow> getRows() {
@@ -359,7 +361,8 @@ public class PharmacyPurchaseController implements Serializable {
             }
         }
 
-        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * 1.08) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
+        double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        wsRate = (tmp.getPharmaceuticalBillItem().getPurchaseRate() * wholesaleFactor) * (tmp.getTmpQty()) / (tmp.getTmpQty() + tmp.getPharmaceuticalBillItem().getFreeQty());
         wsRate = CommonFunctions.round(wsRate);
         tmp.getPharmaceuticalBillItem().setWholesaleRate(wsRate);
         calTotal();
@@ -424,7 +427,7 @@ public class PharmacyPurchaseController implements Serializable {
         this.cashTransactionBean = cashTransactionBean;
     }
 
-    public void calSaleRte() {
+    public void calculateSaleRate() {
         saleRate = 0.0;
         double categoryMarginPercentage = 0;
         if (getCurrentBillItem() == null || getCurrentBillItem().getItem() == null) {

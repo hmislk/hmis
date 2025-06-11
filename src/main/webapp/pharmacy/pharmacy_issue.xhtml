@@ -267,12 +267,12 @@
 
 
                                     <p:commandButton
-                                            accesskey="s"
-                                            value="Issue"
-                                            ajax="false"
-                                            icon="fas fa-check"
-                                            action="#{pharmacyIssueController.checkTheDepartment()}"
-                                            class="w-25 ui-button-warning">
+                                        accesskey="s"
+                                        value="Issue"
+                                        ajax="false"
+                                        icon="fas fa-check"
+                                        action="#{pharmacyIssueController.checkTheDepartment()}"
+                                        class="w-25 ui-button-warning">
                                     </p:commandButton>
 
                                 </p:panel>
@@ -338,15 +338,7 @@
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" >
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}" >
-                                <phi:pharmacy_disposal_bill_five_five bill="#{pharmacyIssueController.printBill}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
-                                <phi:pharmacy_disposal_bill_pos bill="#{pharmacyIssueController.printBill}"/>
-                            </h:panelGroup>
-
+                            <phi:pharmacy_issue_receipt bill="#{pharmacyIssueController.printBill}"/>
                         </h:panelGroup>
                     </p:panel>
                 </h:form>
