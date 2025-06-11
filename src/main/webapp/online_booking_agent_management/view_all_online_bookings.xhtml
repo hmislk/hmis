@@ -66,10 +66,10 @@
                                 <f:selectItems value="#{onlineBookingAgentController.onlineBookingStatusList}" var="ins" itemLabel="#{ins}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
-                            
+
                             <p:spacer></p:spacer>
                             <p:spacer ></p:spacer>
-                            
+
                             <h:outputLabel value="Paid Status"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.paidStatus}" filter="true" >
                                 <f:selectItem itemLabel="All" itemValue="#{null}"></f:selectItem>
@@ -89,13 +89,20 @@
                                 class="ui-button-warning" icon="fas fa-cogs">
                             </p:commandButton>
 
-                            <!--                            <p:commandButton  
-                                                            value="Print" 
-                                                            ajax="false"
-                                                            class="ui-button-info mx-1" 
-                                                            icon="fas fa-print">
-                                                            <p:printer target="printdata" />
-                                                        </p:commandButton>-->
+                            <p:commandButton  
+                                value="Print" 
+                                ajax="false"
+                                class="ui-button-info mx-1" 
+                                icon="fas fa-print">
+                                <p:printer target="onlineBookings" />
+                            </p:commandButton>
+
+                            <p:commandButton  
+                                value="Excel" 
+                                ajax="false"
+                                class="ui-button-success" icon="fas fa-file-excel">
+                                <p:dataExporter type="xlsx" target="onlineBookings" fileName="Online Bookings Report #{sessionController.currentDate} - #{sessionController.institution.name} #{sessionController.department.name}" />
+                            </p:commandButton>
 
                             <!--                            <p:commandButton  
                                                             value="Preview" 
@@ -122,19 +129,16 @@
 
                         </h:panelGrid>
 
-                       
+
                         <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" var="ob"
                                      paginator="true" rows="10"
                                      id="onlineBookings"
                                      selection="#{onlineBookingAgentController.paidToHospitalList}"
-                                     scrollable="true"
-                                     selectionMode="multiple"
                                      rowKey="#{ob.id}"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
 
-                            <p:column selectionBox="true" width="20"></p:column>
                             <p:ajax event="rowSelect" process="@this" listener="#{onlineBookingAgentController.onRowSelect()}" />
                             <p:ajax event="rowUnselect" process="@this" listener="#{onlineBookingAgentController.onRowUnselect()}" />
 
