@@ -86,6 +86,9 @@ public class ConfigOptionApplicationController implements Serializable {
         getDoubleValueByKey("Wholesale Rate Factor", 1.08);
         getDoubleValueByKey("Retail to Purchase Factor", 1.15);
         getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
+        getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
+        getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
+        getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
