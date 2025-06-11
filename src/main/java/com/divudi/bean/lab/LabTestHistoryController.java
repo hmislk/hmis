@@ -65,6 +65,11 @@ public class LabTestHistoryController implements Serializable {
     
     // <editor-fold defaultstate="collapsed" desc="Function">
     
+    // <editor-fold defaultstate="collapsed" desc="Billing">
+    
+    // </editor-fold>
+    
+    
     // <editor-fold defaultstate="collapsed" desc="Sample History">
     public void addBarcodeGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
         addNewHistory(TestHistoryType.BARCODE_GENARATE,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
@@ -117,8 +122,14 @@ public class LabTestHistoryController implements Serializable {
         addNewHistory(TestHistoryType.SENT_SMS_MANUAL,null,null, patientInvestigation, patientReport,null,null,sms,null,null,null);
     }
     
+    public void addReportSentEmailHistory(PatientInvestigation patientInvestigation, PatientReport patientReport,AppEmail email){
+        addNewHistory(TestHistoryType.SENT_EMAIL,null,null, patientInvestigation, patientReport,null,null,null,email,null,null);
+    }
+    
     
     // </editor-fold>
+    
+    
     public void addNewHistory(
             TestHistoryType testHistoryType,
             Department fromDepartment,
@@ -147,7 +158,7 @@ public class LabTestHistoryController implements Serializable {
         
         save();
 
-        System.out.println("Test History Added for = " + current.getPatientInvestigation().getBillItem().getItem().getName() + " -> " + current.getPatientSample());
+        System.out.println("Test History Added for = " + current.getPatientInvestigation().getBillItem().getItem().getName());
 
     }
 

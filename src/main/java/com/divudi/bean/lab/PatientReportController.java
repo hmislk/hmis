@@ -2310,6 +2310,8 @@ public class PatientReportController implements Serializable {
         getEmailFacade().create(email);
 
         System.out.println("email = " + email);
+        
+        labTestHistoryController.addReportSentEmailHistory(currentPtIx, currentPatientReport, email);
 
         try {
             boolean success = emailManagerEjb.sendEmail(
