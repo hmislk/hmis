@@ -105,7 +105,7 @@ public class ScheduledProcessConfigurationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
-        scheduledProcessService.executeScheduledProcessManual(current);
+        scheduledProcessService.executeScheduledProcessManual(current, false);
         JsfUtil.addSuccessMessage("Process executed for last schedule");
     }
 
@@ -114,7 +114,7 @@ public class ScheduledProcessConfigurationController implements Serializable {
             JsfUtil.addErrorMessage("Nothing selected");
             return;
         }
-        scheduledProcessService.executeScheduledProcessManual(current);
+        scheduledProcessService.executeScheduledProcessManual(current, true);
         JsfUtil.addSuccessMessage("Process executed for next schedule");
     }
 
