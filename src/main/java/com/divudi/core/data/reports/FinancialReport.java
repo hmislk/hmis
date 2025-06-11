@@ -10,7 +10,11 @@ public enum FinancialReport implements IReportType {
     CREDIT_INVOICE_DISPATCH_REPORT("Credit Invoice dispatch Report"),
     PAYMENT_SETTLEMENT_REPORT("Payment Settlement Report"),
     PACKAGE_REPORT("Package Report"),
-    INWARD_DUE_SEARCH("Inward Due Search"),;
+    INWARD_DUE_SEARCH("Inward Due Search"),
+    DUE_AGE_DETAIL_REPORT("Due age detail Report"),
+    INWARD_CREDIT_EXCESS("Inward Credit Excess"),
+    INWARD_CREDIT_EXCESS_AGE_CREDIT_COMPANY("Inward credit excess Age Company"),
+    INWARD_CASH_EXCESS("Inward cash Excess"),;
 
     private final String displayName;
 
