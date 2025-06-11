@@ -93,7 +93,7 @@
                                                     id="cancelBtn"
                                                     ajax="false"
                                                     disabled="#{onlineBookingAgentController.cancelBill.netTotal ne onlineBookingAgentController.totalForPaidToHospitalBillCancellation and onlineBookingAgentController.cancelBill.netTotal>0}"
-                                                    action="#{onlineBookingAgentController.createPaymentForHospital()}"
+                                                    action="#{onlineBookingAgentController.paidToHospitalBillCancellation()}"
                                                     class="ui-button-danger" icon="fas fa-cogs">
                                                 </p:commandButton>
                                             </h:panelGroup>
