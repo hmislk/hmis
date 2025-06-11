@@ -70,7 +70,7 @@ public class ScheduledProcessService {
         }
         Institution ins = config.getInstitution();
         Department dep = config.getDepartment();
-        Institution site = null;
+        Institution site = config.getSite();
         if (dep != null) {
             site = dep.getSite();
             if (ins == null) {
