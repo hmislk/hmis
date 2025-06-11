@@ -103,6 +103,13 @@ public class GrnCostingController implements Serializable {
     public boolean isShowProfitInGrnBill() {
         return configOptionApplicationController.getBooleanValueByKey(CFG_SHOW_PROFIT_IN_GRN_BILL, true);
     }
+
+    /**
+     * Wrapper for PharmacyCostingService.calcProfitMargin to be used in JSF.
+     */
+    public double calcProfitMargin(BillItem bi) {
+        return pharmacyCostingService.calcProfitMargin(bi);
+    }
     /////////////////
     private Institution dealor;
     private Bill approveBill;
