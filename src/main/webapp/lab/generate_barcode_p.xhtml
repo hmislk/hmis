@@ -1402,7 +1402,7 @@
                                                     class="w-100">
                                                     <f:selectItem itemLabel="Any"></f:selectItem>
                                                     <f:selectItems 
-                                                        value="#{departmentController.getInstitutionDepartments(patientInvestigationController.orderedInstitution)}" 
+                                                        value="#{departmentController.getInstitutionDepartments(patientInvestigationController.outLabInstitution)}" 
                                                         var="odpt" 
                                                         itemLabel="#{odpt.name}" 
                                                         itemValue="#{odpt}">

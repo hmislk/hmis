@@ -64,17 +64,16 @@ public class LabTestHistoryController implements Serializable {
     // </editor-fold>
     
     // <editor-fold defaultstate="collapsed" desc="Function">
+    
+    // <editor-fold defaultstate="collapsed" desc="Billing">
     public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment){
         addNewHistory(TestHistoryType.ORDERED,null,toDepartment, patientInvestigation, null,null,null,null,null,null,null);
     }
-    // <editor-fold defaultstate="collapsed" desc="Billing">
-    
     // </editor-fold>
-    
     
     // <editor-fold defaultstate="collapsed" desc="Sample History">
     public void addBarcodeGenerateHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
-        addNewHistory(TestHistoryType.BARCODE_GENARATE,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
+        addNewHistory(TestHistoryType.BARCODE_GENERATED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
     }
     
     public void addSampleCollectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
@@ -84,15 +83,13 @@ public class LabTestHistoryController implements Serializable {
     public void addSampleSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter){
         if(sampleTransporter == null){
             addNewHistory(TestHistoryType.SAMPLE_SENT,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
+        }else{
+            addNewHistory(TestHistoryType.SAMPLE_SENT,null,null, patientInvestigation, null,patientSample,sampleTransporter,null,null,null,null);
         }
-        addNewHistory(TestHistoryType.SAMPLE_SENT,null,null, patientInvestigation, null,patientSample,sampleTransporter,null,null,null,null);
     }
     
     public void addSampleReceiveHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter){
-        if(sampleTransporter == null){
-            addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
-        }
-        addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,sampleTransporter,null,null,null,null);
+        addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
     }
     
     public void addSampleRejectHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
@@ -114,11 +111,11 @@ public class LabTestHistoryController implements Serializable {
         addNewHistory(TestHistoryType.REPORT_CALCULATED,null,null, patientInvestigation, patientReport,null,null,null,null,null,null);
     }
     
-    public void addApprovelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){
+    public void addApprovalHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){
         addNewHistory(TestHistoryType.REPORT_APPROVED,null,null, patientInvestigation, patientReport,null,null,null,null,null,null);
     }
     
-    public void addApprovelCancelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){
+    public void addApprovalCancelHistory(PatientInvestigation patientInvestigation, PatientReport patientReport){
         addNewHistory(TestHistoryType.REPORT_APPROVED_CANCEL,null,null, patientInvestigation, patientReport,null,null,null,null,null,null);
     }
     // </editor-fold>
@@ -134,7 +131,6 @@ public class LabTestHistoryController implements Serializable {
     
     
     // </editor-fold>
-    
     
     public void addNewHistory(
             TestHistoryType testHistoryType,
@@ -163,8 +159,6 @@ public class LabTestHistoryController implements Serializable {
         current.setAnalyzer(analyzer);
         
         save();
-
-        System.out.println("Test History Added for = " + current.getPatientInvestigation().getBillItem().getItem().getName());
 
     }
 

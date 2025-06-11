@@ -2158,7 +2158,7 @@ public class PatientReportController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addApprovelHistory(currentPtIx, currentPatientReport);
+            labTestHistoryController.addApprovalHistory(currentPtIx, currentPatientReport);
         }
 
         JsfUtil.addSuccessMessage("Approved");
@@ -2404,7 +2404,7 @@ public class PatientReportController implements Serializable {
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
-            labTestHistoryController.addApprovelCancelHistory(currentPtIx, currentPatientReport);
+            labTestHistoryController.addApprovalCancelHistory(currentPtIx, currentPatientReport);
         }
 
     }

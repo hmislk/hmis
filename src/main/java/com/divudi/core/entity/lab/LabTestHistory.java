@@ -14,6 +14,7 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -79,7 +80,7 @@ public class LabTestHistory implements Serializable {
     @ManyToOne
     private Category analyzer;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Staff staff;
     
     @ManyToOne
@@ -89,7 +90,7 @@ public class LabTestHistory implements Serializable {
     private AppEmail email;
     
     @ManyToOne
-    private PatientSampleComponant sampleComponant;
+    private PatientSampleComponant sampleComponent;
 
     public Long getId() {
         return id;
@@ -260,12 +261,12 @@ public class LabTestHistory implements Serializable {
         this.staff = staff;
     }
 
-    public PatientSampleComponant getSampleComponant() {
-        return sampleComponant;
+    public PatientSampleComponant getSampleComponent() {
+        return sampleComponent;
     }
 
-    public void setSampleComponant(PatientSampleComponant sampleComponant) {
-        this.sampleComponant = sampleComponant;
+    public void setSampleComponant(PatientSampleComponant sampleComponent) {
+        this.sampleComponent = sampleComponent;
     }
 
     public Sms getSms() {
