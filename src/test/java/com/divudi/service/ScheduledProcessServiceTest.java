@@ -41,7 +41,21 @@ public class ScheduledProcessServiceTest {
     @Test
     public void monthEndMovesToEndOfNextMonth() {
         Date from = new GregorianCalendar(2024, Calendar.JUNE, 15, 12, 0, 0).getTime();
-        Date expected = new GregorianCalendar(2024, Calendar.JULY, 30, 0, 0, 0).getTime();
+        Date expected = new GregorianCalendar(2024, Calendar.JULY, 31, 0, 0, 0).getTime();
+        assertEquals(expected, service.calculateNextSupposedAt(ScheduledFrequency.MonthEnd, from));
+    }
+
+    @Test
+    public void monthEndHandlesJanuaryEdge() {
+        Date from = new GregorianCalendar(2023, Calendar.JANUARY, 31, 8, 0, 0).getTime();
+        Date expected = new GregorianCalendar(2023, Calendar.FEBRUARY, 28, 0, 0, 0).getTime();
+        assertEquals(expected, service.calculateNextSupposedAt(ScheduledFrequency.MonthEnd, from));
+    }
+
+    @Test
+    public void monthEndHandlesLeapYear() {
+        Date from = new GregorianCalendar(2024, Calendar.JANUARY, 31, 8, 0, 0).getTime();
+        Date expected = new GregorianCalendar(2024, Calendar.FEBRUARY, 29, 0, 0, 0).getTime();
         assertEquals(expected, service.calculateNextSupposedAt(ScheduledFrequency.MonthEnd, from));
     }
 
