@@ -171,12 +171,13 @@ public class ScheduledProcessService {
                 cal.add(Calendar.MONTH, 1);
                 break;
             case YearEnd:
-                cal.set(Calendar.DAY_OF_YEAR, cal.getActualMaximum(Calendar.DAY_OF_YEAR));
+                cal.add(Calendar.YEAR, 1);
+                cal.set(Calendar.MONTH, Calendar.DECEMBER);
+                cal.set(Calendar.DAY_OF_MONTH, 31);
                 cal.set(Calendar.HOUR_OF_DAY, 0);
                 cal.set(Calendar.MINUTE, 0);
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
-                cal.add(Calendar.YEAR, 1);
                 break;
             default:
                 cal.add(Calendar.HOUR_OF_DAY, 1);
