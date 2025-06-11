@@ -36,6 +36,9 @@ public class ScheduledProcessConfiguration implements Serializable {
 
     @ManyToOne
     private Institution institution;
+    
+    @ManyToOne
+    private Institution site;
 
     @ManyToOne
     private Department department;
@@ -197,6 +200,9 @@ public class ScheduledProcessConfiguration implements Serializable {
     public void setLastRunEnded(Date lastRunEnded) {
         this.lastRunEnded = lastRunEnded;
     }
+    
+    
+    
 
     @Override
     public int hashCode() {
@@ -220,5 +226,13 @@ public class ScheduledProcessConfiguration implements Serializable {
     @Override
     public String toString() {
         return "com.divudi.core.entity.ScheduledProcessConfiguration[ id=" + id + " ]";
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 }
