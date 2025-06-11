@@ -3,6 +3,7 @@
  */
 package com.divudi.service;
 
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.entity.Institution;
@@ -25,15 +26,15 @@ public class HistoricalRecordService {
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
 
-    public HistoricalRecord findRecord(String variableName, Institution institution, Institution site, Department department, Date recordDate) {
+    public HistoricalRecord findRecord(HistoricalRecordType historicalRecordType, Institution institution, Institution site, Department department, Date recordDate) {
         String jpql = "select hr "
                 + " from HistoricalRecord hr "
                 + " where hr.retired=false "
-                + " and hr.variableName=:vn "
+                + " and hr.historicalRecordType=:vn "
                 + " and hr.recordDate=:rd ";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("vn", variableName);
+        parameters.put("vn", historicalRecordType);
         parameters.put("rd", recordDate);
 
         if (institution != null) {
@@ -59,35 +60,32 @@ public class HistoricalRecordService {
         return r;
     }
 
-    public List<HistoricalRecord> findRecords(String variableName, Institution institution, Institution site, Department department, Date fromDate, Date toDate) {
+    public List<HistoricalRecord> findRecords(HistoricalRecordType historicalRecordType, Institution institution, Institution site, Department department, Date fromDate, Date toDate) {
         String jpql = "select hr "
                 + " from HistoricalRecord hr "
-                + " where hr.retired=false "
-                + " and hr.variableName=:vn ";
+                + " where hr.retired=false ";
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("vn", variableName);
+
+        if (historicalRecordType != null) {
+            jpql += " and hr.historicalRecordType=:vn ";
+            parameters.put("vn", historicalRecordType);
+        }
 
         if (institution != null) {
             jpql += " and hr.institution=:ins ";
             parameters.put("ins", institution);
-        } else {
-            jpql += " and hr.institution is null ";
-        }
+        } 
 
         if (site != null) {
             jpql += " and hr.site=:site ";
             parameters.put("site", site);
-        } else {
-            jpql += " and hr.site is null ";
-        }
+        } 
 
         if (department != null) {
             jpql += " and hr.department=:dep ";
             parameters.put("dep", department);
-        } else {
-            jpql += " and hr.department is null ";
-        }
+        } 
 
         if (fromDate != null) {
             jpql += " and hr.recordDate >= :fd ";
@@ -104,12 +102,38 @@ public class HistoricalRecordService {
         return historicalRecordFacade.findByJpql(jpql, parameters, TemporalType.DATE);
     }
 
-    public List<String> fetchVariableNames() {
-        String jpql = "select distinct(hr.variableName) "
-                + " from HistoricalRecord hr "
-                + " where hr.retired=false "
-                + " order by hr.variableName";
-        return historicalRecordFacade.findStringListByJpql(jpql);
+    public List<HistoricalRecordType> fetchHistoricalRecordTypes() {
+        return java.util.Arrays.asList(HistoricalRecordType.values());
+    }
+
+    public HistoricalRecord createHistoricalRecord(HistoricalRecordType historicalRecordType,
+            Institution institution,
+            Institution site,
+            Department department) {
+
+        if (historicalRecordType == null) {
+            return null;
+        }
+
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(historicalRecordType);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setRecordDate(new Date());
+        hr.setRecordDateTime(new Date());
+        hr.setRecordValue(0.0);
+
+        historicalRecordFacade.create(hr);
+        return hr;
+    }
+
+    public HistoricalRecord createHistoricalRecord(HistoricalRecord rec) {
+        if (rec == null) {
+            return null;
+        }
+        historicalRecordFacade.create(rec);
+        return rec;
     }
 
 }

@@ -22,23 +22,33 @@
 
                                 <p:tab title="Manage Processes" disabled="false" >
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  
+                                        <p:commandButton
                                             class="w-100"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Process Definition"
-                                            action="#{processDefinitionController.navigateToManageProcessDefinitions()}" 
+                                            action="#{processDefinitionController.navigateToManageProcessDefinitions()}"
                                             icon="fa fa-money-bill-wave" />
-                                        <p:commandButton  
+                                        <p:commandButton
                                             class="w-100"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Process Definition Step"
-                                            action="#{processStepDefinitionController.navigateToManageProcessStepDefinitions()}" 
+                                            action="#{processStepDefinitionController.navigateToManageProcessStepDefinitions()}"
                                             icon="fa fa-money-bill-wave" />
-                                        <p:commandButton  
+                                        <p:commandButton
                                             class="w-100"
-                                            ajax="false" 
+                                            ajax="false"
                                             value="Process Definition Step Action"
-                                            action="#{processStepActionDefinitionController.navigateToManageProcessStepActionDefinitions()}" 
+                                            action="#{processStepActionDefinitionController.navigateToManageProcessStepActionDefinitions()}"
+                                            icon="fa fa-money-bill-wave" />
+                                    </div>
+                                </p:tab>
+                                <p:tab title="Schedules" disabled="false" >
+                                    <div class="d-grid gap-2">
+                                        <p:commandButton
+                                            class="w-100"
+                                            ajax="false"
+                                            value="Scheduled Process Configuration"
+                                            action="#{scheduledProcessConfigurationController.navigateToManageScheduledProcessConfigurations()}"
                                             icon="fa fa-money-bill-wave" />
                                     </div>
                                 </p:tab>
@@ -128,9 +138,15 @@
 
                                 <p:tab title="Data" disabled="false">
                                     <div class="d-grid gap-2">
-                                        <p:commandButton  
+                                        <p:commandButton
+                                            value="Generate Historical Record"
+                                            action="#{historicalRecordController.navigateToHistoricalRecordGenerate()}"
+                                            ajax="false"
+                                            styleClass="w-100 ui-button-warning"
+                                            icon="fa fa-cogs" />
+                                        <p:commandButton
                                             value="Historical Record List"
-                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}" 
+                                            action="#{historicalRecordController.navigateToHistoricalRecordList()}"
                                             ajax="false"
                                             styleClass="w-100 ui-button-success"
                                             icon="fa fa-database" />
