@@ -52,7 +52,7 @@
                             </div>
 
                             <p:dialog 
-                                widgetVar="payementSettle" 
+                                widgetVar="billToCancel" 
                                 modal="true" 
                                 closable="false"
                                 id="payementSettleDlg"
@@ -61,12 +61,12 @@
                                 height="400"
                                 width="800">
 
-                                <p:ajax event="close" update="onlineBookings"></p:ajax>
+                              
 
                                 <f:facet name="header">
                                     <h:panelGroup class="d-flex align-items-center justify-content-between">
                                         <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.paidToHospitalList ? 'No Selected' : onlineBookingAgentController.paidToHospitalList.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name}" ></h:outputText>
-                                        <a href="#" onclick="PF('payementSettle').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click" update="onlineBookings"></p:ajax></a> 
+                                        <a href="#" onclick="PF('payementSettle').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click"></p:ajax></a> 
                                     </h:panelGroup>
 
                                     <p:panel class="my-1">
@@ -81,7 +81,6 @@
                                                     value="Settle" 
                                                     ajax="false"
                                                     action="#{onlineBookingAgentController.createPaymentForHospital()}"
-                                                    update="onlineBookings"
                                                     class="ui-button-success" icon="fas fa-cogs">
                                                 </p:commandButton>
                                             </h:panelGroup>
@@ -135,7 +134,6 @@
                                                  var="ob" 
                                                  scrollable="true"
                                                  selection="#{onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation}"
-                                                 selection="true" 
                                                  selectionMode="multiple"
                                                  rowKey="#{s.id}">
 
@@ -193,7 +191,7 @@
                         <h:panelGroup   id="gpBillPreview"  > 
 
                             <h:panelGroup id="gpBillPreviewDouble" 
-                                          rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper'}"> 
+                                          > 
 
                                 <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="true" ></ph:agentPaidToHospitalBill>
 
