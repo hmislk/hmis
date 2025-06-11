@@ -40,11 +40,13 @@
                                 </p:commandButton>
 
                                 <p:commandButton 
-                                    ajax="false" 
+                                    ajax="true" 
                                     value="To Cancel"
                                     icon="fa fa-cancel"
                                     class="ui-button-danger"
                                     oncomplete="PF('billToCancel').show()" 
+                                    process="@this"
+                                    update="payementSettleDlg onlineBookingsToPay"
                                     actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(onlineBookingAgentController.printBill)}"
                                     disabled="#{onlineBookingAgentController.printBill.cancelled}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
@@ -55,33 +57,44 @@
                                 widgetVar="billToCancel" 
                                 modal="true" 
                                 closable="false"
+                                dynamic="true"
                                 id="payementSettleDlg"
                                 resizable="false" 
                                 draggable="false" 
                                 height="400"
                                 width="800">
 
-                              
-
                                 <f:facet name="header">
                                     <h:panelGroup class="d-flex align-items-center justify-content-between">
-                                        <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.paidToHospitalList ? 'No Selected' : onlineBookingAgentController.paidToHospitalList.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name}" ></h:outputText>
-                                        <a href="#" onclick="PF('payementSettle').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click"></p:ajax></a> 
+                                        <h:outputText id="onlineBookingsToPay" value="#{ empty onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation ? 'No Selected' : onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation.size()} Appoinments of #{onlineBookingAgentController.agentForBookings.name} select to cancel" ></h:outputText>
+                                        <a href="#" onclick="PF('billToCancel').hide();" style="font-size: 20px; text-decoration: none; border: 4px solid #000; border-radius: 100px; padding: 2px 10px; color: #000">X <p:ajax event="click"></p:ajax></a> 
                                     </h:panelGroup>
 
                                     <p:panel class="my-1">
                                         <f:facet name="header" >
                                             <h:panelGroup class="d-flex align-items-center justify-content-between">
-                                                <h:outputLabel value="Paid To Hospital List" />
+                                                <h:outputLabel value="Select All or Specific Booking to Bill Cancellation" />
                                                 <h:panelGroup id="totalToPay">
                                                     <h:outputLabel value="Total :" />
-                                                    <h:outputLabel value="#{onlineBookingAgentController.paidToHospitalTotal}" />
+                                                    <h:outputLabel value="#{onlineBookingAgentController.cancelBill.netTotal}" />
                                                 </h:panelGroup>
+  
                                                 <p:commandButton  
-                                                    value="Settle" 
-                                                    ajax="false"
-                                                    action="#{onlineBookingAgentController.createPaymentForHospital()}"
+                                                    value="Refrsh" 
+                                                    ajax="true"
+                                                    actionListener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}"
+                                                    process="payementSettleDlg dialogContentForCancellation "
+                                                    update="dialogContentForCancellation txtNetTotal gpPaymentDetails totalToPay onlineBookingsToPay cancelBtn"
                                                     class="ui-button-success" icon="fas fa-cogs">
+                                                </p:commandButton>
+                                                
+                                                <p:commandButton  
+                                                    value="Cancel" 
+                                                    id="cancelBtn"
+                                                    ajax="false"
+                                                    disabled="#{onlineBookingAgentController.cancelBill.netTotal ne onlineBookingAgentController.totalForPaidToHospitalBillCancellation}"
+                                                    action="#{onlineBookingAgentController.createPaymentForHospital()}"
+                                                    class="ui-button-danger" icon="fas fa-cogs">
                                                 </p:commandButton>
                                             </h:panelGroup>
 
@@ -91,16 +104,16 @@
                                             <p:outputLabel value="Payment Method" ></p:outputLabel>
                                             <p:selectOneMenu id="cmbPs" value="#{onlineBookingAgentController.cancelPaymentMethod}" style="width:200px">
                                                 <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
-                                                <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}"/>
+                                                <p:ajax process="cmbPs" update="gpPaymentDetails" event="change" listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}"/>
                                             </p:selectOneMenu>
 
                                             <p:outputLabel value="Value" ></p:outputLabel>
                                             <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.cancelBill.netTotal}" id="txtNetTotal" style="width:200px">
-                                                <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}" update="gpPaymentDetails"></p:ajax>
+                                                <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills()}" update="gpPaymentDetails"></p:ajax>
                                             </p:inputText>
 
                                             <p:outputLabel class="my-2" value="Comments" ></p:outputLabel>
-                                            <p:inputText value="#{onlineBookingAgentController.cancelPaymentMethod.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+                                            <p:inputText value="#{onlineBookingAgentController.cancelBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
 
                                         </h:panelGrid>
 
@@ -129,13 +142,16 @@
 
                                 </f:facet>
 
-                                <h:panelGroup id="dialogContentForPayment">
+                                <h:panelGroup id="dialogContentForCancellation">
                                     <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" 
                                                  var="ob" 
                                                  scrollable="true"
                                                  selection="#{onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation}"
                                                  selectionMode="multiple"
-                                                 rowKey="#{s.id}">
+                                                 rowKey="#{ob.id}">
+                                        
+                                        <p:ajax event="rowSelect" process="@this dialogContentForCancellation" update=":#{p:resolveFirstComponentWithId('payementSettleDlg',view).clientId} :#{p:resolveFirstComponentWithId('totalToPay',view).clientId} " listener="#{onlineBookingAgentController.prepareCancellationAgentPaidToHospitalBills}" />
+                                        <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('payementSettleDlg',view).clientId} :#{p:resolveFirstComponentWithId('totalToPay',view).clientId}" listener="#{onlineBookingAgentController.onRowUnselectForCancellation}" />
 
                                         <p:column selectionBox="true" width="20"></p:column>
 

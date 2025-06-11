@@ -108,6 +108,9 @@ public class OnlineBookingAgentController implements Serializable {
     private DrawerController drawerController;
 
     public List<OnlineBooking> getBookinsToAgenHospitalPayementCancellation() {
+        if(bookinsToAgenHospitalPayementCancellation == null){
+            bookinsToAgenHospitalPayementCancellation = new ArrayList<>();
+        }
         return bookinsToAgenHospitalPayementCancellation;
     }
 
@@ -238,13 +241,38 @@ public class OnlineBookingAgentController implements Serializable {
         }
     }
 
+    public void setTotalForPaymentMethodData(PaymentMethod paymentMethod, Bill bill) {
+        if (paymentMethod != null && (bill != null && bill.getNetTotal() > 0)) {
+            switch (paymentMethod) {
+                case Cash:
+                    break;
+                case Card:
+                    getPaymentMethodData().getCreditCard().setTotalValue(bill.getNetTotal());
+                    break;
+                case Cheque:
+                    getPaymentMethodData().getCheque().setTotalValue(bill.getNetTotal());
+                    break;
+                case Slip:
+                    getPaymentMethodData().getSlip().setTotalValue(bill.getNetTotal());
+                    break;
+                case ewallet:
+                    getPaymentMethodData().getEwallet().setTotalValue(bill.getNetTotal());
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+        }
+    }
+
     public void fetchOnlineBookingsFromAgentPaidBill(Bill bill) {
         if (bill == null) {
             return;
         }
 
+        System.out.println("line 246");
+
         String sql = "Select ob from OnlineBooking ob "
-                + " where ob.bill = :bill "
+                + " where ob.paidToHospitalBill = :bill "
                 + " and ob.retired = :ret "
                 + " and ob.onlineBookingStatus <> :status";
 
@@ -253,7 +281,17 @@ public class OnlineBookingAgentController implements Serializable {
         params.put("ret", false);
         params.put("status", OnlineBookingStatus.PENDING);
 
-        onlineBookingList = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+        System.out.println("line 258");
+
+        List<OnlineBooking> bookings = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+
+        if (bookings != null) {
+            onlineBookingList = null;
+            getOnlineBookingList().addAll(bookings);
+            System.out.println("line 265" + onlineBookingList.size());
+            bookinsToAgenHospitalPayementCancellation = onlineBookingList;
+        }
+        prepareCancellationAgentPaidToHospitalBills();
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
@@ -390,7 +428,7 @@ public class OnlineBookingAgentController implements Serializable {
 
         if (paidBill != null) {
             List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod);
-            drawerController.updateDrawerForIns(payments);;
+            drawerController.updateDrawerForIns(payments);
         }
 
         if (paidBill != null) {
@@ -404,6 +442,42 @@ public class OnlineBookingAgentController implements Serializable {
                 }
             }
         }
+
+    }
+    
+    private double totalForPaidToHospitalBillCancellation;
+    
+    public void setTotalForPaidToHospitalBillCancellation(double totalForPaidToHospitalBillCancellation){
+        this.totalForPaidToHospitalBillCancellation  = totalForPaidToHospitalBillCancellation;
+    }
+    
+    public double getTotalForPaidToHospitalBillCancellation(){
+        double totalAmountToCancellation = 0;
+
+        for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
+            totalAmountToCancellation += ob.getAppoinmentTotalAmount();
+        }
+        
+        return totalAmountToCancellation;
+    }
+
+    public void prepareCancellationAgentPaidToHospitalBills() {
+        System.out.println("line 446");
+        if (bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()) {
+            return;
+        }
+
+        double totalAmountToCancellation = 0;
+
+        for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
+            totalAmountToCancellation += ob.getAppoinmentTotalAmount();
+        }
+        System.out.println("line 446"+totalAmountToCancellation);
+
+        getCancelBill().setTotal(totalAmountToCancellation);
+        getCancelBill().setNetTotal(totalAmountToCancellation);
+
+        setTotalForPaymentMethodData(cancelPaymentMethod, getCancelBill());
 
     }
 
@@ -423,6 +497,13 @@ public class OnlineBookingAgentController implements Serializable {
     public void onRowUnselect(SelectEvent<OnlineBooking> event) {
         OnlineBooking selected = event.getObject();
         paidToHospitalList.remove(selected);
+    }
+    
+    public void onRowUnselectForCancellation(SelectEvent<OnlineBooking> event) {
+        System.out.println("line 487 on");
+        OnlineBooking selected = event.getObject();
+        bookinsToAgenHospitalPayementCancellation.remove(selected);
+        prepareCancellationAgentPaidToHospitalBills();
     }
 
     public void clearPreviousValues() {
