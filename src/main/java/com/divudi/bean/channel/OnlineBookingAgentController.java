@@ -70,7 +70,7 @@ public class OnlineBookingAgentController implements Serializable {
 
     private Institution institutionForBookings;
     private Institution agentForBookings;
-    private boolean paidStatus;
+    private Boolean paidStatus;
     private List<OnlineBooking> paidToHospitalList;
 
     @EJB
@@ -399,11 +399,11 @@ public class OnlineBookingAgentController implements Serializable {
         this.paidToHospitalList = paidToHospitalList;
     }
 
-    public boolean isPaidStatus() {
+    public Boolean isPaidStatus() {
         return paidStatus;
     }
 
-    public void setPaidStatus(boolean paidStatus) {
+    public void setPaidStatus(Boolean paidStatus) {
         this.paidStatus = paidStatus;
     }
 

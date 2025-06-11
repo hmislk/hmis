@@ -67,6 +67,17 @@
                                 <f:selectItems value="#{onlineBookingAgentController.fetchAllOnlineBookingStatus}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
+                            
+                            <p:spacer></p:spacer>
+                            <p:spacer ></p:spacer>
+                            
+                            <h:outputLabel value="Paid Status"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.paidStatus}" filter="true" >
+                                <f:selectItem itemLabel="All" itemValue="#{null}"></f:selectItem>
+                                <f:selectItem itemLabel="Paid" itemValue="true"></f:selectItem>
+                                <f:selectItem itemLabel="Non-Paid" itemValue="false"></f:selectItem>
+                                <p:ajax event="itemSelect" process="@this"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
