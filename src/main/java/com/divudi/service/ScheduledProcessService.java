@@ -163,12 +163,15 @@ public class ScheduledProcessService {
                 cal.set(Calendar.MILLISECOND, 0);
                 break;
             case MonthEnd:
-                cal.set(Calendar.DAY_OF_MONTH, cal.getActualMaximum(Calendar.DAY_OF_MONTH));
+                // Move to the last day of the next month from the provided date
+                cal.add(Calendar.MONTH, 1); // jump to same day next month (handles month length overflow)
+                cal.set(Calendar.DAY_OF_MONTH, 1); // first day of that month
+                cal.add(Calendar.MONTH, 1); // move to first day of the following month
+                cal.add(Calendar.DAY_OF_MONTH, -1); // step back one day -> last day of next month
                 cal.set(Calendar.HOUR_OF_DAY, 0);
                 cal.set(Calendar.MINUTE, 0);
                 cal.set(Calendar.SECOND, 0);
                 cal.set(Calendar.MILLISECOND, 0);
-                cal.add(Calendar.MONTH, 1);
                 break;
             case YearEnd:
                 cal.add(Calendar.YEAR, 1);
