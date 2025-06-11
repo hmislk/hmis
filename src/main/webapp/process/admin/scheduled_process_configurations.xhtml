@@ -109,6 +109,12 @@
                                     </p:panelGrid>
 
                                     <f:facet name="footer">
+                                        <p:commandButton id="runLastBtn" value="Run Last" icon="pi pi-play" class="ui-button-info m-1"
+                                                         action="#{scheduledProcessConfigurationController.runLastScheduled}" process="runLastBtn"
+                                                         update="@form" disabled="#{scheduledProcessConfigurationController.current == null}" />
+                                        <p:commandButton id="runNextBtn" value="Run Next" icon="pi pi-step-forward" class="ui-button-info m-1"
+                                                         action="#{scheduledProcessConfigurationController.runNextScheduled}" process="runNextBtn"
+                                                         update="@form" disabled="#{scheduledProcessConfigurationController.current == null}" />
                                         <p:commandButton id="saveBtn" value="Save" icon="fa fa-save" class="ui-button-success m-1"
                                                          action="#{scheduledProcessConfigurationController.save}" process="saveBtn detailPanel"
                                                          update="@form" rendered="#{scheduledProcessConfigurationController.editable}" />
