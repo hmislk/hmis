@@ -36,10 +36,12 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -90,12 +92,22 @@ public class OnlineBookingAgentController implements Serializable {
     private Bill paidToHospitalBill;
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
+    private OnlineBookingStatus onlineBookingStatus;
     
-    @EJB
+     @EJB
     private PaymentFacade paymentFacade;
     
     @Inject
     private DrawerController drawerController;
+
+
+    public OnlineBookingStatus getOnlineBookingStatus() {
+        return onlineBookingStatus;
+    }
+
+    public void setOnlineBookingStatus(OnlineBookingStatus onlineBookingStatus) {
+        this.onlineBookingStatus = onlineBookingStatus;
+    }
 
     public double getPaidToHospitalTotal() {
         return paidToHospitalTotal;
@@ -130,6 +142,12 @@ public class OnlineBookingAgentController implements Serializable {
 
     public PaymentMethod getPaidToHospitalPaymentMethod() {
         return paidToHospitalPaymentMethod;
+    }
+    
+    public List fetchAllOnlineBookingStatus(){
+        return Arrays.stream(OnlineBookingStatus.values())
+                .filter(status -> status != OnlineBookingStatus.PENDING)
+                .collect(Collectors.toList());
     }
 
     public void setPaidToHospitalPaymentMethod(PaymentMethod paidToHospitalPaymentMethod) {

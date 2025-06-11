@@ -61,8 +61,12 @@
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 
-                            <p:spacer width="20" ></p:spacer>
-                            <p:spacer></p:spacer>
+                            <h:outputLabel value="Booking Status"/>                                
+                            <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.onlineBookingStatus}" filter="true" >
+                                <f:selectItem itemLabel="All" ></f:selectItem>
+                                <f:selectItems value="#{onlineBookingAgentController.fetchAllOnlineBookingStatus}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this"/>
+                            </p:selectOneMenu>
 
                         </h:panelGrid>
 
@@ -73,15 +77,6 @@
                                 ajax="false"
                                 action="#{onlineBookingAgentController.fetchOnlineBookingsForManagement}" 
                                 class="ui-button-warning" icon="fas fa-cogs">
-                            </p:commandButton>
-
-                            <p:commandButton  
-                                value="Settle Payment" 
-                                update="dialogContentForPayment onlineBookingsToPay cmbPs cashValue totalToPay txtNetTotal" 
-                                process="@this onlineBookings cmbPs"
-                                oncomplete="PF('payementSettle').show()"
-                                actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
-                                class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
 
                             <!--                            <p:commandButton  
