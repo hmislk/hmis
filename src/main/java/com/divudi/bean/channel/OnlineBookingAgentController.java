@@ -85,6 +85,7 @@ public class OnlineBookingAgentController implements Serializable {
     @EJB
     private ChannelService channelService;
     private List<OnlineBooking> onlineBookingList;
+    private List<OnlineBooking> bookinsToAgenHospitalPayementCancellation;
 
     @EJB
     private OnlineBookingFacade onlineBookingFacade;
@@ -106,12 +107,20 @@ public class OnlineBookingAgentController implements Serializable {
     @Inject
     private DrawerController drawerController;
 
+    public List<OnlineBooking> getBookinsToAgenHospitalPayementCancellation() {
+        return bookinsToAgenHospitalPayementCancellation;
+    }
+
+    public void setBookinsToAgenHospitalPayementCancellation(List<OnlineBooking> bookinsToAgenHospitalPayementCancellation) {
+        this.bookinsToAgenHospitalPayementCancellation = bookinsToAgenHospitalPayementCancellation;
+    }
+
     public PaymentMethod getCancelPaymentMethod() {
         return cancelPaymentMethod;
     }
 
     public Bill getCancelBill() {
-        if(cancelBill == null){
+        if (cancelBill == null) {
             cancelBill = new CancelledBill();
             cancelBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
         }
@@ -228,12 +237,12 @@ public class OnlineBookingAgentController implements Serializable {
             }
         }
     }
-    
-    public void fetchOnlineBookingsFromAgentPaidBill(Bill bill){
-        if(bill == null){
+
+    public void fetchOnlineBookingsFromAgentPaidBill(Bill bill) {
+        if (bill == null) {
             return;
         }
-        
+
         String sql = "Select ob from OnlineBooking ob "
                 + " where ob.bill = :bill "
                 + " and ob.retired = :ret "
@@ -243,7 +252,7 @@ public class OnlineBookingAgentController implements Serializable {
         params.put("bill", bill);
         params.put("ret", false);
         params.put("status", OnlineBookingStatus.PENDING);
-        
+
         onlineBookingList = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 
@@ -529,7 +538,7 @@ public class OnlineBookingAgentController implements Serializable {
             onlineBookingList = bookingList;
         }
     }
-    
+
     private List<Bill> agentPaidToHospitalBills;
 
     public List<Bill> getAgentPaidToHospitalBills() {
@@ -539,9 +548,9 @@ public class OnlineBookingAgentController implements Serializable {
     public void setAgentPaidToHospitalBills(List<Bill> agentPaidToHospitalBills) {
         this.agentPaidToHospitalBills = agentPaidToHospitalBills;
     }
-    
-    public void fetchAgentPaidToHospitalBills(){
-        
+
+    public void fetchAgentPaidToHospitalBills() {
+
         if (institutionForBookings == null) {
             JsfUtil.addErrorMessage("Please Select Hospital.");
             return;
@@ -551,10 +560,10 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
         }
-        
+
         List<Bill> bills = channelService.fetchOnlineBookingsAgentPaidToHospitalBills(fromDate, toDate, institutionForBookings, agentForBookings);
-       
-        if(bills != null){
+
+        if (bills != null) {
             agentPaidToHospitalBills = bills;
         }
     }

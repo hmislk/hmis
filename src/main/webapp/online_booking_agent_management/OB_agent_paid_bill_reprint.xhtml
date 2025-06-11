@@ -96,29 +96,29 @@
                                             </p:selectOneMenu>
 
                                             <p:outputLabel value="Value" ></p:outputLabel>
-                                            <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.paidToHospitalBill.netTotal}" id="txtNetTotal" style="width:200px">
+                                            <p:inputText onfocus="this.select()" value="#{onlineBookingAgentController.cancelBill.netTotal}" id="txtNetTotal" style="width:200px">
                                                 <p:ajax event="keyup" process="@this" listener="#{onlineBookingAgentController.setTotalForPaymentMethodData()}" update="gpPaymentDetails"></p:ajax>
                                             </p:inputText>
 
                                             <p:outputLabel class="my-2" value="Comments" ></p:outputLabel>
-                                            <p:inputText value="#{onlineBookingAgentController.paidToHospitalBill.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
+                                            <p:inputText value="#{onlineBookingAgentController.cancelPaymentMethod.comments}" placeholder="Enter a Comment" id="comment" style="width:200px"/>
 
                                         </h:panelGrid>
 
                                         <div class="d-flex flex-wrap w-100 gap-2">
                                             <h:panelGroup id="gpPaymentDetails" >
-                                                <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Card'}">
+                                                <h:panelGroup id="creditCard" class="m-1" rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Card'}">
                                                     <pa:creditCard paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
                                                 </h:panelGroup>
-                                                <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Cheque'}" >
+                                                <h:panelGroup id="cheque"  rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Cheque'}" >
                                                     <pa:cheque paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'Slip'}" >
+                                                <h:panelGroup id="slip"   rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'Slip'}" >
                                                     <pa:slip paymentMethodData="#{onlineBookingAgentController.paymentMethodData}"/>
                                                 </h:panelGroup>
 
-                                                <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.paidToHospitalPaymentMethod eq 'ewallet'}" >
+                                                <h:panelGroup id="eWallet"   rendered="#{onlineBookingAgentController.cancelPaymentMethod eq 'ewallet'}" >
                                                     <pa:ewallet_collect paymentMethodData="#{onlineBookingAgentController.paymentMethodData}" />
                                                 </h:panelGroup>
                                             </h:panelGroup>
@@ -134,8 +134,12 @@
                                     <p:dataTable value="#{onlineBookingAgentController.onlineBookingList}" 
                                                  var="ob" 
                                                  scrollable="true"
-                                                 selection="false" 
+                                                 selection="#{onlineBookingAgentController.bookinsToAgenHospitalPayementCancellation}"
+                                                 selection="true" 
+                                                 selectionMode="multiple"
                                                  rowKey="#{s.id}">
+
+                                        <p:column selectionBox="true" width="20"></p:column>
 
                                         <p:column width="5em" headerText="Name">
                                             <f:facet name="header" >
