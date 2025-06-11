@@ -76,6 +76,36 @@
                                                         completeMethod="#{departmentController.completeDept}"
                                                         var="dep" itemValue="#{dep}" itemLabel="#{dep.name}"
                                                         forceSelection="true" class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Site" />
+                                        <p:autoComplete value="#{scheduledProcessConfigurationController.current.site}"
+                                                        completeMethod="#{institutionController.completeSite}"
+                                                        var="site" itemValue="#{site}" itemLabel="#{site.name}"
+                                                        forceSelection="true" class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Next Supposed At" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.nextSupposedAt}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Supposed At" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastSupposedAt}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Process Completed" />
+                                        <p:selectBooleanButton value="#{scheduledProcessConfigurationController.current.lastProcessCompleted}"
+                                                              onLabel="Yes" offLabel="No" class="w-100" />
+
+                                        <h:outputLabel value="Last Run Started" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastRunStarted}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Run Ended" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastRunEnded}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
                                     </p:panelGrid>
 
                                     <f:facet name="footer">
