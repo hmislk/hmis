@@ -4153,39 +4153,52 @@ public class ReportsController implements Serializable {
 
     private List<ReportTemplateRow> filterReportTemplateRowsByEnabledStatus(final Map<String, AgentReferenceBook> agentReferenceBooks,
                                                                             final List<ReportTemplateRow> rows) {
+
         if (agentReferenceBooks == null || agentReferenceBooks.isEmpty() || rows == null || rows.isEmpty()) {
             return rows;
         }
 
-        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+        Map<ReportTemplateRow, String> rowToBookNumber = new HashMap<>(rows.size());
 
         for (ReportTemplateRow row : rows) {
-            Bill bill = row.getBill();
+            if (row == null || row.getBill() == null) continue;
 
-            if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
-                bill = bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+            Bill bill = resolveEffectiveBill(row.getBill());
+            String refNo = bill.getReferenceNumber();
+
+            if (refNo == null || refNo.length() <= 2) continue;
+
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(refNo);
+            if (bookNumber != null) {
+                rowToBookNumber.put(row, bookNumber);
             }
+        }
 
-            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(bill.getReferenceNumber());
-            AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
-            if (agentReferenceBook == null) {
-                continue;
-            }
+        for (Map.Entry<ReportTemplateRow, String> entry : rowToBookNumber.entrySet()) {
+            ReportTemplateRow row = entry.getKey();
+            String bookNumber = entry.getValue();
 
-            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
-                continue;
-            }
+            AgentReferenceBook arb = agentReferenceBooks.get(bookNumber);
+            if (arb == null) continue;
 
-            if (!withInactiveBooks && !agentReferenceBook.getActive() && !agentReferenceBook.isRetired()) {
-                continue;
-            }
+            if (!withDeletedBooks && arb.isRetired()) continue;
+            if (!withInactiveBooks && !arb.getActive() && !arb.isRetired()) continue;
 
-            row.setAgentReferenceBook(agentReferenceBook);
+            row.setAgentReferenceBook(arb);
             filteredRows.add(row);
         }
 
         return filteredRows;
+    }
+
+    private Bill resolveEffectiveBill(Bill bill) {
+        if (bill.getBillClassType() == BillClassType.CancelledBill ||
+                bill.getBillClassType() == BillClassType.RefundBill) {
+            return bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+        }
+        return bill;
     }
 
     private Map<String, AgentReferenceBook> getAgentReferenceBookMapByReportTemplateRows(List<ReportTemplateRow> rows) {
@@ -4195,8 +4208,9 @@ public class ReportsController implements Serializable {
             Set<String> strBookNumbers = rows.stream()
                     .map(r -> {
                         String refNo = r.getBill().getReferenceNumber();
+
                         if (refNo != null && refNo.length() > 2) {
-                            return refNo.substring(0, refNo.length() - 2);
+                            return collectingCentreBillController.generateBookNumberFromReference(refNo);
                         }
                         return null;
                     })
