@@ -333,6 +333,15 @@ public class ReportsController implements Serializable {
 
     private boolean withInactiveBooks;
     private boolean withDeletedBooks;
+    private boolean withoutDateRange;
+
+    public boolean isWithoutDateRange() {
+        return withoutDateRange;
+    }
+
+    public void setWithoutDateRange(boolean withoutDateRange) {
+        this.withoutDateRange = withoutDateRange;
+    }
 
     public boolean isWithInactiveBooks() {
         return withInactiveBooks;
@@ -3962,9 +3971,9 @@ public class ReportsController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
                 String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
                         c.getBill().getBilledBill().getReferenceNumber();
-                table.addCell(new PdfPCell(new Phrase(
-                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber), cellFont)));
-                table.addCell(new PdfPCell(new Phrase(referenceNumber, cellFont)));
+                String bookNumber = collectingCentreBillController.generateBookNumberFromReference(referenceNumber);
+                table.addCell(new PdfPCell(new Phrase(bookNumber != null ? bookNumber : "N/A", cellFont)));
+                table.addCell(new PdfPCell(new Phrase(referenceNumber != null ? referenceNumber : "N/A", cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
                         c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
@@ -4040,9 +4049,9 @@ public class ReportsController implements Serializable {
                 dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
                 String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
                         c.getBill().getBilledBill().getReferenceNumber();
-                dataRow.createCell(1).setCellValue(
-                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber));
-                dataRow.createCell(2).setCellValue(referenceNumber);
+                String bookNumber = collectingCentreBillController.generateBookNumberFromReference(referenceNumber);
+                dataRow.createCell(1).setCellValue(bookNumber != null ? bookNumber : "N/A");
+                dataRow.createCell(2).setCellValue(referenceNumber != null ? referenceNumber : "N/A");
                 dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
                 dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
                 dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
@@ -4112,9 +4121,13 @@ public class ReportsController implements Serializable {
 //            parameters.put("cbn", "%" + cashBookNumber + "%");
 //        }
 
-//        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-//        parameters.put("fd", fromDate);
-//        parameters.put("td", toDate);
+        if (!withoutDateRange) {
+            if (fromDate != null && toDate != null) {
+                jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
+            }
+        }
 
         jpql += "GROUP BY bill";
 
