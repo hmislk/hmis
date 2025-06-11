@@ -70,9 +70,9 @@
                                  value="#{grnCostingController.grnBill.comments}" style="width:75%" />  
 
                 </h:panelGrid>
-                <p:dataTable 
-                    var="bi" 
-                    styleClass="noBorder" 
+                <p:dataTable
+                    var="bi" rowIndexVar="i"
+                    styleClass="noBorder"
                     rowKey="#{bi.searialNo}"
                     selection="#{grnCostingController.selectedBillItems}"
                     value="#{grnCostingController.billItems}" 
@@ -97,12 +97,30 @@
                         width="2em"
                         selectionBox="true"
                         styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
-                    <p:column 
-                        headerText="Item Name" 
+                    <p:column
+                        headerText="Item Name"
                         width="20em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" > 
-                        <h:outputText id="item" value="#{bi.item.name}" ></h:outputText>
-                    </p:column>  
+                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
+                        <h:outputText id="item" value="#{bi.item.name}" />
+                        <p:commandLink
+                            styleClass="ms-1"
+                            title="View Finance Details"
+                            oncomplete="PF('dialog#{i}').show()"
+                            process="@this"
+                            update="@none">
+                            <i class="fas fa-info-circle" />
+                        </p:commandLink>
+                        <p:dialog id="dialog"
+                                  widgetVar="dialog#{i}"
+                                  header="Details"
+                                  modal="true"
+                                  closable="true"
+                                  resizable="false"
+                                  class="w-75"
+                                  dynamic="true">
+                            <ph:bill_item_finance_details pbi="#{bi}"/>
+                        </p:dialog>
+                    </p:column>
                     <p:column 
                         headerText="Code" 
                         width="4em"
@@ -264,8 +282,10 @@
                     </p:column>
 
                 </p:dataTable>  
-                <p:panel>
-                    <p:panelGrid columns="3" style="min-width: 100%" id="tot">
+                <p:panel id="panelBillDetails" header="Bill Details" class="m-1">
+                    <p:tabView id="billTabs">
+                        <p:tab title="Bill Summary">
+                            <p:panelGrid columns="3" style="min-width: 100%" id="tot">
 
                         <p:panelGrid columns="2">
                             <p:outputLabel value="Invoice No "/>
@@ -317,7 +337,12 @@
 
                         </p:panelGrid>
 
-                    </p:panelGrid>
+                            </p:panelGrid>
+                        </p:tab>
+                        <p:tab title="Financial Summary">
+                            <ph:bill_finance_details id="billFinanceDetails" bill="#{grnCostingController.grnBill}" ></ph:bill_finance_details>
+                        </p:tab>
+                    </p:tabView>
                 </p:panel>
 
                 <p:panel header="Bill Expenses" >
