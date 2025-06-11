@@ -1591,7 +1591,7 @@
                 </h:panelGroup>
 
                 <!-- Financial Transaction Manager -->
-                <h:panelGroup rendered="#{ui.icon eq 'Financial_Transaction_Manager'}" layout="block" class="col-1 p-1" >
+                <h:panelGroup rendered="#{ui.icon eq 'Financial_Transaction_Manager' and webUserController.hasPrivilege('PaymentBilling')}" layout="block" class="col-1 p-1" >
                     <h:form>
                         <p:tooltip for="Financial_Transaction_Manager" value="Financial Transaction Manager" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1606,7 +1606,7 @@
                 </h:panelGroup>
 
                 <!-- Channel Booking by Dates -->
-                <h:panelGroup rendered="#{ui.icon eq 'Channel_Booking_by_Dates'}" layout="block" class="col-1 p-1" >
+                <h:panelGroup rendered="#{ui.icon eq 'Channel_Booking_by_Dates' and webUserController.hasPrivilege('ChannellingChannelBooking')}" layout="block" class="col-1 p-1" >
                     <h:form>
                         <p:tooltip for="channel_booking_by_dates" value="Channel Booking by Dates" showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
