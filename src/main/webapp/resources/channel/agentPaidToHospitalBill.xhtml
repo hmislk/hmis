@@ -39,8 +39,9 @@
             </div>
 
             <div class="headingBill">
-                <h:outputLabel value="Sale Bill"   />   
+                <h:outputLabel value="OB Agent Paid To Hospital Bill"   />   
                 <h:outputLabel value="**Duplicate**"  rendered="#{cc.attrs.duplicate eq true}" /> 
+                <h:outputLabel value="**Cancel Bill"  rendered="#{cc.attrs.bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}" /> 
                 <h:outputLabel value="**Cancelled**"  rendered="#{cc.attrs.bill.cancelled eq true}" /> 
             </div>
             <div class="billline">

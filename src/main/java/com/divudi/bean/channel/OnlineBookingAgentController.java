@@ -456,6 +456,7 @@ public class OnlineBookingAgentController implements Serializable {
             ob.setPaidToHospitalBillCancelledBy(getSessionController().getLoggedUser());
             ob.setPaidToHospitalCancelledBill(cancelBill);
         }
+        printBill = cancelBill;
 
         JsfUtil.addSuccessMessage("Bill cancellation is Successful.");
 
