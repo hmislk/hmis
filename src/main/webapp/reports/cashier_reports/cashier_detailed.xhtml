@@ -209,14 +209,14 @@
                             icon="fas fa-file-excel"
                             class="ui-button-success"
                             value="Excel">
-                        <p:fileDownload value="#{searchController.bundleAsExcel}" />
+                        <p:fileDownload value="#{searchController.bundleAsExcel}"/>
                     </p:commandButton>
                     <p:commandButton
                             class="mx-2 ui-button-danger"
                             icon="fas fa-file-pdf"
                             value="PDF"
-                            ajax="false" >
-                        <p:fileDownload value="#{searchController.bundleAsPdf}" />
+                            ajax="false">
+                        <p:fileDownload value="#{searchController.bundleAsPdf}"/>
                     </p:commandButton>
                 </div>
                 <h:panelGroup id="printPanel">
@@ -233,65 +233,92 @@
                              style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
                             <h:outputText value="From Date - "/>
                             <h:outputText value="#{searchController.fromDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                             <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                             <h:outputText value="To Date - "/>
                             <h:outputText value="#{searchController.toDate}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputText>
                         </div>
                     </div>
                     <ui:repeat value="#{searchController.bundle.bundles}" var="myBundle">
 
 
-                        <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
-                        <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
-                        <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
+                        <ez:opdServiceBilled bundle="#{myBundle}"
+                                             rendered="#{myBundle.bundleType eq 'opdServiceBilled'}"/>
+                        <ez:opdServiceCancellations bundle="#{myBundle}"
+                                                    rendered="#{myBundle.bundleType eq 'opdServiceCancellations'}"/>
+                        <ez:opdServiceRefunds bundle="#{myBundle}"
+                                              rendered="#{myBundle.bundleType eq 'opdServiceRefunds'}"/>
 
                         <!-- Credit Sections -->
-                        <ez:opdServiceBilled bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
-                        <ez:opdServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
-                        <ez:opdServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
+                        <ez:opdServiceBilled bundle="#{myBundle}"
+                                             rendered="#{myBundle.bundleType eq 'cashierSummaryOpdCredit'}"/>
+                        <ez:opdServiceCancellations bundle="#{myBundle}"
+                                                    rendered="#{myBundle.bundleType eq 'opdServiceCancellationsCredit'}"/>
+                        <ez:opdServiceRefunds bundle="#{myBundle}"
+                                              rendered="#{myBundle.bundleType eq 'opdServiceRefundsCredit'}"/>
 
                         <!-- Pharmacy Collections -->
-                        <ez:pharmacyNonCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyNonCreditBills'}"/>
-                        <ez:pharmacyServiceCancellations bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
-                        <ez:pharmacyServiceRefunds bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
+                        <ez:pharmacyNonCreditBills bundle="#{myBundle}"
+                                                   rendered="#{myBundle.bundleType eq 'pharmacyNonCreditBills'}"/>
+                        <ez:pharmacyServiceCancellations bundle="#{myBundle}"
+                                                         rendered="#{myBundle.bundleType eq 'pharmacyServiceCancellations'}"/>
+                        <ez:pharmacyServiceRefunds bundle="#{myBundle}"
+                                                   rendered="#{myBundle.bundleType eq 'pharmacyServiceRefunds'}"/>
 
                         <!-- Professional Payments OPD -->
-                        <ez:professionalPaymentsOpd bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
-                        <ez:professionalPaymentsOpdCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
+                        <ez:professionalPaymentsOpd bundle="#{myBundle}"
+                                                    rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPD'}"/>
+                        <ez:professionalPaymentsOpdCancel bundle="#{myBundle}"
+                                                          rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsOPDCancel'}"/>
 
                         <!-- Professional Payments Inward -->
-                        <ez:professionalPaymentsInward bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
-                        <ez:professionalPaymentsInwardCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
+                        <ez:professionalPaymentsInward bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInward'}"/>
+                        <ez:professionalPaymentsInwardCancel bundle="#{myBundle}"
+                                                             rendered="#{myBundle.bundleType eq 'ProfessionalPaymentsInwardCancel'}"/>
 
                         <!-- Petty Cash Payments -->
-                        <ez:pettyCashPayment bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
-                        <ez:pettyCashPaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
+                        <ez:pettyCashPayment bundle="#{myBundle}"
+                                             rendered="#{myBundle.bundleType eq 'PettyCashPayment'}"/>
+                        <ez:pettyCashPaymentCancel bundle="#{myBundle}"
+                                                   rendered="#{myBundle.bundleType eq 'PettyCashPaymentCancel'}"/>
 
                         <!-- Inward Payments -->
                         <ez:inwardPayments bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPayments'}"/>
-                        <ez:inwardPaymentsCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
-                        <ez:inwardPaymentsRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
+                        <ez:inwardPaymentsCancel bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'InwardPaymentsCancel'}"/>
+                        <ez:inwardPaymentsRefund bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'InwardPaymentsRefund'}"/>
 
                         <!-- Credit Company Payments OPD -->
-                        <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
-                        <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
+                        <ez:creditCompanyPaymentOpReceive bundle="#{myBundle}"
+                                                          rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPReceive'}"/>
+                        <ez:creditCompanyPaymentOpCancel bundle="#{myBundle}"
+                                                         rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentOPCancel'}"/>
 
                         <!-- Credit Company Payments Inpatient -->
-                        <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
-                        <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPCancellation'}"/>
+                        <ez:creditCompanyPaymentIpReceive bundle="#{myBundle}"
+                                                          rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPReceive'}"/>
+                        <ez:creditCompanyPaymentIpCancel bundle="#{myBundle}"
+                                                         rendered="#{myBundle.bundleType eq 'CreditCompanyPaymentIPCancellation'}"/>
 
                         <!-- Patient Deposits -->
                         <ez:patientDeposit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDeposit'}"/>
-                        <ez:patientDepositCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
-                        <ez:patientDepositRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
+                        <ez:patientDepositCancel bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'PatientDepositCancel'}"/>
+                        <ez:patientDepositRefund bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'PatientDepositRefund'}"/>
 
                         <!-- Collecting Centre Payments -->
-                        <ez:collectingCentrePaymentReceive bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
-                        <ez:collectingCentrePaymentCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
+                        <ez:collectingCentrePaymentReceive bundle="#{myBundle}"
+                                                           rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentReceive'}"/>
+                        <ez:collectingCentrePaymentCancel bundle="#{myBundle}"
+                                                          rendered="#{myBundle.bundleType eq 'CollectingCentrePaymentCancel'}"/>
 
                         <!--                             OPD Credits
                                                     <ez:opdCredit bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCredit'}"/>
@@ -299,19 +326,25 @@
                                                     <ez:opdCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'OpdCreditRefund'}"/>-->
 
                         <!-- Pharmacy Credit Bills -->
-                        <ez:pharmacyCreditBills bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
-                        <ez:pharmacyCreditCancel bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
-                        <ez:pharmacyCreditRefund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
+                        <ez:pharmacyCreditBills bundle="#{myBundle}"
+                                                rendered="#{myBundle.bundleType eq 'PharmacyCreditBills'}"/>
+                        <ez:pharmacyCreditCancel bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'PharmacyCreditCancel'}"/>
+                        <ez:pharmacyCreditRefund bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'PharmacyCreditRefund'}"/>
 
                         <ez:agencyDeposits bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'AgencyDeposit'}"/>
 
 
                         <!-- Channel Bookings Income-->
-                        <ez:channel_billed bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsWithPayment'}"/>
+                        <ez:channel_billed bundle="#{myBundle}"
+                                           rendered="#{myBundle.bundleType eq 'ChannelBookingsWithPayment'}"/>
                         <!-- Channel Bookings Cancellations-->
-                        <ez:channel_bills_cancellation bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsCancellation'}"/>
+                        <ez:channel_bills_cancellation bundle="#{myBundle}"
+                                                       rendered="#{myBundle.bundleType eq 'ChannelBookingsCancellation'}"/>
                         <!-- Channel Bookings Refunds-->
-                        <ez:channel_bills_refund bundle="#{myBundle}" rendered="#{myBundle.bundleType eq 'ChannelBookingsRefunds'}"/>
+                        <ez:channel_bills_refund bundle="#{myBundle}"
+                                                 rendered="#{myBundle.bundleType eq 'ChannelBookingsRefunds'}"/>
 
                         <p:splitterPanel></p:splitterPanel>
 
@@ -319,10 +352,10 @@
 
 
                     </ui:repeat>
+
+
+                    <ez:netCash bundle="#{searchController.bundle}"/>
                 </h:panelGroup>
-
-                <ez:netCash bundle="#{searchController.bundle}"/>
-
             </p:panel>
 
         </h:form>
