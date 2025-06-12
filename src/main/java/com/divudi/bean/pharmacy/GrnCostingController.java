@@ -1382,6 +1382,7 @@ public class GrnCostingController implements Serializable {
     }
 
     public void discountChangedLitener() {
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
         calDifference();
     }
