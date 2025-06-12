@@ -216,10 +216,7 @@
                             icon="fas fa-file-pdf"
                             value="PDF"
                             ajax="false" >
-                        <p:dataExporter
-                                type="pdf"
-                                target="printPanel"
-                                fileName="Cashier_details_report"/>
+                        <p:fileDownload value="#{searchController.bundleAsPdf}" />
                     </p:commandButton>
                 </div>
                 <h:panelGroup id="printPanel">
@@ -319,12 +316,12 @@
                         <p:splitterPanel></p:splitterPanel>
 
                         <!-- Net Cash Summary -->
-                        <ez:netCash bundle="#{searchController.bundle}"/>
+
 
                     </ui:repeat>
                 </h:panelGroup>
 
-
+                <ez:netCash bundle="#{searchController.bundle}"/>
 
             </p:panel>
 
