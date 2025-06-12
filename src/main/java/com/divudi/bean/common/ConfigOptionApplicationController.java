@@ -8,6 +8,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
+import com.divudi.bean.pharmacy.GrnCostingController;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -89,6 +90,7 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
         getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
         getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
+        getBooleanValueByKey(GrnCostingController.CFG_SHOW_PROFIT_IN_GRN_BILL, true);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {

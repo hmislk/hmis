@@ -1,14 +1,13 @@
 package com.divudi.core.data;
 
-
 /**
- * Enum for defining various icons with human-readable labels. 
- * Note: Image and action paths are removed as per request.
- * 
- * IMPORTANT: This enum is used in several places with EnumType.ORDINAL. 
- * Therefore, do NOT insert new enum values in the middle or reorder existing ones. 
- * Do NOT delete any values. Instead, deprecate unused ones if necessary.
- * 
+ * Enum for defining various icons with human-readable labels. Note: Image and
+ * action paths are removed as per request.
+ *
+ * IMPORTANT: This enum is used in several places with EnumType.ORDINAL.
+ * Therefore, do NOT insert new enum values in the middle or reorder existing
+ * ones. Do NOT delete any values. Instead, deprecate unused ones if necessary.
+ *
  * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com>
  */
 public enum Icon {
@@ -131,9 +130,8 @@ public enum Icon {
     Cashier_Drawer("Logged User Drawer"),
     Financial_Transaction_Manager("Financial Transaction Manager"),
     Channel_Booking_by_Dates("Channel Booking by Dates"),
-    Channel_Scheduling("Channel Scheduling");
-    
-    
+    Channel_Scheduling("Channel Scheduling"),
+    Goods_Receipt_Costing("Goods Receipt Costing");
 
     private final String label;
 
