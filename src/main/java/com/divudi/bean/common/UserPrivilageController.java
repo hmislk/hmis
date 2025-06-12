@@ -245,6 +245,7 @@ public class UserPrivilageController implements Serializable {
         TreeNode labSampleNode = new DefaultTreeNode(new PrivilegeHolder(null, "Samples"), labNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabSampleCollecting, "Sample Collection"), labSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabSampleSending, "Sample Send"), labSampleNode);
+        new DefaultTreeNode(new PrivilegeHolder(Privileges.OutLabSampleSending, "Out Lab Sample Send"), labSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabSampleReceiving, "Sample Receive"), labSampleNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.LabSampleRejecting, "Sample Reject"), labSampleNode);
         
