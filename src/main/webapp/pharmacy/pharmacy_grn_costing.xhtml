@@ -131,14 +131,22 @@
                         </h:outputText>
                     </p:column> 
                     <p:column 
-                        width="6em"
+                        width="4em"
                         headerText="Ordered Qty" 
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
-                        <p:inputText
-                            readonly="true"
+                        <h:outputLabel
                             class="w-100 text-end text-secondary"
                             value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
                     </p:column>  
+
+                    <p:column 
+                        width="4em"
+                        headerText="Ordered Free Qty" 
+                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        <h:outputLabel 
+                            class="w-100 text-end text-secondary"
+                            value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
+                    </p:column> 
 
                     <p:column 
                         width="6em"
@@ -153,15 +161,7 @@
                         </p:inputText>
                     </p:column>  
 
-                    <p:column 
-                        width="6em"
-                        headerText="Ordered Free Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
-                        <p:inputText 
-                            readonly="true"
-                            class="w-100 text-end text-secondary"
-                            value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
-                    </p:column>  
+
 
                     <p:column
                         width="6em"
@@ -288,55 +288,55 @@
                         <p:tab title="Bill Summary">
                             <p:panelGrid columns="3" style="min-width: 100%" id="tot">
 
-                        <p:panelGrid columns="2">
-                            <p:outputLabel value="Invoice No "/>
-                            <p:inputText autocomplete="off" value="#{grnCostingController.invoiceNumber}" />
-                            <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{grnCostingController.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
-                        </p:panelGrid>                    
+                                <p:panelGrid columns="2">
+                                    <p:outputLabel value="Invoice No "/>
+                                    <p:inputText autocomplete="off" value="#{grnCostingController.invoiceNumber}" />
+                                    <p:outputLabel value="Invoice Date"/>
+                                    <p:calendar  value="#{grnCostingController.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                                </p:panelGrid>                    
 
-                        <p:panelGrid columns="2" >
-                            <p:outputLabel value="Gross Total"/>
-                            <p:outputLabel id="gro"  value="#{0-grnCostingController.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                            <p:outputLabel value="Discount"/>
-                            <p:inputText
-                                autocomplete="off" 
-                                id="dis" 
-                                class="text-end w-100"
-                                onfocus="this.select();"
-                                value="#{grnCostingController.discount}" >
-                                <p:ajax process="@this" update="net ins" event="keyup"
-                                        listener="#{grnCostingController.netDiscount()}"/>
-                            </p:inputText>
-                            <p:outputLabel value="Net Total"/>
-                            <p:outputLabel id="net"  value="#{0-grnCostingController.netTotal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:outputLabel>
-                        </p:panelGrid>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Gross Total"/>
+                                    <p:outputLabel id="gro"  value="#{0-grnCostingController.total}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                    <p:outputLabel value="Discount"/>
+                                    <p:inputText
+                                        autocomplete="off" 
+                                        id="dis" 
+                                        class="text-end w-100"
+                                        onfocus="this.select();"
+                                        value="#{grnCostingController.discount}" >
+                                        <p:ajax process="@this" update="net ins" event="keyup"
+                                                listener="#{grnCostingController.netDiscount()}"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Net Total"/>
+                                    <p:outputLabel id="net"  value="#{0-grnCostingController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:outputLabel>
+                                </p:panelGrid>
 
-                        <p:panelGrid columns="2" id="ins">
-                            <p:outputLabel value="Invoice Total"/>
-                            <p:inputText 
-                                id="insv"  
-                                onfocus="this.select();"
-                                value="#{grnCostingController.insTotal}" >
-                                <f:convertNumber pattern="#,##0.00" />
-                                <p:ajax 
-                                    process="@this" 
-                                    update="diff" 
-                                    event="keyup"
-                                    listener="#{grnCostingController.calDifference()}"/>
-                            </p:inputText>
-                            <p:outputLabel value="Difference"/>
-                            <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnCostingController.difference}"
-                                         style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </p:inputText>
+                                <p:panelGrid columns="2" id="ins">
+                                    <p:outputLabel value="Invoice Total"/>
+                                    <p:inputText 
+                                        id="insv"  
+                                        onfocus="this.select();"
+                                        value="#{grnCostingController.insTotal}" >
+                                        <f:convertNumber pattern="#,##0.00" />
+                                        <p:ajax 
+                                            process="@this" 
+                                            update="diff" 
+                                            event="keyup"
+                                            listener="#{grnCostingController.calDifference()}"/>
+                                    </p:inputText>
+                                    <p:outputLabel value="Difference"/>
+                                    <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnCostingController.difference}"
+                                                 style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </p:inputText>
 
 
-                        </p:panelGrid>
+                                </p:panelGrid>
 
                             </p:panelGrid>
                         </p:tab>
