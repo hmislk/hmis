@@ -311,7 +311,10 @@
 
                                 <p:panelGrid columns="2" >
                                     <p:outputLabel value="Gross Total"/>
-                                    <p:outputLabel id="gro"  value="#{grnCostingController.grnBill.total}">
+                                    <p:outputLabel 
+                                        id="gro" 
+                                        class="text-end w-100"
+                                        value="#{grnCostingController.grnBill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Discount"/>
@@ -328,7 +331,10 @@
                                             listener="#{grnCostingController.discountChangedLitener()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Net Total"/>
-                                    <p:outputLabel id="net"  value="#{grnCostingController.grnBill.netTotal}" >
+                                    <p:outputLabel 
+                                        id="net"
+                                        value="#{grnCostingController.grnBill.netTotal}" 
+                                        class="text-end w-100">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:panelGrid>
