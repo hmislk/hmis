@@ -321,8 +321,11 @@
                                         class="text-end w-100"
                                         onfocus="this.select();"
                                         value="#{grnCostingController.grnBill.discount}" >
-                                        <p:ajax process="@this" update="net ins" event="keyup"
-                                                listener="#{grnCostingController.netDiscount()}"/>
+                                        <p:ajax 
+                                            process="@this" 
+                                            update="net ins" 
+                                            event="keyup"
+                                            listener="#{grnCostingController.discountChangedLitener()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Net Total"/>
                                     <p:outputLabel id="net"  value="#{grnCostingController.grnBill.netTotal}" >

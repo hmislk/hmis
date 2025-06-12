@@ -1234,12 +1234,10 @@ public class GrnCostingController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
-        double tot = 0.0;
-        double saleValue = 0.0;
         int serialNo = 0;
 
         // Bill-level inputs: do not calculate here
-        BigDecimal billDiscount = BigDecimal.ZERO;
+        BigDecimal billDiscount = BigDecimal.valueOf(getGrnBill().getDiscount());
         BigDecimal billExpense = BigDecimal.ZERO;
         BigDecimal billTax = BigDecimal.ZERO;
         BigDecimal billCost = BigDecimal.ZERO;
@@ -1284,9 +1282,7 @@ public class GrnCostingController implements Serializable {
             bi.setSearialNo(serialNo++);
             double netValue = bi.getQty() * bi.getRate();
             bi.setNetValue(0 - netValue);
-            tot += bi.getNetValue();
 
-            saleValue += (pbi.getQty() + pbi.getFreeQty()) * pbi.getRetailRate();
 
             if (f != null) {
                 BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
@@ -1517,7 +1513,7 @@ public class GrnCostingController implements Serializable {
             }
             p.setSearialNo(serialNo++);
         }
-        ChangeDiscountLitener();
+        discountChangedLitener();
     }
 
     public void calGrossTotalForGrnPreBill() {
@@ -1534,17 +1530,14 @@ public class GrnCostingController implements Serializable {
         }
 
         getGrnBill().setTotal(0 - tmp);
-        ChangeDiscountLitener();
+        discountChangedLitener();
     }
 
-    public void ChangeDiscountLitener() {
+    public void discountChangedLitener() {
         calculateBillTotalsFromItems();
-    }
-
-    public void netDiscount() {
-        ChangeDiscountLitener();
         calDifference();
     }
+
 
     public void saveBillFee(BillItem bi) {
         saveBillFee(bi, null);
