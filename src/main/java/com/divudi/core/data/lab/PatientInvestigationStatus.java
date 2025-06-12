@@ -11,6 +11,7 @@ public enum PatientInvestigationStatus {
     SAMPLE_GENERATED("Sample Generated (Barcode generated)"),
     SAMPLE_COLLECTED("Sample Collected"),
     SAMPLE_SENT("Sample Sent"),
+    SAMPLE_SENT_TO_OUTLAB("Sample Sent to OutLab"),
     SAMPLE_ACCEPTED("Sample Accepted"),
     SAMPLE_REJECTED("Sample Rejected"),
     SAMPLE_REVERTED("Sample Reverted"),
