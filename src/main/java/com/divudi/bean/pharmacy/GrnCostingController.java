@@ -592,9 +592,21 @@ public class GrnCostingController implements Serializable {
     }
 
     public void settle() {
+        if (!validateInputs()) {
+            return;
+        }
+
+        saveGrnBill();
+        distributeValuesToItems();
+        processBillItems();
+        finalizeSettle();
+        createAndPersistPayment();
+    }
+
+    private boolean validateInputs() {
         if (Math.abs(difference) > 1) {
             JsfUtil.addErrorMessage("The invoice does not match..! Check again");
-            return;
+            return false;
         }
         if (getGrnBill().getFromInstitution() == null) {
             getGrnBill().setFromInstitution(getFromInstitution());
@@ -602,122 +614,101 @@ public class GrnCostingController implements Serializable {
         if (getGrnBill().getReferenceInstitution() == null) {
             getGrnBill().setReferenceInstitution(getReferenceInstitution());
         }
-
         if (getGrnBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method");
-            return;
+            return false;
         }
 
-//        if (currentGrnBillPre != null) {
-//            getGrnBill().setPaymentMethod(getCurrentGrnBillPre().getPaymentMethod());
-//        } else {
-//            getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
-//        }
         getGrnBill().setInvoiceDate(invoiceDate);
         getGrnBill().setInvoiceNumber(invoiceNumber);
         String msg = pharmacyCalculation.errorCheck(getGrnBill(), billItems);
         if (!msg.isEmpty()) {
             JsfUtil.addErrorMessage(msg);
-            return;
+            return false;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
+        return true;
+    }
 
-        if (getGrnBill().getReferenceBill() != null) {
-            if (getGrnBill().getReferenceBill().getId() == null) {
-
-            }
-        }
-
+    private void saveGrnBill() {
         saveBill();
+    }
+
+    private void distributeValuesToItems() {
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+    }
 
+    private void processBillItems() {
         for (BillItem i : getBillItems()) {
-            if (i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0) {
+            if ((i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0)
+                    || (i.getTmpQty() < 0.0 && i.getTmpFreeQty() < 0.0)) {
                 continue;
             }
-
-            if (i.getTmpQty() < 0.0 && i.getTmpFreeQty() < 0.0) {
-                continue;
-            }
-
             applyFinanceDetailsToPharmaceutical(i);
-
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
-
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
             i.setBill(getGrnBill());
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-
             if (ph.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(ph);
             }
-
             i.setPharmaceuticalBillItem(ph);
             getBillItemFacade().edit(i);
-
-            //     updatePoItemQty(i);
-            //System.err.println("1 " + i);
-            ItemBatch itemBatch;
-            if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-                itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
-            } else {
-                itemBatch = getPharmacyCalculation().saveItemBatch(i);
-            }
-            // getPharmacyBillBean().preCalForAddToStock(i, itemBatch, getSessionController().getDepartment());
-
-            double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit() + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
-
-            i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
-
-            Stock stock = getPharmacyBean().addToStock(
-                    i.getPharmaceuticalBillItem(),
-                    Math.abs(addingQty),
-                    getSessionController().getDepartment());
-
-            i.getPharmaceuticalBillItem().setStock(stock);
-
-            getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+            updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
+    }
 
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN);
+    private void updateStockAndBatches(BillItem i) {
+        ItemBatch itemBatch;
+        if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+            itemBatch = getPharmacyCalculation().saveItemBatchWithCosting(i);
+        } else {
+            itemBatch = getPharmacyCalculation().saveItemBatch(i);
+        }
+        double addingQty = i.getPharmaceuticalBillItem().getQtyInUnit()
+                + i.getPharmaceuticalBillItem().getFreeQtyInUnit();
+        i.getPharmaceuticalBillItem().setItemBatch(itemBatch);
+        Stock stock = getPharmacyBean().addToStock(
+                i.getPharmaceuticalBillItem(),
+                Math.abs(addingQty),
+                getSessionController().getDepartment());
+        i.getPharmaceuticalBillItem().setStock(stock);
+        getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+    }
 
+    private void createAndPersistPayment() {
+        createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
+    }
+
+    private void finalizeSettle() {
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+                getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_GRN);
         getGrnBill().setDeptId(deptId);
         getGrnBill().setInsId(deptId);
-
         getGrnBill().setToInstitution(getApproveBill().getFromInstitution());
         getGrnBill().setToDepartment(getApproveBill().getFromDepartment());
-
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setDepartment(getSessionController().getDepartment());
-
         getGrnBill().setCreater(getSessionController().getLoggedUser());
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
-
         getGrnBill().setBillExpenses(billExpenses);
         getGrnBill().setExpenseTotal(calExpenses());
         calGrossTotal();
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
-
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
-
         getBillFacade().edit(getGrnBill());
-
-        Payment p = createPayment(getGrnBill(), getGrnBill().getPaymentMethod());
-
-        //  getPharmacyBillBean().editBill(, , getSessionController());
         printPreview = true;
-
     }
 
     public void settleWholesale() {
