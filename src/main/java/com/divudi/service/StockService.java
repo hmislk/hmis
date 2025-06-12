@@ -1,9 +1,15 @@
 package com.divudi.service;
 
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.data.StockValueRow;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
+import javax.persistence.TemporalType;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -21,6 +27,7 @@ public class StockService {
 
     // ChatGPT contributed - 2025-05
     @Asynchronous
+    @Deprecated // Now these details are NOT recorded in the Stock. Instead have to take from Item Batch as it used to be
     public void addItemNamesToAllStocksAsync() {
         int batchSize = 500;
         int start = 0;
@@ -47,6 +54,7 @@ public class StockService {
     }
 
 // ChatGPT contributed - 2025-05
+    @Deprecated // Now these details are NOT recorded in the Stock. Instead have to take from Item Batch as it used to be
     public void addItemNamesToAllStocks() {
         System.out.println("addItemNamesToAllStocks");
         List<Stock> allStocks = stockFacade.findByJpql("SELECT s FROM Stock s");
@@ -68,6 +76,51 @@ public class StockService {
             System.out.println("Updated stock id=" + s.getId() + " (" + count + "/" + allStocks.size() + ")");
         }
         System.out.println("addItemNamesToAllStocksSimple finished. Total updated: " + count);
+    }
+
+    // ChatGPT contributed - 2025-06
+    public StockValueRow calculateStockValues(Institution institution, Institution site, Department department) {
+        System.out.println("calculateStockValues");
+        System.out.println("department = " + department);
+        Map<String, Object> params = new HashMap<>();
+        StringBuilder jpql = new StringBuilder();
+        jpql.append("select sum(s.stock * s.itemBatch.purcahseRate), "
+                + "sum(s.stock * s.itemBatch.retailsaleRate), "
+                + "sum(s.stock * coalesce(s.itemBatch.costRate,0)) "
+                + "from Stock s where s.stock>0");
+
+        if (department != null) {
+            jpql.append(" and s.department=:dep");
+            params.put("dep", department);
+        } else if (site != null) {
+            jpql.append(" and s.department.site=:site");
+            params.put("site", site);
+        } else if (institution != null) {
+            jpql.append(" and s.department.institution=:ins");
+            params.put("ins", institution);
+        }
+
+        Object[] obj = stockFacade.findAggregateModified(jpql.toString(), params, TemporalType.TIMESTAMP);
+        
+        System.out.println("obj = " + obj);
+        
+        StockValueRow row = new StockValueRow();
+        row.setInstitution(institution);
+        row.setSite(site);
+        row.setDepartment(department);
+        if (obj != null) {
+            if (obj[0] != null) {
+                row.setPurchaseValue((Double) obj[0]);
+            }
+            if (obj[1] != null) {
+                row.setRetailValue((Double) obj[1]);
+            }
+            if (obj[2] != null) {
+                row.setCostValue((Double) obj[2]);
+            }
+        }
+        System.out.println("row = " + row);
+        return row;
     }
 
 }

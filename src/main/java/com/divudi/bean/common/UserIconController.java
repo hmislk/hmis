@@ -247,6 +247,8 @@ public class UserIconController implements Serializable {
             current.setRetired(true);
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
+            fillDepartmentIcon();
+            reOrderUserIcons();
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
