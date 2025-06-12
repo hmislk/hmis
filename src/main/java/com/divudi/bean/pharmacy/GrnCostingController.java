@@ -86,6 +86,7 @@ public class GrnCostingController implements Serializable {
     private AmpFacade ampFacade;
 
     @EJB
+    @Deprecated
     BillFeePaymentFacade billFeePaymentFacade;
     @EJB
     BillFeeFacade billFeeFacade;
@@ -1413,7 +1414,8 @@ public class GrnCostingController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-        createBillFeePaymentAndPayment(bf, p);
+        // Bill Fee Payment Concept is no loger used. 
+        // createBillFeePaymentAndPayment(bf, p);
     }
 
     public Payment createPayment(Bill bill, PaymentMethod pm) {
@@ -1439,6 +1441,7 @@ public class GrnCostingController implements Serializable {
 
     }
 
+    @Deprecated // THis is NO longer Needed
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
         BillFeePayment bfp = new BillFeePayment();
         bfp.setBillFee(bf);
