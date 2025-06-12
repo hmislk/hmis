@@ -144,8 +144,9 @@
                                 <f:facet name="footer">
                                     <h:outputText value="Totals"></h:outputText>
                                 </f:facet>
-                                <p:tag rendered="#{bill.cancelled ne true and bill.refunded ne true}" value="completed" style="color: #0062cc; font-weight: bold" ></p:tag>
+                                <p:tag rendered="#{bill.cancelled ne true and bill.refunded ne true and bill.billType eq 'ChannelOnlineBookingAgentPaidToHospital'}" value="completed" style="color: #0062cc; font-weight: bold" ></p:tag>
                                 <p:tag rendered="#{bill.cancelled eq true }" value="Cancelled" style="color:black ; font-weight: bold"></p:tag>
+                                <p:tag rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}" value="Cancel Bill" style="color:black ; font-weight: bold"></p:tag>
                                 <p:tag rendered="#{bill.refunded eq true}" value="Refunded" style="color: yellow; font-weight: bold"></p:tag>
                             </p:column>
 

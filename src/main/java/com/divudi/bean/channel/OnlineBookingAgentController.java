@@ -101,7 +101,7 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethod cancelPaymentMethod;
     private Bill cancelBill;
     private String billStatus;
-    
+
     @EJB
     private PaymentFacade paymentFacade;
 
@@ -122,8 +122,6 @@ public class OnlineBookingAgentController implements Serializable {
         }
         return bookinsToAgenHospitalPayementCancellation;
     }
-
-    
 
     public void setBookinsToAgenHospitalPayementCancellation(List<OnlineBooking> bookinsToAgenHospitalPayementCancellation) {
         this.bookinsToAgenHospitalPayementCancellation = bookinsToAgenHospitalPayementCancellation;
@@ -453,9 +451,12 @@ public class OnlineBookingAgentController implements Serializable {
 
         Bill paidBill = getPrintBill();
 
-        paidBill.setCancelled(true);
-        paidBill.setCancelledBill(cancelBill);
-        getBillFacade().edit(paidBill);
+        if (onlineBookingList.size() == bookinsToAgenHospitalPayementCancellation.size()) {
+            paidBill.setCancelled(true);
+            paidBill.setCancelledBill(cancelBill);
+            getBillFacade().edit(paidBill);
+        }
+
         System.out.println("line 458");
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             ob.setPaidToHospitalBillCancelledAt(new Date());
