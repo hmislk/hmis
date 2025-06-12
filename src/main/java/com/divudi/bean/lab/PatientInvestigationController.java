@@ -370,7 +370,7 @@ public class PatientInvestigationController implements Serializable {
 
             tptix.setOutsourced(true);
             tptix.setOutsourcedInstitution(outLabInstitution);
-            tptix.setOutsourcedDepartment(orderedDepartment);
+            tptix.setOutsourcedDepartment(outLabDepartment);
             tptix.setOutsourcedUser(sessionController.getLoggedUser());
             tptix.setOutsourcedAt(new Date());
 
@@ -384,13 +384,20 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
             billFacade.edit(tb);
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            for (PatientSample ps : canSentOutLabSamples) {
+                for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
+                    labTestHistoryController.addSampleOutLabSentHistory(pi, ps, sampleTransportedToLabByStaff,sessionController.getDepartment(),outLabDepartment);
+                }
+            }
+        }
 
         JsfUtil.addSuccessMessage("Selected Samples Sent to OutLab");
 
         outLabInstitution = null;
         outLabDepartment = null;
         sampleTransportedToLabByStaff = null;
-
     }
 
     public String navigateToAlternativeReportSelector(PatientInvestigation patientInvestigation) {
