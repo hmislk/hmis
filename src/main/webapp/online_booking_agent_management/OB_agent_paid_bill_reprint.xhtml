@@ -48,7 +48,7 @@
                                     process="@this"
                                     update="payementSettleDlg onlineBookingsToPay"
                                     actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(onlineBookingAgentController.printBill)}"
-                                    disabled="#{onlineBookingAgentController.printBill.cancelled}"
+                                    disabled="#{onlineBookingAgentController.printBill.cancelled or onlineBookingAgentController.printBill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}"
                                     rendered="#{webUserController.hasPrivilege('PharmacySaleCancel')}">                           
                                 </p:commandButton>
                             </div>
@@ -212,6 +212,8 @@
                                 <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="true" ></ph:agentPaidToHospitalBill>
 
                             </h:panelGroup>
+                            
+                           
 
 <!--                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}"> 
                                 <ph:saleBill_five_five bill="#{pharmacyBillSearch.bill}"></ph:saleBill_five_five>
