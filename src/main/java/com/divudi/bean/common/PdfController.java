@@ -956,7 +956,7 @@ public class PdfController {
 
             // Net Total
             table.addCell(new Cell()
-                    .add(new Paragraph(String.format("#,##0.00", row.getBill().getNetTotal())))
+                    .add(new Paragraph(String.format("%,.2f", row.getBill().getNetTotal())))
                     .setTextAlignment(TextAlignment.RIGHT)
                     .setPadding(4));
         }
