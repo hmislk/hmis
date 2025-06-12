@@ -4,6 +4,7 @@
  * buddhika.ari@gmail.com
  */
 package com.divudi.bean.common;
+
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.entity.BillExpense;
 import java.io.Serializable;
@@ -23,7 +24,7 @@ import javax.inject.Named;
  *
  * @author pdhs
  */
-@Named(value = "billExpenseController")
+@Named
 @SessionScoped
 public class BillExpenseController implements Serializable {
 
@@ -41,63 +42,21 @@ public class BillExpenseController implements Serializable {
     List<BillExpense> selectedItems;
     private BillExpense current;
     private List<BillExpense> items = null;
-    private List<BillExpense> filterItem;
-    String selectText = "";
-    String bulkText = "";
-    boolean billedAs;
-    boolean reportedAs;
-    List<BillExpense> itemsToRemove;
 
-    public List<BillExpense> getItemsToRemove() {
-        return itemsToRemove;
+    public String navigateToManageBillExpenses() {
+        return "/admin/items/bill_expenses.xhtml?faces-redirect=true";
     }
-
-//    public List<BillExpense> completeBillExpense(String query) {
-//        List<BillExpense> suggestions;
-//        String sql;
-//        if (query == null) {
-//            suggestions = new ArrayList<>();
-//        } else {
-//            sql = "select c from BillExpense c where c.retired=false and (c.name) like '%" + query.toUpperCase() + "%' order by c.name";
-//            //////// // System.out.println(sql);
-//            suggestions = getFacade().findByJpql(sql);
-//        }
-//        return suggestions;
-//    }
-
-    public List<BillExpense> getSelectedItems() {
-        if (selectText.trim().equals("")) {
-            selectedItems = getFacade().findByJpql("select c from BillExpense c where c.retired=false order by c.name");
-        } else {
-            selectedItems = getFacade().findByJpql("select c from BillExpense c where c.retired=false and (c.name) like '%" + getSelectText().toUpperCase() + "%' order by c.name");
-        }
-        return selectedItems;
-    }
-
-//    public List<BillExpense> completeItem(String qry) {
-//        List<BillExpense> completeItems = getFacade().findByJpql("select c from Item c "
-//                + " where ( type(c) = BillExpense or type(c) = Packege ) "
-//                + " and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%'"
-//                + "  order by c.name");
-//        return completeItems;
-//    }
 
     public void prepareAdd() {
         current = new BillExpense();
     }
 
-    public String getSelectText() {
-        return selectText;
-    }
-
     public void recreateModel() {
         items = null;
-        filterItem = null;
     }
 
     public void saveSelected() {
-
-        if (getCurrent().getId() != null && getCurrent().getId() > 0) {
+        if (getCurrent().getId() != null) {
             getFacade().edit(getCurrent());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -111,25 +70,12 @@ public class BillExpenseController implements Serializable {
         getItems();
     }
 
-    public void setSelectText(String selectText) {
-        recreateModel();
-        this.selectText = selectText;
-    }
-
     public BillExpenseFacade getEjbFacade() {
         return ejbFacade;
     }
 
-    public void setEjbFacade(BillExpenseFacade ejbFacade) {
-        this.ejbFacade = ejbFacade;
-    }
-
     public SessionController getSessionController() {
         return sessionController;
-    }
-
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
     }
 
     public BillExpense getCurrent() {
@@ -144,7 +90,6 @@ public class BillExpenseController implements Serializable {
     }
 
     public void delete() {
-
         if (current != null) {
             current.setRetired(true);
             current.setRetiredAt(new Date());
@@ -156,7 +101,7 @@ public class BillExpenseController implements Serializable {
         }
         recreateModel();
         getItems();
-        current=null;
+        current = null;
         getCurrent();
 
     }
@@ -166,20 +111,11 @@ public class BillExpenseController implements Serializable {
     }
 
     public List<BillExpense> getItems() {
-        String sql = "select c from BillExpense c where c.retired=false order by c.category.name,c.department.name";
-        items = getFacade().findByJpql(sql);
         if (items == null) {
-            items = new ArrayList<>();
+            String sql = "select c from BillExpense c where c.retired=false order by c.name";
+            items = getFacade().findByJpql(sql);
         }
         return items;
-    }
-
-    public List<BillExpense> getFilterItem() {
-        return filterItem;
-    }
-
-    public void setFilterItem(List<BillExpense> filterItem) {
-        this.filterItem = filterItem;
     }
 
     /**
@@ -223,10 +159,9 @@ public class BillExpenseController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + BillExpenseController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + BillExpense.class.getName());
             }
         }
     }
-
 
 }
