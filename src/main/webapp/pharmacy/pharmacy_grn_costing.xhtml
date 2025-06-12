@@ -153,11 +153,12 @@
                         headerText="Receiving Qty" 
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
                         <p:inputText 
+                            id="txtQty"
                             onfocus="this.select();"
                             autocomplete="off" 
                             class="text-end text-primary w-100"
                             value="#{bi.billItemFinanceDetails.quantity}" >
-                            <f:ajax event="blur" execute="@this pRate rRate doeDateOnlyShort batch ordQty" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total ordQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
+                            <f:ajax event="blur" execute="txtQty" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} total ordQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column>  
 
@@ -173,7 +174,7 @@
                             onfocus="this.select();"
                             value="#{bi.billItemFinanceDetails.freeQuantity}"
                             id="freeQty" >
-                            <f:ajax event="blur" execute="@this pRate freeQty rRate ordQty doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total freeQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
+                            <f:ajax event="blur" execute="freeQty" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} total freeQty doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column> 
 
@@ -187,18 +188,33 @@
                             value="#{bi.billItemFinanceDetails.lineGrossRate}"
                             id="pRate"
                             onfocus="this.select()">
-                            <f:ajax event="blur" execute="pRate rRate ordQty freeQty doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                            <f:ajax event="blur" execute="pRate" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column>
                     <p:column
-                        headerText="Sale Price"
                         width="8em"
+                        headerText="Discount Rate"
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
                         <p:inputText
                             autocomplete="off"
                             class="text-end text-primary w-100"
-                            value="#{bi.billItemFinanceDetails.retailSaleRate}"  id="rRate" onfocus="this.select()">
-                            <f:ajax event="blur" execute="pRate rRate ordQty freeQty doeDateOnlyShort batch" render="@this :#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                            value="#{bi.billItemFinanceDetails.lineDiscountRate}"
+                            id="dRate"
+                            onfocus="this.select()">
+                            <f:ajax event="blur" execute="dRate" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                        </p:inputText>
+                    </p:column>
+                    <p:column
+                        headerText="Retail Rate"
+                        width="8em"
+                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        <p:inputText
+                            autocomplete="off"
+                            id="rRate"
+                            class="text-end text-primary w-100"
+                            value="#{bi.billItemFinanceDetails.retailSaleRate}"  
+                            onfocus="this.select()">
+                            <f:ajax event="blur" execute="rRate" render=":#{p:resolveFirstComponentWithId('tot',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
                             <f:convertNumber pattern="#,##0.00" />
                         </p:inputText>
                     </p:column>
@@ -208,12 +224,11 @@
                         width="8em"
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <h:panelGroup id="total">
-                            <p:inputText 
-                                readonly="true"
+                            <h:outputLabel
                                 class="text-end text-secondary w-100"
                                 value="#{bi.billItemFinanceDetails.lineGrossTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
-                            </p:inputText>
+                            </h:outputLabel>
                         </h:panelGroup>
                     </p:column>
 
@@ -255,13 +270,12 @@
                         headerText="Profit %"
                         rendered="#{grnCostingController.showProfitInGrnBill}"
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
-                        <p:inputText
+                        <h:outputLabel
                             id="profMargin"
-                            readonly="true"
                             class="text-end w-100 text-secondary"
                             value="#{grnCostingController.calcProfitMargin(bi)}" >
                             <f:convertNumber pattern="0.0"></f:convertNumber>
-                        </p:inputText>
+                        </h:outputLabel>
                     </p:column>
 
                     <p:column 
@@ -297,7 +311,7 @@
 
                                 <p:panelGrid columns="2" >
                                     <p:outputLabel value="Gross Total"/>
-                                    <p:outputLabel id="gro"  value="#{0-grnCostingController.total}">
+                                    <p:outputLabel id="gro"  value="#{grnCostingController.grnBill.total}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                     <p:outputLabel value="Discount"/>
@@ -306,12 +320,12 @@
                                         id="dis" 
                                         class="text-end w-100"
                                         onfocus="this.select();"
-                                        value="#{grnCostingController.discount}" >
+                                        value="#{grnCostingController.grnBill.discount}" >
                                         <p:ajax process="@this" update="net ins" event="keyup"
                                                 listener="#{grnCostingController.netDiscount()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Net Total"/>
-                                    <p:outputLabel id="net"  value="#{0-grnCostingController.netTotal}" >
+                                    <p:outputLabel id="net"  value="#{grnCostingController.grnBill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
                                 </p:panelGrid>
