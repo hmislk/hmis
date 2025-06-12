@@ -421,32 +421,26 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public void paidToHospitalBillCancellation() {
-        System.out.println("line 426");
         if (printBill == null) {
-            System.out.println("line 428");
             return;
         }
-        System.out.println("line 431");
+
         prepareCancellationAgentPaidToHospitalBills();
-        System.out.println("line 433");
+
         if (bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()) {
-            System.out.println("line 435");
             return;
         }
 
         double totalToCancel = 0;
-        System.out.println("line 440");
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             totalToCancel += ob.getAppoinmentTotalAmount();
         }
 
         if (getCancelBill().getNetTotal() != totalToCancel) {
-            System.out.println("line 446");
             JsfUtil.addErrorMessage("Bill total and value is different.");
             return;
         }
 
-        System.out.println("line 451");
         Bill cancelBill = createCancelBillForAgentPaidToHospitalCancellation(totalToCancel);
 
         Bill paidBill = getPrintBill();
@@ -457,7 +451,6 @@ public class OnlineBookingAgentController implements Serializable {
             getBillFacade().edit(paidBill);
         }
 
-        System.out.println("line 458");
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             ob.setPaidToHospitalBillCancelledAt(new Date());
             ob.setPaidToHospital(false);
@@ -466,7 +459,7 @@ public class OnlineBookingAgentController implements Serializable {
             ob.setPaidToHospitalCancelledBill(cancelBill);
             getOnlineBookingFacade().edit(ob);
         }
-        System.out.println("line 466");
+
         printBill = cancelBill;
 
         JsfUtil.addSuccessMessage("Bill cancellation is Successful.");
@@ -544,7 +537,7 @@ public class OnlineBookingAgentController implements Serializable {
     public void prepareCancellationAgentPaidToHospitalBills() {
 
         double totalAmountToCancellation = 0;
-        System.out.println("line 543");
+
         if (bookinsToAgenHospitalPayementCancellation == null || bookinsToAgenHospitalPayementCancellation.isEmpty()) {
 
             getCancelBill().setTotal(totalAmountToCancellation);
@@ -556,7 +549,6 @@ public class OnlineBookingAgentController implements Serializable {
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             totalAmountToCancellation += ob.getAppoinmentTotalAmount();
         }
-        System.out.println("line 554" + totalAmountToCancellation);
 
         getCancelBill().setTotal(totalAmountToCancellation);
         getCancelBill().setNetTotal(totalAmountToCancellation);
