@@ -113,7 +113,7 @@
                             <h:outputLabel value="No"/>
                         </f:facet>
                         <h:outputLabel value="#{rowIndex+1}">
-                            <f:convertNumber pattern="00" rendered=""></f:convertNumber>
+                            <f:convertNumber pattern="00" rendered=""/>
                         </h:outputLabel>
                     </p:column>
 
@@ -145,7 +145,7 @@
                             <h:outputLabel value="D O E"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                         </h:outputLabel>
                     </p:column>
 
@@ -153,7 +153,7 @@
                         <f:facet name="header">
                             <h:outputLabel value="QTY"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}"/>
                     </p:column>
 
                     <p:column  
@@ -241,7 +241,7 @@
                 </h:outputScript>
             </div>
             <div class="w-100 transfer-footer">
-                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 16px;" ></p:outputLabel>
+                <p:outputLabel value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer Text')}" escape="false" style="font-size: 16px;" />
             </div>
 
         </div>
