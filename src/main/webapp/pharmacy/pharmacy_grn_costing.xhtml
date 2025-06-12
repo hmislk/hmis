@@ -319,21 +319,21 @@
                                     </p:outputLabel>
                                     <p:outputLabel value="Discount"/>
                                     <p:inputText
-                                        autocomplete="off" 
-                                        id="dis" 
+                                        autocomplete="off"
+                                        id="txtBillDiscount"
                                         class="text-end w-100"
                                         onfocus="this.select();"
                                         value="#{grnCostingController.grnBill.discount}" >
-                                        <p:ajax 
-                                            process="@this" 
-                                            update="net ins" 
+                                        <p:ajax
+                                            process="@this"
+                                            update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
                                             event="keyup"
                                             listener="#{grnCostingController.discountChangedLitener()}"/>
                                     </p:inputText>
                                     <p:outputLabel value="Net Total"/>
-                                    <p:outputLabel 
-                                        id="net"
-                                        value="#{grnCostingController.grnBill.netTotal}" 
+                                    <p:outputLabel
+                                        id="txtBillNetTotal"
+                                        value="#{grnCostingController.grnBill.netTotal}"
                                         class="text-end w-100">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>

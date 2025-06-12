@@ -38,7 +38,6 @@ import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -117,67 +116,26 @@ public class GrnCostingController implements Serializable {
         return pharmacyCostingService.calcProfitMargin(bi);
     }
     /////////////////
-    private Institution dealor;
     private Bill approveBill;
     private Bill grnBill;
     private Bill currentGrnBillPre;
-    //   private Double cashPaid;
-    private Date fromDate;
-    private Date toDate;
     private boolean printPreview;
     //////////////
-    //private List<PharmacyItemData> pharmacyItems;
-    private List<Bill> pos;
-    private List<Bill> grns;
-    private List<Bill> filteredValue;
     private List<BillItem> billItems;
     private List<BillItem> selectedBillItems;
     private SearchKeyword searchKeyword;
-    private List<Bill> bills;
     private double insTotal;
     private double difference;
     private Institution fromInstitution;
     private Institution referenceInstitution;
     private Date invoiceDate;
     private String invoiceNumber;
-    private Bill closeBill;
-    private BillItem currentBillItem;
     BillItem currentExpense;
     List<BillItem> billExpenses;
-
-    public void closeSelectedPurchesOrder() {
-        if (closeBill == null) {
-            JsfUtil.addErrorMessage("Bill is Not Valid !");
-            return;
-        }
-
-        closeBill.setBillClosed(true);
-        billFacade.edit(closeBill);
-
-    }
-
-    public void openSelectedPurchesOrder() {
-        if (closeBill == null) {
-            JsfUtil.addErrorMessage("Bill is Not Valid !");
-            return;
-        }
-
-        closeBill.setBillClosed(false);
-        billFacade.edit(closeBill);
-
-    }
 
     public double calDifference() {
         difference = Math.abs(insTotal) - Math.abs(getGrnBill().getNetTotal());
         return difference;
-    }
-
-    public String navigateToResive() {
-        clear();
-        createGrn();
-        getGrnBill().setPaymentMethod(getApproveBill().getPaymentMethod());
-        getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
-        return "/pharmacy/pharmacy_grn?faces-redirect=true";
     }
 
     public String navigateToResiveCosting() {
@@ -188,95 +146,17 @@ public class GrnCostingController implements Serializable {
         return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
     }
 
-    public String navigateToResiveFromImportGrn(Bill importGrn) {
-        clear();
-        saveImportBill(importGrn);
-        createGrn(importGrn);
-        setFromInstitution(importGrn.getFromInstitution());
-
-        getGrnBill().setPaymentMethod(importGrn.getPaymentMethod());
-        return "/pharmacy/pharmacy_grn?faces-redirect=true";
-    }
-
     public void clear() {
         billExpenses = null;
         grnBill = null;
         invoiceDate = null;
         invoiceNumber = null;
-        dealor = null;
-        pos = null;
         printPreview = false;
         billItems = null;
         difference = 0;
         insTotal = 0;
     }
 
-    public String navigateToRecieveGrnPreBill() {
-        clear();
-        currentGrnBillPre = null;
-        for (Bill b : getApproveBill().getListOfBill()) {
-            if (b.getForwardReferenceBill() == null) {
-                JsfUtil.addErrorMessage("Please approve the grn bill");
-                return "";
-            }
-        }
-        createGrn();
-        getCurrentGrnBillPre().setPaymentMethod(getApproveBill().getPaymentMethod());
-        return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
-    }
-
-    public String navigateToApproveRecieveGrnPreBill() {
-        clear();
-        billItems = getCurrentGrnBillPre().getBillItems();
-        invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
-        invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
-        setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
-        setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
-        for (BillItem bi : billItems) {
-            bi.setTmpQty(bi.getPharmaceuticalBillItem().getQtyInUnit());
-            bi.setTmpFreeQty(bi.getPharmaceuticalBillItem().getFreeQtyInUnit());
-        }
-        calGrossTotal();
-        return "/pharmacy/pharmacy_grn_approval_finalized?faces-redirect=true";
-    }
-
-    public String navigateToEditGrn() {
-        clear();
-        billItems = getCurrentGrnBillPre().getBillItems();
-        invoiceDate = getCurrentGrnBillPre().getInvoiceDate();
-        invoiceNumber = getCurrentGrnBillPre().getInvoiceNumber();
-        setFromInstitution(getCurrentGrnBillPre().getFromInstitution());
-        setReferenceInstitution(getSessionController().getLoggedUser().getInstitution());
-        for (BillItem bi : billItems) {
-            bi.setTmpQty(bi.getPharmaceuticalBillItem().getQtyInUnit());
-            bi.setTmpFreeQty(bi.getPharmaceuticalBillItem().getFreeQtyInUnit());
-        }
-        calGrossTotal();
-        return "/pharmacy/pharmacy_grn_with_approval?faces-redirect=true";
-    }
-
-    @Deprecated // Please use navigateToResive
-    public String navigateToResiveAll() {
-        grnBill = null;
-        dealor = null;
-        pos = null;
-        printPreview = false;
-        billItems = null;
-        createGrnWholesale();
-        return "/pharmacy/pharmacy_grn?faces-redirect=true";
-    }
-
-    public String navigateToReceiveWholesale() {
-        grnBill = null;
-        dealor = null;
-        pos = null;
-        printPreview = false;
-        billItems = null;
-        difference = 0;
-        insTotal = 0;
-        createGrnWholesale();
-        return "/pharmacy/pharmacy_grn_wh?faces-redirect=true";
-    }
 
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
@@ -352,10 +232,7 @@ public class GrnCostingController implements Serializable {
 
     public void clearList() {
         //   pharmacyItems = null;
-        pos = null;
-        filteredValue = null;
         //  billItems = null;
-        grns = null;
     }
 
     public void setBatch(BillItem pid) {
@@ -381,19 +258,7 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-    public Date getToDate() {
-        if (toDate == null) {
-            toDate = CommonFunctions.getEndOfDay(new Date());
-        }
-        return toDate;
-    }
 
-    public Date getFromDate() {
-        if (fromDate == null) {
-            fromDate = CommonFunctions.getStartOfDay(new Date());
-        }
-        return fromDate;
-    }
 
     public void request() {
 //        if (Math.abs(difference) > 1) {
@@ -859,24 +724,7 @@ public class GrnCostingController implements Serializable {
     public GrnCostingController() {
     }
 
-    public Institution getDealor() {
-        return dealor;
-    }
-
-    public void setDealor(Institution dealor) {
-        this.dealor = dealor;
-    }
-
     private String txtSearch;
-
-    public void makeListNull() {
-
-//        pharmacyItems = null;
-        pos = null;
-        grns = null;
-        filteredValue = null;
-        bills = null;
-    }
 
     public BillFacade getBillFacade() {
         return billFacade;
@@ -1781,21 +1629,6 @@ public class GrnCostingController implements Serializable {
         this.ampFacade = ampFacade;
     }
 
-    public void setFromDate(Date fromDate) {
-        this.fromDate = fromDate;
-    }
-
-    public void setToDate(Date toDate) {
-        this.toDate = toDate;
-    }
-
-    public List<Bill> getFilteredValue() {
-        return filteredValue;
-    }
-
-    public void setFilteredValue(List<Bill> filteredValue) {
-        this.filteredValue = filteredValue;
-    }
 
     public boolean isPrintPreview() {
         return printPreview;
@@ -1803,14 +1636,6 @@ public class GrnCostingController implements Serializable {
 
     public void setPrintPreview(boolean printPreview) {
         this.printPreview = printPreview;
-    }
-
-    public List<Bill> getPos() {
-        return pos;
-    }
-
-    public void setPos(List<Bill> pos) {
-        this.pos = pos;
     }
 
 //    public List<BillItem> getBillItems() {
@@ -1862,28 +1687,12 @@ public class GrnCostingController implements Serializable {
         this.searchKeyword = searchKeyword;
     }
 
-    public List<Bill> getBills() {
-        return bills;
-    }
-
-    public void setBills(List<Bill> bills) {
-        this.bills = bills;
-    }
-
     public PharmacyCalculation getPharmacyCalculation() {
         return pharmacyCalculation;
     }
 
     public void setPharmacyCalculation(PharmacyCalculation pharmacyCalculation) {
         this.pharmacyCalculation = pharmacyCalculation;
-    }
-
-    public List<Bill> getGrns() {
-        return grns;
-    }
-
-    public void setGrns(List<Bill> grns) {
-        this.grns = grns;
     }
 
     public BillFeePaymentFacade getBillFeePaymentFacade() {
@@ -1971,21 +1780,6 @@ public class GrnCostingController implements Serializable {
         this.invoiceNumber = invoiceNumber;
     }
 
-    public Bill getCloseBill() {
-        return closeBill;
-    }
-
-    public void setCloseBill(Bill closeBill) {
-        this.closeBill = closeBill;
-    }
-
-    public BillItem getCurrentBillItem() {
-        return currentBillItem;
-    }
-
-    public void setCurrentBillItem(BillItem currentBillItem) {
-        this.currentBillItem = currentBillItem;
-    }
 
     public List<BillItem> getBillExpenses() {
         if (billExpenses == null) {
