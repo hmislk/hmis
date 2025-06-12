@@ -288,7 +288,7 @@
                                         <h:outputText value="#{b.deptId}"  class="w-100 m-1" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="To Department" width="280px;" styleClass="#{b.refunded ? 'row-warning' : b.cancelled ? 'row-danger' : ''}">
-                                        <h:outputText value="#{b.toDepartment.name}"  class="w-100 m-1" ></h:outputText>
+                                        <h:outputText value="#{b.toDepartment != null ? b.toDepartment.name : ''}"  class="w-100 m-1" />
                                     </p:column>
 
                                     <p:column 
