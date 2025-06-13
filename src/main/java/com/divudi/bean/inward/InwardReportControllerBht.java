@@ -118,6 +118,7 @@ public class InwardReportControllerBht implements Serializable {
     Bill finalBill;
     private Department department;
     private Patient patient;
+    private List<Bill> issueBills;
 
     public String navigateToInpatientPharmacyItemList() {
         System.out.println("navigateToInpatientPharmacyItemList");
@@ -197,6 +198,13 @@ public class InwardReportControllerBht implements Serializable {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
     }
+    
+    public String madeNullIssue() {
+        patientEncounter = null;
+        bill = null;
+        //department = null;
+        return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
+    }
 
     public String navigateToInpatientLabItemList() {
         System.out.println("navigateToInpatientLabItemList");
@@ -248,6 +256,14 @@ public class InwardReportControllerBht implements Serializable {
         patientEncounter = null;
         //department = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list?faces-redirect=true";
+    }
+    
+    public String navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy() {
+        department = sessionController.getLoggedUser().getDepartment();
+        patientEncounter = null;
+        bill = null;
+        //department = null;
+        return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
     }
 
     public void processInpatientPharmacyItemList() {
@@ -1133,6 +1149,38 @@ public class InwardReportControllerBht implements Serializable {
         patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
+    
+    public void fetchIssueBill(){
+        if(getPatientEncounter() == null){
+            JsfUtil.addErrorMessage("No Patient");
+            return;
+        }
+        
+        issueBills = new ArrayList<>();
+        String jpql;
+        HashMap hm = new HashMap();
+        jpql = "select b from Bill b "
+                + "where b.patientEncounter=:pe "
+                + "and b.billType=:bTp "
+                + "and b.retired=false "
+                + "and  b.toDepartment=:toDep";
+        hm.put("pe", getPatientEncounter());
+        hm.put("toDep", department);
+        hm.put("bTp", BillType.InwardPharmacyRequest);
+        
+        issueBills = getBillFacade().findByJpql(jpql, hm);
+        
+    }
+    
+    public List<Bill> getBHTIssudBills(Bill b) {
+        String sql = "Select b From Bill b where b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.referenceBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyBhtPre);
+        return getBillFacade().findByJpql(sql, hm);
+    }
 
     ////////////GETTERS AND SETTERS
     public List<String1Value2> getTimedServices() {
@@ -1416,6 +1464,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setLabBillItemsToPatientEncounterNetTotal(double labBillItemsToPatientEncounterNetTotal) {
         this.labBillItemsToPatientEncounterNetTotal = labBillItemsToPatientEncounterNetTotal;
+    }
+
+    public List<Bill> getIssueBills() {
+        return issueBills;
+    }
+
+    public void setIssueBills(List<Bill> issueBills) {
+        this.issueBills = issueBills;
     }
 
     //DATA STRUCTURE
