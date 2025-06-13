@@ -193,12 +193,12 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
-    
+
     public String madeNull() {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
     }
-    
+
     public String madeNullIssue() {
         patientEncounter = null;
         bill = null;
@@ -257,7 +257,7 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
-    
+
     public String navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy() {
         department = sessionController.getLoggedUser().getDepartment();
         patientEncounter = null;
@@ -1149,14 +1149,17 @@ public class InwardReportControllerBht implements Serializable {
         patientRooms = patientRoomFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
     }
-    
-    public void fetchIssueBill(){
-        if(getPatientEncounter() == null){
-            JsfUtil.addErrorMessage("No Patient");
+
+    public void fetchIssueBill() {
+        issueBills = new ArrayList<>();
+        if (getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Patient Encounter");
             return;
         }
-        
-        issueBills = new ArrayList<>();
+        if (department == null) {
+            JsfUtil.addErrorMessage("No Department selected");
+            return;
+        }
         String jpql;
         HashMap hm = new HashMap();
         jpql = "select b from Bill b "
@@ -1167,11 +1170,11 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("pe", getPatientEncounter());
         hm.put("toDep", department);
         hm.put("bTp", BillType.InwardPharmacyRequest);
-        
+
         issueBills = getBillFacade().findByJpql(jpql, hm);
-        
+
     }
-    
+
     public List<Bill> getBHTIssudBills(Bill b) {
         String sql = "Select b From Bill b where b.retired=false "
                 + " and b.billType=:btp "
