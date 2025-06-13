@@ -52,6 +52,8 @@ public class SmsController implements Serializable {
      */
     @Inject
     SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     /*
     Class Variables
@@ -293,15 +295,15 @@ public class SmsController implements Serializable {
     }
 
     private void save(Sms s) {
-        if(s==null){
+        if (s == null) {
             JsfUtil.addErrorMessage("No SMS");
             return;
         }
-        if(s.getId()==null){
+        if (s.getId() == null) {
             s.setCreatedAt(new Date());
             s.setCreater(sessionController.getLoggedUser());
             smsFacade.create(s);
-        }else{
+        } else {
             smsFacade.edit(s);
         }
     }
@@ -341,7 +343,7 @@ public class SmsController implements Serializable {
         j += " order by p.person.name";
         System.out.println("j = " + j);
         System.out.println("m = " + m);
-        patientsForSms = patientFacade.findByJpql(j, m, TemporalType.DATE);
+        patientsForSms = patientFacade.findByJpql(j, m, TemporalType.DATE, maxNumberToList.intValue());
         System.out.println("patientsForSms = " + patientsForSms);
     }
 
@@ -354,12 +356,12 @@ public class SmsController implements Serializable {
         msg = msg.replace("{phone1}", nvl(p.getPerson().getPhone()));
         msg = msg.replace("{phone2}", nvl(p.getPerson().getMobile()));
         msg = msg.replace("{address}", nvl(p.getPerson().getAddress()));
-        msg = msg.replace("{area}", p.getPerson().getArea()!=null ? p.getPerson().getArea().getName() : "");
+        msg = msg.replace("{area}", p.getPerson().getArea() != null ? p.getPerson().getArea().getName() : "");
         if (p.getPerson().getSex() != null) {
-            msg = msg.replace("{he/she}", p.getPerson().getSex()==Sex.Male ? "he" : "she");
-            msg = msg.replace("{sir/madam}", p.getPerson().getSex()==Sex.Male ? "sir" : "madam");
+            msg = msg.replace("{he/she}", p.getPerson().getSex() == Sex.Male ? "he" : "she");
+            msg = msg.replace("{sir/madam}", p.getPerson().getSex() == Sex.Male ? "sir" : "madam");
         }
-        msg = msg.replace("{title}", p.getPerson().getTitle()!=null ? p.getPerson().getTitle().getLabel() : "");
+        msg = msg.replace("{title}", p.getPerson().getTitle() != null ? p.getPerson().getTitle().getLabel() : "");
         return msg;
     }
 
@@ -406,6 +408,9 @@ public class SmsController implements Serializable {
     }
 
     public Long getMaxNumberToList() {
+        if (maxNumberToList == null) {
+            maxNumberToList = configOptionApplicationController.getLongValueByKey("Maximum Number of Patients to List to Send Bulkl SMS", 100l);
+        }
         return maxNumberToList;
     }
 
@@ -527,6 +532,4 @@ public class SmsController implements Serializable {
         this.selectedPatients = selectedPatients;
     }
 
-    
-    
 }

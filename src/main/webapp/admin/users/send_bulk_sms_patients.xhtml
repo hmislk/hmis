@@ -18,10 +18,10 @@
                             <h:panelGrid columns="8" class="w-100 p-2" >
                                 <h:outputLabel value="Age From" class="w-100"/>
                                 <p:inputText value="#{smsController.ageFrom}" class="w-100"/>
-                                <p:spacer></p:spacer>
+                                <p:spacer width="10em"></p:spacer>
                                 <h:outputLabel value="Age To" class="w-100"/>
                                 <p:inputText value="#{smsController.ageTo}" class="w-100"/>
-                                <p:spacer></p:spacer>
+                                <p:spacer width="10em"></p:spacer>
                                 <h:outputLabel value="Max Number to List" class="w-100"/>
                                 <p:inputText value="#{smsController.maxNumberToList}" class="w-100"/>
 
@@ -29,7 +29,7 @@
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu value="#{smsController.sex}" >
                                     <f:selectItem itemLabel="Select Sex" />
-                                    <f:selectItems value="#{enumController.sexs}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
+                                    <f:selectItems value="#{enumController.gender}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
                                 </p:selectOneMenu>
                                 <p:spacer></p:spacer>
                                 <h:outputLabel value="Area"/>
@@ -52,7 +52,7 @@
                                 class="w-100 mt-3" 
                                 rowsPerPageTemplate="5,10,20">
                                 <p:column selectionBox="true" style="width:3%"/>
-                                <p:column headerText="Name">
+                                <p:column headerText="Name" >
                                     <h:outputText value="#{pt.person.name}"/>
                                 </p:column>
                                 <p:column headerText="Phone">

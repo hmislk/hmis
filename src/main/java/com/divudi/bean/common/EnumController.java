@@ -572,10 +572,6 @@ public class EnumController implements Serializable {
         return tem;
     }
 
-    public Sex[] getSex() {
-        return Sex.values();
-    }
-
     public Sex[] getGender() {
         Sex[] sexes = {Sex.Male, Sex.Female};
         return sexes;
