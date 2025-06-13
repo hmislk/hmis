@@ -1082,10 +1082,14 @@ public class GrnCostingController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
+        System.out.println("calculateBillTotalsFromItems");
         int serialNo = 0;
 
+        System.out.println("getGrnBill().getDiscount()");
+        
         // Bill-level inputs: do not calculate here
         BigDecimal billDiscount = BigDecimal.valueOf(getGrnBill().getDiscount());
+        System.out.println("billDiscount = " + billDiscount);
         BigDecimal billExpense = BigDecimal.ZERO;
         BigDecimal billTax = BigDecimal.ZERO;
         BigDecimal billCost = BigDecimal.ZERO;
@@ -1384,6 +1388,8 @@ public class GrnCostingController implements Serializable {
     public void discountChangedLitener() {
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
+        System.out.println("getGrnBill().getDiscount() = " + getGrnBill().getDiscount());
+        System.out.println("getGrnBill().getBillFinanceDetails().getTotalDiscount() = " + getGrnBill().getBillFinanceDetails().getTotalDiscount());
         calDifference();
     }
 
