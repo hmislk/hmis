@@ -187,6 +187,16 @@ public class GoodsReturnController implements Serializable {
 
     }
 
+    private double getReturnRate(BillItem item) {
+        double rate = item.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
+                && item.getBillItemFinanceDetails() != null
+                && item.getBillItemFinanceDetails().getLineCostRate() != null) {
+            rate = item.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+        }
+        return rate;
+    }
+
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
 
@@ -195,12 +205,7 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
-                    && i.getBillItemFinanceDetails() != null
-                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
-                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
-            }
+            double rate = getReturnRate(i);
             i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -242,12 +247,7 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
-                    && i.getBillItemFinanceDetails() != null
-                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
-                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
-            }
+            double rate = getReturnRate(i);
             i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -401,12 +401,7 @@ public class GoodsReturnController implements Serializable {
         double grossTotal = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            double rate = p.getPharmaceuticalBillItem().getPurchaseRate();
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
-                    && p.getBillItemFinanceDetails() != null
-                    && p.getBillItemFinanceDetails().getLineCostRate() != null) {
-                rate = p.getBillItemFinanceDetails().getLineCostRate().doubleValue();
-            }
+            double rate = getReturnRate(p);
             grossTotal += rate * p.getTmpQty();
             p.setSearialNo(serialNo++);
         }
