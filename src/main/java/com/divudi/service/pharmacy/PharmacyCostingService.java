@@ -78,7 +78,12 @@ public class PharmacyCostingService {
                 ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO);
 
-        billItemFinanceDetails.setRetailSaleRatePerUnit(retailRate.multiply(unitsPerPack));
+        billItemFinanceDetails.setRetailSaleRatePerUnit(
+                unitsPerPack.compareTo(BigDecimal.ZERO) > 0
+                ? retailRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP)
+                : BigDecimal.ZERO
+        );
+
         billItemFinanceDetails.setLineDiscount(lineDiscountValue);
         billItemFinanceDetails.setLineGrossTotal(lineGrossTotal);
         billItemFinanceDetails.setLineNetTotal(lineNetTotal);
