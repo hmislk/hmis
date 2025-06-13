@@ -6,7 +6,6 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -79,8 +78,6 @@ public class GoodsReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
-    @Inject
-    private ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -187,30 +184,6 @@ public class GoodsReturnController implements Serializable {
 
     }
 
-    public double getReturnRate(BillItem item) {
-        double rate = item.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
-                && item.getBillItemFinanceDetails() != null
-                && item.getBillItemFinanceDetails().getLineCostRate() != null) {
-            rate = item.getBillItemFinanceDetails().getLineCostRate().doubleValue();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
-                && item.getBillItemFinanceDetails() != null
-                && item.getBillItemFinanceDetails().getTotalCostRate() != null) {
-            rate = item.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
-        }
-        return rate;
-    }
-
-    public String getReturnRateLabel() {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)) {
-            return "Line Cost Rate";
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)) {
-            return "Total Cost Rate";
-        }
-        return "Purchase Rate";
-    }
-
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
 
@@ -219,8 +192,7 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            double rate = getReturnRate(i);
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -261,8 +233,7 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            double rate = getReturnRate(i);
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -415,8 +386,7 @@ public class GoodsReturnController implements Serializable {
         double grossTotal = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            double rate = getReturnRate(p);
-            grossTotal += rate * p.getTmpQty();
+            grossTotal += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getTmpQty();
             p.setSearialNo(serialNo++);
         }
 
@@ -586,14 +556,6 @@ public class GoodsReturnController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
-    }
-
-    public ConfigOptionApplicationController getConfigOptionApplicationController() {
-        return configOptionApplicationController;
-    }
-
-    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
-        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     public BillNumberGenerator getBillNumberBean() {
