@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -78,6 +79,8 @@ public class GoodsReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      */
@@ -192,7 +195,13 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
+                    && i.getBillItemFinanceDetails() != null
+                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -233,7 +242,13 @@ public class GoodsReturnController implements Serializable {
             }
 
             i.setBill(getReturnBill());
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
+                    && i.getBillItemFinanceDetails() != null
+                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -386,7 +401,13 @@ public class GoodsReturnController implements Serializable {
         double grossTotal = 0.0;
         int serialNo = 0;
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getTmpQty();
+            double rate = p.getPharmaceuticalBillItem().getPurchaseRate();
+            if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Return Based On Cost Rate", false)
+                    && p.getBillItemFinanceDetails() != null
+                    && p.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = p.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            grossTotal += rate * p.getTmpQty();
             p.setSearialNo(serialNo++);
         }
 
@@ -556,6 +577,14 @@ public class GoodsReturnController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     public BillNumberGenerator getBillNumberBean() {
