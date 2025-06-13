@@ -68,6 +68,7 @@ public class SmsController implements Serializable {
     // Bulk SMS related fields
     private Integer ageFrom;
     private Integer ageTo;
+    private Long maxNumberToList;
     private Sex sex;
     private Area area;
     private String smsTemplate;
@@ -306,6 +307,7 @@ public class SmsController implements Serializable {
     }
 
     public void searchPatientsForBulkSms() {
+        System.out.println("searchPatientsForBulkSms");
         String j = "select p from Patient p where p.retired=false";
         Map<String, Object> m = new HashMap<>();
         if (sex != null) {
@@ -337,7 +339,10 @@ public class SmsController implements Serializable {
             m.put("dt", dobTo);
         }
         j += " order by p.person.name";
+        System.out.println("j = " + j);
+        System.out.println("m = " + m);
         patientsForSms = patientFacade.findByJpql(j, m, TemporalType.DATE);
+        System.out.println("patientsForSms = " + patientsForSms);
     }
 
     private String applyPatientPlaceholders(Patient p, String template) {
@@ -398,6 +403,14 @@ public class SmsController implements Serializable {
         sex = null;
         area = null;
         return "/admin/users/send_bulk_sms_patients?faces-redirect=true";
+    }
+
+    public Long getMaxNumberToList() {
+        return maxNumberToList;
+    }
+
+    public void setMaxNumberToList(Long maxNumberToList) {
+        this.maxNumberToList = maxNumberToList;
     }
 
     public class SmsSummeryRow {
@@ -514,4 +527,6 @@ public class SmsController implements Serializable {
         this.selectedPatients = selectedPatients;
     }
 
+    
+    
 }

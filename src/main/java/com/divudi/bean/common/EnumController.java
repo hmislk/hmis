@@ -78,6 +78,10 @@ public class EnumController implements Serializable {
         enumList.add(DiscountType.class);
     }
 
+    public Sex[] getSex() {
+        return Sex.values();
+    }
+
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
         if (paymentMethodsForOpdBilling == null) {
             fillPaymentMethodsForOpdBilling();

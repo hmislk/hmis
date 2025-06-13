@@ -14,28 +14,44 @@
 
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                     <h:form id="form">
-                        <p:panel header="Send Bulk SMS to Patients">
-                            <h:panelGrid columns="4" class="w-100 p-2" >
-                                <h:outputLabel value="Age From"/>
-                                <p:inputText value="#{smsController.ageFrom}"/>
-                                <h:outputLabel value="Age To"/>
-                                <p:inputText value="#{smsController.ageTo}"/>
+                        <p:panel header="Send Bulk SMS to Patients" class="m-1 w-100">
+                            <h:panelGrid columns="8" class="w-100 p-2" >
+                                <h:outputLabel value="Age From" class="w-100"/>
+                                <p:inputText value="#{smsController.ageFrom}" class="w-100"/>
+                                <p:spacer></p:spacer>
+                                <h:outputLabel value="Age To" class="w-100"/>
+                                <p:inputText value="#{smsController.ageTo}" class="w-100"/>
+                                <p:spacer></p:spacer>
+                                <h:outputLabel value="Max Number to List" class="w-100"/>
+                                <p:inputText value="#{smsController.maxNumberToList}" class="w-100"/>
+
 
                                 <h:outputLabel value="Sex"/>
                                 <p:selectOneMenu value="#{smsController.sex}" >
-                                    <f:selectItem itemLabel="Select Sex" itemValue="" />
-                                    <f:selectItems value="#{sexController.items}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
+                                    <f:selectItem itemLabel="Select Sex" />
+                                    <f:selectItems value="#{enumController.sexs}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
                                 </p:selectOneMenu>
-
+                                <p:spacer></p:spacer>
                                 <h:outputLabel value="Area"/>
                                 <p:autoComplete value="#{smsController.area}" completeMethod="#{areaController.completeArea}" var="a" itemLabel="#{a.name}" itemValue="#{a}" forceSelection="true"/>
-
+                                <p:spacer></p:spacer>
                                 <h:outputLabel value=""/>
                                 <p:commandButton value="Search" action="#{smsController.searchPatientsForBulkSms}" update="tbl" icon="fa fa-search" class="ui-button-warning"/>
                             </h:panelGrid>
 
-                            <p:dataTable id="tbl" value="#{smsController.patientsForSms}" var="pt" rowKey="#{pt.id}" selection="#{smsController.selectedPatients}" selectionMode="multiple" paginator="true" rows="10" paginatorAlwaysVisible="false" class="w-100 mt-3" rowsPerPageTemplate="5,10,20">
-                                <p:column selectionMode="multiple" style="width:3%"/>
+                            <p:dataTable
+                                id="tbl" 
+                                value="#{smsController.patientsForSms}"
+                                var="pt" 
+                                rowKey="#{pt.id}" 
+                                selection="#{smsController.selectedPatients}" 
+                                selectionMode="multiple"
+                                paginator="true"
+                                rows="10" 
+                                paginatorAlwaysVisible="false" 
+                                class="w-100 mt-3" 
+                                rowsPerPageTemplate="5,10,20">
+                                <p:column selectionBox="true" style="width:3%"/>
                                 <p:column headerText="Name">
                                     <h:outputText value="#{pt.person.name}"/>
                                 </p:column>
