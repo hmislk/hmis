@@ -65,6 +65,7 @@ public class SmsController implements Serializable {
 
     private String smsMessage;
     private String smsNumber;
+    private String smsNumbersInput;
     private String smsOutput;
 
     // Bulk SMS related fields
@@ -125,8 +126,6 @@ public class SmsController implements Serializable {
     }
 
     public void sendSmsFromWeb() {
-        System.out.println("sendSmsFromWeb");
-        System.out.println("doNotSendAnySms = " + doNotSendAnySms);
         if (doNotSendAnySms) {
             return;
         }
@@ -309,7 +308,11 @@ public class SmsController implements Serializable {
     }
 
     public void searchPatientsForBulkSms() {
-        System.out.println("searchPatientsForBulkSms");
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+
         String j = "select p from Patient p where p.retired=false";
         Map<String, Object> m = new HashMap<>();
         if (sex != null) {
@@ -341,10 +344,7 @@ public class SmsController implements Serializable {
             m.put("dt", dobTo);
         }
         j += " order by p.person.name";
-        System.out.println("j = " + j);
-        System.out.println("m = " + m);
         patientsForSms = patientFacade.findByJpql(j, m, TemporalType.DATE, maxNumberToList.intValue());
-        System.out.println("patientsForSms = " + patientsForSms);
     }
 
     private String applyPatientPlaceholders(Patient p, String template) {
@@ -370,7 +370,6 @@ public class SmsController implements Serializable {
     }
 
     public void sendBulkSmsToPatients() {
-        System.out.println("sendBulkSmsToPatients");
         if (selectedPatients == null || selectedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No patients selected");
             return;
@@ -380,9 +379,7 @@ public class SmsController implements Serializable {
             return;
         }
         for (Patient p : selectedPatients) {
-            System.out.println("selectedPatients = " + selectedPatients);
             String msg = applyPatientPlaceholders(p, smsTemplate);
-            System.out.println("msg = " + msg);
             String number = nvl(p.getPerson().getMobile());
             if (number.isEmpty()) {
                 number = nvl(p.getPerson().getPhone());
@@ -408,6 +405,41 @@ public class SmsController implements Serializable {
         sex = null;
         area = null;
         return "/admin/users/send_bulk_sms_patients?faces-redirect=true";
+    }
+
+    public String navigateToSendBulkSmsToNumbers() {
+        smsNumbersInput = null;
+        smsMessage = null;
+        return "/admin/users/send_bulk_sms_numbers?faces-redirect=true";
+    }
+
+    public void sendBulkSmsToNumbers() {
+        if (doNotSendAnySms) {
+            JsfUtil.addErrorMessage("SMS sending is disabled");
+            return;
+        }
+        if (smsNumbersInput == null || smsNumbersInput.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No numbers specified");
+            return;
+        }
+        if (smsMessage == null || smsMessage.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No SMS message specified");
+            return;
+        }
+        String[] arr = smsNumbersInput.split("[\n,]+");
+        for (String n : arr) {
+            String number = n.trim();
+            if (number.isEmpty()) {
+                continue;
+            }
+            Sms s = new Sms();
+            s.setReceipientNumber(number);
+            s.setSendingMessage(smsMessage.trim());
+            s.setSmsType(MessageType.BulkNumberSms);
+            save(s);
+            smsManager.sendSms(s);
+        }
+        JsfUtil.addSuccessMessage("SMS sending initiated");
     }
 
     public Long getMaxNumberToList() {
@@ -533,6 +565,14 @@ public class SmsController implements Serializable {
 
     public void setSelectedPatients(List<Patient> selectedPatients) {
         this.selectedPatients = selectedPatients;
+    }
+
+    public String getSmsNumbersInput() {
+        return smsNumbersInput;
+    }
+
+    public void setSmsNumbersInput(String smsNumbersInput) {
+        this.smsNumbersInput = smsNumbersInput;
     }
 
 }
