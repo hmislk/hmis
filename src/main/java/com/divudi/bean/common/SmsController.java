@@ -65,6 +65,7 @@ public class SmsController implements Serializable {
 
     private String smsMessage;
     private String smsNumber;
+    private String smsNumbersInput;
     private String smsOutput;
 
     // Bulk SMS related fields
@@ -410,6 +411,37 @@ public class SmsController implements Serializable {
         return "/admin/users/send_bulk_sms_patients?faces-redirect=true";
     }
 
+    public String navigateToSendBulkSmsToNumbers() {
+        smsNumbersInput = null;
+        smsMessage = null;
+        return "/admin/users/send_bulk_sms_numbers?faces-redirect=true";
+    }
+
+    public void sendBulkSmsToNumbers() {
+        if (smsNumbersInput == null || smsNumbersInput.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No numbers specified");
+            return;
+        }
+        if (smsMessage == null || smsMessage.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("No SMS message specified");
+            return;
+        }
+        String[] arr = smsNumbersInput.split("[\n,]+");
+        for (String n : arr) {
+            String number = n.trim();
+            if (number.isEmpty()) {
+                continue;
+            }
+            Sms s = new Sms();
+            s.setReceipientNumber(number);
+            s.setSendingMessage(smsMessage.trim());
+            s.setSmsType(MessageType.BulkNumberSms);
+            save(s);
+            smsManager.sendSms(s);
+        }
+        JsfUtil.addSuccessMessage("SMS sending initiated");
+    }
+
     public Long getMaxNumberToList() {
         if (maxNumberToList == null) {
             maxNumberToList = configOptionApplicationController.getLongValueByKey("Maximum Number of Patients to List to Send Bulkl SMS", 100l);
@@ -533,6 +565,14 @@ public class SmsController implements Serializable {
 
     public void setSelectedPatients(List<Patient> selectedPatients) {
         this.selectedPatients = selectedPatients;
+    }
+
+    public String getSmsNumbersInput() {
+        return smsNumbersInput;
+    }
+
+    public void setSmsNumbersInput(String smsNumbersInput) {
+        this.smsNumbersInput = smsNumbersInput;
     }
 
 }
