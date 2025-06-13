@@ -18,22 +18,25 @@
                             <h:panelGrid columns="8" class="w-100 p-2" >
                                 <h:outputLabel value="Age From" class="w-100"/>
                                 <p:inputText value="#{smsController.ageFrom}" class="w-100"/>
-                                <p:spacer width="10em"></p:spacer>
+                                <p:spacer width="5em"></p:spacer>
                                 <h:outputLabel value="Age To" class="w-100"/>
                                 <p:inputText value="#{smsController.ageTo}" class="w-100"/>
-                                <p:spacer width="10em"></p:spacer>
+                                <p:spacer width="5em"></p:spacer>
                                 <h:outputLabel value="Max Number to List" class="w-100"/>
                                 <p:inputText value="#{smsController.maxNumberToList}" class="w-100"/>
 
 
                                 <h:outputLabel value="Sex"/>
-                                <p:selectOneMenu value="#{smsController.sex}" >
+                                <p:selectOneMenu class="w-100" value="#{smsController.sex}" >
                                     <f:selectItem itemLabel="Select Sex" />
                                     <f:selectItems value="#{enumController.gender}" var="s" itemLabel="#{s}" itemValue="#{s}"/>
                                 </p:selectOneMenu>
                                 <p:spacer></p:spacer>
                                 <h:outputLabel value="Area"/>
-                                <p:autoComplete value="#{smsController.area}" completeMethod="#{areaController.completeArea}" var="a" itemLabel="#{a.name}" itemValue="#{a}" forceSelection="true"/>
+                                <p:autoComplete
+                                    inputStyleClass="w-100"
+                                    class="w-100"
+                                    value="#{smsController.area}" completeMethod="#{areaController.completeArea}" var="a" itemLabel="#{a.name}" itemValue="#{a}" forceSelection="true"/>
                                 <p:spacer></p:spacer>
                                 <h:outputLabel value=""/>
                                 <p:commandButton value="Search" action="#{smsController.searchPatientsForBulkSms}" update="tbl" icon="fa fa-search" class="ui-button-warning"/>
@@ -52,16 +55,16 @@
                                 class="w-100 mt-3" 
                                 rowsPerPageTemplate="5,10,20">
                                 <p:column selectionBox="true" style="width:3%"/>
-                                <p:column headerText="Name" >
+                                <p:column headerText="Name" filterMatchMode="contains" filterBy="#{pt.person.name}" sortBy="#{pt.person.name}" >
                                     <h:outputText value="#{pt.person.name}"/>
                                 </p:column>
-                                <p:column headerText="Phone">
+                                <p:column headerText="Phone" filterMatchMode="contains" filterBy="#{pt.person.phone}" sortBy="#{pt.person.phone}" >
                                     <h:outputText value="#{pt.person.phone}"/>
                                 </p:column>
-                                <p:column headerText="Mobile">
+                                <p:column headerText="Mobile" filterMatchMode="contains" filterBy="#{pt.person.mobile}" sortBy="#{pt.person.mobile}" >
                                     <h:outputText value="#{pt.person.mobile}"/>
                                 </p:column>
-                                <p:column headerText="Area">
+                                <p:column headerText="Area" filterMatchMode="contains" filterBy="#{pt.person.area.name}" sortBy="#{pt.person.area.name}" >
                                     <h:outputText value="#{pt.person.area.name}"/>
                                 </p:column>
                             </p:dataTable>
@@ -70,7 +73,12 @@
                                 <h:outputLabel value="SMS Template"/>
                                 <p:inputTextarea value="#{smsController.smsTemplate}" class="w-100"/>
                                 <p:spacer/>
-                                <p:commandButton value="Send SMS" action="#{smsController.sendBulkSmsToPatients}" icon="fa fa-paper-plane" update="@form" class="ui-button-success"/>
+                                <p:commandButton
+                                    value="Send SMS"
+                                    action="#{smsController.sendBulkSmsToPatients}" 
+                                    icon="fa fa-paper-plane"
+                                    ajax="false"
+                                    class="ui-button-success"/>
                             </h:panelGrid>
                         </p:panel>
                     </h:form>

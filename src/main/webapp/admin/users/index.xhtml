@@ -67,10 +67,13 @@
                                             icon="fa fa-user-slash"
                                             action="#{webUserController.navigateToListRetiredUsers()}" />
 
+                                        <hr/>
+
                                         <p:commandButton
                                             ajax="false"
                                             value="Send Bulk SMS to Patients"
                                             icon="fa fa-envelope"
+                                            class="ui-button-warning"
                                             action="#{smsController.navigateToSendBulkSmsToPatients()}" />
 
                                         <hr/>

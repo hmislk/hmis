@@ -370,6 +370,7 @@ public class SmsController implements Serializable {
     }
 
     public void sendBulkSmsToPatients() {
+        System.out.println("sendBulkSmsToPatients");
         if (selectedPatients == null || selectedPatients.isEmpty()) {
             JsfUtil.addErrorMessage("No patients selected");
             return;
@@ -379,7 +380,9 @@ public class SmsController implements Serializable {
             return;
         }
         for (Patient p : selectedPatients) {
+            System.out.println("selectedPatients = " + selectedPatients);
             String msg = applyPatientPlaceholders(p, smsTemplate);
+            System.out.println("msg = " + msg);
             String number = nvl(p.getPerson().getMobile());
             if (number.isEmpty()) {
                 number = nvl(p.getPerson().getPhone());
