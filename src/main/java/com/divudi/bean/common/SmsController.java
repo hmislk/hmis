@@ -418,6 +418,10 @@ public class SmsController implements Serializable {
     }
 
     public void sendBulkSmsToNumbers() {
++        if (doNotSendAnySms) {
++            JsfUtil.addErrorMessage("SMS sending is disabled");
++            return;
++        }
         if (smsNumbersInput == null || smsNumbersInput.trim().isEmpty()) {
             JsfUtil.addErrorMessage("No numbers specified");
             return;
@@ -426,12 +430,17 @@ public class SmsController implements Serializable {
             JsfUtil.addErrorMessage("No SMS message specified");
             return;
         }
-        String[] arr = smsNumbersInput.split("[\n,]+");
-        for (String n : arr) {
+-       String[] arr = smsNumbersInput.split("[\n,]+");
+-       for (String n : arr) {
++       Set<String> uniqueNumbers = new HashSet<>();
++       for (String n : smsNumbersInput.split("[\\s,\\n]+")) {
             String number = n.trim();
             if (number.isEmpty()) {
                 continue;
             }
++           if (!uniqueNumbers.add(number)) {
++               continue; // skip duplicates
++           }
             Sms s = new Sms();
             s.setReceipientNumber(number);
             s.setSendingMessage(smsMessage.trim());
