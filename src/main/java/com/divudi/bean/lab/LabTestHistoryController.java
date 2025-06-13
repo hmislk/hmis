@@ -88,6 +88,10 @@ public class LabTestHistoryController implements Serializable {
         }
     }
     
+    public void addSampleOutLabSentHistory(PatientInvestigation patientInvestigation, PatientSample patientSample, Staff sampleTransporter, Department fromDepartment, Department toDepartment ){
+        addNewHistory(TestHistoryType.SAMPLE_SENT_OUT_LAB,fromDepartment,toDepartment, patientInvestigation, null,patientSample,sampleTransporter,null,null,null,null);
+    }
+    
     public void addSampleReceiveHistory(PatientInvestigation patientInvestigation, PatientSample patientSample){
         addNewHistory(TestHistoryType.SAMPLE_RECEIVED,null,null, patientInvestigation, null,patientSample,null,null,null,null,null);
     }
