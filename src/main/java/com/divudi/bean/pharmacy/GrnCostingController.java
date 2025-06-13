@@ -1076,7 +1076,7 @@ public class GrnCostingController implements Serializable {
         generateBillComponent();
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
-        calGrossTotal();
+//        calGrossTotal();
     }
 
     public void calculateBillTotalsFromItems() {
