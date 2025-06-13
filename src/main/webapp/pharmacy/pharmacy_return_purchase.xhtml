@@ -9,155 +9,98 @@
 
     <ui:define name="content">
         <h:form>
-
+            <h:outputStylesheet library="css" name="pharmacyA4.css"/>
             <h:panelGroup rendered="#{!purchaseReturnController.printPreview}" styleClass="alignTop" >
+                <p:panel>
 
-                <p:panel 
-                    header="Pharmacy Direct Purchase Return" 
-                    class="w-100 m-1">
+                    <f:facet name="header" >
 
-                    <div class="row" >
-                        <div class="col-7" >
-                            <p:dataTable 
-                                var="ph" 
-                                value="#{purchaseReturnController.billItems}"
-                                scrollable="true" 
-                                id="itemList" >
+                        <h:panelGrid columns="15"  >
+                            <h:outputLabel value="Supplier :#{purchaseReturnController.returnBill.fromInstitution.name} GRN" />
+                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
+                            <p:selectOneMenu   id="cmbPs" value="#{purchaseReturnController.returnBill.paymentMethod}">
+                                <f:selectItems value="#{enumController.paymentMethods}"/>
+                                <p:ajax process="cmbPs" update="lblCardRef txtCardRef lblCheqRef txtCheqRef bank lblSlipRef txtSlipRef slipBank" event="change" />
 
-                                <f:facet name="header">
-                                    <h:outputText value="Returning Items" ></h:outputText>
-                                </f:facet>
+                            </p:selectOneMenu>
+                            <h:outputLabel id="lblCardRef" value="Card Ref. No" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtCardRef" value="#{purchaseReturnController.returnBill.creditCardRefNo}" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; " />
 
-                                <p:column headerText="Item Name"  style="width:50px;" >
-                                    <h:outputLabel value="#{ph.item.name}"/>
-                                </p:column>
+                            <h:outputLabel id="lblCheqRef" value="Cheque No" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtCheqRef" value="#{purchaseReturnController.returnBill.chequeRefNo}" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " />
+                            <h:selectOneMenu id="bank" value="#{purchaseReturnController.returnBill.bank}" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; ">
+                                <f:selectItem itemLabel="Select Bank"/>
+                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                            </h:selectOneMenu>
 
-                                <p:column  style="width:25px!important;">
-                                    <f:facet name="header">
-                                        <h:outputText value="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity', false) ? 'Balance Total Qty in Unit' : 'Balance Qty in Unit'}" />
-                                    </f:facet>
-                                    <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
-                                </p:column>
+                            <h:outputLabel id="lblSlipRef" value="Slip Memo" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                            <p:inputText autocomplete="off"  id="txtSlipRef" value="#{purchaseReturnController.returnBill.comments}" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; " />
+                            <h:selectOneMenu id="slipBank" value="#{purchaseReturnController.returnBill.bank}" style="display: #{purchaseReturnController.returnBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ; ">
+                                <f:selectItem itemLabel="Select Bank"/>
+                                <f:selectItems value="#{institutionController.banks}" var="inst" itemLabel="#{inst.name}" itemValue="#{inst}"/>
+                            </h:selectOneMenu>
 
-                                <p:column headerText="#{purchaseReturnController.returnRateLabel}" style="width:25px!important;">
-                                    <h:panelGroup id="purchase" >
-                                        <h:outputText  value="#{purchaseReturnController.getReturnRate(ph)}"  >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
-                                    </h:panelGroup>
-                                </p:column>
-
-
-                                <p:column headerText="Batch No" style="width:25px!important;">
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
-                                </p:column>
-
-                                <p:column headerText="Date of Expirey" style="width:25px!important;">
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" />
-                                </p:column>
-
-
-                                <p:column style="width:25px!important;">
-                                    <p:panel header="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity', false) ? 'Returning Total Qty in Unit' : 'Returning Qty in Unit'}" style="margin:0;padding:0;border:0;">
-                                        <p:inputText autocomplete="off" value="#{ph.qty}">
-                                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{purchaseReturnController.onEdit(ph)}" />
-                                        </p:inputText>
-                                    </p:panel>
-                                </p:column>
-
-                                <p:column
-                                    headerText="Returning Free Qty in Unit"
-                                    style="width:25px!important;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity', false)}">
-                                    <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}">
-                                        <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  listener="#{purchaseReturnController.onEdit(ph)}" />
-                                    </p:inputText>
-                                </p:column>
-
-                            </p:dataTable>
-
-                        </div>
-                        <div class="col-5" >
-                            <p:panel 
-                                class="w-100 m-1"
-                                >
-                                <f:facet name="header" >
-                                    <h:outputText value="Return Details" ></h:outputText>
-                                    <p:commandButton  
-                                        value="Return"
-                                        action="#{purchaseReturnController.settle}"
-                                        ajax="false"  
-                                        style="float: right;"
-                                        class="ui-button-warning"
-                                        >
-                                    </p:commandButton>
-                                </f:facet>
-
-                                <p:panelGrid 
-                                    columns="2"
-                                    layout="tabular"
-                                    class="w-100">
-                                    <h:outputLabel value="Supplier : " />
-                                    <h:outputLabel value="#{purchaseReturnController.returnBill.toInstitution.name}" />
-                                    <p:outputLabel  value="Recievable Amount" />
-                                    <p:outputLabel id="total"  value="#{purchaseReturnController.returnBill.total}" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-
-                                    <h:outputLabel value="Payment Received as : " />
-                                    <p:selectOneMenu id="cmbPs" value="#{purchaseReturnController.returnBill.paymentMethod}">
-                                        <f:selectItems value="#{enumController.paymentMethods}"/>
-                                        <p:ajax process="cmbPs"  event="change" />
-                                    </p:selectOneMenu>
-                                </p:panelGrid>
-
-
-
-
-                            </p:panel>
-                            <p:panel class="w-100 m-1">
-                                <f:facet name="header" >
-                                    <h:outputText value="Direct Purchase Details" ></h:outputText>
-                                    <p:commandButton 
-                                        value="View Bill" 
-                                        ajax="false" 
-                                        class="ui-button-info" 
-                                        icon="fa fa-eye"
-                                        style="float: right;"
-                                        action="pharmacy_reprint_purchase?faces-redirect=true">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{purchaseReturnController.bill}"/>
-                                    </p:commandButton>
-                                </f:facet>
-                                <p:panelGrid columns="2" class="w-100">
-                                    <h:outputLabel value="Direct Purchase Bill No :"/>
-                                    <h:outputLabel value="#{purchaseReturnController.bill.deptId}"/>
-                                    <h:outputLabel value="Purchase Net Total :"/>
-                                    <h:outputLabel value="#{purchaseReturnController.bill.invoiceNumber}"/>
-                                    <h:outputLabel value="Purchase Date :"/>
-                                    <h:outputLabel value="#{purchaseReturnController.bill.invoiceDate}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                    </h:outputLabel>
-                                </p:panelGrid>
-
-
-                            </p:panel>
-                            <p:panel header="Invoice Details" >
-                                <h:panelGrid columns="4" class="poDetail">
-                                    <h:outputLabel value="Invoice No :"/>
-                                    <h:outputLabel value="#{purchaseReturnController.bill.deptId}"/>
-                                    <h:outputLabel value="Invoice Date :"/>
-                                    <h:outputLabel value="#{purchaseReturnController.bill.invoiceDate}">
-                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                                    </h:outputLabel>
-                                </h:panelGrid>
-                            </p:panel>
-
-                        </div>
-                    </div>
-
+                            <p:commandButton  value="Return" action="#{purchaseReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
+                            </p:commandButton>
+                            <p:outputLabel  value="Recievable Amount" />
+                            <p:outputLabel id="total"  value="#{purchaseReturnController.returnBill.total}" style="float: right;">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+                        </h:panelGrid>
+                    </f:facet>
                 </p:panel>
 
+                <p:dataTable var="ph" value="#{purchaseReturnController.billItems}"
+                             scrollable="true" scrollHeight="250"
+                             id="itemList" >
+
+                    <f:facet name="header">
+                        Returning Item
+                    </f:facet>
+
+                    <p:column headerText="Item Name"  style="width:50px;" >
+                        <h:outputLabel value="#{ph.item.name}"/>
+                    </p:column>
+
+                    <p:column  headerText="Balance Qty in Unit" style="width:25px!important;">
+                        <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
+                    </p:column>
+
+                    <p:column headerText="Purchase Rate" style="width:25px!important;">
+                        <h:panelGroup id="purchase" >
+                            <h:outputText  value="#{ph.pharmaceuticalBillItem.purchaseRate}"  >
+                                  <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                            <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                        </h:panelGroup>
+                    </p:column>
+
+
+                    <p:column headerText="Batch No" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                    </p:column>
+
+                    <p:column headerText="Date of Expirey" style="width:25px!important;">
+                        <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" />
+                    </p:column>
+
+
+                    <p:column headerText="Returning Qty in Unit" style="width:25px!important;">
+                        <p:inputText autocomplete="off" value="#{ph.qty}" >
+                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId} "  listener="#{purchaseReturnController.onEdit(ph)}" ></f:ajax>
+                        </p:inputText>
+                    </p:column>
+
+                     <p:column
+                         headerText="Returning Free Qty in Unit"
+                         style="width:25px!important;">
+                         <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}" >
+                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId} "  listener="#{purchaseReturnController.onEdit(ph)}" ></f:ajax>
+                        </p:inputText>
+                    </p:column>
+
+                </p:dataTable>
+                <p:spacer height="50"/>
 
             </h:panelGroup>
 
