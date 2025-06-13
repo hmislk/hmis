@@ -322,7 +322,6 @@
                                         autocomplete="off"
                                         id="txtBillDiscount"
                                         class="text-end w-100"
-                                        onfocus="this.select();"
                                         value="#{grnCostingController.grnBill.discount}" >
                                         <p:ajax
                                             process="@this"
@@ -343,7 +342,6 @@
                                     <p:outputLabel value="Invoice Total"/>
                                     <p:inputText 
                                         id="insv"  
-                                        onfocus="this.select();"
                                         value="#{grnCostingController.insTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax 
