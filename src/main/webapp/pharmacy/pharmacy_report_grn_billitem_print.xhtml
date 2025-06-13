@@ -18,7 +18,7 @@
                                 <div class="d-flex gap-2">
                                     <p:commandButton 
                                         icon="fa-solid fa-print"
-                                        class="ui-button-info"
+                                        styleClass="ui-button-info"
                                         style="width: 150px"
                                         ajax="false" 
                                         value="Print">
@@ -180,14 +180,10 @@
                                                     </h:outputLabel>
                                                 </td>
                                                 <td style="text-align: right;">
-                                                    <h:outputLabel value="#{i.bill.fromInstitution.name}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{i.bill.fromInstitution.name}"/>
                                                 </td>
                                                 <td style="text-align: right;">
-                                                    <h:outputLabel value="#{i.item.name}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{i.item.name}"/>
                                                 </td>
                                                 <td style="text-align: right;">
                                                     <h:outputLabel value="#{i.pharmaceuticalBillItem.freeQty}">
@@ -210,9 +206,7 @@
                                                     </h:outputLabel>
                                                 </td>
                                                 <td style="text-align: right;">
-                                                    <h:outputLabel value="#{i.bill.department.name}">
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                    </h:outputLabel>
+                                                    <h:outputLabel value="#{i.bill.department.name}"/>
                                                 </td>
                                             </tr>
                                         </ui:repeat>
