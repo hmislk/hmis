@@ -2427,7 +2427,7 @@ public class PharmacyReportController implements Serializable {
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        Map<Item, PharmacyRow> rowMap = new HashMap<>();
+        Map<Long, PharmacyRow> rowMap = new HashMap<>();
 
         for (Long shid : ids) {
             StockHistory shx = facade.find(shid);
@@ -2442,7 +2442,7 @@ public class PharmacyReportController implements Serializable {
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
             double batchCostRate = shx.getItemBatch().getCostRate();
 
-            PharmacyRow row = rowMap.get(item);
+            PharmacyRow row = rowMap.get(item.getId());
             if (row == null) {
                 row = new PharmacyRow();
                 row.setItem(item);
@@ -2450,15 +2450,15 @@ public class PharmacyReportController implements Serializable {
                 row.setPurchaseValue(0.0);
                 row.setSaleValue(0.0);
                 row.setCostValue(0.0);
-                rowMap.put(item, row);
+                rowMap.put(item.getId(), row);
             }
 
             double newQty = row.getQuantity() + batchQty;
             if (isConsignmentItem() && newQty > 0) {
-                rowMap.remove(item);
+                rowMap.remove(item.getId());
                 continue;
             } else if (newQty <= 0) {
-                rowMap.remove(item);
+                rowMap.remove(item.getId());
                 continue;
             }
 
