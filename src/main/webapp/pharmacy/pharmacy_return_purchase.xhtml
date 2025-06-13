@@ -66,9 +66,9 @@
                         <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
                     </p:column>
 
-                    <p:column headerText="Purchase Rate" style="width:25px!important;">
+                    <p:column headerText="#{purchaseReturnController.returnRateLabel}" style="width:25px!important;">
                         <h:panelGroup id="purchase" >
-                            <h:outputText  value="#{ph.pharmaceuticalBillItem.purchaseRate}"  >
+                            <h:outputText  value="#{purchaseReturnController.getReturnRate(ph)}"  >
                                   <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                             <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />

@@ -46,14 +46,14 @@
                                     <h:outputText id="freeQty" value="#{ph.referanceBillItem.pharmaceuticalBillItem.freeQty}" />
                                 </p:column>
 
-                                <p:column headerText="Purchase Rate" style="width:25px!important;">
-                                    <h:panelGroup id="purchase" >
-                                        <h:outputText  value="#{ph.pharmaceuticalBillItem.purchaseRate}"  >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputText>
-                                        <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
-                                    </h:panelGroup>
-                                </p:column>
+                                  <p:column headerText="#{goodsReturnController.returnRateLabel}" style="width:25px!important;">
+                                      <h:panelGroup id="purchase" >
+                                          <h:outputText  value="#{goodsReturnController.getReturnRate(ph)}"  >
+                                              <f:convertNumber pattern="#,##0.00" />
+                                          </h:outputText>
+                                          <h:outputText value="perPack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
+                                      </h:panelGroup>
+                                  </p:column>
 
 
                                 <p:column headerText="Batch No" style="width:25px!important;">

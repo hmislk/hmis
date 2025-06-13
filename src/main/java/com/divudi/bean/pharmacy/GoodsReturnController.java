@@ -187,14 +187,28 @@ public class GoodsReturnController implements Serializable {
 
     }
 
-    private double getReturnRate(BillItem item) {
+    public double getReturnRate(BillItem item) {
         double rate = item.getPharmaceuticalBillItem().getPurchaseRateInUnit();
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Cost Rate", false)
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
                 && item.getBillItemFinanceDetails() != null
                 && item.getBillItemFinanceDetails().getLineCostRate() != null) {
             rate = item.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+                && item.getBillItemFinanceDetails() != null
+                && item.getBillItemFinanceDetails().getTotalCostRate() != null) {
+            rate = item.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
         }
         return rate;
+    }
+
+    public String getReturnRateLabel() {
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)) {
+            return "Line Cost Rate";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)) {
+            return "Total Cost Rate";
+        }
+        return "Purchase Rate";
     }
 
     private void saveComponent() {
