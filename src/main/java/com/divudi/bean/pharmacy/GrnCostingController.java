@@ -13,7 +13,6 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.ejb.BillNumberGenerator;
-
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -925,7 +924,6 @@ public class GrnCostingController implements Serializable {
                 if (pr == 0.0 || rr == 0.0) {
                     double fallbackPr = getPharmacyBean().getLastPurchaseRate(bi.getItem(), sessionController.getDepartment());
                     double fallbackRr = getPharmacyBean().getLastRetailRateByBillItemFinanceDetails(bi.getItem(), sessionController.getDepartment());
-                    System.out.println("DEBUG: Fallback - PurchaseRate: " + fallbackPr + ", RetailRate: " + fallbackRr);
                     pr = fallbackPr > 0.0 ? fallbackPr : pr;
                     rr = fallbackRr > 0.0 ? fallbackRr : rr;
                     packRate = BigDecimal.valueOf(rr);
@@ -1082,14 +1080,11 @@ public class GrnCostingController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
-        System.out.println("calculateBillTotalsFromItems");
         int serialNo = 0;
 
-        System.out.println("getGrnBill().getDiscount()");
         
         // Bill-level inputs: do not calculate here
         BigDecimal billDiscount = BigDecimal.valueOf(getGrnBill().getDiscount());
-        System.out.println("billDiscount = " + billDiscount);
         BigDecimal billExpense = BigDecimal.ZERO;
         BigDecimal billTax = BigDecimal.ZERO;
         BigDecimal billCost = BigDecimal.ZERO;
@@ -1302,11 +1297,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public void onEdit(RowEditEvent event) {
-        BillItem tmp = (BillItem) event.getObject();
-
-        //    onEditPurchaseRate(tmp);
-        setBatch(tmp);
-        onEdit(tmp);
+        BillItem editingBillItem = (BillItem) event.getObject();
+        setBatch(editingBillItem);
+        onEdit(editingBillItem);
     }
 
     public void checkQty(BillItem bi) {
@@ -1328,9 +1321,6 @@ public class GrnCostingController implements Serializable {
         if (f == null) {
             return;
         }
-
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
-
         double remains = getPharmacyCalculation().getRemainingQty(tmp.getPharmaceuticalBillItem());
         if (remains < f.getQuantity().doubleValue()) {
             f.setQuantity(java.math.BigDecimal.valueOf(remains));
@@ -1342,8 +1332,8 @@ public class GrnCostingController implements Serializable {
             f.setRetailSaleRatePerUnit(f.getLineGrossRate());
             JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
-
-        calGrossTotal();
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        calculateBillTotalsFromItems();
         calDifference();
     }
 
@@ -1388,8 +1378,6 @@ public class GrnCostingController implements Serializable {
     public void discountChangedLitener() {
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
-        System.out.println("getGrnBill().getDiscount() = " + getGrnBill().getDiscount());
-        System.out.println("getGrnBill().getBillFinanceDetails().getTotalDiscount() = " + getGrnBill().getBillFinanceDetails().getTotalDiscount());
         calDifference();
     }
 

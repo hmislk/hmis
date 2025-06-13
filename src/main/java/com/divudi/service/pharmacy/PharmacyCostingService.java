@@ -5,6 +5,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.math.RoundingMode;
@@ -18,13 +19,20 @@ import javax.ejb.Stateless;
 public class PharmacyCostingService {
 
     /**
-     * Recalculate line-level financial values before adding a BillItem to a bill.
+     * Recalculate line-level financial values before adding a BillItem to a
+     * bill.
+     *
      * @param billItemFinanceDetails
      */
     public void recalculateFinancialsBeforeAddingBillItem(BillItemFinanceDetails billItemFinanceDetails) {
         if (billItemFinanceDetails == null || billItemFinanceDetails.getBillItem() == null) {
             return;
         }
+        BillItem billItem = billItemFinanceDetails.getBillItem();
+        if (billItem.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
 
         BigDecimal qty = Optional.ofNullable(billItemFinanceDetails.getQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal freeQty = Optional.ofNullable(billItemFinanceDetails.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -77,10 +85,14 @@ public class PharmacyCostingService {
         billItemFinanceDetails.setLineCost(lineNetTotal);
         billItemFinanceDetails.setLineCostRate(lineCostRate);
         billItemFinanceDetails.setTotalQuantity(totalQty);
+
+        pbi.setRetailRate(billItemFinanceDetails.getRetailSaleRate().doubleValue());
+        pbi.setRetailValue(retailValue.doubleValue());
     }
 
     /**
-     * Distribute bill-level values (discounts, expenses, taxes) proportionally to items.
+     * Distribute bill-level values (discounts, expenses, taxes) proportionally
+     * to items.
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
         if (bill == null || bill.getBillFinanceDetails() == null || billItems == null || billItems.isEmpty()) {
