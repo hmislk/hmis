@@ -3897,6 +3897,18 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBookWiseDetailReport() {
+        if (isWithoutDateRange()) {
+            if (collectingCentre == null) {
+                JsfUtil.addErrorMessage("Please select a collection center if processing without date range!");
+                return;
+            }
+
+            if (cashBookNumber == null || cashBookNumber.isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter a book number if processing without date range!");
+                return;
+            }
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3905,7 +3917,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-//        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
