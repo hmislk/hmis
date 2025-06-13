@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -81,6 +82,8 @@ public class PurchaseReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      *
@@ -189,7 +192,13 @@ public class PurchaseReturnController implements Serializable {
                 continue;
             }
 
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)
+                    && i.getBillItemFinanceDetails() != null
+                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -231,7 +240,13 @@ public class PurchaseReturnController implements Serializable {
                 continue;
             }
 
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = i.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)
+                    && i.getBillItemFinanceDetails() != null
+                    && i.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = i.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -311,7 +326,13 @@ public class PurchaseReturnController implements Serializable {
         double grossTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getQty();
+            double rate = p.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+            if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)
+                    && p.getBillItemFinanceDetails() != null
+                    && p.getBillItemFinanceDetails().getLineCostRate() != null) {
+                rate = p.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+            }
+            grossTotal += rate * p.getQty();
 
         }
 
