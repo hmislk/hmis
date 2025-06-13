@@ -1,9 +1,9 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.data.reports.PharmacyReports;
 import com.divudi.core.util.JsfUtil;
-import com.divudi.bean.pharmacy.StockHistoryController;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillItemStatus;
 import com.divudi.core.data.BillType;
@@ -13,7 +13,6 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemCount;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
@@ -292,6 +291,7 @@ public class PharmacyReportController implements Serializable {
     private List<Stock> stocks;
     private double stockSaleValue;
     private double stockPurchaseValue;
+    private double stockCostValue;
     private double stockTotal;
     private List<PharmacyStockRow> pharmacyStockRows;
     private double stockTottal;
@@ -2156,6 +2156,7 @@ public class PharmacyReportController implements Serializable {
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+            double batchCostRate = shx.getItemBatch().getCostRate();
 
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
@@ -2173,6 +2174,8 @@ public class PharmacyReportController implements Serializable {
             row.setSaleValue(batchQty * batchSaleRate);
             row.setPurchaseRate(batchPurchaseRate);
             row.setRetailRate(batchSaleRate);
+            row.setCostRate(batchCostRate);
+            row.setCostValue(batchQty * batchCostRate);
 
             rows.add(row);
         }
@@ -2188,7 +2191,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2244,10 +2247,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                "Closing Stock", "Rate", "Closing Value"
+                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                    "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2419,89 +2422,78 @@ public class PharmacyReportController implements Serializable {
         jpql.append("and sh.createdAt < :et ");
         params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-//        jpql.append("group by sh.department, sh.itemBatch.item ");
         jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        // Fetch the IDs of the latest StockHistory rows per ItemBatch
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
-        System.out.println("ids = " + ids);
+        Map<Long, PharmacyRow> rowMap = new HashMap<>();
 
-        rows = new ArrayList<>();
-
-        // Process each StockHistory to build rows per Item (not per batch)
         for (Long shid : ids) {
             StockHistory shx = facade.find(shid);
             if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
                 continue;
             }
 
-            // Assign class-level 'item' so it is not shadowed by a local variable
             item = shx.getItemBatch().getItem();
 
-//            double batchQty = shx.getItemStock();
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
+            double batchCostRate = shx.getItemBatch().getCostRate();
 
-            // Check if a PharmacyRow already exists for this Item
-            PharmacyRow matchingRow = null;
-            for (PharmacyRow r : rows) {
-                if (r.getItem() != null && r.getItem().equals(item)) {
-                    matchingRow = r;
-                    break;
-                }
+            PharmacyRow row = rowMap.get(item.getId());
+            if (row == null) {
+                row = new PharmacyRow();
+                row.setItem(item);
+                row.setQuantity(0.0);
+                row.setPurchaseValue(0.0);
+                row.setSaleValue(0.0);
+                row.setCostValue(0.0);
+                rowMap.put(item.getId(), row);
             }
 
-            // If not found, create one
-            if (matchingRow == null) {
-                matchingRow = new PharmacyRow();
-                matchingRow.setItem(item);
-                matchingRow.setQuantity(0.0);
-                matchingRow.setPurchaseValue(0.0);
-                matchingRow.setSaleValue(0.0);
-                rows.add(matchingRow);
-            }
-
-            if (isConsignmentItem() && matchingRow.getQuantity() + batchQty > 0) {
-                rows.remove(matchingRow);
+            double newQty = row.getQuantity() + batchQty;
+            if (isConsignmentItem() && newQty > 0) {
+                rowMap.remove(item.getId());
                 continue;
-            } else {
-                if (matchingRow.getQuantity() + batchQty <= 0) {
-                    rows.remove(matchingRow);
-                    continue;
-                }
+            } else if (newQty <= 0) {
+                rowMap.remove(item.getId());
+                continue;
             }
 
-            // Accumulate the quantities and values
-            matchingRow.setQuantity(matchingRow.getQuantity() + batchQty);
-            matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
-            matchingRow.setSaleValue(matchingRow.getSaleValue() + batchQty * batchSaleRate);
+            row.setQuantity(newQty);
+            row.setPurchaseValue(row.getPurchaseValue() + batchQty * batchPurchaseRate);
+            row.setSaleValue(row.getSaleValue() + batchQty * batchSaleRate);
+            row.setCostValue(row.getCostValue() + batchQty * batchCostRate);
         }
+
+        rows = new ArrayList<>(rowMap.values());
     }
 
     public void processClosingStock() {
-        stockPurchaseValue = 0.0;
-        stockSaleValue = 0.0;
-        stockQty = 0.0;
-        if (reportType.equals("batchWise")) {
-            processClosingStockForBatchReport();
-        } else if (reportType.equals("itemWise")) {
-            processClosingStockForItemReport();
-        } else {
-            JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
-            return;
-        }
-        if (rows != null) {
-            for (PharmacyRow pr : rows) {
-                stockPurchaseValue += pr.getPurchaseValue();
-                stockSaleValue += pr.getSaleValue();
-                stockQty += pr.getQuantity();
+        reportTimerController.trackReportExecution(() -> {
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            stockCostValue = 0.0;
+            stockQty = 0.0;
+            if (reportType.equals("batchWise")) {
+                processClosingStockForBatchReport();
+            } else if (reportType.equals("itemWise")) {
+                processClosingStockForItemReport();
+            } else {
+                JsfUtil.addErrorMessage("Report Type " + reportType + " is NOT supported.");
+                return;
             }
-        }
+            if (rows != null) {
+                for (PharmacyRow pr : rows) {
+                    stockPurchaseValue += pr.getPurchaseValue() != null ? pr.getPurchaseValue() : 0.0;
+                    stockSaleValue += pr.getSaleValue() != null ? pr.getSaleValue() : 0.0;
+                    stockCostValue += pr.getCostValue() != null ? pr.getCostValue() : 0.0;
+                    stockQty += pr.getQuantity() != null ? pr.getQuantity() : 0.0;
+                }
+            }
+        }, InventoryReports.CLOSING_STOCK_REPORT, sessionController.getLoggedUser());
     }
 
     public void exportBatchWisePharmacyStockToPdf() {
@@ -2523,13 +2515,13 @@ public class PharmacyReportController implements Serializable {
                     FontFactory.getFont(FontFactory.HELVETICA, 12)));
             document.add(new Paragraph(" "));
 
-            PdfPTable table = new PdfPTable(12);
+            PdfPTable table = new PdfPTable(14);
             table.setWidthPercentage(100);
-            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2f, 2f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f, 2.5f};
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                "Purchase Rate", "Purchase Value", "Retail Rate", "Sale Value"};
+                    "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -2557,6 +2549,8 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
                 table.addCell(f.getPurchaseRate() != null ? String.format("%.2f", f.getPurchaseRate()) : "0.00");
                 table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostRate() != null ? String.format("%.2f", f.getCostRate()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
                 table.addCell(f.getRetailRate() != null ? String.format("%.2f", f.getRetailRate()) : "0.00");
                 table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
             }
@@ -2569,6 +2563,80 @@ public class PharmacyReportController implements Serializable {
             table.addCell("");
             table.addCell(String.format("%.2f", getStockPurchaseValue()));
             table.addCell("");
+            table.addCell(String.format("%.2f", getStockCostValue()));
+            table.addCell("");
+            table.addCell(String.format("%.2f", getStockSaleValue()));
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Error generating PDF: " + e.getMessage());
+            Logger.getLogger(PharmacyReportController.class.getName()).log(Level.SEVERE, "Error generating PDF", e);
+        }
+    }
+
+    public void exportItemWisePharmacyStockToPdf() {
+        FacesContext context = FacesContext.getCurrentInstance();
+        ExternalContext externalContext = context.getExternalContext();
+        HttpServletResponse response = (HttpServletResponse) externalContext.getResponse();
+
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Stock_Report.pdf");
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMMM yyyy");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            document.add(new Paragraph("Generated On: " + sdf.format(new Date()),
+                    FontFactory.getFont(FontFactory.HELVETICA, 12)));
+            document.add(new Paragraph(" "));
+
+            PdfPTable table = new PdfPTable(9);
+            table.setWidthPercentage(100);
+            float[] columnWidths = {1f, 2f, 2f, 3f, 2f, 2.5f, 2.5f, 2.5f, 2.5f};
+            table.setWidths(columnWidths);
+
+            String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Closing Stock", "Purchase Value", "Cost Value", "Sale Value"};
+
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                table.addCell(cell);
+            }
+
+            List<PharmacyRow> rows = getRows();
+
+            if (rows == null || rows.isEmpty()) {
+                JsfUtil.addErrorMessage("No data available to export");
+                context.responseComplete();
+                return;
+            }
+
+            int serial = 1;
+            for (PharmacyRow f : rows) {
+                table.addCell(String.valueOf(serial++));
+                table.addCell(f.getItem().getCategory() != null ? f.getItem().getCategory().getName() : "-");
+                table.addCell(f.getItem().getCode() != null ? f.getItem().getCode() : "-");
+                table.addCell(f.getItem().getName() != null ? f.getItem().getName() : "-");
+                table.addCell(f.getItem().getMeasurementUnit() != null ? f.getItem().getMeasurementUnit().getName() : "-");
+
+                table.addCell(f.getQuantity() != null ? String.format("%.2f", f.getQuantity()) : "0.00");
+                table.addCell(f.getPurchaseValue() != null ? String.format("%.2f", f.getPurchaseValue()) : "0.00");
+                table.addCell(f.getCostValue() != null ? String.format("%.2f", f.getCostValue()) : "0.00");
+                table.addCell(f.getSaleValue() != null ? String.format("%.2f", f.getSaleValue()) : "0.00");
+            }
+
+            PdfPCell footerCell = new PdfPCell(new Phrase("Total", FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
+            footerCell.setColspan(5);
+            footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+            table.addCell(footerCell);
+            table.addCell(String.format("%.2f", getStockQty()));
+            table.addCell(String.format("%.2f", getStockPurchaseValue()));
+            table.addCell(String.format("%.2f", getStockCostValue()));
             table.addCell(String.format("%.2f", getStockSaleValue()));
 
             document.add(table);
@@ -3277,9 +3345,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -3383,8 +3451,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -4344,6 +4412,14 @@ public class PharmacyReportController implements Serializable {
 
     public void setStockPurchaseValue(double stockPurchaseValue) {
         this.stockPurchaseValue = stockPurchaseValue;
+    }
+
+    public double getStockCostValue() {
+        return stockCostValue;
+    }
+
+    public void setStockCostValue(double stockCostValue) {
+        this.stockCostValue = stockCostValue;
     }
 
     public StockFacade getStockFacade() {

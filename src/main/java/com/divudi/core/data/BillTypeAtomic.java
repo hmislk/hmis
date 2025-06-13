@@ -105,10 +105,7 @@ public enum BillTypeAtomic {
     ACCEPT_RETURN_STORE_INWARD("Accept Returned Store Items Inward", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
     RETURN_STORE_THEATRE("Return Store Items Theatre", BillCategory.REFUND, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
     ACCEPT_RETURN_STORE_THEATRE("Accept Returned Store Items Theatre", BillCategory.BILL, ServiceType.STORE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
-    
-
-
-// PHARMACY
+    // PHARMACY
     PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
     PHARMACY_RETAIL_SALE_WITHOUT_STOCKS("Pharmacy Retail Sale without Stocks", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySaleWithoutStock),
     PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
@@ -145,6 +142,7 @@ public enum BillTypeAtomic {
     PHARMACY_GRN_CANCELLED("Pharmacy GRN Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
     PHARMACY_GRN_REFUND("Pharmacy GRN Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
     PHARMACY_GRN_RETURN("Pharmacy GRN Return", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnBill),
+    PHARMACY_GRN_RETURN_CANCELLATION("Pharmacy GRN Return Cancellation", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyGrnReturn),
     PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL("Pharmacy Direct Purchase", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
     PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED("Pharmacy Direct Purchase - Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
     PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND("Pharmacy Direct Purchase - Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacyPurchaseBill),
@@ -327,8 +325,7 @@ public enum BillTypeAtomic {
     SUPPLIER_PAYMENT("Supplier Payment", BillCategory.BILL, ServiceType.SETTLEMENT, BillFinanceType.CASH_OUT, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_SPEND, BillType.GrnPayment),
     SUPPLIER_PAYMENT_PREPERATION("Supplier Payment Preperation", BillCategory.PREBILL, ServiceType.SETTLEMENT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NO_PAYMENT, BillType.GrnPaymentPreparation),
     SUPPLIER_PAYMENT_CANCELLED("GRN Payment Cancelled", BillCategory.CANCELLATION, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
-    SUPPLIER_PAYMENT_RETURNED("Supplier Payment Returned", BillCategory.REFUND, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
-    ;
+    SUPPLIER_PAYMENT_RETURNED("Supplier Payment Returned", BillCategory.REFUND, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),;
 
     private final String label;
     private final BillCategory billCategory;

@@ -48,6 +48,12 @@ Commercial support was introduced to enhance the system's reach and reliability,
 * Inventory Management System
 * Assets and Consumable Management System
 
+### Scheduled Processes
+Scheduled tasks such as stock value recordings run automatically based on
+configured frequencies. The date calculations for these schedules are handled
+by `ScheduledProcessService`. The `Year End` calculation now correctly sets the
+next run to December 31st of the following year.
+
 
 ## Installation
 
@@ -145,7 +151,7 @@ Our contributors and the Open Source Community for their knowledge and time. Hea
 * Suwasahana Medical Center, Kataragama - 2015 Up to date
 * Suwana Medical Center, Akuressa - 2015 Up to date
 * New Multi Drugs, Galle - 2015 up to date
-* Matara Pharamcy, Akuressa, 2013  up to date
+* Matara Pharmacy, Akuressa, 2013 up to date
 * Matara Pharmacy, Deniyaya, 2013 up to date
 * Matara Pharmacy, Urubokka, 2013 - 2015
 * Matara Pharmacy, Galle, 2015 up to date

@@ -34,8 +34,6 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -43,7 +41,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -461,12 +458,14 @@ public class PharmacyCalculation implements Serializable {
         return (Math.abs(recieveNet));
     }
 
+    @Deprecated // Use calculateRemainigQtyFromOrder
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
         return Math.abs(grns) - Math.abs(grnReturn);
     }
 
+    @Deprecated // use calculateRemainingFreeQtyFromOrder
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
 
         double grnsFree = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill);

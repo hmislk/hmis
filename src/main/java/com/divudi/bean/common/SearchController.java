@@ -2994,7 +2994,11 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailBills() {
         Date startTime = new Date();
 
-        createPharmacyRetailBills(BillType.PharmacyPre, true);
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyPre);
+        billTypes.add(BillType.PharmacySaleWithoutStock);
+
+        createPharmacyRetailBills(billTypes, true);
 
     }
 
@@ -3116,7 +3120,11 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailAllBills() {
         Date startTime = new Date();
 
-        createPharmacyRetailBills(BillType.PharmacyPre, false);
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyPre);
+        billTypes.add(BillType.PharmacySaleWithoutStock);
+
+        createPharmacyRetailBills(billTypes, false);
 
     }
 
@@ -3126,8 +3134,17 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills(BillType billtype, boolean maxNum) {
 
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(billtype);
+
+        createPharmacyRetailBills(billTypes, maxNum);
+
+    }
+
+    public void createPharmacyRetailBills(List<BillType> billtypes, boolean maxNum) {
+
         Map m = new HashMap();
-        m.put("bt", billtype);
+        m.put("bts", billtypes);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -3138,7 +3155,7 @@ public class SearchController implements Serializable {
 
         sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt"
+                + " and b.billType in :bts"
                 + " and b.billTypeAtomic <> :bta"
                 + " and b.billedBill is null "
                 + " and b.institution=:ins "
@@ -9135,7 +9152,7 @@ public class SearchController implements Serializable {
             jpql += " and b.creditCompany=:cc ";
             m.put("cc", creditCompany);
         }
-
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.OPD));
         btas.addAll(BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING));
         btas.removeAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
@@ -11647,6 +11664,7 @@ public class SearchController implements Serializable {
         if (allBills != null) {
             for (Bill tmpBill : allBills) {
                 boolean billHasErrors;
+                billService.reloadBill(tmpBill);
                 billHasErrors = billService.checkBillForErrors(tmpBill);
                 if (!billHasErrors) {
                     continue;
@@ -11696,6 +11714,8 @@ public class SearchController implements Serializable {
                 if (diff > 1.0) { // Significant error found
                     Bill b = ah.getBill();
                     if (b != null && !bills.contains(b)) { // Avoid duplicates
+                        String msg = "Agent history balance mismatch.";
+                        b.setTmpComments((b.getTmpComments() == null ? "" : b.getTmpComments()) + msg + " ");
                         bills.add(b);
                     }
                 }
@@ -12883,7 +12903,7 @@ public class SearchController implements Serializable {
 
         HashMap hm = new HashMap();
         hm.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
-        
+
         if (getFromDate() != null && getToDate() != null) {
             sql += " and b.bill.appointmentAt between :frm and  :to";
             hm.put("frm", getFromDate());
@@ -12926,7 +12946,7 @@ public class SearchController implements Serializable {
         hm.put("bt", bts);
         hm.put("ftp", FeeType.Staff);
         hm.put("class", BilledBill.class);
-        
+
         if (getReportKeyWord().isAdditionalDetails()) {
             billFees = billFeeFacade.findByJpql(sql, hm, TemporalType.TIMESTAMP);
         } else {
@@ -17249,6 +17269,7 @@ public class SearchController implements Serializable {
 
     public ReportTemplateRowBundle generatePharmacyCollection() {
         ReportTemplateRowBundle pb;
+        //TODO: Use a List of Bill Type Atomics instead of calling the findByServiceTypeAndPaymentCategory
         List<BillTypeAtomic> pharmacyBillTypesAtomics = BillTypeAtomic.findByServiceTypeAndPaymentCategory(ServiceType.PHARMACY,
                 PaymentCategory.NON_CREDIT_COLLECTION);
         List<PaymentMethod> ppms = PaymentMethod.getMethodsByType(PaymentType.NON_CREDIT);
@@ -19696,6 +19717,20 @@ public class SearchController implements Serializable {
             createBillsBillItemsList(new HashSet<>(bills), allBillItems);
         } catch (IOException e) {
             e.printStackTrace(); // Handle exceptions properly
+        }
+    }
+
+    public void searchOpdBillsWithIndications() {
+        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        createTableByKeyword(billTypesAtomics, institution, department, fromInstitution, fromDepartment, toInstitution, toDepartment);
+
+        if (bills != null) {
+            bills = bills.stream()
+                    .filter(b -> b.getIndication() != null && !b.getIndication().trim().isEmpty())
+                    .collect(Collectors.toList());
         }
     }
 

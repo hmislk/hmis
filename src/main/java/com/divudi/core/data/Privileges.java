@@ -135,6 +135,7 @@ public enum Privileges {
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
     LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
@@ -615,6 +616,7 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
 
@@ -723,6 +725,7 @@ public enum Privileges {
             case LabBillReactivating:
             case LabInvestigationFee:
             case LabSampleCollecting:
+            case OutLabSampleSending:
             case LabAddInwardServices:
             case LabBillCancelSpecial:
             case LabBillRefundSpecial:

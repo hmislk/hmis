@@ -177,13 +177,13 @@
                                     <h:outputLabel 
                                         class="w-100 m-1"
                                         style="white-space: nowrap;"
-                                        value="Retail Rate - Unit" />
+                                        value="Retail Rate" />
                                     <p:inputText
                                         autocomplete="off"
                                         id="txtRetailRate"
                                         onfocus="this.select()"
                                         class="w-100 m-1 text-end"
-                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRatePerUnit}">
+                                        value="#{pharmacyDirectPurchaseController.currentBillItem.billItemFinanceDetails.retailSaleRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                         <p:ajax 
                                             event="blur"
@@ -240,8 +240,7 @@
 
 
 
-                                <div class="col-4">
-                                </div>
+
 
                                 <div class="col-1 text-end">
                                     <h:outputLabel 
@@ -270,9 +269,18 @@
                                             class="w-100 m-1 text-end"
                                             value="#{pharmacyDirectPurchaseController.currentBillItem.item.dblValue}">
                                         </p:inputText>
+                                        <p:inputText
+                                            rendered="#{pharmacyDirectPurchaseController.currentBillItem.item.class.simpleName eq 'Amp'}"
+                                            disabled="true"
+                                            autocomplete="off"
+                                            class="w-100 m-1 text-end"
+                                            value="1">
+                                        </p:inputText>
                                     </h:panelGroup>
                                 </div>
 
+                                <div class="col-2">
+                                </div>
 
                                 <div class="col-1 text-end">
                                     <h:outputLabel 
@@ -406,13 +414,14 @@
                             </p:column>
 
                             <p:column headerText="Dis. Rate"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRatePerUnit}">
+                                <h:outputLabel 
+                                    value="#{ph.billItemFinanceDetails.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>

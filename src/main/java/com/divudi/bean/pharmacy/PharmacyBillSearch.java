@@ -2735,6 +2735,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            cb.setPaymentMethod(PaymentMethod.None);
             cb.setReferenceBill(getBill());
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
