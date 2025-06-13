@@ -2422,71 +2422,53 @@ public class PharmacyReportController implements Serializable {
         jpql.append("and sh.createdAt < :et ");
         params.put("et", CommonFunctions.getEndOfDay(toDate));
 
-//        jpql.append("group by sh.department, sh.itemBatch.item ");
         jpql.append("group by sh.department, sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        // Fetch the IDs of the latest StockHistory rows per ItemBatch
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
-        System.out.println("ids = " + ids);
+        Map<Item, PharmacyRow> rowMap = new HashMap<>();
 
-        rows = new ArrayList<>();
-
-        // Process each StockHistory to build rows per Item (not per batch)
         for (Long shid : ids) {
             StockHistory shx = facade.find(shid);
             if (shx == null || shx.getItemBatch() == null || shx.getItemBatch().getItem() == null) {
                 continue;
             }
 
-            // Assign class-level 'item' so it is not shadowed by a local variable
             item = shx.getItemBatch().getItem();
 
-//            double batchQty = shx.getItemStock();
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
             double batchCostRate = shx.getItemBatch().getCostRate();
 
-            // Check if a PharmacyRow already exists for this Item
-            PharmacyRow matchingRow = null;
-            for (PharmacyRow r : rows) {
-                if (r.getItem() != null && r.getItem().equals(item)) {
-                    matchingRow = r;
-                    break;
-                }
+            PharmacyRow row = rowMap.get(item);
+            if (row == null) {
+                row = new PharmacyRow();
+                row.setItem(item);
+                row.setQuantity(0.0);
+                row.setPurchaseValue(0.0);
+                row.setSaleValue(0.0);
+                row.setCostValue(0.0);
+                rowMap.put(item, row);
             }
 
-            // If not found, create one
-            if (matchingRow == null) {
-                matchingRow = new PharmacyRow();
-                matchingRow.setItem(item);
-                matchingRow.setQuantity(0.0);
-                matchingRow.setPurchaseValue(0.0);
-                matchingRow.setSaleValue(0.0);
-                matchingRow.setCostValue(0.0);
-                rows.add(matchingRow);
-            }
-
-            if (isConsignmentItem() && matchingRow.getQuantity() + batchQty > 0) {
-                rows.remove(matchingRow);
+            double newQty = row.getQuantity() + batchQty;
+            if (isConsignmentItem() && newQty > 0) {
+                rowMap.remove(item);
                 continue;
-            } else {
-                if (matchingRow.getQuantity() + batchQty <= 0) {
-                    rows.remove(matchingRow);
-                    continue;
-                }
+            } else if (newQty <= 0) {
+                rowMap.remove(item);
+                continue;
             }
 
-            // Accumulate the quantities and values
-            matchingRow.setQuantity(matchingRow.getQuantity() + batchQty);
-            matchingRow.setPurchaseValue(matchingRow.getPurchaseValue() + batchQty * batchPurchaseRate);
-            matchingRow.setSaleValue(matchingRow.getSaleValue() + batchQty * batchSaleRate);
-            matchingRow.setCostValue(matchingRow.getCostValue() + batchQty * batchCostRate);
+            row.setQuantity(newQty);
+            row.setPurchaseValue(row.getPurchaseValue() + batchQty * batchPurchaseRate);
+            row.setSaleValue(row.getSaleValue() + batchQty * batchSaleRate);
+            row.setCostValue(row.getCostValue() + batchQty * batchCostRate);
         }
+
+        rows = new ArrayList<>(rowMap.values());
     }
 
     public void processClosingStock() {
