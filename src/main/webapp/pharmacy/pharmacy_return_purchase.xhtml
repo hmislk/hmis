@@ -50,6 +50,23 @@
                     </f:facet>
                 </p:panel>
 
+                <p:panel>
+                    <h:panelGrid columns="4" class="poDetail">
+                        <h:outputLabel value="Purchase Bill No :"/>
+                        <h:outputLabel value="#{purchaseReturnController.bill.deptId}"/>
+                        <h:outputLabel value="Invoice No :"/>
+                        <h:outputLabel value="#{purchaseReturnController.bill.invoiceNumber}"/>
+                        <h:outputLabel value="Invoice Date :"/>
+                        <h:outputLabel value="#{purchaseReturnController.bill.invoiceDate}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                        <h:outputLabel value="GRN Date :"/>
+                        <h:outputLabel value="#{purchaseReturnController.bill.createdAt}">
+                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                    </h:panelGrid>
+                </p:panel>
+
                 <p:dataTable var="ph" value="#{purchaseReturnController.billItems}"
                              scrollable="true" scrollHeight="250"
                              id="itemList" >
