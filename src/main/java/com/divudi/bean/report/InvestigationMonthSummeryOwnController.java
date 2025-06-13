@@ -207,7 +207,7 @@ public class InvestigationMonthSummeryOwnController implements Serializable {
             boldStyle.setFont(boldFont);
 
             XSSFCellStyle dateStyle = workbook.createCellStyle();
-            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/mm/yyyy"));
+            dateStyle.setDataFormat(workbook.createDataFormat().getFormat("dd/MM/yyyy"));
 
             XSSFCellStyle amountStyle = workbook.createCellStyle();
             amountStyle.setDataFormat(workbook.createDataFormat().getFormat("#,##0.00"));
