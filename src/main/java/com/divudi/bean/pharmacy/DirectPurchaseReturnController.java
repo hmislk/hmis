@@ -6,6 +6,7 @@ package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
@@ -48,7 +49,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class PurchaseReturnController implements Serializable {
+public class DirectPurchaseReturnController implements Serializable {
 
     /**
      * EJBs
@@ -81,6 +82,8 @@ public class PurchaseReturnController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SessionController sessionController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     /**
      * Properties
      *
@@ -127,16 +130,42 @@ public class PurchaseReturnController implements Serializable {
     private PharmacyCalculation pharmacyRecieveBean;
 
     private double getRemainingQty(BillItem bilItem) {
-        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            double originalQty = bilItem.getQty();
+            double originalFreeQty = 0.0;
+            if (bilItem.getPharmaceuticalBillItem() != null) {
+                originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
+            }
+            double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(bilItem, BillType.PurchaseReturn, new BilledBill());
+            return originalQty + originalFreeQty - Math.abs(returnedTotal);
+        } else {
+            String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+                    + "   p.creater is not null and"
+                    + " p.referanceBillItem=:bt and p.bill.billType=:btp";
+
+            HashMap hm = new HashMap();
+            hm.put("bt", bilItem);
+            hm.put("btp", BillType.PurchaseReturn);
+
+            return bilItem.getQty() + getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        }
+    }
+
+    private double getRemainingFreeQty(BillItem bilItem) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "   p.creater is not null and"
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
 
         HashMap hm = new HashMap();
         hm.put("bt", bilItem);
         hm.put("btp", BillType.PurchaseReturn);
-        ///    hm.put("class", bill.getClass());
 
-        return bilItem.getQty() + getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+        double originalFreeQty = 0.0;
+        if (bilItem.getPharmaceuticalBillItem() != null) {
+            originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
+        }
+
+        return originalFreeQty + getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
     public void onEdit(BillItem tmp) {
@@ -146,6 +175,14 @@ public class PurchaseReturnController implements Serializable {
         if (tmp.getQty() > remain) {
             tmp.setQty(remain);
             JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+        }
+
+        if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            double remainFree = getRemainingFreeQty(tmp.getReferanceBillItem());
+            if (tmp.getPharmaceuticalBillItem().getFreeQty() > remainFree) {
+                tmp.getPharmaceuticalBillItem().setFreeQty(remainFree);
+                JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
+            }
         }
 
         calTotal();
@@ -181,6 +218,30 @@ public class PurchaseReturnController implements Serializable {
 
     }
 
+    public double getReturnRate(BillItem item) {
+        double rate = item.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+                && item.getBillItemFinanceDetails() != null
+                && item.getBillItemFinanceDetails().getLineCostRate() != null) {
+            rate = item.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+                && item.getBillItemFinanceDetails() != null
+                && item.getBillItemFinanceDetails().getTotalCostRate() != null) {
+            rate = item.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+        }
+        return rate;
+    }
+
+    public String getReturnRateLabel() {
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)) {
+            return "Line Cost Rate";
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)) {
+            return "Total Cost Rate";
+        }
+        return "Purchase Rate";
+    }
+
     private void saveComponent() {
         for (BillItem i : getBillItems()) {
             i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
@@ -189,7 +250,8 @@ public class PurchaseReturnController implements Serializable {
                 continue;
             }
 
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = getReturnRate(i);
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -231,7 +293,8 @@ public class PurchaseReturnController implements Serializable {
                 continue;
             }
 
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * i.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            double rate = getReturnRate(i);
+            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -311,7 +374,8 @@ public class PurchaseReturnController implements Serializable {
         double grossTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getPharmaceuticalBillItem().getPurchaseRate() * p.getQty();
+            double rate = getReturnRate(p);
+            grossTotal += rate * p.getQty();
 
         }
 
@@ -337,11 +401,19 @@ public class PurchaseReturnController implements Serializable {
             tmp.copy(i);
             tmp.setBillItem(bi);
 
-            double rBilled = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+            double originalQty = i.getQty();
+            double originalFreeQty = i.getFreeQty();
 
-            //System.err.println("Billed Qty " + i.getQty());
-            //System.err.println("Return Qty " + rBilled);
-            tmp.setQty(i.getQty() - Math.abs(rBilled));
+            if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+                double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                tmp.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
+                tmp.setFreeQty(0.0);
+            } else {
+                double returnedQty = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                double returnedFreeQty = getPharmacyRecieveBean().getTotalFreeQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                tmp.setQty(originalQty - Math.abs(returnedQty));
+                tmp.setFreeQty(originalFreeQty - Math.abs(returnedFreeQty));
+            }
 
             bi.setPharmaceuticalBillItem(tmp);
 
@@ -458,6 +530,14 @@ public class PurchaseReturnController implements Serializable {
 
     public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
+    }
+
+    public ConfigOptionApplicationController getConfigOptionApplicationController() {
+        return configOptionApplicationController;
+    }
+
+    public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
+        this.configOptionApplicationController = configOptionApplicationController;
     }
 
     public BillNumberGenerator getBillNumberBean() {
