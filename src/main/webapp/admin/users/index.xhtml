@@ -61,11 +61,17 @@
                                             value="View Non Staff Users" 
                                             icon="fa fa-user-circle"
                                             action="#{webUserController.navigateToManageUsersWithoutStaff()}" />
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="View Retired Users" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View Retired Users"
                                             icon="fa fa-user-slash"
                                             action="#{webUserController.navigateToListRetiredUsers()}" />
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Send Bulk SMS to Patients"
+                                            icon="fa fa-envelope"
+                                            action="#{smsController.navigateToSendBulkSmsToPatients()}" />
 
                                         <hr/>
                                     </div>
