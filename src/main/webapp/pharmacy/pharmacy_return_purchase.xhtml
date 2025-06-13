@@ -42,6 +42,10 @@
 
                             <p:commandButton  value="Return" action="#{purchaseReturnController.settle}" ajax="false"  style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;">
                             </p:commandButton>
+                            <p:commandButton value="View Bill" ajax="false" class="ui-button-info" icon="fa fa-eye"
+                                             action="pharmacy_reprint_purchase?faces-redirect=true">
+                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{purchaseReturnController.bill}"/>
+                            </p:commandButton>
                             <p:outputLabel  value="Recievable Amount" />
                             <p:outputLabel id="total"  value="#{purchaseReturnController.returnBill.total}" style="float: right;">
                                 <f:convertNumber pattern="#,##0.00" />
