@@ -21,10 +21,11 @@
 
             <h:panelGroup rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
                 <div class="container-fluid" >
-                    <div class="row my-2" >
-                        <div class="col-10" >
-                            <h:form >
-                                <h:panelGrid columns="6" class="w-100 mb-4" style="font-weight: bolder">
+                    <h:form >
+
+                        <div class="row my-2" >
+                            <div class="col-10" >
+                                <h:panelGrid columns="6" class="w-100" style="font-weight: bolder">
                                     <h:panelGrid columns="1" class="w-100">
                                         <h:outputLabel class="w-100" value="Date Range for"/>
                                         <p:selectOneMenu filter="true" filterMatchMode="contains" class="w-100" value="#{patientInvestigationController.searchDateType}">
@@ -188,9 +189,38 @@
                                     </h:panelGrid>
 
                                 </h:panelGrid>
-                            </h:form>
+                            </div>
+                            <div class="col-2">
+                                <h:panelGrid columns="1" class="w-100 mx-2">
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}"  value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" actionListener="#{patientInvestigationController.clearAlternativeReportData()}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
+                                    <hr/>
 
-                            <h:form >
+                                    <p:selectOneMenu class="w-100" value="#{patientInvestigationController.sampleSearchStrategy}">
+                                        <f:selectItem itemLabel="All Samples"/>
+                                        <f:selectItem itemValue="INTERNAL_ONLY" itemLabel="Internal Samples Only"/>
+                                        <f:selectItem itemValue="EXTERNAL_ONLY" itemLabel="Outsource Samples Only"/>
+                                    </p:selectOneMenu>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        action="#{patientInvestigationController.searchPatientSamples}" 
+                                        value="Samples" 
+                                        icon="fas fa-vial" 
+                                        styleClass="m-1 ui-button-warning w-100">
+                                    </p:commandButton>
+
+                                    <hr/><p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientReports}" value="Reports" icon="fas fa-file-medical" styleClass="m-1 ui-button-danger w-100"/>
+                                    <p:commandButton ajax="false" action="#{patientInvestigationController.clearFilters}" value="Clear" icon="fas fa-eraser" styleClass="m-1 ui-button-secondary w-100"/>
+                                </h:panelGrid>
+                            </div>
+                        </div>
+
+                    </h:form>
+
+                    <h:form >
+                        <div class="row" >
+                            <div class="col-10 w-80" >
+
                                 <!--PATIENT_INVESTIGATIONS-->
                                 <h:panelGroup rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}" >
 
@@ -272,7 +302,7 @@
                                         <!-- Status Column -->
                                         <p:column headerText="Status" style="width: 7em; vertical-align: top;">
                                             <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
-                                            <h:outputLabel value="#{patientInvestigation.status.label}"/>
+                                            <h:outputLabel value="#{patientInvestigation.status}"/>
                                             <br/>
                                             <br/>
                                             <p:badge 
@@ -339,14 +369,12 @@
                                                         class="ui-button-info"
                                                         ajax="false" 
                                                         id="btnPrintWorksheets" 
-                                                        disabled="#{!(patientInvestigation.sampleAccepted or patientInvestigation.outsourced)}" 
                                                         action="/lab/single_worksheet?faces-redirect=true"
                                                         >
                                                         <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
                                                 </div>
                                                 <div class="row">
-                                                    #{patientInvestigation}
                                                     <p:commandButton 
                                                         icon="fa fa-file-text"
                                                         value="Create a New Report" 
@@ -366,7 +394,7 @@
                                                         value="Upload New Report" 
                                                         id="btnNewUpload"
                                                         rendered="#{patientInvestigation.billItem.item.canUploadPatinrtReport}"
-                                                        disabled="#{!(patientInvestigation.sampleAccepted or patientInvestigation.outsourced)}" 
+                                                        disabled="#{patientInvestigation.sampleSentAt eq null}"
                                                         action="#{patientReportController.navigateToUploadNewPatientReport(patientInvestigation)}"
                                                         class="ui-button-warning mt-2"
                                                         onclick="if (!confirm('Are you sure you want to New Patient Report?'))
@@ -405,8 +433,7 @@
                                                             value="To Worksheet" 
                                                             class="ui-button-info"
                                                             ajax="false" 
-                                                            id="btnPrintWorksheetsForRefund" 
-                                                            disabled="#{patientInvestigation.sampleAccepted ne true}" 
+                                                            id="btnPrintWorksheetsForRefund"
                                                             action="/lab/single_worksheet?faces-redirect=true"
                                                             >
                                                             <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
@@ -417,7 +444,7 @@
                                                             icon="fa fa-file-text"
                                                             value="Create a New Report" 
                                                             id="btnNewReportForRefund"
-                                                            disabled="#{!patientInvestigation.sampleAccepted}" 
+                                                            disabled="#{!(patientInvestigation.sampleAccepted or patientInvestigation.outsourced)}" 
                                                             action="#{patientReportController.navigateToCreatedPatientReport(patientInvestigation)}"
                                                             class="ui-button-danger mt-2"
                                                             onclick="if (!confirm('Are you sure you want to New Patient Report?'))
@@ -883,7 +910,7 @@
                                             <i class="fa-solid fa-vial-virus text-danger"></i> <!-- Sample Icon -->
                                             <h:outputLabel value="#{ps.id}" class="mx-2" /><br/><br/>
                                             <i class="fas fa-vial text-danger"></i> <!-- Sample Icon -->
-                                            <h:outputLabel value="#{ps.tube.name}" class="mx-2" /><br/><br/>
+                                            <h:outputLabel value="#{ps.tube.name}" class="mx-2" />
                                         </p:column>
 
                                         <p:column headerText="Investigation List" width="8em" style="vertical-align: top;">
@@ -962,7 +989,7 @@
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{!ps.bill.cancelled}">
-                                                <h:outputLabel value=" #{ps.status.label}" />
+                                                <h:outputLabel value=" #{ps.status}" />
                                             </h:panelGroup>
 
                                         </p:column>
@@ -995,18 +1022,18 @@
                                                             </h:outputLabel>
                                                         </div>
                                                     </h:panelGroup>
-                                                    <h:panelGroup rendered="#{ps.outsourced}">
-                                                        <div class="d-flex gap-3 ">
-                                                            <h:outputLabel value="Send to OutLab " />
-                                                            <h:outputLabel value="#{ps.outsourcedAt}" >
-                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                                                            </h:outputLabel>
-                                                        </div>
-                                                    </h:panelGroup>
                                                     <h:panelGroup rendered="#{ps.sampleSent}">
                                                         <div class="d-flex gap-3 ">
                                                             <h:outputLabel value="Send to Lab " />
                                                             <h:outputLabel value="#{ps.sampleSentAt}" >
+                                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                                            </h:outputLabel>
+                                                        </div>
+                                                    </h:panelGroup>
+                                                    <h:panelGroup rendered="#{ps.outsourced}">
+                                                        <div class="d-flex gap-3 ">
+                                                            <h:outputLabel value="Send to OutLab " />
+                                                            <h:outputLabel value="#{ps.outsourcedAt}" >
                                                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                                             </h:outputLabel>
                                                         </div>
@@ -1026,9 +1053,7 @@
                                                 </h:panelGroup>
 
                                                 <h:panelGrid rendered="#{ps.sampleRejected or ps.cancelled}">
-
                                                     <h:panelGroup rendered="#{ps.sampleRejected}">
-
                                                         <div class="d-flex gap-3 " >
                                                             <h:outputLabel value="Rejected At" />
                                                             <h:outputLabel value="#{ps.sampleRejectedAt}" >
@@ -1133,7 +1158,7 @@
                                         <p:column headerText="Status" width="5em" style="vertical-align: top;">
 
                                             <h:panelGroup rendered="#{!dpr.patientInvestigation.billItem.bill.cancelled}">
-                                                <h:outputLabel value="#{dpr.patientInvestigation.status.label}" />
+                                                <h:outputLabel value="#{dpr.patientInvestigation.status}" />
                                             </h:panelGroup>
 
                                             <h:panelGroup rendered="#{dpr.patientInvestigation.billItem.bill.cancelled}">
@@ -1195,10 +1220,11 @@
 
                                         <!-- Actions Column -->
                                         <p:column headerText="Actions" style="vertical-align: top; width: 180px;" >
-                                            <p:commandLink id="cmdOldReport" 
-                                                           value="#{dpr.item.name}" 
-                                                           rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
-                                                           ajax="false" action="/lab/patient_report?faces-redirect=true">
+                                            <p:commandLink 
+                                                id="cmdOldReport" 
+                                                value="#{dpr.item.name}" 
+                                                rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
+                                                ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                             </p:commandLink>
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -1300,65 +1326,13 @@
                                     </p:dataTable>
 
                                 </h:panelGroup>
-                            </h:form>
-                        </div>
 
-                        <div class="col-2" >
-                            <h:form >
+                            </div>
+
+                            <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100">
                                     <p:commandButton 
-                                        ajax="false" 
-                                        action="#{patientInvestigationController.searchBills}"  
-                                        value="Bills" 
-                                        icon="fas fa-file-invoice-dollar" 
-                                        styleClass="m-1 ui-button-success w-100">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{patientInvestigationController.searchPatientInvestigations}" 
-                                        actionListener="#{patientInvestigationController.clearAlternativeReportData()}" 
-                                        value="Investigations" 
-                                        icon="fas fa-search" 
-                                        styleClass="m-1 ui-button-primary w-100">
-                                    </p:commandButton>
-
-                                    <hr/>
-
-                                    <p:selectOneMenu class="w-100" value="#{patientInvestigationController.sampleSearchStrategy}">
-                                        <f:selectItem itemLabel="All Samples"/>
-                                        <f:selectItem itemValue="INTERNAL_ONLY" itemLabel="Internal Samples Only"/>
-                                        <f:selectItem itemValue="EXTERNAL_ONLY" itemLabel="Outsource Samples Only"/>
-                                    </p:selectOneMenu>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{patientInvestigationController.searchPatientSamples}" 
-                                        value="Samples" 
-                                        icon="fas fa-vial" 
-                                        styleClass="m-1 ui-button-warning w-100">
-                                    </p:commandButton>
-
-                                    <hr/>
-
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{patientInvestigationController.searchPatientReports}" 
-                                        value="Reports" 
-                                        icon="fas fa-file-medical" 
-                                        styleClass="m-1 ui-button-danger w-100">
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        ajax="false" 
-                                        action="#{patientInvestigationController.clearFilters}" 
-                                        value="Clear" 
-                                        icon="fas fa-eraser" 
-                                        styleClass="m-1 ui-button-secondary w-100">
-                                    </p:commandButton>
-
-                                </h:panelGrid>
-
-                                <h:panelGrid columns="1" class="w-100 mt-5" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}">
-                                    <p:commandButton 
-
+                                        rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                         id="btnGenerateBarcodes"
                                         value="Generate Barcodes"
                                         ajax="false"
@@ -1367,10 +1341,9 @@
                                         icon="pi pi-barcode"
                                         styleClass="m-1 w-100 ui-button-success" >
                                     </p:commandButton>
-                                </h:panelGrid>
 
-                                <h:panelGrid columns="1" class="w-100 mt-5" rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_SAMPLES'}">
                                     <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnCollectSamples"
                                         value="Collect Samples"
                                         ajax="false"
@@ -1382,17 +1355,27 @@
 
                                     <hr/>
 
-                                    <h:panelGrid columns="1" class="w-100">
+                                    <style>
+                                        .custom-dropdown-panel {
+                                            position: absolute; /* Ensure the dropdown is positioned absolutely */
+                                            right: 0; /* Align the panel to the right edge */
+                                            top: 100%; /* Position the panel directly below the input box */
+                                            z-index: 1000; /* Ensure the panel is above other elements */
+                                            width: 30%; /* Make the dropdown match the width of the input box */
+                                            box-sizing: border-box; /* Include padding and border in the element's total width and height */
+                                        }
+                                    </style>
+
+                                    <h:panelGrid columns="1" class="w-100" >
                                         <p:commandButton
-                                            value="Send to Out Lab " 
-                                            type="button"                                            
+                                            value="Send to Out Lab "
+                                            disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                             styleClass="m-1 w-100 ui-button-primary" 
                                             icon="fa fa-paper-plane" 
                                             onclick="PF('dlg2').show()">
                                         </p:commandButton>
 
                                         <hr/>
-
                                     </h:panelGrid>
 
                                     <p:dialog 
@@ -1472,23 +1455,11 @@
                                                     styleClass="m-1 ui-button-info" >
                                                 </p:commandButton>
                                             </div>
-
                                         </div>
 
                                     </p:dialog>
 
-                                    <style>
-                                        .custom-dropdown-panel {
-                                            position: absolute; /* Ensure the dropdown is positioned absolutely */
-                                            right: 0; /* Align the panel to the right edge */
-                                            top: 100%; /* Position the panel directly below the input box */
-                                            z-index: 1000; /* Ensure the panel is above other elements */
-                                            width: 30%; /* Make the dropdown match the width of the input box */
-                                            box-sizing: border-box; /* Include padding and border in the element's total width and height */
-                                        }
-                                    </style>
-
-                                    <p:autoComplete
+                                    <p:autoComplete 
                                         completeMethod="#{staffController.completeStaff}"
                                         value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
                                         var="mys" 
@@ -1502,7 +1473,8 @@
                                         <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
                                     </p:autoComplete>
 
-                                    <p:commandButton
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnSendToLab"
                                         value="Send to Lab"
                                         ajax="false"
@@ -1514,7 +1486,8 @@
 
                                     <hr/>
 
-                                    <p:commandButton
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnReceiveAtLab"
                                         value="Received Samples"
                                         ajax="false"
@@ -1525,6 +1498,7 @@
                                     </p:commandButton>
 
                                     <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnCollectReceiveAtLab"
                                         value="Collect &amp; Received Samples"
                                         ajax="false"
@@ -1536,12 +1510,13 @@
 
                                     <hr/>
 
-                                    <p:inputText
+                                    <p:inputText 
                                         class="w-100"
                                         value="#{patientInvestigationController.sampleRejectionComment}" >
                                     </p:inputText>
 
-                                    <p:commandButton
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnRejectSamples"
                                         value="Reject Samples"
                                         ajax="false"
@@ -1553,7 +1528,8 @@
 
                                     <hr/>
 
-                                    <p:commandButton
+                                    <p:commandButton 
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnGenerateTestCodes"
                                         value="Check Analyzer Test Codes"
                                         ajax="false"
@@ -1568,10 +1544,13 @@
                                         value="#{patientInvestigationController.testDetails}" >
                                     </p:inputTextarea>
 
+                                    <hr/>
+
                                 </h:panelGrid>
-                            </h:form>
+                            </div>
+
                         </div>
-                    </div>
+                    </h:form>
                 </div>
             </h:panelGroup>
         </ui:define>
