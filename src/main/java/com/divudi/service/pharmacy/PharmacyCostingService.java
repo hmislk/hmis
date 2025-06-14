@@ -113,6 +113,8 @@ public class PharmacyCostingService {
     /**
      * Distribute bill-level values (discounts, expenses, taxes) proportionally
      * to items.
+     * @param billItems
+     * @param bill
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
         if (bill == null || bill.getBillFinanceDetails() == null || billItems == null || billItems.isEmpty()) {
