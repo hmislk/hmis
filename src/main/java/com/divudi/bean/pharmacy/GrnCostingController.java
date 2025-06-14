@@ -1263,13 +1263,22 @@ public class GrnCostingController implements Serializable {
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
 
         if (bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
-            pbi.setQty(java.util.Optional.ofNullable(f.getQuantity()).orElse(java.math.BigDecimal.ZERO).doubleValue());
-            pbi.setQtyInUnit(pbi.getQty());
-            pbi.setQtyPacks(pbi.getQty());
+            BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
+                    .orElse(BigDecimal.ONE);
+            BigDecimal qtyUnits = Optional.ofNullable(f.getQuantity())
+                    .orElse(BigDecimal.ZERO)
+                    .multiply(unitsPerPack);
+            BigDecimal freeQtyUnits = Optional.ofNullable(f.getFreeQuantity())
+                    .orElse(BigDecimal.ZERO)
+                    .multiply(unitsPerPack);
 
-            pbi.setFreeQty(java.util.Optional.ofNullable(f.getFreeQuantity()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setQty(qtyUnits.doubleValue());
+            pbi.setQtyInUnit(pbi.getQty());
+            pbi.setQtyPacks(Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO).doubleValue());
+
+            pbi.setFreeQty(freeQtyUnits.doubleValue());
             pbi.setFreeQtyInUnit(pbi.getFreeQty());
-            pbi.setFreeQtyPacks(pbi.getFreeQty());
+            pbi.setFreeQtyPacks(Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO).doubleValue());
 
             pbi.setPurchaseRate(java.util.Optional.ofNullable(f.getNetRate()).orElse(java.math.BigDecimal.ZERO).doubleValue());
             pbi.setPurchaseRatePack(pbi.getPurchaseRate());
