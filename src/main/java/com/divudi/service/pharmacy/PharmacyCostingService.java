@@ -380,6 +380,7 @@ public class PharmacyCostingService {
         // Set legacy totals on Bill
         bill.setTotal(grossTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
+        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         bill.setSaleValue(totalRetail.doubleValue());
 
         // Ensure BillFinanceDetails is present
