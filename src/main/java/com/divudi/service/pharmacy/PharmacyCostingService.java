@@ -74,8 +74,8 @@ public class PharmacyCostingService {
         BigDecimal retailValue = retailRate.multiply(totalQtyInUnits);
 
         billItemFinanceDetails.setLineGrossRate(lineGrossRate);
-        billItemFinanceDetails.setLineNetRate(totalQty.compareTo(BigDecimal.ZERO) > 0
-                ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
+        billItemFinanceDetails.setLineNetRate(qty.compareTo(BigDecimal.ZERO) > 0
+                ? lineNetTotal.divide(qty, 4, RoundingMode.HALF_UP)
                 : BigDecimal.ZERO);
 
         billItemFinanceDetails.setRetailSaleRatePerUnit(
@@ -187,7 +187,7 @@ public class PharmacyCostingService {
             BigDecimal lineCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
                     ? lineNetTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            BigDecimal billCostRate = billCost.compareTo(BigDecimal.ZERO) > 0 && totalQty.compareTo(BigDecimal.ZERO) > 0
+            BigDecimal billCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
                     ? billCost.divide(totalQty, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
             BigDecimal totalCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
@@ -207,14 +207,21 @@ public class PharmacyCostingService {
             f.setGrossTotal(lineGrossTotal);
 
             if (f.getLineNetRate() == null || f.getLineNetRate().compareTo(BigDecimal.ZERO) == 0) {
-                BigDecimal lineNetRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                        ? lineNetTotal.divide(totalQty, 4, RoundingMode.HALF_UP)
+                BigDecimal lineNetRate = quantity.compareTo(BigDecimal.ZERO) > 0
+                        ? lineNetTotal.divide(quantity, 4, RoundingMode.HALF_UP)
                         : BigDecimal.ZERO;
                 f.setLineNetRate(lineNetRate);
             }
 
-            f.setBillNetRate(BigDecimal.ZERO);
-            f.setNetRate(f.getLineNetRate());
+            BigDecimal billNetRate = quantity.compareTo(BigDecimal.ZERO) > 0
+                    ? billCost.divide(quantity, 4, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            f.setBillNetRate(billNetRate);
+
+            BigDecimal netRate = quantity.compareTo(BigDecimal.ZERO) > 0
+                    ? netTotal.divide(quantity, 4, RoundingMode.HALF_UP)
+                    : BigDecimal.ZERO;
+            f.setNetRate(netRate);
         }
     }
 
