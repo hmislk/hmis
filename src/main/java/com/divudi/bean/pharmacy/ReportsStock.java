@@ -165,6 +165,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReportDepartmentStockByZeroItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_zero_item?faces-redirect=true";
+    }
+
     public String navigateToStockReportByBatch() {
         stocks = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
@@ -591,8 +596,39 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 stockSaleValue += r.getSaleValue();
 
             }
-            pharmacyStockRows = lsts;
+        pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentZeroItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null) {
+                JsfUtil.addErrorMessage("Please select a department");
+                return;
+            }
+            Map m = new HashMap();
+            String sql;
+            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
+                    + "(s.itemBatch.item.code, "
+                    + "s.itemBatch.item.name, "
+                    + "sum(s.stock), "
+                    + "sum(s.itemBatch.purcahseRate * s.stock), "
+                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
+                    + "from Stock s where s.stock=:z and s.department=:d "
+                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
+                    + "order by s.itemBatch.item.name";
+            m.put("d", department);
+            m.put("z", 0.0);
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (PharmacyStockRow r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
+
+            }
+            pharmacyStockRows = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_ZERO_ITEM, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentStockByItemOrderByVmp() {
