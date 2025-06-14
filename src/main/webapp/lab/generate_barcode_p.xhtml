@@ -312,14 +312,14 @@
                                                 rendered="#{patientInvestigation.billItem.refunded}"
                                                 styleClass="ui-badge-warning" >
                                             </p:badge>
-                                            
-                                                <p:badge 
-                                                    value="Bill Cancel" 
-                                                    severity="info"
-                                                    rendered="#{patientInvestigation.billItem.bill.cancelled}"
-                                                    style="width: 200px;"
-                                                    styleClass="ui-badge-danger" >
-                                                </p:badge>
+
+                                            <p:badge 
+                                                value="Bill Cancel" 
+                                                severity="info"
+                                                rendered="#{patientInvestigation.billItem.bill.cancelled}"
+                                                style="width: 200px;"
+                                                styleClass="ui-badge-danger" >
+                                            </p:badge>
                                         </p:column>
 
                                         <!-- Ordered Institution and Department Column with Icons -->
@@ -1053,9 +1053,7 @@
                                                 </h:panelGroup>
 
                                                 <h:panelGrid rendered="#{ps.sampleRejected or ps.cancelled}">
-
                                                     <h:panelGroup rendered="#{ps.sampleRejected}">
-
                                                         <div class="d-flex gap-3 " >
                                                             <h:outputLabel value="Rejected At" />
                                                             <h:outputLabel value="#{ps.sampleRejectedAt}" >
@@ -1222,10 +1220,11 @@
 
                                         <!-- Actions Column -->
                                         <p:column headerText="Actions" style="vertical-align: top; width: 180px;" >
-                                            <p:commandLink id="cmdOldReport" 
-                                                           value="#{dpr.item.name}" 
-                                                           rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
-                                                           ajax="false" action="/lab/patient_report?faces-redirect=true">
+                                            <p:commandLink 
+                                                id="cmdOldReport" 
+                                                value="#{dpr.item.name}" 
+                                                rendered="#{dpr.item ne dpr.patientInvestigation.billItem.item and false}"
+                                                ajax="false" action="/lab/patient_report?faces-redirect=true">
                                                 <f:setPropertyActionListener value="#{dpr}" target="#{patientReportController.currentPatientReport}" />
                                             </p:commandLink>
                                             <h:panelGroup rendered="#{webUserController.hasPrivilege('Developers')}" >
@@ -1366,7 +1365,7 @@
                                             box-sizing: border-box; /* Include padding and border in the element's total width and height */
                                         }
                                     </style>
-                                    
+
                                     <h:panelGrid columns="1" class="w-100" >
                                         <p:commandButton
                                             value="Send to Out Lab "
@@ -1456,7 +1455,6 @@
                                                     styleClass="m-1 ui-button-info" >
                                                 </p:commandButton>
                                             </div>
-
                                         </div>
 
                                     </p:dialog>
@@ -1474,7 +1472,7 @@
                                         <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
                                         <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
                                     </p:autoComplete>
-                                    
+
                                     <p:commandButton 
                                         disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
                                         id="btnSendToLab"
