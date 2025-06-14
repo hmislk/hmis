@@ -115,7 +115,19 @@ public class PharmacyCostingService {
      * to items.
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
-        if (bill == null || bill.getBillFinanceDetails() == null || billItems == null || billItems.isEmpty()) {
+        if (bill == null) {
+            return;
+        }
+
+        if (bill.getBillFinanceDetails() == null) {
+            bill.setBillFinanceDetails(new BillFinanceDetails(bill));
+        }
+
+        bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
+        bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
+        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpenseTotal()));
+
+        if (billItems == null || billItems.isEmpty()) {
             return;
         }
 
@@ -137,10 +149,6 @@ public class PharmacyCostingService {
         if (totalBasis.compareTo(BigDecimal.ZERO) == 0) {
             return;
         }
-
-        bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
-        bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
-        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpenseTotal()));
 
         BigDecimal billDiscountTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillDiscount()).orElse(BigDecimal.ZERO);
         BigDecimal billExpenseTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillExpense()).orElse(BigDecimal.ZERO);
