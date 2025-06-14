@@ -742,13 +742,11 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void billDiscountChangedByUser() {
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
 
     public void billTaxChangedByUser() {
-        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
@@ -1075,21 +1073,27 @@ public class PharmacyDirectPurchaseController implements Serializable {
         int serialNo = 0;
 
         // Bill-level inputs: do not calculate here
-        BigDecimal billDiscount = BigDecimal.ZERO;
-        BigDecimal billExpense = BigDecimal.ZERO;
-        BigDecimal billTax = BigDecimal.ZERO;
-        BigDecimal billCost = BigDecimal.ZERO;
+
+        // Inputs from user or UI – left unchanged if already set
+        BigDecimal safeBillDiscount = billDiscount != null ? billDiscount : BigDecimal.ZERO;
+        BigDecimal safeBillExpense = billExpense != null ? billExpense : BigDecimal.ZERO;
+        BigDecimal safeBillTax = billTax != null ? billTax : BigDecimal.ZERO;
+
+        BigDecimal billDiscount = BigDecimal.valueOf(getBill().getDiscount());
+        BigDecimal billExpense = BigDecimal.valueOf(getBill().getExpenseTotal());
+        BigDecimal billTax = BigDecimal.valueOf(getBill().getTax());
+        BigDecimal billCost = billDiscount.subtract(billExpense.add(billTax));
 
         // Totals from bill items
         BigDecimal totalLineDiscounts = BigDecimal.ZERO;
-        BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalLineExpenses = BigDecimal.ZERO;
+        BigDecimal totalLineCosts = BigDecimal.ZERO;
+        BigDecimal totalTaxLines = BigDecimal.ZERO;
+
+        BigDecimal totalDiscount = BigDecimal.ZERO;
         BigDecimal totalExpense = BigDecimal.ZERO;
         BigDecimal totalCost = BigDecimal.ZERO;
-        BigDecimal totalCostLines = BigDecimal.ZERO;
-
         BigDecimal totalTax = BigDecimal.ZERO;
-        BigDecimal totalTaxLines = BigDecimal.ZERO;
 
         BigDecimal totalFreeItemValue = BigDecimal.ZERO;
         BigDecimal totalPurchase = BigDecimal.ZERO;
@@ -1139,7 +1143,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 totalLineDiscounts = totalLineDiscounts.add(Optional.ofNullable(f.getLineDiscount()).orElse(BigDecimal.ZERO));
                 totalLineExpenses = totalLineExpenses.add(Optional.ofNullable(f.getLineExpense()).orElse(BigDecimal.ZERO));
                 totalTaxLines = totalTaxLines.add(Optional.ofNullable(f.getLineTax()).orElse(BigDecimal.ZERO));
-                totalCostLines = totalCostLines.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
+                totalLineCosts = totalLineCosts.add(Optional.ofNullable(f.getLineCost()).orElse(BigDecimal.ZERO));
 
                 totalDiscount = totalDiscount.add(Optional.ofNullable(f.getTotalDiscount()).orElse(BigDecimal.ZERO));
                 totalExpense = totalExpense.add(Optional.ofNullable(f.getTotalExpense()).orElse(BigDecimal.ZERO));
@@ -1177,22 +1181,20 @@ public class PharmacyDirectPurchaseController implements Serializable {
             getBill().setBillFinanceDetails(bfd);
         }
 
-        // Inputs from user or UI – left unchanged if already set
-        bfd.setBillDiscount(bfd.getBillDiscount() != null ? bfd.getBillDiscount() : billDiscount);
-        bfd.setBillExpense(bfd.getBillExpense() != null ? bfd.getBillExpense() : billExpense);
-        bfd.setBillTaxValue(bfd.getBillTaxValue() != null ? bfd.getBillTaxValue() : billTax);
-        bfd.setBillCostValue(bfd.getBillCostValue() != null ? bfd.getBillCostValue() : billCost);
+
 
         // Assign calculated from items
         bfd.setLineDiscount(totalLineDiscounts);
         bfd.setLineExpense(totalLineExpenses);
         bfd.setItemTaxValue(totalTaxLines);
-        bfd.setLineCostValue(totalCostLines);
+        bfd.setLineCostValue(totalLineCosts);
 
         bfd.setTotalDiscount(totalDiscount);
         bfd.setTotalExpense(totalExpense);
-        bfd.setTotalCostValue(totalCost);
         bfd.setTotalTaxValue(totalTax);
+
+        bfd.setBillCostValue(billCost);
+        bfd.setTotalCostValue(totalCost);
 
         bfd.setTotalOfFreeItemValues(totalFreeItemValue);
         bfd.setTotalPurchaseValue(totalPurchase);
@@ -1208,6 +1210,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
     }
 
     @Deprecated // use 

@@ -607,7 +607,7 @@ public class PharmacyBean {
             s.setStock(s.getStock() + qty);
             getStockFacade().editAndCommit(s);
         }
-        addToStockHistoryForCosting(pharmaceuticalBillItem, s, department);
+        addToStockHistoryForCosting(billItem, s, department);
         return s;
     }
 
