@@ -551,18 +551,22 @@
                                             value="#{pharmacyDirectPurchaseController.bill.discount}">
                                             <p:ajax 
                                                 process="@this" 
-                                                update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                                update=":#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} :#{p:resolveFirstComponentWithId('net', view).clientId}" 
                                                 event="blur"
                                                 listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                         </p:inputText>
 
-                                        <p:outputLabel value="Net Total" />
-                                        <h:outputLabel 
-                                            id="net"
-                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
-                                            value="#{pharmacyDirectPurchaseController.bill.netTotal}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                        <p:outputLabel value="Net Total" id="net"/>
+                                        <h:panelGroup >
+                                            <h:outputLabel 
+                                                class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                                value="#{pharmacyDirectPurchaseController.bill.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputLabel>
+                                            
+
+                                        </h:panelGroup>
+
 
                                         <p:outputLabel value="Sale Value" />
                                         <h:outputLabel 

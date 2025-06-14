@@ -548,6 +548,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void billDiscountChangedByUser() {
+        System.out.println("billDiscountChangedByUser");
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
@@ -580,7 +581,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void settleDirectPurchaseBillFinally() {
-        System.out.println("settleDirectPurchaseBillFinally");
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return;
@@ -671,7 +671,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             System.out.println(" i.getBillItemFinanceDetails().getTotalQuantityByUnits() = " + i.getBillItemFinanceDetails().getTotalQuantityByUnits());
 
             pbi.setItemBatch(itemBatch);
-            System.out.println("addingQty = " + addingQty);
 
             Stock stock = getPharmacyBean().addToStockForCosting(i, Math.abs(addingQty), getSessionController().getDepartment());
 
