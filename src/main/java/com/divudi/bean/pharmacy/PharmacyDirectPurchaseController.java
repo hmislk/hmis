@@ -947,7 +947,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         pharmacyCostingService.distributeProportionalBillValuesToItems(billItems, bill);
         calculateBillTotalsFromItems();
-        calTotal();
         currentBillItem = null;
     }
 
