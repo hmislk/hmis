@@ -197,14 +197,17 @@ public class PharmacyCostingService {
             BigDecimal billCost = netTotal.subtract(lineNetTotal);
             f.setBillCost(billCost);
 
-            BigDecimal lineCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                    ? lineNetTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
+            BigDecimal qtyUnits = Optional.ofNullable(f.getTotalQuantityByUnits())
+                    .orElse(totalQty);
+
+            BigDecimal lineCostRate = qtyUnits.compareTo(BigDecimal.ZERO) > 0
+                    ? lineNetTotal.divide(qtyUnits, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            BigDecimal billCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                    ? billCost.divide(totalQty, 6, RoundingMode.HALF_UP)
+            BigDecimal billCostRate = qtyUnits.compareTo(BigDecimal.ZERO) > 0
+                    ? billCost.divide(qtyUnits, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
-            BigDecimal totalCostRate = totalQty.compareTo(BigDecimal.ZERO) > 0
-                    ? netTotal.divide(totalQty, 6, RoundingMode.HALF_UP)
+            BigDecimal totalCostRate = qtyUnits.compareTo(BigDecimal.ZERO) > 0
+                    ? netTotal.divide(qtyUnits, 6, RoundingMode.HALF_UP)
                     : BigDecimal.ZERO;
 
             f.setLineCostRate(lineCostRate.setScale(4, RoundingMode.HALF_UP));
