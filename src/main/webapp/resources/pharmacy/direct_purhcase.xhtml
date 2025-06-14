@@ -157,7 +157,7 @@
                         style="padding: 4px; width: 6em;" 
                         class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                         <f:facet name="header">Profit %</f:facet>
-                        <h:outputText id="profMargin" value="#{pharmacyDirectPurchaseController.calcProfitMargin(bip)}" >
+                        <h:outputText id="profMargin" value="#{pharmacyDirectPurchaseController.calculateProfitMargin(bip)}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
                         </h:outputText>
                     </p:column>

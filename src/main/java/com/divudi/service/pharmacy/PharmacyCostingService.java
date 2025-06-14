@@ -25,6 +25,7 @@ public class PharmacyCostingService {
      * @param billItemFinanceDetails
      */
     public void recalculateFinancialsBeforeAddingBillItem(BillItemFinanceDetails billItemFinanceDetails) {
+        System.out.println("recalculateFinancialsBeforeAddingBillItem");
         if (billItemFinanceDetails == null || billItemFinanceDetails.getBillItem() == null) {
             return;
         }
@@ -35,29 +36,41 @@ public class PharmacyCostingService {
         PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
 
         BigDecimal qty = Optional.ofNullable(billItemFinanceDetails.getQuantity()).orElse(BigDecimal.ZERO);
+        System.out.println("qty = " + qty);
         BigDecimal freeQty = Optional.ofNullable(billItemFinanceDetails.getFreeQuantity()).orElse(BigDecimal.ZERO);
+        System.out.println("freeQty = " + freeQty);
         BigDecimal lineGrossRate = Optional.ofNullable(billItemFinanceDetails.getLineGrossRate()).orElse(BigDecimal.ZERO);
         BigDecimal lineDiscountRate = Optional.ofNullable(billItemFinanceDetails.getLineDiscountRate()).orElse(BigDecimal.ZERO);
         BigDecimal retailRate = Optional.ofNullable(billItemFinanceDetails.getRetailSaleRate()).orElse(BigDecimal.ZERO);
 
         Item item = billItemFinanceDetails.getBillItem().getItem();
         BigDecimal totalQty = qty.add(freeQty);
+        System.out.println("totalQty = " + totalQty);
 
         BigDecimal unitsPerPack;
         BigDecimal qtyInUnits;
         BigDecimal freeQtyInUnits;
         BigDecimal totalQtyInUnits;
         if (item instanceof Ampp) {
+            System.out.println("Ampp");
             double dblVal = item.getDblValue();
             unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+            System.out.println("unitsPerPack = " + unitsPerPack);
             qtyInUnits = qty.multiply(unitsPerPack);
+            System.out.println("qtyInUnits = " + qtyInUnits);
             freeQtyInUnits = freeQty.multiply(unitsPerPack);
+            System.out.println("freeQtyInUnits = " + freeQtyInUnits);
             totalQtyInUnits = totalQty.multiply(unitsPerPack);
+            System.out.println("totalQtyInUnits = " + totalQtyInUnits);
         } else {
+            System.out.println("Amp");
             unitsPerPack = BigDecimal.ONE;
             qtyInUnits = qty;
+            System.out.println("qtyInUnits = " + qtyInUnits);
             freeQtyInUnits = freeQty;
+            System.out.println("freeQtyInUnits = " + freeQtyInUnits);
             totalQtyInUnits = totalQty;
+            System.out.println("totalQtyInUnits = " + totalQtyInUnits);
         }
 
         billItemFinanceDetails.setUnitsPerPack(unitsPerPack);
@@ -225,45 +238,55 @@ public class PharmacyCostingService {
         }
     }
 
-    /**
-     * Calculate the profit margin percentage for a BillItem based on its
-     * finance details. Returns 0.0 if values are missing.
-     */
-    public double calcProfitMargin(BillItem bi) {
-        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+    public double calculateProfitMarginForPurchases(BillItem bi) {
+        if (bi == null) {
+            System.out.println("BillItem is null");
             return 0.0;
         }
 
-        Item item = bi.getItem();
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-
-        BigDecimal qtyInUnits = Optional.ofNullable(f.getTotalQuantityByUnits()).orElse(BigDecimal.ZERO);
-        if (qtyInUnits.compareTo(BigDecimal.ZERO) == 0) {
+        if (f == null) {
+            System.out.println("BillItemFinanceDetails is null");
             return 0.0;
         }
 
-        BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO);
+        BigDecimal purchaseRate = f.getLineNetRate();
+        BigDecimal retailRate = f.getRetailSaleRate();
+        BigDecimal qty = f.getQuantity();
+        BigDecimal freeQty = f.getFreeQuantity();
 
-        BigDecimal costRatePerUnit;
-        if (item instanceof Ampp) {
-            double unitsPerPackDouble = item.getDblValue();
-            BigDecimal unitsPerPack = unitsPerPackDouble > 0 ? BigDecimal.valueOf(unitsPerPackDouble) : BigDecimal.ONE;
-            BigDecimal packCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-            costRatePerUnit = packCostRate.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
-        } else {
-            costRatePerUnit = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-        }
-
-        BigDecimal retailTotal = retailRate.multiply(qtyInUnits);
-        BigDecimal costTotal = costRatePerUnit.multiply(qtyInUnits);
-
-        if (retailTotal.compareTo(BigDecimal.ZERO) == 0) {
+        if (purchaseRate == null || retailRate == null || qty == null || freeQty == null) {
+            System.out.println("One or more required fields are null:");
+            System.out.println("purchaseRate: " + purchaseRate);
+            System.out.println("retailRate: " + retailRate);
+            System.out.println("qty: " + qty);
+            System.out.println("freeQty: " + freeQty);
             return 0.0;
         }
 
-        return retailTotal.subtract(costTotal)
-                .divide(retailTotal, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100))
-                .doubleValue();
+        BigDecimal totalQty = qty.add(freeQty);
+        BigDecimal purchaseValue = purchaseRate.multiply(qty);
+        BigDecimal retailValue = retailRate.multiply(totalQty);
+
+        if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
+            System.out.println("Purchase value is zero, cannot divide");
+            return 0.0;
+        }
+
+        BigDecimal margin = retailValue.subtract(purchaseValue)
+                .divide(purchaseValue, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100));
+
+        System.out.println("Purchase Rate: " + purchaseRate);
+        System.out.println("Retail Rate: " + retailRate);
+        System.out.println("Quantity: " + qty);
+        System.out.println("Free Quantity: " + freeQty);
+        System.out.println("Total Quantity: " + totalQty);
+        System.out.println("Purchase Value: " + purchaseValue);
+        System.out.println("Retail Value: " + retailValue);
+        System.out.println("Profit Margin: " + margin);
+
+        return margin.doubleValue();
     }
+
 }

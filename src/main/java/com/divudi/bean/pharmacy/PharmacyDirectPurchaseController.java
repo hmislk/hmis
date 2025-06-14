@@ -199,7 +199,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
 // ChatGPT contributed - Recalculates line-level financial values before adding BillItem to bill
-
     public void onQuantityChange() {
         BillItem bi = currentBillItem;
         if (bi == null || bi.getBillItemFinanceDetails() == null) {
@@ -497,56 +496,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 // ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
     // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
-    public double calcProfitMargin(BillItem ph) {
-        if (ph == null || ph.getBillItemFinanceDetails() == null) {
-            return 0.0;
-        }
-
-        Item item = ph.getItem();
-        BillItemFinanceDetails f = ph.getBillItemFinanceDetails();
-
-        BigDecimal qtyInUnits = Optional.ofNullable(f.getTotalQuantityByUnits()).orElse(BigDecimal.ZERO);
-        if (qtyInUnits.compareTo(BigDecimal.ZERO) == 0) {
-            return 0.0;
-        }
-
-        // Retail rate is always per unit
-        BigDecimal retailRate = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO);
-
-        // Determine correct cost rate
-        BigDecimal costRatePerUnit;
-        if (item instanceof Ampp) {
-            double unitsPerPackDouble = item.getDblValue();
-            BigDecimal unitsPerPack = unitsPerPackDouble > 0 ? BigDecimal.valueOf(unitsPerPackDouble) : BigDecimal.ONE;
-
-            // Line cost rate in this case is cost per pack, so convert to per-unit
-            BigDecimal packCostRate = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-            costRatePerUnit = packCostRate.divide(unitsPerPack, 6, RoundingMode.HALF_UP);
-        } else {
-            // For Amp or unit-based items, cost rate is already per unit
-            costRatePerUnit = Optional.ofNullable(f.getLineCostRate()).orElse(BigDecimal.ZERO);
-        }
-
-        // Calculate totals
-        BigDecimal retailTotal = retailRate.multiply(qtyInUnits);
-        BigDecimal costTotal = costRatePerUnit.multiply(qtyInUnits);
-
-        if (retailTotal.compareTo(BigDecimal.ZERO) == 0) {
-            return 0.0;
-        }
-
-        // Margin = (retail − cost) / retail × 100
-        return retailTotal.subtract(costTotal)
-                .divide(retailTotal, 4, RoundingMode.HALF_UP)
-                .multiply(BigDecimal.valueOf(100))
-                .doubleValue();
+    public double calculateProfitMargin(BillItem bi) {
+        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
     }
 
     public boolean isProfitMarginExcessive(BillItem ph) {
         if (ph == null || ph.getItem() == null || ph.getItem().getCategory() == null) {
             return false;
         }
-        double margin = calcProfitMargin(ph);
+        double margin = calculateProfitMargin(ph);
         return ph.getItem().getCategory().getProfitMargin() > margin;
     }
 
@@ -779,11 +737,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void billDiscountChangedByUser() {
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
 
     public void billTaxChangedByUser() {
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
@@ -816,7 +776,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void settleDirectPurchaseBillFinally() {
-
+        System.out.println("settleDirectPurchaseBillFinally");
         if (getBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Select Payment Method");
             return;
@@ -878,7 +838,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -890,13 +850,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 getBillItemFacade().edit(i);
             }
 
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
+            if (pbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(pbi);
             } else {
-                getPharmaceuticalBillItemFacade().edit(tmpPh);
+                getPharmaceuticalBillItemFacade().edit(pbi);
             }
 
-            i.setPharmaceuticalBillItem(tmpPh);
+            i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
 
             saveBillFee(i);
@@ -904,15 +864,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
 
             double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
+            System.out.println(" i.getBillItemFinanceDetails().getTotalQuantityByUnits() = " + i.getBillItemFinanceDetails().getTotalQuantityByUnits());
 
-            tmpPh.setItemBatch(itemBatch);
+            pbi.setItemBatch(itemBatch);
+            System.out.println("addingQty = " + addingQty);
 
-            Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
+            Stock stock = getPharmacyBean().addToStockForCosting(i, Math.abs(addingQty), getSessionController().getDepartment());
 
-            tmpPh.setLastPurchaseRate(lastPurchaseRate);
-            tmpPh.setStock(stock);
+            pbi.setLastPurchaseRate(lastPurchaseRate);
+            pbi.setStock(stock);
 
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
+            getPharmaceuticalBillItemFacade().edit(pbi);
 
             getBill().getBillItems().add(i);
         }

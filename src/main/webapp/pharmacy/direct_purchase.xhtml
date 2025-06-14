@@ -457,7 +457,7 @@
                             <p:column headerText="Profit %"  styleClass="text-end">
                                 <h:outputText
                                     id="profMargin"
-                                    value="#{pharmacyDirectPurchaseController.calcProfitMargin(ph)}"
+                                    value="#{pharmacyDirectPurchaseController.calculateProfitMargin(ph)}"
                                     styleClass="#{pharmacyDirectPurchaseController.isProfitMarginExcessive(ph) ? 'ui-messages-fatal' : ''}">
                                     <f:convertNumber pattern="0.0" />
                                 </h:outputText>
