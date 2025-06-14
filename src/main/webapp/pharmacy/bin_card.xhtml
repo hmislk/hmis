@@ -123,35 +123,97 @@
                         <h:outputText value="#{sh.pbItem.billItem.bill.billType.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic eq null}"/>
                         <h:outputText value="#{sh.pbItem.billItem.bill.billTypeAtomic.label}" rendered="#{sh.pbItem.billItem.bill.billTypeAtomic ne null}"/>
                     </p:column>
-                    
-                     <!-- Item -->
+
+                    <!-- Item -->
                     <p:column headerText="Item">
                         <h:outputText value="#{sh.pbItem.billItem.item.name}" />
                     </p:column>
 
-                    <!-- Quantity In -->
-                    <p:column headerText="Qty In" class="text-end">
-                        <h:outputText value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
-                                      rendered="#{sh.pbItem.transThisIsStockIn}"
-                                      styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
+                    <p:column headerText="Qty In" styleClass="text-end">
+
+                        <!-- Grouped rendering for Ampp items -->
+                        <h:panelGroup rendered="#{sh.pbItem.transThisIsStockIn and sh.pbItem.billItem.item.class.simpleName eq 'Ampp'}">
+
+                            <h:outputText 
+                                value="(" 
+                                styleClass="#{sh.pbItem.qty gt 0 ? 'text-primary' : ''}" />
+
+                            <h:outputText 
+                                value="#{sh.pbItem.qtyPacks + sh.pbItem.freeQtyPacks}" 
+                                styleClass="#{sh.pbItem.qty gt 0 ? 'text-primary' : ''}">
+                                <f:convertNumber pattern="#.#"/>
+                            </h:outputText>
+
+                            <h:outputText 
+                                value="  X  " 
+                                styleClass="#{sh.pbItem.qty gt 0 ? 'text-primary' : ''}" />
+
+                            <h:outputText 
+                                value="#{sh.pbItem.billItem.item.dblValue}" 
+                                styleClass="#{sh.pbItem.qty gt 0 ? 'text-primary' : ''}">
+                                <f:convertNumber pattern="#.#"/>
+                            </h:outputText>
+
+                            <h:outputText 
+                                value=")    " 
+                                styleClass="#{sh.pbItem.qty gt 0 ? 'text-primary' : ''}" />
+                        </h:panelGroup>
+
+                        <!-- Total quantity display -->
+                        <h:outputText 
+                            value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
+                            rendered="#{sh.pbItem.transThisIsStockIn}"
+                            styleClass="#{sh.pbItem.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
-                        <p:commandLink value="" ></p:commandLink>
+
                     </p:column>
 
-                    <!-- Quantity Out -->
-                    <p:column headerText="Qty Out" class="text-end">
+
+                    <p:column headerText="Qty Out" styleClass="text-end">
+
+                        <!-- Grouped rendering for Ampp items -->
+                        <h:panelGroup rendered="#{sh.pbItem.transThisIsStockOut and sh.pbItem.billItem.item.class.simpleName eq 'Ampp'}">
+
+                            <h:outputText 
+                                value="(" 
+                                styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}" />
+
+                            <h:outputText 
+                                value="#{sh.pbItem.qtyPacks + sh.pbItem.freeQtyPacks}" 
+                                styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
+                                <f:convertNumber pattern="#.#"/>
+                            </h:outputText>
+
+                            <h:outputText 
+                                value="  X  " 
+                                styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}" />
+
+                            <h:outputText 
+                                value="#{sh.pbItem.billItem.item.dblValue}" 
+                                styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
+                                <f:convertNumber pattern="#.#"/>
+                            </h:outputText>
+
+                            <h:outputText 
+                                value=")    " 
+                                styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}" />
+                        </h:panelGroup>
+
+                        <!-- Total quantity display -->
                         <h:outputText 
                             value="#{sh.pbItem.transAbsoluteQtyPlusFreeQty}" 
                             rendered="#{sh.pbItem.transThisIsStockOut}"
                             styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
+
                     </p:column>
 
-                    <p:column headerText="Balance Qty" class="text-end">
+
+                    <p:column headerText="Closing Stock" class="text-end">
                         <h:outputText value="#{sh.itemStock}">
-                            <f:convertNumber pattern="#.#"/>
+                            <f:convertNumber pattern="#,##0.#"/>
                         </h:outputText>
                     </p:column>
 
