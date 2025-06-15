@@ -17,6 +17,10 @@ All development branches must be created based on the related GitHub issue when 
 - `12888-need-to-display-consultant-name-and-credit-company-name`
 - `12746-return-item-only-with-discount-accept-pharmacy-refund-updated-incorrect-in-pharmacy-income-report`
 
+## Closing Issues with Pull Requests
+
+After creating a branch and opening a pull request, include a closing phrase such as `Closes #<issue-number>` in the PR description or a follow-up comment. This ensures GitHub Actions will automatically move the issue through project workflows when the PR is merged.
+
 ## Adding User Icons
 
 1. Add a new constant to `src/main/java/com/divudi/core/data/Icon.java`. The value should be the label displayed to users.
