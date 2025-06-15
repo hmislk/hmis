@@ -109,6 +109,12 @@
                                             <p:commandButton class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                icon="fa fa-cubes"
+                                                value="Stock Report by Zero Item"
+                                                action="#{reportsStock.navigateToPharmacyReportDepartmentStockByZeroItem()}"
+                                                ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Suppliers Expiring Stocks" action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton 
                                                 class="w-100"

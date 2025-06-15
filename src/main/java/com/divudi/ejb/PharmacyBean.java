@@ -567,34 +567,47 @@ public class PharmacyBean {
         if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
-            s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             s.setCode(pharmaceuticalBillItem.getCode());
-            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
-            Item i = null;
-            if (ib != null) {
-                i = ib.getItem();
-            }
-            if (i != null) {
-                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
-                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
-                String code = i.getCode();
-                Long longCode = CommonFunctions.stringToLong(code);
-                s.setLongCode(longCode);
-                s.setDateOfExpire(ib.getDateOfExpire());
-                s.setRetailsaleRate(ib.getRetailsaleRate());
-            } else {
-                s.setItemName("UNKNOWN");
-                s.setBarcode("");
-                s.setLongCode(0L);
-            }
             getStockFacade().createAndFlush(s);
         } else {
             s.setStock(s.getStock() + qty);
             getStockFacade().editAndCommit(s);
         }
         addToStockHistory(pharmaceuticalBillItem, s, department);
+        return s;
+    }
+
+    public Stock addToStockForCosting(BillItem billItem, double qty, Department department) {
+        if (billItem == null) {
+            return null;
+        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return null;
+        }
+        BillItemFinanceDetails billItemFinanceDetails = billItem.getBillItemFinanceDetails();
+        if (billItemFinanceDetails == null) {
+            return null;
+        }
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
+        params.put("bch", pharmaceuticalBillItem.getItemBatch());
+        params.put("dep", department);
+        Stock s = getStockFacade().findFirstByJpql(jpql, params, true);
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+            s = new Stock();
+            s.setDepartment(department);
+            s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            s.setStock(qty);
+            getStockFacade().createAndFlush(s);
+        } else {
+            s.setStock(s.getStock() + qty);
+            getStockFacade().editAndCommit(s);
+        }
+        addToStockHistoryForCosting(billItem, s, department);
         return s;
     }
 
@@ -904,6 +917,57 @@ public class PharmacyBean {
         // Resolve AMP if item is an AMPP
         Item originalItem = phItem.getBillItem().getItem();
         Item amp = originalItem instanceof Ampp ? ((Ampp) originalItem).getAmp() : originalItem;
+
+        StockHistory sh = new StockHistory();
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+
+        sh.setFromDate(now);
+        sh.setPbItem(phItem);
+        sh.setHxDate(cal.get(Calendar.DATE));
+        sh.setHxMonth(cal.get(Calendar.MONTH));
+        sh.setHxWeek(cal.get(Calendar.WEEK_OF_YEAR));
+        sh.setHxYear(cal.get(Calendar.YEAR));
+
+        sh.setStockAt(now);
+        sh.setCreatedAt(now);
+        sh.setDepartment(d);
+        sh.setInstitution(d.getInstitution());
+
+        Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
+        sh.setStockQty(fetchedStock.getStock());
+
+        // Ensure AMP is used for item tracking
+        sh.setItem(amp);
+        sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(amp, d));
+        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(amp));
+
+        if (sh.getId() == null) {
+            getStockHistoryFacade().createAndFlush(sh);
+        } else {
+            getStockHistoryFacade().editAndCommit(sh);
+        }
+
+        phItem.setStockHistory(sh);
+        getPharmaceuticalBillItemFacade().editAndCommit(phItem);
+    }
+
+    public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
+        if (billItem == null) {
+            return;
+        }
+        PharmaceuticalBillItem phItem = billItem.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            return;
+        }
+        Item item = billItem.getItem();
+        if (item == null) {
+            return;
+        }
+        
+        Item amp = item instanceof Ampp ? ((Ampp) item).getAmp() : item;
 
         StockHistory sh = new StockHistory();
         Date now = new Date();
