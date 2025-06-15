@@ -211,3 +211,14 @@ Use the following check to conditionally render a UI component:
 - All new privileges must be assigned manually via the User Privileges page.
 
 These guidelines apply to the entire repository.
+
+## HTML Output Sanitisation
+
+Dynamic text displayed with `escape="false"` must be sanitised to avoid
+cross-site scripting vulnerabilities. Use
+`CommonFunctionsProxy.escapeHtml(String)` before rendering user-provided content
+that doesn't intentionally include HTML tags.
+
+**Note:** The escaping method converts `<` and `>` characters to HTML entities,
+so it should not be used when the string contains markup that must be rendered,
+such as `<br>` or style elements.
