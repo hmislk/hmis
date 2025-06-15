@@ -1308,7 +1308,7 @@ public class SearchController implements Serializable {
     }
 
     public void makeListNull() {
-        maxResult = configOptionApplicationController.getIntegerValueByKey("Maximum Number of reords for default search", 50);
+        maxResult = configOptionApplicationController.getIntegerValueByKey("Maximum Number of records for default search", 50);
         bills = null;
         aceptPaymentBills = null;
         selectedBills = null;
