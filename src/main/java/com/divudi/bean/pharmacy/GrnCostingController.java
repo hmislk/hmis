@@ -991,8 +991,7 @@ public class GrnCostingController implements Serializable {
                 ph.setDoe(i.getDoe());
                 ph.setStringValue(i.getStringValue());
 
-                double wholesaleFactor2 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
-                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor2) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                ph.setWholesaleRate(getWholesaleRate(ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1044,8 +1043,7 @@ public class GrnCostingController implements Serializable {
             ph.setPurchaseRate(i.getPurchaseRate());
             ph.setRetailRate(i.getRetailRate());
 
-            double wholesaleFactor3 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
-            ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor3) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+            ph.setWholesaleRate(getWholesaleRate(ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit()));
 
             ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             ph.setFreeQty(i.getFreeQty());
@@ -1246,6 +1244,12 @@ public class GrnCostingController implements Serializable {
         HashMap hm = new HashMap();
         hm.put("b", billItem.getReferanceBillItem());
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+
+    private double getWholesaleRate(double purchaseRate, double qtyInUnit, double freeQtyInUnit) {
+        double wholesaleFactor =
+            configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        return (purchaseRate * wholesaleFactor) * qtyInUnit / (freeQtyInUnit + qtyInUnit);
     }
 
     private void applyFinanceDetailsToPharmaceutical(BillItem bi) {
