@@ -4066,7 +4066,11 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         purchaseReturnController.setPrintPreview(true);
         purchaseReturnController.setReturnBill(bill);
-        return "/pharmacy/pharmacy_return_purchase";
+        if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+            return "/pharmacy/direct_purchase_return";
+        } else {
+            return "/pharmacy/pharmacy_return_purchase";
+        }
     }
 
     public String navigateToPharmacyReturnWithoutTreasingBillView() {
