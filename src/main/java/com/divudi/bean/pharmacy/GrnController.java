@@ -124,7 +124,7 @@ public class GrnController implements Serializable {
     BillItem currentExpense;
     List<BillItem> billExpenses;
 
-    public void closeSelectedPurchesOrder() {
+    public void closeSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -135,7 +135,7 @@ public class GrnController implements Serializable {
 
     }
 
-    public void openSelectedPurchesOrder() {
+    public void openSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;

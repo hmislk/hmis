@@ -157,7 +157,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Close" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.closeSelectedPurchesOrder()}" 
+                                            action="#{grnController.closeSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>
@@ -168,7 +168,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Re-Open" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.openSelectedPurchesOrder()}" 
+                                            action="#{grnController.openSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>
