@@ -20,17 +20,6 @@ Developed using Java Enterprise Edition, the system offers both a web applicatio
 
 Current Version: 3.0.0.20240813.1 (This line will be automatically updated to reflect the latest version)
 
-## Upgrade Instructions
-
-When upgrading from an older installation, apply any new SQL scripts found in
-`src/main/webapp/resources/sql/` to keep your database schema in sync.  The
-latest release introduces a new `OBJECTID` column to the `AUDITEVENT` table.
-Run the script `add_objectid_to_auditevent.sql` to add this column:
-
-```sql
-ALTER TABLE AUDITEVENT ADD COLUMN OBJECTID BIGINT;
-```
-
 ## History
 
 In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an Electronic Medical Record (EMR) System tailored for his general practice. Utilising Microsoft Visual Basic 6 and MS-Access, this system caught the attention of fellow doctors, leading to widespread adoption. As its user base grew, so did its features, evolving through collaborative discussions and feedback.
