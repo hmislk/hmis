@@ -383,27 +383,35 @@ public class DirectPurchaseReturnController implements Serializable {
 
     public void prepareReturnBill() {
         System.out.println("prepareReturnBill");
-        if(bill==null){
+        if (bill == null) {
             JsfUtil.addErrorMessage("No Direct Purcchase is selected to return");
             return;
         }
-        if(bill.getBillTypeAtomic()==null){
+        if (bill.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No Bill Type for the selected Bill to return. Its a system error. Please contact Developers");
             return;
         }
-        if(bill.getBillTypeAtomic()!=BillTypeAtomic.PHARMACY_DIRECT_PURCHASE){
+        if (bill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_DIRECT_PURCHASE) {
             JsfUtil.addErrorMessage("Wrong Bill Type for the selected Bill to return. Its a system error. Please contact Developers");
             return;
         }
-        resetValuesForReturn();
         getReturnBill();
         getReturnBill().setBilledBill(bill);
-        prepareBillItems();
+        prepareBillItems(bill);
     }
 
-    private void prepareBillItems() {
+    private void prepareBillItems(Bill bill) {
         System.out.println("prepareBillItems");
-        String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId();
+        System.out.println("getBill() = " + bill);
+        if (bill == null) {
+            JsfUtil.addErrorMessage("There is a system error. Please contact Developers");
+            return;
+        }
+        if (bill.getId() == null) {
+            JsfUtil.addErrorMessage("There is a system error. Please contact Developers");
+            return;
+        }
+        String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + bill.getId();
         List<PharmaceuticalBillItem> pbisOfBilledBill = getPharmaceuticalBillItemFacade().findByJpql(jpql);
         System.out.println("pbisOfBilledBill = " + pbisOfBilledBill);
         for (PharmaceuticalBillItem pbiOfBilledBill : pbisOfBilledBill) {
@@ -414,7 +422,8 @@ public class DirectPurchaseReturnController implements Serializable {
             newBillItemInReturnBill.setBill(getReturnBill());
             newBillItemInReturnBill.setItem(pbiOfBilledBill.getBillItem().getItem());
             newBillItemInReturnBill.setReferanceBillItem(pbiOfBilledBill.getBillItem());
-
+            newBillItemInReturnBill.setBill(returnBill);
+            
             PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemInReturnBill.copy(pbiOfBilledBill);
             newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
@@ -434,17 +443,6 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
             newBillItemInReturnBill.setPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill);
-
-            List<Item> suggessions = new ArrayList<>();
-            Item item = pbiOfBilledBill.getBillItem().getItem();
-
-            if (item instanceof Amp) {
-                suggessions.add(item);
-                suggessions.add(getPharmacyBean().getAmpp((Amp) item));
-            } else if (item instanceof Ampp) {
-                suggessions.add(((Ampp) item).getAmp());
-                suggessions.add(item);
-            }
 
             getBillItems().add(newBillItemInReturnBill);
         }

@@ -4067,23 +4067,19 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
-        System.out.println("loading bill details started");
+        directPurchaseReturnController.resetValuesForReturn();
         loadBillDetails(bill);
-        System.out.println("loading bill details ended");
+        directPurchaseReturnController.setBill(bill);
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        System.out.println("manageCosting = " + manageCosting);
         if (manageCosting) {
+            directPurchaseReturnController.setPrintPreview(true);
+            directPurchaseReturnController.setBill(bill);
+            directPurchaseReturnController.prepareReturnBill();
+            return "/pharmacy/pharmacy_return_purchase";
+        } else {
             purchaseReturnController.setPrintPreview(true);
             purchaseReturnController.setBill(bill);
             return "/pharmacy/direct_purchase_return";
-        } else {
-            System.out.println("manageCosting is true ");
-            directPurchaseReturnController.setPrintPreview(true);
-            directPurchaseReturnController.setBill(bill);
-            System.out.println("before calling prepareReturnBill");
-            directPurchaseReturnController.prepareReturnBill();
-            System.out.println("After calling prepareReturnBill");
-            return "/pharmacy/pharmacy_return_purchase";
         }
     }
 
