@@ -228,8 +228,8 @@ public class AuditEventController implements Serializable {
         Map<String, Object> hm = new HashMap<>();
         hm.put("et", "ConfigOption");
         hm.put("trigs", Arrays.asList("Update Config Option", "Delete Config Option"));
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         if (items != null) {
             for (AuditEvent ae : items) {
