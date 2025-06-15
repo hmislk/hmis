@@ -32,9 +32,9 @@
                                         value="Return" 
                                         ajax="false"
                                         class="ui-button-warning"
-                                        action="pharmacy_return_purchase?faces-redirect=true;" 
+                                        action="#{billSearch.navigateToDirectPurchaseReturnBillView()}" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}" >
-                                        <f:setPropertyActionListener target="#{purchaseReturnController.bill}"  value="#{pharmacyBillSearch.bill}"/>
+                                        <f:setPropertyActionListener target="#{billSearch.bill}"  value="#{pharmacyBillSearch.bill}"/>
                                     </p:commandButton>
 
                                     <p:commandButton 

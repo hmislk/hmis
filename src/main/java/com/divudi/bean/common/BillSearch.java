@@ -54,6 +54,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
+import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
@@ -235,6 +236,8 @@ public class BillSearch implements Serializable {
     PharmacyPurchaseController pharmacyPurchaseController;
     @Inject
     PurchaseReturnController purchaseReturnController;
+    @Inject
+    DirectPurchaseReturnController directPurchaseReturnController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     @Inject
@@ -4064,11 +4067,14 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        purchaseReturnController.setPrintPreview(true);
-        purchaseReturnController.setReturnBill(bill);
         if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+            purchaseReturnController.setPrintPreview(true);
+            purchaseReturnController.setBill(bill);
             return "/pharmacy/direct_purchase_return";
         } else {
+            directPurchaseReturnController.setPrintPreview(true);
+            directPurchaseReturnController.setBill(bill);
+
             return "/pharmacy/pharmacy_return_purchase";
         }
     }
