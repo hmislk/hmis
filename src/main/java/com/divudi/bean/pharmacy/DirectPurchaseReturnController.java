@@ -32,6 +32,9 @@ import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.service.pharmacy.PharmacyCostingService;
+import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -70,6 +73,8 @@ public class DirectPurchaseReturnController implements Serializable {
     BillFeeFacade billFeeFacade;
     @EJB
     PaymentFacade paymentFacade;
+    @EJB
+    PharmacyCostingService pharmacyCostingService;
 
     /**
      * Controllers
@@ -443,6 +448,21 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
             newBillItemInReturnBill.setPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill);
+
+            BillItemFinanceDetails fd = null;
+            BillItemFinanceDetails originalFd = pbiOfBilledBill.getBillItem().getBillItemFinanceDetails();
+            if (originalFd != null) {
+                fd = originalFd.clone();
+                fd.setBillItem(newBillItemInReturnBill);
+            } else {
+                fd = new BillItemFinanceDetails(newBillItemInReturnBill);
+            }
+            fd.setQuantity(BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getQty()));
+            fd.setFreeQuantity(BigDecimal.valueOf(newPharmaceuticalBillItemInReturnBill.getFreeQty()));
+            newBillItemInReturnBill.setBillItemFinanceDetails(fd);
+            if (pharmacyCostingService != null) {
+                pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+            }
 
             getBillItems().add(newBillItemInReturnBill);
         }
