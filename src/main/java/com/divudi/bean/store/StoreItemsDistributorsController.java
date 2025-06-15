@@ -83,6 +83,9 @@ public class StoreItemsDistributorsController implements Serializable {
     }
 
     private boolean checkItem() {
+        if (getCurrentInstitution() == null || getCurrentItem() == null) {
+            return false;
+        }
         String sql = "Select i from ItemsDistributors i where i.retired=false"
                 + " and i.institution.id= " + getCurrentInstitution().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
@@ -211,6 +214,11 @@ public class StoreItemsDistributorsController implements Serializable {
      * @return
      */
     public List<ItemsDistributors> getItems() {
+        if (getCurrentInstitution() == null) {
+            items = new ArrayList<>();
+            return items;
+        }
+
         String temSql;
         HashMap hm = new HashMap();
 
