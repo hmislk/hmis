@@ -596,39 +596,44 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 stockSaleValue += r.getSaleValue();
 
             }
-        pharmacyStockRows = lsts;
+            pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentZeroItemStocks() {
         reportTimerController.trackReportExecution(() -> {
-            if (department == null) {
-                JsfUtil.addErrorMessage("Please select a department");
+            if (department == null && site == null && institution == null) {
+                JsfUtil.addErrorMessage("Please select a department, site, or institution");
                 return;
             }
             Map m = new HashMap();
-            String sql;
-            sql = "select new com.divudi.core.data.dataStructure.PharmacyStockRow"
-                    + "(s.itemBatch.item.code, "
-                    + "s.itemBatch.item.name, "
-                    + "sum(s.stock), "
-                    + "sum(s.itemBatch.purcahseRate * s.stock), "
-                    + "sum(s.itemBatch.retailsaleRate * s.stock))  "
-                    + "from Stock s where s.stock=:z and s.department=:d "
-                    + "group by s.itemBatch.item.name, s.itemBatch.item.code "
-                    + "order by s.itemBatch.item.name";
-            m.put("d", department);
-            m.put("z", 0.0);
-            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
+            StringBuilder sql = new StringBuilder("select new com.divudi.core.data.dataStructure.PharmacyStockRow(" +
+                    "s.itemBatch.item.code, " +
+                    "s.itemBatch.item.name, " +
+                    "sum(s.stock), " +
+                    "sum(s.itemBatch.purcahseRate * s.stock), " +
+                    "sum(s.itemBatch.retailsaleRate * s.stock)) " +
+                    "from Stock s where 1=1 ");
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            sql.append(" group by s.itemBatch.item.code, s.itemBatch.item.name having sum(s.stock) = 0 order by s.itemBatch.item.name");
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql.toString(), m);
             stockPurchaseValue = 0.0;
             stockSaleValue = 0.0;
             for (PharmacyStockRow r : lsts) {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
-
             }
             pharmacyStockRows = lsts;
-        }, PharmacyReports.STOCK_REPORT_BY_ZERO_ITEM, sessionController.getLoggedUser());
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
     }
 
     public void fillDepartmentStockByItemOrderByVmp() {
