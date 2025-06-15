@@ -38,7 +38,7 @@
                         <h:outputLabel value=":" style="width: 40px; text-align: center;" />
                         <p:selectOneMenu 
                             id="ins2" 
-                            value="#{userDepartmentController.currentInstituion}" 
+                            value="#{userDepartmentController.currentInstitution}"
                             filter="true"
                             style="width: 500px;"
                             class="w-100">
@@ -67,7 +67,7 @@
                         <h:panelGroup id="somDept">
 
                             <p:selectOneMenu 
-                                rendered="#{userDepartmentController.currentInstituion eq null and userDepartmentController.currentSite eq null}"
+                                rendered="#{userDepartmentController.currentInstitution eq null and userDepartmentController.currentSite eq null}"
                                 value="#{userDepartmentController.currentDepartment}" 
                                 style="width: 500px;" 
                                 class="w-100" 
@@ -78,7 +78,7 @@
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
-                                rendered="#{userDepartmentController.currentInstituion eq null and userDepartmentController.currentSite ne null}"
+                                rendered="#{userDepartmentController.currentInstitution eq null and userDepartmentController.currentSite ne null}"
                                 value="#{userDepartmentController.currentDepartment}" 
                                 style="width: 500px;" 
                                 class="w-100" 
@@ -89,25 +89,25 @@
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
-                                rendered="#{userDepartmentController.currentInstituion ne null and userDepartmentController.currentSite eq null}"
+                                rendered="#{userDepartmentController.currentInstitution ne null and userDepartmentController.currentSite eq null}"
                                 value="#{userDepartmentController.currentDepartment}" 
                                 style="width: 500px;" 
                                 class="w-100" 
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(userDepartmentController.currentInstituion)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSiteForInstitution(userDepartmentController.currentInstitution)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                             <p:selectOneMenu 
-                                rendered="#{userDepartmentController.currentInstituion ne null and userDepartmentController.currentSite ne null}"
+                                rendered="#{userDepartmentController.currentInstitution ne null and userDepartmentController.currentSite ne null}"
                                 value="#{userDepartmentController.currentDepartment}" 
                                 style="width: 500px;" 
                                 class="w-100" 
                                 filter="true"
                                 filterMatchMode="contains">
                                 <f:selectItem itemLabel="Select Department" />
-                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentInstituion, userDepartmentController.currentSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
+                                <f:selectItems value="#{departmentController.getDepartmentsOfInstitutionAndSite(userDepartmentController.currentInstitution, userDepartmentController.currentSite)}" var="d" itemLabel="#{d.name}" itemValue="#{d}" />
                             </p:selectOneMenu>
 
                         </h:panelGroup>
