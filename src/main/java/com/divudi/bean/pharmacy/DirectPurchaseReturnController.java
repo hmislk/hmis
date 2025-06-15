@@ -21,10 +21,7 @@ import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.pharmacy.Amp;
-import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -41,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -153,6 +151,82 @@ public class DirectPurchaseReturnController implements Serializable {
         }
     }
 
+    private void addDataToReturningBillItem(BillItem returningBillItem) {
+        if (returningBillItem == null) {
+            return;
+        }
+        BillItem originalBillItem = returningBillItem.getReferanceBillItem();
+        if (originalBillItem == null) {
+            return;
+        }
+        BillItemFinanceDetails bifdOriginal = originalBillItem.getBillItemFinanceDetails();
+        if (bifdOriginal == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbiOriginal = originalBillItem.getPharmaceuticalBillItem();
+        if (pbiOriginal == null) {
+            return;
+        }
+        BillItemFinanceDetails bifdReturning = returningBillItem.getBillItemFinanceDetails();
+        if (bifdReturning == null) {
+            return;
+        }
+        PharmaceuticalBillItem pbiReturning = returningBillItem.getPharmaceuticalBillItem();
+        if (pbiReturning == null) {
+            return;
+        }
+
+        BigDecimal alreadyReturnQuentity = BigDecimal.ZERO;
+        BigDecimal alreadyReturnedFreeQuentity = BigDecimal.ZERO;
+        BigDecimal allreadyReturnedTotalQuentity = BigDecimal.ZERO;
+
+        BigDecimal returningRate = BigDecimal.ZERO;
+
+        String sql = "Select sum(b.billItemFinanceDetails.quantity), sum(b.billItemFinanceDetails.freeQuantity) "
+                + " from BillItem b "
+                + " where b.retired=false "
+                + " and b.bill.retired=false "
+                + " and b.referanceBillItem=:obi "
+                + " and b.bill.billTypeAtomic=:bta";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("obi", originalBillItem);
+        params.put("bta", BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+
+        Object[] returnedValues = getBillItemFacade().findSingleAggregate(sql, params);
+
+        if (returnedValues != null) {
+            alreadyReturnQuentity = returnedValues[0] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[0].toString());
+            alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[1].toString());
+            allreadyReturnedTotalQuentity = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
+        }
+
+        bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
+        bifdOriginal.setReturnFreeQuantity(alreadyReturnedFreeQuentity);
+
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            // Returning free quantity is not tracked separately.
+            // The total return covers both original quantity and free quantity.
+            // Here, free quantity being returned is considered zero.
+            // Need to subtract already returned total (qty + free) from original total (qty + free)
+            BigDecimal originalTotal = bifdOriginal.getQuantity().add(bifdOriginal.getFreeQuantity());
+            BigDecimal returnedTotal = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
+            BigDecimal remaining = originalTotal.subtract(returnedTotal);
+            bifdReturning.setQuantity(remaining);
+            bifdReturning.setFreeQuantity(BigDecimal.ZERO);
+        } else {
+            // Returning quantity and free quantity are managed separately.
+            // Subtract already returned quantity and free quantity from respective originals.
+            bifdReturning.setQuantity(bifdOriginal.getQuantity().subtract(alreadyReturnQuentity));
+            bifdReturning.setFreeQuantity(bifdOriginal.getFreeQuantity().subtract(alreadyReturnedFreeQuentity));
+        }
+
+        returningRate = getReturnRate(originalBillItem);
+        bifdReturning.setGrossRate(returningRate);
+
+        billItemFacade.edit(originalBillItem);
+    }
+
     private double getRemainingFreeQty(BillItem bilItem) {
         String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "   p.creater is not null and"
@@ -219,16 +293,16 @@ public class DirectPurchaseReturnController implements Serializable {
 
     }
 
-    public double getReturnRate(BillItem item) {
-        double rate = item.getPharmaceuticalBillItem().getPurchaseRateInUnit();
+    public BigDecimal getReturnRate(BillItem originalBillItem) {
+        BigDecimal rate = originalBillItem.getBillItemFinanceDetails().getGrossRate();
         if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
-                && item.getBillItemFinanceDetails() != null
-                && item.getBillItemFinanceDetails().getLineCostRate() != null) {
-            rate = item.getBillItemFinanceDetails().getLineCostRate().doubleValue();
+                && originalBillItem.getBillItemFinanceDetails() != null
+                && originalBillItem.getBillItemFinanceDetails().getLineCostRate() != null) {
+            rate = originalBillItem.getBillItemFinanceDetails().getLineCostRate();
         } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
-                && item.getBillItemFinanceDetails() != null
-                && item.getBillItemFinanceDetails().getTotalCostRate() != null) {
-            rate = item.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+                && originalBillItem.getBillItemFinanceDetails() != null
+                && originalBillItem.getBillItemFinanceDetails().getTotalCostRate() != null) {
+            rate = originalBillItem.getBillItemFinanceDetails().getTotalCostRate();
         }
         return rate;
     }
@@ -251,7 +325,7 @@ public class DirectPurchaseReturnController implements Serializable {
                 continue;
             }
 
-            double rate = getReturnRate(i);
+            double rate = getReturnRate(i).doubleValue();
             i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -294,7 +368,7 @@ public class DirectPurchaseReturnController implements Serializable {
                 continue;
             }
 
-            double rate = getReturnRate(i);
+            double rate = getReturnRate(i).doubleValue();
             i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -375,7 +449,7 @@ public class DirectPurchaseReturnController implements Serializable {
         double grossTotal = 0.0;
 
         for (BillItem p : getBillItems()) {
-            double rate = getReturnRate(p);
+            double rate = getReturnRate(p).doubleValue();
             grossTotal += rate * p.getQty();
 
         }
@@ -428,7 +502,20 @@ public class DirectPurchaseReturnController implements Serializable {
             newBillItemInReturnBill.setItem(pbiOfBilledBill.getBillItem().getItem());
             newBillItemInReturnBill.setReferanceBillItem(pbiOfBilledBill.getBillItem());
             newBillItemInReturnBill.setBill(returnBill);
-            
+
+            BigDecimal alreadyReturnQuentity = BigDecimal.ZERO;
+            BigDecimal alreadyReturnedFreeQuentity = BigDecimal.ZERO;
+            BigDecimal allreadyReturnedTotalQuentity = BigDecimal.ZERO;
+
+            BigDecimal availableToReturnQuentity = BigDecimal.ZERO;
+            BigDecimal availableToReturnFreeQuentity = BigDecimal.ZERO;
+            BigDecimal availableToReturnTotalQuentity = BigDecimal.ZERO;
+
+            BigDecimal returningRate = BigDecimal.ZERO;
+            BigDecimal returningValue = BigDecimal.ZERO;
+            BigDecimal returningFreeValue = BigDecimal.ZERO;
+            BigDecimal returningTotalValue = BigDecimal.ZERO;
+
             PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemInReturnBill.copy(pbiOfBilledBill);
             newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
@@ -464,11 +551,27 @@ public class DirectPurchaseReturnController implements Serializable {
                 pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
             }
 
+            addDataToReturningBillItem(newBillItemInReturnBill);
+
             getBillItems().add(newBillItemInReturnBill);
+            calculateBillItemDetails(newBillItemInReturnBill);
         }
         System.out.println("getBillItems = " + getBillItems());
     }
 
+    private void calculateBillItemDetails(BillItem returningBillItem){
+        // user Input, must not changed
+        returningBillItem.getBillItemFinanceDetails().getQuantity();
+        returningBillItem.getBillItemFinanceDetails().getFreeQuantity();
+        returningBillItem.getBillItemFinanceDetails().getGrossRate();
+        // All Others have to calculate here for BillItemFinanceDetails. No discounts, No tax, no anything else, no bill values
+        // Have to consider Ampp or Amp and set the unitsPerPack and do the calculations
+        // Please folllow DirectPurchaseController Method to get an idea about how to fill all values
+        returningBillItem.getPharmaceuticalBillItem();
+        // The detailed filled for PharmaceuticalBillItem in pharmacy_return_purchase page as user inputs or calculated in purchaseReturnController have to be calculated using the BillItemFinanceDetails and recorded for backword compatability 
+        
+    }
+    
     public void onEditItem(PharmacyItemData tmp) {
         double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
         double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
