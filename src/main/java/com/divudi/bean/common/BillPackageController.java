@@ -692,10 +692,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         boolean labStatusOk = checkCancelBill(billToCancel);
 
         if (!labStatusOk) {
-            JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-            if (getWebUserController().hasPrivilege("OpdPackageBillCancel")) {
-                JsfUtil.addSuccessMessage("Special privilege granted to cancel processed bill");
-            } else {
+            if (!getWebUserController().hasPrivilege("OpdPackageBillCancel")) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
                 JsfUtil.addErrorMessage(
                         "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
                 return false;
