@@ -63,6 +63,12 @@ The installation is very easy for testing. In a development setting, simply clon
 
 The features available to different roles of the users are stated in detail in the User Manual.
 
+### Sanitizing Admin-Defined HTML
+
+Text values saved via `setLongTextValueByKey` are cleaned with JSoup's basic
+safelist before being stored. This prevents administrators from accidentally
+introducing unsafe markup.
+
 ## Request Originators 
 * Dr M H B Ariyaratne
 * Dr Jagath Samarasekara

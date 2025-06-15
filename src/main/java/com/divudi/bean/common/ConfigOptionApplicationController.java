@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 /**
  *
@@ -382,7 +384,8 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setValueType(OptionValueType.LONG_TEXT);
             optionFacade.create(option);
         }
-        option.setOptionValue(value);
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        option.setOptionValue(sanitized);
         optionFacade.edit(option);
         loadApplicationOptions();
     }
