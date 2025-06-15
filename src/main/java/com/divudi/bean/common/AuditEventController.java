@@ -219,10 +219,6 @@ public class AuditEventController implements Serializable {
         return auditEvents;
     }
 
-    public void fillConfigOptionChanges() {
-        fillConfigOption(Arrays.asList("Update Config Option", "Delete Config Option"));
-    }
-
     public void fillConfigOptionEvents() {
         fillConfigOption(Arrays.asList("Update Config Option", "Delete Config Option"));
     }

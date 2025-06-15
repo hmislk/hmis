@@ -221,14 +221,20 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton
                                                 ajax="false"
-                                                action="/audit/items_and_fees?faces-redirect=true;"
-                                                value="Items &amp; Fees"
-                                                icon="fa fa-comments" >
+                                            action="/audit/items_and_fees?faces-redirect=true;"
+                                            value="Items &amp; Fees"
+                                            icon="fa fa-comments" >
                                             </p:commandButton>
                                             <p:commandButton
                                                 ajax="false"
                                                 action="/audit/config_option_changes?faces-redirect=true;"
                                                 value="Config Option Changes"
+                                                icon="pi pi-history" >
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="/audit/config_option_events?faces-redirect=true;"
+                                                value="Config Option Events"
                                                 icon="pi pi-history" >
                                             </p:commandButton>
                                         </div>
