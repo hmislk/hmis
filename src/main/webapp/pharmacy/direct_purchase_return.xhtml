@@ -21,25 +21,24 @@
                             <p:dataTable 
                                 var="ph" 
                                 value="#{directPurchaseReturnController.billItems}"
-                                scrollable="true" 
                                 id="itemList" >
 
                                 <f:facet name="header">
                                     <h:outputText value="Returning Items" ></h:outputText>
                                 </f:facet>
 
-                                <p:column headerText="Item Name"  style="width:50px;" >
+                                <p:column headerText="Item Name"  >
                                     <h:outputLabel value="#{ph.item.name}"/>
                                 </p:column>
 
-                                <p:column  style="width:25px!important;">
+                                <p:column  >
                                     <f:facet name="header">
                                         <h:outputText value="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity', false) ? 'Balance Total Qty in Unit' : 'Balance Qty in Unit'}" />
                                     </f:facet>
                                     <h:outputText id="qty" value="#{ph.pharmaceuticalBillItem.qty}" />
                                 </p:column>
 
-                                <p:column headerText="#{directPurchaseReturnController.returnRateLabel}" style="width:25px!important;">
+                                <p:column headerText="#{directPurchaseReturnController.returnRateLabel}" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  value="#{directPurchaseReturnController.getReturnRate(ph)}"  >
                                             <f:convertNumber pattern="#,##0.00" />
@@ -49,28 +48,35 @@
                                 </p:column>
 
 
-                                <p:column headerText="Batch No" style="width:25px!important;">
+                                <p:column headerText="Batch No" >
                                     <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
                                 </p:column>
 
-                                <p:column headerText="Date of Expirey" style="width:25px!important;">
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" />
+                                <p:column headerText="Date of Expirey" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
                                 </p:column>
 
 
-                                <p:column style="width:25px!important;">
-                                    <p:panel header="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity', false) ? 'Returning Total Qty in Unit' : 'Returning Qty in Unit'}" style="margin:0;padding:0;border:0;">
-                                        <p:inputText autocomplete="off" value="#{ph.qty}">
-                                            <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{directPurchaseReturnController.onEdit(ph)}" />
-                                        </p:inputText>
-                                    </p:panel>
+                                <p:column headerText="Returning Total Qty" rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity')}">
+                                    <p:inputText autocomplete="off" value="#{ph.qty}">
+                                        <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{directPurchaseReturnController.onEdit(ph)}" />
+                                    </p:inputText>
                                 </p:column>
 
                                 <p:column
-                                    headerText="Returning Free Qty in Unit"
-                                    style="width:25px!important;"
-                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity', false)}">
-                                    <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}">
+                                    headerText="Returning Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
+                                    <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}" class="w-100">
+                                        <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  listener="#{directPurchaseReturnController.onEdit(ph)}" />
+                                    </p:inputText>
+                                </p:column>
+                                
+                                <p:column
+                                    headerText="Returning Free Qty"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
+                                    <p:inputText autocomplete="off" value="#{ph.pharmaceuticalBillItem.freeQty}" class="w-100">
                                         <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}"  listener="#{directPurchaseReturnController.onEdit(ph)}" />
                                     </p:inputText>
                                 </p:column>

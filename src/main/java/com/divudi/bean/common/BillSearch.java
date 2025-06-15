@@ -4057,7 +4057,7 @@ public class BillSearch implements Serializable {
 
     public String navigateToDirectPurchaseCancellationBillView() {
         prepareToPharmacyCancellationBill();
-        return "/pharmacy/pharmacy_cancel_purchase";
+        return "/pharmacy/pharmacy_cancel_purchase?faces-redirect=true";
     }
 
     public String navigateToDirectPurchaseReturnBillView() {
@@ -4072,14 +4072,14 @@ public class BillSearch implements Serializable {
         directPurchaseReturnController.setBill(bill);
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
-            directPurchaseReturnController.setPrintPreview(true);
             directPurchaseReturnController.setBill(bill);
             directPurchaseReturnController.prepareReturnBill();
-            return "/pharmacy/pharmacy_return_purchase";
+            purchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
-            purchaseReturnController.setPrintPreview(true);
             purchaseReturnController.setBill(bill);
-            return "/pharmacy/direct_purchase_return";
+            purchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
         }
     }
 
