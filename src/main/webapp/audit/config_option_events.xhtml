@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputText value="Config Option Change History" />
+                            <h:outputText value="Config Option Events" />
                         </f:facet>
 
                         <h:panelGrid columns="2" class="my-2">
@@ -31,7 +31,7 @@
                         </h:panelGrid>
 
                         <h:panelGrid columns="3" class="my-2">
-                                            <p:commandButton id="btnSearch"
+                            <p:commandButton id="btnSearch"
                                              class="ui-button-warning"
                                              icon="pi pi-search"
                                              ajax="false"
@@ -39,7 +39,7 @@
                                              action="#{auditEventController.fillConfigOptionEvents}" />
                         </h:panelGrid>
 
-                        <p:dataTable rowIndexVar="i" id="tblChanges"
+                        <p:dataTable rowIndexVar="i" id="tblEvents"
                                      value="#{auditEventController.items}"
                                      var="ae"
                                      style="min-width:100%;"
