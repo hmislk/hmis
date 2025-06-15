@@ -164,6 +164,8 @@ In XHTML pages, configuration values can be checked or used directly for renderi
 - Use `.getBooleanValueByKey()` for true/false logic.
 - Use `.getShortTextValueByKey(key, true)` for text values.
 - Missing keys will be auto-created with default values if provided.
+- `setLongTextValueByKey` sanitises HTML input using JSoup's basic Safelist
+  before storing long text configuration options.
 
 
 ## Adding and Managing Privileges
