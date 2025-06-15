@@ -4871,10 +4871,6 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         this.collectingCentre = collectingCentre;
     }
 
-    public String navigateToBillContactNumbers() {
-        return "/admin/bill_contact_numbers.xhtml";
-    }
-
     public Bill getBatchBill() {
         return batchBill;
     }
