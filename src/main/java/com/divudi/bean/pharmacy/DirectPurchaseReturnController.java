@@ -23,6 +23,8 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.Item;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillFeePaymentFacade;
@@ -33,6 +35,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -561,15 +564,83 @@ public class DirectPurchaseReturnController implements Serializable {
 
     private void calculateBillItemDetails(BillItem returningBillItem){
         // user Input, must not changed
-        returningBillItem.getBillItemFinanceDetails().getQuantity();
-        returningBillItem.getBillItemFinanceDetails().getFreeQuantity();
-        returningBillItem.getBillItemFinanceDetails().getGrossRate();
-        // All Others have to calculate here for BillItemFinanceDetails. No discounts, No tax, no anything else, no bill values
-        // Have to consider Ampp or Amp and set the unitsPerPack and do the calculations
-        // Please folllow DirectPurchaseController Method to get an idea about how to fill all values
-        returningBillItem.getPharmaceuticalBillItem();
-        // The detailed filled for PharmaceuticalBillItem in pharmacy_return_purchase page as user inputs or calculated in purchaseReturnController have to be calculated using the BillItemFinanceDetails and recorded for backword compatability 
-        
+        if (returningBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails f = returningBillItem.getBillItemFinanceDetails();
+        PharmaceuticalBillItem pbi = returningBillItem.getPharmaceuticalBillItem();
+
+        if (f == null || pbi == null) {
+            return;
+        }
+
+        // Values provided by the user
+        BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal grossRate = Optional.ofNullable(f.getGrossRate()).orElse(BigDecimal.ZERO);
+
+        Item item = returningBillItem.getItem();
+
+        BigDecimal unitsPerPack;
+        if (item instanceof Ampp) {
+            double units = item.getDblValue();
+            unitsPerPack = units > 0.0 ? BigDecimal.valueOf(units) : BigDecimal.ONE;
+        } else {
+            unitsPerPack = BigDecimal.ONE;
+        }
+
+        f.setUnitsPerPack(unitsPerPack);
+
+        // Calculate derived quantities
+        BigDecimal qtyUnits = qty.multiply(unitsPerPack);
+        BigDecimal freeQtyUnits = freeQty.multiply(unitsPerPack);
+
+        f.setQuantityByUnits(qtyUnits);
+        f.setFreeQuantityByUnits(freeQtyUnits);
+        f.setTotalQuantity(qty.add(freeQty));
+        f.setTotalQuantityByUnits(qtyUnits.add(freeQtyUnits));
+
+        // Basic rates - net rate equals gross rate in return scenario
+        f.setNetRate(grossRate);
+        f.setLineGrossRate(grossRate);
+        f.setLineNetRate(grossRate);
+        f.setRetailSaleRatePerUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO));
+        f.setRetailSaleRate(Optional.ofNullable(f.getRetailSaleRate()).orElse(f.getRetailSaleRatePerUnit()));
+
+        // Fill PharmaceuticalBillItem for backward compatibility
+        if (item instanceof Ampp) {
+            pbi.setQty(qtyUnits.doubleValue());
+            pbi.setQtyPacks(qty.doubleValue());
+
+            pbi.setFreeQty(freeQtyUnits.doubleValue());
+            pbi.setFreeQtyPacks(freeQty.doubleValue());
+
+            pbi.setPurchaseRate(grossRate.doubleValue());
+            pbi.setPurchaseRatePack(grossRate.doubleValue());
+
+            double retailRate = f.getRetailSaleRate().doubleValue();
+            pbi.setRetailRate(retailRate);
+            pbi.setRetailRatePack(retailRate);
+            pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
+        } else {
+            pbi.setQty(qtyUnits.doubleValue());
+            pbi.setQtyPacks(qtyUnits.doubleValue());
+
+            pbi.setFreeQty(freeQtyUnits.doubleValue());
+            pbi.setFreeQtyPacks(freeQtyUnits.doubleValue());
+
+            pbi.setPurchaseRate(grossRate.doubleValue());
+            pbi.setPurchaseRatePack(grossRate.doubleValue());
+
+            double retailRate = f.getRetailSaleRatePerUnit().doubleValue();
+            pbi.setRetailRate(retailRate);
+            pbi.setRetailRatePack(retailRate);
+            pbi.setRetailRateInUnit(retailRate);
+
+            f.setRetailSaleRate(f.getRetailSaleRatePerUnit());
+        }
+
     }
     
     public void onEditItem(PharmacyItemData tmp) {
