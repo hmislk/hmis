@@ -23,7 +23,7 @@
                                         value="Cancel" 
                                         ajax="false"
                                         icon="fas fa-cancel"
-                                        class="ui-button-danger"
+                                        class="ui-button-danger mx-2"
                                         action="pharmacy_cancel_purchase?faces-redirect=true;" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}">                           
                                     </p:commandButton>
@@ -31,7 +31,8 @@
                                     <p:commandButton
                                         value="Return" 
                                         ajax="false"
-                                        class="ui-button-warning"
+                                        icon="fa fa-rotate-left"
+                                        class="ui-button-warning mx-2"
                                         action="#{billSearch.navigateToDirectPurchaseReturnBillView()}" 
                                         disabled="#{pharmacyBillSearch.bill.cancelled}" >
                                         <f:setPropertyActionListener target="#{billSearch.bill}"  value="#{pharmacyBillSearch.bill}"/>
@@ -39,14 +40,14 @@
 
                                     <p:commandButton 
                                         value="Reprint"
-                                        class="ui-button-info"
+                                        class="ui-button-info mx-2"
                                         icon="fa fa-print"
                                         ajax="false" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton> 
 
                                     <p:commandButton 
-                                        value="Back to Search"
+                                        value="Back to Search mx-2"
                                         class="ui-button-warning"
                                         icon="fas fa-arrow-left"
                                         ajax="false"

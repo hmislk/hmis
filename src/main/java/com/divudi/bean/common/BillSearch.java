@@ -3216,7 +3216,7 @@ public class BillSearch implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
 //        paymentMethod = bill.getPaymentMethod();
-//        createBillItems();
+//        prepareReturnBill();
 //
 //        boolean flag = billController.checkBillValues(bill);
 //        bill.setTransError(flag);
@@ -3795,7 +3795,6 @@ public class BillSearch implements Serializable {
             return null;
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
-        System.out.println("billTypeAtomic = " + billTypeAtomic);
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
@@ -4062,19 +4061,28 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToDirectPurchaseReturnBillView() {
+        System.out.println("navigateToDirectPurchaseReturnBillView");
+        System.out.println("bill = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
+        System.out.println("loading bill details started");
         loadBillDetails(bill);
-        if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+        System.out.println("loading bill details ended");
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        System.out.println("manageCosting = " + manageCosting);
+        if (manageCosting) {
             purchaseReturnController.setPrintPreview(true);
             purchaseReturnController.setBill(bill);
             return "/pharmacy/direct_purchase_return";
         } else {
+            System.out.println("manageCosting is true ");
             directPurchaseReturnController.setPrintPreview(true);
             directPurchaseReturnController.setBill(bill);
-
+            System.out.println("before calling prepareReturnBill");
+            directPurchaseReturnController.prepareReturnBill();
+            System.out.println("After calling prepareReturnBill");
             return "/pharmacy/pharmacy_return_purchase";
         }
     }

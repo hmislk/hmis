@@ -99,18 +99,15 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public void setBill(Bill bill) {
-        makeNull();
         this.bill = bill;
-        createBillItems();
     }
 
     public Bill getReturnBill() {
         if (returnBill == null) {
             returnBill = new BilledBill();
             returnBill.setBillType(BillType.PurchaseReturn);
-
+            returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         }
-
         return returnBill;
     }
 
@@ -189,12 +186,11 @@ public class DirectPurchaseReturnController implements Serializable {
         getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
 
-    public void makeNull() {
+    public void resetValuesForReturn() {
         bill = null;
         returnBill = null;
         printPreview = false;
         billItems = null;
-
     }
 
     private void saveReturnBill() {
@@ -385,40 +381,62 @@ public class DirectPurchaseReturnController implements Serializable {
         //  return grossTotal;
     }
 
-    public void createBillItems() {
-        String sql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId();
-        List<PharmaceuticalBillItem> tmp2 = getPharmaceuticalBillItemFacade().findByJpql(sql);
+    public void prepareReturnBill() {
+        System.out.println("prepareReturnBill");
+        if(bill==null){
+            JsfUtil.addErrorMessage("No Direct Purcchase is selected to return");
+            return;
+        }
+        if(bill.getBillTypeAtomic()==null){
+            JsfUtil.addErrorMessage("No Bill Type for the selected Bill to return. Its a system error. Please contact Developers");
+            return;
+        }
+        if(bill.getBillTypeAtomic()!=BillTypeAtomic.PHARMACY_DIRECT_PURCHASE){
+            JsfUtil.addErrorMessage("Wrong Bill Type for the selected Bill to return. Its a system error. Please contact Developers");
+            return;
+        }
+        resetValuesForReturn();
+        getReturnBill();
+        getReturnBill().setBilledBill(bill);
+        prepareBillItems();
+    }
 
-        for (PharmaceuticalBillItem i : tmp2) {
-            BillItem bi = new BillItem();
-            bi.copy(i.getBillItem());
-            bi.setQty(0.0);
-            bi.setBill(getReturnBill());
-            bi.setItem(i.getBillItem().getItem());
-            bi.setReferanceBillItem(i.getBillItem());
+    private void prepareBillItems() {
+        System.out.println("prepareBillItems");
+        String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + getBill().getId();
+        List<PharmaceuticalBillItem> pbisOfBilledBill = getPharmaceuticalBillItemFacade().findByJpql(jpql);
+        System.out.println("pbisOfBilledBill = " + pbisOfBilledBill);
+        for (PharmaceuticalBillItem pbiOfBilledBill : pbisOfBilledBill) {
+            System.out.println("i = " + pbiOfBilledBill);
+            BillItem newBillItemInReturnBill = new BillItem();
+            newBillItemInReturnBill.copy(pbiOfBilledBill.getBillItem());
+            newBillItemInReturnBill.setQty(0.0);
+            newBillItemInReturnBill.setBill(getReturnBill());
+            newBillItemInReturnBill.setItem(pbiOfBilledBill.getBillItem().getItem());
+            newBillItemInReturnBill.setReferanceBillItem(pbiOfBilledBill.getBillItem());
 
-            PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
-            tmp.copy(i);
-            tmp.setBillItem(bi);
+            PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
+            newPharmaceuticalBillItemInReturnBill.copy(pbiOfBilledBill);
+            newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
 
-            double originalQty = i.getQty();
-            double originalFreeQty = i.getFreeQty();
+            double originalQty = pbiOfBilledBill.getQty();
+            double originalFreeQty = pbiOfBilledBill.getFreeQty();
 
             if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-                double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
-                tmp.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
-                tmp.setFreeQty(0.0);
+                double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(pbiOfBilledBill.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                newPharmaceuticalBillItemInReturnBill.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
+                newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
-                double returnedQty = getPharmacyRecieveBean().getTotalQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
-                double returnedFreeQty = getPharmacyRecieveBean().getTotalFreeQty(i.getBillItem(), BillType.PurchaseReturn, new BilledBill());
-                tmp.setQty(originalQty - Math.abs(returnedQty));
-                tmp.setFreeQty(originalFreeQty - Math.abs(returnedFreeQty));
+                double returnedQty = getPharmacyRecieveBean().getTotalQty(pbiOfBilledBill.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                double returnedFreeQty = getPharmacyRecieveBean().getTotalFreeQty(pbiOfBilledBill.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                newPharmaceuticalBillItemInReturnBill.setQty(originalQty - Math.abs(returnedQty));
+                newPharmaceuticalBillItemInReturnBill.setFreeQty(originalFreeQty - Math.abs(returnedFreeQty));
             }
 
-            bi.setPharmaceuticalBillItem(tmp);
+            newBillItemInReturnBill.setPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill);
 
             List<Item> suggessions = new ArrayList<>();
-            Item item = i.getBillItem().getItem();
+            Item item = pbiOfBilledBill.getBillItem().getItem();
 
             if (item instanceof Amp) {
                 suggessions.add(item);
@@ -428,9 +446,9 @@ public class DirectPurchaseReturnController implements Serializable {
                 suggessions.add(item);
             }
 
-            getBillItems().add(bi);
+            getBillItems().add(newBillItemInReturnBill);
         }
-
+        System.out.println("getBillItems = " + getBillItems());
     }
 
     public void onEditItem(PharmacyItemData tmp) {
