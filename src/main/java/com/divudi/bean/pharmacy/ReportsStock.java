@@ -165,6 +165,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReportDepartmentStockByZeroItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_zero_item?faces-redirect=true";
+    }
+
     public String navigateToStockReportByBatch() {
         stocks = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
