@@ -220,25 +220,14 @@ public class AuditEventController implements Serializable {
     }
 
     public void fillConfigOptionChanges() {
-        String jpql = "select a from AuditEvent a "
-                + " where a.entityType=:et"
-                + " and a.eventTrigger in :trigs"
-                + " and a.eventDataTime between :fd and :td"
-                + " order by a.eventDataTime desc";
-        Map<String, Object> hm = new HashMap<>();
-        hm.put("et", "ConfigOption");
-        hm.put("trigs", Arrays.asList("Update Config Option", "Delete Config Option"));
-        hm.put("fd", getFromDate());
-        hm.put("td", getToDate());
-        items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
-        if (items != null) {
-            for (AuditEvent ae : items) {
-                ae.calculateDifference();
-            }
-        }
+        fillConfigOption(Arrays.asList("Update Config Option", "Delete Config Option"));
     }
 
     public void fillConfigOptionEvents() {
+        fillConfigOption(Arrays.asList("Update Config Option", "Delete Config Option"));
+    }
+
+    private void fillConfigOption(List<String> triggers) {
         String jpql = "select a from AuditEvent a "
                 + " where a.entityType=:et"
                 + " and a.eventTrigger in :trigs"
@@ -246,14 +235,12 @@ public class AuditEventController implements Serializable {
                 + " order by a.eventDataTime desc";
         Map<String, Object> hm = new HashMap<>();
         hm.put("et", ConfigOption.class.getSimpleName());
-        hm.put("trigs", Arrays.asList("Update Config Option", "Delete Config Option"));
-        hm.put("fd", fromDate);
-        hm.put("td", toDate);
+        hm.put("trigs", triggers);
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
         items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
         if (items != null) {
-            for (AuditEvent ae : items) {
-                ae.calculateDifference();
-            }
+            items.forEach(AuditEvent::calculateDifference);
         }
     }
 
