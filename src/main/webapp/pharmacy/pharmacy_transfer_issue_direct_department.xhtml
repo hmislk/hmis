@@ -6,16 +6,16 @@
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
-
     <ui:define name="content">
-        <h:form>
+        <p:panel 
+            rendered="#{!transferIssueController.printPreview}"
+            class="w-100 m-0"
+            style="border: 2px solid red;">
+            <f:facet name="header" >
+                <h:outputLabel value="Pharmacy Direct Issue" />
+            </f:facet>
 
-            <p:panel rendered="#{!transferIssueController.printPreview}">
-
-                <f:facet name="header" >
-                    <h:outputLabel value="Pharmacy Direct Issue" />
-                </f:facet>
-
+            <h:form>
                 <div class="row" >
                     <div class="col-8" >
                         <p:panel header="Add Items" class="">
@@ -165,7 +165,7 @@
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputText value="Issue Details" ></h:outputText>
-                                
+
                                 <p:commandButton  
                                     value="Issue" 
                                     icon="fas fa-check" 
@@ -206,7 +206,7 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
-                                
+
                                 <h:outputLabel value="Comment" />
                                 <h:outputLabel value=": &nbsp;"/>
                                 <p:inputTextarea value="#{transferIssueController.issuedBill.comments}" rows="3" cols="20"/>
@@ -215,12 +215,13 @@
                         </p:panel>
                     </div>
                 </div>
-
                 <ph:history/>
+            </h:form>
+        </p:panel>
 
-            </p:panel>
-            <p:panel rendered="#{transferIssueController.printPreview}">
 
+        <p:panel rendered="#{transferIssueController.printPreview}">
+            <h:form>
                 <div class="d-flex justify-content-between">
                     <p:commandButton
                         ajax="false"
@@ -269,14 +270,14 @@
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
- 
+
 <!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
 
                 </h:panelGroup>
+            </h:form>
+        </p:panel>
 
-            </p:panel>
 
-        </h:form>
     </ui:define>
 
 </ui:composition>
