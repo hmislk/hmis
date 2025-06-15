@@ -12,6 +12,7 @@ import com.divudi.core.data.AuditEventStatus;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.facade.AuditEventFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.entity.ConfigOption;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -226,6 +227,25 @@ public class AuditEventController implements Serializable {
                 + " order by a.eventDataTime desc";
         Map<String, Object> hm = new HashMap<>();
         hm.put("et", "ConfigOption");
+        hm.put("trigs", Arrays.asList("Update Config Option", "Delete Config Option"));
+        hm.put("fd", fromDate);
+        hm.put("td", toDate);
+        items = getFacade().findByJpql(jpql, hm, TemporalType.TIMESTAMP);
+        if (items != null) {
+            for (AuditEvent ae : items) {
+                ae.calculateDifference();
+            }
+        }
+    }
+
+    public void fillConfigOptionEvents() {
+        String jpql = "select a from AuditEvent a "
+                + " where a.entityType=:et"
+                + " and a.eventTrigger in :trigs"
+                + " and a.eventDataTime between :fd and :td"
+                + " order by a.eventDataTime desc";
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("et", ConfigOption.class.getSimpleName());
         hm.put("trigs", Arrays.asList("Update Config Option", "Delete Config Option"));
         hm.put("fd", fromDate);
         hm.put("td", toDate);
