@@ -125,7 +125,7 @@
                                 <p:outputLabel value=":" ></p:outputLabel>
                                 <p:outputLabel value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.bhtNo}" ></p:outputLabel>
                                 <p:outputLabel value="Credit Company" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
-                                <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel>
+                                <p:outputLabel value=":" rendered="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.paymentMethod eq 'Credit'}" ></p:outputLabel
     <!-- Credit company name, only render if paymentMethod is Credit and creditCompany is non-null -->
     <p:outputLabel 
         value="#{pharmacySaleBhtController.bhtRequestBill.patientEncounter.creditCompany.name}" 

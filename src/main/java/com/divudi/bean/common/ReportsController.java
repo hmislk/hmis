@@ -333,6 +333,15 @@ public class ReportsController implements Serializable {
 
     private boolean withInactiveBooks;
     private boolean withDeletedBooks;
+    private boolean withoutDateRange;
+
+    public boolean isWithoutDateRange() {
+        return withoutDateRange;
+    }
+
+    public void setWithoutDateRange(boolean withoutDateRange) {
+        this.withoutDateRange = withoutDateRange;
+    }
 
     public boolean isWithInactiveBooks() {
         return withInactiveBooks;
@@ -3888,6 +3897,18 @@ public class ReportsController implements Serializable {
     }
 
     public void generateCollectionCenterBookWiseDetailReport() {
+        if (isWithoutDateRange()) {
+            if (collectingCentre == null) {
+                JsfUtil.addErrorMessage("Please select a collection center if processing without date range!");
+                return;
+            }
+
+            if (cashBookNumber == null || cashBookNumber.isEmpty()) {
+                JsfUtil.addErrorMessage("Please enter a book number if processing without date range!");
+                return;
+            }
+        }
+
         bundle = new ReportTemplateRowBundle();
 
         List<BillTypeAtomic> opdBts = new ArrayList<>();
@@ -3896,7 +3917,6 @@ public class ReportsController implements Serializable {
         opdBts.add(BillTypeAtomic.CC_BILL);
         opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-//        opdBts.add(BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL);
 
         bundle.setName("Bills");
         bundle.setBundleType("billList");
@@ -3962,9 +3982,9 @@ public class ReportsController implements Serializable {
                 table.addCell(new PdfPCell(new Phrase(c.getBill().getDeptId(), cellFont)));
                 String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
                         c.getBill().getBilledBill().getReferenceNumber();
-                table.addCell(new PdfPCell(new Phrase(
-                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber), cellFont)));
-                table.addCell(new PdfPCell(new Phrase(referenceNumber, cellFont)));
+                String bookNumber = collectingCentreBillController.generateBookNumberFromReference(referenceNumber);
+                table.addCell(new PdfPCell(new Phrase(bookNumber != null ? bookNumber : "N/A", cellFont)));
+                table.addCell(new PdfPCell(new Phrase(referenceNumber != null ? referenceNumber : "N/A", cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
                         c.getBill().getPatient().getPerson().getNameWithTitle(), cellFont)));
                 table.addCell(new PdfPCell(new Phrase(
@@ -4040,9 +4060,9 @@ public class ReportsController implements Serializable {
                 dataRow.createCell(0).setCellValue(c.getBill().getDeptId());
                 String referenceNumber = c.getBill().getReferenceNumber() != null ? c.getBill().getReferenceNumber() :
                         c.getBill().getBilledBill().getReferenceNumber();
-                dataRow.createCell(1).setCellValue(
-                        collectingCentreBillController.generateBookNumberFromReference(referenceNumber));
-                dataRow.createCell(2).setCellValue(referenceNumber);
+                String bookNumber = collectingCentreBillController.generateBookNumberFromReference(referenceNumber);
+                dataRow.createCell(1).setCellValue(bookNumber != null ? bookNumber : "N/A");
+                dataRow.createCell(2).setCellValue(referenceNumber != null ? referenceNumber : "N/A");
                 dataRow.createCell(3).setCellValue(c.getBill().getPatient().getPerson().getNameWithTitle());
                 dataRow.createCell(4).setCellValue(c.getBill().getCreater().getWebUserPerson().getName());
                 dataRow.createCell(5).setCellValue(dateFormat.format(c.getBill().getCreatedAt()));
@@ -4107,27 +4127,31 @@ public class ReportsController implements Serializable {
             parameters.put("cc", collectingCentre);
         }
 
-//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-//            jpql += "AND bill.referenceNumber LIKE :cbn ";
-//            parameters.put("cbn", "%" + cashBookNumber + "%");
-//        }
+        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+            jpql += "AND bill.referenceNumber LIKE :cbn ";
+            parameters.put("cbn", "%" + cashBookNumber + "%");
+        }
 
-//        jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
-//        parameters.put("fd", fromDate);
-//        parameters.put("td", toDate);
+        if (!withoutDateRange) {
+            if (fromDate != null && toDate != null) {
+                jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
+                parameters.put("fd", fromDate);
+                parameters.put("td", toDate);
+            }
+        }
 
-        jpql += "GROUP BY bill";
+//        jpql += "GROUP BY bill";
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
-        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
-            rs = rs.stream()
-                    .filter(r -> {
-                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
-                        return bookNumber != null && bookNumber.contains(cashBookNumber);
-                    })
-                    .collect(Collectors.toList());
-        }
+//        if (cashBookNumber != null && !cashBookNumber.trim().isEmpty()) {
+//            rs = rs.stream()
+//                    .filter(r -> {
+//                        String bookNumber = collectingCentreBillController.generateBookNumberFromReference(r.getBill().getReferenceNumber());
+//                        return bookNumber != null && bookNumber.contains(cashBookNumber);
+//                    })
+//                    .collect(Collectors.toList());
+//        }
 
         Map<String, AgentReferenceBook> agentReferenceBooks = getAgentReferenceBookMapByReportTemplateRows(rs);
 
@@ -4140,39 +4164,52 @@ public class ReportsController implements Serializable {
 
     private List<ReportTemplateRow> filterReportTemplateRowsByEnabledStatus(final Map<String, AgentReferenceBook> agentReferenceBooks,
                                                                             final List<ReportTemplateRow> rows) {
+
         if (agentReferenceBooks == null || agentReferenceBooks.isEmpty() || rows == null || rows.isEmpty()) {
             return rows;
         }
 
-        List<ReportTemplateRow> filteredRows = new ArrayList<>();
+        Map<ReportTemplateRow, String> rowToBookNumber = new HashMap<>(rows.size());
 
         for (ReportTemplateRow row : rows) {
-            Bill bill = row.getBill();
+            if (row == null || row.getBill() == null) continue;
 
-            if (bill.getBillClassType().equals(BillClassType.CancelledBill) || bill.getBillClassType().equals(BillClassType.RefundBill)) {
-                bill = bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+            Bill bill = resolveEffectiveBill(row.getBill());
+            String refNo = bill.getReferenceNumber();
+
+            if (refNo == null || refNo.length() <= 2) continue;
+
+            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(refNo);
+            if (bookNumber != null) {
+                rowToBookNumber.put(row, bookNumber);
             }
+        }
 
-            String bookNumber = collectingCentreBillController.generateBookNumberFromReference(bill.getReferenceNumber());
-            AgentReferenceBook agentReferenceBook = agentReferenceBooks.get(bookNumber);
+        List<ReportTemplateRow> filteredRows = new ArrayList<>();
 
-            if (agentReferenceBook == null) {
-                continue;
-            }
+        for (Map.Entry<ReportTemplateRow, String> entry : rowToBookNumber.entrySet()) {
+            ReportTemplateRow row = entry.getKey();
+            String bookNumber = entry.getValue();
 
-            if (!withDeletedBooks && agentReferenceBook.isRetired()) {
-                continue;
-            }
+            AgentReferenceBook arb = agentReferenceBooks.get(bookNumber);
+            if (arb == null) continue;
 
-            if (!withInactiveBooks && !agentReferenceBook.getActive() && !agentReferenceBook.isRetired()) {
-                continue;
-            }
+            if (!withDeletedBooks && arb.isRetired()) continue;
+            if (!withInactiveBooks && !arb.getActive() && !arb.isRetired()) continue;
 
-            row.setAgentReferenceBook(agentReferenceBook);
+            row.setAgentReferenceBook(arb);
             filteredRows.add(row);
         }
 
         return filteredRows;
+    }
+
+    private Bill resolveEffectiveBill(Bill bill) {
+        if (bill.getBillClassType() == BillClassType.CancelledBill ||
+                bill.getBillClassType() == BillClassType.RefundBill) {
+            return bill.getBilledBill() != null ? bill.getBilledBill() : bill;
+        }
+        return bill;
     }
 
     private Map<String, AgentReferenceBook> getAgentReferenceBookMapByReportTemplateRows(List<ReportTemplateRow> rows) {
@@ -4182,8 +4219,9 @@ public class ReportsController implements Serializable {
             Set<String> strBookNumbers = rows.stream()
                     .map(r -> {
                         String refNo = r.getBill().getReferenceNumber();
+
                         if (refNo != null && refNo.length() > 2) {
-                            return refNo.substring(0, refNo.length() - 2);
+                            return collectingCentreBillController.generateBookNumberFromReference(refNo);
                         }
                         return null;
                     })

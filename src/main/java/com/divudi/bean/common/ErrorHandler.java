@@ -4,6 +4,7 @@ import java.io.Serializable;
 import javax.enterprise.context.RequestScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Named;
+import com.divudi.core.util.CommonFunctions;
 
 /**
  * Error Handler Bean
@@ -58,13 +59,13 @@ public class ErrorHandler implements Serializable {
         // Append the main exception class and message
         sb.append(t.getClass().getName())
           .append(": ")
-          .append(escapeHtml(t.getMessage()))
+          .append(CommonFunctions.escapeHtml(t.getMessage()))
           .append("\n");
 
         // Append stack trace elements
         for (StackTraceElement element : t.getStackTrace()) {
             sb.append("    at ")
-              .append(escapeHtml(element.toString()))
+              .append(CommonFunctions.escapeHtml(element.toString()))
               .append("\n");
         }
 
@@ -76,15 +77,4 @@ public class ErrorHandler implements Serializable {
         }
     }
 
-    private String escapeHtml(String input) {
-        if (input == null) {
-            return "";
-        }
-        return input
-            .replace("&", "&amp;")
-            .replace("<", "&lt;")
-            .replace(">", "&gt;")
-            .replace("\"", "&quot;")
-            .replace("'", "&#39;");
-    }
 }

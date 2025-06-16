@@ -55,6 +55,7 @@ public enum Privileges {
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
+    OpdPackageBillCancel("OPD Package Bill Cancel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -135,6 +136,7 @@ public enum Privileges {
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
     LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
@@ -669,6 +671,7 @@ public enum Privileges {
         switch (this) {
             case Opd:
             case OpdCancel:
+            case OpdPackageBillCancel:
             case OpdReturn:
             case OpdBilling:
             case OpdOrdering:
@@ -724,6 +727,7 @@ public enum Privileges {
             case LabBillReactivating:
             case LabInvestigationFee:
             case LabSampleCollecting:
+            case OutLabSampleSending:
             case LabAddInwardServices:
             case LabBillCancelSpecial:
             case LabBillRefundSpecial:

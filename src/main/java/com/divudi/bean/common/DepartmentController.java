@@ -216,14 +216,14 @@ public class DepartmentController implements Serializable {
     }
 
     @Deprecated
-    public List<Department> getInsDepartments(Institution currentInstituion) {
+    public List<Department> getInsDepartments(Institution currentInstitution) {
         // Please use public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> currentInsDepartments = new ArrayList<>();
-        if (currentInstituion == null) {
+        if (currentInstitution == null) {
             return currentInsDepartments;
         }
         Map m = new HashMap();
-        m.put("ins", currentInstituion);
+        m.put("ins", currentInstitution);
         m.put("ret", false);
         String jpql = "SELECT d "
                 + " FROM Department d "
