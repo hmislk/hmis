@@ -1181,6 +1181,19 @@ public class InwardReportControllerBht implements Serializable {
         hm.put("btp", BillType.PharmacyBhtPre);
         return getBillFacade().findByJpql(sql, hm);
     }
+    
+    public List<Bill> getReturnAndCancelBHTIssueBills(Bill b) {
+        String sql = "Select b From Bill b where b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and b.referenceBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        hm.put("btp", btas);
+        return getBillFacade().findByJpql(sql, hm);
+    }
 
     ////////////GETTERS AND SETTERS
     public List<String1Value2> getTimedServices() {
