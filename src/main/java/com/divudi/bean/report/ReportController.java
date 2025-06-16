@@ -2612,6 +2612,13 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         return "/reports/lab/external_laboratory_workload?faces-redirect=true";
     }
 
+    public String navigateToLaboratoryWorkloadReport() {
+        if (institutionController.getItems() == null) {
+            institutionController.fillItems();
+        }
+        return "/reports/lab/laboratory_workload?faces-redirect=true";
+    }
+
     public String navigateToSampleCarrierReport() {
         if (institutionController.getItems() == null) {
             institutionController.fillItems();
