@@ -279,26 +279,6 @@
                 </h:panelGroup>
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                <div class="d-flex gap-2" style="font-size: 9pt;margin-left:5%">
-                    <h:outputLabel value="Remark :"/>
-                    <h:outputLabel value="#{cc.attrs.bill.cancelledBill.comments}"/>
-                </div>
-            </h:panelGroup>
-            <div class="d-flex justify-content-end align-items-center" style="margin-right: 5%;font-size: 9pt">
-                <h:panelGroup rendered="#{cc.attrs.bill.cancelled}">
-                    <div>
-                        <h:outputLabel value="Original Bill No :  #{cc.attrs.bill.deptId}" />
-                    </div>
-                </h:panelGroup>
-            </div>
-
-<!--            <div class="footer" style="text-align: center;">
-                <br/>
-                <h:outputLabel value="#{sessionController.userPreference.pharmacyBillFooter}"/>
-                <br/>
-            </div>-->
-
         </div>
 
     </cc:implementation>
