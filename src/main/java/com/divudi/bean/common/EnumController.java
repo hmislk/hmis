@@ -75,6 +75,10 @@ public class EnumController implements Serializable {
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
     }
+    
+    public Sex[] getSex() {
+        return Sex.values();
+    }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
         if (paymentMethodsForOpdBilling == null) {
@@ -556,10 +560,6 @@ public class EnumController implements Serializable {
             Title.Mrs,
             Title.Other,};
         return tem;
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
     }
 
     public Sex[] getGender() {
