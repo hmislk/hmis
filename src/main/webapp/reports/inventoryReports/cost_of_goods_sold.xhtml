@@ -44,7 +44,7 @@
 
                             <p:spacer width="20"/>
                             <p:spacer width="20"/>
-                            
+
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-university ml-5" />
                                 <p:outputLabel value="Institution" class="mx-3" >
@@ -140,23 +140,23 @@
                                         itemValue="#{dept}"/>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-                            
-<!--                            <h:panelGroup layout="block" styleClass="form-group">
-                                <h:outputText styleClass="fa fa-box mr-2"/>
-                                <p:outputLabel value="Item Name" for="phmItem" class="m-3">
-                                </p:outputLabel>
-                            </h:panelGroup>
-                            <p:autoComplete
-                                id="phmItem"
-                                value="#{pharmacyReportController.amp}"
-                                completeMethod="#{ampController.completeAmp}"
-                                var="item"
-                                class="w-100"
-                                minQueryLength="3"
-                                maxResults="20"
-                                inputStyleClass="w-100"
-                                itemLabel="#{item.name}"
-                                itemValue="#{item}"/>-->
+
+                            <!--                            <h:panelGroup layout="block" styleClass="form-group">
+                                                            <h:outputText styleClass="fa fa-box mr-2"/>
+                                                            <p:outputLabel value="Item Name" for="phmItem" class="m-3">
+                                                            </p:outputLabel>
+                                                        </h:panelGroup>
+                                                        <p:autoComplete
+                                                            id="phmItem"
+                                                            value="#{pharmacyReportController.amp}"
+                                                            completeMethod="#{ampController.completeAmp}"
+                                                            var="item"
+                                                            class="w-100"
+                                                            minQueryLength="3"
+                                                            maxResults="20"
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{item.name}"
+                                                            itemValue="#{item}"/>-->
 
                         </p:panelGrid>
 
@@ -190,11 +190,16 @@
 
                             <p:column headerText="Type">
                                 <p:commandLink  value="#{f.key}"
-                                                action="#{reportController.navigateToClosingStockReport()}"/>
+                                                immediate="true"
+                                                title="View #{f.key} report"
+                                                action="#{reportController.navigateToCostOfGoodSoldReports()}">
+                                    <f:setPropertyActionListener value="#{f.key}" 
+                                                                 target="#{reportController.reportTemplateFileIndexName}" />
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Value">
                                 <h:outputText value="#{f.value}" >
-                                 <f:convertNumber pattern="#,##0.00"/>
+                                    <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
 

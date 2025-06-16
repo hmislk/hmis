@@ -1263,10 +1263,10 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         bundle.getBundles().add(opdServicesBundle);
         bundle.getBundles().add(inpatientServicesBundle);
-        
+
         bundle.getBundles().add(outpatientPharmacyBundle);
         bundle.getBundles().add(inpatientPharmacyBundle);
-        
+
         bundle.getBundles().add(ccBundle);
 
     }
@@ -2980,6 +2980,45 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public String navigateToconsumption() {
         return "/reports/inventoryReports/consumption?faces-redirect=true";
+    }
+
+    public String navigateToCostOfGoodSoldReports() {
+        if (reportTemplateFileIndexName == null) {
+            return "";
+        }
+
+        switch (reportTemplateFileIndexName) {
+            case "Stock Correction":
+                return "/reports/inventoryReports/stock_correction?faces-redirect=true";
+            case "GRN Cash Total":
+                return "/reports/inventoryReports/grn_cash?faces-redirect=true";
+            case "GRN Credit Total":
+                return "/reports/inventoryReports/grn_credit?faces-redirect=true";
+            case "Drug Return IP":
+                return "/reports/inventoryReports/ip_drug_return?faces-redirect=true";
+            case "Drug Return Op":
+                return "/reports/inventoryReports/op_drug_return?faces-redirect=true";
+            case "Stock Consumption":
+                return "/reports/inventoryReports/stock_consumption?faces-redirect=true";
+            case "Purchase Return":
+                return "/reports/inventoryReports/purchase_return?faces-redirect=true";
+            case "Transfer Issue Value":
+                return "/reports/inventoryReports/transfer_issue?faces-redirect=true";
+            case "Transfer Receive Value":
+                return "/reports/inventoryReports/transfer_receive?faces-redirect=true";
+            case "Sale Credit Value":
+                return "/reports/inventoryReports/opd_credit?faces-redirect=true";
+            case "BHT Issue Value":
+                return "/reports/inventoryReports/bht_issue?faces-redirect=true";
+            case "Sale Credit Card":
+                return "/reports/inventoryReports/opd_sale?faces-redirect=true";
+            case "Closing Stock Value":
+            case "Opening Stock Value":
+                return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+
+            default:
+                return "";
+        }
     }
 
     public String navigateToClosingStockReport() {

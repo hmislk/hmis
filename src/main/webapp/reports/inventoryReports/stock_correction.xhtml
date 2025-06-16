@@ -1,0 +1,135 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel header="Stock Correction Details" style="margin-bottom:2em;">
+                        <h:panelGrid columns="2" cellpadding="5">
+                            <h:outputText value="From Date :" />
+                            <h:outputText value="#{pharmacyReportController.fromDate}">
+                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                            </h:outputText>
+                            <h:outputText value="To Date :" />
+                            <h:outputText value="#{pharmacyReportController.toDate}">
+                                <f:convertDateTime pattern="yyyy-MM-dd HH:mm:ss" />
+                            </h:outputText>
+                            <h:outputText value="Store :" />
+                            <h:outputText value="#{pharmacyReportController.department.name}" />
+                        </h:panelGrid>
+                        <br/>
+                        <p:dataTable value="" var="item" style="width:100%;">
+                            <p:column headerText="Item">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Rate">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="New Rate">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="New Value">
+                                <h:outputText value="" />
+                            </p:column>
+                            <p:column headerText="Variance">
+                                <h:outputText value="" />
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <h:outputText value="2 Examples for How to manage the case" style="color:red;font-weight:bold;" />
+
+                    <p:panel header="Case 01" style="margin-bottom:1em;">
+                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
+                        <p:dataTable value="" var="os">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Adjustments +" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="adj">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="cs">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Opening Stock" />
+                            <h:outputText value="" />
+                            <h:outputText value="Stock Correction" />
+                            <h:outputText value="" />
+                            <h:outputText value="Closing Stock" />
+                            <h:outputText value="" />
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <p:panel header="Case 02" style="margin-bottom:2em;">
+                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
+                        <p:dataTable value="" var="os">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Adjustments -" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="adj">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="cs">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Opening Stock" />
+                            <h:outputText value="" />
+                            <h:outputText value="Stock Correction" />
+                            <h:outputText value="" />
+                            <h:outputText value="Closing Stock" />
+                            <h:outputText value="" />
+                        </h:panelGrid>
+                    </p:panel>
+
+               </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>
