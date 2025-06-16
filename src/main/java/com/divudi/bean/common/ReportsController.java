@@ -4642,11 +4642,11 @@ public class ReportsController implements Serializable {
         bundle.setBundleType("billList");
 
         if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts);
+            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, true);
 
             bundle.calculateTotalByBillItemsNetTotal();
         } else {
-            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, true);
 
             bundle.calculateTotalByBillItemRowValues();
         }
@@ -4699,11 +4699,11 @@ public class ReportsController implements Serializable {
         bundle.setBundleType("billList");
 
         if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts);
+            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, false);
 
             bundle.calculateTotalByBillItemsNetTotal();
         } else {
-            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts);
+            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, false);
 
             bundle.calculateTotalByBillItemRowValues();
         }
@@ -4729,7 +4729,7 @@ public class ReportsController implements Serializable {
         );
     }
 
-    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts) {
+    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadBillItems(List<BillTypeAtomic> bts, boolean externalLaboratoryOnly) {
         Map<String, Object> parameters = new HashMap<>();
 
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow(billItem) "
@@ -4809,15 +4809,18 @@ public class ReportsController implements Serializable {
             parameters.put("code", investigation);
         }
 
+//        if (externalLaboratoryOnly) {
+//            jpql += "AND billItem.patientInvestigation.outsourced = true ";
+//        }
+
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
 
         jpql += "GROUP BY billItem";
 
-
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(jpql, parameters, TemporalType.TIMESTAMP);
-        removeCancelledNonInvestigationBills(rs);
+        removeCancelledNonInvestigationBills(rs, externalLaboratoryOnly);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
@@ -4826,9 +4829,7 @@ public class ReportsController implements Serializable {
         return b;
     }
 
-    private void removeCancelledNonInvestigationBills(final List<ReportTemplateRow> rs) {
-        List<BillTypeAtomic> cancelAndRefundBillTypeAtomics = cancelAndRefundBillTypeAtomics();
-
+    private void removeCancelledNonInvestigationBills(final List<ReportTemplateRow> rs, boolean externalLaboratoryOnly) {
         Iterator<ReportTemplateRow> iterator = rs.iterator();
 
         while (iterator.hasNext()) {
@@ -4836,39 +4837,59 @@ public class ReportsController implements Serializable {
             BillItem currentItem = row.getBillItem();
             Bill currentBill = currentItem.getBill();
 
-            if (!cancelAndRefundBillTypeAtomics.contains(currentBill.getBillTypeAtomic())) {
+            if (externalLaboratoryOnly) {
+                if (currentItem.getPatientInvestigation() != null && currentItem.getPatientInvestigation().getOutsourced() != null
+                        && !currentItem.getPatientInvestigation().getOutsourced()) {
+                    iterator.remove();
+                    continue;
+                }
+            }
+
+            if (!currentBill.getBillClassType().equals(BillClassType.CancelledBill) && !currentBill.getBillClassType().equals(BillClassType.RefundBill)) {
                 continue;
             }
 
             currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
 
-            if (currentItem.getReferanceBillItem() != null) {
-                if (currentItem.getReferanceBillItem().getPatientInvestigation() == null) {
-                    iterator.remove();
-                }
-            } else {
-                Bill originalBill = currentBill.getBilledBill();
-                if (originalBill == null) {
-                    continue;
-                }
+            if (!(currentItem.getItem() instanceof Investigation)) {
+                iterator.remove();
+            }
 
-                List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
-                        .orElse(Collections.emptyList());
+            if (externalLaboratoryOnly) {
+                if (currentItem.getReferanceBillItem() != null) {
+                    if (currentItem.getReferanceBillItem().getPatientInvestigation() != null) {
+                        if (currentItem.getReferanceBillItem().getPatientInvestigation().getOutsourced() != null
+                                && !currentItem.getReferanceBillItem().getPatientInvestigation().getOutsourced()) {
+                            iterator.remove();
+                        }
+                    }
+                } else {
+                    Bill originalBill = currentBill.getBilledBill();
+                    if (originalBill == null) {
+                        continue;
+                    }
 
-                boolean hasMatchingItem = originalItems.stream()
-                        .filter(oi -> oi.getItem() != null)
-                        .anyMatch(oi ->
-                                oi.getItem().equals(currentItem.getItem()) &&
-                                        oi.getPatientInvestigation() == null);
+                    List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
+                            .orElse(Collections.emptyList());
 
-                if (hasMatchingItem) {
-                    iterator.remove();
+                    boolean hasMatchingItem = originalItems.stream()
+                            .filter(oi -> oi.getItem() != null)
+                            .anyMatch(oi ->
+                                    oi.getItem().equals(currentItem.getItem()) &&
+                                            oi.getPatientInvestigation() != null &&
+                                            oi.getPatientInvestigation().getOutsourced() != null &&
+                                            !oi.getPatientInvestigation().getOutsourced());
+
+                    if (hasMatchingItem) {
+                        iterator.remove();
+                    }
                 }
             }
         }
     }
 
-    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts) {
+    private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts,
+                                                                                       boolean externalLaboratoryOnly) {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("bts", bts);
         parameters.put("fd", fromDate);
@@ -4948,13 +4969,16 @@ public class ReportsController implements Serializable {
             parameters.put("inv", investigation);
         }
 
+//        if (externalLaboratoryOnly) {
+//            jpql += "AND billItem.patientInvestigation.outsourced = true ";
+//        }
+
         jpql += "GROUP BY billItem";
 
 
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-        removeCancelledNonInvestigationBills(rs);
+        removeCancelledNonInvestigationBills(rs, externalLaboratoryOnly);
         createSummaryRows(rs);
-//        rs.removeIf(row -> row.getRowValue() == 0.0);
 
         ReportTemplateRowBundle b = new ReportTemplateRowBundle();
         b.setReportTemplateRows(rs);
