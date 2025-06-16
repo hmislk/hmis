@@ -1163,6 +1163,7 @@ public class InwardReportControllerBht implements Serializable {
                 + "where b.patientEncounter=:pe "
                 + "and b.billType=:bTp "
                 + "and b.retired=false "
+                + "and b.cancelled=false "
                 + "and  b.toDepartment=:toDep";
         hm.put("pe", getPatientEncounter());
         hm.put("toDep", department);
