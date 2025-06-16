@@ -150,6 +150,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
+    private boolean billSettlingStarted;
     /////////////////
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
@@ -843,6 +844,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public void settleBillWithPay2() {
+        if (billSettlingStarted) {
+            return;
+        }
+        billSettlingStarted = true;
         editingQty = null;
         if (errorCheckForSaleBill()) {
             return;
@@ -873,6 +878,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
 //        makeNull();
         billPreview = true;
+        billSettlingStarted = false;
 
     }
 
@@ -2144,6 +2150,14 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
     public void setStaffFacade(StaffFacade staffFacade) {
         this.staffFacade = staffFacade;
+    }
+
+    public boolean isBillSettlingStarted() {
+        return billSettlingStarted;
+    }
+
+    public void setBillSettlingStarted(boolean billSettlingStarted) {
+        this.billSettlingStarted = billSettlingStarted;
     }
 
 }

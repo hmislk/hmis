@@ -150,6 +150,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
+    private boolean billSettlingStarted;
     /////////////////
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
@@ -1017,6 +1018,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void settleBillWithPay2() {
+        if (billSettlingStarted) {
+            return;
+        }
+        billSettlingStarted = true;
         Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
         if (pharmacyBillingAfterShiftStart) {
@@ -1089,6 +1094,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         setBill(getBillFacade().find(getSaleBill().getId()));
 
         paymentService.updateBalances(payments);
+        billSettlingStarted = false;
 
         markComplete(getPreBill());
 //        markToken();
@@ -1687,6 +1693,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void setToInstitution(Institution toInstitution) {
         this.toInstitution = toInstitution;
+    }
+
+    public boolean isBillSettlingStarted() {
+        return billSettlingStarted;
+    }
+
+    public void setBillSettlingStarted(boolean billSettlingStarted) {
+        this.billSettlingStarted = billSettlingStarted;
     }
 
 }
