@@ -109,6 +109,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Buddhika
@@ -116,6 +118,8 @@ import org.primefaces.model.LazyDataModel;
 @Named
 @SessionScoped
 public class BillSearch implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(BillSearch.class.getName());
 
     /**
      * EJBs
@@ -4061,15 +4065,13 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToDirectPurchaseReturnBillView() {
-        System.out.println("navigateToDirectPurchaseReturnBillView");
-        System.out.println("bill = " + bill);
+        LOGGER.log(Level.FINE, "navigateToDirectPurchaseReturnBillView – bill id: {0}", bill != null ? bill.getId() : "null");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
         directPurchaseReturnController.resetValuesForReturn();
         loadBillDetails(bill);
-        directPurchaseReturnController.setBill(bill);
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
             directPurchaseReturnController.setBill(bill);
