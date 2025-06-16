@@ -2642,11 +2642,9 @@ public class BillSearch implements Serializable {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
-
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
-
     }
 
     public void cancelCashOutBill() {
