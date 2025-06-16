@@ -2156,7 +2156,7 @@ public class PharmacyReportController implements Serializable {
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
-            double batchCostRate = shx.getItemBatch().getCostRate();
+            double batchCostRate = shx.getItemBatch().getCostRate() != null ? shx.getItemBatch().getCostRate() : 0.0;
 
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
@@ -2449,7 +2449,7 @@ public class PharmacyReportController implements Serializable {
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
-            double batchCostRate = shx.getItemBatch().getCostRate();
+            double batchCostRate = shx.getItemBatch().getCostRate() != null ? shx.getItemBatch().getCostRate() : 0.0;
 
             // Check if a PharmacyRow already exists for this Item
             PharmacyRow matchingRow = null;
