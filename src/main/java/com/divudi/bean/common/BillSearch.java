@@ -324,11 +324,19 @@ public class BillSearch implements Serializable {
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
+    private boolean duplicate ;
 
     private Payment payment;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
+    }
+    
+    public String navigateToCancelBillView() {
+        System.out.println("bill = " + bill.getDeptId());
+        printPreview = true;
+        duplicate = true;
+        return "/opd/bill_cancel?faces-redirect=true";
     }
 
     public String navigateToInwardSearchService() {
@@ -2506,6 +2514,7 @@ public class BillSearch implements Serializable {
         notificationController.createNotification(cancellationBill);
         bill = billFacade.find(cancellationBill.getId());
         printPreview = true;
+        duplicate = false;
         comment = null;
 
 //            getEjbApplication().getBillsToCancel().add(cb);
@@ -5622,6 +5631,14 @@ public class BillSearch implements Serializable {
 
     public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
         this.viewingPatientInvestigations = viewingPatientInvestigations;
+    }
+
+    public boolean isDuplicate() {
+        return duplicate;
+    }
+
+    public void setDuplicate(boolean duplicate) {
+        this.duplicate = duplicate;
     }
 
     public class PaymentSummary {
