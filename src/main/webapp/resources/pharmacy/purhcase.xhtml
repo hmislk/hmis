@@ -97,14 +97,14 @@
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">QTY</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails != null ? bip.billItemFinanceDetails.quantity : 0}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">Free</f:facet>
-                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails != null ? bip.billItemFinanceDetails.freeQuantity : 0}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
 
