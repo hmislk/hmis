@@ -2429,10 +2429,6 @@ public class PharmacyReportController implements Serializable {
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
-        System.out.println("ids = " + ids);
-
         rows = new ArrayList<>();
 
         // Process each StockHistory to build rows per Item (not per batch)
