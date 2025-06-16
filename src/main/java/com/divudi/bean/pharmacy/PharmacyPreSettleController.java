@@ -1070,6 +1070,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         }
 
         Bill latestPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
+        if (latestPreBill.getBillItems().size() != getPreBill().getBillItems().size()) {
+            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again.");
+            billSettlingStarted = false;
+            return;
+        }
         Map<String, Object> params = new HashMap<>();
         params.put("pre", latestPreBill);
         Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
