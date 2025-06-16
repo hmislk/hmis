@@ -42,6 +42,7 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -52,6 +53,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -98,6 +100,9 @@ public class BillService {
     private ItemFacade itemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     private static final Gson gson = new Gson();
 
@@ -1901,6 +1906,12 @@ public class BillService {
 
         Double saleValue = 0.0;
         Double purchaseValue = 0.0;
+        BigDecimal lineCostValue = BigDecimal.ZERO;
+        BigDecimal billCostValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+
+        boolean calculateCost = configOptionApplicationController
+                .getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
         
         List<BillItem> billItems = new ArrayList<>();
         billItems = fetchBillItems(b);
@@ -1929,6 +1940,9 @@ public class BillService {
 
             double retailTotal = 0;
             double purchaseTotal = 0;
+            BigDecimal lineCost = BigDecimal.ZERO;
+            BigDecimal billCost = BigDecimal.ZERO;
+            BigDecimal totalCost = BigDecimal.ZERO;
 
             switch (bc) {
                 case BILL:
@@ -1936,12 +1950,36 @@ public class BillService {
                 case PREBILL:
                     retailTotal = retail * qty;
                     purchaseTotal = purchase * qty;
+                    if (calculateCost) {
+                        lineCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getLineCostRate)
+                                .orElse(BigDecimal.ZERO)
+                                .multiply(BigDecimal.valueOf(qty));
+                        billCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getBillCost)
+                                .orElse(BigDecimal.ZERO);
+                        totalCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getTotalCost)
+                                .orElse(lineCost.add(billCost));
+                    }
                     break;
 
                 case CANCELLATION:
                 case REFUND:
                     retailTotal = -retail * qty;
                     purchaseTotal = -purchase * qty;
+                    if (calculateCost) {
+                        lineCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getLineCostRate)
+                                .orElse(BigDecimal.ZERO)
+                                .multiply(BigDecimal.valueOf(qty)).negate();
+                        billCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getBillCost)
+                                .orElse(BigDecimal.ZERO).negate();
+                        totalCost = Optional.ofNullable(bi.getBillItemFinanceDetails())
+                                .map(BillItemFinanceDetails::getTotalCost)
+                                .orElse(lineCost.add(billCost)).negate();
+                    }
                     break;
 
                 default:
@@ -1949,6 +1987,11 @@ public class BillService {
             }
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
+            if (calculateCost) {
+                lineCostValue = lineCostValue.add(lineCost);
+                billCostValue = billCostValue.add(billCost);
+                totalCostValue = totalCostValue.add(totalCost);
+            }
         }
         if (b.getBillFinanceDetails() == null) {
             b.setBillFinanceDetails(new BillFinanceDetails());
@@ -1956,6 +1999,11 @@ public class BillService {
 
         b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
         b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+        if (calculateCost) {
+            b.getBillFinanceDetails().setLineCostValue(lineCostValue);
+            b.getBillFinanceDetails().setBillCostValue(billCostValue);
+            b.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+        }
         billFacade.editAndCommit(b);
     }
 
