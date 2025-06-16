@@ -44,7 +44,6 @@ public class PatientDepositService {
         m.put("ret", false);
 
         PatientDeposit pd = patientDepositFacade.findFirstByJpql(jpql, m);
-        System.out.println("pd = " + pd);
 
         save(p);
 

@@ -56,13 +56,6 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(
-    indexes = {
-        @Index(name = "idx_item_name", columnList = "name"),
-        @Index(name = "idx_item_code", columnList = "code"),
-        @Index(name = "idx_item_barcode", columnList = "barcode")
-    }
-)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
 public class Item implements Serializable, Comparable<Item>, RetirableEntity  {

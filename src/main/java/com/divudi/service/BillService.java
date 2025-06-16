@@ -295,11 +295,6 @@ public class BillService {
         double additionalFeeCalculatedByBillFees = 0.0;
 
         List<BillFee> bfs = fetchBillFees(bi);
-        System.out.println("bfs = " + bfs);
-
-        for (BillFee bf : bfs) {
-            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
-        }
 
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
@@ -317,10 +312,7 @@ public class BillService {
 
         }
 
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
 
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
@@ -366,11 +358,6 @@ public class BillService {
             }
 
         }
-
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
 
         duplicateBillItem.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         duplicateBillItem.setStaffFee(staffFeesCalculatedByBillFees);
@@ -1022,8 +1009,6 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1729,8 +1714,12 @@ public class BillService {
             case CC_PAYMENT_RECEIVED_BILL:
             case CC_PAYMENT_MADE_BILL:
             case CC_PAYMENT_MADE_CANCELLATION_BILL:
-                boolean billHasNoBillItems = billHasNoBillItems(bill);
-                if (billHasNoBillItems) {
+                boolean noItemsError = billHasNoBillItems(bill);
+                boolean netTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+                boolean hospitalFeeError = billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(bill);
+                boolean centreFeeError = billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(bill);
+
+                if (noItemsError || netTotalError || hospitalFeeError || centreFeeError) {
                     hasAtLeatOneError = true;
                 }
                 break;
@@ -1771,6 +1760,50 @@ public class BillService {
         return mismatch;
     }
 
+    // ChatGPT contributed method to validate collecting centre fee totals
+    public boolean billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billCcTotal = Math.abs(bill.getTotalCenterFee());
+        double billItemCcTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billCcTotal - billItemCcTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill collecting centre fee total (" + billCcTotal + ") does not match sum of bill item collecting centre fees (" + billItemCcTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate hospital fee totals
+    public boolean billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
+        double billItemHospitalTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billHospitalTotal - billItemHospitalTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill hospital fee total (" + billHospitalTotal + ") does not match sum of bill item hospital fees (" + billItemHospitalTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
 // ChatGPT contributed method to check if bill has no bill items
     public boolean billHasNoBillItems(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
@@ -1790,14 +1823,7 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", bill);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
-        if (ptix == null) {
-            System.out.println("ptix is null = " + ptix);
-        } else {
-            System.out.println("ptix size= " + ptix.size());
-        }
         return ptix;
     }
 

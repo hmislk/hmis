@@ -2994,7 +2994,11 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailBills() {
         Date startTime = new Date();
 
-        createPharmacyRetailBills(BillType.PharmacyPre, true);
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyPre);
+        billTypes.add(BillType.PharmacySaleWithoutStock);
+
+        createPharmacyRetailBills(billTypes, true);
 
     }
 
@@ -3116,7 +3120,11 @@ public class SearchController implements Serializable {
     public void createPharmacyRetailAllBills() {
         Date startTime = new Date();
 
-        createPharmacyRetailBills(BillType.PharmacyPre, false);
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(BillType.PharmacyPre);
+        billTypes.add(BillType.PharmacySaleWithoutStock);
+
+        createPharmacyRetailBills(billTypes, false);
 
     }
 
@@ -3126,8 +3134,17 @@ public class SearchController implements Serializable {
 
     public void createPharmacyRetailBills(BillType billtype, boolean maxNum) {
 
+        List<BillType> billTypes = new ArrayList<>();
+        billTypes.add(billtype);
+
+        createPharmacyRetailBills(billTypes, maxNum);
+
+    }
+
+    public void createPharmacyRetailBills(List<BillType> billtypes, boolean maxNum) {
+
         Map m = new HashMap();
-        m.put("bt", billtype);
+        m.put("bts", billtypes);
         //   m.put("class", PreBill.class);
         m.put("fd", getFromDate());
         m.put("td", getToDate());
@@ -3138,7 +3155,7 @@ public class SearchController implements Serializable {
 
         sql = "Select b from PreBill b where "
                 + " b.createdAt between :fd and :td "
-                + " and b.billType=:bt"
+                + " and b.billType in :bts"
                 + " and b.billTypeAtomic <> :bta"
                 + " and b.billedBill is null "
                 + " and b.institution=:ins "
@@ -11647,6 +11664,7 @@ public class SearchController implements Serializable {
         if (allBills != null) {
             for (Bill tmpBill : allBills) {
                 boolean billHasErrors;
+                billService.reloadBill(tmpBill);
                 billHasErrors = billService.checkBillForErrors(tmpBill);
                 if (!billHasErrors) {
                     continue;
@@ -11696,6 +11714,8 @@ public class SearchController implements Serializable {
                 if (diff > 1.0) { // Significant error found
                     Bill b = ah.getBill();
                     if (b != null && !bills.contains(b)) { // Avoid duplicates
+                        String msg = "Agent history balance mismatch.";
+                        b.setTmpComments((b.getTmpComments() == null ? "" : b.getTmpComments()) + msg + " ");
                         bills.add(b);
                     }
                 }

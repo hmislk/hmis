@@ -55,6 +55,7 @@ import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -256,6 +257,7 @@ public class PharmacySummaryReportController implements Serializable {
     public String navigateToPharmacyMovementOutBySaleIssueAndConsumptionWithCurrentStockReport() {
         reportViewTypes = Arrays.asList(
                 ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_ITEM
         );
         reportViewType = ReportViewType.BY_ITEM;
@@ -306,7 +308,7 @@ public class PharmacySummaryReportController implements Serializable {
         dailyStockBalanceReport.setDate(fromDate);
         dailyStockBalanceReport.setDepartment(department);
 
-        HistoricalRecord openingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, fromDate);
+        HistoricalRecord openingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, fromDate);
         if (openingBalance != null) {
             dailyStockBalanceReport.setOpeningStockValue(openingBalance.getRecordValue());
         }
@@ -332,7 +334,7 @@ public class PharmacySummaryReportController implements Serializable {
         PharmacyBundle adjustmentBundle = pharmacyService.fetchPharmacyAdjustmentValueByBillType(startOfTheDay, endOfTheDay, null, null, department, null, null, null);
         dailyStockBalanceReport.setPharmacyAdjustmentsByBillTypeBundle(adjustmentBundle);
 
-        HistoricalRecord closingBalance = historicalRecordService.findRecord("Pharmacy Stock Value at Retail Sale Rate", null, null, department, toDate);
+        HistoricalRecord closingBalance = historicalRecordService.findRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE, null, null, department, toDate);
         if (closingBalance != null) {
             dailyStockBalanceReport.setClosingStockValue(closingBalance.getRecordValue());
         }
@@ -560,6 +562,9 @@ public class PharmacySummaryReportController implements Serializable {
             switch (reportViewType) {
                 case BY_BILL:
                     processMovementOutWithStocksReportByBill();
+                    break;
+                case BY_BILL_TYPE:
+                    processMovementOutWithStockReportByBillType();
                     break;
                 case BY_ITEM:
                     processMovementOutWithStockReportByItem();
@@ -837,10 +842,12 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processMovementOutWithStockReportByItem() {
-        List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
-        List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        pharmacyBundle = new PharmacyBundle(pbis);
-        pharmacyBundle.groupSaleDetailsByItems();
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyMovementOutBillTypes();
+            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            pharmacyBundle = new PharmacyBundle(pbis);
+            pharmacyBundle.groupSaleDetailsByItems();
+        }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {

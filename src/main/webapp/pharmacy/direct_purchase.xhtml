@@ -109,7 +109,8 @@
                                             listener="#{pharmacyDirectPurchaseController.onQuantityChange}"
                                             update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                             txtRetailValue txtCostValue
-                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit" />
+                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit
+                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
                                     </p:inputText>
                                 </div>
                                 <div class="col-1">
@@ -125,7 +126,8 @@
                                         <p:ajax 
                                             event="blur"
                                             process="@this"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue"
+                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue txtRetailValue txtCostValue
+                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
                                             listener="#{pharmacyDirectPurchaseController.onFreeQuantityChange}" />
                                     </p:inputText>
                                 </div>
@@ -144,9 +146,10 @@
                                             event="blur"
                                             process="@this"
                                             listener="#{pharmacyDirectPurchaseController.onLineGrossRateChange}"
-                                            update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue 
+                                            update="txtPurchaseValue txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                             txtRetailValue txtCostValue
-                                            txtPackOrUnit txtUnitsPerPack" />
+                                            txtPackOrUnit txtUnitsPerPack
+                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
 
                                     </p:inputText>
 
@@ -166,9 +169,10 @@
                                             event="blur"
                                             process="@this"
                                             listener="#{pharmacyDirectPurchaseController.onLineDiscountRateChange}"
-                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue 
+                                            update="txtLineDiscountValue txtPurchaseValueMinusLineDiscountValue
                                             txtRetailValue txtCostValue
-                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit" />
+                                            txtPurchaseValue txtUnitsPerPack txtPackOrUnit
+                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
                                     </p:inputText>
                                 </div>
 
@@ -189,7 +193,8 @@
                                             event="blur"
                                             process="@this"
                                             listener="#{pharmacyDirectPurchaseController.onRetailSaleRateChange}"
-                                            update="txtRetailValue txtPackOrUnit txtUnitsPerPack" />
+                                            update="txtRetailValue txtPackOrUnit txtUnitsPerPack
+                                            :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" />
                                     </p:inputText>
                                 </div>
 
@@ -231,7 +236,7 @@
                                         icon="fas fa-plus"
                                         action="#{pharmacyDirectPurchaseController.addItem}"
                                         process="@this" 
-                                        update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} msg"/>
+                                        update="itemList itemselectgrid tot focusItem :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('totalSaleValue',view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} msg"/>
 
                                 </div>
 
@@ -414,13 +419,14 @@
                             </p:column>
 
                             <p:column headerText="Dis. Rate"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}">
+                                <h:outputLabel value="#{ph.billItemFinanceDetails.lineDiscountRate}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
 
                             <p:column headerText="RR"  styleClass="text-end">
-                                <h:outputLabel value="#{ph.billItemFinanceDetails.retailSaleRatePerUnit}">
+                                <h:outputLabel 
+                                    value="#{ph.billItemFinanceDetails.retailSaleRate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
@@ -451,7 +457,7 @@
                             <p:column headerText="Profit %"  styleClass="text-end">
                                 <h:outputText
                                     id="profMargin"
-                                    value="#{pharmacyDirectPurchaseController.calcProfitMargin(ph)}"
+                                    value="#{pharmacyDirectPurchaseController.calculateProfitMargin(ph)}"
                                     styleClass="#{pharmacyDirectPurchaseController.isProfitMarginExcessive(ph) ? 'ui-messages-fatal' : ''}">
                                     <f:convertNumber pattern="0.0" />
                                 </h:outputText>
@@ -545,12 +551,13 @@
                                             value="#{pharmacyDirectPurchaseController.bill.discount}">
                                             <p:ajax 
                                                 process="@this" 
-                                                update=":#{p:resolveFirstComponentWithId('net', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                                update=":#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId} net testBillDiscount" 
                                                 event="blur"
                                                 listener="#{pharmacyDirectPurchaseController.billDiscountChangedByUser()}" />
                                         </p:inputText>
 
                                         <p:outputLabel value="Net Total" />
+
                                         <h:outputLabel 
                                             id="net"
                                             class="w-100 text-end ui-inputfield bg-secondary text-white"
@@ -570,10 +577,10 @@
 
                                 <!-- Detailed Finance Tab -->
                                 <p:tab title="Financial Summary">
-
-                                    <ph:bill_finance_details id="billFinanceDetails" bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
-
-
+                                    <h:panelGroup id="billFinanceDetails" >
+                                        <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
+                                    </h:panelGroup>
+                                    
                                 </p:tab>
 
                             </p:tabView>
