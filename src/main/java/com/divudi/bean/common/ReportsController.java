@@ -4834,58 +4834,56 @@ public class ReportsController implements Serializable {
 
         while (iterator.hasNext()) {
             ReportTemplateRow row = iterator.next();
-            BillItem currentItem = row.getBillItem();
-            Bill currentBill = currentItem.getBill();
+            BillItem item = row.getBillItem();
+            Bill bill = item.getBill();
 
-            if (externalLaboratoryOnly) {
-                if (currentItem.getPatientInvestigation() != null && currentItem.getPatientInvestigation().getOutsourced() != null
-                        && !currentItem.getPatientInvestigation().getOutsourced()) {
-                    iterator.remove();
-                    continue;
-                }
-            }
-
-            if (!currentBill.getBillClassType().equals(BillClassType.CancelledBill) && !currentBill.getBillClassType().equals(BillClassType.RefundBill)) {
+            if (externalLaboratoryOnly && isInternalInvestigation(item)) {
+                iterator.remove();
                 continue;
             }
 
-            currentItem.setNetValue(-Math.abs(currentItem.getNetValue()));
+            if (!isCancelledOrRefundBill(bill)) {
+                continue;
+            }
 
-            if (!(currentItem.getItem() instanceof Investigation)) {
+            item.setNetValue(-Math.abs(item.getNetValue()));
+
+            if (!(item.getItem() instanceof Investigation)) {
+                iterator.remove();
+                continue;
+            }
+
+            if (externalLaboratoryOnly && isFromInternalReference(item, bill)) {
                 iterator.remove();
             }
-
-            if (externalLaboratoryOnly) {
-                if (currentItem.getReferanceBillItem() != null) {
-                    if (currentItem.getReferanceBillItem().getPatientInvestigation() != null) {
-                        if (currentItem.getReferanceBillItem().getPatientInvestigation().getOutsourced() != null
-                                && !currentItem.getReferanceBillItem().getPatientInvestigation().getOutsourced()) {
-                            iterator.remove();
-                        }
-                    }
-                } else {
-                    Bill originalBill = currentBill.getBilledBill();
-                    if (originalBill == null) {
-                        continue;
-                    }
-
-                    List<BillItem> originalItems = Optional.ofNullable(originalBill.getBillItems())
-                            .orElse(Collections.emptyList());
-
-                    boolean hasMatchingItem = originalItems.stream()
-                            .filter(oi -> oi.getItem() != null)
-                            .anyMatch(oi ->
-                                    oi.getItem().equals(currentItem.getItem()) &&
-                                            oi.getPatientInvestigation() != null &&
-                                            oi.getPatientInvestigation().getOutsourced() != null &&
-                                            !oi.getPatientInvestigation().getOutsourced());
-
-                    if (hasMatchingItem) {
-                        iterator.remove();
-                    }
-                }
-            }
         }
+    }
+
+    private boolean isCancelledOrRefundBill(Bill bill) {
+        BillClassType type = bill.getBillClassType();
+        return type == BillClassType.CancelledBill || type == BillClassType.RefundBill;
+    }
+
+    private boolean isInternalInvestigation(BillItem item) {
+        return item.getPatientInvestigation() != null &&
+                Boolean.FALSE.equals(item.getPatientInvestigation().getOutsourced());
+    }
+
+    private boolean isFromInternalReference(BillItem item, Bill currentBill) {
+        BillItem referenceItem = item.getReferanceBillItem();
+
+        if (referenceItem != null) {
+            return isInternalInvestigation(referenceItem);
+        }
+
+        Bill originalBill = currentBill.getBilledBill();
+        if (originalBill == null) return false;
+
+        return Optional.ofNullable(originalBill.getBillItems())
+                .orElse(Collections.emptyList())
+                .stream()
+                .filter(oi -> oi.getItem() != null && oi.getItem().equals(item.getItem()))
+                .anyMatch(this::isInternalInvestigation);
     }
 
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts,
