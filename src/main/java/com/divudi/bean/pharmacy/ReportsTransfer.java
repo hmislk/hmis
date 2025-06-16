@@ -583,10 +583,16 @@ public class ReportsTransfer implements Serializable {
             marginValue = 0;
             netTotalPurchaseValues = 0.0;
             for (Bill b : transferBills) {
-                if(b.getBillFinanceDetails() == null || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0){
+                if (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0) {
                     billService.createBillFinancialDetailsForPharmacyBill(b);
                 }
-                netTotalPurchaseValues = netTotalPurchaseValues + (b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
+                Double pv = (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null)
+                        ? 0.0
+                        : b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                netTotalPurchaseValues += pv;
                 totalsValue = totalsValue + (b.getTotal());
                 discountsValue = discountsValue + b.getDiscount();
                 marginValue += b.getMargin();
