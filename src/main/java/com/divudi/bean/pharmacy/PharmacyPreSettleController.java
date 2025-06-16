@@ -67,6 +67,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -1062,7 +1063,16 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return;
         }
-        
+
+        Bill latestPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
+        Map<String, Object> params = new HashMap<>();
+        params.put("pre", latestPreBill);
+        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("Already Paid");
+            return;
+        }
+
         saveSaleBill();
 //        saveSaleBillItems();
 
