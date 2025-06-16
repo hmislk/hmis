@@ -553,7 +553,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (getSaleBill().getId() == null) {
             getBillFacade().create(getSaleBill());
         } else {
-            getBillFacade().edit(getSaleBill());
+            getBillFacade().editAndCommit(getSaleBill());
         }
 
         updateSettledBatchBill();
@@ -592,10 +592,10 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (outputBilledBill.getId() == null) {
             getBillFacade().create(outputBilledBill);
         } else {
-            getBillFacade().edit(outputBilledBill);
+            getBillFacade().editAndCommit(outputBilledBill);
         }
         inputPreBill.setReferenceBill(outputBilledBill);
-        getBillFacade().edit(inputPreBill);
+        getBillFacade().editAndCommit(inputPreBill);
         return outputBilledBill;
     }
 
@@ -736,18 +736,18 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         if (savingSettlingIndividualBill.getId() == null) {
             getBillFacade().create(savingSettlingIndividualBill);
         } else {
-            getBillFacade().edit(savingSettlingIndividualBill);
+            getBillFacade().editAndCommit(savingSettlingIndividualBill);
         }
 
         individualBill.setReferenceBill(savingSettlingIndividualBill);
-        getBillFacade().edit(individualBill);
+        getBillFacade().editAndCommit(individualBill);
 
         return savingSettlingIndividualBill;
     }
 
     private void updateSettledBatchBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
 
     }
 
@@ -781,8 +781,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
             getBillBean().setPaymentMethodData(newlyCreatedIndividualBilledBillOfBilledBatchBill, getPreBill().getPaymentMethod(), paymentMethodData);
 
-            getBillFacade().edit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
-            getBillFacade().edit(preBill);
+            getBillFacade().editAndCommit(newlyCreatedIndividualBilledBillOfBilledBatchBill);
+            getBillFacade().editAndCommit(preBill);
             billsOfBatchBilledBill.add(newlyCreatedIndividualBilledBillOfBilledBatchBill);
         }
     }
@@ -804,7 +804,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             saveBillFee(originalBillFees, newSettlingBillItem);
             newlyCreatedSettlingIndividualBill.getBillItems().add(newSettlingBillItem);
         }
-        getBillFacade().edit(individualPreBill);
+        getBillFacade().editAndCommit(individualPreBill);
 
     }
 
@@ -865,7 +865,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         saveIndividualBilledBillsOfPreBatchBill();
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -1064,7 +1064,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         saveSettlingBatchBill();
         saveIndividualBilledBillsOfPreBatchBill();
 
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
         setBill(getBillFacade().find(getSaleBill().getId()));
 
         billPreview = true;
