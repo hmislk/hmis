@@ -63,6 +63,7 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -150,7 +151,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
-    private boolean billSettlingStarted;
+    private final AtomicBoolean billSettlingStarted = new AtomicBoolean(false);
     /////////////////
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
@@ -1018,10 +1019,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void settleBillWithPay2() {
-        if (billSettlingStarted) {
+        if (!billSettlingStarted.compareAndSet(false, true)) {
             return;
         }
-        billSettlingStarted = true;
         try {
         Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
@@ -1038,33 +1038,27 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 && getPreBill().getBillClassType() != BillClassType.PreBill) {
             JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
             makeNull();
-            billSettlingStarted = false;
             return;
         }
         if (errorCheckForSaleBill()) {
-            billSettlingStarted = false;
             return;
         }
         if (errorCheckForSaleBillAraedyAddToStock()) {
             JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
-            billSettlingStarted = false;
             return;
         }
         if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
-            billSettlingStarted = false;
             return;
         }
 
         if (errorCheckOnPaymentMethod()) {
-            billSettlingStarted = false;
             return;
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (checkAndUpdateBalance() > 0) {
                 JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
-                billSettlingStarted = false;
                 return;
             }
         }
@@ -1073,7 +1067,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (!discountSchemeValidation.isFlag()) {
 //            billSettlingStarted = false;
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
-            billSettlingStarted = false;
             return;
         }
 
@@ -1083,7 +1076,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
         if (existing != null) {
             JsfUtil.addErrorMessage("Already Paid");
-            billSettlingStarted = false;
             return;
         }
 
@@ -1110,7 +1102,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         //    removeSettledToken();
         billPreview = true;
     } finally {
-        billSettlingStarted = false;
+        billSettlingStarted.set(false);
     }
     
     public Token findTokenFromBill(Bill bill){
@@ -1470,7 +1462,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 setPreBill(args);
                 getPreBill().setPaymentMethod(args.getPaymentMethod());
                 getPreBill().setPaymentScheme(args.getPaymentScheme());
-                billSettlingStarted=false;
+                billSettlingStarted.set(false);
 //                paymentMethod = getPreBill().getPaymentMethod();
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
@@ -1707,11 +1699,11 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public boolean isBillSettlingStarted() {
-        return billSettlingStarted;
+        return billSettlingStarted.get();
     }
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
-        this.billSettlingStarted = billSettlingStarted;
+        this.billSettlingStarted.set(billSettlingStarted);
     }
 
 }

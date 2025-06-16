@@ -63,6 +63,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -150,7 +151,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     private String patientTabId = "tabNewPt";
     private String strTenderedValue = "";
     boolean billPreview = false;
-    private boolean billSettlingStarted;
+    private final AtomicBoolean billSettlingStarted = new AtomicBoolean(false);
     /////////////////
     List<Stock> replaceableStocks;
     List<BillItem> billItems;
@@ -844,10 +845,9 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public void settleBillWithPay2() {
-        if (billSettlingStarted) {
+        if (!billSettlingStarted.compareAndSet(false, true)) {
             return;
         }
-        billSettlingStarted = true;
         try {
             editingQty = null;
             if (errorCheckForSaleBill()) {
@@ -880,7 +880,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 //        makeNull();
         billPreview = true;
     } finally {
-        billSettlingStarted = false;
+        billSettlingStarted.set(false);
     }
 
     private boolean paymentMethodDataErrorCheck() {
@@ -2154,11 +2154,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     }
 
     public boolean isBillSettlingStarted() {
-        return billSettlingStarted;
+        return billSettlingStarted.get();
     }
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
-        this.billSettlingStarted = billSettlingStarted;
+        this.billSettlingStarted.set(billSettlingStarted);
     }
 
 }
