@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 /**
  *
@@ -89,6 +91,11 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
         getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
         getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
+        getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
+        getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
         getBooleanValueByKey("Show Profit Percentage in GRN", true);
     }
 
@@ -377,7 +384,8 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setValueType(OptionValueType.LONG_TEXT);
             optionFacade.create(option);
         }
-        option.setOptionValue(value);
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        option.setOptionValue(sanitized);
         optionFacade.edit(option);
         loadApplicationOptions();
     }
