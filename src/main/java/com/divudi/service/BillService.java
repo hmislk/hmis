@@ -52,6 +52,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -98,6 +99,9 @@ public class BillService {
     private ItemFacade itemFacade;
     @EJB
     private PatientInvestigationFacade patientInvestigationFacade;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     private static final Gson gson = new Gson();
 
@@ -1901,6 +1905,9 @@ public class BillService {
 
         Double saleValue = 0.0;
         Double purchaseValue = 0.0;
+        BigDecimal lineCostValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        boolean useCostRate = configOptionApplicationController.getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
         
         List<BillItem> billItems = new ArrayList<>();
         billItems = fetchBillItems(b);
@@ -1918,6 +1925,14 @@ public class BillService {
             }
 
             Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+
+            BigDecimal itemLineCost = BigDecimal.ZERO;
+            BigDecimal itemTotalCost = BigDecimal.ZERO;
+            BillItemFinanceDetails fid = bi.getBillItemFinanceDetails();
+            if (fid != null) {
+                itemLineCost = Optional.ofNullable(fid.getLineCost()).orElse(BigDecimal.ZERO);
+                itemTotalCost = Optional.ofNullable(fid.getTotalCost()).orElse(itemLineCost);
+            }
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
@@ -1942,6 +1957,8 @@ public class BillService {
                 case REFUND:
                     retailTotal = -retail * qty;
                     purchaseTotal = -purchase * qty;
+                    itemLineCost = itemLineCost.negate();
+                    itemTotalCost = itemTotalCost.negate();
                     break;
 
                 default:
@@ -1949,6 +1966,10 @@ public class BillService {
             }
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
+            if (useCostRate) {
+                lineCostValue = lineCostValue.add(itemLineCost);
+                totalCostValue = totalCostValue.add(itemTotalCost);
+            }
         }
         if (b.getBillFinanceDetails() == null) {
             b.setBillFinanceDetails(new BillFinanceDetails());
@@ -1956,6 +1977,10 @@ public class BillService {
 
         b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
         b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+        if (useCostRate) {
+            b.getBillFinanceDetails().setLineCostValue(lineCostValue);
+            b.getBillFinanceDetails().setTotalCostValue(totalCostValue);
+        }
         billFacade.editAndCommit(b);
     }
 
