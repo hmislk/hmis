@@ -1022,6 +1022,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             return;
         }
         billSettlingStarted = true;
+        try {
         Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
         if (pharmacyBillingAfterShiftStart) {
@@ -1094,13 +1095,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         setBill(getBillFacade().find(getSaleBill().getId()));
 
         paymentService.updateBalances(payments);
-        billSettlingStarted = false;
 
         markComplete(getPreBill());
 //        markToken();
 //        makeNull();
         //    removeSettledToken();
         billPreview = true;
+    } finally {
+        billSettlingStarted = false;
     }
     
     public Token findTokenFromBill(Bill bill){

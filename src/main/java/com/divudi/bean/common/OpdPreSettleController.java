@@ -848,10 +848,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             return;
         }
         billSettlingStarted = true;
-        editingQty = null;
-        if (errorCheckForSaleBill()) {
-            return;
-        }
+        try {
+            editingQty = null;
+            if (errorCheckForSaleBill()) {
+                return;
+            }
 
         Bill latestPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
         Map<String, Object> params = new HashMap<>();
@@ -878,8 +879,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
 //        makeNull();
         billPreview = true;
+    } finally {
         billSettlingStarted = false;
-
     }
 
     private boolean paymentMethodDataErrorCheck() {
