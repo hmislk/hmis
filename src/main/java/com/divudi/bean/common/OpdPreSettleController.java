@@ -848,6 +848,15 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             return;
         }
 
+        Bill latestPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
+        Map<String, Object> params = new HashMap<>();
+        params.put("pre", latestPreBill);
+        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("Already Paid");
+            return;
+        }
+
         if (getCashPaid() < getPreBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Tendered Amount is lower than Total");
             return;
