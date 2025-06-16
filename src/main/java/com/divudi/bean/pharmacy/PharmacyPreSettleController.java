@@ -1104,6 +1104,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     } finally {
         billSettlingStarted.set(false);
     }
+}
+
     
     public Token findTokenFromBill(Bill bill){
         return  tokenController.findPharmacyTokenSaleForCashier(bill, TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);     
