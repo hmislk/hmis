@@ -28,6 +28,12 @@
                     <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
                     <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.bhtNo}" /></div>
                 </div>
+                
+                <div class="row">
+                    <div class="col-md-3"><p:outputLabel value="Consultant Name"/></div>
+                    <div class="col-md-1 justify-content-end d-flex"><p:outputLabel value=":"/></div>
+                    <div class="col-md-8"><h:outputLabel  value="#{cc.attrs.admission.referringConsultant.person.nameWithTitle}" /></div>
+                </div>
 
                 <div class="row">
                     <div class="col-md-3"><p:outputLabel value="Admission Type"  /></div>

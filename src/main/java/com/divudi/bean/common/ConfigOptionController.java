@@ -27,6 +27,7 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import com.divudi.service.AuditService;
 
 /**
  *
@@ -44,6 +45,9 @@ public class ConfigOptionController implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    @EJB
+    AuditService auditService;
 
     private ConfigOption option;
     private Institution institution;
@@ -98,11 +102,21 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+        Map<String, Object> before = new HashMap<>();
+        before.put("optionKey", delo.getOptionKey());
+        before.put("optionValue", delo.getOptionValue());
+
         delo.setRetireComments("del");
         delo.setRetired(true);
         delo.setRetiredAt(new Date());
         delo.setRetirer(sessionController.getLoggedUser());
         saveOption(delo);
+
+        Map<String, Object> after = new HashMap<>();
+        after.put("optionKey", delo.getOptionKey());
+        after.put("retired", true);
+
+        auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Delete Config Option");
         configOptionApplicationController.loadApplicationOptions();
         JsfUtil.addSuccessMessage("Deleted");
     }
@@ -139,7 +153,18 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        if (option.getId() == null) {
+        Map<String, Object> before = null;
+        boolean creating = option.getId() == null;
+        if (!creating) {
+            ConfigOption existing = optionFacade.find(option.getId());
+            if (existing != null) {
+                before = new HashMap<>();
+                before.put("optionKey", existing.getOptionKey());
+                before.put("optionValue", existing.getOptionValue());
+            }
+        }
+
+        if (creating) {
             option.setCreatedAt(new Date());
             option.setCreater(sessionController.getLoggedUser());
             optionFacade.create(option);
@@ -147,6 +172,13 @@ public class ConfigOptionController implements Serializable {
             optionFacade.edit(option);
         }
         configOptionApplicationController.loadApplicationOptions();
+
+        Map<String, Object> after = new HashMap<>();
+        after.put("optionKey", option.getOptionKey());
+        after.put("optionValue", option.getOptionValue());
+
+        String trigger = creating ? "Create Config Option" : "Update Config Option";
+        auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), trigger);
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
