@@ -54,8 +54,20 @@
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.total}"/>
                             <h:outputLabel value="Grn Value"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" id="btnSearch" ajax="false" value="Logged Institution Search" action="#{searchController.createGrnTable}"/>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" id="btnSearch2" ajax="false" value="All Search" action="#{searchController.createGrnTableAllIns()}"/>
+                            <p:commandButton 
+                                class="w-100 ui-button-warning"
+                                icon="fas fa-search"
+                                id="btnSearch"
+                                ajax="false" 
+                                value="Logged Institution Search"
+                                action="#{searchController.createGrnTable}"/>
+                            <p:commandButton 
+                                class="w-100 ui-button-warning"
+                                icon="fas fa-search" 
+                                id="btnSearch2"
+                                ajax="false"
+                                value="All Institution Search" 
+                                action="#{searchController.createGrnTableAllIns()}"/>
 
                         </h:panelGrid>
                     </div>
@@ -65,6 +77,7 @@
                             class="w-100"
                             var="p" 
                             paginator="true"
+                            rows="10"
                             rowIndexVar="n"
                             paginatorPosition="bottom"
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"

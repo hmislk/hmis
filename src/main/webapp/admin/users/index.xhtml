@@ -82,6 +82,14 @@
                                             icon="fa fa-envelope"
                                             class="ui-button-warning"
                                             action="#{smsController.navigateToSendBulkSmsToNumbers()}" />
+                                        
+                                        <p:commandButton  
+                                                ajax="false"  
+                                                action="#{smsController.navigateToBillContactNumbers()}" 
+                                                value="Bulk Messaging" 
+                                                icon="fa fa-comments"
+                                                rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
+                                            </p:commandButton>    
 
                                         <hr/>
                                     </div>

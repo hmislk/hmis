@@ -936,7 +936,7 @@
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
+                            action="#{searchController.navigateToReturnReceivedGoods()}"  
                             value="Return Received Goods" 
                             icon="fas fa-undo-alt"
                             actionListener="#{searchController.makeListNull()}" 
