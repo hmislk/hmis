@@ -585,7 +585,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //        getSaleBill().setCashPaid(cashPaid);
 //        getSaleBill().setBalance(cashPaid - getPreBill().getNetTotal());
         if (getSaleBill().getId() == null) {
-            getBillFacade().create(getSaleBill());
+            getBillFacade().createAndFlush(getSaleBill());
+        } else {
+            getBillFacade().editAndFlush(getSaleBill());
         }
 
         updatePreBill();
@@ -640,12 +642,12 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     private void updateSaleReturnPreBill() {
         getPreBill().setReferenceBill(getSaleReturnBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndFlush(getPreBill());
     }
 
     private void updatePreBill() {
         getPreBill().setReferenceBill(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndFlush(getPreBill());
     }
 
     private void saveSaleBillItems() {
@@ -659,7 +661,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             newBil.setCreater(getSessionController().getLoggedUser());
 
             if (newBil.getId() == null) {
-                getBillItemFacade().create(newBil);
+                getBillItemFacade().createAndFlush(newBil);
+            } else {
+                getBillItemFacade().editAndFlush(newBil);
             }
 
             PharmaceuticalBillItem newPhar = new PharmaceuticalBillItem();
@@ -667,16 +671,18 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             newPhar.setBillItem(newBil);
 
             if (newPhar.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(newPhar);
+                getPharmaceuticalBillItemFacade().createAndFlush(newPhar);
+            } else {
+                getPharmaceuticalBillItemFacade().editAndFlush(newPhar);
             }
 
             newBil.setPharmaceuticalBillItem(newPhar);
-            getBillItemFacade().edit(newBil);
+            getBillItemFacade().editAndFlush(newBil);
 
             //   getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleBill().getBillItems().add(newBil);
         }
-        getBillFacade().edit(getSaleBill());
+        getBillFacade().editAndFlush(getSaleBill());
 
     }
 
@@ -691,7 +697,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             newBil.setCreater(getSessionController().getLoggedUser());
 
             if (newBil.getId() == null) {
-                getBillItemFacade().create(newBil);
+                getBillItemFacade().createAndFlush(newBil);
+            } else {
+                getBillItemFacade().editAndFlush(newBil);
             }
 
             PharmaceuticalBillItem newPhar = new PharmaceuticalBillItem();
@@ -699,11 +707,13 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             newPhar.setBillItem(newBil);
 
             if (newPhar.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(newPhar);
+                getPharmaceuticalBillItemFacade().createAndFlush(newPhar);
+            } else {
+                getPharmaceuticalBillItemFacade().editAndFlush(newPhar);
             }
 
             newBil.setPharmaceuticalBillItem(newPhar);
-            getBillItemFacade().edit(newBil);
+            getBillItemFacade().editAndFlush(newBil);
 
             //   getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             //create billFee
@@ -711,7 +721,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
             getSaleBill().getBillItems().add(newBil);
         }
-        getBillFacade().edit(getSaleBill());
+        getBillFacade().editAndFlush(getSaleBill());
 
     }
 
@@ -1016,6 +1026,17 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void settleBillWithPay2() {
+        // Reload bill to avoid stale state and verify payment status
+        if (getPreBill() != null && getPreBill().getId() != null) {
+            Bill freshPreBill = getBillFacade().findWithoutCache(getPreBill().getId());
+            if (freshPreBill != null) {
+                setPreBill(freshPreBill);
+                if (freshPreBill.getReferenceBill() != null || freshPreBill.checkActiveCashPreBill()) {
+                    JsfUtil.addErrorMessage("Payment already made for this bill");
+                    return;
+                }
+            }
+        }
         Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
         if (pharmacyBillingAfterShiftStart) {
@@ -1072,7 +1093,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         saveSaleBillItems();
 
 //        getPreBill().getCashBillsPre().add(getSaleBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndFlush(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
@@ -1284,7 +1305,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         saveSaleReturnBillItems(p);
 
 //        getPreBill().getReturnCashBills().add(getSaleReturnBill());
-        getBillFacade().edit(getPreBill());
+        getBillFacade().editAndFlush(getPreBill());
 
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(getSaleReturnBill(), getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
