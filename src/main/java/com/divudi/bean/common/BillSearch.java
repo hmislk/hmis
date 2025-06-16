@@ -333,7 +333,10 @@ public class BillSearch implements Serializable {
     }
     
     public String navigateToCancelBillView() {
-        System.out.println("bill = " + bill.getDeptId());
+         if (bill != null) {
+            JsfUtil.addErrorMessage("Bill is Missing..");
+            return "";
+        }
         printPreview = true;
         duplicate = true;
         return "/opd/bill_cancel?faces-redirect=true";
