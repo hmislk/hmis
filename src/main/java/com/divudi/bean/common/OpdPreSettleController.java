@@ -882,6 +882,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
     } finally {
         billSettlingStarted.set(false);
     }
+}
 
     private boolean paymentMethodDataErrorCheck() {
         if (getPaymentMethod() == PaymentMethod.Card) {
