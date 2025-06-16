@@ -1037,27 +1037,33 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 && getPreBill().getBillClassType() != BillClassType.PreBill) {
             JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
             makeNull();
+            billSettlingStarted = false;
             return;
         }
         if (errorCheckForSaleBill()) {
+            billSettlingStarted = false;
             return;
         }
         if (errorCheckForSaleBillAraedyAddToStock()) {
             JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
+            billSettlingStarted = false;
             return;
         }
         if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
+            billSettlingStarted = false;
             return;
         }
 
         if (errorCheckOnPaymentMethod()) {
+            billSettlingStarted = false;
             return;
         }
 
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
             if (checkAndUpdateBalance() > 0) {
                 JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
+                billSettlingStarted = false;
                 return;
             }
         }
@@ -1066,6 +1072,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         if (!discountSchemeValidation.isFlag()) {
 //            billSettlingStarted = false;
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            billSettlingStarted = false;
             return;
         }
 
@@ -1075,6 +1082,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill=:pre", params);
         if (existing != null) {
             JsfUtil.addErrorMessage("Already Paid");
+            billSettlingStarted = false;
             return;
         }
 
@@ -1460,6 +1468,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 setPreBill(args);
                 getPreBill().setPaymentMethod(args.getPaymentMethod());
                 getPreBill().setPaymentScheme(args.getPaymentScheme());
+                billSettlingStarted=false;
 //                paymentMethod = getPreBill().getPaymentMethod();
                 return "/pharmacy/pharmacy_bill_pre_settle?faces-redirect=true";
             }
