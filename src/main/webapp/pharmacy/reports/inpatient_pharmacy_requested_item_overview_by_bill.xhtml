@@ -183,6 +183,24 @@
                                             <h:outputLabel value="#{commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
                                         </p:column>
                                     </p:dataTable>
+                                    <ui:repeat value="#{inwardReportControllerBht.getReturnAndCancelBHTIssueBills(b)}" var="b">
+                                    <p:dataTable id="tblIssue" value="#{billBeanController.fetchBillItems(b)}" var="bi">
+                                        <f:facet name="header">
+                                            <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
+                                            <h:outputLabel value="&nbsp;:&nbsp;" />
+                                            <h:outputLabel value="#{b.department.name}" /><br/>
+                                            <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} User&nbsp;" />
+                                            <h:outputLabel value="&nbsp;:&nbsp;" />
+                                            <h:outputLabel value="#{b.creater.webUserPerson.nameWithTitle}" />
+                                        </f:facet>
+                                        <p:column headerText="Item" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}" >
+                                            <h:outputLabel value="#{bi.item.name}" />
+                                        </p:column>
+                                        <p:column headerText="Qty" styleClass="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'ui-messages-warn' : 'ui-messages-fatal'}">
+                                            <h:outputLabel value="#{-commonFunctionsProxy.abs(bi.pharmaceuticalBillItem.qty)}" />
+                                        </p:column>
+                                    </p:dataTable>
+                                </ui:repeat>
                                 </ui:repeat>
                             </h:panelGroup>
                         </div>
