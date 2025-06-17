@@ -478,7 +478,7 @@ public class DirectPurchaseReturnController implements Serializable {
 
     public void prepareReturnBill() {
         if (bill == null) {
-            JsfUtil.addErrorMessage("No Direct Purcchase is selected to return");
+            JsfUtil.addErrorMessage("No Direct Purchase is selected to return");
             return;
         }
         if (bill.getBillTypeAtomic() == null) {
