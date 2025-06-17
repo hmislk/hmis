@@ -60,6 +60,7 @@ import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.light.pharmacy.PharmacyIncomeRow;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
@@ -835,9 +836,9 @@ public class PharmacySummaryReportController implements Serializable {
     public void processPharmacyIncomeAndCostReportByBillItem() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
+            List<PharmacyIncomeRow> rows = billService.fetchPharmacyIncomeRows(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(rows);
+            bundle.generateRetailAndCostDetailsForPharmacyIncomeRows();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
