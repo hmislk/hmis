@@ -31,6 +31,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -298,16 +299,27 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public BigDecimal getReturnRate(BillItem originalBillItem) {
-        BigDecimal rate = originalBillItem.getBillItemFinanceDetails().getGrossRate();
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
-                && originalBillItem.getBillItemFinanceDetails() != null
-                && originalBillItem.getBillItemFinanceDetails().getLineCostRate() != null) {
-            rate = originalBillItem.getBillItemFinanceDetails().getLineCostRate();
-        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
-                && originalBillItem.getBillItemFinanceDetails() != null
-                && originalBillItem.getBillItemFinanceDetails().getTotalCostRate() != null) {
-            rate = originalBillItem.getBillItemFinanceDetails().getTotalCostRate();
+        BillItemFinanceDetails fd = originalBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return BigDecimal.ZERO;
         }
+
+        BigDecimal rate = fd.getGrossRate();
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+                && fd.getLineCostRate() != null) {
+            rate = fd.getLineCostRate();
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+                && fd.getTotalCostRate() != null) {
+            rate = fd.getTotalCostRate();
+        }
+
+        if (originalBillItem.getItem() instanceof Ampp) {
+            BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+            if (upp.compareTo(BigDecimal.ZERO) > 0) {
+                rate = rate.multiply(upp);
+            }
+        }
+
         return rate;
     }
 
@@ -480,6 +492,27 @@ public class DirectPurchaseReturnController implements Serializable {
         }
         getReturnBill();
         getReturnBill().setBilledBill(bill);
+        // Reset inherited financial values
+        getReturnBill().setDiscount(0.0);
+        getReturnBill().setExpenseTotal(0.0);
+        getReturnBill().setTax(0.0);
+        if (getReturnBill().getBillFinanceDetails() == null) {
+            getReturnBill().setBillFinanceDetails(new BillFinanceDetails(getReturnBill()));
+        } else {
+            BillFinanceDetails bfd = getReturnBill().getBillFinanceDetails();
+            bfd.setBillDiscount(BigDecimal.ZERO);
+            bfd.setBillExpense(BigDecimal.ZERO);
+            bfd.setBillTaxValue(BigDecimal.ZERO);
+            bfd.setTotalDiscount(BigDecimal.ZERO);
+            bfd.setTotalExpense(BigDecimal.ZERO);
+            bfd.setTotalTaxValue(BigDecimal.ZERO);
+            bfd.setLineDiscount(BigDecimal.ZERO);
+            bfd.setLineExpense(BigDecimal.ZERO);
+            bfd.setItemTaxValue(BigDecimal.ZERO);
+            bfd.setBillCostValue(BigDecimal.ZERO);
+            bfd.setLineCostValue(BigDecimal.ZERO);
+            bfd.setTotalCostValue(BigDecimal.ZERO);
+        }
         prepareBillItems(bill);
     }
 
@@ -500,7 +533,8 @@ public class DirectPurchaseReturnController implements Serializable {
         for (PharmaceuticalBillItem pbiOfBilledBill : pbisOfBilledBill) {
             System.out.println("i = " + pbiOfBilledBill);
             BillItem newBillItemInReturnBill = new BillItem();
-            newBillItemInReturnBill.copy(pbiOfBilledBill.getBillItem());
+            // Copy basic item data but ignore any financial values
+            newBillItemInReturnBill.copyWithoutFinancialData(pbiOfBilledBill.getBillItem());
             newBillItemInReturnBill.setQty(0.0);
             newBillItemInReturnBill.setBill(getReturnBill());
             newBillItemInReturnBill.setItem(pbiOfBilledBill.getBillItem().getItem());
@@ -546,6 +580,34 @@ public class DirectPurchaseReturnController implements Serializable {
             if (originalFd != null) {
                 fd = originalFd.clone();
                 fd.setBillItem(newBillItemInReturnBill);
+                // Remove any previously calculated discounts, taxes or expenses
+                fd.setLineDiscountRate(BigDecimal.ZERO);
+                fd.setBillDiscountRate(BigDecimal.ZERO);
+                fd.setTotalDiscountRate(BigDecimal.ZERO);
+                fd.setLineDiscount(BigDecimal.ZERO);
+                fd.setBillDiscount(BigDecimal.ZERO);
+                fd.setTotalDiscount(BigDecimal.ZERO);
+
+                fd.setLineExpenseRate(BigDecimal.ZERO);
+                fd.setBillExpenseRate(BigDecimal.ZERO);
+                fd.setTotalExpenseRate(BigDecimal.ZERO);
+                fd.setLineExpense(BigDecimal.ZERO);
+                fd.setBillExpense(BigDecimal.ZERO);
+                fd.setTotalExpense(BigDecimal.ZERO);
+
+                fd.setBillTaxRate(BigDecimal.ZERO);
+                fd.setLineTaxRate(BigDecimal.ZERO);
+                fd.setTotalTaxRate(BigDecimal.ZERO);
+                fd.setBillTax(BigDecimal.ZERO);
+                fd.setLineTax(BigDecimal.ZERO);
+                fd.setTotalTax(BigDecimal.ZERO);
+
+                fd.setBillCostRate(BigDecimal.ZERO);
+                fd.setLineCostRate(BigDecimal.ZERO);
+                fd.setTotalCostRate(BigDecimal.ZERO);
+                fd.setBillCost(BigDecimal.ZERO);
+                fd.setLineCost(BigDecimal.ZERO);
+                fd.setTotalCost(BigDecimal.ZERO);
             } else {
                 fd = new BillItemFinanceDetails(newBillItemInReturnBill);
             }
