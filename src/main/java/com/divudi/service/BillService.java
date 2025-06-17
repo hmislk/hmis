@@ -52,6 +52,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.light.pharmacy.PharmacyIncomeRow;
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
@@ -1130,6 +1131,68 @@ public class BillService {
         jpql += " order by b.createdAt desc  ";
         List<PharmaceuticalBillItem> fetchedPharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedPharmaceuticalBillItems;
+    }
+
+    public List<PharmacyIncomeRow> fetchPharmacyIncomeRows(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+        String jpql = "select new com.divudi.core.light.pharmacy.PharmacyIncomeRow(" +
+                " b.id, b.deptId, b.billTypeAtomic, " +
+                " b.patient.person.nameWithTitle, b.patientEncounter.bhtNo, b.createdAt, " +
+                " pbi.itemBatch.item.name, pbi.qty, pbi.retailRate, pbi.purchaseRate" +
+                ")" +
+                " from PharmaceuticalBillItem pbi " +
+                " join pbi.billItem bi " +
+                " join bi.bill b " +
+                " where (b.retired=false or b.retired is null) " +
+                " and (bi.retired=false or bi.retired is null) " +
+                " and b.billTypeAtomic in :billTypesAtomics " +
+                " and b.createdAt between :fromDate and :toDate ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return (List<PharmacyIncomeRow>) pharmaceuticalBillItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,

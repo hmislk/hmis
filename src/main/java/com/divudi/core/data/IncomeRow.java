@@ -33,6 +33,7 @@ public class IncomeRow implements Serializable {
     private Bill referanceBill;
     private BillItem billItem;
     private PharmaceuticalBillItem pharmaceuticalBillItem;
+    private com.divudi.core.light.pharmacy.PharmacyIncomeRow pharmacyIncomeRow;
     private BillFee billFee;
     private Payment payment;
 
@@ -181,6 +182,13 @@ public class IncomeRow implements Serializable {
         this();
         this.pharmaceuticalBillItem = pbi;
         rowType = "PharmaceuticalBillItem";
+    }
+
+    public IncomeRow(com.divudi.core.light.pharmacy.PharmacyIncomeRow pir) {
+        this();
+        this.pharmacyIncomeRow = pir;
+        rowType = "PharmacyIncomeRow";
+        this.qty = pir.getQty() == null ? 0 : pir.getQty();
     }
 
     public IncomeRow(SessionInstance sessionInstance) {
@@ -1284,6 +1292,14 @@ public class IncomeRow implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public com.divudi.core.light.pharmacy.PharmacyIncomeRow getPharmacyIncomeRow() {
+        return pharmacyIncomeRow;
+    }
+
+    public void setPharmacyIncomeRow(com.divudi.core.light.pharmacy.PharmacyIncomeRow pharmacyIncomeRow) {
+        this.pharmacyIncomeRow = pharmacyIncomeRow;
     }
     
     

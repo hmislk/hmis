@@ -292,6 +292,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof com.divudi.core.light.pharmacy.PharmacyIncomeRow) {
+                for (Object obj : entries) {
+                    if (obj instanceof com.divudi.core.light.pharmacy.PharmacyIncomeRow) {
+                        com.divudi.core.light.pharmacy.PharmacyIncomeRow pir =
+                                (com.divudi.core.light.pharmacy.PharmacyIncomeRow) obj;
+                        IncomeRow ir = new IncomeRow(pir);
+                        rows.add(ir);
+                    }
+                }
             } else if (firstElement instanceof IncomeRow) {
                 // Process list as IncomeRows
                 for (Object obj : entries) {
@@ -338,6 +347,63 @@ public class IncomeBundle implements Serializable {
             }
 
             double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    break;
+
+                default:
+                    break;
+            }
+
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+        }
+    }
+
+    public void generateRetailAndCostDetailsForPharmacyIncomeRows() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+        quantity = 0.0;
+
+        for (IncomeRow r : getRows()) {
+            com.divudi.core.light.pharmacy.PharmacyIncomeRow pir = r.getPharmacyIncomeRow();
+            if (pir == null || pir.getBillTypeAtomic() == null || pir.getBillTypeAtomic().getBillCategory() == null) {
+                continue;
+            }
+
+            com.divudi.core.data.BillCategory bc = pir.getBillTypeAtomic().getBillCategory();
+
+            Double q = pir.getQty();
+            Double rRate = pir.getRetailRate();
+            Double pRate = pir.getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            quantity += qty;
             double retail = Math.abs(rRate);
             double purchase = Math.abs(pRate);
 
