@@ -275,7 +275,7 @@ public class PharmacySummaryReportController implements Serializable {
                 ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_BILL_ITEM
         );
-        reportViewType = ReportViewType.BY_ITEM;
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_and_cost_report?faces-redirect=true";
     }
 
