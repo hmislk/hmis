@@ -64,13 +64,14 @@
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
                                         </h:outputText>
-                                        <h:inputText
+                                        <p:inputText
                                             id="txtReturnRate"
+                                            class="w-100 text-end"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                             <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturnRateChange(ph)}" />
-                                        </h:inputText>
+                                        </p:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
                                 </p:column>
@@ -88,6 +89,7 @@
                                     <p:inputText
                                         id="txtReturningTotalQty"
                                         autocomplete="off"
+                                        class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
@@ -99,6 +101,7 @@
                                     <p:inputText
                                         id="txtReturningQty"
                                         autocomplete="off"
+                                        class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturningQtyChange(ph)}" />
                                     </p:inputText>
@@ -108,6 +111,7 @@
                                     headerText="Returning Free Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
+                                        class="w-100 text-end"
                                         id="txtReturningFreeQty"
                                         autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturningFreeQtyChange(ph)}" />
