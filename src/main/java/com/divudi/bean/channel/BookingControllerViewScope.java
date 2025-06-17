@@ -2465,6 +2465,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getSelectedBillSession().setAbsentMarkedUser(sessionController.getLoggedUser());
         if (getSelectedBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
+            getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ABSENT);
+            getOnlineBookingFacade().edit(getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking());
         }
         billSessionFacade.edit(getSelectedBillSession());
     }
