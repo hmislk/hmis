@@ -261,6 +261,8 @@ public class DirectPurchaseReturnController implements Serializable {
             }
         }
 
+        calculateBillItemDetails(tmp);
+        callculateBillDetails();
         calTotal();
         getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
     }
@@ -560,24 +562,89 @@ public class DirectPurchaseReturnController implements Serializable {
         System.out.println("getBillItems = " + getBillItems());
     }
 
-    private void calculateBillItemDetails(BillItem returningBillItem){
-        // user Input, must not changed
-        returningBillItem.getBillItemFinanceDetails().getQuantity();
-        returningBillItem.getBillItemFinanceDetails().getFreeQuantity();
-        returningBillItem.getBillItemFinanceDetails().getLineGrossRate();
-        // All Others have to calculate here for BillItemFinanceDetails. No discounts, No tax, no anything else, no bill values
-        // Have to consider Ampp or Amp and set the unitsPerPack and do the calculations
-        // Please folllow DirectPurchaseController Method to get an idea about how to fill all values
-        returningBillItem.getPharmaceuticalBillItem();
-        // The detailed filled for PharmaceuticalBillItem in pharmacy_return_purchase page as user inputs or calculated in purchaseReturnController have to be calculated using the BillItemFinanceDetails and recorded for backword compatability 
-        
+    private void calculateBillItemDetails(BillItem returningBillItem) {
+        if (returningBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails f = returningBillItem.getBillItemFinanceDetails();
+        PharmaceuticalBillItem pbi = returningBillItem.getPharmaceuticalBillItem();
+
+        if (f == null || pbi == null) {
+            return;
+        }
+
+        if (pharmacyCostingService != null) {
+            pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        }
+
+        BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
+
+        if (returningBillItem.getItem() instanceof Ampp) {
+            pbi.setQtyPacks(qty.doubleValue());
+            pbi.setQty(f.getQuantityByUnits().doubleValue());
+            pbi.setFreeQtyPacks(freeQty.doubleValue());
+            pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
+            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
+            pbi.setPurchaseRate(f.getLineGrossRate().doubleValue());
+            pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
+            pbi.setRetailRatePack(f.getRetailSaleRate().doubleValue());
+            pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
+        } else {
+            pbi.setQty(qty.doubleValue());
+            pbi.setQtyPacks(qty.doubleValue());
+            pbi.setFreeQty(freeQty.doubleValue());
+            pbi.setFreeQtyPacks(freeQty.doubleValue());
+            pbi.setPurchaseRate(f.getLineGrossRate().doubleValue());
+            pbi.setPurchaseRatePack(f.getLineGrossRate().doubleValue());
+            f.setRetailSaleRate(f.getRetailSaleRatePerUnit());
+            double rr = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
+            pbi.setRetailRate(rr);
+            pbi.setRetailRatePack(rr);
+            pbi.setRetailRateInUnit(rr);
+        }
+
+        returningBillItem.setQty(f.getQuantityByUnits().doubleValue());
+        returningBillItem.setRate(f.getLineGrossRate().doubleValue());
     }
     
-    private void callculateBillDetails(){
-        // to to go through all bill items and calculate the total ones
-        
-        // Have to calculate the billFinanceDetails as done in the settle button of direct_purchase
-        // for backword compatibility all values of the bill have to be filled as in the settle button of pharmacy_return_purchase
+    private void callculateBillDetails() {
+        if (returnBill == null) {
+            return;
+        }
+
+        if (billItems != null) {
+            for (BillItem bi : billItems) {
+                calculateBillItemDetails(bi);
+            }
+        }
+
+        if (pharmacyCostingService != null) {
+            pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getReturnBill());
+            pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getReturnBill(), getBillItems());
+        }
+
+        if (pharmacyCalculation != null) {
+            pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getReturnBill());
+        }
+    }
+
+    public void onReturnRateChange(BillItem bi) {
+        calculateBillItemDetails(bi);
+        callculateBillDetails();
+    }
+
+    public void onReturningTotalQtyChange(BillItem bi) {
+        onEdit(bi);
+    }
+
+    public void onReturningQtyChange(BillItem bi) {
+        onEdit(bi);
+    }
+
+    public void onReturningFreeQtyChange(BillItem bi) {
+        onEdit(bi);
     }
     
     // Have to have onedit methods for the following components in the  page direct_purchase_return
