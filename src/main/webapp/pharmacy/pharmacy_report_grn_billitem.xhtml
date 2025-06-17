@@ -45,12 +45,14 @@
                             ajax="false" 
                             value="Process"
                             icon="fa-solid fa-arrows-rotate"
+                            disabled="true"
                         class="ui-button-warning"
                             action="#{pharmacySaleReportController.createGRNBillItemTable()}"/>
                         <p:commandButton 
                             actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}" 
                             ajax="false" 
                             value="Excel"
+                            disabled="true"
                             icon="fa-solid fa-file-excel"
                         class="ui-button-success mx-2" >
                             <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
