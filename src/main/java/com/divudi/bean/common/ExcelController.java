@@ -516,7 +516,11 @@ public class ExcelController {
             Cell noDataCell = noDataRow.createCell(0);
             noDataCell.setCellValue("No Data for " + addingBundle.getName());
             // Merge the cell across multiple columns
-            dataSheet.addMergedRegion(new CellRangeAddress(startRow - 1, startRow - 1, 0, 10));
+            dataSheet.addMergedRegion(new CellRangeAddress(
+            startRow - 1,
+            startRow - 1,
+            0,
+            10));
         }
 
         return startRow;
