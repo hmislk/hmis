@@ -151,6 +151,11 @@
                                 <h:outputText value="#{ob.referenceNo}">
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="Appoinment Status">
+                                <h:outputText value="#{ob.onlineBookingStatus}" style="#{(ob.onlineBookingStatus eq 'PATIENT_CANCELED' or ob.onlineBookingStatus eq 'DOCTOR_CANCELED') ? 'color:red' : ob.onlineBookingStatus eq 'ABSENT' ? 'color:yellow':ob.onlineBookingStatus eq 'COMPLETED' ? 'color:green':'color:black'}; font-weight: bold">
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Patient">
                                 <h:outputText value="#{ob.title}. #{ob.patientName}">
