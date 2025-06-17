@@ -41,7 +41,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.math.RoundingMode;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -316,7 +315,7 @@ public class DirectPurchaseReturnController implements Serializable {
         if (originalBillItem.getItem() instanceof Ampp) {
             BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
             if (upp.compareTo(BigDecimal.ZERO) > 0) {
-                rate = rate.divide(upp, 4, RoundingMode.HALF_UP);
+                rate = rate.multiply(upp);
             }
         }
 
