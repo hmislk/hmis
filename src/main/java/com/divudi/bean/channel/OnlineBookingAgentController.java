@@ -578,14 +578,17 @@ public class OnlineBookingAgentController implements Serializable {
     public String createPaymentForHospital() {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
+            return null;
         }
 
         if (createTotalAmountToPay() != getPaidToHospitalBill().getNetTotal()) {
             JsfUtil.addErrorMessage("Value is different than total amount.");
+            return null;
         }
 
         if (agentForBookings == null) {
             JsfUtil.addErrorMessage("No agent is selected.");
+            return null;
         }
 
         Bill paidBill = createHospitalPaymentBill(paidToHospitalList);
