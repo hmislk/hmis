@@ -15,29 +15,73 @@
                 <h:form>
 
 
-                    <p:panel header="Supplier's Expiaring Stock Report" >
+                    <p:panel header="Supplier's Expiring Stock Report" >
 
-                        <h:panelGrid columns="2" class="my-2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
-                            </p:autoComplete>
+                        <div class="row">
+                            <div class="col-6">
+                                <h:panelGrid columns="3" class="my-2" >
+                                    <h:outputLabel value="From" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{reportsStock.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                                    <h:outputLabel value="Department" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.department}"  >
+                                    </p:autoComplete>
+                                </h:panelGrid> 
+                            </div>
+                            <div class="col-6">
+                                <h:panelGrid columns="3" class="my-2" >
+                                    <h:outputLabel value="To" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <p:calendar class="w-100 mx-2" inputStyleClass="w-100" value="#{reportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                                    <h:outputLabel value="Supplier" ></h:outputLabel>
+                                    <h:outputLabel value=":" ></h:outputLabel>
+                                    <p:autoComplete 
+                                        class="mx-2"
+                                        completeMethod="#{institutionController.completeSuppliers}" 
+                                        var="dept" itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" forceSelection="true" 
+                                        value="#{reportsStock.institution}" >
+                                    </p:autoComplete>
+                                </h:panelGrid>
+                            </div>
+                        </div>
+                        
+                        <h:panelGrid columns="6" class="my-2">
+                            <p:commandButton 
+                                class="ui-button-outlined" 
+                                ajax="false" 
+                                value="List Three Months Expiry" 
+                                actionListener="#{reportsStock.fillThreeMonthsExpiaryOfSupplier()}" ></p:commandButton>
+                            <p:commandButton 
+                                class="ui-button-outlined mx-2"
+                                ajax="false"
+                                value="List Six Months Expiry" 
+                                action="#{reportsStock.fillSixMonthsExpiaryOfSupplier()}" >
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-outlined " ajax="false" value="List One Year Expiry" 
+                                             actionListener="#{reportsStock.fillOneYearExpiaryOfSupplier()}" ></p:commandButton>
+                            <p:commandButton 
+                                ajax="false" 
+                                value="Process" 
+                                class="ui-button-warning mx-2" 
+                                icon="fas fa-cogs" 
+                                actionListener="#{reportsStock.fillDistributorExpiryStocks()}" >
+                            </p:commandButton>
+                            
+                             <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false" >
+                                <p:printer target="gpBillPreview" >
+                                </p:printer>
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel"  value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Supplier's_Expiaring_Stock_Report"
 
-                            <h:outputLabel value="Supplier" ></h:outputLabel>
-                            <p:autoComplete 
-                                class="mx-2"
-                                completeMethod="#{institutionController.completeSuppliers}" 
-                                var="dept" itemLabel="#{dept.name}" 
-                                itemValue="#{dept}" forceSelection="true" 
-                                value="#{reportsStock.institution}" >
-                            </p:autoComplete>
 
-                           
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.fromDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar class="w-100 mx-4" inputStyleClass="w-100" value="#{reportsStock.toDate}" pattern="#{sessionController.applicationPreference.longDateFormat}" ></p:calendar>
+                                                />
+                            </p:commandButton>
+                        </h:panelGrid>
 
-
+<!--                        <h:panelGrid columns="2" class="my-2" >
                             <p:commandButton ajax="false" value="Process" class="ui-button-warning " icon="fas fa-cogs" 
                                              actionListener="#{reportsStock.fillDistributorStocks()}" >
                             </p:commandButton>
@@ -71,17 +115,7 @@
                                 value="Process" 
                                 actionListener="#{reportsStock.fillDepartmentExpiaryStocks()}" >
                             </p:commandButton>
-                            <p:commandButton class="ui-button-info mx-2" icon="fas fa-print" value="Print" ajax="false" >
-                                <p:printer target="gpBillPreview" >
-                                </p:printer>
-                            </p:commandButton>
-                            <p:commandButton class="ui-button-success" icon="fas fa-file-excel"  value="Excel" ajax="false">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="Lab_Investigation_List"
-
-
-                                                />
-                            </p:commandButton>
-                        </h:panelGrid>
+                        </h:panelGrid>-->
 
 
                         <h:panelGroup styleClass="noBorder summeryBorder"  id="gpBillPreview">

@@ -980,7 +980,6 @@ public class ChannelService {
         bs.setCreatedAt(new Date());
         //  bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
-        System.out.println(can);
         can.setSingleBillSession(bs);
         getBillFacade().edit(can);
 
@@ -1021,7 +1020,6 @@ public class ChannelService {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
             Date startDate = formatter.parse(fromDate);
             Date endDate = formatter.parse(toDate);
-            System.out.println(startDate + "" + endDate);
 
             Map params = new HashMap();
 
@@ -1480,7 +1478,6 @@ public class ChannelService {
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", sessionDate);
-            System.out.println(sessionDate);
         } else if (sessionDate == null) {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
@@ -1618,7 +1615,6 @@ public class ChannelService {
         jpql.append(" order by i.sessionDate asc");
 
         m.put("ret", false);
-        System.out.println(jpql.toString() + "\n" + m);
         return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
 
