@@ -299,7 +299,38 @@ public class OnlineBookingAgentController implements Serializable {
         prepareCancellationAgentPaidToHospitalBills();
     }
 
-    public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
+    private double calculateMultiplePaymentMethodTotal() {
+
+        double total = 0;
+        if (paymentMethodData != null) {
+
+            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
+                switch (cd.getPaymentMethod()) {
+                    case Card:
+                        total += cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                        break;
+
+                    case Cash:
+                        total += cd.getPaymentMethodData().getCash().getTotalValue();
+                        break;
+
+                    case Cheque:
+                        total += cd.getPaymentMethodData().getCheque().getTotalValue();
+                        break;
+
+                    case Slip:
+                        total += cd.getPaymentMethodData().getSlip().getTotalValue();
+                        break;
+                    default:
+                        throw new AssertionError();
+                }
+            }
+        }
+
+        return total;
+    }
+
+    public List<Payment> createPayment(Bill bill, PaymentMethod pm, boolean isCancellation) {
         List<Payment> ps = new ArrayList<>();
         if (pm == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -310,6 +341,14 @@ public class OnlineBookingAgentController implements Serializable {
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
+
+                double paidTotal = calculateMultiplePaymentMethodTotal();
+
+                if (isCancellation) {
+                    p.setPaidValue(-paidTotal);
+                } else {
+                    p.setPaidValue(paidTotal);
+                }
 
                 switch (cd.getPaymentMethod()) {
                     case Card:
@@ -384,14 +423,19 @@ public class OnlineBookingAgentController implements Serializable {
                     break;
             }
 
-            p.setPaidValue(p.getBill().getNetTotal());
+            if (isCancellation) {
+                p.setPaidValue(-p.getBill().getNetTotal());
+            } else {
+                p.setPaidValue(p.getBill().getNetTotal());
+            }
+
             paymentFacade.create(p);
 
             ps.add(p);
         }
         return ps;
     }
-    
+
     @Inject
     private BookingControllerViewScope bookingControllerViewScope;
 
@@ -416,10 +460,10 @@ public class OnlineBookingAgentController implements Serializable {
         paidBill.setBillDate(new Date());
         paidBill.setBillTime(new Date());
         paidBill.setPaymentMethod(paidToHospitalPaymentMethod);
-        
+
         String billNo = bookingControllerViewScope.generateBillNumberInsId(paidBill);
-        
-        if(billNo != null && !billNo.isEmpty()){
+
+        if (billNo != null && !billNo.isEmpty()) {
             paidBill.setDeptId(billNo);
         }
 
@@ -455,6 +499,11 @@ public class OnlineBookingAgentController implements Serializable {
         }
 
         Bill cancelBill = createCancelBillForAgentPaidToHospitalCancellation(totalToCancel);
+        
+        if(cancelBill != null){
+            List<Payment> payments = createPayment(cancelBill, cancelPaymentMethod, true);
+            drawerController.updateDrawerForOuts(payments);
+        }
 
         Bill paidBill = getPrintBill();
 
@@ -462,30 +511,30 @@ public class OnlineBookingAgentController implements Serializable {
             paidBill.setCancelled(true);
             paidBill.setCancelledBill(cancelBill);
             getBillFacade().edit(paidBill);
-        }else if(onlineBookingList.size() != bookinsToAgenHospitalPayementCancellation.size()){
+        } else if (onlineBookingList.size() != bookinsToAgenHospitalPayementCancellation.size()) {
             paidBill.setRefunded(true);
-            if(paidBill.getRefundedBill() != null){
+            if (paidBill.getRefundedBill() != null) {
                 paidBill.getRefundBills().add(cancelBill);
-            }else{
+            } else {
                 paidBill.setRefundedBill(cancelBill);
             }
             getBillFacade().edit(paidBill);
         }
-        
-        String remark ="Cancelled OB ref Nos - (";
+
+        String remark = "Cancelled OB ref Nos - (";
 
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             ob.setPaidToHospitalBillCancelledAt(new Date());
             ob.setPaidToHospital(false);
             ob.setPaidToHospitalBill(null);
-            remark += ob.getReferenceNo()+" / ";
+            remark += ob.getReferenceNo() + " / ";
             ob.setPaidToHospitalBillCancelledBy(getSessionController().getLoggedUser());
             ob.setPaidToHospitalCancelledBill(cancelBill);
             getOnlineBookingFacade().edit(ob);
         }
-        
-        remark += ") from "+ paidBill.getDeptId() + " (bill no) Bill ";
-        cancelBill.setComments(cancelBill.getComments()+" - "+remark);
+
+        remark += ") from " + paidBill.getDeptId() + " (bill no) Bill ";
+        cancelBill.setComments(cancelBill.getComments() + " - " + remark);
         getBillFacade().edit(cancelBill);
 
         printBill = cancelBill;
@@ -506,10 +555,10 @@ public class OnlineBookingAgentController implements Serializable {
         bill.setToDepartment(getSessionController().getDepartment());
         bill.setFromInstitution(printBill.getFromInstitution());
         bill.setReferenceBill(printBill);
-        
+
         String billNo = getBookingControllerViewScope().generateBillNumberInsId(bill);
-        
-        if(billNo != null && !billNo.isEmpty()){
+
+        if (billNo != null && !billNo.isEmpty()) {
             bill.setDeptId(billNo);
         }
 
@@ -538,7 +587,7 @@ public class OnlineBookingAgentController implements Serializable {
         Bill paidBill = createHospitalPaymentBill(paidToHospitalList);
 
         if (paidBill != null) {
-            List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod);
+            List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod, false);
             drawerController.updateDrawerForIns(payments);
         }
 
@@ -553,7 +602,7 @@ public class OnlineBookingAgentController implements Serializable {
                 }
             }
         }
-        
+
         printBill = paidBill;
         printOriginal = true;
         return "OB_agent_paid_bill_reprint?faces-redirect=true";
