@@ -32,19 +32,19 @@
                                 </p:column>
 
                                 <p:column headerText="Purchased Quantity" >
-                                    <h:outputLabel id="qty" value="#{ph.referanceBillItem.billItemFinanceDetails.quantity}" />
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.quantity}" />
                                 </p:column>
                                 <p:column headerText="Free Quantity" >
-                                    <h:outputLabel id="qty" value="#{ph.referanceBillItem.billItemFinanceDetails.freeQuantity}" />
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.freeQuantity}" />
                                 </p:column>
                                 <p:column 
                                     headerText="Already Returned Qty" >
-                                    <h:outputLabel id="qty" value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
                                 </p:column>
                                 <p:column 
                                     headerText="Already Returned Free Qty" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel id="qty" value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
                                 </p:column>
                                 <p:column headerText="Purchased Rate" >
                                     <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
