@@ -37,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,6 +79,8 @@ public class ReportsTransfer implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemFacade itemFacade;
+    @EJB
+    BillService billService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -578,7 +581,18 @@ public class ReportsTransfer implements Serializable {
             discountsValue = 0.0;
             netTotalValues = 0.0;
             marginValue = 0;
+            netTotalPurchaseValues = 0.0;
             for (Bill b : transferBills) {
+                if (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0) {
+                    billService.createBillFinancialDetailsForPharmacyBill(b);
+                }
+                Double pv = (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null)
+                        ? 0.0
+                        : b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                netTotalPurchaseValues += pv;
                 totalsValue = totalsValue + (b.getTotal());
                 discountsValue = discountsValue + b.getDiscount();
                 marginValue += b.getMargin();
