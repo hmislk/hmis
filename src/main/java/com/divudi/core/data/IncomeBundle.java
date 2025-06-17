@@ -456,10 +456,18 @@ public class IncomeBundle implements Serializable {
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
             if (b != null && b.getBillFinanceDetails() != null) {
-                saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
-                purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-                grossProfitValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
-                        - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                BigDecimal retailBd = b.getBillFinanceDetails().getTotalRetailSaleValue();
+                BigDecimal purchaseBd = b.getBillFinanceDetails().getTotalPurchaseValue();
+
+                if (retailBd != null) {
+                    saleValue += retailBd.doubleValue();
+                }
+                if (purchaseBd != null) {
+                    purchaseValue += purchaseBd.doubleValue();
+                }
+                if (retailBd != null && purchaseBd != null) {
+                    grossProfitValue += retailBd.doubleValue() - purchaseBd.doubleValue();
+                }
             } else {
                 saleValue += r.getRetailValue();
                 purchaseValue += r.getPurchaseValue();
