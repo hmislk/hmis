@@ -4073,7 +4073,7 @@ public class BillSearch implements Serializable {
         if (manageCosting) {
             directPurchaseReturnController.setBill(bill);
             directPurchaseReturnController.prepareReturnBill();
-            purchaseReturnController.setPrintPreview(false);
+            directPurchaseReturnController.setPrintPreview(false);
             return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
             purchaseReturnController.setBill(bill);
