@@ -26,6 +26,7 @@ import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -260,10 +261,10 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    public IncomeBundle(List<?> entries) {
+    public IncomeBundle(Collection<?> entries) {
         this(); // Initialize id and rows list
         if (entries != null && !entries.isEmpty()) {
-            Object firstElement = entries.get(0);
+            Object firstElement = entries.iterator().next();
             if (firstElement instanceof Bill) {
                 // Process list as Bills
                 for (Object obj : entries) {
@@ -300,6 +301,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(incomeRow);
                     }
                 }
+            }
+        }
+    }
+
+    public IncomeBundle(List<PharmacyIncomeCostBillDTO> dtos) {
+        this();
+        if (dtos != null) {
+            for (PharmacyIncomeCostBillDTO dto : dtos) {
+                rows.add(new IncomeRow(dto));
             }
         }
     }
@@ -445,17 +455,16 @@ public class IncomeBundle implements Serializable {
 
         for (IncomeRow r : getRows()) {
             Bill b = r.getBill();
-            if (b == null) {
-                continue;
+            if (b != null && b.getBillFinanceDetails() != null) {
+                saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+                purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                grossProfitValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue()
+                        - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+            } else {
+                saleValue += r.getRetailValue();
+                purchaseValue += r.getPurchaseValue();
+                grossProfitValue += r.getRetailValue() - r.getPurchaseValue();
             }
-
-            if (b.getBillFinanceDetails() == null) {
-                continue;
-            }
-
-            saleValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
-            purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-            grossProfitValue += (b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() - b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
         }
     }
 
