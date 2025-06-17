@@ -2000,4 +2000,88 @@ public class BillService {
         billFacade.editAndCommit(b);
     }
 
+    /**
+     * Calculate pharmacy bill totals without persisting changes.
+     *
+     * <p>
+     * This method mirrors the logic of
+     * {@link #createBillFinancialDetailsForPharmacyBill(Bill)} but does not
+     * update the database. It is intended for reporting scenarios where bill
+     * financial details are required only in memory.</p>
+     *
+     * @param b Bill to calculate totals for
+     */
+    public void calculateBillFinancialDetailsForPharmacyBill(Bill b) {
+
+        if (b == null) {
+            return;
+        }
+
+        BillTypeAtomic bta = Optional
+                .ofNullable(b)
+                .map(Bill::getBillTypeAtomic)
+                .orElse(null);
+        if (bta == null || bta.getBillCategory() == null) {
+            return; // unable to categorise safely
+        }
+        BillCategory bc = bta.getBillCategory();
+
+        Double saleValue = 0.0;
+        Double purchaseValue = 0.0;
+
+        List<BillItem> billItems = fetchBillItems(b);
+
+        for (BillItem bi : billItems) {
+
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+
+            Double q = bi.getPharmaceuticalBillItem().getQty();
+            Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
+            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                rRate = bi.getNetRate();
+            }
+
+            Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
+
+            if (q == null || rRate == null || pRate == null) {
+                continue;
+            }
+
+            double qty = Math.abs(q);
+            double retail = Math.abs(rRate);
+            double purchase = Math.abs(pRate);
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    break;
+
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    break;
+
+                default:
+                    break;
+            }
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+        }
+        if (b.getBillFinanceDetails() == null) {
+            b.setBillFinanceDetails(new BillFinanceDetails());
+        }
+
+        b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+        b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+    }
+
 }
