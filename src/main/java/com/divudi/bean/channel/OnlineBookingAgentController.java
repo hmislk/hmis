@@ -3,6 +3,7 @@ package com.divudi.bean.channel;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
@@ -136,6 +137,7 @@ public class OnlineBookingAgentController implements Serializable {
         if (cancelBill == null) {
             cancelBill = new CancelledBill();
             cancelBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+            cancelBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
         }
         return cancelBill;
     }
@@ -190,6 +192,7 @@ public class OnlineBookingAgentController implements Serializable {
         if (paidToHospitalBill == null) {
             paidToHospitalBill = new BilledBill();
             paidToHospitalBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+            paidToHospitalBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL);
         }
         return paidToHospitalBill;
     }
@@ -453,6 +456,7 @@ public class OnlineBookingAgentController implements Serializable {
         paidBill.setCreater(getSessionController().getLoggedUser());
         paidBill.setToInstitution(getSessionController().getInstitution());
         paidBill.setToDepartment(getSessionController().getDepartment());
+        paidBill.setDepartment(getSessionController().getDepartment());
         paidBill.setFromInstitution(agentForBookings);
         paidBill.setCreditCompany(agentForBookings);
         paidBill.setTotal(createTotalAmountToPay());
@@ -553,6 +557,7 @@ public class OnlineBookingAgentController implements Serializable {
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setToInstitution(getSessionController().getInstitution());
         bill.setToDepartment(getSessionController().getDepartment());
+        bill.setDepartment(getSessionController().getDepartment());
         bill.setFromInstitution(printBill.getFromInstitution());
         bill.setReferenceBill(printBill);
 
