@@ -8,7 +8,6 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.ConfigOption;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.facade.ConfigOptionFacade;
-import com.divudi.bean.pharmacy.GrnCostingController;
 import javax.inject.Named;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -21,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 /**
  *
@@ -90,7 +91,12 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
         getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
         getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
-        getBooleanValueByKey(GrnCostingController.CFG_SHOW_PROFIT_IN_GRN_BILL, true);
+        getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
+        getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
+        getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        getBooleanValueByKey("Show Profit Percentage in GRN", true);
     }
 
     private void loadPharmacyIssueReceiptConfigurationDefaults() {
@@ -378,7 +384,8 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setValueType(OptionValueType.LONG_TEXT);
             optionFacade.create(option);
         }
-        option.setOptionValue(value);
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        option.setOptionValue(sanitized);
         optionFacade.edit(option);
         loadApplicationOptions();
     }

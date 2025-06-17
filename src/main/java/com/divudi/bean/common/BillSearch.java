@@ -324,11 +324,22 @@ public class BillSearch implements Serializable {
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
+    private boolean duplicate ;
 
     private Payment payment;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
+    }
+    
+    public String navigateToCancelBillView() {
+         if (bill != null) {
+            JsfUtil.addErrorMessage("Bill is Missing..");
+            return "";
+        }
+        printPreview = true;
+        duplicate = true;
+        return "/opd/bill_cancel?faces-redirect=true";
     }
 
     public String navigateToInwardSearchService() {
@@ -2506,6 +2517,7 @@ public class BillSearch implements Serializable {
         notificationController.createNotification(cancellationBill);
         bill = billFacade.find(cancellationBill.getId());
         printPreview = true;
+        duplicate = false;
         comment = null;
 
 //            getEjbApplication().getBillsToCancel().add(cb);
@@ -2633,11 +2645,9 @@ public class BillSearch implements Serializable {
                 getEjbApplication().getBillsToCancel().add(cb);
                 JsfUtil.addSuccessMessage("Awaiting Cancellation");
             }
-
         } else {
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
-
     }
 
     public void cancelCashOutBill() {
@@ -4066,7 +4076,11 @@ public class BillSearch implements Serializable {
         loadBillDetails(bill);
         purchaseReturnController.setPrintPreview(true);
         purchaseReturnController.setReturnBill(bill);
-        return "/pharmacy/pharmacy_return_purchase";
+        if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
+            return "/pharmacy/direct_purchase_return";
+        } else {
+            return "/pharmacy/pharmacy_return_purchase";
+        }
     }
 
     public String navigateToPharmacyReturnWithoutTreasingBillView() {
@@ -5618,6 +5632,14 @@ public class BillSearch implements Serializable {
 
     public void setViewingPatientInvestigations(List<PatientInvestigation> viewingPatientInvestigations) {
         this.viewingPatientInvestigations = viewingPatientInvestigations;
+    }
+
+    public boolean isDuplicate() {
+        return duplicate;
+    }
+
+    public void setDuplicate(boolean duplicate) {
+        this.duplicate = duplicate;
     }
 
     public class PaymentSummary {

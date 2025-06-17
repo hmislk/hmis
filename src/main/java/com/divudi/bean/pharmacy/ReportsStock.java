@@ -165,6 +165,11 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         return "/pharmacy/pharmacy_report_department_stock_by_item_order_by_vmp?faces-redirect=true";
     }
 
+    public String navigateToPharmacyReportDepartmentStockByZeroItem() {
+        pharmacyStockRows = new ArrayList<>();
+        return "/pharmacy/pharmacy_report_department_stock_by_zero_item?faces-redirect=true";
+    }
+
     public String navigateToStockReportByBatch() {
         stocks = new ArrayList<>();
         return "/pharmacy/pharmacy_report_department_stock_by_batch?faces-redirect=true";
@@ -531,13 +536,13 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         // The optimized JPQL using SUM and CASE WHEN
         jpql = "SELECT "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod IN :credit OR b.billTypeAtomic IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.purchaseRate) ELSE 0 END), "
+                + "THEN (pbi.qty * pbi.purchaseRate) ELSE 0 END), "
                 + "SUM(CASE WHEN (b.paymentMethod NOT IN :credit AND b.billTypeAtomic NOT IN :creditTypes) "
-                + "THEN (pbi.freeQty * pbi.retailRate) ELSE 0 END) "
+                + "THEN (pbi.qty * pbi.retailRate) ELSE 0 END) "
                 + "FROM BillItem bi "
                 + "JOIN bi.bill b "
                 + "JOIN bi.pharmaceuticalBillItem pbi "
@@ -590,6 +595,42 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 stockPurchaseValue += r.getPurchaseValue();
                 stockSaleValue += r.getSaleValue();
 
+            }
+            pharmacyStockRows = lsts;
+        }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());
+    }
+
+    public void fillDepartmentZeroItemStocks() {
+        reportTimerController.trackReportExecution(() -> {
+            if (department == null && site == null && institution == null) {
+                JsfUtil.addErrorMessage("Please select a department, site, or institution");
+                return;
+            }
+            Map m = new HashMap();
+            StringBuilder sql = new StringBuilder("select new com.divudi.core.data.dataStructure.PharmacyStockRow(" +
+                    "s.itemBatch.item.code, " +
+                    "s.itemBatch.item.name, " +
+                    "sum(s.stock), " +
+                    "sum(s.itemBatch.purcahseRate * s.stock), " +
+                    "sum(s.itemBatch.retailsaleRate * s.stock)) " +
+                    "from Stock s where 1=1 ");
+            if (department != null) {
+                sql.append(" and s.department=:d");
+                m.put("d", department);
+            } else if (site != null) {
+                sql.append(" and s.department.site=:site");
+                m.put("site", site);
+            } else if (institution != null) {
+                sql.append(" and s.department.institution=:ins");
+                m.put("ins", institution);
+            }
+            sql.append(" group by s.itemBatch.item.code, s.itemBatch.item.name having sum(s.stock) = 0 order by s.itemBatch.item.name");
+            List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql.toString(), m);
+            stockPurchaseValue = 0.0;
+            stockSaleValue = 0.0;
+            for (PharmacyStockRow r : lsts) {
+                stockPurchaseValue += r.getPurchaseValue();
+                stockSaleValue += r.getSaleValue();
             }
             pharmacyStockRows = lsts;
         }, PharmacyReports.STOCK_REPORT_BY_ITEM, sessionController.getLoggedUser());

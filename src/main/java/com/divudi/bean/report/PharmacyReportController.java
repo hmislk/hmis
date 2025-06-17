@@ -2156,7 +2156,7 @@ public class PharmacyReportController implements Serializable {
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
-            double batchCostRate = shx.getItemBatch().getCostRate();
+            double batchCostRate = shx.getItemBatch().getCostRate() != null ? shx.getItemBatch().getCostRate() : 0.0;
 
             if (isConsignmentItem()) {
                 if (batchQty > 0) {
@@ -2429,10 +2429,6 @@ public class PharmacyReportController implements Serializable {
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
-        System.out.println("ids = " + ids);
-
         rows = new ArrayList<>();
 
         // Process each StockHistory to build rows per Item (not per batch)
@@ -2449,7 +2445,7 @@ public class PharmacyReportController implements Serializable {
             double batchQty = shx.getStockQty();
             double batchPurchaseRate = shx.getItemBatch().getPurcahseRate();
             double batchSaleRate = shx.getItemBatch().getRetailsaleRate();
-            double batchCostRate = shx.getItemBatch().getCostRate();
+            double batchCostRate = shx.getItemBatch().getCostRate() != null ? shx.getItemBatch().getCostRate() : 0.0;
 
             // Check if a PharmacyRow already exists for this Item
             PharmacyRow matchingRow = null;

@@ -35,9 +35,7 @@
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="flatTable" fileName="InvestigationReport" />
-                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" action="#{investigationMonthSummeryOwnController.exportInvestigationReportToExcel()}"/>
                         </h:panelGrid>
                     </f:facet>
 
