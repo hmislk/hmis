@@ -551,6 +551,8 @@ public class OnlineBookingAgentController implements Serializable {
                 }
             }
         }
+        
+        printBill = paidBill;
 
     }
 

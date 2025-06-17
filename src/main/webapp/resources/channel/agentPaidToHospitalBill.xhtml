@@ -300,18 +300,6 @@
                         </tr>
                     </h:panelGroup>
 
-                    <tr>
-                        <td  class="totalsItemBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Bookings" />
-                        </td>
-                        <td  class="totalsItemBlock" style="text-align: right; ">
-                            <h:outputLabel   value="#{onlineBookingAgentController.onlineBookingList.size()}" >
-                                
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
-
 
                     <h:panelGroup rendered="#{cc.attrs.bill.creater ne null}">
                         <tr >

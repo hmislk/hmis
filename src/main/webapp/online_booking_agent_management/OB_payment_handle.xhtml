@@ -5,6 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:p="http://primefaces.org/ui"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/channel"
       xmlns:f="http://xmlns.jcp.org/jsf/core">
 
     <body>
@@ -145,9 +146,9 @@
                                             </h:panelGroup>
                                             <p:commandButton  
                                                 value="Settle" 
-                                                ajax="false"
+                                                ajax="true"
                                                 action="#{onlineBookingAgentController.createPaymentForHospital()}"
-                                                update="onlineBookings"
+                                                update="onlineBookings printPaidBill"
                                                 class="ui-button-success" icon="fas fa-cogs">
                                             </p:commandButton>
                                         </h:panelGroup>
@@ -195,6 +196,10 @@
                                 </p:panel>
 
                             </f:facet>
+                            
+                            <h:panelGroup id="printPaidBill" rendered="#{onlineBookingAgentController.printBill ne null}">
+                                 <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="false" ></ph:agentPaidToHospitalBill>
+                            </h:panelGroup>
 
                             <h:panelGroup id="dialogContentForPayment">
                                 <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 
