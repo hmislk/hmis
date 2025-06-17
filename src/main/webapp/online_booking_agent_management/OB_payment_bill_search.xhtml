@@ -57,7 +57,7 @@
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this"/>
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Bill Status"/>                                
@@ -65,7 +65,7 @@
                                 <f:selectItem itemLabel="All Bills" itemValue="ALL"></f:selectItem>
                                 <f:selectItem itemLabel="Completed Bills" itemValue="Completed"></f:selectItem>
                                 <f:selectItem itemLabel="Cancelled Bills" itemValue="Cancelled"></f:selectItem>
-                                <p:ajax event="itemSelect" process="@this"/>
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
                             <p:spacer width="20" ></p:spacer>

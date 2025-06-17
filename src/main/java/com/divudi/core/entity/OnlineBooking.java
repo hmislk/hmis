@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -49,6 +50,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private boolean canceled;
     private String cancelledBy;
     private boolean paidToHospital;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date paidToHospitalDate;
     private WebUser paidToHospitalProcessedBy;
 
@@ -59,6 +61,7 @@ public class OnlineBooking implements Serializable, RetirableEntity {
     private Bill paidToHospitalCancelledBill;
 
     private WebUser paidToHospitalBillCancelledBy;
+    @Temporal(TemporalType.TIMESTAMP)
     private Date paidToHospitalBillCancelledAt;
     private String comment;
 
