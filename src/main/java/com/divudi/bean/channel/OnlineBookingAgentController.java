@@ -576,7 +576,6 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public void onRowUnselectForCancellation(SelectEvent<OnlineBooking> event) {
-        System.out.println("line 487 on");
         OnlineBooking selected = event.getObject();
         bookinsToAgenHospitalPayementCancellation.remove(selected);
         prepareCancellationAgentPaidToHospitalBills();
