@@ -524,8 +524,10 @@ public class DirectPurchaseReturnController implements Serializable {
             JsfUtil.addErrorMessage("There is a system error. Please contact Developers");
             return;
         }
-        String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + bill.getId();
-        List<PharmaceuticalBillItem> pbisOfBilledBill = getPharmaceuticalBillItemFacade().findByJpql(jpql);
+        String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id = :billId";
+        Map<String, Object> params = new HashMap<>();
+        params.put("billId", bill.getId());
+        List<PharmaceuticalBillItem> pbisOfBilledBill = getPharmaceuticalBillItemFacade().findByJpql(jpql, params);
         for (PharmaceuticalBillItem pbiOfBilledBill : pbisOfBilledBill) {
             BillItem newBillItemInReturnBill = new BillItem();
             // Copy basic item data but ignore any financial values
