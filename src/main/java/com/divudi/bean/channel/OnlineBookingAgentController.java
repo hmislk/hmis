@@ -390,6 +390,17 @@ public class OnlineBookingAgentController implements Serializable {
         }
         return ps;
     }
+    
+    @Inject
+    private BookingControllerViewScope bookingControllerViewScope;
+
+    public BookingControllerViewScope getBookingControllerViewScope() {
+        return bookingControllerViewScope;
+    }
+
+    public void setBookingControllerViewScope(BookingControllerViewScope bookingControllerViewScope) {
+        this.bookingControllerViewScope = bookingControllerViewScope;
+    }
 
     public Bill createHospitalPaymentBill(List<OnlineBooking> bookings) {
         Bill paidBill = getPaidToHospitalBill();
@@ -404,6 +415,12 @@ public class OnlineBookingAgentController implements Serializable {
         paidBill.setBillDate(new Date());
         paidBill.setBillTime(new Date());
         paidBill.setPaymentMethod(paidToHospitalPaymentMethod);
+        
+        String billNo = bookingControllerViewScope.generateBillNumberInsId(paidBill);
+        
+        if(billNo != null && !billNo.isEmpty()){
+            paidBill.setDeptId(billNo);
+        }
 
         if (paidBill.getId() == null) {
             getBillFacade().create(paidBill);
@@ -445,15 +462,21 @@ public class OnlineBookingAgentController implements Serializable {
             paidBill.setCancelledBill(cancelBill);
             getBillFacade().edit(paidBill);
         }
+        
+        String remark ="Cancelled OB ref Nos - (";
 
         for (OnlineBooking ob : bookinsToAgenHospitalPayementCancellation) {
             ob.setPaidToHospitalBillCancelledAt(new Date());
             ob.setPaidToHospital(false);
             ob.setPaidToHospitalBill(null);
+            remark += ob.getReferenceNo()+" / ";
             ob.setPaidToHospitalBillCancelledBy(getSessionController().getLoggedUser());
             ob.setPaidToHospitalCancelledBill(cancelBill);
             getOnlineBookingFacade().edit(ob);
         }
+        
+        remark += ") from "+ paidBill.getDeptId() + " (bill no) Bill ";
+        cancelBill.setComments(cancelBill.getComments()+" - "+remark);
 
         printBill = cancelBill;
 
@@ -463,13 +486,19 @@ public class OnlineBookingAgentController implements Serializable {
 
     public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel) {
         Bill bill = getCancelBill();
-        bill.setNetTotal(totalToCancel);
+        bill.setNetTotal(-totalToCancel);
         bill.setCreatedAt(new Date());
         bill.setPaymentMethod(cancelPaymentMethod);
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setToInstitution(getSessionController().getInstitution());
         bill.setFromInstitution(printBill.getFromInstitution());
         bill.setReferenceBill(printBill);
+        
+        String billNo = getBookingControllerViewScope().generateBillNumberInsId(bill);
+        
+        if(billNo != null && !billNo.isEmpty()){
+            bill.setDeptId(billNo);
+        }
 
         if (bill.getId() == null) {
             getBillFacade().create(bill);

@@ -151,7 +151,7 @@
                             </p:column>
 
                             <p:column headerText="From Agent">
-                                <h:outputText value="#{bill.fromInstitution}">
+                                <h:outputText value="#{bill.fromInstitution.name}">
                                 </h:outputText>
                             </p:column>
 
@@ -173,26 +173,49 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Action" width="50px" class="d-flex">
-                                <p:commandButton 
-                                    id="btnViewBill"
-                                    ajax="false" 
-                                    icon="fas fa-file-invoice"
-                                    action="OB_agent_paid_bill_reprint?faces-redirect=true">
-                                    <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>                                     
-                                </p:commandButton>
+                            <p:column headerText="Remark">
+                                <h:outputText value="#{bill.comments}">
+                                </h:outputText>
+                            </p:column>
 
-                                <p:commandButton 
-                                    id="viewObBtn"
-                                    ajax="true" 
-                                    oncomplete="PF('viewObs').show()"
-                                    icon="fa-solid fa-list"
-                                    update="viewObDlg"
-                                    class="mx-3"
-                                    process="@this"
-                                    actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(bill)}">
+                            <p:column headerText="Action" width="50px">
 
-                                </p:commandButton>
+                                <h:panelGroup class="d-flex">
+                                    <p:commandButton 
+                                        id="btnViewBill"
+                                        ajax="false" 
+                                        icon="fas fa-file-invoice"
+                                        action="OB_agent_paid_bill_reprint?faces-redirect=true">
+                                        <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>                                     
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        id="viewObBtn"
+                                        ajax="true" 
+                                        oncomplete="PF('viewObs').show()"
+                                        icon="fa-solid fa-list"
+                                        update="viewObDlg"
+                                        class="mx-1"
+                                        rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospital'}"
+                                        process="@this"
+                                        actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(bill)}">
+
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        id="viewObBtn2"
+                                        ajax="true" 
+                                        oncomplete="PF('viewObs').show()"
+                                        icon="fa-solid fa-list"
+                                        update="viewObDlg"
+                                        class="mx-1"
+                                        rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}"
+                                        process="@this"
+                                        actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(bill.referenceBill)}">
+
+                                    </p:commandButton>
+                                </h:panelGroup>
+
 
                                 <p:dialog 
                                     widgetVar="viewObs" 
@@ -258,7 +281,7 @@
 
 
                                 <p:tooltip for="btnViewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
-                                <p:tooltip for="viewObBtn" value="View Associate Bookings"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="viewObBtn viewObBtn2" value="View Associate Bookings"  showDelay="0" hideDelay="0"></p:tooltip>
 
                             </p:column>
 
