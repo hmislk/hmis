@@ -4069,7 +4069,6 @@ public class BillSearch implements Serializable {
         }
         directPurchaseReturnController.resetValuesForReturn();
         loadBillDetails(bill);
-        directPurchaseReturnController.setBill(bill);
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
             directPurchaseReturnController.setBill(bill);
