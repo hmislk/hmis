@@ -184,7 +184,7 @@
                                         </p:column>
                                     </p:dataTable>
                                     <ui:repeat value="#{inwardReportControllerBht.getReturnAndCancelBHTIssueBills(b)}" var="b">
-                                        <p:dataTable id="tblIssue" value="#{billBeanController.fetchBillItems(b)}" var="bi">
+                                        <p:dataTable id="tblIssueRet" value="#{billBeanController.fetchBillItems(b)}" var="bi">
                                             <f:facet name="header">
                                                 <h:outputLabel value="#{b.billTypeAtomic eq 'ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN' ? 'Returned' : 'Cancelled'} From &nbsp;" />
                                                 <h:outputLabel value="&nbsp;:&nbsp;" />
