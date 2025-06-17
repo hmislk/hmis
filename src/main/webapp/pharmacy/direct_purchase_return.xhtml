@@ -50,7 +50,7 @@
                                     width="5em" 
                                     headerText="Already Returned Free Qty" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
+                                    <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
                                 </p:column>
                                 <p:column 
                                     width="5em" 
@@ -73,14 +73,14 @@
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
-                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
                                         </h:outputText>
                                         <p:inputText
                                             id="txtReturnRate"
                                             class="w-100 text-end"
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}"
-                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                             <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturnRateChange(ph)}" />
                                         </p:inputText>

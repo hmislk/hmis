@@ -477,7 +477,6 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     public void prepareReturnBill() {
-        System.out.println("prepareReturnBill");
         if (bill == null) {
             JsfUtil.addErrorMessage("No Direct Purcchase is selected to return");
             return;
@@ -517,8 +516,6 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     private void prepareBillItems(Bill bill) {
-        System.out.println("prepareBillItems");
-        System.out.println("getBill() = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("There is a system error. Please contact Developers");
             return;
@@ -529,9 +526,7 @@ public class DirectPurchaseReturnController implements Serializable {
         }
         String jpql = "Select p from PharmaceuticalBillItem p where p.billItem.bill.id=" + bill.getId();
         List<PharmaceuticalBillItem> pbisOfBilledBill = getPharmaceuticalBillItemFacade().findByJpql(jpql);
-        System.out.println("pbisOfBilledBill = " + pbisOfBilledBill);
         for (PharmaceuticalBillItem pbiOfBilledBill : pbisOfBilledBill) {
-            System.out.println("i = " + pbiOfBilledBill);
             BillItem newBillItemInReturnBill = new BillItem();
             // Copy basic item data but ignore any financial values
             newBillItemInReturnBill.copyWithoutFinancialData(pbiOfBilledBill.getBillItem());
@@ -623,7 +618,6 @@ public class DirectPurchaseReturnController implements Serializable {
             getBillItems().add(newBillItemInReturnBill);
             calculateBillItemDetails(newBillItemInReturnBill);
         }
-        System.out.println("getBillItems = " + getBillItems());
     }
 
     private void calculateBillItemDetails(BillItem returningBillItem) {
