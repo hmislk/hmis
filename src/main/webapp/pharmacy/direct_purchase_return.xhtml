@@ -106,6 +106,7 @@
                                         autocomplete="off"
                                         class="w-100 text-end"
                                         value="#{ph.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                         <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
