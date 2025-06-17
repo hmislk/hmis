@@ -461,6 +461,14 @@ public class OnlineBookingAgentController implements Serializable {
             paidBill.setCancelled(true);
             paidBill.setCancelledBill(cancelBill);
             getBillFacade().edit(paidBill);
+        }else if(onlineBookingList.size() != bookinsToAgenHospitalPayementCancellation.size()){
+            paidBill.setRefunded(true);
+            if(paidBill.getRefundedBill() != null){
+                paidBill.getRefundBills().add(cancelBill);
+            }else{
+                paidBill.setRefundedBill(cancelBill);
+            }
+            getBillFacade().edit(paidBill);
         }
         
         String remark ="Cancelled OB ref Nos - (";
@@ -477,6 +485,7 @@ public class OnlineBookingAgentController implements Serializable {
         
         remark += ") from "+ paidBill.getDeptId() + " (bill no) Bill ";
         cancelBill.setComments(cancelBill.getComments()+" - "+remark);
+        getBillFacade().edit(cancelBill);
 
         printBill = cancelBill;
 
@@ -487,10 +496,12 @@ public class OnlineBookingAgentController implements Serializable {
     public Bill createCancelBillForAgentPaidToHospitalCancellation(double totalToCancel) {
         Bill bill = getCancelBill();
         bill.setNetTotal(-totalToCancel);
+        bill.setTotal(-totalToCancel);
         bill.setCreatedAt(new Date());
         bill.setPaymentMethod(cancelPaymentMethod);
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setToInstitution(getSessionController().getInstitution());
+        bill.setToDepartment(getSessionController().getDepartment());
         bill.setFromInstitution(printBill.getFromInstitution());
         bill.setReferenceBill(printBill);
         

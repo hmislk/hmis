@@ -202,18 +202,6 @@
 
                                     </p:commandButton>
 
-                                    <p:commandButton 
-                                        id="viewObBtn2"
-                                        ajax="true" 
-                                        oncomplete="PF('viewObs').show()"
-                                        icon="fa-solid fa-list"
-                                        update="viewObDlg"
-                                        class="mx-1"
-                                        rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}"
-                                        process="@this"
-                                        actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(bill.referenceBill)}">
-
-                                    </p:commandButton>
                                 </h:panelGroup>
 
 
