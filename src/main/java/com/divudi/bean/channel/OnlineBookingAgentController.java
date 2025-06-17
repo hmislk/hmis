@@ -249,7 +249,7 @@ public class OnlineBookingAgentController implements Serializable {
                     getPaymentMethodData().getEwallet().setTotalValue(paidToHospitalBill.getNetTotal());
                     break;
                 default:
-                    throw new AssertionError();
+                    throw new IllegalArgumentException("Unsupported payment method: " + paidToHospitalPaymentMethod);
             }
         }
     }
@@ -413,6 +413,7 @@ public class OnlineBookingAgentController implements Serializable {
                 case Slip:
                     p.setBank(paymentMethodData.getSlip().getInstitution());
                     p.setRealizedAt(paymentMethodData.getSlip().getDate());
+                    break;
                 case OnCall:
                     break;
                 case OnlineSettlement:
