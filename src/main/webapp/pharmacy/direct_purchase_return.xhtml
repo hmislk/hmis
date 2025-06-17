@@ -31,33 +31,45 @@
                                     <h:outputLabel value="#{ph.item.name}"/>
                                 </p:column>
 
-                                <p:column headerText="Purchased Quantity" >
+                                <p:column
+                                    width="5em" 
+                                    headerText="Purchased Quantity" >
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.quantity}" />
                                 </p:column>
-                                <p:column headerText="Free Quantity" >
+                                <p:column
+                                    width="5em" 
+                                    headerText="Free Quantity" >
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.freeQuantity}" />
                                 </p:column>
                                 <p:column 
+                                    width="5em" 
                                     headerText="Already Returned Qty" >
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
                                 </p:column>
                                 <p:column 
+                                    width="5em" 
                                     headerText="Already Returned Free Qty" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
                                 </p:column>
-                                <p:column headerText="Purchased Rate" >
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Purchased Rate" >
                                     <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Cost Rate (Per Unit)" >
+                                <p:column 
+                                    width="5em" 
+                                    headerText="Cost Rate (Per Unit)" >
                                     <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
 
-                                <p:column headerText="Rerutn rate (#{directPurchaseReturnController.returnRateLabel})" >
+                                <p:column
+                                    width="5em" 
+                                    headerText="Rerutn rate (#{directPurchaseReturnController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
                                             value="#{ph.billItemFinanceDetails.lineGrossRate}" 
@@ -75,15 +87,18 @@
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
                                 </p:column>
-                                <p:column headerText="Batch No" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
-                                </p:column>
-                                <p:column headerText="Date of Expirey" >
+                                <!--                                <p:column headerText="Batch No" >
+                                                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stringValue}" />
+                                                                </p:column>-->
+                                <p:column 
+                                    headerText="Date of Expirey" 
+                                    width="5em" >
                                     <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputText>
                                 </p:column>
                                 <p:column 
+                                    width="5em" 
                                     headerText="Returning Total Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity')}">
                                     <p:inputText
@@ -93,9 +108,11 @@
                                         value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:ajax event="blur" render="@this txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" listener="#{directPurchaseReturnController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
+                                    <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                 </p:column>
 
                                 <p:column
+                                    width="5em" 
                                     headerText="Returning Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
@@ -109,6 +126,7 @@
 
                                 <p:column
                                     headerText="Returning Free Qty"
+                                    width="5em" 
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <p:inputText
                                         class="w-100 text-end"
@@ -118,7 +136,7 @@
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="Return Value" >
+                                <p:column headerText="Return Value" width="5em" >
                                     <h:outputText id="txtLineReturnValue" value="#{ph.billItemFinanceDetails.lineGrossTotal}" >
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                     </h:outputText>
