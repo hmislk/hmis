@@ -295,11 +295,6 @@ public class BillService {
         double additionalFeeCalculatedByBillFees = 0.0;
 
         List<BillFee> bfs = fetchBillFees(bi);
-        System.out.println("bfs = " + bfs);
-
-        for (BillFee bf : bfs) {
-            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
-        }
 
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
@@ -317,10 +312,7 @@ public class BillService {
 
         }
 
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
 
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
@@ -366,11 +358,6 @@ public class BillService {
             }
 
         }
-
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
 
         duplicateBillItem.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         duplicateBillItem.setStaffFee(staffFeesCalculatedByBillFees);
@@ -1022,8 +1009,6 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
     }
@@ -1838,14 +1823,7 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", bill);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
-        if (ptix == null) {
-            System.out.println("ptix is null = " + ptix);
-        } else {
-            System.out.println("ptix size= " + ptix.size());
-        }
         return ptix;
     }
 
