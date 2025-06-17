@@ -56,6 +56,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.data.HistoricalRecordType;
+import static com.divudi.core.data.ReportViewType.BY_BILL_ITEM;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -269,6 +270,12 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToPharmacyIncomeAndCostReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_BILL_ITEM
+        );
+        reportViewType = ReportViewType.BY_ITEM;
         return "/pharmacy/reports/summary_reports/pharmacy_income_and_cost_report?faces-redirect=true";
     }
 
