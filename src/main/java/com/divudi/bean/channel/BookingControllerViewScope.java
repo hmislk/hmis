@@ -3647,9 +3647,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null) {
                 if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking().isAbsent()) {
                     selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(false);
+                    selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
                     selectedBillSession.setAbsent(false);
                 } else {
                     selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
+                    selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ABSENT);
                     selectedBillSession.setAbsent(true);
                 }
 

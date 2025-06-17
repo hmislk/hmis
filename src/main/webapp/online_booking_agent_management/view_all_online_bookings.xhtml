@@ -147,22 +147,22 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Ref No">
+                            <p:column headerText="Ref No" filterMatchMode="contains" filterBy="#{ob.referenceNo}">
                                 <h:outputText value="#{ob.referenceNo}">
                                 </h:outputText>
                             </p:column>
                             
-                            <p:column headerText="Appoinment Status">
-                                <h:outputText value="#{ob.onlineBookingStatus}" style="#{(ob.onlineBookingStatus eq 'PATIENT_CANCELED' or ob.onlineBookingStatus eq 'DOCTOR_CANCELED') ? 'color:red' : ob.onlineBookingStatus eq 'ABSENT' ? 'color:yellow':ob.onlineBookingStatus eq 'COMPLETED' ? 'color:green':'color:black'}; font-weight: bold">
+                            <p:column headerText="Appoinment Status" width="10em">
+                                <h:outputText value="#{ob.onlineBookingStatus}" style="#{(ob.onlineBookingStatus eq 'PATIENT_CANCELED' or ob.onlineBookingStatus eq 'DOCTOR_CANCELED') ? 'color:red' : ob.onlineBookingStatus eq 'ABSENT' ? 'color:#f39c12':ob.onlineBookingStatus eq 'COMPLETED' ? 'color:green':'color:black'}; font-weight: bold">
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient">
+                            <p:column headerText="Patient" filterMatchMode="contains" filterBy="#{ob.patientName}">
                                 <h:outputText value="#{ob.title}. #{ob.patientName}">
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Phone">
+                            <p:column headerText="Phone" filterMatchMode="contains" filterBy="#{ob.phoneNo}">
                                 <h:outputText value="#{ob.phoneNo}">
                                 </h:outputText>
                             </p:column>
