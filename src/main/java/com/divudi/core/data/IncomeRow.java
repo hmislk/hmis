@@ -40,6 +40,13 @@ public class IncomeRow implements Serializable {
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
 
+    // Fields populated from PharmacyIncomeCostBillDTO
+    private Long billId;
+    private String billNo;
+    private String patientName;
+    private String bhtNo;
+    private Date createdAt;
+
     private boolean selected;
 
     private Item item;
@@ -207,6 +214,25 @@ public class IncomeRow implements Serializable {
     public IncomeRow(BillFee billFee) {
         this();
         this.billFee = billFee;
+    }
+
+    public IncomeRow(PharmacyIncomeCostBillDTO dto) {
+        this();
+        if (dto != null) {
+            this.billId = dto.getId();
+            this.billNo = dto.getBillNo();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.bhtNo = dto.getBhtNo();
+            this.createdAt = dto.getCreatedAt();
+            if (dto.getRetailValue() != null) {
+                this.retailValue = dto.getRetailValue().doubleValue();
+            }
+            if (dto.getPurchaseValue() != null) {
+                this.purchaseValue = dto.getPurchaseValue().doubleValue();
+            }
+            this.grossProfit = this.retailValue - this.purchaseValue;
+        }
     }
 
     // Getter for UUID (optional, depending on use case)
@@ -1284,6 +1310,46 @@ public class IncomeRow implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
+    }
+
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public String getBhtNo() {
+        return bhtNo;
+    }
+
+    public void setBhtNo(String bhtNo) {
+        this.bhtNo = bhtNo;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
     }
     
     
