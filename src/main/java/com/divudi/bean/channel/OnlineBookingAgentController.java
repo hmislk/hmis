@@ -344,7 +344,7 @@ public class OnlineBookingAgentController implements Serializable {
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
-                
+
                 double paidValue = 0;
 
                 switch (cd.getPaymentMethod()) {
@@ -502,8 +502,8 @@ public class OnlineBookingAgentController implements Serializable {
         }
 
         Bill cancelBill = createCancelBillForAgentPaidToHospitalCancellation(totalToCancel);
-        
-        if(cancelBill != null){
+
+        if (cancelBill != null) {
             List<Payment> payments = createPayment(cancelBill, cancelPaymentMethod, true);
             drawerController.updateDrawerForOuts(payments);
         }
@@ -658,16 +658,16 @@ public class OnlineBookingAgentController implements Serializable {
         if (selected.isPaidToHospital()) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_WARN, "Selection is not allowed", "This Booking is already paid."));
-            paidToHospitalList.remove(selected); // manually remove it
+            getPaidToHospitalList().remove(selected); // manually remove it
         } else {
-            paidToHospitalList.add(selected);
+            getPaidToHospitalList().add(selected);
         }
 
     }
 
     public void onRowUnselect(SelectEvent<OnlineBooking> event) {
         OnlineBooking selected = event.getObject();
-        paidToHospitalList.remove(selected);
+        getPaidToHospitalList().remove(selected);
     }
 
     public void onRowUnselectForCancellation(SelectEvent<OnlineBooking> event) {
@@ -711,6 +711,10 @@ public class OnlineBookingAgentController implements Serializable {
     }
 
     public List<OnlineBooking> getPaidToHospitalList() {
+        if (paidToHospitalList == null) {
+            paidToHospitalList = new ArrayList<>();
+        }
+
         return paidToHospitalList;
     }
 

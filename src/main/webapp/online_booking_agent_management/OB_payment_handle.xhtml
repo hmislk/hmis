@@ -352,9 +352,15 @@
                     }
 
                     function createAllTotals() {
-                        calculateTotals('.calValues', '.totalAppoinmentFee');
-                        calculateTotals('.calNetValues', '.totalNetFee');
-                        calculateTotals('.calAgentValues', '.totalAgentFee');
+                        try{
+                            calculateTotals('.calValues', '.totalAppoinmentFee');
+                            calculateTotals('.calNetValues', '.totalNetFee');
+                            calculateTotals('.calAgentValues', '.totalAgentFee');
+
+                        }catch(e){
+                            
+                             console.error('Error calculating totals:', error);
+                        }
 
                     }
 
