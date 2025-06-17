@@ -427,9 +427,9 @@ public class OnlineBookingAgentController implements Serializable {
             }
 
             if (isCancellation) {
-                p.setPaidValue(-p.getBill().getNetTotal());
+                p.setPaidValue(-Math.abs(p.getBill().getNetTotal()));
             } else {
-                p.setPaidValue(p.getBill().getNetTotal());
+                p.setPaidValue(Math.abs(p.getBill().getNetTotal()));
             }
 
             paymentFacade.create(p);
