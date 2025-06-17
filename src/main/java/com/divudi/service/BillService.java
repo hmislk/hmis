@@ -1026,9 +1026,13 @@ public class BillService {
 
         String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO(" +
                 " b.id, b.deptId, b.billTypeAtomic, " +
-                " b.patient.person.name, b.patientEncounter.bhtNo, b.createdAt, " +
-                " bfd.totalRetailSaleValue, bfd.totalPurchaseValue) " +
-                " from Bill b join b.billFinanceDetails bfd " +
+                " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, " +
+                " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) " +
+                " from Bill b " +
+                " left join b.billFinanceDetails bfd " +
+                " left join b.patient pat " +
+                " left join pat.person pers " +
+                " left join b.patientEncounter pe " +
                 " where b.retired=:ret " +
                 " and b.billTypeAtomic in :billTypesAtomics " +
                 " and b.createdAt between :fromDate and :toDate ";
