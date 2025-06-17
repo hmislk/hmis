@@ -143,8 +143,11 @@
                             <p:ajax event="rowUnselect" process="@this" listener="#{onlineBookingAgentController.onRowUnselect()}" />
 
                             <p:column headerText="OB ID">
-                                <h:outputText value="#{ob.id}">
-                                </h:outputText>
+                                <p:commandLink 
+                                    ajax="false" 
+                                    value="#{ob.id}" 
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(ob.bill.paidBill.singleBillSession)}">
+                                </p:commandLink>
                             </p:column>
 
                             <p:column headerText="Ref No" filterMatchMode="contains" filterBy="#{ob.referenceNo}">

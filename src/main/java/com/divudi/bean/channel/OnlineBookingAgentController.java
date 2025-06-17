@@ -470,6 +470,7 @@ public class OnlineBookingAgentController implements Serializable {
         Bill bill = getCancelBill();
         bill.setNetTotal(totalToCancel);
         bill.setCreatedAt(new Date());
+        bill.setPaymentMethod(cancelPaymentMethod);
         bill.setCreater(getSessionController().getLoggedUser());
         bill.setToInstitution(getSessionController().getInstitution());
         bill.setFromInstitution(printBill.getFromInstitution());
