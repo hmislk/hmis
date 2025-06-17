@@ -344,28 +344,25 @@ public class OnlineBookingAgentController implements Serializable {
                 p.setCreatedAt(new Date());
                 p.setCreater(getSessionController().getLoggedUser());
                 p.setPaymentMethod(cd.getPaymentMethod());
-
-                double paidTotal = calculateMultiplePaymentMethodTotal();
-
-                if (isCancellation) {
-                    p.setPaidValue(-paidTotal);
-                } else {
-                    p.setPaidValue(paidTotal);
-                }
+                
+                double paidValue = 0;
 
                 switch (cd.getPaymentMethod()) {
                     case Card:
                         p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
                         p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
+                        paidValue = cd.getPaymentMethodData().getCreditCard().getTotalValue();
+                        p.setPaidValue(isCancellation ? -paidValue : paidValue);
                         break;
                     case Cheque:
                         p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
                         p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
+                        paidValue = cd.getPaymentMethodData().getCheque().getTotalValue();
+                        p.setPaidValue(isCancellation ? -paidValue : paidValue);
                         break;
                     case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
+                        paidValue = cd.getPaymentMethodData().getCash().getTotalValue();
+                        p.setPaidValue(isCancellation ? -paidValue : paidValue);
                         break;
                     case ewallet:
 
@@ -373,9 +370,11 @@ public class OnlineBookingAgentController implements Serializable {
                     case Credit:
                     case PatientDeposit:
                     case Slip:
-                        p.setPaidValue(cd.getPaymentMethodData().getSlip().getTotalValue());
+                        paidValue = cd.getPaymentMethodData().getSlip().getTotalValue();
+                        p.setPaidValue(isCancellation ? -paidValue : paidValue);
                         p.setBank(cd.getPaymentMethodData().getSlip().getInstitution());
                         p.setRealizedAt(cd.getPaymentMethodData().getSlip().getDate());
+                        break;
                     case OnCall:
                     case OnlineSettlement:
                     case YouOweMe:
@@ -934,7 +933,7 @@ public class OnlineBookingAgentController implements Serializable {
                 + " from Institution i "
                 + " where i.retired=:ret"
                 + " and i.institutionType = :type"
-                + " and LOWER(i.name) like  LOWER(CONCAT('%', :params, '%')) or LOWER(i.code) like  LOWER(CONCAT('%', :params, '%'))"
+                + " and (LOWER(i.name) like  LOWER(CONCAT('%', :params, '%')) or LOWER(i.code) like  LOWER(CONCAT('%', :params, '%')))"
                 + " order by i.name";
         Map m = new HashMap();
         m.put("ret", false);

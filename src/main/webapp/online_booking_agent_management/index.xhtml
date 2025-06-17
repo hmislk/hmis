@@ -40,61 +40,9 @@
                                                              action="/online_booking_agent_management/OB_payment_bill_search?faces-redirect=true"
                                                              actionListener="#{onlineBookingAgentController.clearPreviousValues()}"
                                                              class="w-100 m-1"/>
-<!--                                            <p:commandButton icon="fa fa-book" ajax="false" value="Issue Agency Books"
-                                                             action="/agency_management/agency_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-list-alt" ajax="false" value="Search Agency Book Issues"
-                                                             action="/agency_management/report_agency_referece_book?faces-redirect=true"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-credit-card" ajax="false" value="Update Agency Credit Limit"
-                                                             action="/agency_management/agency_update_credit_limit?faces-redirect=true"
-                                                             actionListener="#{institutionController.makeNull()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChangeCreditLimitInCC')}"
-                                                             class="w-100 m-1"/>-->
-
-<!--                                            <p:commandButton icon="fa fa-check-circle" ajax="false" value="Pay Agencies"
-                                                             action="/agency_management/pay_agency?faces-redirect=true"
-                                                             class="w-100 m-1"/>-->
 
                                         </h:panelGrid>
                                     </p:tab>
-
-                                    <!-- Credit/Debit Note Section -->
-<!--                                    <p:tab title="Credit/Debit Note"
-                                           rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote') or webUserController.hasPrivilege('ChannelDebitNote')}">
-                                        <h:panelGrid columns="1" class="w-100" >
-                                            <p:commandButton icon="fa fa-plus-circle" ajax="false" value="Credit Note"
-                                                             action="/agency_management/agency_credit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNote')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search-plus" ajax="false" value="Credit Note Search"
-                                                             action="/agency_management/agency_credit_note_bill_search_own?faces-redirect=true"
-                                                             actionListener="#{searchController.makeListNull}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelCrdeitNoteSearch')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-minus-circle" ajax="false" value="Debit Note"
-                                                             action="/agency_management/agency_debit_note_bill?faces-redirect=true"
-                                                             actionListener="#{agentAndCcPaymentController.prepareNewBill()}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNote')}"
-                                                             class="w-100 m-1"/>
-                                            <p:commandButton icon="fa fa-search-minus" ajax="false" value="Debit Note Search"
-                                                             action="/agency_management/agency_note_bill_search_own?faces-redirect=true"
-                                                             actionListener="#{searchController.makeListNull}"
-                                                             rendered="#{webUserController.hasPrivilege('ChannelDebitNoteSearch')}"
-                                                             class="w-100 m-1"/>
-                                        </h:panelGrid>
-                                    </p:tab>
-
-                                    <p:tab title="Agent">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment" action="/agent_bill?faces-redirect=true" actionListener="#{agentAndCcPaymentController.prepareNewBill()}" />
-                                            <p:commandButton class="w-100" ajax="false" value="Agent Payment Bill Search" action="/agent_bill_search_own?faces-redirect=true" actionListener="#{searchController.makeListNull}" />
-                                            <p:commandButton  class="w-100" ajax="false" value="Pay Agent"  action="/channel/channel_payment_agent_bill?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannellingPaymentPayDoctor')}" />
-                                            <p:commandButton  class="w-100" ajax="false" value="Payment Done Search"  action="/channel/channel_payment_agency_bill_search?faces-redirect=true" actionListener="#{billSearch.recreateModel}" rendered="#{webUserController.hasPrivilege('ChannellingPaymentDoneSearch')}"/>
-
-                                        </div>
-                                    </p:tab>-->
 
                                 </p:accordionPanel>
                             </h:form>

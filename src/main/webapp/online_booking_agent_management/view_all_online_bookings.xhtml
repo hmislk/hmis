@@ -57,14 +57,14 @@
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
                                 <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this"/>
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
                             <h:outputLabel value="Booking Status"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.onlineBookingStatus}" filter="true" >
                                 <f:selectItem itemLabel="All" ></f:selectItem>
                                 <f:selectItems value="#{onlineBookingAgentController.onlineBookingStatusList}" var="ins" itemLabel="#{ins}" itemValue="#{ins}" ></f:selectItems>
-                                <p:ajax event="itemSelect" process="@this"/>
+                                <p:ajax event="change" process="@this"/>
                             </p:selectOneMenu>
 
                             <p:spacer></p:spacer>
@@ -135,6 +135,7 @@
                                      id="onlineBookings"
                                      selection="#{onlineBookingAgentController.paidToHospitalList}"
                                      rowKey="#{ob.id}"
+                                     selectionMode="multiple"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink}"
                                      currentPageReportTemplate="(Page {currentPage} of {totalPages})"
                                      paginatorPosition="bottom">
