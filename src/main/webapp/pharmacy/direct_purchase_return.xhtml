@@ -47,9 +47,9 @@
                                     <h:outputLabel id="qty" value="#{ph.referanceBillItem.billItemFinanceDetails.returnQuantity}" />
                                 </p:column>
                                 <p:column headerText="Purchased Rate" >
-                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
+                                    <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                    </h:outputText>
+                                    </h:outputLabel>
                                 </p:column>
                                 <p:column headerText="Cost Rate (Per Unit)" >
                                     <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
@@ -60,15 +60,16 @@
                                 <p:column headerText="Rerutn rate (#{directPurchaseReturnController.returnRateLabel})" >
                                     <h:panelGroup id="purchase" >
                                         <h:outputText  
-                                            value="#{ph.billItemFinanceDetails.grossRate}" 
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" />
                                         </h:outputText>
-                                        <h:outputText 
-                                            value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" 
+                                        <h:inputText 
+                                            id="txtReturnRate"
+                                            value="#{ph.billItemFinanceDetails.lineGrossRate}" 
                                             rendered="#{!configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return - Changing Return Rate is allowed')}">
                                             <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                        </h:outputText>
+                                        </h:inputText>
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
                                 </p:column>
@@ -83,7 +84,10 @@
                                 <p:column 
                                     headerText="Returning Total Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Total Quantity')}">
-                                    <p:inputText autocomplete="off" value="#{ph.billItemFinanceDetails.quantity}">
+                                    <p:inputText
+                                        id="txtReturningTotalQty"
+                                        autocomplete="off" 
+                                        value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{directPurchaseReturnController.onEdit(ph)}" />
                                     </p:inputText>
                                 </p:column>
@@ -91,7 +95,10 @@
                                 <p:column
                                     headerText="Returning Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText autocomplete="off" value="#{ph.billItemFinanceDetails.quantity}">
+                                    <p:inputText 
+                                        id="txtReturningQty"
+                                        autocomplete="off" 
+                                        value="#{ph.billItemFinanceDetails.quantity}">
                                         <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{directPurchaseReturnController.onEdit(ph)}" />
                                     </p:inputText>
                                 </p:column>
@@ -99,13 +106,15 @@
                                 <p:column
                                     headerText="Returning Free Qty"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
-                                    <p:inputText autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
+                                    <p:inputText
+                                        id="txtReturningFreeQty"
+                                        autocomplete="off" value="#{ph.billItemFinanceDetails.freeQuantity}">
                                         <f:ajax event="blur" render="@this :#{p:resolveFirstComponentWithId('total',view).clientId}" listener="#{directPurchaseReturnController.onEdit(ph)}" />
                                     </p:inputText>
                                 </p:column>
 
                                 <p:column headerText="Return Value" >
-                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.lineNetTotal}" >
+                                    <h:outputText id="txtLineReturnValue" value="#{ph.billItemFinanceDetails.lineGrossTotal}" >
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
@@ -131,12 +140,13 @@
 
                                 <p:panelGrid 
                                     columns="2"
+                                    id="panelReturnBillDetails"
                                     layout="tabular"
                                     class="w-100">
                                     <h:outputLabel value="Supplier : " />
                                     <h:outputLabel value="#{directPurchaseReturnController.returnBill.toInstitution.name}" />
                                     <p:outputLabel  value="Recievable Amount" />
-                                    <p:outputLabel id="total"  value="#{directPurchaseReturnController.returnBill.total}" >
+                                    <p:outputLabel id="total"  value="#{directPurchaseReturnController.returnBill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
 

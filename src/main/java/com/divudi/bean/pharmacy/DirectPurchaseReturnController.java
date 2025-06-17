@@ -222,7 +222,7 @@ public class DirectPurchaseReturnController implements Serializable {
         }
 
         returningRate = getReturnRate(originalBillItem);
-        bifdReturning.setGrossRate(returningRate);
+        bifdReturning.setLineGrossRate(returningRate);
 
         billItemFacade.edit(originalBillItem);
     }
@@ -519,6 +519,7 @@ public class DirectPurchaseReturnController implements Serializable {
             PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemInReturnBill.copy(pbiOfBilledBill);
             newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
+            
 
             double originalQty = pbiOfBilledBill.getQty();
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
@@ -563,7 +564,7 @@ public class DirectPurchaseReturnController implements Serializable {
         // user Input, must not changed
         returningBillItem.getBillItemFinanceDetails().getQuantity();
         returningBillItem.getBillItemFinanceDetails().getFreeQuantity();
-        returningBillItem.getBillItemFinanceDetails().getGrossRate();
+        returningBillItem.getBillItemFinanceDetails().getLineGrossRate();
         // All Others have to calculate here for BillItemFinanceDetails. No discounts, No tax, no anything else, no bill values
         // Have to consider Ampp or Amp and set the unitsPerPack and do the calculations
         // Please folllow DirectPurchaseController Method to get an idea about how to fill all values
@@ -571,6 +572,19 @@ public class DirectPurchaseReturnController implements Serializable {
         // The detailed filled for PharmaceuticalBillItem in pharmacy_return_purchase page as user inputs or calculated in purchaseReturnController have to be calculated using the BillItemFinanceDetails and recorded for backword compatability 
         
     }
+    
+    private void callculateBillDetails(){
+        // to to go through all bill items and calculate the total ones
+        
+        // Have to calculate the billFinanceDetails as done in the settle button of direct_purchase
+        // for backword compatibility all values of the bill have to be filled as in the settle button of pharmacy_return_purchase
+    }
+    
+    // Have to have onedit methods for the following components in the  page direct_purchase_return
+    // txtReturnRate, txtReturningTotalQty, txtReturningQty, txtReturningFreeQty
+    // These should update bill item lelvel txtLineReturnValue and Bill Level panelReturnBillDetails
+
+    // have to prefil 
     
     public void onEditItem(PharmacyItemData tmp) {
         double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
