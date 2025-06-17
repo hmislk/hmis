@@ -196,10 +196,6 @@
                                 </p:panel>
 
                             </f:facet>
-                            
-                            <h:panelGroup id="printPaidBill" rendered="#{onlineBookingAgentController.printBill ne null}">
-                                 <ph:agentPaidToHospitalBill bill="#{onlineBookingAgentController.printBill}" duplicate="false" ></ph:agentPaidToHospitalBill>
-                            </h:panelGroup>
 
                             <h:panelGroup id="dialogContentForPayment">
                                 <p:dataTable value="#{onlineBookingAgentController.paidToHospitalList}" 

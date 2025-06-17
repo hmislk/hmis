@@ -75,6 +75,7 @@ public class OnlineBookingAgentController implements Serializable {
     private Boolean paidStatus;
     private List<OnlineBooking> paidToHospitalList;
     private List<OnlineBookingStatus> onlineBookingStatusList;
+    private boolean printOriginal;
 
     @EJB
     private InstitutionFacade institutionFacade;
@@ -488,6 +489,7 @@ public class OnlineBookingAgentController implements Serializable {
         getBillFacade().edit(cancelBill);
 
         printBill = cancelBill;
+        printOriginal = true;
 
         JsfUtil.addSuccessMessage("Bill cancellation is Successful.");
 
@@ -520,7 +522,7 @@ public class OnlineBookingAgentController implements Serializable {
         return bill;
     }
 
-    public void createPaymentForHospital() {
+    public String createPaymentForHospital() {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
             JsfUtil.addErrorMessage("No Bookings are selected to proceed");
         }
@@ -553,6 +555,8 @@ public class OnlineBookingAgentController implements Serializable {
         }
         
         printBill = paidBill;
+        printOriginal = true;
+        return "OB_agent_paid_bill_reprint?faces-redirect=true";
 
     }
 
@@ -629,6 +633,7 @@ public class OnlineBookingAgentController implements Serializable {
         paymentMethodData = null;
         printBill = null;
         agentPaidToHospitalBills = null;
+        printOriginal = false;
 
     }
 
@@ -948,6 +953,14 @@ public class OnlineBookingAgentController implements Serializable {
 
     public void setPrintBill(Bill printBill) {
         this.printBill = printBill;
+    }
+
+    public boolean isPrintOriginal() {
+        return printOriginal;
+    }
+
+    public void setPrintOriginal(boolean printOriginal) {
+        this.printOriginal = printOriginal;
     }
 
 }
