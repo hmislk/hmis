@@ -218,6 +218,17 @@
                             <p:column headerText="Paid to Hospital">
                                 <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">
                                 </h:outputText>
+                                
+                                <p:commandButton 
+                                    id="btnViewBill"
+                                    ajax="false" 
+                                    class="mx-1"
+                                    rendered="#{ob.paidToHospital}"
+                                    icon="fas fa-file-invoice"
+                                    actionListener="#{onlineBookingAgentController.fetchOnlineBookingsFromAgentPaidBill(ob.paidToHospitalBill)}"
+                                    action="OB_agent_paid_bill_reprint?faces-redirect=true">
+                                    <f:setPropertyActionListener value="#{ob.paidToHospitalBill}" target="#{onlineBookingAgentController.printBill}"/>                                     
+                                </p:commandButton>
                             </p:column>
 
                         </p:dataTable>

@@ -30,6 +30,17 @@
                                     action="/online_booking_agent_management/OB_payment_bill_search?faces-redirect=true"
                                     >
                                 </p:commandButton>
+                                
+                                <p:commandButton 
+                                    accesskey="n" 
+                                    value="Back to OB List"  
+                                    ajax="false" 
+                                    class="ui-button-secondary"
+                                    icon="fa-solid fa-arrow-left"
+                                    actionListener="#{onlineBookingAgentController.fetchAllOnlineBookings()}"
+                                    action="/online_booking_agent_management/view_all_online_bookings?faces-redirect=true"
+                                    >
+                                </p:commandButton>
 
                                 <p:commandButton 
                                     value="Reprint" 

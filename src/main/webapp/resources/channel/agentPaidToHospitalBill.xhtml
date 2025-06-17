@@ -61,12 +61,6 @@
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </td>
-                        <td style="width: 10%" >
-
-                        </td>
-                        <td style="width: 15%" >
-                            <!--<h:outputLabel value="Time" ></h:outputLabel>-->
-                        </td>
 
                         <td style="width: 30%" >
                             <!--<h:outputLabel value=": &npsp;" ></h:outputLabel>-->
@@ -191,19 +185,31 @@
 
                     <h:panelGroup rendered="#{cc.attrs.bill.toInstitution ne null}" >
                         <tr>
-                            <td style="width: 15% ;text-align: left;" >
-                                <h:outputLabel value="Company" class="billDetails"></h:outputLabel>
+                            <td style="width: 30% ;text-align: left;" >
+                                <h:outputLabel value="To Hospital" class="billDetails"></h:outputLabel>
                             </td>
                             <td>:</td>
-                            <td style="width: 30%;" >
+                            <td style="width: 60%;" >
                                 <h:outputLabel value="#{cc.attrs.bill.toInstitution.name}"  class="billDetails">
                                 </h:outputLabel>
                             </td>
+                            <td style="width: 10%" ></td>
+
+
+                        </tr>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.fromInstitution ne null}" >
+                        <tr>
+                            <td style="width: 30% ;text-align: left;" >
+                                <h:outputLabel value="From Agent" class="billDetails"></h:outputLabel>
+                            </td>
+                            <td>:</td>
+                            <td style="width: 60%;" >
+                                <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}"  class="billDetails">
+                                </h:outputLabel>
+                            </td>
                             <td style="width: 10%" >
-                            </td>
-                            <td style="width: 15%" >
-                            </td>
-                            <td style="width: 30%" >
                             </td>
                         </tr>
                     </h:panelGroup>
@@ -212,88 +218,6 @@
 
             </div>
 
-
-            <div class="billline" style="width: 100%; margin-left: 5%;">
-                <h:outputLabel value="-------------------------------------------------"   />                        
-            </div>
-
-
-            <div >
-
-                <table width="100%" style="width: 100%;" >
-                    <tr>
-                        <td style="width: 12%; text-align: left;">
-                            <h:outputLabel value="CODE" styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-                        <td style="width: 35%; ">
-                            <h:outputLabel value="ITEM" styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-                        <td  style="width:18%;text-align: right;">
-                            <h:outputLabel value="QTY"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:18%;text-align: right;">
-                            <h:outputLabel value="RATE"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-
-                        <td  style="width:22%;text-align: right;">
-                            <h:outputLabel value="VALUE"  styleClass="itemHeadings" ></h:outputLabel>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td colspan="5" style="width: 100%">
-                            <div class="billline">
-                                <h:outputLabel value="-------------------------------------------------"   />                           
-                            </div>
-                        </td>
-
-                    </tr>
-                    <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip">
-
-                        <tr>
-                            <td colspan="1">
-                                <h:outputLabel value="#{bip.item.code}"  styleClass="itemsBlock" style="text-transform: capitalize!important;"  >
-                                </h:outputLabel>
-                            </td>
-                            <td colspan="4">
-                                <h:outputLabel value="#{bip.item.name}"  styleClass="itemsBlock" style="text-transform: capitalize!important; text-align: left;"  >
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td colspan="2">
-
-                            </td>
-                            <td styleClass="itemsBlockRight" style="width: 20%; text-align: right;">
-                                <h:outputLabel    value="#{bip.qty}"    styleClass="itemsBlock"   style="text-align: right;" >
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight"  style="text-align: right; width: 18%" >
-                                <h:outputLabel    value="#{bip.rate}" >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                            <td  styleClass="itemsBlockRight" style="text-align: right; width: 42%" >
-                                <h:outputLabel    value="#{bip.grossValue}"    >
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-
-                        </tr>
-
-
-
-
-                    </ui:repeat>
-
-
-
-
-                </table>
-
-
-            </div>
 
 
             <div class="billline" style="width: 90%; margin-left: 5%;">
@@ -307,7 +231,7 @@
                 <table style="width: 100%;">
 
                     <tr>
-                        <td class="totalsBlock" style="text-align: left; width: 60%;">
+                        <td class="totalsBlock" style="text-align: left; width: 40%;">
                             <h:outputLabel value="Total" />
                         </td>
                         <td  class="totalsBlock" style="text-align: right!important; width: 40%;">
@@ -378,23 +302,24 @@
 
                     <tr>
                         <td  class="totalsItemBlock" style="text-align: left;">
-                            <h:outputLabel   value="Number of Items Count" />
+                            <h:outputLabel   value="Number of Bookings" />
                         </td>
                         <td  class="totalsItemBlock" style="text-align: right; ">
-                            <h:outputLabel   value="#{cc.attrs.bill.billItems.size()}">
+                            <h:outputLabel   value="#{onlineBookingAgentController.onlineBookingList.size()}" >
+                                
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </td>
                     </tr>
 
 
-                    <h:panelGroup rendered="#{cc.attrs.bill.referenceBill ne null}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.creater ne null}">
                         <tr >
                             <td style="text-align: left;">
                                 <h:outputLabel   value="Prepared by" />
                             </td>
                             <td style="text-align: right; ">
-                                <h:outputLabel   value="#{cc.attrs.bill.referenceBill.creater.name}">
+                                <h:outputLabel   value="#{cc.attrs.bill.creater.name}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </td>

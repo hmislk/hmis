@@ -278,8 +278,6 @@ public class OnlineBookingAgentController implements Serializable {
             return;
         }
 
-        System.out.println("line 246");
-
         String sql = "Select ob from OnlineBooking ob "
                 + " where ob.paidToHospitalBill = :bill "
                 + " and ob.retired = :ret "
@@ -290,14 +288,11 @@ public class OnlineBookingAgentController implements Serializable {
         params.put("ret", false);
         params.put("status", OnlineBookingStatus.PENDING);
 
-        System.out.println("line 258");
-
         List<OnlineBooking> bookings = getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
 
         if (bookings != null) {
             onlineBookingList = null;
             getOnlineBookingList().addAll(bookings);
-            System.out.println("line 265" + onlineBookingList.size());
             bookinsToAgenHospitalPayementCancellation = onlineBookingList;
         }
         prepareCancellationAgentPaidToHospitalBills();
