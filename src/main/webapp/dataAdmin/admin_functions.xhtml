@@ -67,17 +67,49 @@
                                         #{billController.output}
                                     </td>
                                 </tr>
-                                <!--                                <tr>
-                                                                    <td><strong>Another Correction Task</strong></td>
-                                                                    <td>Description for another correction goes here</td>
-                                                                    <td>
-                                                                        <p:commandButton value="Do This Fix"  />
-                                                                    </td>
-                                                                    <td>
-                                #{financialTransactionController.output}
-                            </td>
-                        </tr>-->
-                            </tbody>
+
+
+                                <tbody>
+                                    <tr>
+                                        <td><strong>Add Data to Bill Finance Details</strong></td>
+                                        <td>
+                                            Bill Finance Details is a newly added entity. Sll its data are not fully added while trnasactions.. This method willadd those data. Once all transactions are settled, this can be removed.
+                                        </td>
+
+                                        <td>
+                                            <h:form>
+                                                <p:commandButton 
+                                                    action="#{billController.fixReferancesInPharmacyGrnReturns()}"
+                                                    ajax="false"
+                                                    value="Correct Reference Bill in GRN Returns"  />
+
+                                                <p:commandButton 
+                                                    value="Calculate Bill Totals" 
+                                                    ajax="false"
+                                                    styleClass="ui-button-warning m-1"
+                                                    icon="pi pi-cog"
+                                                    action="#{pharmacySummaryReportController.calPharmacyIncomeAndCostReportByBill}">
+                                                </p:commandButton>
+
+                                            </h:form>
+                                        </td>
+                                        <td>
+                                            #{billController.output}
+                                        </td>
+                                    </tr>
+
+
+                                    <!--                                <tr>
+                                                                        <td><strong>Another Correction Task</strong></td>
+                                                                        <td>Description for another correction goes here</td>
+                                                                        <td>
+                                                                            <p:commandButton value="Do This Fix"  />
+                                                                        </td>
+                                                                        <td>
+                                    #{financialTransactionController.output}
+                                </td>
+                            </tr>-->
+                                </tbody>
                         </table>
 
 
