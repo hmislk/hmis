@@ -2050,6 +2050,43 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void processStockConsumption() {
+        try {
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+
+            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
+                    + "LEFT JOIN FETCH bi.item "
+                    + "LEFT JOIN FETCH bi.bill b "
+                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
+                    + "LEFT JOIN FETCH pbi.itemBatch "
+                    + "WHERE bi.retired = false "
+                    + "AND b.retired = false "
+                    + "AND b.billType = :billType "
+                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
+
+            Map<String, Object> params = new HashMap<>();
+            params.put("billType", BillType.PharmacyIssue);
+            params.put("fromDate", fromDate);
+            params.put("toDate", toDate);
+
+            addFilter(jpql, params, "b.institution", "ins", institution);
+            addFilter(jpql, params, "b.department.site", "sit", site);
+            addFilter(jpql, params, "b.department", "dep", department);
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            netTotal = billItems.stream()
+                    .mapToDouble(BillItem::getNetValue)
+                    .sum();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            billItems = new ArrayList<>();
+            netTotal = 0.0;
+        }
+    }
+
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
