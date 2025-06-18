@@ -2086,6 +2086,9 @@ public class PharmacyReportController implements Serializable {
         creditTypePaymentMethods.add(PaymentMethod.Staff);
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), creditTypePaymentMethods);
     }
+    public void processBhtIssue() {
+        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE));
+    }
 
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
