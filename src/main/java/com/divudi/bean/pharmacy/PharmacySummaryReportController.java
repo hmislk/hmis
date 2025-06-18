@@ -49,6 +49,7 @@ import static com.divudi.core.data.ReportViewType.BY_BILL;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -56,6 +57,7 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.data.HistoricalRecordType;
+import static com.divudi.core.data.ReportViewType.BY_BILL_ITEM;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -269,6 +271,12 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public String navigateToPharmacyIncomeAndCostReport() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_BILL_ITEM
+        );
+        reportViewType = ReportViewType.BY_BILL;
         return "/pharmacy/reports/summary_reports/pharmacy_income_and_cost_report?faces-redirect=true";
     }
 
@@ -823,7 +831,8 @@ public class PharmacySummaryReportController implements Serializable {
                     processPharmacyIncomeAndCostReportByBillType();
                     break;
                 case BY_BILL:
-                    processPharmacyIncomeAndCostReportByBill();
+//                    processPharmacyIncomeAndCostReportByBill();
+                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
@@ -869,6 +878,18 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    public void processPharmacyIncomeAndCostReportByBillDto() {
+        reportTimerController.trackReportExecution(() -> {
+            List<PharmacyIncomeCostBillDTO> dtos =
+                    billService.fetchBillIncomeCostDtos(fromDate, toDate, institution, site,
+                            department, webUser, getPharmacyIncomeBillTypes(),
+                            admissionType, paymentScheme);
+            bundle = new IncomeBundle(dtos);
+            bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    @Deprecated // Do not use this method. It will stop the whole application if a data range of one month is given. This will be deleted in next iteration
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);

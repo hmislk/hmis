@@ -46,7 +46,6 @@ public class StockService {
                 } else {
                     s.setItemName("UNKNOWN");
                 }
-                System.out.println("s = " + s);
             }
             stockFacade.batchEdit(batch, batchSize);
             start += batchSize;
@@ -56,7 +55,6 @@ public class StockService {
 // ChatGPT contributed - 2025-05
     @Deprecated // Now these details are NOT recorded in the Stock. Instead have to take from Item Batch as it used to be
     public void addItemNamesToAllStocks() {
-        System.out.println("addItemNamesToAllStocks");
         List<Stock> allStocks = stockFacade.findByJpql("SELECT s FROM Stock s");
         int count = 0;
         for (Stock s : allStocks) {
@@ -73,9 +71,7 @@ public class StockService {
             }
             stockFacade.edit(s);
             count++;
-            System.out.println("Updated stock id=" + s.getId() + " (" + count + "/" + allStocks.size() + ")");
         }
-        System.out.println("addItemNamesToAllStocksSimple finished. Total updated: " + count);
     }
 
     // ChatGPT contributed - 2025-06
@@ -102,7 +98,6 @@ public class StockService {
 
         Object[] obj = stockFacade.findAggregateModified(jpql.toString(), params, TemporalType.TIMESTAMP);
         
-        System.out.println("obj = " + obj);
         
         StockValueRow row = new StockValueRow();
         row.setInstitution(institution);
@@ -119,7 +114,6 @@ public class StockService {
                 row.setCostValue((Double) obj[2]);
             }
         }
-        System.out.println("row = " + row);
         return row;
     }
 

@@ -54,6 +54,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
+import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
@@ -235,6 +236,8 @@ public class BillSearch implements Serializable {
     PharmacyPurchaseController pharmacyPurchaseController;
     @Inject
     PurchaseReturnController purchaseReturnController;
+    @Inject
+    DirectPurchaseReturnController directPurchaseReturnController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     @Inject
@@ -3223,7 +3226,7 @@ public class BillSearch implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
 //        paymentMethod = bill.getPaymentMethod();
-//        createBillItems();
+//        prepareReturnBill();
 //
 //        boolean flag = billController.checkBillValues(bill);
 //        bill.setTransError(flag);
@@ -3802,7 +3805,6 @@ public class BillSearch implements Serializable {
             return null;
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
-        System.out.println("billTypeAtomic = " + billTypeAtomic);
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
@@ -4065,21 +4067,28 @@ public class BillSearch implements Serializable {
 
     public String navigateToDirectPurchaseCancellationBillView() {
         prepareToPharmacyCancellationBill();
-        return "/pharmacy/pharmacy_cancel_purchase";
+        return "/pharmacy/pharmacy_cancel_purchase?faces-redirect=true";
     }
 
     public String navigateToDirectPurchaseReturnBillView() {
+        System.out.println("navigateToDirectPurchaseReturnBillView");
+        System.out.println("bill = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
         }
+        directPurchaseReturnController.resetValuesForReturn();
         loadBillDetails(bill);
-        purchaseReturnController.setPrintPreview(true);
-        purchaseReturnController.setReturnBill(bill);
-        if (configOptionApplicationController.getBooleanValueByKey("Manage Costing", true)) {
-            return "/pharmacy/direct_purchase_return";
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            directPurchaseReturnController.setBill(bill);
+            directPurchaseReturnController.prepareReturnBill();
+            directPurchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
-            return "/pharmacy/pharmacy_return_purchase";
+            purchaseReturnController.setBill(bill);
+            purchaseReturnController.setPrintPreview(false);
+            return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
         }
     }
 

@@ -57,6 +57,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import com.google.common.collect.HashBiMap;
+import java.lang.reflect.Array;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -580,6 +581,107 @@ public class ChannelService {
         return deptId;
     }
 
+    public List<Bill> fetchOnlineBookingsAgentPaidToHospitalBills(Date fromDate, Date toDate, Institution hospital, Institution agent, String billStatus) {
+
+        String sql = "select bill from Bill bill "
+                + " where bill.retired = :ret "
+                + " and bill.toInstitution = :toIns"
+                + " and bill.createdAt between :fromDate and :toDate";
+
+        Map params = new HashMap();
+
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+        params.put("ret", false);
+        params.put("toIns", hospital);
+
+        if (agent != null) {
+            sql += " and bill.fromInstitution = :fromIns";
+            params.put("fromIns", agent);
+        }
+        if (billStatus != null && !billStatus.isEmpty()) {
+            switch (billStatus) {
+                case "Completed":
+                    sql += " and bill.billType = :type";
+                    params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospital);
+                    break;
+
+                case "Cancelled":
+                    sql += " and bill.billType = :type";
+                    params.put("type", BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+                    break;
+
+                default:
+                    sql += " and bill.billType in :type";
+                    BillType[] bts = {BillType.ChannelOnlineBookingAgentPaidToHospital, BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation};
+                    params.put("type", Arrays.asList(bts));
+                    break;
+            }
+        }
+
+        sql += " order by bill.createdAt desc";
+
+        return getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status) {
+        String sql = "Select ob from OnlineBooking ob"
+                + " where ob.onlineBookingStatus = :status "
+                + " and ob.retired = :retire "
+                + " and ob.paidToHospital = :paid "
+                + " and ob.createdAt between :from and :to";
+
+        Map params = new HashMap<>();
+        params.put("status", status);
+        params.put("retire", false);
+        params.put("from", fromDate);
+        params.put("to", toDate);
+        params.put("paid", paid);
+
+        if (agent != null) {
+            sql += " and ob.agency = :agent";
+            params.put("agent", agent);
+        }
+        if (hospital != null) {
+            sql += " and ob.hospital = :hospital";
+            params.put("hospital", hospital);
+        }
+
+        sql += " order by ob.createdAt desc";
+
+        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
+    public List<OnlineBooking> fetchAllOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, Boolean paid, List<OnlineBookingStatus> status) {
+        String sql = "Select ob from OnlineBooking ob"
+                + " where ob.onlineBookingStatus in :status "
+                + " and ob.retired = :retire "
+                + " and ob.createdAt between :from and :to";
+
+        Map params = new HashMap<>();
+        params.put("status", status);
+        params.put("retire", false);
+        params.put("from", fromDate);
+        params.put("to", toDate);
+
+        if (agent != null) {
+            sql += " and ob.agency = :agent";
+            params.put("agent", agent);
+        }
+        if (hospital != null) {
+            sql += " and ob.hospital = :hospital";
+            params.put("hospital", hospital);
+        }
+        if (paid != null) {
+            sql += " and ob.paidToHospital = :paid ";
+            params.put("paid", paid);
+        }
+
+        sql += " order by ob.createdAt desc";
+
+        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+    }
+
     public Institution findCreditCompany(String code, String name, InstitutionType type) {
         Map params = new HashMap();
 
@@ -878,7 +980,6 @@ public class ChannelService {
         bs.setCreatedAt(new Date());
         //  bs.setCreater(getSessionController().getLoggedUser());
         getBillSessionFacade().create(bs);
-        System.out.println(can);
         can.setSingleBillSession(bs);
         getBillFacade().edit(can);
 
@@ -919,7 +1020,6 @@ public class ChannelService {
             SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
             Date startDate = formatter.parse(fromDate);
             Date endDate = formatter.parse(toDate);
-            System.out.println(startDate + "" + endDate);
 
             Map params = new HashMap();
 
@@ -1378,7 +1478,6 @@ public class ChannelService {
         if (sessionDate != null) {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", sessionDate);
-            System.out.println(sessionDate);
         } else if (sessionDate == null) {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", new Date());
@@ -1516,7 +1615,6 @@ public class ChannelService {
         jpql.append(" order by i.sessionDate asc");
 
         m.put("ret", false);
-        System.out.println(jpql.toString() + "\n" + m);
         return sessionInstanceFacade.findFirstByJpql(jpql.toString(), m, TemporalType.DATE);
         // System.out.println(jpql.toString()+"\n"+sessionInstances.size()+"\n"+m.values());
 
