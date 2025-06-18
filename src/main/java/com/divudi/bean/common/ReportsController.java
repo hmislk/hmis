@@ -4957,6 +4957,10 @@ public class ReportsController implements Serializable {
         }
     }
 
+    public void resetToDepartment() {
+        toDepartment = null;
+    }
+
     private boolean isCancelledOrRefundBill(Bill bill) {
         BillClassType type = bill.getBillClassType();
         return type == BillClassType.CancelledBill || type == BillClassType.RefundBill;

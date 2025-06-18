@@ -311,12 +311,15 @@
                             <p:column style="padding: 4px;">#{oi.name}</p:column>
                             <p:ajax event="itemSelect"
                                     process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
                             <p:ajax event="itemUnselect"
                                     process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
                             <p:ajax event="change"
                                     process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
                                     update="sendSampleDept"/>
                         </p:autoComplete>
 
@@ -330,7 +333,6 @@
                                 inputStyleClass="w-100"
                                 class="w-100"
                                 filter="true"
-                                style="max-width: 100px;"
                                 value="#{reportsController.toDepartment}"
                                 filterMatchMode="contains"
                                 id="sendSampleDept">
@@ -467,15 +469,35 @@
                                                     row.billItem.patientEncounter.finalBill.creater.webUserPerson.nameWithTitle :
                                                     row.billItem.bill.creater.webUserPerson.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Received Date" width="5rem">
-                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">
+                            <!--                            <p:column headerText="Received Date" width="5rem">-->
+                            <!--                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">-->
+                            <!--                                    <f:convertDateTime-->
+                            <!--                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                            <!--                                </h:outputText>-->
+                            <!--                            </p:column>-->
+                            <!--                            <p:column headerText="Received By" width="5rem">-->
+                            <!--                                <h:outputText-->
+                            <!--                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>-->
+                            <!--                            </p:column>-->
+                            <p:column headerText="Collected Date" width="5rem">
+                                <h:outputText value="#{row.billItem.patientInvestigation.sampleCollectedAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Received By" width="5rem">
+                            <p:column headerText="Collected By" width="5rem">
                                 <h:outputText
-                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>
+                                        value="#{row.billItem.patientInvestigation.sampleCollectedBy.webUserPerson.nameWithTitle}"/>
+                            </p:column>
+                            <p:column headerText="Sent Date" width="5rem">
+                                <h:outputText value="#{row.billItem.patientInvestigation.outsourcedAt}">
+                                    <f:convertDateTime
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Sent By" width="5rem">
+                                <h:outputText
+                                        value="#{row.billItem.patientInvestigation.outsourcedUser.webUserPerson.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Remarks" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.comments}"/>
