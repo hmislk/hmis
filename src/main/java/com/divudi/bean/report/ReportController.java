@@ -2990,6 +2990,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public String navigateToCostOfGoodSoldReports() {
+        pharmacyReportController.setBillItems( new ArrayList<>());
+        pharmacyReportController.setNetTotal(0.0);
+        
         if (reportTemplateFileIndexName == null) {
             return "";
         }
@@ -3022,6 +3025,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             case "Closing Stock Value":
             case "Opening Stock Value":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
+            case "Variance":
+            case "Sale Cash":
+            case "Calculated Closing Stock Value":
+                JsfUtil.addErrorMessage("No Given Report Template");
+                return null;
 
             default:
                 return "";
