@@ -832,6 +832,7 @@ public class PharmacySummaryReportController implements Serializable {
                     break;
                 case BY_BILL:
                     processPharmacyIncomeAndCostReportByBill();
+                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
@@ -858,6 +859,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_MOVEMENT_OUT_REPORT, sessionController.getLoggedUser());
     }
 
+    @Deprecated // use processPharmacyIncomeAndCostReportByBillDto
     public void processPharmacyIncomeAndCostReportByBill() {
         reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
@@ -879,8 +881,8 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
         reportTimerController.trackReportExecution(() -> {
-            List<PharmacyIncomeCostBillDTO> dtos =
-                    billService.fetchBillIncomeCostDtos(fromDate, toDate, institution, site,
+            List<PharmacyIncomeCostBillDTO> dtos
+                    = billService.fetchBillIncomeCostDtos(fromDate, toDate, institution, site,
                             department, webUser, getPharmacyIncomeBillTypes(),
                             admissionType, paymentScheme);
             bundle = new IncomeBundle(dtos);
@@ -888,6 +890,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    @Deprecated // DO NOT Use this method. This will be removed in next iterations.
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);

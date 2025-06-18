@@ -200,17 +200,9 @@
                         <p:commandButton
                             value="Process"
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReportByBillDto()}"
-                            styleClass="ui-button-success m-1"
-                            icon="pi pi-cog"
-                            rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}"/>
-                        <p:commandButton
-                            value="Process"
-                            ajax="false"
                             action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReport()}"
                             styleClass="ui-button-success m-1"
-                            icon="pi pi-cog"
-                            rendered="#{pharmacySummaryReportController.reportViewType ne 'BY_BILL'}"/>
+                            icon="pi pi-cog"/>
                          
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}" >
                             <p:commandButton 
@@ -232,15 +224,7 @@
                                 icon="pi pi-print">
                                 <p:printer target="tblb" />
                             </p:commandButton>
-                            
-                            <p:commandButton 
-                                value="Calculate Bill Totals" 
-                                ajax="false"
-                                styleClass="ui-button-warning m-1"
-                                icon="pi pi-cog"
-                                action="#{pharmacySummaryReportController.calPharmacyIncomeAndCostReportByBill}">
-                            </p:commandButton>
-
+                           
                             <p:dataTable
                                 id="tblb"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
