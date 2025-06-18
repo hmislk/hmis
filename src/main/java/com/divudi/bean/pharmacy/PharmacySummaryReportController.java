@@ -62,6 +62,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -72,6 +73,7 @@ import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1024,7 +1026,8 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void addFinancialDetailsIfNotExistsForPharmacyBills() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<Bill> pbis = billService.fetchBills(billController.getFromDate(), billController.getToDate(),
+                null, null, null, null, billTypeAtomics, null, null);
         for (Bill b : pbis) {
             if (b == null) {
                 continue;
