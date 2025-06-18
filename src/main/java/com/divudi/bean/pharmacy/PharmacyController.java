@@ -72,6 +72,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
@@ -1822,6 +1824,11 @@ public class PharmacyController implements Serializable {
         for (Bill bill : billList) {
             double netTotal = bill.getNetTotal();
             double saleValue = bill.getSaleValue();
+
+            if (bill.getPaymentMethod() == null) {
+                Logger.getLogger(PharmacyController.class.getName()).log(Level.WARNING, "Bill {0} has no payment method", bill.getId());
+                continue;
+            }
 
             switch (bill.getPaymentMethod()) {
                 case Credit:

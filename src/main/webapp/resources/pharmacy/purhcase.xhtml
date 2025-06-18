@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
         <cc:attribute name="ShowProfit" type="java.lang.Boolean"/>
         <cc:attribute name="ShowRetailValue" type="java.lang.Boolean"/>
     </cc:interface>
@@ -97,14 +97,14 @@
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">QTY</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">Free</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
 
@@ -117,16 +117,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:column style="padding: 4px; width: 5em;" class="text-end">
-                        <f:facet name="header">Last P.R.</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.lastPurchaseRate}">
-                            <f:convertNumber pattern="#,##0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
                     <p:column style="padding: 4px; width: 6em;" class="text-end">
                         <f:facet name="header">P. Value</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.billItemFinanceDetails.quantity}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                     </p:column>
