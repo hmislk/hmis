@@ -1885,84 +1885,12 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    private List<BillItem> grnCashBillItems;
-    private List<BillItem> grnCreditBillItems;
-
-    public List<BillItem> getGrnCashBillItems() {
-        return grnCashBillItems;
-    }
-
-    public List<BillItem> getGrnCreditBillItems() {
-        return grnCreditBillItems;
-    }
-
     public void processGrnCash() {
-        try {
-            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
-                    + "LEFT JOIN FETCH bi.item i "
-                    + "LEFT JOIN FETCH bi.bill b "
-                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
-                    + "LEFT JOIN FETCH pbi.itemBatch ib "
-                    + "WHERE bi.retired = false "
-                    + "AND bi.bill.billTypeAtomic = :billType "
-                    + "AND bi.bill.paymentMethod = :paymentMethod "
-                    + "AND bi.createdAt BETWEEN :fromDate AND :toDate "
-                    + "ORDER BY bi.createdAt ");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("billType", BillTypeAtomic.PHARMACY_GRN);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-            params.put("paymentMethod", PaymentMethod.Cash);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            grnCashBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        } catch (Exception e) {
-            e.printStackTrace();
-            grnCashBillItems = new ArrayList<>();
-        }
+        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void processGrnCredit() {
-        try {
-            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
-                    + "LEFT JOIN FETCH bi.item i "
-                    + "LEFT JOIN FETCH bi.bill b "
-                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
-                    + "LEFT JOIN FETCH pbi.itemBatch ib "
-                    + "WHERE bi.retired = false "
-                    + "AND b.retired = false "
-                    + "AND b.billTypeAtomic = :billType "
-                    + "AND b.paymentMethod = :paymentMethod "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                    + "ORDER BY b.createdAt ");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("billType", BillTypeAtomic.PHARMACY_GRN);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-            params.put("paymentMethod", PaymentMethod.Credit);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            grnCreditBillItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-        } catch (Exception e) {
-            e.printStackTrace();
-            grnCreditBillItems = new ArrayList<>();
-        }
-    }
-
-    public void setGrnCashBillItems(List<BillItem> grnCashBillItems) {
-        this.grnCashBillItems = grnCashBillItems;
-    }
-
-    public void setGrnCreditBillItems(List<BillItem> grnCreditBillItems) {
-        this.grnCreditBillItems = grnCreditBillItems;
+        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Credit));
     }
 
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
@@ -2086,9 +2014,11 @@ public class PharmacyReportController implements Serializable {
         creditTypePaymentMethods.add(PaymentMethod.Staff);
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), creditTypePaymentMethods);
     }
+
     public void processBhtIssue() {
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE));
     }
+
     public void processSaleCreditCard() {
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Card));
     }

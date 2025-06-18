@@ -185,6 +185,21 @@
                                                 fileName="Stock Correction Report"/>
                             </p:commandButton>
                         </div>
+                        <h:outputScript>
+                            function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                            }
+
+                            function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                            }
+
+                            window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                            };
+                        </h:outputScript>
 
                         <br/>
                         <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" var="item" style="width:100%;" id="tbl1">

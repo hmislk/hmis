@@ -214,7 +214,7 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                             <p:column headerText="Date">
-                                <h:outputText value="#{row.createdAt}">
+                                <h:outputText value="#{row.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>

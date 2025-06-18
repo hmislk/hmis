@@ -202,7 +202,7 @@
                         </div>
 
 
-                        <p:dataTable value="#{pharmacyReportController.grnCashBillItems}" var="bi" id="tbl">
+                        <p:dataTable value="#{pharmacyReportController.billItems}" var="bi" id="tbl">
                             <p:column headerText="DATE">
                                 <h:outputText value="#{bi.bill.createdAt}">
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
