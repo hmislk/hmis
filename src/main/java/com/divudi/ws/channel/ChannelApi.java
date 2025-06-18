@@ -1617,6 +1617,8 @@ public class ChannelApi {
             bookingStatus = "Doctor Canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
             bookingStatus = "Completed";
+        }else if(bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.ABSENT){
+            bookingStatus = "Absent";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
