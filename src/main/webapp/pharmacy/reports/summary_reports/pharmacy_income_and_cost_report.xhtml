@@ -188,7 +188,7 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                                 <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}" />
-                                <f:selectItems value="#{enumController.reportViewTypes}"
+                                <f:selectItems value="#{pharmacySummaryReportController.reportViewTypes}"
                                                var="rvt"
                                                itemLabel="#{rvt.label}"
                                                itemValue="#{rvt}" />
@@ -197,13 +197,20 @@
 
                         </h:panelGrid>
 
-                        <p:commandButton 
-                            value="Process" 
+                        <p:commandButton
+                            value="Process"
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReport()}" 
-                            styleClass="ui-button-success m-1" 
-                            icon="pi pi-cog">
-                        </p:commandButton>
+                            action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReportByBillDto()}"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"
+                            rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}"/>
+                        <p:commandButton
+                            value="Process"
+                            ajax="false"
+                            action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReport()}"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog"
+                            rendered="#{pharmacySummaryReportController.reportViewType ne 'BY_BILL'}"/>
                          
                         <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}" >
                             <p:commandButton 
@@ -244,29 +251,29 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
                                 <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.billNo}"  style="padding: 0px!important; margin: 0px!important;" />
                                     <f:facet name="footer" >
                                         <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                         </h:outputText>
                                     </f:facet>
                                 </p:column>
-                                <p:column 
+                                <p:column
                                     headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.patientName}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="BHT No"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.patientEncounter.bhtNo}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.bhtNo}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Date"   width="10em" >
-                                    <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputText>
-                                </p:column> 
+                                </p:column>
                                 <p:column headerText="Retail Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.retailValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -277,7 +284,7 @@
                                 </p:column>
 
                                 <p:column headerText="Cost Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.purchaseValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -288,7 +295,7 @@
                                 </p:column>
 
                                 <p:column headerText="Gross Profit" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue - row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.grossProfit)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -298,17 +305,6 @@
                                     </f:facet>
                                 </p:column>
 
-
-                                <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
-                                    <p:commandLink 
-                                        value="View" 
-                                        style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                        class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                    </p:commandLink>
-                                </p:column>
 
 
                             </p:dataTable>
