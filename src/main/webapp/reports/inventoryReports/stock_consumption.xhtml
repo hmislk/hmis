@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process" 
+                                action="#{pharmacyReportController.processStockConsumption()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -202,7 +203,7 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="" 
+                                     value="#{pharmacyReportController.billItems}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -214,47 +215,63 @@
 
 
                             <p:column headerText="Date" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.createdAt}" />
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
+                            
                             <p:column headerText="Item Name" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.name}" />
                             </p:column>
+                            
                             <p:column headerText="Batch Code" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
+                            
                             <p:column headerText="Doc No" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.referenceBill.deptId}" />
                             </p:column>
+                            
                             <p:column headerText="Ref. Doc No (Original bill No)" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.deptId}" />
                             </p:column>
+                            
                             <p:column headerText="QTY" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.qty}" />
                             </p:column>
+                            
                             <p:column headerText="Code" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.code}" />
                             </p:column>
+                            
                             <p:column headerText="Rate" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
                             </p:column>
+                            
                             <p:column headerText="Stock Consumption" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
                             </p:column>
+                            
                             <p:column headerText="Net Total" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.netTotal}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                </f:facet>
                             </p:column>
+                            
                             <p:column headerText="Consumption Department" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.toDepartment.name}" />
                             </p:column>
+                            
                             <p:column headerText="Remarks" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.comments}" />
                             </p:column>
+                            
                             <p:column headerText="UOM" width="5em">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.measurementUnit.name}" />
                             </p:column>
+
 
                         </p:dataTable>
 
