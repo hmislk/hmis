@@ -1965,16 +1965,10 @@ public class PharmacyReportController implements Serializable {
         this.grnCreditBillItems = grnCreditBillItems;
     }
 
-    public void processIpDrugReturn() {
+    private void retrieveBillItems(String billTypeField, Object billTypeValue) {
         try {
             billItems = new ArrayList<>();
             netTotal = 0.0;
-            List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
-                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
-                    BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
-                    BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
-            );
 
             StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
                     + "LEFT JOIN FETCH bi.item "
@@ -1983,11 +1977,11 @@ public class PharmacyReportController implements Serializable {
                     + "LEFT JOIN FETCH pbi.itemBatch "
                     + "WHERE bi.retired = false "
                     + "AND b.retired = false "
-                    + "AND b.billTypeAtomic IN :billTypes "
+                    + "AND " + billTypeField + " IN :billTypes "
                     + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
             Map<String, Object> params = new HashMap<>();
-            params.put("billTypes", billTypeAtomics);
+            params.put("billTypes", billTypeValue);
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
@@ -1996,141 +1990,54 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department", "dep", department);
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            netTotal = billItems.stream()
-                    .mapToDouble(BillItem::getNetValue)
-                    .sum();
+            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
 
         } catch (Exception e) {
             e.printStackTrace();
             billItems = new ArrayList<>();
             netTotal = 0.0;
         }
+    }
+
+    public void processIpDrugReturn() {
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes);
     }
 
     public void processOpDrugReturn() {
-        try {
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-            List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
-            );
-
-            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
-                    + "LEFT JOIN FETCH bi.item "
-                    + "LEFT JOIN FETCH bi.bill b "
-                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
-                    + "LEFT JOIN FETCH pbi.itemBatch "
-                    + "WHERE bi.retired = false "
-                    + "AND b.retired = false "
-                    + "AND b.billTypeAtomic IN :billTypes "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("billTypes", billTypeAtomics);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            netTotal = billItems.stream()
-                    .mapToDouble(BillItem::getNetValue)
-                    .sum();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-        }
-    }
-
-    public void processStockConsumption() {
-        try {
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-
-            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
-                    + "LEFT JOIN FETCH bi.item "
-                    + "LEFT JOIN FETCH bi.bill b "
-                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
-                    + "LEFT JOIN FETCH pbi.itemBatch "
-                    + "WHERE bi.retired = false "
-                    + "AND b.retired = false "
-                    + "AND b.billType = :billType "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
-
-            Map<String, Object> params = new HashMap<>();
-            params.put("billType", BillType.PharmacyIssue);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            netTotal = billItems.stream()
-                    .mapToDouble(BillItem::getNetValue)
-                    .sum();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-        }
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED_PRE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes);
     }
 
     public void processPurchaseReturn() {
-        try {
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-            List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED,
-                    BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND,
-                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
-                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
-                    BillTypeAtomic.PHARMACY_GRN_CANCELLED,
-                    BillTypeAtomic.PHARMACY_GRN_REFUND,
-                    BillTypeAtomic.PHARMACY_GRN_RETURN,
-                    BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_CANCELLED,
+                BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL_REFUND,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND,
+                BillTypeAtomic.PHARMACY_GRN_CANCELLED,
+                BillTypeAtomic.PHARMACY_GRN_REFUND,
+                BillTypeAtomic.PHARMACY_GRN_RETURN,
+                BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes);
+    }
 
-            StringBuilder jpql = new StringBuilder("SELECT bi FROM BillItem bi "
-                    + "LEFT JOIN FETCH bi.item "
-                    + "LEFT JOIN FETCH bi.bill b "
-                    + "LEFT JOIN FETCH bi.pharmaceuticalBillItem pbi "
-                    + "LEFT JOIN FETCH pbi.itemBatch "
-                    + "WHERE bi.retired = false "
-                    + "AND b.retired = false "
-                    + "AND b.billTypeAtomic IN :billTypes "
-                    + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
+    public void processStockConsumption() {
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyIssue));
+    }
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("billTypes", billTypeAtomics);
-            params.put("fromDate", fromDate);
-            params.put("toDate", toDate);
-
-            addFilter(jpql, params, "b.institution", "ins", institution);
-            addFilter(jpql, params, "b.department.site", "sit", site);
-            addFilter(jpql, params, "b.department", "dep", department);
-
-            billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            netTotal = billItems.stream()
-                    .mapToDouble(BillItem::getNetValue)
-                    .sum();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            billItems = new ArrayList<>();
-            netTotal = 0.0;
-        }
+    public void processTransferIssue() {
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferIssue));
     }
 
     public void processCollectingCentreTestWiseCountReport() {
