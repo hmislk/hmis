@@ -27,6 +27,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillItemDTO;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -314,6 +315,15 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+    public IncomeBundle(List<PharmacyIncomeCostBillItemDTO> dtos) {
+        this();
+        if (dtos != null) {
+            for (PharmacyIncomeCostBillItemDTO dto : dtos) {
+                rows.add(new IncomeRow(dto));
+            }
+        }
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
@@ -321,27 +331,36 @@ public class IncomeBundle implements Serializable {
 
         for (IncomeRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
-            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
-                continue;
+
+            BillTypeAtomic bta;
+            Double q;
+            Double rRate;
+            Double pRate;
+
+            if (b != null && b.getBillItem() != null && b.getBillItem().getBill() != null) {
+                bta = Optional
+                        .ofNullable(b.getBillItem())
+                        .map(BillItem::getBill)
+                        .map(Bill::getBillTypeAtomic)
+                        .orElse(null);
+                q = b.getQty();
+                rRate = b.getRetailRate();
+                if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                    rRate = b.getBillItem().getNetRate();
+                }
+                pRate = b.getPurchaseRate();
+            } else {
+                bta = r.getBillTypeAtomic();
+                q = r.getQty();
+                rRate = r.getRetailRate();
+                pRate = r.getPurchaseRate();
             }
 
-            BillTypeAtomic bta = Optional
-                    .ofNullable(b.getBillItem())
-                    .map(BillItem::getBill)
-                    .map(Bill::getBillTypeAtomic)
-                    .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
                 continue; // unable to categorise safely
             }
+
             BillCategory bc = bta.getBillCategory();
-
-            Double q = b.getQty();
-            Double rRate = b.getRetailRate();
-            if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
-                rRate = b.getBillItem().getNetRate();
-            }
-
-            Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
@@ -485,26 +504,33 @@ public class IncomeBundle implements Serializable {
 
         for (IncomeRow r : getRows()) {
             PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
-            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
-                continue;
-            }
 
-            BillTypeAtomic bta = Optional.ofNullable(b.getBillItem())
-                    .map(BillItem::getBill)
-                    .map(Bill::getBillTypeAtomic)
-                    .orElse(null);
+            BillTypeAtomic bta;
+            Double q;
+            Double rRate;
+            Double pRate;
+
+            if (b != null && b.getBillItem() != null && b.getBillItem().getBill() != null) {
+                bta = Optional.ofNullable(b.getBillItem())
+                        .map(BillItem::getBill)
+                        .map(Bill::getBillTypeAtomic)
+                        .orElse(null);
+
+                q = b.getQty();
+                rRate = b.getRetailRate();
+                pRate = b.getPurchaseRate();
+            } else {
+                bta = r.getBillTypeAtomic();
+                q = r.getQty();
+                rRate = r.getRetailRate();
+                pRate = r.getPurchaseRate();
+            }
 
             if (bta == null || bta.getBillCategory() == null) {
                 continue;
             }
 
             BillCategory bc = bta.getBillCategory();
-            Double q = b.getQty();
-//            Double rRate = bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
-//                    ? b.getBillItem().getNetRate()
-//                    : b.getRetailRate();
-            Double rRate = b.getRetailRate();
-            Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;

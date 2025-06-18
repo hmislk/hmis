@@ -50,6 +50,7 @@ import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillItemDTO;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -845,6 +846,17 @@ public class PharmacySummaryReportController implements Serializable {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
             List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
             bundle = new IncomeBundle(pbis);
+            bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+    }
+
+    public void processPharmacyIncomeAndCostReportByBillItemDto() {
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+            List<PharmacyIncomeCostBillItemDTO> dtos =
+                    billService.fetchBillItemIncomeCostDtos(fromDate, toDate, institution, site,
+                            department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(dtos);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
