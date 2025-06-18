@@ -173,6 +173,8 @@ public class PharmacySummaryReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+    @Inject
+    BillController billController;
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
@@ -950,6 +952,37 @@ public class PharmacySummaryReportController implements Serializable {
         
          */
         // If bifd fields have other value other than zero or null, that value should not be assigned
+    }
+
+    public void addFinancialDetailsIfNotExistsForPharmacyBills() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        for (Bill b : pbis) {
+            if (b == null) {
+                continue;
+            }
+
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
+            if (bta == null || bta.getBillCategory() == null) {
+                continue; // unable to categorise safely
+            }
+            BillCategory bc = bta.getBillCategory();
+
+            Double saleValue = 0.0;
+            Double purchaseValue = 0.0;
+
+            for (BillItem bi : b.getBillItems()) {
+                addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(bi);
+                billItemFacade.edit(bi);
+
+                // calculate bill item finance details 
+            }
+// update bill finance details if they are null or zero. follow the methods used in PharmacyDirectPurchaseController
+            getBillFacade().edit(b);
+        }
     }
 
     public void calPharmacyIncomeAndCostReportByBill() {
