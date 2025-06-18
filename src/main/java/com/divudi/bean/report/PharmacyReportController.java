@@ -2039,6 +2039,9 @@ public class PharmacyReportController implements Serializable {
     public void processTransferIssue() {
         retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferIssue));
     }
+    public void processTransferReceive() {
+        retrieveBillItems("b.billType", Collections.singletonList(BillType.PharmacyTransferReceive));
+    }
 
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
