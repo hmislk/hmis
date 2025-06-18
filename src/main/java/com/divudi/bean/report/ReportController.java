@@ -930,7 +930,17 @@ public class ReportController implements Serializable {
             jpql += " AND bi.bill.department.site = :site";
             params.put("site", site);
         }
+        
+        if (toInstitution != null) {
+            jpql += " AND bi.bill.toInstitution = :toIns";
+            params.put("toIns", toInstitution);
+        }
 
+        if (toDepartment != null) {
+            jpql += " AND bi.bill.toDepartment = :toDep";
+            params.put("toDep", toDepartment);
+        } 
+             
         if (category != null) {
             jpql += " AND bi.item.category = :cat";
             params.put("cat", category);
@@ -1031,6 +1041,16 @@ public class ReportController implements Serializable {
             params.put("site", site);
         }
 
+        if (toInstitution != null) {
+            jpql += " AND bi.bill.toInstitution = :toIns";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " AND bi.bill.toDepartment = :toDep";
+            params.put("toDep", toDepartment);
+        }
+        
         if (category != null) {
             jpql += " AND bi.item.category = :cat";
             params.put("cat", category);
