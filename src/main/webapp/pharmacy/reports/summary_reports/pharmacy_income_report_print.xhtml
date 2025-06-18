@@ -60,15 +60,15 @@
                         <tbody>
                             <ui:repeat value="#{pharmacySummaryReportController.bundle.rows}" var="row" varStatus="status">
                                 <tr>
-                                    <td><h:outputText value="#{row.bill.deptId}" /></td>
-                                    <td style="text-align: left;"><h:outputText value="#{row.bill.patient.person.nameWithTitle}" /></td>
+                                    <td><h:outputText value="#{row.billNo}" /></td>
+                                    <td style="text-align: left;"><h:outputText value="#{row.patientName}" /></td>
                                     <td>
-                                        <h:outputText value="#{row.bill.createdAt}">
+                                        <h:outputText value="#{row.createdAt}">
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
                                         </h:outputText>
                                     </td>
                                     <td class="text-end">
-                                        <h:outputText value="#{row.bill.netTotal}">
+                                        <h:outputText value="#{row.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputText>
                                     </td>

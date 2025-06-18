@@ -208,15 +208,15 @@
                                                         <h:outputText value="#{i.index +1}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.deptId}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{row.billNo}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{row.bill.createdAt}" style="margin-left: 1mm;">
+                                                        <h:outputText value="#{row.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="dd/MM/YY" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{row.bill.netTotal}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{row.netTotal}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>

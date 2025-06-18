@@ -422,7 +422,7 @@
                                         class="mx-1"
                                         action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{row.pharmaceuticalBillItem.billItem.bill}" target="#{billSearch.bill}" />
+                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
                                     </p:commandLink>
                                 </p:column>
 
