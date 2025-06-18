@@ -30,6 +30,10 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.service.BillService;
+import com.divudi.core.entity.BillItemFinanceDetails;
+import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -77,6 +81,10 @@ public class TransferIssueController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    @EJB
+    private BillService billService;
 
     private List<BillItem> billItems;
     private BillItem billItem;
@@ -493,6 +501,8 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
+        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValue);
+
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
         if (getSessionController().getApplicationPreference().isDepNumGenFromToDepartment()) {
@@ -514,6 +524,7 @@ public class TransferIssueController implements Serializable {
 //        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
+        billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
@@ -655,6 +666,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
         getBillFacade().edit(getIssuedBill());
+        billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -670,15 +682,45 @@ public class TransferIssueController implements Serializable {
 
     }
 
+    private double getPreferredRate(BillItem b) {
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Based On Purchase Rate", false)) {
+            return b.getPharmaceuticalBillItem().getPurchaseRate();
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Based On Cost Rate", false)) {
+            BillItemFinanceDetails f = b.getBillItemFinanceDetails();
+            if (f != null && f.getLineCostRate() != null) {
+                return f.getLineCostRate().doubleValue();
+            }
+            return b.getPharmaceuticalBillItem().getPurchaseRate();
+        }
+        return b.getPharmaceuticalBillItem().getRetailRate();
+    }
+
     private void updateBillItemRateAndValue(BillItem b) {
-        boolean useRetailRate = sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate();
-        double rate = useRetailRate
-                ? b.getPharmaceuticalBillItem().getRetailRate()
-                : b.getPharmaceuticalBillItem().getPurchaseRate();
+        double rate = getPreferredRate(b);
 
         b.setRate(rate);
         b.setQty(b.getPharmaceuticalBillItem().getQty());
         b.setNetValue(rate * b.getPharmaceuticalBillItem().getQty());
+
+        BillItemFinanceDetails f = b.getBillItemFinanceDetails();
+        if (f == null) {
+            f = new BillItemFinanceDetails(b);
+            b.setBillItemFinanceDetails(f);
+        }
+
+        BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
+        BigDecimal rateBig = BigDecimal.valueOf(rate);
+        BigDecimal total = rateBig.multiply(qty);
+
+        f.setQuantity(qty);
+        f.setTotalQuantity(qty);
+        f.setLineGrossRate(rateBig);
+        f.setLineNetRate(rateBig);
+        f.setLineGrossTotal(total);
+        f.setLineNetTotal(total);
+        f.setLineCost(total);
+        f.setLineCostRate(rateBig);
 
         getBillItemFacade().edit(b);
     }
@@ -687,17 +729,10 @@ public class TransferIssueController implements Serializable {
         double value = 0;
         int serialNo = 0;
 
-        if (sessionController.getDepartmentPreference().isTranferNetTotalbyRetailRate()) {
-            for (BillItem b : getIssuedBill().getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-        } else {
-            for (BillItem b : getIssuedBill().getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-
+        for (BillItem b : getIssuedBill().getBillItems()) {
+            double rate = getPreferredRate(b);
+            value += rate * b.getPharmaceuticalBillItem().getQty();
+            b.setSearialNo(serialNo++);
         }
 
         return value;

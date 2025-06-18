@@ -396,6 +396,35 @@ public class StockController implements Serializable {
         return 0.0;
     }
 
+    public double findStock(Institution institution, Institution site, Department department, Item item) {
+        if (item instanceof Amp) {
+            return findStock(institution, site, department, (Amp) item);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findStock(Institution institution, Institution site, Department department, Amp amp) {
+        String jpql = "select sum(i.stock) from Stock i where i.retired=false and i.itemBatch.item=:amp";
+        Map<String, Object> m = new HashMap<>();
+        m.put("amp", amp);
+        if (department != null) {
+            jpql += " and i.department=:dep";
+            m.put("dep", department);
+        } else if (institution != null && site != null) {
+            jpql += " and i.department.site=:site and i.department.institution=:ins";
+            m.put("site", site);
+            m.put("ins", institution);
+        } else if (institution != null) {
+            jpql += " and i.department.institution=:ins";
+            m.put("ins", institution);
+        } else if (site != null) {
+            jpql += " and i.department.site=:site";
+            m.put("site", site);
+        }
+        return billItemFacade.findDoubleByJpql(jpql, m);
+    }
+
     public double findStock(Department department, List<Amp> amps) {
         Double stock;
         String jpql;

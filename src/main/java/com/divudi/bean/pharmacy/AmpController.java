@@ -106,6 +106,8 @@ public class AmpController implements Serializable {
     @Inject
     private ItemController itemController;
 
+    private boolean duplicateCode;
+
     private UploadedFile file;
 
     public UploadedFile getFile() {
@@ -673,7 +675,7 @@ public class AmpController implements Serializable {
         
         if(current.getId() != null){
             if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
-                JsfUtil.addErrorMessage("You have no privilage to edit AMPs.");
+                JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
                 return;
             }
         }
@@ -717,6 +719,8 @@ public class AmpController implements Serializable {
         }
 
         if (getCurrent().getId() != null) {
+            getCurrent().setEditedAt(new Date());
+            getCurrent().setEditer(getSessionController().getLoggedUser());
             getFacade().edit(current);
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
@@ -744,6 +748,108 @@ public class AmpController implements Serializable {
         m.put("icode", code);
         Amp amp = getFacade().findFirstByJpql(jpql, m);
         return amp != null;
+    }
+
+    public void checkCodeDuplicate() {
+        duplicateCode = checkItemCode(current.getCode(), current);
+        if (duplicateCode) {
+            JsfUtil.addErrorMessage("This Code has Already been Used.");
+        }
+    }
+
+    public void generateCode() {
+        int length = configOptionApplicationController.getIntegerValueByKey("AMP_CODE_LENGTH", 4);
+        String code = "";
+        if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_NUMERIC_ONLY")) {
+            code = generateNumericCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_CHARACTERS_ONLY")) {
+            code = generateCharacterCode(length);
+        } else if (configOptionApplicationController.getBooleanValueByKey("AMP_CODE_ALPHANUMERIC")) {
+            code = generateAlphaNumericCode(length);
+        }
+        current.setCode(code);
+        checkCodeDuplicate();
+    }
+
+    private String generateNumericCode(int length) {
+        long max = 0;
+        List<Amp> all = findItems();
+        for (Amp a : all) {
+            try {
+                long val = Long.parseLong(a.getCode());
+                if (val > max) {
+                    max = val;
+                }
+            } catch (Exception e) {
+            }
+        }
+        long next = max + 1;
+        String format = "%0" + length + "d";
+        String code = String.format(format, next);
+        while (checkItemCode(code, current)) {
+            next++;
+            code = String.format(format, next);
+        }
+        return code;
+    }
+
+    private String generateCharacterCode(int length) {
+        String base = generateShortCode(current.getName());
+        if (base.isEmpty()) {
+            base = "AMP"; // Default fallback
+        }
+        if (base.length() > length) {
+            base = base.substring(0, length);
+        }
+        String code = base.toUpperCase();
+        int index = 1;
+        while (checkItemCode(code, current)) {
+            String suffix = String.valueOf(index);
+            int cut = Math.max(0, length - suffix.length());
+            String prefix = base.length() > cut ? base.substring(0, cut) : base;
+            code = (prefix + suffix).toUpperCase();
+            index++;
+        }
+        if (code.length() > length) {
+            code = code.substring(0, length);
+        }
+        return code;
+    }
+
+    private String generateAlphaNumericCode(int length) {
+        String base = generateShortCode(current.getName()).toUpperCase();
+        if (base.length() >= length) {
+            base = base.substring(0, length - 1);
+        }
+        int digits = Math.max(1, length - base.length());
+        long index = 1;
+        String code;
+        String format = "%0" + digits + "d";
+        code = base + String.format(format, index);
+        while (checkItemCode(code, current)) {
+            index++;
+            code = base + String.format(format, index);
+        }
+        return code;
+    }
+
+    private String generateShortCode(String name) {
+        StringBuilder sc = new StringBuilder();
+        if (name == null || name.trim().isEmpty()) {
+            return "";
+        }
+        String[] words = name.split(" ");
+        if (words.length == 1 && words[0].length() >= 3) {
+            sc = new StringBuilder(words[0].substring(0, 3).toLowerCase());
+        } else {
+            for (String w : words) {
+                if (!w.isEmpty()) {
+                    sc.append(w.charAt(0));
+                }
+            }
+            sc = new StringBuilder(sc.toString().toLowerCase());
+        }
+        return sc.toString();
     }
 
     public void saveSelected() {
@@ -970,6 +1076,14 @@ public class AmpController implements Serializable {
 
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
+    }
+
+    public boolean isDuplicateCode() {
+        return duplicateCode;
+    }
+
+    public void setDuplicateCode(boolean duplicateCode) {
+        this.duplicateCode = duplicateCode;
     }
 
     /**

@@ -16,28 +16,30 @@
                     <p:panel >
                         <f:facet name="header" >
                             <h:outputLabel value="Transfer Recieve Reprint" ></h:outputLabel>
-                            <p:commandButton 
-                                value="Reprint" 
-                                icon="fas fa-print"
-                                class="ui-button-info"
-                                ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
-                            </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="To Cancel" 
-                                icon="fas fa-cancel"
-                                class="ui-button-danger mx-2 mb-2"
-                                action="pharmacy_cancel_transfer_receive" 
-                                disabled="#{pharmacyBillSearch.bill.cancelled}">                           
-                            </p:commandButton>    
-                            <p:commandButton
-                                value="Back"
-                                icon="fas fa-arrow-left"
-                                onclick="window.history.back(); return false"
-                                class="ui-button-danger mb-2"
+                            <div style="float: right">
+                                <p:commandButton
+                                        value="Reprint"
+                                        icon="fas fa-print"
+                                        class="ui-button-info"
+                                        ajax="false" >
+                                    <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+                                <p:commandButton
+                                        ajax="false"
+                                        value="To Cancel"
+                                        icon="fas fa-cancel"
+                                        class="ui-button-danger mx-2 mb-2"
+                                        action="pharmacy_cancel_transfer_receive"
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                </p:commandButton>
+                                <p:commandButton
+                                        value="Back"
+                                        icon="fas fa-arrow-left"
+                                        onclick="window.history.back(); return false"
+                                        class="ui-button-danger mb-2"
                                 >
-                            </p:commandButton>
+                                </p:commandButton>
+                            </div>
                         </f:facet>
 
                         <h:panelGroup id="gpBillPreview" >

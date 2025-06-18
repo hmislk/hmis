@@ -2,6 +2,7 @@ package com.divudi.core.data;
 
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.cashTransaction.DenominationTransaction;
+import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.lab.PatientInvestigation;
 
@@ -21,6 +22,11 @@ public class ReportTemplateRow implements Serializable {
 
     private String uuid;
     private Long counter;
+
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
 
     private Category category;
     private Bill bill;
@@ -149,6 +155,8 @@ public class ReportTemplateRow implements Serializable {
 
     private PaymentHandover paymentHandover;
 
+    private AgentReferenceBook agentReferenceBook;
+
     // Constructor to generate a new UUID when an object is created
     public ReportTemplateRow() {
         this.id = UUID.randomUUID();
@@ -161,6 +169,12 @@ public class ReportTemplateRow implements Serializable {
     public ReportTemplateRow(Institution institution, Double itemTotal) {
         this.itemTotal = itemTotal;
         this.institution = institution;
+    }
+
+    public ReportTemplateRow(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
+        this.billTypeAtomic = billTypeAtomic;
+        this.toDepartment = toDpartment;
+        this.itemCount = count;
     }
 
     public ReportTemplateRow(Institution institution, Long itemCount, Double itemHospitalFee, Double itemCollectingCentreFee, Double itemProfessionalFee, Double itemNetTotal) {
@@ -1366,4 +1380,45 @@ public class ReportTemplateRow implements Serializable {
         this.patientInvestigation = patientInvestigation;
     }
 
+    public AgentReferenceBook getAgentReferenceBook() {
+        return agentReferenceBook;
+    }
+
+    public void setAgentReferenceBook(AgentReferenceBook agentReferenceBook) {
+        this.agentReferenceBook = agentReferenceBook;
+    }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+    
+    
 }

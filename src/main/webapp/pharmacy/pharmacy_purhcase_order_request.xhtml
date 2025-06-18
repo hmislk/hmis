@@ -262,7 +262,9 @@
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock"  style="padding: 6px; text-align: right;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
+                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>                            
                                     </p:column>
                                     <f:selectItems value="#{purchaseOrderRequestController.dealorItems}" var="di" itemLabel="#{di.name}" itemValue="#{di}" ></f:selectItems>
                                 </p:selectOneMenu>
@@ -286,7 +288,7 @@
                                     scrollHeight="600"
                                     minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
-                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    completeMethod="#{itemController.completeAmpAndAmppItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
@@ -294,7 +296,9 @@
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock" style="padding: 6px; text-align: right;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
+                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>                            
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 
@@ -388,8 +392,8 @@
                                         <h:outputLabel value="Supplier Address" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
-                                        
-                                         <h:outputLabel value="Payment Method" />
+
+                                        <h:outputLabel value="Payment Method" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
                                     </h:panelGrid>

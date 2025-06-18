@@ -367,12 +367,14 @@ public class CollectingCentreController implements Serializable {
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired=:ret"
-                + " and ah.createdAt between :fd and :td ";
+                + " and ah.createdAt between :fd and :td "
+                + " and ah.historyType <> :ht ";
 
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         m.put("fd", fromDate);
         m.put("td", toDate);
+        m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
         if (collectingCentre != null) {
             jpql += " and ah.agency = :cc ";

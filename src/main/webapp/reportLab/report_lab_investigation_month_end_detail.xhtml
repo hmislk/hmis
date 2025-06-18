@@ -35,9 +35,7 @@
                                 <p:printer target="panelPrint" />
                             </p:commandButton>
 
-                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton">
-                                <p:dataExporter type="xlsx" target="flatTable" fileName="InvestigationReport" />
-                            </p:commandButton>
+                            <p:commandButton ajax="false" value="Excel" styleClass="noPrintButton" action="#{investigationMonthSummeryOwnController.exportInvestigationReportToExcel()}"/>
                         </h:panelGrid>
                     </f:facet>
 
@@ -85,6 +83,15 @@
                     <p:dataTable id="flatTable" styleClass="hidden-table" style="display: none;">
                         <f:facet name="header">
                             <h:outputText value="Investigation Month End Detail" />
+                            <br/>
+                            <h:outputLabel value=" From : " style="white-space: pre-line"/>
+                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.fromDate}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
+                            <h:outputLabel value="&emsp;&emsp;To :"/>
+                            <h:outputLabel  value="#{investigationMonthSummeryOwnController.toDate}" >
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </h:outputLabel>
                         </f:facet>
 
                         <p:column headerText="Investigation">
@@ -133,6 +140,9 @@
                                 </ui:repeat>
                             </ui:repeat>
                         </p:column>
+                        <f:facet name="footer" >
+                            <h:outputLabel value="Printed By : #{sessionController.loggedUser.webUserPerson.name}" style="float: right"/>
+                        </f:facet>
                     </p:dataTable>
                 </p:panel>
             </h:form>

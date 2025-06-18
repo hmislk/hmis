@@ -117,6 +117,8 @@ public enum BillType {
     ChannelProPayment,
     ChannelAgencyPayment,
     ChannelAgencyCommission,
+    ChannelOnlineBookingAgentPaidToHospital,
+    ChannelOnlineBookingAgentPaidToHospitalBillCancellation,
     gpBooking,
     gpSettling,
     Appointment,

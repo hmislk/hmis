@@ -6,6 +6,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.ScheduledProcess;
+import com.divudi.core.data.ScheduledFrequency;
 import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.hr.*;
@@ -74,6 +76,10 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
@@ -279,6 +285,14 @@ public class EnumController implements Serializable {
         return Arrays.asList(HistoryType.values());
     }
 
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
+    }
+
+    public List<ScheduledFrequency> getScheduledFrequencies() {
+        return Arrays.asList(ScheduledFrequency.values());
+    }
+
     public Dashboard[] getDashboardTypes() {
         return Dashboard.values();
     }
@@ -306,7 +320,8 @@ public class EnumController implements Serializable {
                 ReportViewType.BY_BILL,
                 ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
-                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+                ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                ReportViewType.BY_ITEM
         );
     }
 
@@ -555,10 +570,6 @@ public class EnumController implements Serializable {
             Title.Mrs,
             Title.Other,};
         return tem;
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
     }
 
     public Sex[] getGender() {
