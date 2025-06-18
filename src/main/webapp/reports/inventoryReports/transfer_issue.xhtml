@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -246,6 +246,9 @@
                             </p:column>
                             <p:column headerText="Net Total">
                                 <h:outputText value="#{f.bill.netTotal}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                </f:facet>
                             </p:column>                          
 
                         </p:dataTable>
