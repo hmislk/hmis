@@ -831,7 +831,8 @@ public class PharmacySummaryReportController implements Serializable {
                     processPharmacyIncomeAndCostReportByBillType();
                     break;
                 case BY_BILL:
-                    processPharmacyIncomeAndCostReportByBill();
+//                    processPharmacyIncomeAndCostReportByBill();
+                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
@@ -888,6 +889,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
+    @Deprecated // Do not use this method. It will stop the whole application if a data range of one month is given. This will be deleted in next iteration
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
