@@ -3232,6 +3232,10 @@ public class BillSearch implements Serializable {
 //        bill.setTransError(flag);
     }
 
+    public Bill findBill(Long id) {
+        return getBillFacade().find(id);
+    }
+
     public String navigateToCancelOpdBill() {
         if (bill == null) {
             JsfUtil.addErrorMessage("Nothing to cancel");
