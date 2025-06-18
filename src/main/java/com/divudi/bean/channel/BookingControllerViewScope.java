@@ -2465,6 +2465,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         getSelectedBillSession().setAbsentMarkedUser(sessionController.getLoggedUser());
         if (getSelectedBillSession().getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
+            getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ABSENT);
+            getOnlineBookingFacade().edit(getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking());
         }
         billSessionFacade.edit(getSelectedBillSession());
     }
@@ -2571,14 +2573,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String navigateBackToBookingsFromBillSession() {
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
-        viewScopeDataTransferController.setSelectedSessionInstance(selectedSessionInstance);
+        viewScopeDataTransferController.setSelectedSessionInstance(printingBill.getSingleBillSession().getSessionInstance());
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
 
         viewScopeDataTransferController.setNeedToFillBillSessions(false);
         viewScopeDataTransferController.setNeedToFillBillSessionDetails(false);
-        viewScopeDataTransferController.setNeedToFillSessionInstances(true);
+        viewScopeDataTransferController.setNeedToFillSessionInstances(false);
         viewScopeDataTransferController.setNeedToFillSessionInstanceDetails(true);
         viewScopeDataTransferController.setNeedToFillMembershipDetails(false);
         viewScopeDataTransferController.setNeedToPrepareForNewBooking(true);
@@ -3646,9 +3648,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking() != null) {
                 if (selectedBillSession.getBill().getReferenceBill().getOnlineBooking().isAbsent()) {
                     selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(false);
+                    selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
                     selectedBillSession.setAbsent(false);
                 } else {
                     selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setAbsent(true);
+                    selectedBillSession.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ABSENT);
                     selectedBillSession.setAbsent(true);
                 }
 
@@ -7099,7 +7103,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public String generateBillNumberInsId(Bill bill) {
         String suffix = getSessionController().getInstitution().getInstitutionCode();
         BillClassType billClassType = null;
-        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit};
+        BillType[] billTypes = {BillType.ChannelAgent, BillType.ChannelCash, BillType.ChannelOnCall, BillType.ChannelStaff, BillType.ChannelCredit, BillType.ChannelOnlineBookingAgentPaidToHospital, BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation};
         List<BillType> bts = Arrays.asList(billTypes);
         BillType billType = null;
         String insId = null;
@@ -8661,7 +8665,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void calculateSelectedBillSessionTotal() {
-        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, getSelectedSessionInstance().getOriginatingSession().getCategory());
+        SessionInstance session = getSelectedSessionInstance() != null ? getSelectedSessionInstance() : getBillSession() != null ? getBillSession().getSessionInstance() : null;
+        System.out.println("line 8665 "+session+getSelectedSessionInstance()+getBillSession());
+        if(session == null){
+            return;
+        }
+        PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, session.getOriginatingSession().getCategory());
         feeTotalForSelectedBill = 0.0;
         feeDiscountForSelectedBill = 0.0;
         feeNetTotalForSelectedBill = 0.0;
