@@ -4810,6 +4810,16 @@ public class ReportsController implements Serializable {
 
         if (externalLaboratoryOnly) {
             jpql += "AND billItem.patientInvestigation.outsourced = true ";
+
+            if (toInstitution != null) {
+                jpql += "AND billItem.patientInvestigation.outsourcedInstitution = :oInst ";
+                parameters.put("oInst", toInstitution);
+            }
+
+            if (toDepartment != null) {
+                jpql += "AND billItem.patientInvestigation.outsourcedDepartment = :oDept ";
+                parameters.put("oDept", toDepartment);
+            }
         }
 
         jpql += "AND bill.createdAt BETWEEN :fd AND :td ";
@@ -4904,7 +4914,7 @@ public class ReportsController implements Serializable {
         List<ReportTemplateRow> cancelledRs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpqlWithoutCache(cancelledJpql, cancelledParameters, TemporalType.TIMESTAMP);
 
         if (externalLaboratoryOnly) {
-            removeCancelledNonInvestigationBills(cancelledRs);
+            removeCancelledNonInvestigationBillsWithSentInstitutionDepartmentFilters(cancelledRs);
         }
 
         List<ReportTemplateRow> allRows = new ArrayList<>(rs);
@@ -4917,7 +4927,7 @@ public class ReportsController implements Serializable {
         return b;
     }
 
-    private void removeCancelledNonInvestigationBills(final List<ReportTemplateRow> rs) {
+    private void removeCancelledNonInvestigationBillsWithSentInstitutionDepartmentFilters(final List<ReportTemplateRow> rs) {
         Iterator<ReportTemplateRow> iterator = rs.iterator();
 
         while (iterator.hasNext()) {
@@ -4957,11 +4967,35 @@ public class ReportsController implements Serializable {
                 Boolean.FALSE.equals(item.getPatientInvestigation().getOutsourced());
     }
 
+    private boolean isOutsourcedInstitution(BillItem item) {
+        if (toInstitution == null) {
+            return true;
+        }
+
+        return item.getPatientInvestigation() != null &&
+                item.getPatientInvestigation().getOutsourcedInstitution() != null
+                && item.getPatientInvestigation().getOutsourcedInstitution().equals(toInstitution);
+    }
+
+    private boolean isOutsourcedDepartment(BillItem item) {
+        if (toDepartment == null) {
+            return true;
+        }
+
+        return item.getPatientInvestigation() != null &&
+                item.getPatientInvestigation().getOutsourcedDepartment() != null
+                && item.getPatientInvestigation().getOutsourcedDepartment().equals(toDepartment);
+    }
+
     private boolean isFromInternalReference(BillItem item, Bill currentBill) {
         BillItem referenceItem = item.getReferanceBillItem();
 
         if (referenceItem != null) {
-            return isInternalInvestigation(referenceItem);
+            if (isInternalInvestigation(referenceItem)) {
+                return true;
+            } else {
+                return !(isOutsourcedInstitution(referenceItem) && isOutsourcedDepartment(referenceItem));
+            }
         }
 
         Bill originalBill = currentBill.getBilledBill();
@@ -4971,7 +5005,13 @@ public class ReportsController implements Serializable {
                 .orElse(Collections.emptyList())
                 .stream()
                 .filter(oi -> oi.getItem() != null && oi.getItem().equals(item.getItem()))
-                .anyMatch(this::isInternalInvestigation);
+                .anyMatch(oi -> {
+                    if (isInternalInvestigation(oi)) {
+                        return true;
+                    } else {
+                        return !(isOutsourcedInstitution(oi) && isOutsourcedDepartment(oi));
+                    }
+                });
     }
 
     private ReportTemplateRowBundle generateExternalLaboratoryWorkloadSummaryBillItems(List<BillTypeAtomic> bts,
@@ -5055,6 +5095,16 @@ public class ReportsController implements Serializable {
 
         if (externalLaboratoryOnly) {
             jpql += "AND billItem.patientInvestigation.outsourced = true ";
+
+            if (toInstitution != null) {
+                jpql += "AND billItem.patientInvestigation.outsourcedInstitution = :oInst ";
+                parameters.put("oInst", toInstitution);
+            }
+
+            if (toDepartment != null) {
+                jpql += "AND billItem.patientInvestigation.outsourcedDepartment = :oDept ";
+                parameters.put("oDept", toDepartment);
+            }
         }
 
         jpql += "GROUP BY billItem";
@@ -5144,11 +5194,10 @@ public class ReportsController implements Serializable {
 
         cancelledJpql += "GROUP BY billItem";
 
-
         List<ReportTemplateRow> cancelledRs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(cancelledJpql, cancelledParameters, TemporalType.TIMESTAMP);
 
         if (externalLaboratoryOnly) {
-            removeCancelledNonInvestigationBills(cancelledRs);
+            removeCancelledNonInvestigationBillsWithSentInstitutionDepartmentFilters(cancelledRs);
         }
 
         List<ReportTemplateRow> allRows = new ArrayList<>(rs);
