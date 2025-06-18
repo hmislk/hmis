@@ -1,6 +1,7 @@
 package com.divudi.core.data;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillItemDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -164,6 +165,9 @@ public class IncomeRow implements Serializable {
 
     private double qty;
 
+    private double retailRate;
+    private double purchaseRate;
+
     private long duration;
 
     private UUID id;
@@ -232,6 +236,30 @@ public class IncomeRow implements Serializable {
             if (dto.getPurchaseValue() != null) {
                 this.purchaseValue = dto.getPurchaseValue().doubleValue();
             }
+            this.grossProfit = this.retailValue - this.purchaseValue;
+        }
+    }
+
+    public IncomeRow(PharmacyIncomeCostBillItemDTO dto) {
+        this();
+        if (dto != null) {
+            this.billNo = dto.getBillNo();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.bhtNo = dto.getBhtNo();
+            this.createdAt = dto.getCreatedAt();
+            this.itemName = dto.getItemName();
+            if (dto.getQty() != null) {
+                this.qty = dto.getQty();
+            }
+            if (dto.getRetailRate() != null) {
+                this.retailRate = dto.getRetailRate();
+            }
+            if (dto.getPurchaseRate() != null) {
+                this.purchaseRate = dto.getPurchaseRate();
+            }
+            this.retailValue = this.retailRate * this.qty;
+            this.purchaseValue = this.purchaseRate * this.qty;
             this.grossProfit = this.retailValue - this.purchaseValue;
         }
     }
@@ -1052,6 +1080,22 @@ public class IncomeRow implements Serializable {
 
     public void setQty(double qty) {
         this.qty = qty;
+    }
+
+    public double getRetailRate() {
+        return retailRate;
+    }
+
+    public void setRetailRate(double retailRate) {
+        this.retailRate = retailRate;
+    }
+
+    public double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(double purchaseRate) {
+        this.purchaseRate = purchaseRate;
     }
 
     public void setBillItem(BillItem billItem) {
