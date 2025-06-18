@@ -27,6 +27,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillItemDTO;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -314,6 +315,15 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+    public IncomeBundle(List<PharmacyIncomeCostBillItemDTO> dtos) {
+        this();
+        if (dtos != null) {
+            for (PharmacyIncomeCostBillItemDTO dto : dtos) {
+                rows.add(new IncomeRow(dto));
+            }
+        }
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
@@ -378,6 +388,57 @@ public class IncomeBundle implements Serializable {
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
             grossProfitValue += grossProfit;
+        }
+    }
+
+    public void generateRetailAndCostDetailsForBillItemDtos() {
+        saleValue = 0;
+        purchaseValue = 0;
+        grossProfitValue = 0;
+        quantity = 0.0;
+
+        for (IncomeRow r : getRows()) {
+            BillTypeAtomic bta = r.getBillTypeAtomic();
+            if (bta == null || bta.getBillCategory() == null) {
+                continue;
+            }
+            BillCategory bc = bta.getBillCategory();
+
+            double qty = Math.abs(r.getQty());
+            double retail = Math.abs(r.getRetailRate());
+            double purchase = Math.abs(r.getPurchaseRate());
+
+            double retailTotal = 0;
+            double purchaseTotal = 0;
+            double grossProfit = 0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    retailTotal = retail * qty;
+                    purchaseTotal = purchase * qty;
+                    grossProfit = (retail - purchase) * qty;
+                    break;
+                case CANCELLATION:
+                case REFUND:
+                    retailTotal = -retail * qty;
+                    purchaseTotal = -purchase * qty;
+                    grossProfit = -(retail - purchase) * qty;
+                    qty = -qty;
+                    break;
+                default:
+                    break;
+            }
+
+            r.setRetailValue(retailTotal);
+            r.setPurchaseValue(purchaseTotal);
+            r.setGrossProfit(grossProfit);
+
+            saleValue += retailTotal;
+            purchaseValue += purchaseTotal;
+            grossProfitValue += grossProfit;
+            quantity += qty;
         }
     }
 
