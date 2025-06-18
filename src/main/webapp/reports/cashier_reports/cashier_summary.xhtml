@@ -221,10 +221,7 @@
                         icon="fas fa-file-pdf"
                         value="PDF"
                         ajax="false">
-                    <p:dataExporter
-                            type="pdf"
-                            target="printPanel"
-                            fileName="Cashier_details_report"/>
+                    <p:fileDownload value="#{searchController.bundleAsPdf}"/>
                 </p:commandButton>
 
 
