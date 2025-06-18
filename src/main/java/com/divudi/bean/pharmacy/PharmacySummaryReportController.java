@@ -893,20 +893,88 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(BillItem bi) {
-        // Have to do null checks
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
         BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+        if (bifd == null) {
+            bifd = new BillItemFinanceDetails(bi);
+            bi.setBillItemFinanceDetails(bifd);
+        }
+
         PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-        Bill b = bi.getBill();
-        BillTypeAtomic bta = bi.getBill().getBillTypeAtomic();
 
-        double qty = pbi.getQty();
-        double purchaseRate = pbi.getItemBatch().getPurcahseRate(); // From PBI
-        double retailRate = bi.getRate(); // From Bill Item
-        double costRate = pbi.getItemBatch().getCostRate(); // From PBI
+        Item item = bi.getItem();
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        if (item instanceof Ampp) {
+            double dblVal = item.getDblValue();
+            unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+        }
 
-        // have to calculate the bifd details from above.
-        // follow the pettern in PharmacyDirectPurchaseController
-        // all other bill types exept the following will be excluded
+        BigDecimal qty = item instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getQtyPacks())
+                : BigDecimal.valueOf(pbi.getQty());
+        BigDecimal freeQty = item instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
+                : BigDecimal.valueOf(pbi.getFreeQty());
+
+        BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
+        BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
+
+        if (bifd.getUnitsPerPack() == null || bifd.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setUnitsPerPack(unitsPerPack);
+        }
+        if (bifd.getQuantity() == null || bifd.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantity(qty);
+        }
+        if (bifd.getFreeQuantity() == null || bifd.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantity(freeQty);
+        }
+        if (bifd.getTotalQuantity() == null || bifd.getTotalQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantity(qty.add(freeQty));
+        }
+        if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantityByUnits(qtyInUnits);
+        }
+        if (bifd.getFreeQuantityByUnits() == null || bifd.getFreeQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantityByUnits(freeQtyInUnits);
+        }
+        if (bifd.getTotalQuantityByUnits() == null || bifd.getTotalQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantityByUnits(qtyInUnits.add(freeQtyInUnits));
+        }
+
+        Double purchaseRate = pbi.getPurchaseRate();
+        if (purchaseRate == null && pbi.getItemBatch() != null) {
+            purchaseRate = pbi.getItemBatch().getPurcahseRate();
+        }
+        if (purchaseRate != null &&
+                (bifd.getLineGrossRate() == null || bifd.getLineGrossRate().compareTo(BigDecimal.ZERO) == 0)) {
+            bifd.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
+            bifd.setLineNetRate(BigDecimal.valueOf(purchaseRate));
+        }
+
+        Double costRate = null;
+        if (pbi.getItemBatch() != null) {
+            costRate = pbi.getItemBatch().getCostRate();
+        }
+        if (costRate != null && (bifd.getLineCostRate() == null || bifd.getLineCostRate().compareTo(BigDecimal.ZERO) == 0)) {
+            bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+        }
+
+        double retailRate = bi.getRate();
+        if (bifd.getRetailSaleRate() == null || bifd.getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+        }
+        if (bifd.getRetailSaleRatePerUnit() == null || bifd.getRetailSaleRatePerUnit().compareTo(BigDecimal.ZERO) == 0) {
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) > 0) {
+                bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate).divide(unitsPerPack, 4, RoundingMode.HALF_UP));
+            } else {
+                bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate));
+            }
+        }
+
+        // If bifd fields have other value other than zero or null, that value should not be assigned
         /*
         
         
@@ -971,16 +1039,52 @@ public class PharmacySummaryReportController implements Serializable {
             }
             BillCategory bc = bta.getBillCategory();
 
-            Double saleValue = 0.0;
-            Double purchaseValue = 0.0;
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+            double costValue = 0.0;
 
             for (BillItem bi : b.getBillItems()) {
                 addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(bi);
                 billItemFacade.edit(bi);
 
-                // calculate bill item finance details 
+                PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+                if (pbi == null) {
+                    continue;
+                }
+                double qty = Math.abs(pbi.getQty());
+                double retailRate = Math.abs(pbi.getRetailRate());
+                if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
+                    retailRate = Math.abs(bi.getNetRate());
+                }
+                double purchaseRate = Math.abs(pbi.getPurchaseRate());
+                double cRate = 0.0;
+                if (pbi.getItemBatch() != null && pbi.getItemBatch().getCostRate() != null) {
+                    cRate = Math.abs(pbi.getItemBatch().getCostRate());
+                }
+
+                double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
+
+                saleValue += factor * retailRate * qty;
+                purchaseValue += factor * purchaseRate * qty;
+                costValue += factor * cRate * qty;
             }
-// update bill finance details if they are null or zero. follow the methods used in PharmacyDirectPurchaseController
+
+            BillFinanceDetails bfd = b.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails(b);
+                b.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
+            bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
+
+            if (bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0
+                    && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0
+                    && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
+                billService.createBillFinancialDetailsForPharmacyBill(b);
+            }
+
             getBillFacade().edit(b);
         }
     }
