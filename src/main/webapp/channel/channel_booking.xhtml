@@ -557,6 +557,14 @@
                                     if (selectedSessionId == sendSessionId) {
                                         document.querySelector('.ws-trigger').click();
 
+                                        if (Notification.permission === "default") {
+                                            Notification.requestPermission().then(function (permission) {
+                                                if (permission === "granted") {
+                                                    new Notification("Thanks!", {body: "Notifications are now enabled."});
+                                                }
+                                            });
+                                        }
+
                                     }
 
                                 }

@@ -304,11 +304,16 @@
 
                                         <script>
                                             console.log("start connection");
-                                            const wsUrl = "ws://localhost:8080/rh/ws/notify";
 
-                                            let socket = new WebSocket(wsUrl);
+                                            if (typeof window.wsUrl === "undefined") {
+                                                window.wsUrl = "ws://localhost:8080/rh/ws/notify";
+                                            }
 
-                                            socket.onmessage = function (event) {
+                                            if (typeof window.socket === "undefined") {
+                                                window.socket = new WebSocket(window.wsUrl);
+                                            }
+
+                                            window.socket.onmessage = function (event) {
                                                 console.log("line 312")
                                                 const message = event.data;
                                                 const messageParts = message.split(" - ");
@@ -318,9 +323,10 @@
                                                 if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
                                                     document.querySelector(".ws-trigger").click();
 
-                                                }else if(sendMessage === "Temporary Booking Retired"){
+                                                }
+                                                if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
                                                     console.log("line 322 to retire")
-                                                    document.querySelector(".ws-trigger-2").click();
+                                                    document.querySelector(".ws-triggers").click();
                                                 }
 
                                             }
@@ -332,13 +338,8 @@
                                                          styleClass="ws-trigger"
                                                          update="groupFilteredSessions"
                                                          style="display:none"/>
-                                        
-                                        <p:commandButton id="ws-2"
-                                                         action="#{bookingControllerViewScope.releasedAppoinmentNumbers}"
-                                                         process="@this"
-                                                         styleClass="ws-trigger-2"
-                                                         update="releaseNumderAvailable releaseNumderAvailableCount releasedNumbers"
-                                                         style="display:none"/>
+
+
 
 
                                     </h:panelGroup>
@@ -451,12 +452,20 @@
                                                     <p:row id="row1" rendered="#{ configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
 
                                                         <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Appoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
-                                                            <f:selectItem id="releaseNumderAvailableCount" itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="Please select" />
+                                                            <f:selectItem id="releaseNumderAvailableCount" itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" />
                                                             <f:selectItems id="releaseNumderAvailable" value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
                                                             <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
                                                         </p:selectOneMenu>
 
                                                     </p:row>
+
+                                                    <p:commandButton id="ws-2"
+                                                                     action="#{bookingControllerViewScope.releasedAppoinmentNumbers}"
+                                                                     process="@this"
+                                                                     styleClass="ws-triggers"
+                                                                     update="row1"
+                                                                     style="display:none"/>
+
                                                     <p:commandButton
                                                         id="btnAdd"
                                                         value="Add Normal Booking"
