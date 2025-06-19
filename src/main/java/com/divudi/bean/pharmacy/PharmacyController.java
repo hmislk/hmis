@@ -741,6 +741,7 @@ public class PharmacyController implements Serializable {
     private double totalSaleValue;
     private double totalCreditSaleValue;
     private double totalCashSaleValue;
+    private double totalCostValue;
     private Item item;
     private List<BillItem> billItems;
     private List<PharmacySummery> departmentSummaries;
@@ -1067,8 +1068,12 @@ public class PharmacyController implements Serializable {
             JsfUtil.addErrorMessage(e, " Something Went Wrong!");
         }
         totalPurchase = 0.0;
+        totalCostValue = 0.0;
+
         for (Bill b : bills) {
             totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
+            totalCostValue += b.getBillFinanceDetails().getBillCostValue() != null ?
+                    b.getBillFinanceDetails().getBillCostValue().doubleValue() : 0;
         }
     }
 
@@ -1126,8 +1131,10 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
         }
         totalPurchase = 0.0;
+        totalCostValue = 0.0;
         for (BillItem i : billItems) {
             totalPurchase += i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
+            totalCostValue += (i.getBillItemFinanceDetails().getLineCost() != null) ? i.getBillItemFinanceDetails().getLineCost().doubleValue() : 0;
         }
     }
 
@@ -5053,5 +5060,13 @@ public class PharmacyController implements Serializable {
 
     public void setDepartmentCategoryMap(Map<String, Map<String, List<DepartmentCategoryWiseItems>>> departmentCategoryMap) {
         this.departmentCategoryMap = departmentCategoryMap;
+    }
+
+    public double getTotalCostValue() {
+        return totalCostValue;
+    }
+
+    public void setTotalCostValue(double totalCostValue) {
+        this.totalCostValue = totalCostValue;
     }
 }
