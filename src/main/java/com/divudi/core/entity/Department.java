@@ -370,4 +370,7 @@ public class Department implements Serializable {
         this.site = site;
     }
 
+    public String trim() {
+        return null;
+    }
 }
