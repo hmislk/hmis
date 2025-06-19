@@ -20,19 +20,19 @@
                         
                         <div class="row">
                             <div class="col-4 ">
-                                <h:outputLabel value="Issue From" ></h:outputLabel>&nbsp;
+                                <h:outputLabel value="Issue From" />
                             <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
                                             value="#{reportsTransfer.fromDepartment}"  >
                             </p:autoComplete>
                             </div>
                             <div class="col-4">
-                                <h:outputLabel value="From" ></h:outputLabel>&nbsp;
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="From" />
+                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </div>
                             <div class="col-4">
-                                <h:outputLabel value="To" ></h:outputLabel>&nbsp;
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                                <h:outputLabel value="To"/>
+                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
                             </div>
                         </div>
 
@@ -56,8 +56,7 @@
                                 ajax="false"
                                 icon="fas fa-print"
                                 class="ui-button-info"
-                                action="#" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                                action="pharmacy_report_transfer_issue_bill_summery_print?faces-redirect=true" >
                             </p:commandButton>
                             
                            
@@ -68,17 +67,17 @@
                             <p:dataTable id="tbl"
                                          value="#{reportsTransfer.listz}" var="i"  >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Transfer Issue Summary Report"/>
+                                    <h:outputLabel value="Pharmacy Transfer Issue Summary Report - "/>
                                     <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/> 
                                     <br/>
                                     <!--<h:panelGrid columns="4">-->
                                     <h:outputLabel value="From  "/>&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.fromDate}">&nbsp;&nbsp;
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     <h:outputLabel value="To  "/>&nbsp;
                                         <h:outputLabel value="#{reportsTransfer.toDate}">
-                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                         </h:outputLabel>
                                     <!--</h:panelGrid>-->
                                 </f:facet>
@@ -87,7 +86,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Department"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.string}" ></h:outputLabel>                                    
+                                    <h:outputLabel value="#{i.string}" />
                                 </p:column>
                                 
                                 <p:column headerText="Sale Value" style="text-align: right;">
