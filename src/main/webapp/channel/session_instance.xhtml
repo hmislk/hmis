@@ -252,7 +252,7 @@
 
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
-<!--                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>-->
+                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
                                     <p:tab >
 
                                         <f:facet name="title">
@@ -342,10 +342,13 @@
                                             let socket = new WebSocket(wsUrl);
 
                                             socket.onmessage = function (event) {
-                                                console.log("Message recieved " + event.data);
-//                                                alert(event.data);
-                                                
-                                                document.querySelector('.ws-trigger').click();
+
+                                                const message = event.data;
+
+                                                if (message === "Online Booking Completed" || message === "Online Booking Edited" || message === "Online Booking Cancelled" ) {
+                                                    document.querySelector('.ws-trigger').click();
+                                                }
+
 
                                             }
                                         </script>
@@ -354,7 +357,7 @@
                                                          action="#{bookingControllerViewScope.loadBillSessions}"
                                                          process="@this"
                                                          styleClass="ws-trigger"
-                                                         update="temporaryBookings"
+                                                         update="acBookings"
                                                          style="display:none"/>
                     <!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
