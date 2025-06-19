@@ -1294,6 +1294,7 @@ public class CreditCompanyDueController implements Serializable {
             InstitutionBills newIns = new InstitutionBills();
             newIns.setInstitution(ins);
             newIns.setPayments(payments);
+            newIns.setBills(new ArrayList<>());
 
             Set<Long> countedBillIds = new HashSet<>(); // Assuming bill.getId() is Long
 
@@ -1303,7 +1304,8 @@ public class CreditCompanyDueController implements Serializable {
                 }
 
                 countedBillIds.add(p.getBill().getId());
-
+                
+                newIns.getBills().add(p.getBill());
                 newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                 newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
             }
