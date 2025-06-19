@@ -924,47 +924,140 @@ public class PharmacySummaryReportController implements Serializable {
         pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
         //Available data for calculations, should not be altered dueing this method - End
 
-        /**
-         * Have to calculate Data for Bill Item Finance Details Only Bill Item
-         * Finance Details of this provided bill item will be changed here No
-         * data related direct to bill item, bill or pharmaceutical bill item
-         * should be changed here in this method Explanations should be given
-         * for each individual calculation
-         *
-         * This method is only Used for Pharmacy Sales This method is different
-         * from Purchase Calculations Here rates and values are relate to sales
-         * (not to purchases like in direct purchase
-         *
-         * The Bill Discount, Bill Tax and Bill Expenses have to be
-         * proportionately divided to calculate bill related values for this
-         * bill item The bill net total is compared to bill items net total to
-         * get the proportion of distribution
-         *
-         * Have to calculate the line rates and line values from the available
-         * values of bill item or pharmaceutical bill item
-         *
-         * Then have to add the values from bill related components
-         * 
-         * lineGrossTotal = bill items gross total
-         * billGrossTotal  = 0 // later may alter
-         * grossTotal  = lineGrossTotal  + billGrossTotal 
-         * lineNetTotal = bill items net total
-         * billNetTotal  = proportionately calculated from bill valies = tax + expenses - discount
-         * netTotal  = lineNetTotal  + billNetTotal 
-         * 
-         *
-         * Then bill related rates for bill components are valvulated by
-         * deviding the values from total quantity
-         *
-         * then bill related values and bill item related values are added to
-         * get total bill item related values
-         *
-         * then total values are calculated by adding bill related values and
-         * item related values
-         *
-         * Have to avoid NPEs
-         */
-        
+        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+        if (bifd == null) {
+            bifd = new BillItemFinanceDetails(bi);
+            bi.setBillItemFinanceDetails(bifd);
+        }
+
+        Item itemOfInputBillItem = bi.getItem();
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        if (itemOfInputBillItem instanceof Ampp) {
+            double dblVal = itemOfInputBillItem.getDblValue();
+            unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+        }
+
+        BigDecimal qty = itemOfInputBillItem instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getQtyPacks())
+                : BigDecimal.valueOf(pbi.getQty());
+        BigDecimal freeQty = itemOfInputBillItem instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
+                : BigDecimal.valueOf(pbi.getFreeQty());
+
+        BigDecimal totalQty = qty.add(freeQty);
+
+        BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
+        BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
+        BigDecimal totalQtyInUnits = qtyInUnits.add(freeQtyInUnits);
+
+        if (bifd.getUnitsPerPack() == null || bifd.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setUnitsPerPack(unitsPerPack);
+        }
+        if (bifd.getQuantity() == null || bifd.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantity(qty);
+        }
+        if (bifd.getFreeQuantity() == null || bifd.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantity(freeQty);
+        }
+        if (bifd.getTotalQuantity() == null || bifd.getTotalQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantity(totalQty);
+        }
+        if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantityByUnits(qtyInUnits);
+        }
+        if (bifd.getFreeQuantityByUnits() == null || bifd.getFreeQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantityByUnits(freeQtyInUnits);
+        }
+        if (bifd.getTotalQuantityByUnits() == null || bifd.getTotalQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantityByUnits(totalQtyInUnits);
+        }
+
+        BigDecimal proportion = BigDecimal.ZERO;
+        if (bill.getNetTotal() != 0) {
+            proportion = BigDecimal.valueOf(bi.getNetValue())
+                    .divide(BigDecimal.valueOf(bill.getNetTotal()), 10, RoundingMode.HALF_EVEN);
+        }
+
+        BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount()).multiply(proportion);
+        BigDecimal billTax = BigDecimal.valueOf(bill.getTax()).multiply(proportion);
+        BigDecimal billExpense = BigDecimal.valueOf(bill.getExpenseTotal()).multiply(proportion);
+        BigDecimal billNetTotal = billTax.add(billExpense).subtract(billDiscount);
+
+        BigDecimal billDiscountRate = BigDecimal.ZERO;
+        BigDecimal billExpenseRate = BigDecimal.ZERO;
+        BigDecimal billTaxRate = BigDecimal.ZERO;
+        if (qtyInUnits.compareTo(BigDecimal.ZERO) != 0) {
+            billDiscountRate = billDiscount.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
+            billExpenseRate = billExpense.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
+            billTaxRate = billTax.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
+        }
+
+        BigDecimal lineGrossRate = BigDecimal.valueOf(bi.getRate());
+        BigDecimal lineNetRate = BigDecimal.valueOf(bi.getNetRate());
+        BigDecimal lineDiscountRate = BigDecimal.valueOf(bi.getDiscountRate());
+
+        BigDecimal lineGrossTotal = BigDecimal.valueOf(bi.getGrossValue());
+        BigDecimal lineNetTotal = BigDecimal.valueOf(bi.getNetValue());
+
+        BigDecimal billGrossTotal = BigDecimal.ZERO;
+        BigDecimal grossTotal = lineGrossTotal.add(billGrossTotal);
+        BigDecimal netTotal = lineNetTotal.add(billNetTotal);
+
+        bifd.setLineGrossRate(lineGrossRate);
+        bifd.setBillGrossRate(BigDecimal.ZERO);
+        bifd.setGrossRate(lineGrossRate);
+
+        bifd.setLineNetRate(lineNetRate);
+        bifd.setBillNetRate(billTaxRate.add(billExpenseRate).subtract(billDiscountRate));
+        bifd.setNetRate(bifd.getLineNetRate().add(bifd.getBillNetRate()));
+
+        bifd.setLineDiscountRate(lineDiscountRate);
+        bifd.setBillDiscountRate(billDiscountRate);
+        bifd.setTotalDiscountRate(lineDiscountRate.add(billDiscountRate));
+
+        bifd.setLineExpenseRate(BigDecimal.ZERO);
+        bifd.setBillExpenseRate(billExpenseRate);
+        bifd.setTotalExpenseRate(billExpenseRate);
+
+        bifd.setLineTaxRate(BigDecimal.valueOf(bi.getVat()));
+        bifd.setBillTaxRate(billTaxRate);
+        bifd.setTotalTaxRate(BigDecimal.valueOf(bi.getVat()).add(billTaxRate));
+
+        Double costRate = null;
+        if (pbi.getItemBatch() != null) {
+            costRate = pbi.getItemBatch().getCostRate();
+        }
+        BigDecimal lineCostRate = costRate == null ? BigDecimal.ZERO : BigDecimal.valueOf(costRate);
+        bifd.setLineCostRate(lineCostRate);
+        bifd.setBillCostRate(BigDecimal.ZERO);
+        bifd.setTotalCostRate(lineCostRate);
+
+        bifd.setBillDiscount(billDiscount);
+        bifd.setLineDiscount(BigDecimal.valueOf(bi.getDiscount()));
+        bifd.setTotalDiscount(bifd.getLineDiscount().add(bifd.getBillDiscount()));
+
+        bifd.setBillTax(billTax);
+        bifd.setLineTax(BigDecimal.valueOf(bi.getVat()));
+        bifd.setTotalTax(bifd.getBillTax().add(bifd.getLineTax()));
+
+        bifd.setBillExpense(billExpense);
+        bifd.setLineExpense(BigDecimal.ZERO);
+        bifd.setTotalExpense(billExpense);
+
+        bifd.setLineCost(lineCostRate.multiply(totalQtyInUnits));
+        bifd.setBillCost(BigDecimal.ZERO);
+        bifd.setTotalCost(bifd.getLineCost());
+
+        bifd.setLineGrossTotal(lineGrossTotal);
+        bifd.setBillGrossTotal(billGrossTotal);
+        bifd.setGrossTotal(grossTotal);
+
+        bifd.setLineNetTotal(lineNetTotal);
+        bifd.setBillNetTotal(billNetTotal);
+        bifd.setNetTotal(netTotal);
+
+        bifd.setRetailSaleRate(lineGrossRate);
+        bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(unitsPerPack));
 
     }
 
