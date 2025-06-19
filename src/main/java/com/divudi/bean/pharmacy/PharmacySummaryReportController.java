@@ -899,25 +899,80 @@ public class PharmacySummaryReportController implements Serializable {
             return;
         }
 
+        Bill bill = bi.getBill();
+
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+        //Available data for calculations, should not be altered dueing this method - Start
+        //from bill
+        bill.getDiscount();  // double values , NOT Double or BigDecimal, so never null
+        bill.getTax(); // double values , NOT Double or BigDecimal, so never null
+        bill.getExpenseTotal(); // double values , NOT Double or BigDecimal, so never null
+        bill.getNetTotal(); // double values , NOT Double or BigDecimal, so never null
+        // from bill Item
+        bi.getItem();
+        bi.getItem().getDblValue(); // This is Units per pack in AMPPs, THis should be one for AMPs
+        bi.getRate(); // double values , NOT Double or BigDecimal, so never null
+        bi.getGrossValue(); // double values , NOT Double or BigDecimal, so never null
+        bi.getNetRate(); // double values , NOT Double or BigDecimal, so never null
+        bi.getNetValue(); // Net Total for Bill Item.  // double values , NOT Double or BigDecimal, so never null
+        bi.getDiscount(); // double values , NOT Double or BigDecimal, so never null
+        bi.getDiscountRate(); // double values , NOT Double or BigDecimal, so never null
+        // from Pharmaceutical bill item
+        pbi.getQty();  // double values , NOT Double or BigDecimal, so never null
+        pbi.getFreeQty();  // double values , NOT Double or BigDecimal, so never null
+        pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
+        //Available data for calculations, should not be altered dueing this method - End
+
+        /**
+         * Have to calculate Data for Bill Item Finance Details Only Bill Item
+         * Finance Details of this provided bill item will be changed here No
+         * data related direct to bill item, bill or pharmaceutical bill item
+         * should be changed here in this method Explanations should be given
+         * for each calculation
+         *
+         * This method is only Used for Pharmacy Sales This method is different
+         * from Purchase Calculations Here rates and values are relate to sales
+         * (not to purchases like in direct purchase
+         *
+         * The Bill Discount, Bill Tax and Bill Expenses have to be
+         * proportionately divided to calculate bill related values for this
+         * bill item The bill net total is compared to bill items net total to
+         * get the proportion of distribution
+         *
+         * Have to calculate the line rates and line values from the available
+         * values of bill item or pharmaceutical bill item
+         *
+         * Then have to add the values from bill related components
+         *
+         * Then bill related rates for bill components are valvulated by
+         * deviding the values from total quantity
+         *
+         * then bill related values and bill item related values are added to
+         * get total bill item related values
+         *
+         * then total values are calculated by adding bill related values and
+         * item related values
+         *
+         * Have to avoid NPEs
+         */
         BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
         if (bifd == null) {
             bifd = new BillItemFinanceDetails(bi);
             bi.setBillItemFinanceDetails(bifd);
         }
 
-        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-
-        Item item = bi.getItem();
+        Item itemOfInputBillItem = bi.getItem();
         BigDecimal unitsPerPack = BigDecimal.ONE;
-        if (item instanceof Ampp) {
-            double dblVal = item.getDblValue();
+        if (itemOfInputBillItem instanceof Ampp) {
+            double dblVal = itemOfInputBillItem.getDblValue();
             unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
         }
 
-        BigDecimal qty = item instanceof Ampp
+        BigDecimal qty = itemOfInputBillItem instanceof Ampp
                 ? BigDecimal.valueOf(pbi.getQtyPacks())
                 : BigDecimal.valueOf(pbi.getQty());
-        BigDecimal freeQty = item instanceof Ampp
+        BigDecimal freeQty = itemOfInputBillItem instanceof Ampp
                 ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
                 : BigDecimal.valueOf(pbi.getFreeQty());
 
@@ -946,82 +1001,157 @@ public class PharmacySummaryReportController implements Serializable {
             bifd.setTotalQuantityByUnits(qtyInUnits.add(freeQtyInUnits));
         }
 
-        Double purchaseRate = pbi.getPurchaseRate();
-        if (purchaseRate == null && pbi.getItemBatch() != null) {
-            purchaseRate = pbi.getItemBatch().getPurcahseRate();
+        Double costRate = null;
+        if (pbi.getItemBatch() != null) {
+            costRate = pbi.getItemBatch().getCostRate();
         }
-        if (purchaseRate != null &&
-                (bifd.getLineGrossRate() == null || bifd.getLineGrossRate().compareTo(BigDecimal.ZERO) == 0)) {
-            bifd.setLineGrossRate(BigDecimal.valueOf(purchaseRate));
-            bifd.setLineNetRate(BigDecimal.valueOf(purchaseRate));
+        bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+        bifd.setBillCostRate(BigDecimal.ZERO);
+        bifd.setTotalCostRate(BigDecimal.valueOf(costRate));
+
+        double retailRate = bi.getRate();
+
+        if (bifd.getRetailSaleRate() == null || bifd.getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
+            if (itemOfInputBillItem instanceof Ampp) {
+                bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            } else {
+                bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            }
+
+        }
+        if (bifd.getRetailSaleRatePerUnit() == null || bifd.getRetailSaleRatePerUnit().compareTo(BigDecimal.ZERO) == 0) {
+            if (itemOfInputBillItem instanceof Ampp) {
+                bifd.setRetailSaleRatePerUnit(bifd.getRetailSaleRate().multiply(bifd.getUnitsPerPack()));
+            } else {
+                bifd.setRetailSaleRatePerUnit(bifd.getRetailSaleRate());
+            }
+        }
+
+        bifd.setBillCost(BigDecimal.ZERO);
+        bifd.setLineCost(bifd.getLineCostRate().multiply(bifd.getTotalQuantityByUnits()));
+        bifd.setTotalCost(bifd.getLineCost().add(bifd.getBillCost()));
+
+        bifd.setLineGrossTotal(bifd.getLineGrossRate().multiply(bifd.getQuantity()));
+        bifd.setLineNetTotal(bifd.getLineNetRate().multiply(bifd.getQuantity()));
+
+        bifd.setLineDiscount(BigDecimal.ZERO);
+        bifd.setBillDiscount(BigDecimal.ZERO);
+
+    }
+
+    @Deprecated // WIll be deleted soon. Use addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale
+    public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySaleOld(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
+        Bill bill = bi.getBill();
+
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+        //Available data for calculations, should not be altered dueing this method - Start
+        //from bill
+        bill.getDiscount();  // double values , NOT Double or BigDecimal, so never null
+        bill.getTax(); // double values , NOT Double or BigDecimal, so never null
+        bill.getExpenseTotal(); // double values , NOT Double or BigDecimal, so never null
+        bill.getNetTotal(); // double values , NOT Double or BigDecimal, so never null
+        // from bill Item
+        bi.getItem();
+        bi.getItem().getDblValue(); // This is Units per pack in AMPPs, THis should be one for AMPs
+        bi.getRate(); // double values , NOT Double or BigDecimal, so never null
+        bi.getGrossValue(); // double values , NOT Double or BigDecimal, so never null
+        bi.getNetRate(); // double values , NOT Double or BigDecimal, so never null
+        bi.getNetValue(); // Net Total for Bill Item.  // double values , NOT Double or BigDecimal, so never null
+        bi.getDiscount(); // double values , NOT Double or BigDecimal, so never null
+        bi.getDiscountRate(); // double values , NOT Double or BigDecimal, so never null
+        // from Pharmaceutical bill item
+        pbi.getQty();  // double values , NOT Double or BigDecimal, so never null
+        pbi.getFreeQty();  // double values , NOT Double or BigDecimal, so never null
+        pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
+        //Available data for calculations, should not be altered dueing this method - End
+
+        
+        BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+        if (bifd == null) {
+            bifd = new BillItemFinanceDetails(bi);
+            bi.setBillItemFinanceDetails(bifd);
+        }
+
+        Item itemOfInputBillItem = bi.getItem();
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        if (itemOfInputBillItem instanceof Ampp) {
+            double dblVal = itemOfInputBillItem.getDblValue();
+            unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
+        }
+
+        BigDecimal qty = itemOfInputBillItem instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getQtyPacks())
+                : BigDecimal.valueOf(pbi.getQty());
+        BigDecimal freeQty = itemOfInputBillItem instanceof Ampp
+                ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
+                : BigDecimal.valueOf(pbi.getFreeQty());
+
+        BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
+        BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
+
+        if (bifd.getUnitsPerPack() == null || bifd.getUnitsPerPack().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setUnitsPerPack(unitsPerPack);
+        }
+        if (bifd.getQuantity() == null || bifd.getQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantity(qty);
+        }
+        if (bifd.getFreeQuantity() == null || bifd.getFreeQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantity(freeQty);
+        }
+        if (bifd.getTotalQuantity() == null || bifd.getTotalQuantity().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantity(qty.add(freeQty));
+        }
+        if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setQuantityByUnits(qtyInUnits);
+        }
+        if (bifd.getFreeQuantityByUnits() == null || bifd.getFreeQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setFreeQuantityByUnits(freeQtyInUnits);
+        }
+        if (bifd.getTotalQuantityByUnits() == null || bifd.getTotalQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+            bifd.setTotalQuantityByUnits(qtyInUnits.add(freeQtyInUnits));
         }
 
         Double costRate = null;
         if (pbi.getItemBatch() != null) {
             costRate = pbi.getItemBatch().getCostRate();
         }
-        if (costRate != null && (bifd.getLineCostRate() == null || bifd.getLineCostRate().compareTo(BigDecimal.ZERO) == 0)) {
-            bifd.setLineCostRate(BigDecimal.valueOf(costRate));
-        }
+        bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+        bifd.setBillCostRate(BigDecimal.ZERO);
+        bifd.setTotalCostRate(BigDecimal.valueOf(costRate));
 
         double retailRate = bi.getRate();
+
         if (bifd.getRetailSaleRate() == null || bifd.getRetailSaleRate().compareTo(BigDecimal.ZERO) == 0) {
-            bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            if (itemOfInputBillItem instanceof Ampp) {
+                bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            } else {
+                bifd.setRetailSaleRate(BigDecimal.valueOf(retailRate));
+            }
+
         }
         if (bifd.getRetailSaleRatePerUnit() == null || bifd.getRetailSaleRatePerUnit().compareTo(BigDecimal.ZERO) == 0) {
-            if (unitsPerPack.compareTo(BigDecimal.ZERO) > 0) {
-                bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate).divide(unitsPerPack, 4, RoundingMode.HALF_UP));
+            if (itemOfInputBillItem instanceof Ampp) {
+                bifd.setRetailSaleRatePerUnit(bifd.getRetailSaleRate().multiply(bifd.getUnitsPerPack()));
             } else {
-                bifd.setRetailSaleRatePerUnit(BigDecimal.valueOf(retailRate));
+                bifd.setRetailSaleRatePerUnit(bifd.getRetailSaleRate());
             }
         }
 
-        // If bifd fields have other value other than zero or null, that value should not be assigned
-        /*
-        
-        
-        
-          PHARMACY_RETAIL_SALE("Pharmacy Retail Sale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_WITHOUT_STOCKS("Pharmacy Retail Sale without Stocks", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySaleWithoutStock),
-    PHARMACY_RETAIL_SALE_PRE("Pharmacy Retail Sale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
-    PHARMACY_RETAIL_SALE_PRE_WITHOUT_STOCKS("Pharmacy Retail Sale Prebill Without Stocks", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySaleWithoutStock),
-    PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER("Pharmacy Retail Sale Pre Bill Settled At Cashier", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER("Pharmacy Retail Sale Pre Bill To Settle At Cashier", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
-    PHARMACY_RETAIL_SALE_CANCELLED("Pharmacy Retail Sale Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_CANCELLED_PRE("Pharmacy Retail Sale Cancelled - Pre Bill", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
-    PHARMACY_RETAIL_SALE_REFUND("Pharmacy Retail Sale Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY("Pharmacy Retail Sale Return Items Only", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS("Pharmacy Retail Sale Return Item Payments", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS("Pharmacy Retail Sale Return Items And Payments", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL("Pharmacy Retail Sale Return Items And Payments - Prebill", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacyPre),
-    PHARMACY_SALE_WITHOUT_STOCK("Pharmacy Sale Without Stock", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySaleWithoutStock),
-    PHARMACY_SALE_WITHOUT_STOCK_PRE("Pharmacy Sale Without Stock Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.NO_PAYMENT, BillType.PharmacySaleWithoutStock),
-    PHARMACY_SALE_WITHOUT_STOCK_CANCELLED("Pharmacy Sale Without Stock Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySaleWithoutStock),
-    PHARMACY_SALE_WITHOUT_STOCK_REFUND("Pharmacy Sale Without Stock Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_SPEND, BillType.PharmacySaleWithoutStock),
-    PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK("Pharmacy Retail Sale Pre Bill Add to Stock", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacyPre),
-    PHARMACY_WHOLESALE("Pharmacy Wholesale", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.CASH_IN, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_WHOLESALE_PRE("Pharmacy Wholesale Pre", BillCategory.BILL, ServiceType.PHARMACY, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.PHARMACY, PaymentCategory.CREDIT_SPEND, BillType.PharmacySale),
-    PHARMACY_WHOLESALE_CANCELLED("Pharmacy Wholesale Cancelled", BillCategory.CANCELLATION, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-    PHARMACY_WHOLESALE_REFUND("Pharmacy Wholesale Refund", BillCategory.REFUND, ServiceType.PHARMACY, BillFinanceType.CASH_OUT, CountedServiceType.PHARMACY, PaymentCategory.NON_CREDIT_COLLECTION, BillType.PharmacySale),
-  
-          ISSUE_MEDICINE_ON_REQUEST_INWARD("Issue Medicines on Request to Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Medicines on Request to Inward", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN("Issue of Medicines on Request to Inward Return", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_THEATRE("Issue Medicines on Request to Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
-    ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Medicines on Request to Theatre", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
-    ACCEPT_ISSUED_MEDICINE_INWARD("Accept Issued Medicines Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ACCEPT_ISSUED_MEDICINE_THEATRE("Accept Issued Medicines Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreTransferReceive),
+        bifd.setBillCost(BigDecimal.ZERO);
+        bifd.setLineCost(bifd.getLineCostRate().multiply(bifd.getTotalQuantityByUnits()));
+        bifd.setTotalCost(bifd.getLineCost().add(bifd.getBillCost()));
 
-        
-        ISSUE_MEDICINE_ON_REQUEST_INWARD("Issue Medicines on Request to Inward", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION("Cancel Issue of Medicines on Request to Inward", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN("Issue of Medicines on Request to Inward Return", BillCategory.REFUND, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.PharmacyIssue),
-    ISSUE_MEDICINE_ON_REQUEST_THEATRE("Issue Medicines on Request to Theatre", BillCategory.BILL, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
-    ISSUE_MEDICINE_ON_REQUEST_THEATRE_CANCELLATION("Cancel Issue of Medicines on Request to Theatre", BillCategory.CANCELLATION, ServiceType.INWARD_SERVICE, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.INWARD, PaymentCategory.NO_PAYMENT, BillType.StoreIssue),
-    
-        
-         */
-        // If bifd fields have other value other than zero or null, that value should not be assigned
+        bifd.setLineGrossTotal(bifd.getLineGrossRate().multiply(bifd.getQuantity()));
+        bifd.setLineNetTotal(bifd.getLineNetRate().multiply(bifd.getQuantity()));
+
+        bifd.setLineDiscount(BigDecimal.ZERO);
+        bifd.setBillDiscount(BigDecimal.ZERO);
+
     }
 
     public void addFinancialDetailsIfNotExistsForPharmacyBills() {
