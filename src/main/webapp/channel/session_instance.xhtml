@@ -344,11 +344,19 @@
                                             socket.onmessage = function (event) {
 
                                                 const message = event.data;
+                                                const messageParts = message.split(" - ");
+                                                const sendSessionId = messageParts[1];
+                                                const sendMessage = messageParts[0];
 
-                                                if (message === "Online Booking Completed" || message === "Online Booking Edited" || message === "Online Booking Cancelled" ) {
-                                                    document.querySelector('.ws-trigger').click();
+                                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Edited" || sendMessage === "Online Booking Cancelled") {
+                                                    const selectedSessionId = '#{bookingControllerViewScope.selectedSessionInstance.id}';
+                                                     
+                                                    if (selectedSessionId == sendSessionId) {
+                                                        document.querySelector('.ws-trigger').click();
+
+                                                    }
+
                                                 }
-
 
                                             }
                                         </script>

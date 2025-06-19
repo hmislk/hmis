@@ -1224,11 +1224,11 @@ public class ChannelApi {
         }
 
         OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic, email, address);
-
-        WebSocketService.broadcastToSessions("Online Booking Edited");
         
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
+        
+        WebSocketService.broadcastToSessions("Online Booking Edited - "+session.getId());
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1428,10 +1428,10 @@ public class ChannelApi {
 
         Bill completedBill = channelService.settleOnlineAgentInitialBooking(temporarySavedBill.getSingleBillSession(), clientsReferanceNo, agencyCharge);
 
-        WebSocketService.broadcastToSessions("Online Booking Completed");
-
         OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
+        
+        WebSocketService.broadcastToSessions("Online Booking Completed - "+ session.getId());
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1779,6 +1779,8 @@ public class ChannelApi {
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
+        
+        WebSocketService.broadcastToSessions("Online Booking Cancelled in - "+ session.getId());
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
