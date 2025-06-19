@@ -298,11 +298,39 @@
                                                         </span>
                                                     </div>
 
-
-
                                                 </div>
                                             </p:column>
                                         </p:dataTable>
+
+                                        <script>
+                                            console.log("start connection");
+                                            const wsUrl = "ws://localhost:8080/rh/ws/notify";
+
+                                            let socket = new WebSocket(wsUrl);
+
+                                            socket.onmessage = function (event) {
+
+                                                const message = event.data;
+                                                const messageParts = message.split(" - ");
+                                                const sendSessionId = messageParts[1];
+                                                const sendMessage = messageParts[0];
+
+                                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
+                                                    document.querySelector(".ws-trigger").click();
+
+                                                }
+
+                                            }
+                                        </script>
+
+                                        <p:commandButton id="ws"
+                                                         action="#{bookingControllerViewScope.listAndFilterSessionInstances}"
+                                                         process="@this"
+                                                         styleClass="ws-trigger"
+                                                         update="groupFilteredSessions"
+                                                         style="display:none"/>
+
+
                                     </h:panelGroup>
                                 </div>
                                 <div class="col-5" > 
@@ -1114,32 +1142,6 @@
                     </h:form>
 
                 </h:panelGroup>
-
-                <script>
-                    console.log("start connection");
-                    const wsUrl = "ws://localhost:8080/rh/ws/notify";
-
-                    let socket = new WebSocket(wsUrl);
-
-                    socket.onmessage = function (event) {
-                        console.log("Message recieved " + event.data);
-                        alert(event.data);
-
-                        PrimeFaces.ab({
-                            source: 'ws-trigger', // dummy source (can be anything)
-                            process: '@this',
-                            update: 'completecount paidCount',
-                            onstart: function () {
-                                console.log("Calling server to refresh counts...");
-                            },
-                            onsuccess: function () {
-                                console.log("Counts updated.");
-                            }
-                        });
-
-                    }
-                </script>
-
 
             </ui:define>
         </ui:composition>

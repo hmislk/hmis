@@ -1060,6 +1060,8 @@ public class ChannelApi {
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
 
+        WebSocketService.broadcastToSessions("Online Temporary Booking Added - "+session.getId());
+        
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
