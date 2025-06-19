@@ -14,6 +14,8 @@
                 <h:form id="form">
                     <p:growl id="msg" ></p:growl>
 
+
+
                     <div class="d-flex justify-content-between align-items-center bg-light">
                         <div class="my-2 mx-1" style="font-weight: bolder">
                             <div class="d-flex align-items-center">
@@ -86,8 +88,8 @@
                                              styleClass="ui-button-success mx-1"
                                              icon="fa fa-check"
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
-                            
-                             <p:commandButton action="/channel/channel_booking?faces-redirect=true"
+
+                            <p:commandButton action="/channel/channel_booking?faces-redirect=true"
                                              value="Back to Booking view"
                                              ajax="false"
                                              class="ui-button-secondary mx-1"
@@ -246,11 +248,11 @@
 
 
                                         </p:dataTable>
-                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:poll>
+<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:poll>-->
 
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
-                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
+<!--                                    <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>-->
                                     <p:tab >
 
                                         <f:facet name="title">
@@ -332,7 +334,29 @@
 
 
                                         </p:dataTable>
-<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
+
+                                        <script>
+                                            console.log("start connection");
+                                            const wsUrl = "ws://localhost:8080/rh/ws/notify";
+
+                                            let socket = new WebSocket(wsUrl);
+
+                                            socket.onmessage = function (event) {
+                                                console.log("Message recieved " + event.data);
+//                                                alert(event.data);
+                                                
+                                                document.querySelector('.ws-trigger').click();
+
+                                            }
+                                        </script>
+
+                                        <p:commandButton id="ws"
+                                                         action="#{bookingControllerViewScope.loadBillSessions}"
+                                                         process="@this"
+                                                         styleClass="ws-trigger"
+                                                         update="temporaryBookings"
+                                                         style="display:none"/>
+                    <!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
 
                                     <p:tab title="Nurse View" >
@@ -849,7 +873,7 @@
 
                                                 <p:outputLabel value="Accept Online Bookings"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.acceptOnlineBookings}"/>
-                                                
+
                                                 <p:outputLabel value="Doctor on Holiday"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.doctorHoliday}"/>
 
@@ -1119,6 +1143,8 @@
                             </div>
                         </div>
                     </div>
+
+
 
                 </h:form>
             </ui:define>

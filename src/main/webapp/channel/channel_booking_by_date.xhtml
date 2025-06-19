@@ -252,7 +252,7 @@
                                                             <div class="d-flex align-items-center">
                                                                 <span class="text-center mx-1">
                                                                     <h:outputText value="P" style="font-weight: bolder"/><br/>
-                                                                    <p:badge value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
+                                                                    <p:badge id="paidCount" value="#{s.paidPatientCount != null ? s.paidPatientCount : ' '}" severity="warning" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
                                                                 <span class="text-center mx-1"> 
                                                                     <h:outputText style="font-weight: bolder" value="B"/><br/>
@@ -260,9 +260,9 @@
                                                                 </span>
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputText style="font-weight: bolder" value="C"/><br/>
-                                                                    <p:badge value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="success" size="large" styleClass="mr-2"></p:badge>
+                                                                    <p:badge id="completecount" value="#{s.completedPatientCount != null ? s.completedPatientCount : ' '}" severity="success" size="large" styleClass="mr-2"></p:badge>
                                                                 </span>
-                                                                
+
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
@@ -278,7 +278,7 @@
                                                                     </p:commandButton>
 
                                                                 </span>
-                                                                
+
                                                                 <span class="text-center mx-1" > 
                                                                     <h:outputLabel /><br/>
                                                                     <p:commandButton 
@@ -293,7 +293,7 @@
 
                                                                 </span>
 
-                                                                
+
                                                             </div>
                                                         </span>
                                                     </div>
@@ -1113,11 +1113,32 @@
 
                     </h:form>
 
-
-
-
-
                 </h:panelGroup>
+
+                <script>
+                    console.log("start connection");
+                    const wsUrl = "ws://localhost:8080/rh/ws/notify";
+
+                    let socket = new WebSocket(wsUrl);
+
+                    socket.onmessage = function (event) {
+                        console.log("Message recieved " + event.data);
+                        alert(event.data);
+
+                        PrimeFaces.ab({
+                            source: 'ws-trigger', // dummy source (can be anything)
+                            process: '@this',
+                            update: 'completecount paidCount',
+                            onstart: function () {
+                                console.log("Calling server to refresh counts...");
+                            },
+                            onsuccess: function () {
+                                console.log("Counts updated.");
+                            }
+                        });
+
+                    }
+                </script>
 
 
             </ui:define>
