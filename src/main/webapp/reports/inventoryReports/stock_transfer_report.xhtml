@@ -429,16 +429,29 @@
                             <p:column headerText="Unit" width="4em" style="text-align: center;">
                                 <h:outputText value="#{i.item.vmp.strengthUnit.name}"/>
                             </p:column>
-                            <p:column headerText="Cost rate" width="5em"
+                            <p:column headerText="Purchase rate" width="5em"
                                       style="text-align: right; padding-right: 10px;">
                                 <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Purchase Value" width="5em"
+                                      style="text-align: right; padding-right: 10px;">
+                                <p:outputLabel
+                                        value="#{i.pharmaceuticalBillItem.qty * i.pharmaceuticalBillItem.purchaseRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+                            <p:column headerText="Cost rate" width="5em"
+                                      style="text-align: right; padding-right: 10px;">
+                                <p:outputLabel value="#{i.billItemFinanceDetails.lineCostRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Cost Value" width="5em"
                                       style="text-align: right; padding-right: 10px;">
                                 <p:outputLabel
-                                        value="#{i.pharmaceuticalBillItem.qty * i.pharmaceuticalBillItem.purchaseRate}">
+                                        value="#{i.billItemFinanceDetails.lineCost}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
