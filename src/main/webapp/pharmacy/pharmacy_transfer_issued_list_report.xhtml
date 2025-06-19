@@ -106,7 +106,8 @@
 
                         <p:column headerText="Billed At">
                             <h:outputLabel value="#{p.createdAt}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                             </h:outputLabel>
                         </p:column>
 
