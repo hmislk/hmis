@@ -162,6 +162,8 @@ public class ChannelService {
             b.getOnlineBooking().setRetiredAt(new Date());
             b.getOnlineBooking().setRetireComments("Online Booking is NOT completed.");
             getOnlineBookingFacade().edit(b.getOnlineBooking());
+            
+            WebSocketService.broadcastToSessions("Temporary Booking Retired - "+ b.getSingleBillSession().getSessionInstance().getId());
 
             if (b.getBillFees() != null) {
                 for (BillFee bf : b.getBillFees()) {

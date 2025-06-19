@@ -309,7 +309,7 @@
                                             let socket = new WebSocket(wsUrl);
 
                                             socket.onmessage = function (event) {
-
+                                                console.log("line 312")
                                                 const message = event.data;
                                                 const messageParts = message.split(" - ");
                                                 const sendSessionId = messageParts[1];
@@ -318,6 +318,9 @@
                                                 if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
                                                     document.querySelector(".ws-trigger").click();
 
+                                                }else if(sendMessage === "Temporary Booking Retired"){
+                                                    console.log("line 322 to retire")
+                                                    document.querySelector(".ws-trigger-2").click();
                                                 }
 
                                             }
@@ -328,6 +331,13 @@
                                                          process="@this"
                                                          styleClass="ws-trigger"
                                                          update="groupFilteredSessions"
+                                                         style="display:none"/>
+                                        
+                                        <p:commandButton id="ws-2"
+                                                         action="#{bookingControllerViewScope.releasedAppoinmentNumbers}"
+                                                         process="@this"
+                                                         styleClass="ws-trigger-2"
+                                                         update="releaseNumderAvailable releaseNumderAvailableCount"
                                                          style="display:none"/>
 
 
@@ -440,9 +450,9 @@
                                                 <p:panel header="Normal Booking Section (Check Released Appoinment Numbers)">
                                                     <p:row id="row1" rendered="#{ configOptionApplicationController.getBooleanValueByKey('Released Number Booking available in the Channel Booking by date', false)}">
 
-                                                        <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Apoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
-                                                            <f:selectItem itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="Please select" />
-                                                            <f:selectItems value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
+                                                        <p:selectOneMenu style="border: 2px solid #007bff; border-radius: 10px; padding: 1px; background-color: #f8f9fa;" class="w-50" id="releasedNumbers" placeholder=" Appoinment Numbers" value="#{bookingControllerViewScope.assignedReleasedAppoinmentNumber}" editable="true">
+                                                            <f:selectItem id="releaseNumderAvailableCount" itemLabel="Released Apoinment No.s : (#{bookingControllerViewScope.releasedAppoinmentNumbers.size()})" itemValue="Please select" />
+                                                            <f:selectItems id="releaseNumderAvailable" value="#{bookingControllerViewScope.releasedAppoinmentNumbers}"/>
                                                             <p:ajax event="valueChange" update="releasedNumbers btnAddReserved"></p:ajax>
                                                         </p:selectOneMenu>
 
