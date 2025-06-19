@@ -425,23 +425,31 @@
                         <p:column headerText="Retail Sale Value"
                                   styleClass="averageNumericColumn">
                             <f:facet name="header">
-                                <h:outputLabel value="Purchase Sale Value"/>
+                                <h:outputLabel value="Retail Sale Value"/>
                             </f:facet>
                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="Purchase Sale Value"
+                        <p:column headerText="Purchase Value"
                                   styleClass="averageNumericColumn">
                             <f:facet name="header">
-                                <h:outputLabel value="Purchase Sale Value"/>
+                                <h:outputLabel value="Purchase Value"/>
                             </f:facet>
                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate * bi.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
+                        <p:column headerText="Cost Value"
+                                  styleClass="averageNumericColumn">
+                            <f:facet name="header">
+                                <h:outputLabel value="Cost Value"/>
+                            </f:facet>
+                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineCost}">
+                                <f:convertNumber pattern="#,##0.00"/>
+                            </h:outputLabel>
+                        </p:column>
                     </p:dataTable>
-
 
                     <!--                                        <div class="mt-5">
 
