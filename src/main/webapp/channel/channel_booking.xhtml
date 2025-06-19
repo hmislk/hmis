@@ -536,7 +536,41 @@
                             </p:column>
 
                         </p:selectOneListbox>
-                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
+
+                        <script>
+                            console.log("start connection");
+                            const wsUrl = "ws://localhost:8080/rh/ws/notify";
+
+                            let socket = new WebSocket(wsUrl);
+
+                            socket.onmessage = function (event) {
+                                console.log("line 547");
+                                const message = event.data;
+                                const messageParts = message.split(" - ");
+                                const sendSessionId = messageParts[1];
+                                const sendMessage = messageParts[0];
+
+                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Edited" || sendMessage === "Online Booking Cancelled") {
+                                    console.log("line 554");
+                                    const selectedSessionId = '#{bookingController.selectedSessionInstance.id}';
+
+                                    if (selectedSessionId == sendSessionId) {
+                                        document.querySelector('.ws-trigger').click();
+
+                                    }
+
+                                }
+
+                            }
+                        </script>
+
+                        <p:commandButton id="ws"
+                                         action="#{bookingController.fillBillSessions}"
+                                         process="@this"
+                                         styleClass="ws-trigger"
+                                         update="acBookings "
+                                         style="display:none"/>
+<!--                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>-->
                     </div>
                 </div>
 

@@ -1782,7 +1782,7 @@ public class ChannelApi {
 
         SessionInstance session = bs.getSessionInstance();
         
-        WebSocketService.broadcastToSessions("Online Booking Cancelled in - "+ session.getId());
+        WebSocketService.broadcastToSessions("Online Booking Cancelled - "+ session.getId());
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
