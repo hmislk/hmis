@@ -929,7 +929,7 @@ public class PharmacySummaryReportController implements Serializable {
          * Finance Details of this provided bill item will be changed here No
          * data related direct to bill item, bill or pharmaceutical bill item
          * should be changed here in this method Explanations should be given
-         * for each calculation
+         * for each individual calculation
          *
          * This method is only Used for Pharmacy Sales This method is different
          * from Purchase Calculations Here rates and values are relate to sales
