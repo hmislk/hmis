@@ -944,6 +944,14 @@ public class PharmacySummaryReportController implements Serializable {
          * values of bill item or pharmaceutical bill item
          *
          * Then have to add the values from bill related components
+         * 
+         * lineGrossTotal = bill items gross total
+         * billGrossTotal  = 0 // later may alter
+         * grossTotal  = lineGrossTotal  + billGrossTotal 
+         * lineNetTotal = bill items net total
+         * billNetTotal  = proportionately calculated from bill valies = tax + expenses - discount
+         * netTotal  = lineNetTotal  + billNetTotal 
+         * 
          *
          * Then bill related rates for bill components are valvulated by
          * deviding the values from total quantity
