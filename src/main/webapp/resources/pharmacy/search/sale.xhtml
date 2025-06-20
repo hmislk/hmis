@@ -39,19 +39,13 @@
             </p:column>
             
             <p:column headerText="BILL NO" sortBy="#{bill.deptId}" filterBy="#{bill.deptId}" filterMatchMode="contains" >
-                <h:commandLink action="pharmacy_reprint_bill_sale" value="#{bill.deptId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>    
+                <h:outputLabel value="#{bill.deptId}" />
+            </p:column>
 
             <p:column headerText="Billed At"  >
-                <h:commandLink action="pharmacy_reprint_bill_sale" >
-                    <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -67,11 +61,7 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Billed By" >
-                <h:commandLink action="pharmacy_reprint_bill_sale" >
-                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.creater.webUserPerson.name}" />
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
@@ -86,18 +76,12 @@
                 </h:panelGroup>
             </p:column>   
             <p:column headerText="Payment Method"  >
-                <h:commandLink action="pharmacy_reprint_bill_sale" >
-                    <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>                               
-            <p:column headerText="Net Value" style="text-align: right;" sortBy="#{bill.netTotal}"  >
-                <h:commandLink action="pharmacy_reprint_bill_sale" >
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.paymentMethod}" />
+            </p:column>
+            <p:column headerText="Net Value" styleClass="text-end" sortBy="#{bill.netTotal}"  >
+                <h:outputLabel value="#{bill.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
 
             <p:column headerText="Comments" >

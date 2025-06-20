@@ -41,46 +41,34 @@
                 <h:outputLabel value="GOOD RECEIVE NOTE"/>
             </f:facet>
 
+            <p:column headerText="Actions">
+                <p:commandButton ajax="false" value="View" action="/pharmacy/pharmacy_reprint_grn">
+                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                </p:commandButton>
+            </p:column>
+
 
             <p:column headerText="GRN No" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" value="#{bill.deptId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>      
+                <h:outputLabel value="#{bill.deptId}" />
+            </p:column>
             <p:column headerText="PO No">
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" value="#{bill.referenceBill.deptId}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>    
+                <h:outputLabel value="#{bill.referenceBill.deptId}" />
+            </p:column>
             <p:column headerText="Invoice No" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" value="#{bill.invoiceNumber}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>  
+                <h:outputLabel value="#{bill.invoiceNumber}" />
+            </p:column>
             <p:column headerText="Invoice Date" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
-                    <h:outputLabel  value="#{bill.invoiceDate}">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel>                    
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.invoiceDate}" >
+                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                </h:outputLabel>
             </p:column>
             <p:column headerText="Dealer Name">
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" value="#{bill.fromInstitution.name}">
-                    <h:outputLabel  ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.fromInstitution.name}" />
             </p:column>
             <p:column headerText="Billed At"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
-                    <h:outputLabel value="#{bill.createdAt}" >
-                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.createdAt}" >
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                </h:outputLabel>
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -96,11 +84,7 @@
                 </h:panelGroup>
             </p:column>                 
             <p:column headerText="Billed By" >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
-                    <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.creater.webUserPerson.name}" />
                 <br/>
                 <h:panelGroup rendered="#{bill.cancelled}" >
                     <h:outputLabel style="color: red;" value="Cancelled By " />
@@ -115,27 +99,18 @@
                 </h:panelGroup>
             </p:column>               
             <p:column headerText="Payment Method"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
-                    <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
-            </p:column>                               
-            <p:column headerText="Net Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn" >
-                    <h:outputLabel value="#{bill.netTotal}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+                <h:outputLabel value="#{bill.paymentMethod}" />
+            </p:column>
+            <p:column headerText="Net Value" styleClass="text-end"  >
+                <h:outputLabel value="#{bill.netTotal}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
             
-            <p:column headerText="Sale Value" style="text-align: right;"  >
-                <h:commandLink action="/pharmacy/pharmacy_reprint_grn?faces-redirect=true;" >
-                    <h:outputLabel value="#{bill.saleValue}" >
-                        <f:convertNumber pattern="#,##0.00"/>
-                    </h:outputLabel>
-                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                </h:commandLink>
+            <p:column headerText="Sale Value" styleClass="text-end"  >
+                <h:outputLabel value="#{bill.saleValue}" >
+                    <f:convertNumber pattern="#,##0.00"/>
+                </h:outputLabel>
             </p:column>
 
             <p:column headerText="Comments" >

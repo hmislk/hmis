@@ -50,11 +50,15 @@
                     <h:outputText  value="#{i+1}" ></h:outputText>
                 </p:column>
 
-                <p:column headerText="Bill No" style="padding: 8px;">
-                    <h:commandLink action="pharmacy_reprint_purchase?faces-redirect=true" value="#{bill.deptId}">
+                <p:column headerText="Actions" style="padding:8px;">
+                    <p:commandButton ajax="false" value="View" action="pharmacy_reprint_purchase?faces-redirect=true">
                         <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
-                    </h:commandLink>
-                </p:column> 
+                    </p:commandButton>
+                </p:column>
+
+                <p:column headerText="Bill No" style="padding: 8px;">
+                    <h:outputText value="#{bill.deptId}" />
+                </p:column>
 
                 <p:column headerText="Invoice No" filterBy="#{bill.invoiceNumber}" filterMatchMode="contains"  style="padding: 8px; width:8em;">
                     <h:outputText  value="#{bill.invoiceNumber}" ></h:outputText>
@@ -100,13 +104,13 @@
                     <h:outputText value="#{bill.fromInstitution.name}" ></h:outputText>
                 </p:column> 
 
-                <p:column headerText="Net Value" style="text-align: right; padding: 8px;" width="8em;">
+                <p:column headerText="Net Value" styleClass="text-end" style="padding: 8px;" width="8em;">
                     <h:outputText value="#{bill.netTotal}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputText>
                 </p:column>
 
-                <p:column headerText="Sale Value"  style="text-align: right; padding: 8px;" width="8em;">
+                <p:column headerText="Sale Value"  styleClass="text-end" style="padding: 8px;" width="8em;">
                     <h:outputText value="#{bill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputText>
