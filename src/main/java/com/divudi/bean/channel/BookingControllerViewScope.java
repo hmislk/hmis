@@ -1654,13 +1654,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void refreshSessionsForUpdates(SessionInstance selectSession) {
-        System.out.println("line 1660");
-        listAndFilterSessionInstances();
-        selectedSessionInstance = selectSession;
-        sessionInstanceSelected();
-        sessionInstancesFiltered = new ArrayList<>();
-        sessionInstancesFiltered.add(selectSession);
-        System.out.println("line 1660");
+
+        if (selectSession == null) {
+            loadSessionInstances();
+            addBillSessionData();
+        } else {
+            listAndFilterSessionInstances();
+            selectedSessionInstance = selectSession;
+            sessionInstanceSelected();
+            sessionInstancesFiltered = new ArrayList<>();
+            sessionInstancesFiltered.add(selectSession);
+        }
+
 //        if (selectedSessionInstance == null) {
 //            loadSessionInstances();
 //            addBillSessionData();
