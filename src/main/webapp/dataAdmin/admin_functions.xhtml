@@ -80,11 +80,11 @@
                                         <h:form>
 
                                             <p:commandButton 
-                                                value="Calculate Bill Totals" 
+                                                value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
                                                 ajax="false"
                                                 styleClass="ui-button-warning m-1"
                                                 icon="pi pi-cog"
-                                                action="#{pharmacySummaryReportController.addFinancialDetailsIfNotExistsForPharmacyBills}">
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
                                             </p:commandButton>
 
                                         </h:form>

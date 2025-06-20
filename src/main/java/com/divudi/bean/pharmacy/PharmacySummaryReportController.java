@@ -60,6 +60,7 @@ import com.divudi.core.data.HistoricalRecordType;
 import static com.divudi.core.data.ReportViewType.BY_BILL_ITEM;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.StockBill;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -894,103 +895,101 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
-    
-        /**
-         * Have to calculate Data for Bill Item Finance Details Only Bill Item
-         * Finance Details of this provided bill item will be changed here No
-         * data related direct to bill item, bill or pharmaceutical bill item
-         * should be changed here in this method Explanations should be given
-         * for each individual calculation
-         *
-         * This method is only Used for Pharmacy Sales This method is different
-         * from Purchase Calculations Here rates and values are relate to sales
-         * (not to purchases like in direct purchase
-         *
-         * The Bill Discount, Bill Tax and Bill Expenses have to be
-         * proportionately divided to calculate bill related values for this
-         * bill item The bill net total is compared to bill items net total to
-         * get the proportion of distribution
-         *
-         * Have to calculate the line rates and line values from the available
-         * values of bill item or pharmaceutical bill item
-         *
-         * Then have to add the values from bill related components
-         *
-         * lineGrossTotal = bill items gross total billGrossTotal = 0 // later
-         * may alter grossTotal = lineGrossTotal + billGrossTotal lineNetTotal =
-         * bill items net total billNetTotal = proportionately calculated from
-         * bill valies = tax + expenses - discount netTotal = lineNetTotal +
-         * billNetTotal
-         *
-         *
-         * Then bill related rates for bill components are valvulated by
-         * deviding the values from total quantity
-         *
-         * then bill related values and bill item related values are added to
-         * get total bill item related values
-         *
-         * then total values are calculated by adding bill related values and
-         * item related values
-         *
-         * Have to avoid NPEs
-         *
-         */
-        //Available data for calculations, should not be altered dueing this method - Start
-        //from bill
-//        bill.getDiscount();  // double values , NOT Double or BigDecimal, so never null. SHould not used in calculations as currently it is the sum of line discounts, not a seperate discoutn for the bill
-//        bill.getTax(); // double values , NOT Double or BigDecimal, so never null
-//        bill.getExpenseTotal(); // double values , NOT Double or BigDecimal, so never null
-//        bill.getNetTotal(); // double values , NOT Double or BigDecimal, so never null
-//        // from bill Item
-//        bi.getItem();
-//        bi.getItem().getDblValue(); // This is Units per pack in AMPPs, THis should be one for AMPs
-//        bi.getRate(); // double values , NOT Double or BigDecimal, so never null
-//        bi.getGrossValue(); // double values , NOT Double or BigDecimal, so never null
-//        bi.getNetRate(); // double values , NOT Double or BigDecimal, so never null
-//        bi.getNetValue(); // Net Total for Bill Item.  // double values , NOT Double or BigDecimal, so never null
-//        bi.getDiscount(); // double values , NOT Double or BigDecimal, so never null
-//        bi.getDiscountRate(); // double values , NOT Double or BigDecimal, so never null
-//        // from Pharmaceutical bill item
-//        pbi.getQty();  // double values , NOT Double or BigDecimal, so never null
-//        pbi.getFreeQty();  // double values , NOT Double or BigDecimal, so never null
-//        pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
-        //Available data for calculations, should not be altered dueing this method - End
+      /**
+     * Calculates and assigns financial details for the given {@code BillItem}'s
+     * {@code BillItemFinanceDetails} during a **pharmacy sale**.
+     *
+     * This method must only modify the {@code BillItemFinanceDetails} of the
+     * provided {@code BillItem}. No other data related to the {@code BillItem},
+     * its parent {@code Bill}, or the associated {@code PharmaceuticalBillItem}
+     * should be altered.
+     *
+     * The calculation logic differs from purchase-related calculations (e.g., direct purchases)
+     * as this method is designed exclusively for sales scenarios. All rates and
+     * totals computed here are based on **sale values**, not cost or purchase values.
+     *
+     * Key steps:
+     * - Compute line-level values (rates, amounts) using available data from
+     *   {@code BillItem} and {@code PharmaceuticalBillItem}.
+     * - Derive a proportion using the {@code BillItem}'s net value as a ratio of
+     *   the total bill net value.
+     * - Use this proportion to allocate the {@code Bill}'s total discount, tax,
+     *   and expense values to the current item.
+     * - Convert all quantities into atomic units based on the item's unit-per-pack
+     *   conversion factor (1 for AMP, specific value for AMPP).
+     * - Assign all computed line-level, bill-level, and combined totals and rates
+     *   to the corresponding fields in {@code BillItemFinanceDetails}.
+     * - Avoid any potential {@code NullPointerException} by ensuring all values are
+     *   non-null and safely handled.
+     *
+     * Reference Logic:
+     * - lineGrossTotal = bi.getGrossValue()
+     * - billGrossTotal = 0 (reserved for future use)
+     * - grossTotal = lineGrossTotal + billGrossTotal
+     *
+     * - lineNetTotal = bi.getNetValue()
+     * - billNetTotal = (bill.tax + bill.expenses - bill.discount) * proportion
+     * - netTotal = lineNetTotal + billNetTotal
+     *
+     * - Per-unit bill rates (discount/tax/expense) are calculated by dividing the
+     *   proportional value by quantity in units.
+     *
+     * NOTE:
+     * - All input data used here (from {@code Bill}, {@code BillItem}, and
+     *   {@code PharmaceuticalBillItem}) must not be changed within this method.
+     * - All primitives (double) are assumed non-null and directly accessible.
+     *
+     * Available Input Data (read-only during this method):
+     * - Bill: getDiscount(), getTax(), getExpenseTotal(), getNetTotal()
+     * - BillItem: getItem(), getRate(), getGrossValue(), getNetRate(), getNetValue(),
+     *             getDiscount(), getDiscountRate()
+     * - PharmaceuticalBillItem: getQty(), getFreeQty(), getItemBatch().getCostRate()
+     * - Item: getDblValue() (used as unitsPerPack if AMPP)
+     * @param bi
+     */
+
     public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(BillItem bi) {
         if (bi == null || bi.getPharmaceuticalBillItem() == null) {
-            return;
+            return; // Exit if bill item or pharmaceutical bill item is null
         }
 
-        Bill bill = bi.getBill();
+        Bill bill = bi.getBill(); // Get the associated bill
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem(); // Get pharmaceutical bill item
 
-        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-
-
+        // Create finance detail object if not already created
         BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
         if (bifd == null) {
             bifd = new BillItemFinanceDetails(bi);
             bi.setBillItemFinanceDetails(bifd);
         }
 
-        Item itemOfInputBillItem = bi.getItem();
-        BigDecimal unitsPerPack = BigDecimal.ONE;
+        Item itemOfInputBillItem = bi.getItem(); // Get the item
+        BigDecimal unitsPerPack = BigDecimal.ONE; // Default unitsPerPack
+
+        // Calculate units per pack if item is AMPP
         if (itemOfInputBillItem instanceof Ampp) {
             double dblVal = itemOfInputBillItem.getDblValue();
             unitsPerPack = dblVal > 0.0 ? BigDecimal.valueOf(dblVal) : BigDecimal.ONE;
         }
 
+        // Calculate qty and free qty based on whether item is AMPP
         BigDecimal qty = itemOfInputBillItem instanceof Ampp
                 ? BigDecimal.valueOf(pbi.getQtyPacks())
                 : BigDecimal.valueOf(pbi.getQty());
+
         BigDecimal freeQty = itemOfInputBillItem instanceof Ampp
                 ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
                 : BigDecimal.valueOf(pbi.getFreeQty());
 
+        // Total quantity = qty + free
         BigDecimal totalQty = qty.add(freeQty);
 
+        // Convert quantities to atomic units
         BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
         BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
         BigDecimal totalQtyInUnits = qtyInUnits.add(freeQtyInUnits);
 
+        // Assign quantity values to bifd
         bifd.setUnitsPerPack(unitsPerPack);
         bifd.setQuantity(qty);
         bifd.setFreeQuantity(freeQty);
@@ -999,37 +998,46 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setFreeQuantityByUnits(freeQtyInUnits);
         bifd.setTotalQuantityByUnits(totalQtyInUnits);
 
+        // Calculate proportion = line value / total net bill
         BigDecimal proportion = BigDecimal.ZERO;
         if (bill.getNetTotal() != 0) {
             proportion = BigDecimal.valueOf(bi.getNetValue())
                     .divide(BigDecimal.valueOf(bill.getNetTotal()), 10, RoundingMode.HALF_EVEN);
         }
 
+        // Retrieve cost rate from item batch
         Double costRate = null;
         if (pbi.getItemBatch() != null) {
             costRate = pbi.getItemBatch().getCostRate();
         }
-        
-        //First calcualte cost from cost rate
-        
+
+        // Assign cost rate values
         BigDecimal lineCostRate = costRate == null ? BigDecimal.ZERO : BigDecimal.valueOf(costRate);
         bifd.setLineCostRate(lineCostRate);
         bifd.setBillCostRate(BigDecimal.ZERO);
         bifd.setTotalCostRate(lineCostRate);
 
-        // Second calculate retail rate (here it is equal to lineGrossRate as this is a sale
-        
+        // Assign cost values
+        bifd.setLineCost(lineCostRate.multiply(totalQtyInUnits));
+        bifd.setBillCost(BigDecimal.ZERO);
+        bifd.setTotalCost(bifd.getLineCost());
+
+        // Assign gross rate (sale rate)
         BigDecimal lineGrossRate = BigDecimal.valueOf(bi.getRate());
         bifd.setRetailSaleRate(lineGrossRate);
-        bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(bifd.getUnitsPerPack()));
+        bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(unitsPerPack));
 
-        // Then calculate and assign remaining values to bifd
-        
+        // Calculate discount, tax, and expense from bill using proportion
         BigDecimal discountPortionFromBill = BigDecimal.valueOf(bill.getDiscount()).multiply(proportion);
         BigDecimal taxPortionFromBill = BigDecimal.valueOf(bill.getTax()).multiply(proportion);
         BigDecimal expensePortionFromBill = BigDecimal.valueOf(bill.getExpenseTotal()).multiply(proportion);
-        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = taxPortionFromBill.add(expensePortionFromBill).subtract(discountPortionFromBill);
 
+        // Calculate the difference between gross and net as gap
+        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = taxPortionFromBill
+                .add(expensePortionFromBill)
+                .subtract(discountPortionFromBill);
+
+        // Assign gross and net totals
         BigDecimal lineGrossTotal = BigDecimal.valueOf(bi.getGrossValue());
         BigDecimal billGrossTotal = BigDecimal.ZERO;
         BigDecimal grossTotal = lineGrossTotal.add(billGrossTotal);
@@ -1042,65 +1050,61 @@ public class PharmacySummaryReportController implements Serializable {
         BigDecimal billDiscountTotal = discountPortionFromBill;
         BigDecimal discountTotal = lineDiscountTotal.add(billDiscountTotal);
 
-        BigDecimal lineExpenseTotal = BigDecimal.ZERO; // May add this function later from UI
+        BigDecimal lineExpenseTotal = BigDecimal.ZERO;
         BigDecimal billExpenseTotal = expensePortionFromBill;
-        BigDecimal expenseTotal = lineExpenseTotal.add(expenseTotal);
+        BigDecimal expenseTotal = lineExpenseTotal.add(billExpenseTotal); // ✅ fixed typo
 
-        BigDecimal lineTaxTotal = BigDecimal.ZERO; // May add this function later from UI
+        BigDecimal lineTaxTotal = BigDecimal.ZERO;
         BigDecimal billTaxTotal = taxPortionFromBill;
         BigDecimal taxTotal = lineTaxTotal.add(billTaxTotal);
 
-        bifd.setLineGrossTotal(lineGrossTotal);
-
-        bifd.setBillDiscount(discountPortionFromBill);
-        bifd.setLineDiscount(BigDecimal.valueOf(bi.getDiscount()));
-        bifd.setTotalDiscount(bifd.getLineDiscount().add(bifd.getBillDiscount()));
-
-        bifd.setBillTax(taxPortionFromBill);
-        bifd.setLineTax(BigDecimal.valueOf(bi.getVat()));
-        bifd.setTotalTax(bifd.getBillTax().add(bifd.getLineTax()));
-
-        bifd.setBillExpense(expensePortionFromBill);
-        bifd.setLineExpense(BigDecimal.ZERO);
-        bifd.setTotalExpense(expensePortionFromBill);
-
-        bifd.setLineCost(lineCostRate.multiply(totalQtyInUnits));
-        bifd.setBillCost(BigDecimal.ZERO);
-        bifd.setTotalCost(bifd.getLineCost());
-
+        // Assign gross totals
         bifd.setLineGrossTotal(lineGrossTotal);
         bifd.setBillGrossTotal(billGrossTotal);
         bifd.setGrossTotal(grossTotal);
 
+        // Assign discount values
+        bifd.setLineDiscount(lineDiscountTotal);
+        bifd.setBillDiscount(billDiscountTotal);
+        bifd.setTotalDiscount(discountTotal);
+
+        // Assign tax values
+        bifd.setLineTax(lineTaxTotal);
+        bifd.setBillTax(billTaxTotal);
+        bifd.setTotalTax(taxTotal);
+
+        // Assign expense values
+        bifd.setLineExpense(lineExpenseTotal);
+        bifd.setBillExpense(billExpenseTotal);
+        bifd.setTotalExpense(expenseTotal);
+
+        // Assign net totals
         bifd.setLineNetTotal(lineNetTotal);
-        bifd.setBillNetTotal(gapPortionFromBillNetTotalFromBillGrossTotal);
+        bifd.setBillNetTotal(billNetTotal);
         bifd.setNetTotal(netTotal);
 
-       
-        // then calculate remaining rates and assign to bifd
-        
-        BigDecimal lineExpenseRate = BigDecimal.ZERO; // May add this function later from UI
-        BigDecimal lineTaxRate = BigDecimal.ZERO; // May add this function later from UI
-        BigDecimal lineDiscountRate = BigDecimal.valueOf(bi.getDiscountRate());
-        BigDecimal lineNetRate = BigDecimal.valueOf(bi.getNetRate());
-
+        // Calculate per-unit adjustments for rates
         BigDecimal rateOfDiscountPortionFromBill = BigDecimal.ZERO;
         BigDecimal rateOfExpensePortionFromBill = BigDecimal.ZERO;
         BigDecimal rateOfTaxPortionFromBill = BigDecimal.ZERO;
+
         if (qtyInUnits.compareTo(BigDecimal.ZERO) != 0) {
             rateOfDiscountPortionFromBill = discountPortionFromBill.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
             rateOfTaxPortionFromBill = taxPortionFromBill.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
             rateOfExpensePortionFromBill = expensePortionFromBill.divide(qtyInUnits, 10, RoundingMode.HALF_EVEN);
         }
 
+        // Assign rates
         bifd.setLineGrossRate(lineGrossRate);
         bifd.setBillGrossRate(BigDecimal.ZERO);
         bifd.setGrossRate(lineGrossRate);
 
+        BigDecimal lineNetRate = BigDecimal.valueOf(bi.getNetRate());
         bifd.setLineNetRate(lineNetRate);
         bifd.setBillNetRate(rateOfTaxPortionFromBill.add(rateOfExpensePortionFromBill).subtract(rateOfDiscountPortionFromBill));
         bifd.setNetRate(bifd.getLineNetRate().add(bifd.getBillNetRate()));
 
+        BigDecimal lineDiscountRate = BigDecimal.valueOf(bi.getDiscountRate());
         bifd.setLineDiscountRate(lineDiscountRate);
         bifd.setBillDiscountRate(rateOfDiscountPortionFromBill);
         bifd.setTotalDiscountRate(lineDiscountRate.add(rateOfDiscountPortionFromBill));
@@ -1112,8 +1116,6 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setLineTaxRate(BigDecimal.valueOf(bi.getVat()));
         bifd.setBillTaxRate(rateOfTaxPortionFromBill);
         bifd.setTotalTaxRate(BigDecimal.valueOf(bi.getVat()).add(rateOfTaxPortionFromBill));
-
-        
     }
 
     @Deprecated // WIll be deleted soon. Use addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale
@@ -1230,7 +1232,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     }
 
-    public void addFinancialDetailsIfNotExistsForPharmacyBills() {
+    public void addFinancialDetailsForPharmacySaleBillsFromBillItemData() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<Bill> pbis = billService.fetchBills(billController.getFromDate(), billController.getToDate(),
                 null, null, null, null, billTypeAtomics, null, null);
@@ -1284,16 +1286,14 @@ public class PharmacySummaryReportController implements Serializable {
                 b.setBillFinanceDetails(bfd);
             }
 
+            StockBill sb = b.getStockBill();
+            sb.setStockValueAsSaleRate(saleValue);
+            sb.setStockValueAtPurchaseRates(purchaseValue);
+            sb.setStockValueAsCostRate(costValue);
+            
             bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
             bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
             bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
-
-            if (bfd.getTotalRetailSaleValue().compareTo(BigDecimal.ZERO) == 0
-                    && bfd.getTotalPurchaseValue().compareTo(BigDecimal.ZERO) == 0
-                    && bfd.getTotalCostValue().compareTo(BigDecimal.ZERO) == 0) {
-                billService.createBillFinancialDetailsForPharmacyBill(b);
-            }
-
             getBillFacade().edit(b);
         }
     }
