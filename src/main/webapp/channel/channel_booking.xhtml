@@ -554,7 +554,7 @@
                                 const sendSessionId = messageParts[1];
                                 const sendMessage = messageParts[0];
 
-                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Edited" || sendMessage === "Online Booking Cancelled") {
+                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Cancelled") {
                                     const selectedSessionId = '#{bookingController.selectedSessionInstance.id}';
 
                                     if (selectedSessionId == sendSessionId) {

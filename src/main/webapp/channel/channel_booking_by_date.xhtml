@@ -322,6 +322,7 @@
 
                                                 if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
                                                     document.querySelector(".ws-trigger").click();
+                                                    console.log("booking add");
 
                                                 }
                                                 if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
@@ -333,7 +334,7 @@
                                         </script>
 
                                         <p:commandButton id="ws"
-                                                         action="#{bookingControllerViewScope.listAndFilterSessionInstances}"
+                                                         action="#{bookingControllerViewScope.refreshSessionsForUpdates(bookingControllerViewScope.selectedSessionInstance)}"
                                                          process="@this"
                                                          styleClass="ws-trigger"
                                                          update="groupFilteredSessions"
@@ -460,7 +461,7 @@
                                                     </p:row>
 
                                                     <p:commandButton id="ws-2"
-                                                                     action="#{bookingControllerViewScope.releasedAppoinmentNumbers}"
+                                                                     action="#{bookingControllerViewScope.getReleasedAppoinmentNumbers}"
                                                                      process="@this"
                                                                      styleClass="ws-triggers"
                                                                      update="row1"
