@@ -2,6 +2,7 @@ package com.divudi.core.light.common;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
+import com.divudi.core.data.PaymentMethod;
 import java.util.Date;
 import java.util.Objects;
 
@@ -24,6 +25,11 @@ public class BillLight {
     private Double discount;
     private Double netValue;
     private Long patientId;
+    private String referenceBillNo;
+    private String invoiceNo;
+    private Date invoiceDate;
+    private PaymentMethod paymentMethod;
+    private Double saleValue;
     private String canterName;
     private String referringDoctorName;
     private BillTypeAtomic billTypeAtomic;
@@ -101,6 +107,31 @@ public class BillLight {
         this.discount = discount;
         this.netValue = netValue;
         this.patientId = patientId;
+    }
+
+    public BillLight(Long id, String billNo, Date billDate,
+            String institutionName, String departmentName, String userName,
+            String patientName, String patientPhone, Double grossValue,
+            Double discount, Double netValue, Long patientId,
+            String referenceBillNo, String invoiceNo, Date invoiceDate,
+            PaymentMethod paymentMethod, Double saleValue) {
+        this.id = id;
+        this.billNo = billNo;
+        this.billDate = billDate;
+        this.institutionName = institutionName;
+        this.departmentName = departmentName;
+        this.userName = userName;
+        this.patientName = patientName;
+        this.patientPhone = patientPhone;
+        this.grossValue = grossValue;
+        this.discount = discount;
+        this.netValue = netValue;
+        this.patientId = patientId;
+        this.referenceBillNo = referenceBillNo;
+        this.invoiceNo = invoiceNo;
+        this.invoiceDate = invoiceDate;
+        this.paymentMethod = paymentMethod;
+        this.saleValue = saleValue;
     }
 
     public Long getId() {
@@ -197,6 +228,46 @@ public class BillLight {
 
     public void setPatientId(Long patientId) {
         this.patientId = patientId;
+    }
+
+    public String getReferenceBillNo() {
+        return referenceBillNo;
+    }
+
+    public void setReferenceBillNo(String referenceBillNo) {
+        this.referenceBillNo = referenceBillNo;
+    }
+
+    public String getInvoiceNo() {
+        return invoiceNo;
+    }
+
+    public void setInvoiceNo(String invoiceNo) {
+        this.invoiceNo = invoiceNo;
+    }
+
+    public Date getInvoiceDate() {
+        return invoiceDate;
+    }
+
+    public void setInvoiceDate(Date invoiceDate) {
+        this.invoiceDate = invoiceDate;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public Double getSaleValue() {
+        return saleValue;
+    }
+
+    public void setSaleValue(Double saleValue) {
+        this.saleValue = saleValue;
     }
 
     public String getReferringDoctorName() {
