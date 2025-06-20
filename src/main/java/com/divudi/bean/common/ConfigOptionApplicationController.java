@@ -48,7 +48,6 @@ public class ConfigOptionApplicationController implements Serializable {
     @PostConstruct
     public void init() {
         loadApplicationOptions();
-
     }
 
     public void loadApplicationOptions() {
