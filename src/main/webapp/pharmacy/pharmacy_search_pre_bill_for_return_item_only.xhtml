@@ -101,8 +101,9 @@
                                             id="viewBill" 
                                             icon="fas fa-file-invoice"
                                             action="pharmacy_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" 
-                                                                         target="#{pharmacyBillSearch.bill}"/>   
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.id}"
+                                                                         target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandButton>
                                         <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton 
@@ -156,7 +157,8 @@
                                                     icon="fas fa-file-invoice"
                                                     action="pharmacy_reprint_bill_return_pre" 
                                                     disabled="#{rb.creater eq null}">
-                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}"/>
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{rb.id}"/>
+                                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                                 </p:commandButton>
                                                 <p:tooltip for="returnViewBill" value="View Return Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                             </p:column>

@@ -74,7 +74,8 @@
                                             value="#{bill.deptId}"
                                             ajax="false"
                                             action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/> 
+                                            <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandLink>
                                     </p:column>
 

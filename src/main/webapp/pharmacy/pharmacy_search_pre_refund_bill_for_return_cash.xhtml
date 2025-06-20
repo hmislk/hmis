@@ -146,7 +146,8 @@
                                             <p:column>
                                                 <p:commandButton ajax="false" value="View Returned Bill"  rendered="#{rb.refundedBill eq null}"
                                                                  action="pharmacy_reprint_bill_return_cash"  >
-                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{rb.id}" />
+                                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>

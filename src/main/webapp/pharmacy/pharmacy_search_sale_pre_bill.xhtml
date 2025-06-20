@@ -73,8 +73,9 @@
                                             value="#{bill.deptId}" 
                                             disabled="#{bill.referenceBill eq null}"                                            
                                             >
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/> 
-                                            <f:setPropertyActionListener value="#{bill.referenceBill.paymentMethod}" target="#{pharmacyBillSearch.paymentMethod}"/> 
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.paymentMethod}" target="#{pharmacyBillSearch.paymentMethod}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandLink>
                                     </p:column>
                                     

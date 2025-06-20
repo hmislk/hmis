@@ -125,7 +125,8 @@
                                             value="View"
                                             class="mx-1 ui-button-success"
                                             action="pharmacy_reprint_bill_sale?faces-redirect=true">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>   
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandButton>
                                         <p:tooltip for="viewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
                                         <p:commandButton 

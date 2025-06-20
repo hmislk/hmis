@@ -118,7 +118,8 @@
                                     
                                     <p:column>
                                         <p:commandButton ajax="false" action="pharmacy_reprint_adjustment" value="View BIll">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{pi.bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandButton>
                                     </p:column>
 

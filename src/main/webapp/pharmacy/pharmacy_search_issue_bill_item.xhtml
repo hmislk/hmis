@@ -75,11 +75,12 @@
                                         <h:outputLabel value="#{i+1}"/>
                                     </p:column>
                                     <p:column headerText="Bill No" styleClass="alignTop"  width="10em">
-                                        <p:commandLink 
-                                            ajax="false" 
+                                        <p:commandLink
+                                            ajax="false"
                                             value="#{pi.bill.deptId}"
                                             action="/pharmacy/pharmacy_reprint_bill_unit_issue">
-                                            <f:setPropertyActionListener value="#{pi.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{pi.bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandLink>
                                     </p:column>
                                     <p:column headerText="Item Name"  styleClass="alignTop" width="20em">

@@ -81,7 +81,8 @@
                                             value="#{bill.deptId}" 
                                             disabled="#{bill.referenceBill eq null}"
                                             action="#{pharmacyBillSearch.navigatePharmacyReprintRetailBill()}">
-                                            <f:setPropertyActionListener value="#{bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>  
+                                            <f:setPropertyActionListener value="#{bill.referenceBill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandLink>
                                     </p:column>
 

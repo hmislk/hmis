@@ -108,7 +108,8 @@
                                             disabled="#{bill.checkActiveReturnCashBill() or bill.cancelled}" 
                                             value="Cancel Return Item Bill" 
                                             action="pharmacy_reprint_bill_return_pre">
-                                            <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                            <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandButton>                                
                                     </p:column>
 
@@ -154,7 +155,8 @@
                                                     class="ui-button-primary"
                                                     action="pharmacy_reprint_bill_return_cash" 
                                                     disabled="#{rb.cancelled}">
-                                                    <f:setPropertyActionListener value="#{rb}" target="#{pharmacyBillSearch.bill}"/>
+                                                    <f:setPropertyActionListener value="#{rb.id}" target="#{pharmacyBillSearch.billId}"/>
+                                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                                 </p:commandButton> 
                                                 <p:tooltip for="cancelRefundCashBill" value="View Bill"   showDelay="0" hideDelay="0"></p:tooltip>
                                             </p:column>

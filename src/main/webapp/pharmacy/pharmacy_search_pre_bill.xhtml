@@ -329,7 +329,8 @@
                                                     value="View Payment Bill"
                                                     action="pharmacy_reprint_bill_sale_cashier?faces-redirect=true"
                                                     disabled="#{bill.referenceBill eq null}">
-                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{rb}" />
+                                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{rb.id}" />
+                                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}" />
                                                 </p:commandButton>
                                             </p:column>
                                         </p:dataTable>

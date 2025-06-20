@@ -51,7 +51,8 @@
                                       filterMatchMode="contains">
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                             </p:column> 
 
@@ -65,7 +66,8 @@
                                       >
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.toInstitution.name}"  rendered="#{bill.toInstitution.name eq null}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                             </p:column> 
                             <p:column headerText="Billed at"  >
@@ -73,7 +75,8 @@
                                     <h:outputLabel value="#{bill.createdAt}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -93,7 +96,8 @@
                                 <h:commandLink action="pharmacy_reprint_purchase" >
                                     <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                                 <br/>
                                 <h:panelGroup rendered="#{bill.cancelled}" >
@@ -116,7 +120,8 @@
                                       >
                                 <h:commandLink action="pharmacy_reprint_purchase" >
                                     <h:outputLabel value="#{bill.paymentMethod}" ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                             </p:column>                               
                             <p:column headerText="Net Value"  style="text-align: right;"  >
@@ -124,7 +129,8 @@
                                     <h:outputLabel value="#{bill.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                             </p:column>
 

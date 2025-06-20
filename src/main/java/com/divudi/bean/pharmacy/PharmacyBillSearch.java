@@ -134,6 +134,7 @@ public class PharmacyBillSearch implements Serializable {
     private String txtSearch;
     private String comment;
     private Bill bill;
+    private Long billId;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
     private RefundBill billForRefund;
@@ -3150,6 +3151,15 @@ public class PharmacyBillSearch implements Serializable {
 //            paymentMethod = bb.getPaymentMethod();
 //        }
 
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+        this.bill = billFacade.find(billId);
     }
 
     public List<BillEntry> getBillEntrys() {

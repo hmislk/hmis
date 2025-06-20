@@ -72,7 +72,8 @@
                                       >
                                 <h:commandLink action="pharmacy_reprint_purchase" value="#{bill.deptId}">
                                     <h:outputLabel  ></h:outputLabel>
-                                    <f:setPropertyActionListener value="#{bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{bill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                 </h:commandLink>
                             </p:column> 
                             <p:column headerText="Bill Type" 

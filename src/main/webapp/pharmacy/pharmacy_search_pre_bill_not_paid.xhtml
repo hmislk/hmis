@@ -118,7 +118,8 @@
 
                             <p:column >
                                 <p:commandButton ajax="false"  value="View Bill" action="pharmacy_reprint_bill_pre" icon="fas fa-file-invoice" class="ui-button-warning" disabled="#{bill.referenceBill ne null}">                                
-                                    <f:setPropertyActionListener  value="#{bill}" target="#{pharmacyBillSearch.bill}" />
+                                    <f:setPropertyActionListener  value="#{bill.id}" target="#{pharmacyBillSearch.billId}" />
+                                    <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}" />
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>

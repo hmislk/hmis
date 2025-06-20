@@ -135,7 +135,8 @@
                                             ajax="false" 
                                             icon="fas fa-file-invoice"
                                             action="pharmacy_reprint_bill_sale">
-                                            <f:setPropertyActionListener value="#{pi.bill.referenceBill}" target="#{pharmacyBillSearch.bill}"/>                                     
+                                            <f:setPropertyActionListener value="#{pi.bill.referenceBill.id}" target="#{pharmacyBillSearch.billId}"/>
+                                            <f:setPropertyActionListener value="#{null}" target="#{searchController.bills}"/>
                                         </p:commandButton>
                                         
                                         <p:tooltip for="btnViewBill" value="View Bill"  showDelay="0" hideDelay="0"></p:tooltip>
