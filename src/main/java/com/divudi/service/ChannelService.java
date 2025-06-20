@@ -162,8 +162,8 @@ public class ChannelService {
             b.getOnlineBooking().setRetiredAt(new Date());
             b.getOnlineBooking().setRetireComments("Online Booking is NOT completed.");
             getOnlineBookingFacade().edit(b.getOnlineBooking());
-            
-            WebSocketService.broadcastToSessions("Temporary Booking Retired - "+ b.getSingleBillSession().getSessionInstance().getId());
+
+            WebSocketService.broadcastToSessions("Temporary Booking Retired - " + b.getSingleBillSession().getSessionInstance().getId());
 
             if (b.getBillFees() != null) {
                 for (BillFee bf : b.getBillFees()) {
@@ -846,9 +846,13 @@ public class ChannelService {
         }
         return releasedNumberList;
     }
-    
-     public void fillBillSessionsAndUpdateBookingsCountInSessionInstance(SessionInstance session) {
-        
+
+    public void fillBillSessionsAndUpdateBookingsCountInSessionInstance(SessionInstance session) {
+
+        if (session == null) {
+            return;
+        }
+
         BillType[] billTypes = {
             BillType.ChannelAgent,
             BillType.ChannelCash,
@@ -1000,8 +1004,8 @@ public class ChannelService {
                 - completedPatientCount);
         sessionInstanceFacade.edit(session);
     }
-     
-     public long generateNextAvailableAppointmentNumberBySessionInstance(SessionInstance ssi, List<Integer> serialNumberArray) {
+
+    public long generateNextAvailableAppointmentNumberBySessionInstance(SessionInstance ssi, List<Integer> serialNumberArray) {
         long nextAvailable = 0;
 
         if (ssi == null || serialNumberArray == null) {
@@ -1311,7 +1315,7 @@ public class ChannelService {
         billSessionFacade.edit(bs);
 
         cancelOnlineBooking(bill.getReferenceBill().getOnlineBooking());
-        
+
         fillBillSessionsAndUpdateBookingsCountInSessionInstance(bill.getSingleBillSession().getSessionInstance());
 
         return cbs;
@@ -1842,7 +1846,7 @@ public class ChannelService {
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
         getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
-        
+
         fillBillSessionsAndUpdateBookingsCountInSessionInstance(preBillSession.getSessionInstance());
 
         return paidBill;
