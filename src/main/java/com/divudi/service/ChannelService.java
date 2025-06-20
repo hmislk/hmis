@@ -846,6 +846,187 @@ public class ChannelService {
         }
         return releasedNumberList;
     }
+    
+     public void fillBillSessionsAndUpdateBookingsCountInSessionInstance(SessionInstance session) {
+        
+        BillType[] billTypes = {
+            BillType.ChannelAgent,
+            BillType.ChannelCash,
+            BillType.ChannelOnCall,
+            BillType.ChannelStaff,
+            BillType.ChannelCredit,
+            BillType.ChannelResheduleWithPayment,
+            BillType.ChannelResheduleWithOutPayment,};
+
+        List<BillType> bts = Arrays.asList(billTypes);
+        String sql = "Select bs "
+                + " From BillSession bs "
+                + " where bs.retired=false"
+                + " and bs.bill.billType in :bts"
+                + " and type(bs.bill)=:class "
+                + " and bs.bill.billTypeAtomic != :bta"
+                + " and bs.sessionInstance=:ss "
+                + " order by bs.serialNo ";
+        HashMap<String, Object> hh = new HashMap<>();
+
+        Bill b = new Bill();
+        b.getBillTypeAtomic();
+        hh.put("bts", bts);
+        hh.put("bta", BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_PENDING_PAYMENT);
+        hh.put("class", BilledBill.class);
+        hh.put("ss", session);
+
+        List<BillSession> billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
+
+        // Initialize counts
+        long bookedPatientCount = 0;
+        long paidPatientCount = 0;
+        long completedPatientCount = 0;
+        long cancelPatientCount = 0;
+        long refundedPatientCount = 0;
+        long onCallPatientCount = 0;
+        long reservedBookingCount = 0;
+        long sessionStartingNumber = 0;
+        long nextAvailableAppointmentNumber = 0;
+
+        if (session.getOriginatingSession()
+                .getSessionStartingNumber() != null
+                && !session.getOriginatingSession().getSessionStartingNumber().trim().equals("")) {
+
+            int ssn = Integer.parseInt(session.getOriginatingSession().getSessionStartingNumber().trim());
+            sessionStartingNumber = ssn;
+        } else {
+            sessionStartingNumber = 1; // Use 1 instead of 01 since it's an integer
+        }
+
+        if (billSessions == null) {
+            session.setBookedPatientCount(0l);
+            session.setPaidPatientCount(0l);
+            session.setCompletedPatientCount(0l);
+            session.setRemainingPatientCount(0l);
+            session.setNextAvailableAppointmentNumber(sessionStartingNumber);
+            sessionInstanceFacade.edit(session);
+            return;
+        }
+        List<Integer> serialnumbersBySelectedSessionInstance = new ArrayList<>();
+        // Loop through billSessions to calculate counts
+        for (BillSession bs : billSessions) {
+            if (bs != null) {
+                bookedPatientCount++; // Always increment if bs is not null
+                serialnumbersBySelectedSessionInstance.add(bs.getSerialNo());
+                // Additional check for reserved status
+                try {
+                    if (bs.isReservedBooking()) {
+                        reservedBookingCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+
+                }
+
+                // Additional check for completion status
+                try {
+                    if (bs.isCompleted()) {
+                        completedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking completion status
+
+                }
+
+                // Additional check for paid status
+                try {
+                    if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                        paidPatientCount++;
+                    }
+                    if (bs.getPaidBillSession() != null) {
+                        paidPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+                // Additional check for cancel status
+                try {
+                    if (bs.getBill().isCancelled()) {
+                        cancelPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for refund status
+                try {
+                    if (bs.getBill().isRefunded()) {
+                        refundedPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+
+                // Additional check for Oncall status
+                try {
+                    if (bs.getPaidBillSession() == null && !bs.getBill().isCancelled() && bs.getBill().getBillTypeAtomic() != BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+                        onCallPatientCount++;
+                    }
+                } catch (NullPointerException npe) {
+                    // Log or handle the fact that there was an NPE checking paid status
+
+                }
+            }
+        }
+
+        // Set calculated counts to selectedSessionInstance
+        session.setBookedPatientCount(bookedPatientCount);
+
+        session.setPaidPatientCount(paidPatientCount);
+
+        session.setCompletedPatientCount(completedPatientCount);
+
+        session.setCancelPatientCount(cancelPatientCount);
+
+        session.setRefundedPatientCount(refundedPatientCount);
+
+        session.setOnCallPatientCount(onCallPatientCount);
+
+        session.setReservedBookingCount(reservedBookingCount);
+
+        session.setNextAvailableAppointmentNumber(generateNextAvailableAppointmentNumberBySessionInstance(session, serialnumbersBySelectedSessionInstance));
+
+        // Assuming remainingPatientCount is calculated as booked - completed
+        session.setRemainingPatientCount(bookedPatientCount
+                - completedPatientCount);
+        sessionInstanceFacade.edit(session);
+    }
+     
+     public long generateNextAvailableAppointmentNumberBySessionInstance(SessionInstance ssi, List<Integer> serialNumberArray) {
+        long nextAvailable = 0;
+
+        if (ssi == null || serialNumberArray == null) {
+            return nextAvailable;
+        }
+
+        List<Integer> reservedNumbersBySessionInstance = CommonFunctions.convertStringToIntegerList(ssi.getReserveNumbers());
+
+        if (reservedNumbersBySessionInstance != null && !reservedNumbersBySessionInstance.isEmpty()) {
+            serialNumberArray.removeAll(reservedNumbersBySessionInstance);
+        }
+
+        int maxNumber = 0;
+        if (!serialNumberArray.isEmpty()) {
+            maxNumber = serialNumberArray.stream().max(Integer::compareTo).orElse(0);
+        }
+
+        nextAvailable = maxNumber + 1;
+
+        while (reservedNumbersBySessionInstance.contains((int) nextAvailable)) {
+            nextAvailable++;
+        }
+
+        return nextAvailable;
+    }
 
     private BillSession createBillSession(Bill bill, BillItem billItem, boolean forReservedNumbers, SessionInstance session) {
         BillSession bs = new BillSession();
@@ -1130,6 +1311,8 @@ public class ChannelService {
         billSessionFacade.edit(bs);
 
         cancelOnlineBooking(bill.getReferenceBill().getOnlineBooking());
+        
+        fillBillSessionsAndUpdateBookingsCountInSessionInstance(bill.getSingleBillSession().getSessionInstance());
 
         return cbs;
 
@@ -1659,6 +1842,8 @@ public class ChannelService {
         bookingDetails.setAppoinmentTotalAmount(paidBill.getNetTotal());
 
         getOnlineBookingFacade().edit(paidBill.getReferenceBill().getOnlineBooking());
+        
+        fillBillSessionsAndUpdateBookingsCountInSessionInstance(preBillSession.getSessionInstance());
 
         return paidBill;
     }
