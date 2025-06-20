@@ -1196,7 +1196,8 @@ public class PharmacySummaryReportController implements Serializable {
         if (pbi.getItemBatch() != null) {
             costRate = pbi.getItemBatch().getCostRate();
         }
-        bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+        BigDecimal lineCostRate = costRate == null ? BigDecimal.ZERO : BigDecimal.valueOf(costRate);
+        bifd.setLineCostRate(lineCostRate);
         bifd.setBillCostRate(BigDecimal.ZERO);
         bifd.setTotalCostRate(BigDecimal.valueOf(costRate));
 
