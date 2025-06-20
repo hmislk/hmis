@@ -306,7 +306,8 @@
                                             console.log("start connection");
 
                                             if (typeof window.wsUrl === "undefined") {
-                                                window.wsUrl = "ws://localhost:8080/rh/ws/notify";
+                                                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; 
+                                                window.wsUrl = protocol + "//localhost:8080/rh/ws/notify";
                                             }
 
                                             if (typeof window.socket === "undefined") {
