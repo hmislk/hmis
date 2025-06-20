@@ -406,6 +406,7 @@
                                 </f:facet>
                                 <div class="d-flex align-items-center gap-2">
                                     <h:outputText value="#{s.name}" />
+                                    <p:tag severity="warning" value="Scanning" rendered="#{s.originatingSession.category eq 'Scanning'}"></p:tag>
                                     <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
 
                                 </div>
@@ -548,14 +549,12 @@
                             let socket = new WebSocket(wsUrl);
 
                             socket.onmessage = function (event) {
-                                console.log("line 547");
                                 const message = event.data;
                                 const messageParts = message.split(" - ");
                                 const sendSessionId = messageParts[1];
                                 const sendMessage = messageParts[0];
 
                                 if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Edited" || sendMessage === "Online Booking Cancelled") {
-                                    console.log("line 554");
                                     const selectedSessionId = '#{bookingController.selectedSessionInstance.id}';
 
                                     if (selectedSessionId == sendSessionId) {
