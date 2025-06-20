@@ -545,7 +545,7 @@
                         <script>
                             console.log("start connection");
                             const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-                            const wsUrl = protocol + "//localhost:8080/rh/ws/notify";
+                            const wsUrl = protocol + "//" + window.location.host +"/rh/ws/notify";
 
                             let socket = new WebSocket(wsUrl);
 

@@ -307,7 +307,7 @@
 
                                             if (typeof window.wsUrl === "undefined") {
                                                 const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; 
-                                                window.wsUrl = protocol + "//localhost:8080/rh/ws/notify";
+                                                window.wsUrl = protocol + "//" + window.location.host +"/rh/ws/notify";
                                             }
 
                                             if (typeof window.socket === "undefined") {
@@ -315,7 +315,7 @@
                                             }
 
                                             window.socket.onmessage = function (event) {
-                                                console.log("line 312")
+
                                                 const message = event.data;
                                                 const messageParts = message.split(" - ");
                                                 const sendSessionId = messageParts[1];
