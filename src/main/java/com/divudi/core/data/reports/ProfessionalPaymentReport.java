@@ -1,14 +1,13 @@
 package com.divudi.core.data.reports;
 
-public enum LaboratoryReport implements IReportType {
-    SAMPLE_CARRIER_REPORT("Sample Carrier Report"),
-    INVESTIGATION_MONTH_END_SUMMARY("Investigation Month End Summary"),
-    COLLECTION_CENTER_STATEMENT_REPORT("Collection Center Statement Report"),;
+public enum ProfessionalPaymentReport implements IReportType {
+    OPD_PROFESSIONAL_FEE_PAYMENTS_REPORT("OPD Professional Fee Payments Report"),
+    OPD_PROFESSIONAL_PAYMENTS_REPORT("OPD Professional Payments Report"),;
 
 
     private final String displayName;
 
-    LaboratoryReport(String displayName) {
+    ProfessionalPaymentReport(String displayName) {
         this.displayName = displayName;
     }
 
