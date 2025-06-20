@@ -16,7 +16,7 @@
 
 
 
-                    <div class="d-flex justify-content-between align-items-center bg-light">
+                    <div class="d-flex justify-content-between align-items-center bg-light" style="position: sticky; top: 0; z-index: 1000">
                         <div class="my-2 mx-1" style="font-weight: bolder">
                             <div class="d-flex align-items-center">
                                 <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
@@ -106,6 +106,11 @@
 
                         </div>
                     </div>
+
+                    <div id="global-notification" style="position: fixed; right: 20px; z-index: 9999; display: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); ">
+                        Online booking received!
+                    </div>
+
                     <div class="row">
                         <div class="col-7">
                             <p:panel class="my-2">
@@ -114,7 +119,7 @@
                                 <p:tabView >
                                     <p:tab >
                                         <f:facet name="title">
-                                            <h:outputText value="Bookings " />
+                                            <h:outputText value="Bookings "/>
                                             <p:badge id="BookingCount" value="#{bookingControllerViewScope.billSessions.size()}" severity="warning"/>
                                         </f:facet>
                                         <p:dataTable id="acBookings" 
@@ -253,6 +258,7 @@
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
                                     <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
+
                                     <p:tab >
 
                                         <f:facet name="title">
@@ -335,10 +341,6 @@
 
                                         </p:dataTable>
 
-                                        <div id="global-notification" style="position: fixed; top: 100px; right: 1000px; z-index: 9999; display: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); ">
-                                            Online booking received!
-                                        </div>
-
                                         <script>
                                             console.log("start connection");
                                             const wsUrl = "ws://localhost:8080/rh/ws/notify";
@@ -352,7 +354,7 @@
                                                 const sendSessionId = messageParts[1];
                                                 const sendMessage = messageParts[0];
 
-                                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Edited" || sendMessage === "Online Booking Cancelled") {
+                                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Cancelled") {
                                                     const selectedSessionId = '#{bookingControllerViewScope.selectedSessionInstance.id}';
 
                                                     if (selectedSessionId == sendSessionId) {
@@ -363,6 +365,16 @@
                                                     if (sendMessage === "Online Booking Completed") {
                                                         const notify = document.getElementById('global-notification');
                                                         notify.style.display = 'block';
+                                                        setTimeout(() => {
+                                                            notify.style.display = 'none';
+                                                            notify.style.transition = 'all 0.6s ease';
+                                                        }, 3000);
+
+                                                    } else if (sendMessage === "Online Booking Cancelled") {
+                                                        const notify = document.getElementById('global-notification');
+                                                        notify.style.display = 'block';
+                                                        notify.style.backgroundColor = '#c23616';
+                                                        notify.innerHTML = "Online Booking Cancelled";
                                                         setTimeout(() => {
                                                             notify.style.display = 'none';
                                                             notify.style.transition = 'all 0.6s ease';
