@@ -1,15 +1,12 @@
 package com.divudi.core.data.reports;
 
-public enum CashierReports implements IReportType {
-    All_CASHIER_SUMMARY("All Cashier Summary"),
-    CASHIER_SUMMARY("Cashier Summary"),
-    CASHIER_DETAILED("Cashier Detailed"),
-    TOTAL_CASHIER_SUMMARY("Total Cashier Summary"),
-    CASHIER_SHIFT_END_SUMMARY("Cashier Shift End Summary"),;
+public enum CreditReport implements IReportType {
+    OPD_CREDIT_DUE("OPD credit due report"),
+    INWARD_CREDIT_DUE("Inward credit due report");
 
     private final String displayName;
 
-    CashierReports(String displayName) {
+    CreditReport(String displayName) {
         this.displayName = displayName;
     }
 
