@@ -1656,11 +1656,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void refreshSessionsForUpdates(SessionInstance selectSession) {
 
         if (selectSession == null || sessionInstancesFiltered.size() > 1) {
-            System.out.println("line 1659");
             loadSessionInstances();
             addBillSessionData();
         } else {
-            System.out.println("line 1663");
             listAndFilterSessionInstances();
             selectedSessionInstance = selectSession;
             sessionInstanceSelected();
@@ -1669,30 +1667,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             sessionInstancesFiltered.add(selectSession);
         }
 
-//        if (selectedSessionInstance == null) {
-//            loadSessionInstances();
-//            addBillSessionData();
-//            System.out.println("line 1660");
-//        } else {
-//            System.out.println("line 1662");
-//            SessionInstance currentSession;
-//            List<SessionInstance> sessions = new ArrayList<>();
-//
-//            for (SessionInstance ss : sessionInstancesFiltered) {
-//                sessions.add(refetchSessionInstance(ss));
-//            }
-//
-//            currentSession = refetchSessionInstance(selectedSessionInstance);
-//            loadSessionInstances();
-//            sessionInstancesFiltered = sessions;
-//
-//            addBillSessionData();
-//
-//            selectedSessionInstance = refetchSessionInstance(currentSession);
-//            sessionInstanceSelected();
-//            System.out.println("line 1678 " + selectedSessionInstance.getPaidPatientCount() + "  " + selectedSessionInstance.getBookedPatientCount());
-//            System.out.println("line 1679 " + sessionInstancesFiltered.get(0).getPaidPatientCount() + "  " + sessionInstancesFiltered.get(0).getBookedPatientCount());
-//        }
     }
 
     private SessionInstance refetchSessionInstance(SessionInstance session) {
