@@ -349,6 +349,10 @@
                             <p:column headerText="Rate" width="5em">
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
+                            <p:column headerText="Cost Rate" width="5em">
+                                <h:outputText value="#{f.pbItem.billItem.billItemFinanceDetails.totalCostRate / f.pbItem.billItem.billItemFinanceDetails.unitsPerPack}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                            </p:column>
+                            
                             <p:column headerText="Closing Stock Value" width="15em">
                                 <h:outputText value="#{f.itemStock * f.pbItem.purchaseRate}" >
                                     <f:convertNumber pattern="#,##0.00" />

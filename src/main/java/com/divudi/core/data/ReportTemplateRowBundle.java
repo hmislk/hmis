@@ -70,6 +70,11 @@ public class ReportTemplateRowBundle implements Serializable {
     private Long long9;
     private Long long10;
 
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
+
     private PaymentMethod paymentMethod;
 
     private double onCallValue;
@@ -149,6 +154,11 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public ReportTemplateRowBundle() {
         this.id = UUID.randomUUID();
+    }
+
+    public ReportTemplateRowBundle(String name) {
+        this.id = UUID.randomUUID();
+        this.name = name;
     }
 
     //    public ReportTemplateRowBundle(SessionController sessionController) {
@@ -2988,6 +2998,46 @@ public class ReportTemplateRowBundle implements Serializable {
 
     public void setHandoverBill(Bill handoverBill) {
         this.handoverBill = handoverBill;
+    }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+
+    public double geteWalletHandoverValue() {
+        return eWalletHandoverValue;
+    }
+
+    public void seteWalletHandoverValue(double eWalletHandoverValue) {
+        this.eWalletHandoverValue = eWalletHandoverValue;
     }
 
 }

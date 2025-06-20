@@ -18,6 +18,15 @@
                                     <p:ajax process="@this"></p:ajax>
                                     <p:tab title="Summaries">
                                         <div class="d-grid gap-2">
+
+                                            <p:commandButton 
+                                                ajax="false" 
+                                                value="Income Bill Counts" 
+                                                icon="fa fa-chart-bar"
+                                                action="#{reportController.navigateToIncomeBillCountReport()}"
+                                                class="w-100">
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Shift End Summaries" 
@@ -53,7 +62,7 @@
                                                 action="#{searchController.navigateToBillList}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Count List"
@@ -61,7 +70,7 @@
                                                 actionListener="#{searchController.resetAllFiltersExceptDateRange}"
                                                 class="w-100">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Bill Item List" 

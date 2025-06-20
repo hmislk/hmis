@@ -89,7 +89,6 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal totalCostRate = BigDecimal.ZERO;
 
     // ------------------ TOTALS ------------------
-    // Value before deductions
     @Column(precision = 18, scale = 4)
     private BigDecimal lineGrossTotal = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
@@ -97,7 +96,6 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal grossTotal = BigDecimal.ZERO;
 
-    // Value after deductions
     @Column(precision = 18, scale = 4)
     private BigDecimal lineNetTotal = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
@@ -105,7 +103,6 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal netTotal = BigDecimal.ZERO;
 
-    // Absolute discount values
     @Column(precision = 18, scale = 4)
     private BigDecimal lineDiscount = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)

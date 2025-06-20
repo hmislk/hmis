@@ -420,8 +420,9 @@
                                 <h:outputText value="#{b.invoiceNumber}"/>
                             </p:column>
 
-                            <p:column headerText="Cancel No" width="5em">
-                                <h:outputText value="#{b.cancelledBill.deptId}"/>
+                            <p:column headerText="Cancel/Refund No" width="5em">
+                                <h:outputText value="#{b.cancelledBill.deptId}" style="color: red;" />
+                                <h:outputText value="#{b.refundedBill.deptId}" style="color: orange;" />
                             </p:column>
 
                             <p:column
@@ -436,6 +437,22 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{-1 * pharmacyController.totalPurchase}">
+                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column
+                                    headerText="Cost Rate Value"
+                                    width="4em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{b.billFinanceDetails.billCostValue}"
+                                    filterBy="#{b.billFinanceDetails.billCostValue}">
+                                <h:outputText value="#{b.billFinanceDetails.billCostValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                 </f:facet>
                             </p:column>
@@ -534,11 +551,12 @@
                             </p:column>
 
                             <p:column headerText="Cancel No" width="5em">
-                                <p:outputLabel value="#{i.bill.cancelledBill.deptId}"/>
+                                <h:outputText value="#{i.bill.cancelledBill.deptId}" style="color: red;" />
+                                <h:outputText value="#{i.bill.refundedBill.deptId}" style="color: orange;" />
                             </p:column>
 
                             <p:column
-                                    headerText="Rate"
+                                    headerText="Purchase Rate"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
@@ -550,7 +568,7 @@
                             </p:column>
 
                             <p:column
-                                    headerText="Value"
+                                    headerText="Purchase Value"
                                     width="6em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
@@ -561,6 +579,34 @@
                                 </p:outputLabel>
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacyController.totalPurchase}">
+                                        <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column
+                                    headerText="Cost Rate"
+                                    width="6em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{i.billItemFinanceDetails.lineCostRate}"
+                                    filterBy="#{i.billItemFinanceDetails.lineCostRate}">
+                                <p:outputLabel value="#{i.billItemFinanceDetails.lineCostRate}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                            </p:column>
+
+                            <p:column
+                                    headerText="Cost Value"
+                                    width="6em"
+                                    style="text-align: right;"
+                                    filterMatchMode="contains"
+                                    sortBy="#{i.billItemFinanceDetails.lineCost}"
+                                    filterBy="#{i.billItemFinanceDetails.lineCost}">
+                                <p:outputLabel value="#{i.billItemFinanceDetails.lineCost}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </p:outputLabel>
+                                <f:facet name="footer">
+                                    <h:outputLabel value="#{pharmacyController.totalCostValue}">
                                         <f:convertNumber pattern="#,##0.00"/></h:outputLabel>
                                 </f:facet>
                             </p:column>

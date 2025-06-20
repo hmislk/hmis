@@ -1,0 +1,187 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/online_booking_agent_management/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+
+
+    <ui:define name="subcontent">
+
+        <h:panelGroup  >
+            <h:form>
+                <p:growl id="msg"/>
+                <p:focus id="selectFocus" for="lstSelect" />
+                <p:focus id="detailFocus" for="gpDetail" />
+
+                <p:panel header="Manage Online Booking Agents">
+                    <div class="row">
+                        <div class="col-md-5">
+
+                            <p:commandButton 
+                                id="btnAdd" 
+                                value="Add New"                             
+                                action="#{onlineBookingAgentController.prepareAdd()}"
+                                class="ui-button-success"
+                                update="lstSelect gpDetail activeStatus" 
+                                icon="fa fa-plus"
+                                process="btnAdd">
+                            </p:commandButton>
+
+                            <p:commandButton 
+                                id="btnDelete" 
+                                icon="fa fa-trash"
+                                onclick="PF('cancelDialog').show();"
+                                value="Delete"
+                                update="lstSelect gpDetail msg activeStatus" process="btnDelete"
+                                class=" m-1 ui-button-danger w-25"
+                                >
+                            </p:commandButton>
+
+                            <p:confirmDialog id="cancelDialog"
+                                             widgetVar="cancelDialog"
+                                             header="Confirmation"
+                                             message="Are you sure you want to cancel the selected sessions?"
+                                             severity="warn"
+                                             showEffect="fade"
+                                             hideEffect="fade"
+                                             responsive="true">
+
+                                <p:commandButton value="Yes"
+                                                 icon="pi pi-check"
+                                                 update="lstSelect gpDetail msg activeStatus"
+                                                 oncomplete="PF('cancelDialog').hide();"
+                                                 action="#{onlineBookingAgentController.delete()}"
+                                                 process="@this"
+                                                 />
+
+                                <p:commandButton value="No"
+                                                 icon="pi pi-times"
+                                                 onclick="PF('cancelDialog').hide(); return false;"
+                                                 type="button"
+                                                 styleClass="ui-button-secondary" />
+                            </p:confirmDialog>
+
+                            <p:selectOneListbox  id="lstSelect"
+                                                 value="#{onlineBookingAgentController.current}" 
+                                                 style="w-100"
+                                                 filter="true">
+                                <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
+                                <p:ajax update="gpDetail" process="lstSelect" >
+                                </p:ajax>
+                            </p:selectOneListbox>
+
+
+                        </div>
+
+                        <div class="col-md-7">
+                            <p:panel class="w-100 form-control m-1" id="gpDetail">
+                                <f:facet name="header">
+                                    <h:panelGroup layout="block" style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h:outputText value="Details of the Agent"></h:outputText>
+                                        <h:outputText id="activeStatus" class="mx-5" value="(#{onlineBookingAgentController.current.inactive eq true ? 'Inactive Agent' : 'Active Agent'})" style="color: #{onlineBookingAgentController.current.inactive eq true ? 'Red' : 'Black'}; font-weight: bold; align-items: end"></h:outputText>
+                                    </h:panelGroup>
+                                </f:facet>
+
+                                <p:tabView  class="w-100 form-control m-1">
+                                    <p:tab title="Basic Details" class="w-100 form-control m-1" >
+
+                                        <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                            <h:outputText id="lblName" value="Name"  class="m-1"></h:outputText>
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
+                                                         id="txtName" value="#{onlineBookingAgentController.current.name}"></p:inputText>
+                                            <h:outputText id="lblPName" value="Printing Name"  ></h:outputText>
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
+                                                         id="txtPName" value="#{onlineBookingAgentController.current.chequePrintingName}"></p:inputText>
+                                            <h:outputText value="Bill Prefix"  ></h:outputText>
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
+                                                         value="#{onlineBookingAgentController.current.institutionCode}"></p:inputText>
+                                            <h:outputText id="lblCode" value="Code"  ></h:outputText>
+                                            <p:inputText autocomplete="off" class="w-100 form-control m-1"
+                                                         id="txtCode" value="#{onlineBookingAgentController.current.code}"></p:inputText>
+
+                                            <h:outputText  value="Description" ></h:outputText>
+                                            <p:inputTextarea class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.descreption}"  ></p:inputTextarea>
+                                            <h:outputText id="lblDept" value="Type"></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" disabled="true" autocomplete="off"  value="#{onlineBookingAgentController.current.institutionType}"  ></p:inputText>                                                                     
+                                            <h:outputText value="Deactive Agent"></h:outputText>
+                                            <p:selectBooleanCheckbox class="w-100 m-1" value="#{onlineBookingAgentController.current.inactive}" itemLabel="(Select and Update to deactivate)"/>
+                                            <h:outputText value="Phone" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.phone}"  ></p:inputText>
+                                            <h:outputText value="Fax" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.fax}"  ></p:inputText>
+                                            <h:outputText value="Email" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.email}"  ></p:inputText>
+                                            <h:outputText value="Address" ></h:outputText>
+                                            <p:inputTextarea class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.address}"  ></p:inputTextarea>
+                                            <h:outputText value="Web" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.web}"  ></p:inputText>
+                                        </h:panelGrid>
+
+                                    </p:tab>
+
+                                    <p:tab title="Advanced">
+                                        <h:panelGrid columns="2" class="w-100 form-control m-1" >
+
+                                            <h:outputText  value="Point of Issue No." ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.pointOfIssueNo}" ></p:inputText>
+
+                                            <h:outputText value="Bank" ></h:outputText>
+                                            <p:autoComplete completeMethod="#{institutionController.completeBankBranch}" 
+                                                            var="dept" id="branch"
+                                                            class="w-100 form-control m-1" placeholder="Branch"
+                                                            inputStyleClass="w-100"
+                                                            itemLabel="#{dept.name}"
+                                                            itemValue="#{dept}"
+                                                            forceSelection="true" 
+                                                            value="#{institutionController.current.bankBranch}"/>
+                                            <h:outputText  value="Account No." ></h:outputText>
+                                            <p:inputText  autocomplete="off" class="w-100 form-control m-1" value="#{onlineBookingAgentController.current.accountNo}"  ></p:inputText>
+
+                                            <h:outputText value="Credit Limit" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.allowedCreditLimit}"  ></p:inputText>
+
+                                            <h:outputText value="Owner Email" ></h:outputText>
+                                            <p:inputText class="w-100 form-control m-1" autocomplete="off"  value="#{onlineBookingAgentController.current.ownerEmail}"  ></p:inputText>
+
+                                        </h:panelGrid>
+
+                                    </p:tab>
+
+                                </p:tabView>
+
+                                <p:commandButton 
+                                    id="btnSave" 
+                                    value="Save" 
+                                    disabled="#{onlineBookingAgentController.current.id ne null}"
+                                    action="#{onlineBookingAgentController.saveSelected(true)}" 
+                                    process="btnSave gpDetail" 
+                                    update="lstSelect msg btnUpdate btnSave activeStatus" 
+                                    class=" m-1 ui-button-warning w-25"
+                                    icon="fas fa-save">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="btnUpdate" 
+                                    value="Update" 
+                                    disabled="#{onlineBookingAgentController.current.id eq null}"
+                                    action="#{onlineBookingAgentController.saveSelected(false)}" 
+                                    process="btnUpdate gpDetail" 
+                                    update="lstSelect msg activeStatus" 
+                                    class=" m-1 ui-button-warning w-25"
+                                    icon="fas fa-save">
+                                </p:commandButton>
+                                <p:defaultCommand target="btnSave"/>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+
+            </h:form>
+
+        </h:panelGroup>
+
+    </ui:define>
+
+</ui:composition>

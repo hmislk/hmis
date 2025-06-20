@@ -35,7 +35,7 @@ public class SearchKeyword {
     private String fromInstitution;
     private String fromDepartment;
     private String toInstitution;
-    private String toDepartment;
+    private Department toDepartment;
     private String creator;
     private String bank;
     private String number;
@@ -271,11 +271,11 @@ public class SearchKeyword {
         this.bhtNo = bhtNo;
     }
 
-    public String getToDepartment() {
+    public Department getToDepartment() {
         return toDepartment;
     }
 
-    public void setToDepartment(String toDepartment) {
+    public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
 

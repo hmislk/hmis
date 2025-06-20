@@ -7,6 +7,7 @@ import static com.divudi.core.data.BillCategory.PAYMENTS;
 import static com.divudi.core.data.BillCategory.PREBILL;
 import static com.divudi.core.data.BillCategory.REFUND;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.BillType;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
@@ -31,13 +32,17 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
+import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -291,11 +296,6 @@ public class BillService {
         double additionalFeeCalculatedByBillFees = 0.0;
 
         List<BillFee> bfs = fetchBillFees(bi);
-        System.out.println("bfs = " + bfs);
-
-        for (BillFee bf : bfs) {
-            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
-        }
 
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
@@ -313,10 +313,7 @@ public class BillService {
 
         }
 
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
 
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
@@ -362,11 +359,6 @@ public class BillService {
             }
 
         }
-
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
 
         duplicateBillItem.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         duplicateBillItem.setStaffFee(staffFeesCalculatedByBillFees);
@@ -604,6 +596,7 @@ public class BillService {
         return btas;
     }
 
+    
     public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
 
@@ -667,6 +660,47 @@ public class BillService {
                 + " order by bi.id";
         params.put("bl", b);
         return billItemFacade.findLongByJpql(jpql, params);
+    }
+
+    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
+            Institution institution, Department department, BillType[] billTypes, Class bc) {
+        String sql;
+        Map m = new HashMap();
+        sql = "select count(bi) "
+                + " from BillItem bi "
+                + " where bi.bill.retired=false "
+                + " and bi.bill.billType in :billTypes "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and type(bi.bill) =:bc ";
+        if (pm != null) {
+            sql += " and bi.bill.paymentMethod=:pm ";
+            m.put("pm", pm);
+        }
+        if (institution != null) {
+            sql += " and bi.bill.toInstitution=:ins ";
+            m.put("ins", institution);
+        }
+
+        if (department != null) {
+            sql += " and bi.bill.toDepartment=:dep ";
+            m.put("dep", department);
+        }
+
+        List<BillType> bts = Arrays.asList(billTypes);
+
+        m.put("billTypes", bts);
+        m.put("bc", bc);
+        m.put("fd", fd);
+        m.put("td", td);
+
+        return billFacade.findLongByJpql(sql, m, TemporalType.TIMESTAMP);
+    }
+
+    public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
+            Institution institution, Department department, BillType[] billTypes) {
+        return calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, BilledBill.class)
+                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, CancelledBill.class)
+                - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, RefundBill.class);
     }
 
     public List<BillItem> fetchBillItems(List<Bill> bills) {
@@ -976,10 +1010,72 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
+    }
+
+    public List<PharmacyIncomeCostBillDTO> fetchBillIncomeCostDtos(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO(" +
+                " b.id, b.deptId, b.billTypeAtomic, " +
+                " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, " +
+                " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) " +
+                " from Bill b " +
+                " left join b.billFinanceDetails bfd " +
+                " left join b.patient pat " +
+                " left join pat.person pers " +
+                " left join b.patientEncounter pe " +
+                " where b.retired=:ret " +
+                " and b.billTypeAtomic in :billTypesAtomics " +
+                " and b.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return (List<PharmacyIncomeCostBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
@@ -1391,6 +1487,7 @@ public class BillService {
             return null;
         }
         List<BillTypeAtomic> btas = new ArrayList<>();
+        //TODO: Use a List of Bill Type Atomics instead of calling the findBy methods
         switch (inputBill.getBillTypeAtomic()) {
             case PHARMACY_GRN:
                 btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
@@ -1682,8 +1779,12 @@ public class BillService {
             case CC_PAYMENT_RECEIVED_BILL:
             case CC_PAYMENT_MADE_BILL:
             case CC_PAYMENT_MADE_CANCELLATION_BILL:
-                boolean billHasNoBillItems = billHasNoBillItems(bill);
-                if (billHasNoBillItems) {
+                boolean noItemsError = billHasNoBillItems(bill);
+                boolean netTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
+                boolean hospitalFeeError = billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(bill);
+                boolean centreFeeError = billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(bill);
+
+                if (noItemsError || netTotalError || hospitalFeeError || centreFeeError) {
                     hasAtLeatOneError = true;
                 }
                 break;
@@ -1724,6 +1825,50 @@ public class BillService {
         return mismatch;
     }
 
+    // ChatGPT contributed method to validate collecting centre fee totals
+    public boolean billCollectingCentreFeeTotalIsNotEqualToBillItemCollectingCentreFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billCcTotal = Math.abs(bill.getTotalCenterFee());
+        double billItemCcTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billCcTotal - billItemCcTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill collecting centre fee total (" + billCcTotal + ") does not match sum of bill item collecting centre fees (" + billItemCcTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
+    // ChatGPT contributed method to validate hospital fee totals
+    public boolean billHospitalFeeTotalIsNotEqualToBillItemHospitalFeeTotal(Bill bill) {
+        if (bill == null || bill.getBillItems() == null) {
+            return true;
+        }
+
+        double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
+        double billItemHospitalTotal = bill.getBillItems().stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
+                .sum();
+
+        boolean mismatch = Math.abs(billHospitalTotal - billItemHospitalTotal) >= 0.01;
+
+        if (mismatch) {
+            bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
+                    + "Bill hospital fee total (" + billHospitalTotal + ") does not match sum of bill item hospital fees (" + billItemHospitalTotal + "). ");
+        }
+
+        return mismatch;
+    }
+
 // ChatGPT contributed method to check if bill has no bill items
     public boolean billHasNoBillItems(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
@@ -1743,14 +1888,7 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", bill);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
-        if (ptix == null) {
-            System.out.println("ptix is null = " + ptix);
-        } else {
-            System.out.println("ptix size= " + ptix.size());
-        }
         return ptix;
     }
 

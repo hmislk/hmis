@@ -81,7 +81,6 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -255,7 +254,6 @@ public class LaboratoryManagementController implements Serializable {
         }
     }
 
-    
     public String navigateToLaboratoryAdministration() {
         return "/admin/lims/index?faces-redirect=true";
     }
@@ -306,14 +304,14 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
-    
+
     public void navigateToPatientReportsFromSelectedPatientInvestigation(PatientInvestigation patientInvestigation) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_REPORTS;
-        
+
         items.add(patientInvestigation);
     }
-    
+
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
         listingEntity = ListingEntity.REPORT_PRINT;
@@ -331,39 +329,67 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
-    
-    public String navigateToBackFormPatientReportEditingView(){
-        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+
+    public String navigateToBackFormPatientReportEditingView() {
+        if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
             listingEntity = ListingEntity.PATIENT_REPORTS;
             return "/lab/laboratory_management_dashboard?faces-redirect=true";
-        }else{
+        } else {
             patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
             return "/lab/generate_barcode_p?faces-redirect=true";
         }
     }
-    public String navigateToBackFormPatientReportPrintView(){
-        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+
+    public String navigateToBackFormPatientReportPrintView() {
+        if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
             listingEntity = ListingEntity.PATIENT_REPORTS;
             return "/lab/laboratory_management_dashboard?faces-redirect=true";
-        }else{
+        } else {
             patientInvestigationController.setListingEntity(ListingEntity.PATIENT_REPORTS);
             return "/lab/generate_barcode_p?faces-redirect=true";
         }
     }
-    
-    public String navigateToBackFormPatientReportPrintingView(){
-        if(configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)){
+
+    public String navigateToBackFormPatientReportPrintingView() {
+        if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
             listingEntity = ListingEntity.REPORT_PRINT;
             return "/lab/laboratory_management_dashboard?faces-redirect=true";
-        }else{
+        } else {
             patientInvestigationController.setListingEntity(ListingEntity.REPORT_PRINT);
             return "/lab/generate_barcode_p?faces-redirect=true";
         }
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
+    public void makeNull() {
+        this.bills = null;
+        this.items = null;
+        this.investigationName = null;
+        this.filteringStatus = null;
+        this.selectedBillBarcodes = null;
+        this.currentBill = null;
+        this.availableStatus = null;
+        this.selectAll = false;
+        this.sampleId = null;
+        this.sampleRejectionComment = null;
+        this.patientSamples = null;
+        this.route = null;
+        this.collectionCenter = null;
+        this.orderedInstitution = null;
+        this.orderedDepartment = null;
+        this.performingInstitution = null;
+        this.performingDepartment = null;
+        this.billNo = null;
+        this.bhtNo = null;
+        this.patientName = null;
+        this.selectedPatientSamples = null;
+        this.sampleTransportedToLabByStaff = null;
+        this.billBarcodes = null;
+        this.type = null;
+        this.referringDoctor = null;
+    }
+
     public void searchLabBills() {
         listingEntity = ListingEntity.BILLS;
         String jpql;
@@ -703,7 +729,7 @@ public class LaboratoryManagementController implements Serializable {
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
-                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click COllect again");
+                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click Collect again");
                 return;
             }
         }
@@ -1216,9 +1242,9 @@ public class LaboratoryManagementController implements Serializable {
 
     public void searchProcessingPatientReports() {
         searchPatientInvestigations();
-        
+
         List<PatientInvestigation> processingList = new ArrayList<>();
-        
+
         for (PatientInvestigation pi : items) {
             if (!hasPatientReports(pi)) {
                 processingList.add(pi);
@@ -1331,12 +1357,10 @@ public class LaboratoryManagementController implements Serializable {
                 items.add(pr.getPatientInvestigation());
             }
         }
-        System.out.println("items = " + items.size());
 
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
