@@ -67,16 +67,35 @@
                                         #{billController.output}
                                     </td>
                                 </tr>
-                                <!--                                <tr>
-                                                                    <td><strong>Another Correction Task</strong></td>
-                                                                    <td>Description for another correction goes here</td>
-                                                                    <td>
-                                                                        <p:commandButton value="Do This Fix"  />
-                                                                    </td>
-                                                                    <td>
-                                #{financialTransactionController.output}
-                            </td>
-                        </tr>-->
+
+
+
+                                <tr>
+                                    <td><strong>Add Data to Bill Finance Details</strong></td>
+                                    <td>
+                                        Bill Finance Details is a newly added entity. Sll its data are not fully added while trnasactions.. This method willadd those data. Once all transactions are settled, this can be removed.
+                                    </td>
+
+                                    <td>
+                                        <h:form>
+
+                                            <p:commandButton 
+                                                value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
+                                                ajax="false"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-cog"
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
+                                            </p:commandButton>
+
+                                        </h:form>
+                                    </td>
+                                    <td>
+                                        #{billController.output}
+                                    </td>
+                                </tr>
+
+
+                                
                             </tbody>
                         </table>
 
