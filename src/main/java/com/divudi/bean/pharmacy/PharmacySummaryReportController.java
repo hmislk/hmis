@@ -895,7 +895,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
-      /**
+    /**
      * Calculates and assigns financial details for the given {@code BillItem}'s
      * {@code BillItemFinanceDetails} during a **pharmacy sale**.
      *
@@ -904,50 +904,48 @@ public class PharmacySummaryReportController implements Serializable {
      * its parent {@code Bill}, or the associated {@code PharmaceuticalBillItem}
      * should be altered.
      *
-     * The calculation logic differs from purchase-related calculations (e.g., direct purchases)
-     * as this method is designed exclusively for sales scenarios. All rates and
-     * totals computed here are based on **sale values**, not cost or purchase values.
+     * The calculation logic differs from purchase-related calculations (e.g.,
+     * direct purchases) as this method is designed exclusively for sales
+     * scenarios. All rates and totals computed here are based on **sale
+     * values**, not cost or purchase values.
      *
-     * Key steps:
-     * - Compute line-level values (rates, amounts) using available data from
-     *   {@code BillItem} and {@code PharmaceuticalBillItem}.
-     * - Derive a proportion using the {@code BillItem}'s net value as a ratio of
-     *   the total bill net value.
-     * - Use this proportion to allocate the {@code Bill}'s total discount, tax,
-     *   and expense values to the current item.
-     * - Convert all quantities into atomic units based on the item's unit-per-pack
-     *   conversion factor (1 for AMP, specific value for AMPP).
-     * - Assign all computed line-level, bill-level, and combined totals and rates
-     *   to the corresponding fields in {@code BillItemFinanceDetails}.
-     * - Avoid any potential {@code NullPointerException} by ensuring all values are
-     *   non-null and safely handled.
+     * Key steps: - Compute line-level values (rates, amounts) using available
+     * data from {@code BillItem} and {@code PharmaceuticalBillItem}. - Derive a
+     * proportion using the {@code BillItem}'s net value as a ratio of the total
+     * bill net value. - Use this proportion to allocate the {@code Bill}'s
+     * total discount, tax, and expense values to the current item. - Convert
+     * all quantities into atomic units based on the item's unit-per-pack
+     * conversion factor (1 for AMP, specific value for AMPP). - Assign all
+     * computed line-level, bill-level, and combined totals and rates to the
+     * corresponding fields in {@code BillItemFinanceDetails}. - Avoid any
+     * potential {@code NullPointerException} by ensuring all values are
+     * non-null and safely handled.
      *
-     * Reference Logic:
-     * - lineGrossTotal = bi.getGrossValue()
-     * - billGrossTotal = 0 (reserved for future use)
-     * - grossTotal = lineGrossTotal + billGrossTotal
+     * Reference Logic: - lineGrossTotal = bi.getGrossValue() - billGrossTotal =
+     * 0 (reserved for future use) - grossTotal = lineGrossTotal +
+     * billGrossTotal
      *
-     * - lineNetTotal = bi.getNetValue()
-     * - billNetTotal = (bill.tax + bill.expenses - bill.discount) * proportion
-     * - netTotal = lineNetTotal + billNetTotal
+     * - lineNetTotal = bi.getNetValue() - billNetTotal = (bill.tax +
+     * bill.expenses - bill.discount) * proportion - netTotal = lineNetTotal +
+     * billNetTotal
      *
-     * - Per-unit bill rates (discount/tax/expense) are calculated by dividing the
-     *   proportional value by quantity in units.
+     * - Per-unit bill rates (discount/tax/expense) are calculated by dividing
+     * the proportional value by quantity in units.
      *
-     * NOTE:
-     * - All input data used here (from {@code Bill}, {@code BillItem}, and
-     *   {@code PharmaceuticalBillItem}) must not be changed within this method.
-     * - All primitives (double) are assumed non-null and directly accessible.
+     * NOTE: - All input data used here (from {@code Bill}, {@code BillItem},
+     * and {@code PharmaceuticalBillItem}) must not be changed within this
+     * method. - All primitives (double) are assumed non-null and directly
+     * accessible.
      *
-     * Available Input Data (read-only during this method):
-     * - Bill: getDiscount(), getTax(), getExpenseTotal(), getNetTotal()
-     * - BillItem: getItem(), getRate(), getGrossValue(), getNetRate(), getNetValue(),
-     *             getDiscount(), getDiscountRate()
-     * - PharmaceuticalBillItem: getQty(), getFreeQty(), getItemBatch().getCostRate()
-     * - Item: getDblValue() (used as unitsPerPack if AMPP)
+     * Available Input Data (read-only during this method): - Bill:
+     * getDiscount(), getTax(), getExpenseTotal(), getNetTotal() - BillItem:
+     * getItem(), getRate(), getGrossValue(), getNetRate(), getNetValue(),
+     * getDiscount(), getDiscountRate() - PharmaceuticalBillItem: getQty(),
+     * getFreeQty(), getItemBatch().getCostRate() - Item: getDblValue() (used as
+     * unitsPerPack if AMPP)
+     *
      * @param bi
      */
-
     public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(BillItem bi) {
         if (bi == null || bi.getPharmaceuticalBillItem() == null) {
             return; // Exit if bill item or pharmaceutical bill item is null
@@ -1255,29 +1253,49 @@ public class PharmacySummaryReportController implements Serializable {
             double costValue = 0.0;
 
             for (BillItem bi : b.getBillItems()) {
+                // Step 1: Add missing finance data
                 addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(bi);
                 billItemFacade.edit(bi);
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
+                    System.out.println("Skipped BillItem: No PharmaceuticalBillItem.");
                     continue;
                 }
+
                 double qty = Math.abs(pbi.getQty());
                 double retailRate = Math.abs(pbi.getRetailRate());
+                double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
+                double cRate =  Math.abs(pbi.getItemBatch().getCostRate());
+
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
-                }
-                double purchaseRate = Math.abs(pbi.getPurchaseRate());
-                double cRate = 0.0;
-                if (pbi.getItemBatch() != null && pbi.getItemBatch().getCostRate() != null) {
-                    cRate = Math.abs(pbi.getItemBatch().getCostRate());
+                    System.out.println("Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
                 }
 
                 double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
 
-                saleValue += factor * retailRate * qty;
-                purchaseValue += factor * purchaseRate * qty;
-                costValue += factor * cRate * qty;
+                double itemSaleValue = factor * retailRate * qty;
+                double itemPurchaseValue = factor * purchaseRate * qty;
+                double itemCostValue = factor * cRate * qty;
+
+                // Add to totals
+                saleValue += itemSaleValue;
+                purchaseValue += itemPurchaseValue;
+                costValue += itemCostValue;
+
+                // Print debug info
+                System.out.println("---- BillItem Debug ----");
+                System.out.println("Item: " + bi.getItem().getName());
+                System.out.println("Qty: " + qty);
+                System.out.println("Retail Rate: " + retailRate);
+                System.out.println("Purchase Rate: " + purchaseRate);
+                System.out.println("Cost Rate: " + cRate);
+                System.out.println("Factor: " + factor);
+                System.out.println("Item Sale Value: " + itemSaleValue);
+                System.out.println("Item Purchase Value: " + itemPurchaseValue);
+                System.out.println("Item Cost Value: " + itemCostValue);
+                System.out.println("------------------------");
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
@@ -1290,7 +1308,7 @@ public class PharmacySummaryReportController implements Serializable {
             sb.setStockValueAsSaleRate(saleValue);
             sb.setStockValueAtPurchaseRates(purchaseValue);
             sb.setStockValueAsCostRate(costValue);
-            
+
             bfd.setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
             bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
             bfd.setTotalCostValue(BigDecimal.valueOf(costValue));
