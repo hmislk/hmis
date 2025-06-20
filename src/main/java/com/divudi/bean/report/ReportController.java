@@ -39,6 +39,7 @@ import com.divudi.core.light.common.PrescriptionSummaryReportRow;
 import com.divudi.service.BillAnalyticsService;
 import com.divudi.service.BillService;
 import com.divudi.core.data.HistoryType;
+
 import java.io.IOException;
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
@@ -1328,8 +1329,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         reportTimerController.trackReportExecution(() -> {
         StringBuilder jpql = new StringBuilder(
                 "SELECT bi FROM BillItem bi "
-                + "WHERE bi.retired = :ret "
-                + "AND bi.bill.billTypeAtomic IN :btas");
+                        + "WHERE bi.retired = :ret "
+                        + "AND bi.bill.billTypeAtomic IN :btas");
         Map<String, Object> m = new HashMap<>();
         m.put("ret", false);
         List<BillTypeAtomic> btas = new ArrayList<>();
@@ -3696,62 +3697,64 @@ public class ReportController implements Serializable, ControllerWithReportFilte
      * overall totals are updated accordingly.</p>
      */
     public void processCollectingCentreTestWiseCountReportWithoutCancellationsAndRefunds() {
-        String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
-                + "bi.item.name, "
-                + "count(bi), "
-                + "sum(bi.hospitalFee) , "
-                + "sum(bi.collectingCentreFee), "
-                + "sum(bi.staffFee), "
-                + "sum(bi.netValue)"
-                + ") "
-                + " from BillItem bi "
-                + " where (bi.retired is null or bi.retired = false) "
-                + " and (bi.bill.cancelled is null or bi.bill.cancelled = false) "
-                + " and (bi.refunded is null or bi.refunded = false) "
-                + " and bi.bill.createdAt between :fd and :td "
-                + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
+        reportTimerController.trackReportExecution(() -> {
+            String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
+                    + "bi.item.name, "
+                    + "count(bi), "
+                    + "sum(bi.hospitalFee) , "
+                    + "sum(bi.collectingCentreFee), "
+                    + "sum(bi.staffFee), "
+                    + "sum(bi.netValue)"
+                    + ") "
+                    + " from BillItem bi "
+                    + " where (bi.retired is null or bi.retired = false) "
+                    + " and (bi.bill.cancelled is null or bi.bill.cancelled = false) "
+                    + " and (bi.refunded is null or bi.refunded = false) "
+                    + " and bi.bill.createdAt between :fd and :td "
+                    + " and bi.bill.billTypeAtomic = :billTypeAtomic ";
 
-        Map<String, Object> m = new HashMap<>();
-        m.put("fd", fromDate);
-        m.put("td", toDate);
-        m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
+            Map<String, Object> m = new HashMap<>();
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            m.put("billTypeAtomic", BillTypeAtomic.CC_BILL);
 
-        if (institution != null) {
-            jpql += " and bi.bill.institution = :ins ";
-            m.put("ins", institution);
-        }
-
-        if (department != null) {
-            jpql += " and bi.bill.department = :dep ";
-            m.put("dep", department);
-        }
-
-        if (site != null) {
-            jpql += " and bi.bill.department.site = :site ";
-            m.put("site", site);
-        }
-
-        if (collectingCentre != null) {
-            jpql += " and bi.bill.collectingCentre.id = :ccId ";
-            m.put("ccId", collectingCentre.getId());
-        }
-        jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
-        testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-        totalCount = 0.0;
-        totalHosFee = 0.0;
-        totalCCFee = 0.0;
-        totalProFee = 0.0;
-        totalNetTotal = 0.0;
-        if (testWiseCounts != null) {
-            for (TestWiseCountReport report : testWiseCounts) {
-                totalCount += report.getCount();
-                totalHosFee += report.getHosFee();
-                totalCCFee += report.getCcFee();
-                totalProFee += report.getProFee();
-                totalNetTotal += report.getTotal();
-
+            if (institution != null) {
+                jpql += " and bi.bill.institution = :ins ";
+                m.put("ins", institution);
             }
-        }
+
+            if (department != null) {
+                jpql += " and bi.bill.department = :dep ";
+                m.put("dep", department);
+            }
+
+            if (site != null) {
+                jpql += " and bi.bill.department.site = :site ";
+                m.put("site", site);
+            }
+
+            if (collectingCentre != null) {
+                jpql += " and bi.bill.collectingCentre.id = :ccId ";
+                m.put("ccId", collectingCentre.getId());
+            }
+            jpql += " group by bi.item.name ORDER BY bi.item.name ASC";
+            testWiseCounts = (List<TestWiseCountReport>) billItemFacade.findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+            totalCount = 0.0;
+            totalHosFee = 0.0;
+            totalCCFee = 0.0;
+            totalProFee = 0.0;
+            totalNetTotal = 0.0;
+            if (testWiseCounts != null) {
+                for (TestWiseCountReport report : testWiseCounts) {
+                    totalCount += report.getCount();
+                    totalHosFee += report.getHosFee();
+                    totalCCFee += report.getCcFee();
+                    totalProFee += report.getProFee();
+                    totalNetTotal += report.getTotal();
+
+                }
+            }
+        }, CollectionCenterReport.COLLECTION_CENTER_TEST_WISE_COUNT_REPORT, sessionController.getLoggedUser());
     }
 
     public void processLabTestWiseCountReport() {
