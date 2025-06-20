@@ -376,6 +376,9 @@
                                     <p:column headerText="Payment Method" >
                                         <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
                                     </p:column>
+                                    <p:column headerText="comments" >
+                                        <h:outputText value="#{p.comments}" ></h:outputText>
+                                    </p:column>
                                     <p:column headerText="Value" class="text-end">
                                         <h:outputText value="#{p.paidValue}" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
