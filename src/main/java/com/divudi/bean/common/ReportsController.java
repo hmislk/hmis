@@ -3367,7 +3367,7 @@ public class ReportsController implements Serializable {
             workbook.write(out);
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(CreditCompanyDueController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
+            Logger.getLogger(ReportsController.class.getName()).log(java.util.logging.Level.SEVERE, e.getMessage());
         }
     }
 
@@ -3505,7 +3505,7 @@ public class ReportsController implements Serializable {
             document.close();
             context.responseComplete();
         } catch (Exception e) {
-            Logger.getLogger(CreditCompanyDueController.class.getName()).log(Level.SEVERE, e.getMessage());
+            Logger.getLogger(ReportsController.class.getName()).log(Level.SEVERE, e.getMessage());
         }
     }
 
@@ -3907,19 +3907,19 @@ public class ReportsController implements Serializable {
     public void generateCollectionCenterBookWiseDetailReport() {
         reportTimerController.trackReportExecution(() -> {
             bundle = new ReportTemplateRowBundle();
-        if (isWithoutDateRange()) {
-            if (collectingCentre == null) {
-                JsfUtil.addErrorMessage("Please select a collection center if processing without date range!");
-                return;
+            if (isWithoutDateRange()) {
+                if (collectingCentre == null) {
+                    JsfUtil.addErrorMessage("Please select a collection center if processing without date range!");
+                    return;
+                }
+
+                if (cashBookNumber == null || cashBookNumber.isEmpty()) {
+                    JsfUtil.addErrorMessage("Please enter a book number if processing without date range!");
+                    return;
+                }
             }
 
-            if (cashBookNumber == null || cashBookNumber.isEmpty()) {
-                JsfUtil.addErrorMessage("Please enter a book number if processing without date range!");
-                return;
-            }
-        }
-
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
             List<BillTypeAtomic> opdBts = new ArrayList<>();
             bundle = new ReportTemplateRowBundle();
@@ -4610,117 +4610,121 @@ public class ReportsController implements Serializable {
     }
 
     public void externalLaboratoryWorkloadReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
+            }
 
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("CC")) {
-            opdBts.add(BillTypeAtomic.CC_BILL);
-            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        }
+            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("CC")) {
+                opdBts.add(BillTypeAtomic.CC_BILL);
+                opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, true);
+            if (reportType.equalsIgnoreCase("detail")) {
+                bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, true);
 
-            bundle.calculateTotalByBillItemsNetTotal();
-        } else {
-            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, true);
+                bundle.calculateTotalByBillItemsNetTotal();
+            } else {
+                bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, true);
 
-            bundle.calculateTotalByBillItemRowValues();
-        }
+                bundle.calculateTotalByBillItemRowValues();
+            }
+        }, LaboratoryReport.EXTERNAL_LABORATORY_WORKLOAD_REPORT, sessionController.getLoggedUser());
     }
 
     public void laboratoryWorkloadReport() {
-        if (visitType == null || visitType.trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a visit type");
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (visitType == null || visitType.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Please select a visit type");
+                return;
+            }
 
-        bundle = new ReportTemplateRowBundle();
+            bundle = new ReportTemplateRowBundle();
 
-        List<BillTypeAtomic> opdBts = new ArrayList<>();
-        bundle = new ReportTemplateRowBundle();
+            List<BillTypeAtomic> opdBts = new ArrayList<>();
+            bundle = new ReportTemplateRowBundle();
 
-        if (visitType != null && visitType.equalsIgnoreCase("IP")) {
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
-            opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
-            opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("OP")) {
-            opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-            opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-            opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
-        }
-        if (visitType != null && visitType.equalsIgnoreCase("CC")) {
-            opdBts.add(BillTypeAtomic.CC_BILL);
-            opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
-            opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
-        }
+            if (visitType != null && visitType.equalsIgnoreCase("IP")) {
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.INWARD_FINAL_BILL);
+                opdBts.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_INWARD_SERVICE_RETURN);
+                opdBts.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("OP")) {
+                opdBts.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+                opdBts.add(BillTypeAtomic.OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+                opdBts.add(BillTypeAtomic.OPD_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+            }
+            if (visitType != null && visitType.equalsIgnoreCase("CC")) {
+                opdBts.add(BillTypeAtomic.CC_BILL);
+                opdBts.add(BillTypeAtomic.CC_BILL_REFUND);
+                opdBts.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+            }
 
-        bundle.setName("Bills");
-        bundle.setBundleType("billList");
+            bundle.setName("Bills");
+            bundle.setBundleType("billList");
 
-        if (reportType.equalsIgnoreCase("detail")) {
-            bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, false);
+            if (reportType.equalsIgnoreCase("detail")) {
+                bundle = generateExternalLaboratoryWorkloadBillItems(opdBts, false);
 
-            bundle.calculateTotalByBillItemsNetTotal();
-        } else {
-            bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, false);
+                bundle.calculateTotalByBillItemsNetTotal();
+            } else {
+                bundle = generateExternalLaboratoryWorkloadSummaryBillItems(opdBts, false);
 
-            bundle.calculateTotalByBillItemRowValues();
-        }
+                bundle.calculateTotalByBillItemRowValues();
+            }
+        }, LaboratoryReport.LABORATORY_WORKLOAD_REPORT, sessionController.getLoggedUser());
     }
 
     private List<BillTypeAtomic> cancelAndRefundBillTypeAtomics() {

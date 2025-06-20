@@ -14,7 +14,6 @@ import com.divudi.core.data.dataStructure.InstitutionBills;
 import com.divudi.core.data.dataStructure.InstitutionEncounters;
 import com.divudi.core.data.reports.CreditReport;
 import com.divudi.core.data.reports.FinancialReport;
-import com.divudi.core.data.reports.ManagementReport;
 import com.divudi.core.data.table.String1Value5;
 
 import com.divudi.core.facade.*;
@@ -38,6 +37,7 @@ import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
@@ -61,7 +61,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @SessionScoped
 public class CreditCompanyDueController implements Serializable {
 
-    private final SessionController sessionController;
+    @Inject
+    private SessionController sessionController;
     @EJB
     private CreditBean creditBean;
     @EJB
@@ -125,6 +126,9 @@ public class CreditCompanyDueController implements Serializable {
 
     Map<Institution, List<InstitutionBillEncounter>> billInstitutionEncounterMap;
     private Map<PatientEncounter, List<InstitutionBillEncounter>> institutionBillPatientEncounterMap;
+
+    public CreditCompanyDueController() {
+    }
 
     public Map<Institution, List<InstitutionBillEncounter>> getBillInstitutionEncounterMap() {
         return billInstitutionEncounterMap;
@@ -1239,7 +1243,11 @@ public class CreditCompanyDueController implements Serializable {
         }
     }
 
-    public CreditCompanyDueController(@Named SessionController sessionController) {
+    public SessionController getSessionController() {
+        return sessionController;
+    }
+
+    public void setSessionController(SessionController sessionController) {
         this.sessionController = sessionController;
     }
 
@@ -1430,7 +1438,7 @@ public class CreditCompanyDueController implements Serializable {
 
     }
 
-//    public void createInwardCreditDueWithAdditionalFilters() {
+    //    public void createInwardCreditDueWithAdditionalFilters() {
 //        Date startTime = new Date();
 //
 //        List<Institution> setIns = getCreditBean().getCreditInstitutionByPatientEncounterWithFinalizedPayments(getFromDate(), getToDate(),
