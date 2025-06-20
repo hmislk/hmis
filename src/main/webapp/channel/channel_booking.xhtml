@@ -537,6 +537,10 @@
 
                         </p:selectOneListbox>
 
+                        <div id="global-notification" style="position: fixed; top: 100px; right: 1000px; z-index: 9999; display: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); ">
+                            Online booking received!
+                        </div>
+
                         <script>
                             console.log("start connection");
                             const wsUrl = "ws://localhost:8080/rh/ws/notify";
@@ -556,15 +560,15 @@
 
                                     if (selectedSessionId == sendSessionId) {
                                         document.querySelector('.ws-trigger').click();
+                                    }
 
-                                        if (Notification.permission === "default") {
-                                            Notification.requestPermission().then(function (permission) {
-                                                if (permission === "granted") {
-                                                    new Notification("Thanks!", {body: "Notifications are now enabled."});
-                                                }
-                                            });
-                                        }
-
+                                    if (sendMessage === "Online Booking Completed") {
+                                        const notify = document.getElementById('global-notification');
+                                        notify.style.display = 'block';
+                                        setTimeout(() => {
+                                            notify.style.display = 'none';
+                                            notify.style.transition = 'all 0.6s ease';
+                                        }, 3000);
                                     }
 
                                 }
