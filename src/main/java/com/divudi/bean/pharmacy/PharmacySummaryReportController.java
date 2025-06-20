@@ -894,15 +894,7 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
-    public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(BillItem bi) {
-        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
-            return;
-        }
-
-        Bill bill = bi.getBill();
-
-        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-
+    
         /**
          * Have to calculate Data for Bill Item Finance Details Only Bill Item
          * Finance Details of this provided bill item will be changed here No
@@ -945,24 +937,33 @@ public class PharmacySummaryReportController implements Serializable {
          */
         //Available data for calculations, should not be altered dueing this method - Start
         //from bill
-        bill.getDiscount();  // double values , NOT Double or BigDecimal, so never null. SHould not used in calculations as currently it is the sum of line discounts, not a seperate discoutn for the bill
-        bill.getTax(); // double values , NOT Double or BigDecimal, so never null
-        bill.getExpenseTotal(); // double values , NOT Double or BigDecimal, so never null
-        bill.getNetTotal(); // double values , NOT Double or BigDecimal, so never null
-        // from bill Item
-        bi.getItem();
-        bi.getItem().getDblValue(); // This is Units per pack in AMPPs, THis should be one for AMPs
-        bi.getRate(); // double values , NOT Double or BigDecimal, so never null
-        bi.getGrossValue(); // double values , NOT Double or BigDecimal, so never null
-        bi.getNetRate(); // double values , NOT Double or BigDecimal, so never null
-        bi.getNetValue(); // Net Total for Bill Item.  // double values , NOT Double or BigDecimal, so never null
-        bi.getDiscount(); // double values , NOT Double or BigDecimal, so never null
-        bi.getDiscountRate(); // double values , NOT Double or BigDecimal, so never null
-        // from Pharmaceutical bill item
-        pbi.getQty();  // double values , NOT Double or BigDecimal, so never null
-        pbi.getFreeQty();  // double values , NOT Double or BigDecimal, so never null
-        pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
+//        bill.getDiscount();  // double values , NOT Double or BigDecimal, so never null. SHould not used in calculations as currently it is the sum of line discounts, not a seperate discoutn for the bill
+//        bill.getTax(); // double values , NOT Double or BigDecimal, so never null
+//        bill.getExpenseTotal(); // double values , NOT Double or BigDecimal, so never null
+//        bill.getNetTotal(); // double values , NOT Double or BigDecimal, so never null
+//        // from bill Item
+//        bi.getItem();
+//        bi.getItem().getDblValue(); // This is Units per pack in AMPPs, THis should be one for AMPs
+//        bi.getRate(); // double values , NOT Double or BigDecimal, so never null
+//        bi.getGrossValue(); // double values , NOT Double or BigDecimal, so never null
+//        bi.getNetRate(); // double values , NOT Double or BigDecimal, so never null
+//        bi.getNetValue(); // Net Total for Bill Item.  // double values , NOT Double or BigDecimal, so never null
+//        bi.getDiscount(); // double values , NOT Double or BigDecimal, so never null
+//        bi.getDiscountRate(); // double values , NOT Double or BigDecimal, so never null
+//        // from Pharmaceutical bill item
+//        pbi.getQty();  // double values , NOT Double or BigDecimal, so never null
+//        pbi.getFreeQty();  // double values , NOT Double or BigDecimal, so never null
+//        pbi.getItemBatch().getCostRate(); //Always Cost is by Units , NOT packs
         //Available data for calculations, should not be altered dueing this method - End
+    public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale(BillItem bi) {
+        if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            return;
+        }
+
+        Bill bill = bi.getBill();
+
+        PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
 
         BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
         if (bifd == null) {
@@ -1022,7 +1023,7 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setRetailSaleRate(lineGrossRate);
         bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(bifd.getUnitsPerPack()));
 
-        
+        // Then calculate and assign remaining values to bifd
         
         BigDecimal discountPortionFromBill = BigDecimal.valueOf(bill.getDiscount()).multiply(proportion);
         BigDecimal taxPortionFromBill = BigDecimal.valueOf(bill.getTax()).multiply(proportion);
@@ -1075,8 +1076,8 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setBillNetTotal(gapPortionFromBillNetTotalFromBillGrossTotal);
         bifd.setNetTotal(netTotal);
 
-        // set other values
-        // calculate rates
+       
+        // then calculate remaining rates and assign to bifd
         
         BigDecimal lineExpenseRate = BigDecimal.ZERO; // May add this function later from UI
         BigDecimal lineTaxRate = BigDecimal.ZERO; // May add this function later from UI
