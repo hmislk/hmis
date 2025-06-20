@@ -12,10 +12,10 @@
         <ui:define name="content">
 
             <h:form>
-                <p:panel header="Pharmacy Transfer Issue Bills Print View" styleClass="w-100">
+                <p:panel header="Supplier's Expiring Stock Report Print View" styleClass="w-100">
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
-                            <h:outputText value="Pharmacy Transfer Issue Bills Print View" class="mt-2"/>
+                            <h:outputText value="Supplier's Expiring Stock Report Print View" class="mt-2"/>
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                         icon="fa-solid fa-print"
@@ -31,7 +31,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="pharmacy_report_transfer_issue_bill?faces-redirect=true">
+                                        action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true">
                                 </p:commandButton>
                             </div>
 
@@ -79,7 +79,7 @@
                                     font-family: Arial, sans-serif;
                                     font-size: 10pt;
                                 }
-                                size: A4 portrait !important;
+                                size: A4 landscape !important;
                             }
 
                             body {
@@ -134,26 +134,26 @@
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
-                                    <h:outputText value="Pharmacy Transfer Issue Bills"/>
+                                    <h:outputText value="Supplier's Expiring Stock Report"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
-                                    <h:outputText value="From - "/>
-                                    <h:outputText value="#{reportsTransfer.fromDepartment.name}"/>
+                                    <h:outputText value="Department - "/>
+                                    <h:outputText value="#{reportsStock.department.name}"/>
                                     <h:outputText value="" style="width: 2em!important;" class="text-center"/>
-                                    <h:outputText value="To - "/>
-                                    <h:outputText value="#{reportsTransfer.toDepartment.name}"/>
+                                    <h:outputText value="Supplier - "/>
+                                    <h:outputText value="#{reportsStock.institution.name}"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
                                     <h:outputText value="From Date - "/>
-                                    <h:outputText value="#{reportsTransfer.fromDate}">
+                                    <h:outputText value="#{reportsStock.fromDate}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
                                     <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                     <h:outputText value="To Date - "/>
-                                    <h:outputText value="#{reportsTransfer.toDate}">
+                                    <h:outputText value="#{reportsStock.toDate}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
@@ -164,45 +164,48 @@
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <thead>
                                     <tr>
-                                        <th style="text-align: left;">Bill No</th>
-                                        <th style="text-align: left;">Date/Time</th>
-                                        <th style="text-align: left;">Sent from</th>
-                                        <th style="text-align: left;">To be Received by</th>
-                                        <th style="text-align: left;">Transporter</th>
-                                        <th style="text-align: left;">Remarks</th>
-                                        <th style="text-align: right;">Purchase Value</th>
-                                        <th style="text-align: right;">Sale Value</th>
+                                        <th style="text-align: center;">No</th>
+                                        <th style="text-align: center;">Item</th>
+                                        <th style="text-align: center;">Code</th>
+                                        <th style="text-align: center;">Stock Quantity</th>
+                                        <th style="text-align: center;">Expiry</th>
+                                        <th style="text-align: center;">Purchase Rate</th>
+                                        <th style="text-align: center;">Purchase Value</th>
+                                        <th style="text-align: center;">Sale Rate</th>
+                                        <th style="text-align: center;">Sale Value</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <ui:repeat value="#{reportsTransfer.transferBills}" var="i">
+                                    <ui:repeat value="#{reportsStock.stocks}" var="i" rowIndexVar="ii">
                                         <tr>
-                                            <td><h:outputText value="#{i.deptId}"/></td>
+                                            <td><h:outputText value="#{ii+1}"/></td>
                                             <td>
-                                                <h:outputText value="#{i.createdAt}">
-                                                    <f:convertDateTime
-                                                            pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                <h:outputText value="#{i.itemBatch.item.name}"/>
+                                            </td>
+                                            <td><h:outputText value="#{i.itemBatch.item.code}"/></td>
+                                            <td><h:outputText value="#{i.stock}"/></td>
+                                            <td>
+                                                <h:outputText value="#{i.itemBatch.dateOfExpire}">
+                                                    <f:convertDateTime pattern="dd MMM yy"/>
                                                 </h:outputText>
                                             </td>
-                                            <td><h:outputText value="#{i.fromDepartment.name}"/></td>
-                                            <td><h:outputText value="#{i.toDepartment.name}"/></td>
-                                            <td><h:outputText value="#{i.toStaff.person.nameWithTitle}"/></td>
-                                            <td>
-                                                <h:panelGroup rendered="#{i.cancelled}">
-                                                    <h:outputText value="Cancelled "/>
-                                                    <h:outputLabel value="#{i.cancelledBill.deptId}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{i.refunded}">
-                                                    <h:outputText value="Returned"/>
-                                                </h:panelGroup>
+                                            <td style="text-align: right;">
+                                                <h:outputText value="#{i.itemBatch.purcahseRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.netTotal}">
+                                                <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
                                             <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.saleValue}">
+                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </td>
+                                            <td style="text-align: right;">
+                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}">
                                                     <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </td>
@@ -215,13 +218,24 @@
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.netTotalValues}">
+                                            <h:outputLabel value="#{reportsStock.stockPurchaseValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
                                         </td>
+                                        <td>
+
+                                        </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.totalsValue}">
+                                            <h:outputLabel value="#{reportsStock.stockSaleValue}">
                                                 <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="9" style="text-align: right; font-weight: 700;">
+                                            <h:outputLabel value="Printed At "/>
+                                            <h:outputLabel value="#{sessionController.currentDate}">
+                                                <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>
                                             </h:outputLabel>
                                         </td>
                                     </tr>
