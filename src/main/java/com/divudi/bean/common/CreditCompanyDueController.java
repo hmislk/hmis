@@ -1306,6 +1306,7 @@ public class CreditCompanyDueController implements Serializable {
                 InstitutionBills newIns = new InstitutionBills();
                 newIns.setInstitution(ins);
                 newIns.setPayments(payments);
+                newIns.setBills(new ArrayList<>());
 
                 Set<Long> countedBillIds = new HashSet<>(); // Assuming bill.getId() is Long
 
@@ -1316,6 +1317,7 @@ public class CreditCompanyDueController implements Serializable {
 
                     countedBillIds.add(p.getBill().getId());
 
+                    newIns.getBills().add(p.getBill());
                     newIns.setTotal(newIns.getTotal() + p.getBill().getNetTotal());
                     newIns.setPaidTotal(newIns.getPaidTotal() + p.getBill().getPaidAmount());
                 }
@@ -1454,9 +1456,8 @@ public class CreditCompanyDueController implements Serializable {
 //            newIns.setPatientEncounters(lst);
 //
 //            for (PatientEncounter b : lst) {
-
-    /// /                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
-    /// /                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
+////                b.setTransPaidByPatient(createInwardPaymentTotal(b, getFromDate(), getToDate(), BillType.InwardPaymentBill));
+////                b.setTransPaidByCompany(createInwardPaymentTotalCredit(b, getFromDate(), getToDate(), BillType.CashRecieveBill));
 //
 //                newIns.setTotal(newIns.getTotal() + b.getFinalBill().getNetTotal());
 //                newIns.setPaidTotalPatient(newIns.getPaidTotalPatient() + b.getFinalBill().getSettledAmountByPatient());

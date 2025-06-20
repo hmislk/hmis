@@ -49,7 +49,9 @@
                                         icon="fa fa-cancel"
                                         style="float: right"
                                         class="ui-button-danger"
-                                        action="#{billSearch.cancelCollectingCentreBill()}">
+                                        action="#{billSearch.cancelCollectingCentreBill()}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;">
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"

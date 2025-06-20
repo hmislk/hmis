@@ -177,6 +177,28 @@ public class DepartmentController implements Serializable {
         return deps;
     }
 
+    public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
+        List<Department> deps;
+        Map<String, Object> m = new HashMap<>();
+
+        String jpql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and TYPE(d) <> Route "
+                + " and d.name IS NOT NULL "
+                + " and TRIM(d.name) <> '' ";
+
+        if (ins != null) {
+            m.put("ins", ins);
+            jpql += " and d.institution=:ins ";
+        }
+
+        jpql += " order by d.name";
+
+        deps = getFacade().findByJpql(jpql, m);
+
+        return deps != null ? deps : new ArrayList<>();
+    }
+
     public List<Department> getInstitutionDepartmentsWithSite(Institution ins, Institution site) {
         List<Department> deps;
         Map<String, Object> m = new HashMap<>();
@@ -216,14 +238,14 @@ public class DepartmentController implements Serializable {
     }
 
     @Deprecated
-    public List<Department> getInsDepartments(Institution currentInstituion) {
+    public List<Department> getInsDepartments(Institution currentInstitution) {
         // Please use public List<Department> getInstitutionDepatrments(Institution ins) {
         List<Department> currentInsDepartments = new ArrayList<>();
-        if (currentInstituion == null) {
+        if (currentInstitution == null) {
             return currentInsDepartments;
         }
         Map m = new HashMap();
-        m.put("ins", currentInstituion);
+        m.put("ins", currentInstitution);
         m.put("ret", false);
         String jpql = "SELECT d "
                 + " FROM Department d "

@@ -529,29 +529,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                batchBillCancellationStarted = false;
-                return "";
-            }
+        if (!hasPrivilegeToCancelPackageBill(getBill())) {
+            batchBillCancellationStarted = false;
+            return "";
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
@@ -708,6 +688,27 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return canCancelBill;
     }
 
+    private boolean hasPrivilegeToCancelPackageBill(Bill billToCancel) {
+        boolean labStatusOk = checkCancelBill(billToCancel);
+
+        if (!labStatusOk) {
+            if (!getWebUserController().hasPrivilege("OpdPackageBillCancel")) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -730,28 +731,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
-                if (!checkCancelBill(singleBill)) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    if (getWebUserController().hasPrivilege("BillCancel")) {
-                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                    } else {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                } else {
-                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+        for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+            if (!hasPrivilegeToCancelPackageBill(singleBill)) {
                 batchBillCancellationStarted = false;
                 return "";
             }

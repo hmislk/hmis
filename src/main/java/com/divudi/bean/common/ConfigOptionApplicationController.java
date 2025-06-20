@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 
 /**
  *
@@ -49,26 +51,15 @@ public class ConfigOptionApplicationController implements Serializable {
 
     }
 
-//    private void initializeDenominations() {
-//        String denominationsStr = getLongTextValueByKey("Currency Denominations");
-//        if (denominationsStr == null || !denominationsStr.trim().isEmpty()) {
-//            denominationsStr = "1,2,5,10,20,50,100,500,1000,5000";
-//        }
-//        denominations = Arrays.stream(denominationsStr.split(","))
-//                .map(String::trim) // Trim any extra spaces
-//                .filter(s -> !s.isEmpty()) // Filter out empty strings
-//                .map(Integer::parseInt)
-//                .map(value -> new Denomination(value, 0))
-//                .collect(Collectors.toList());
-//    }
     public void loadApplicationOptions() {
         applicationOptions = new HashMap<>();
         List<ConfigOption> options = getApplicationOptions();
         for (ConfigOption option : options) {
             applicationOptions.put(option.getOptionKey(), option);
         }
-//        initializeDenominations();
         loadEmailGatewayConfigurationDefaults();
+        loadPharmacyConfigurationDefaults();
+        loadPharmacyIssueReceiptConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -91,6 +82,80 @@ public class ConfigOptionApplicationController implements Serializable {
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after half an hour", false);
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after one hour", false);
         getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Send after two hours", false);
+    }
+
+    private void loadPharmacyConfigurationDefaults() {
+        getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        getDoubleValueByKey("Retail to Purchase Factor", 1.15);
+        getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
+        getBooleanValueByKey("Direct Issue Based On Retail Rate", true);
+        getBooleanValueByKey("Direct Issue Based On Purchase Rate", false);
+        getBooleanValueByKey("Direct Issue Based On Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", true);
+        getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false);
+        getBooleanValueByKey("Direct Purchase Return by Quantity and Free Quantity", true);
+        getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        getBooleanValueByKey("Show Profit Percentage in GRN", true);
+    }
+
+    private void loadPharmacyIssueReceiptConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Issue Receipt CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "}\n"
+                + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 16px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 11px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-details-table, .receipt-items-table, .receipt-summary-table {\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-items-header {\n"
+                + "    font-weight: bold;\n"
+                + "    border-bottom: 1px solid #ccc;\n"
+                + "}\n"
+                + ".item-name, .item-qty, .item-rate, .item-value {\n"
+                + "    padding: 4px;\n"
+                + "    text-align: left;\n"
+                + "}\n"
+                + ".item-qty, .item-rate, .item-value {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".summary-label {\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".summary-value {\n"
+                + "    text-align: right;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".total-amount {\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".receipt-cashier {\n"
+                + "    margin-top: 20px;\n"
+                + "    text-align: right;\n"
+                + "    text-decoration: overline;\n"
+                + "}"
+        );
     }
 
     public ConfigOption getApplicationOption(String key) {
@@ -319,7 +384,8 @@ public class ConfigOptionApplicationController implements Serializable {
             option.setValueType(OptionValueType.LONG_TEXT);
             optionFacade.create(option);
         }
-        option.setOptionValue(value);
+        String sanitized = Jsoup.clean(value, Safelist.basic());
+        option.setOptionValue(sanitized);
         optionFacade.edit(option);
         loadApplicationOptions();
     }

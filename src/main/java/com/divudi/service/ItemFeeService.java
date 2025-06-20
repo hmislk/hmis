@@ -44,8 +44,6 @@ public class ItemFeeService {
         jpql += " and f.forInstitution=:site";
         m.put("site", site);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }

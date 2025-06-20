@@ -179,6 +179,7 @@ public class MiddlewareController {
                     case HumaCount5D:
                     case HumaLyte:
                     case HumaStar600:
+                    case XL_200:
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());

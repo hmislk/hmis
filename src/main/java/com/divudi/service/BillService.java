@@ -42,6 +42,7 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
 import com.divudi.core.facade.BillItemFacade;
@@ -295,11 +296,6 @@ public class BillService {
         double additionalFeeCalculatedByBillFees = 0.0;
 
         List<BillFee> bfs = fetchBillFees(bi);
-        System.out.println("bfs = " + bfs);
-
-        for (BillFee bf : bfs) {
-            System.out.println(bf.getFee().getFeeType() + " - " + bf.getFeeValue());
-        }
 
         for (BillFee bf : bfs) {
             if (bf.getInstitution() != null && bf.getInstitution().getInstitutionType() == InstitutionType.CollectingCentre) {
@@ -317,10 +313,7 @@ public class BillService {
 
         }
 
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
+
 
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
@@ -366,11 +359,6 @@ public class BillService {
             }
 
         }
-
-        System.out.println("Hospital Fee  = " + hospitalFeeCalculatedByBillFess);
-        System.out.println("Reagent Fee = " + reagentFeeCalculatedByBillFees);
-        System.out.println("Staff Fees = " + staffFeesCalculatedByBillFees);
-        System.out.println("Additional Fee = " + additionalFeeCalculatedByBillFees);
 
         duplicateBillItem.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         duplicateBillItem.setStaffFee(staffFeesCalculatedByBillFees);
@@ -1022,10 +1010,72 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBills;
+    }
+
+    public List<PharmacyIncomeCostBillDTO> fetchBillIncomeCostDtos(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme) {
+
+        String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO(" +
+                " b.id, b.deptId, b.billTypeAtomic, " +
+                " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, " +
+                " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) " +
+                " from Bill b " +
+                " left join b.billFinanceDetails bfd " +
+                " left join b.patient pat " +
+                " left join pat.person pers " +
+                " left join b.patientEncounter pe " +
+                " where b.retired=:ret " +
+                " and b.billTypeAtomic in :billTypesAtomics " +
+                " and b.createdAt between :fromDate and :toDate ";
+
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return (List<PharmacyIncomeCostBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
@@ -1838,14 +1888,7 @@ public class BillService {
                 + " WHERE pbi.billItem.bill=:bl "
                 + " order by pbi.id";
         params.put("bl", bill);
-        System.out.println("params = " + params);
-        System.out.println("jpql = " + jpql);
         List<PatientInvestigation> ptix = patientInvestigationFacade.findByJpql(jpql, params);
-        if (ptix == null) {
-            System.out.println("ptix is null = " + ptix);
-        } else {
-            System.out.println("ptix size= " + ptix.size());
-        }
         return ptix;
     }
 

@@ -860,6 +860,7 @@
                                      value="BHT Issue Requests" icon="fas fa-clipboard-list"
                                      actionListener="#{pharmacySaleBhtController.resetAll()}"
                                      rendered="#{webUserController.hasPrivilege('PharmacyBhtIssueRequest')}" />
+                        <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy()}"  value="Pharmacy Requested &amp; Issued Drug Overview" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
 
                         <p:menuitem  ajax="false" action="/inward/pharmacy_search_sale_bill_bht" actionListener="#{searchController.makeListNull}"
                                      value="Search Inpatient Direct Issues by Bill" icon="fas fa-file-medical" rendered="#{webUserController.hasPrivilege('PharmacySearchInpatientDirectIssuesbyBill')}" ></p:menuitem>
@@ -918,13 +919,14 @@
                             icon="fas fa-clipboard-check"
                             actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"  
-                            value="Goods Receipt"  
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
+                            value="Goods Receipt"
                             icon="fas fa-dolly-flatbed"
-                            actionListener="#{searchController.makeListNull()}" 
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"  ></p:menuitem> 
+                            actionListener="#{searchController.makeListNull()}"
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') 
+                                        and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"  ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  
@@ -934,7 +936,7 @@
                             rendered="#{webUserController.hasPrivilege('GoodsRecipt') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}" ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
-                            action="/pharmacy/pharmacy_grn_list_for_return?faces-redirect=true"  
+                            action="#{searchController.navigateToReturnReceivedGoods()}"  
                             value="Return Received Goods" 
                             icon="fas fa-undo-alt"
                             actionListener="#{searchController.makeListNull()}" 
@@ -1082,8 +1084,7 @@
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
                     </p:menuitem> 
-                    <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListForPharmacy()}"  value="Pharmacy Issued Drug List" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>
-                    <p:menuitem  
+                    <p:menuitem  ajax="false" action="#{inwardReportControllerBht.navigateToInpatientPharmacyItemListForPharmacy()}"  value="Pharmacy Issued Drug List" icon="fas fa-list" rendered="#{webUserController.hasPrivilege('PharmacySummaryViews')}" ></p:menuitem>                    <p:menuitem  
                         ajax="false" 
                         action="#{pharmacyController.navigateToPharmacyAnalytics()}" 
                         value="Pharmacy Analytics" 
@@ -1479,6 +1480,14 @@
                         action="/agency_management/index?faces-redirect=true"
                         value="Agency Management" 
                         icon="fa fa-cart-arrow-down"
+                        rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
+                    </p:menuitem>
+                    
+                    <p:menuitem  
+                        ajax="false"  
+                        action="/online_booking_agent_management/index?faces-redirect=true"
+                        value="Online Booking Agent Management" 
+                        icon="fa-solid fa-globe"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
 
