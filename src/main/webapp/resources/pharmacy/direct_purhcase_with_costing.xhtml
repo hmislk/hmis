@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" type="com.divudi.core.entity.Bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="ShowProfit" type="java.lang.Boolean"/>
         <cc:attribute name="ShowRetailValue" type="java.lang.Boolean"/>
     </cc:interface>
@@ -68,10 +68,6 @@
                     <h:outputLabel value="Supplier" class="billDetailsFiveFive"/>
                     <h:outputLabel value="#{cc.attrs.bill.fromInstitution.name}" class="billDetailsFiveFive"/>
 
-                    <h:outputLabel value="Purchase Date" class="billDetailsFiveFive"/>
-                    <h:outputLabel value="#{cc.attrs.bill.createdAt}" class="billDetailsFiveFive">
-                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                    </h:outputLabel>
                 </h:panelGrid>
             </div>
 
