@@ -119,6 +119,8 @@ public class ChannelService {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    
+    private static final Logger LOGGER = Logger.getLogger(ChannelService.class.getName());
 
     @PermitAll //TODO: Fix this to appropriate roles .
     public void retireNonSettledOnlineBills() {
@@ -163,7 +165,11 @@ public class ChannelService {
             b.getOnlineBooking().setRetireComments("Online Booking is NOT completed.");
             getOnlineBookingFacade().edit(b.getOnlineBooking());
 
-            WebSocketService.broadcastToSessions("Temporary Booking Retired - " + b.getSingleBillSession().getSessionInstance().getId());
+            try {
+                WebSocketService.broadcastToSessions("Temporary Booking Retired - " + b.getSingleBillSession().getSessionInstance().getId());
+            } catch (Exception e) {
+                LOGGER.severe("Web socket communication error at retire method " + e.getMessage());
+            }
 
             if (b.getBillFees() != null) {
                 for (BillFee bf : b.getBillFees()) {

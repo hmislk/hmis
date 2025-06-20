@@ -74,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
@@ -156,6 +157,8 @@ public class ChannelApi {
     PatientService patientService;
     @EJB
     ChannelService channelService;
+    
+    private static final Logger LOGGER = Logger.getLogger(ChannelApi.class.getName());
 
     /**
      * Creates a new instance of Api
@@ -1060,8 +1063,12 @@ public class ChannelApi {
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
 
-        WebSocketService.broadcastToSessions("Online Temporary Booking Added - "+session.getId());
-        
+        try {
+            WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at temporary booking" + e.getMessage());
+        }
+
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
@@ -1226,11 +1233,15 @@ public class ChannelApi {
         }
 
         OnlineBooking editedBooking = channelService.editOnlineBooking(bookingDetails, patientPhoneNo, title, patientName, patientNic, email, address);
-        
+
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
-        
-        WebSocketService.broadcastToSessions("Online Booking Edited - "+session.getId());
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Edited - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at edit booking" + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1336,6 +1347,7 @@ public class ChannelApi {
         }
     }
 
+
     @POST
     @Path("/complete")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -1432,8 +1444,12 @@ public class ChannelApi {
 
         OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
-        
-        WebSocketService.broadcastToSessions("Online Booking Completed - "+ session.getId());
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Completed - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at complete booking " + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1781,8 +1797,8 @@ public class ChannelApi {
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
-        
-        WebSocketService.broadcastToSessions("Online Booking Cancelled - "+ session.getId());
+
+        WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {

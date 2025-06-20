@@ -3,6 +3,7 @@ package com.divudi.service;
 
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.logging.Logger;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
 import javax.websocket.OnMessage;
@@ -19,32 +20,33 @@ import javax.websocket.server.ServerEndpoint;
 public class WebSocketService {
     
     private static final Set<Session> sessions = new CopyOnWriteArraySet<>();
+    private static final Logger LOGGER = Logger.getLogger(WebSocketService.class.getName());
     
     @OnOpen
     public void onOpen(Session session){
        sessions.add(session);
-        System.out.println("session is created - "+session.getId());
+        LOGGER.info("session is created - "+session.getId());
     }
     
     @OnClose
     public void onClose(Session session){
         sessions.remove(session);
-        System.out.println("session is closed - " + session.getId());
+        LOGGER.info("session is closed - " + session.getId());
     }
     
     @OnError
     public void onError(Session session, Throwable throwable){
-        System.out.println("error occured from -"+session.getId() +" "+throwable.getMessage());
+        LOGGER.info("error occured from -"+session.getId() +" "+throwable.getMessage());
     }
     
     @OnMessage
     public void onMessage(String message, Session session){
-        System.out.println("message recieved from "+session.getId() + " message - "+message);
+        LOGGER.info("message recieved from "+session.getId() + " message - "+message);
     }
     
     public static void broadcastToSessions(String message){
         if(sessions.isEmpty()){
-            System.out.println("no ws sessions");
+            LOGGER.info("no ws sessions");
             return;
         }
         
@@ -53,7 +55,7 @@ public class WebSocketService {
                 try {
                     session.getBasicRemote().sendText(message);
                 } catch (Exception e) {
-                    System.out.println("Error when broadcasting - "+ e.getMessage());
+                    LOGGER.info("Error when broadcasting - "+ e.getMessage());
                 }
             }
         }
