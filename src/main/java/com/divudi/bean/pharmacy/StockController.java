@@ -19,6 +19,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillItemFacade;
@@ -114,17 +115,29 @@ public class StockController implements Serializable {
         if (item == null) {
             return;
         }
-        String sql;
-        Map m = new HashMap();
+        Amp amp;
+        if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            amp = ampp.getAmp();
+            if (amp == null) {
+                return;
+            }
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else {
+            return;
+        }
+        String jpql;
+        Map params = new HashMap();
         double d = 0.0;
-        m.put("s", d);
-        m.put("item", item);
-        sql = "select s "
+        params.put("s", d);
+        params.put("item", amp);
+        jpql = "select s "
                 + "from Stock s "
                 + "where s.stock > :s "
                 + "and s.itemBatch.item = :item "
                 + "order by s.itemBatch.dateOfExpire desc";
-        selectedItemStocks = ejbFacade.findByJpql(sql, m, 20);
+        selectedItemStocks = ejbFacade.findByJpql(jpql, params, 20);
         totalStockQty = calculateStockQty(selectedItemStocks);
     }
 
@@ -353,6 +366,10 @@ public class StockController implements Serializable {
     public double findStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
             return findStock(institution, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
