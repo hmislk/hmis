@@ -110,7 +110,7 @@
                             </p:column>  
 
                             <p:column headerText="Qty" styleClass="averageNumericColumn" width="6em">                         
-                                <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
+                                <p:inputText autocomplete="off" id="qty" value="#{bi.pharmaceuticalBillItem.qty}" style="width:100%" label="Qty" onfocus="this.select()">
                                     <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
@@ -143,6 +143,8 @@
                             </p:column>  
 
                             <p:column headerText="Total" style="text-align: right;" styleClass="averageNumericColumn" >  
+                                #{bi.pharmaceuticalBillItem.purchaseRate} X
+                                #{bi.pharmaceuticalBillItem.qty} =
                                 <h:panelGroup id="total">
                                     <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                         <f:convertNumber pattern="#,##0.00"/>
