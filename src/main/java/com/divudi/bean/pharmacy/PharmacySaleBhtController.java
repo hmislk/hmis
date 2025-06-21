@@ -327,6 +327,24 @@ public class PharmacySaleBhtController implements Serializable {
 //        calculateBillItemForEditing(tmp);
         calTotal();
     }
+    
+    public void changeBillItem(BillItem bi, Stock tempStock){
+        
+        if (tempStock == null) {
+            errorMessage = "Item?";
+            JsfUtil.addErrorMessage("Item?");
+            return;
+        }
+        if (tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("Please not select Expired Items");
+            return;
+        }
+        bi.getPharmaceuticalBillItem().setItemBatch(tempStock.getItemBatch());
+        bi.getPharmaceuticalBillItem().setStock(tempStock);
+        bi.setItem(tempStock.getItemBatch().getItem());
+        calculateRates(bi);
+        calCurrentBillItemTotal(getBillItems());
+    }
 
     public Title[] getTitle() {
         return Title.values();
