@@ -242,7 +242,7 @@ public class PurchaseOrderController implements Serializable {
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
 
             double qty;
-            qty = i.getTmpQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            qty = i.getQty() + i.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 i.setRetired(true);
                 i.setRetirer(sessionController.getLoggedUser());
@@ -303,8 +303,7 @@ public class PurchaseOrderController implements Serializable {
             ph.setRetailRate(i.getRetailRate());
             bi.setPharmaceuticalBillItem(ph);
 
-            bi.setTmpQty(ph.getQty());
-            System.out.println("bi.getTmpQty() = " + bi.getTmpQty());
+//            bi.setTmpQty(ph.getQty());
 
             System.out.println("ph.getQty() = " + ph.getQty());
             
