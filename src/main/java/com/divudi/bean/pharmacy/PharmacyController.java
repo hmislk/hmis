@@ -2587,8 +2587,9 @@ public class PharmacyController implements Serializable {
 //        }
         String sql;
         Map m = new HashMap();
-        m.put("frm", getFromDate());
-        m.put("to", getToDate());
+        // Use provided date range instead of controller fields
+        m.put("frm", fromDate);
+        m.put("to", toDate);
         sql = "select new com.divudi.core.data.dataStructure.ItemQuantityAndValues(i.item, "
                 + "sum(i.pharmaceuticalBillItem.qty), "
                 + "sum(i.netValue)) "
@@ -2599,7 +2600,8 @@ public class PharmacyController implements Serializable {
             sql += " and i.bill.department=:dep";
         }
         if (item != null) {
-            m.put("item", department);
+            // Filter results for the selected item
+            m.put("item", item);
             sql += " and i.item=:item ";
         }
 

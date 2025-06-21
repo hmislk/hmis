@@ -5,13 +5,15 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
-                xmlns:p="http://primefaces.org/ui">
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
 
 
     <ui:define name="subcontent">
         <h:panelGroup >
             <h:form  >
                 <p:panel header="Single Item Transaction Details" styleClass="alignTop verticalAndHorizontalCenteringLarge">
+                    <common:institution_site_department_filter controller="#{pharmacyController}" />
                     
                     <div class="row">
                         <div class="col-4">
