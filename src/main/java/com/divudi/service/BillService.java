@@ -1830,7 +1830,6 @@ public class BillService {
 
         double billCcTotal = Math.abs(bill.getTotalCenterFee());
         double billItemCcTotal = bill.getBillItems().stream()
-                .filter(Objects::nonNull)
                 .filter(bi -> bi != null && !bi.isRetired())
                 .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
                 .sum();
@@ -1853,7 +1852,6 @@ public class BillService {
 
         double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
         double billItemHospitalTotal = bill.getBillItems().stream()
-                .filter(Objects::nonNull)
                 .filter(bi -> bi != null && !bi.isRetired())
                 .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
                 .sum();
