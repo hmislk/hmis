@@ -119,7 +119,7 @@ public class StockController implements Serializable {
         if (item instanceof Ampp) {
             Ampp ampp = (Ampp) item;
             amp = ampp.getAmp();
-            if (item == null) {
+            if (amp == null) {
                 return;
             }
         } else if (item instanceof Amp) {

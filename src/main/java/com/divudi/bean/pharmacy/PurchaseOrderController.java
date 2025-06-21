@@ -180,10 +180,7 @@ public class PurchaseOrderController implements Serializable {
     private PharmacyController pharmacyController;
 
     public void onEdit(BillItem tmp) {
-        System.out.println("onEdit");
         tmp.setNetValue(tmp.getPharmaceuticalBillItem().getQty() * tmp.getPharmaceuticalBillItem().getPurchaseRate());
-        System.out.println("tmp.getPharmaceuticalBillItem().getQty() = " + tmp.getPharmaceuticalBillItem().getQty());
-        System.out.println("tmp.getPharmaceuticalBillItem().getPurchaseRate() = " + tmp.getPharmaceuticalBillItem().getPurchaseRate());
         calTotal();
     }
 
@@ -293,19 +290,14 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
-            System.out.println("bi.getItem().getName() = " + bi.getItem().getName());
             
             ph.setFreeQty(i.getFreeQty());
-            System.out.println("i.getQty() = " + i.getQty());
             ph.setQty(i.getQty());
-            System.out.println("ph = " + ph.getQty());
             ph.setPurchaseRate(i.getPurchaseRate());
             ph.setRetailRate(i.getRetailRate());
             bi.setPharmaceuticalBillItem(ph);
-
 //            bi.setTmpQty(ph.getQty());
 
-            System.out.println("ph.getQty() = " + ph.getQty());
             
             getBillItems().add(bi);
         }
@@ -382,7 +374,6 @@ public class PurchaseOrderController implements Serializable {
         int serialNo = 0;
         for (BillItem bi : getBillItems()) {
             tmp += bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate();
-            System.out.println(" bi.getPharmaceuticalBillItem().getQty() = " +  bi.getPharmaceuticalBillItem().getQty());
             bi.setSearialNo(serialNo++);
         }
         getAprovedBill().setTotal(tmp);
