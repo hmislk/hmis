@@ -272,6 +272,14 @@ public class PharmacySummaryReportController implements Serializable {
         return "/pharmacy/reports/movement_reports/movement_out_by_sale_issue_and_consumption_with_current_stock_report?faces-redirect=true";
     }
 
+    public String navigateToItemTransactionDetails() {
+        reportViewTypes = Arrays.asList(
+                ReportViewType.BY_BILL_TYPE
+        );
+        reportViewType = ReportViewType.BY_BILL_TYPE;
+        return "/pharmacy/pharmacy_item_transactions?faces-redirect=true";
+    }
+
     public String navigateToPharmacyProcurementReport() {
         return "/pharmacy/reports/procurement_reports/pharmacy_procurement_report?faces-redirect=true";
     }
@@ -540,6 +548,24 @@ public class PharmacySummaryReportController implements Serializable {
         setToDate(null);
     }
 
+    public void processSingleItemTransactionSummary() {
+        reportTimerController.trackReportExecution(() -> {
+            if (reportViewType == null) {
+                JsfUtil.addErrorMessage("Please select a report view type.");
+                return;
+            }
+            switch (reportViewType) {
+                case BY_BILL_TYPE:
+                    processSingleItemTransactionSummaryByBillType();
+                    break;
+                // more to be developed
+                default:
+                    JsfUtil.addErrorMessage("Unsupported report view type: " + reportViewType.getLabel());
+                    break;
+            }
+        }, SummaryReports.PHARMACY_SINGLE_ITEM_TRANSACTION_SUMMARY, sessionController.getLoggedUser());
+    }
+
     public void processPharmacyIncomeReport() {
         reportTimerController.trackReportExecution(() -> {
             if (reportViewType == null) {
@@ -612,6 +638,25 @@ public class PharmacySummaryReportController implements Serializable {
         List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
         pharmacyBundle = new PharmacyBundle(bills);
         pharmacyBundle.generateProcurementForBills();
+    }
+
+    public void processSingleItemTransactionSummaryByBillType() {
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(incomeBills);
+        
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            r.setInstitution(institution);
+            r.setDepartment(department);
+            r.setItem(item);
+            r.setBillTypeAtomic(billTypeAtomic);
+            r.setQty(0);
+            
+        }
+        bundle.generatePaymentDetailsGroupedByBillType();
     }
 
     public void processPharmacyIncomeReportByBillType() {
@@ -1267,7 +1312,7 @@ public class PharmacySummaryReportController implements Serializable {
                 double qty = Math.abs(pbi.getQty());
                 double retailRate = Math.abs(pbi.getRetailRate());
                 double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
-                double cRate =  Math.abs(pbi.getItemBatch().getCostRate());
+                double cRate = Math.abs(pbi.getItemBatch().getCostRate());
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());

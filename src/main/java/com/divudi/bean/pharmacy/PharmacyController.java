@@ -3770,23 +3770,10 @@ public class PharmacyController implements Serializable, ControllerWithReportFil
     public List<BillItem> getGrns() {
         return grns;
     }
-    
-    public void fillDetailsByAtomic() {
-        createInstitutionSale();
-        createInstitutionBhtIssue();
-        createInstitutionStock();
-        createInstitutionTransferIssue();
-        createInstitutionIssue();
-        createInstitutionTransferReceive();
-        createGrnTable();
-        createPoTable();
-        createDirectPurchaseTable();
-        createInstitutionIssue();
-    }
 
     
     
-    
+    @Deprecated // For Reports, use new method #{pharmacySummaryReportController.processSingleItemTransactionSummary}
     public void fillDetails() {
         createInstitutionSale();
         createInstitutionBhtIssue();

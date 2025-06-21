@@ -134,13 +134,7 @@ public class PharmacyReportController implements Serializable {
     @EJB
     BillFacade billFacade;
     @EJB
-    InstitutionFacade institutionFacade;
-    @EJB
-    AgentHistoryFacade agentHistoryFacade;
-    @EJB
     PatientDepositHistoryFacade patientDepositHistoryFacade;
-    @EJB
-    AgentReferenceBookFacade agentReferenceBookFacade;
     @EJB
     private PaymentFacade paymentFacade;
     @EJB

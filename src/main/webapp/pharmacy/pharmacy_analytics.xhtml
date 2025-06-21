@@ -170,7 +170,13 @@
                                             <p:commandButton class="w-100" value="Bin Card" action="#{pharmacyController.navigateToBinCard}" ajax="false"/>
                                             <p:commandButton class="w-100 ui-button-warning" value="Items (AMP) List" action="#{ampController.navigateToCreateItemList}" ajax="false"/>
                                             <p:commandButton class="w-100 ui-button-warning" value="Medicine (VTM,ATM,VMP,AMP,VMPP &amp; AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"/>
-                                            <p:commandButton class="w-100" icon="fa fa-list" value="Single Items Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"/>
+                                            <p:commandButton
+                                                class="w-100" 
+                                                icon="fa fa-list"
+                                                value="Single Items Summary"
+                                                action="#{pharmacySummaryReportController.navigateToItemTransactionDetails}" 
+                                                ajax="false"/>
+                                            
                                             <p:commandButton class="w-100" icon="fa fa-list" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"/>
 
                                             <p:commandButton class="w-100 ui-button-warning" value="Items Without Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndReportItemsWithoutDistributor}" ajax="false"/>

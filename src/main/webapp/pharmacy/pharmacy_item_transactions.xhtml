@@ -15,7 +15,7 @@
                 <p:panel header="Single Item Transaction Details" styleClass="alignTop verticalAndHorizontalCenteringLarge">
                     <div class="row">
                         <div class="col-12">
-                            <common:institution_site_department_filter controller="#{pharmacyController}" />
+                            <common:institution_site_department_filter controller="#{pharmacySummaryReportController}" />
                         </div>
                     </div>
                     
@@ -26,7 +26,7 @@
                             <h:panelGrid columns="8" class="w-100" >
                                 <h:outputLabel value="Select Item"/>
                                 <p:autoComplete id="lstSelect"    
-                                                value="#{pharmacyController.pharmacyItem}" 
+                                                value="#{pharmacySummaryReportController.item}" 
                                                 forceSelection="true"
                                                 class="w-100"
                                                 inputStyleClass="w-100"
@@ -47,7 +47,7 @@
                                 <h:outputLabel value="From"/>
                                 <p:calendar 
                                     id="frmDate"
-                                    value="#{pharmacyController.fromDate}" 
+                                    value="#{pharmacySummaryReportController.fromDate}" 
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
@@ -60,7 +60,7 @@
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     id="toDate" 
-                                    value="#{pharmacyController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                    value="#{pharmacySummaryReportController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
                                     <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
                                 </p:calendar>
 
@@ -75,7 +75,7 @@
                             value="Process"
                             icon="fas fa-arrows-rotate"
                             class="ui-button-warning"
-                            action="#{pharmacyController.fillDetailsByAtomic()}"  >
+                            action="#{pharmacySummaryReportController.processSingleItemTransactionSummary()}"  >
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -84,7 +84,7 @@
 
                     <p:tabView id="tab"  style="min-height: 250px; min-width:950px;"  activeIndex="0" >
                         <p:tab   title="Stock"    >
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins">
+                            <p:dataTable styleClass="noBorder" value="#{pharmacySummaryReportController.institutionStocks}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -133,7 +133,7 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel id="grantTotal" value="#{pharmacyController.grantStock}">
+                                                <h:outputLabel id="grantTotal" value="#{pharmacySummaryReportController.grantStock}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -145,7 +145,7 @@
                         </p:tab>
 
                         <p:tab   title="Sale"    >
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
+                            <p:dataTable styleClass="noBorder" value="#{pharmacySummaryReportController.institutionSales}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -211,14 +211,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantSaleQty}">   
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantSaleValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -230,7 +230,7 @@
                         </p:tab>
 
                         <p:tab   title="Wholesale"    >
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
+                            <p:dataTable styleClass="noBorder" value="#{pharmacySummaryReportController.institutionWholeSales}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -296,14 +296,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleQty}">   
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantSaleQty}">   
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantSaleValue}">
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantSaleValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -315,7 +315,7 @@
                         </p:tab>
 
                         <p:tab   title="Inward"    >
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
+                            <p:dataTable styleClass="noBorder" value="#{pharmacySummaryReportController.institutionBhtIssue}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -381,14 +381,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantBhtIssueQty}">   
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantBhtIssueQty}">   
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{pharmacyController.grantBhtValue}">
+                                                <h:outputLabel  value="#{pharmacySummaryReportController.grantBhtValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -400,7 +400,7 @@
                         </p:tab>
 
                         <p:tab   title="Transfer Issue"    >
-                            <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                            <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacySummaryReportController.institutionTransferIssue}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -466,14 +466,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueQty}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantTransferIssueQty}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferIssueValue}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantTransferIssueValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -486,7 +486,7 @@
 
                         <p:tab   title="Transfer Receive"    >
                             <p:dataTable styleClass="noBorder" id="trRceive" 
-                                         value="#{pharmacyController.institutionTransferReceive}" var="ins">
+                                         value="#{pharmacySummaryReportController.institutionTransferReceive}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -552,14 +552,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveQty}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantTransferReceiveQty}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantTransferReceiveValue}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantTransferReceiveValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -572,7 +572,7 @@
 
                         <p:tab   title="Issue"    >
                             <p:dataTable styleClass="noBorder" id="depIssue"
-                                         value="#{pharmacyController.institutionIssue}" var="ins">
+                                         value="#{pharmacySummaryReportController.institutionIssue}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -638,14 +638,14 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantIssueQty}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantIssueQty}">
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel  value="#{0-pharmacyController.grantIssueValue}">
+                                                <h:outputLabel  value="#{0-pharmacySummaryReportController.grantIssueValue}">
                                                     <f:convertNumber  pattern="#,##0.00" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -658,7 +658,7 @@
 
                         <p:tab  title="Order"  >
 
-                            <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grns}" 
+                            <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacySummaryReportController.grns}" 
                                          var="dd2" scrollable="true" scrollHeight="150" >
                                 <p:column headerText="GRN No">
                                     #{dd2.bill.deptId}
@@ -697,7 +697,7 @@
 
                         <p:tab  title="GRN"  >
 
-                            <p:dataTable styleClass="noBorder" id="po" value="#{pharmacyController.pos}" var="dd3" scrollable="true" scrollHeight="150" >
+                            <p:dataTable styleClass="noBorder" id="po" value="#{pharmacySummaryReportController.pos}" var="dd3" scrollable="true" scrollHeight="150" >
                                 <p:column headerText="Po No">
                                     #{dd3.bill.deptId}
                                 </p:column>
@@ -720,7 +720,7 @@
 
                         <p:tab  title="Purchase"  >
 
-                            <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacyController.directPurchase}" var="dd3" scrollable="true" scrollHeight="150" >
+                            <p:dataTable styleClass="noBorder" id="dp" value="#{pharmacySummaryReportController.directPurchase}" var="dd3" scrollable="true" scrollHeight="150" >
                                 <p:column headerText="Bill No">
                                     #{dd3.bill.deptId}
                                 </p:column>
