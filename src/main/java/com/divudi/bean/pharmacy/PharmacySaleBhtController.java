@@ -329,14 +329,24 @@ public class PharmacySaleBhtController implements Serializable {
     }
     
     public void changeBillItem(BillItem bi, Stock tempStock){
-        
+        if (bi == null) {
+            JsfUtil.addErrorMessage("Bill item is required");
+            return;
+        }
         if (tempStock == null) {
-            errorMessage = "Item?";
             JsfUtil.addErrorMessage("Item?");
+            return;
+        }
+        if (tempStock.getItemBatch() == null) {
+            JsfUtil.addErrorMessage("Invalid stock - missing batch information");
             return;
         }
         if (tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
             JsfUtil.addErrorMessage("Please not select Expired Items");
+            return;
+        }
+        if (tempStock.getStock() <= 0) {
+            JsfUtil.addErrorMessage("No sufficient stock available");
             return;
         }
         bi.getPharmaceuticalBillItem().setItemBatch(tempStock.getItemBatch());
