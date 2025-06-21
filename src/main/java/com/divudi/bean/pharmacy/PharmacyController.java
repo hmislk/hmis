@@ -3770,10 +3770,8 @@ public class PharmacyController implements Serializable, ControllerWithReportFil
     public List<BillItem> getGrns() {
         return grns;
     }
-
-    public void fillDetails() {
-        Date startTime = new Date();
-
+    
+    public void fillDetailsByAtomic() {
         createInstitutionSale();
         createInstitutionBhtIssue();
         createInstitutionStock();
@@ -3784,7 +3782,22 @@ public class PharmacyController implements Serializable, ControllerWithReportFil
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
+    }
 
+    
+    
+    
+    public void fillDetails() {
+        createInstitutionSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
+        createInstitutionIssue();
+        createInstitutionTransferReceive();
+        createGrnTable();
+        createPoTable();
+        createDirectPurchaseTable();
+        createInstitutionIssue();
     }
 
     public void createTable() {

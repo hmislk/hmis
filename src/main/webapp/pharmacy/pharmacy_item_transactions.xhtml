@@ -18,6 +18,8 @@
                             <common:institution_site_department_filter controller="#{pharmacyController}" />
                         </div>
                     </div>
+                    
+                    <p:separator ></p:separator>
 
                     <div class="row">
                         <div class="col-12">
@@ -73,7 +75,7 @@
                             value="Process"
                             icon="fas fa-arrows-rotate"
                             class="ui-button-warning"
-                            action="#{pharmacyController.fillDetails()}"  >
+                            action="#{pharmacyController.fillDetailsByAtomic()}"  >
                         </p:commandButton>
                     </h:panelGrid>
 
