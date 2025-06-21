@@ -13,43 +13,60 @@
         <h:panelGroup >
             <h:form  >
                 <p:panel header="Single Item Transaction Details" styleClass="alignTop verticalAndHorizontalCenteringLarge">
-                    <common:institution_site_department_filter controller="#{pharmacyController}" />
-                    
                     <div class="row">
-                        <div class="col-4">
-                            <h:outputLabel value="Select Item"/>&nbsp;
-                        <p:autoComplete id="lstSelect"    
-                                        value="#{pharmacyController.pharmacyItem}" 
-                                        forceSelection="true"
-                                        style="min-width: 223px" 
-                                        completeMethod="#{ampController.completeAmpByName}" 
-                                        var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
-                            <p:column headerText="Item">
-                                <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Code">
-                                <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
-                            </p:column>
-                            <p:column headerText="Barcode">
-                                <h:outputLabel value="#{myItem.barcode}" ></h:outputLabel>
-                            </p:column>
-                        </p:autoComplete>
-                        </div>
-                        <div class="col-4">
-                            <h:outputLabel value="From"/>&nbsp;
-                        <p:calendar id="frmDate" value="#{pharmacyController.fromDate}" 
-                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
-                        </p:calendar>
-                        </div>
-                        <div class="col-4">
-                            <h:outputLabel value="To"/>&nbsp;
-                        <p:calendar id="toDate" value="#{pharmacyController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
-                            <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
-                        </p:calendar>
+                        <div class="col-12">
+                            <common:institution_site_department_filter controller="#{pharmacyController}" />
                         </div>
                     </div>
-                    
+
+                    <div class="row">
+                        <div class="col-12">
+                            <h:panelGrid columns="8" class="w-100" >
+                                <h:outputLabel value="Select Item"/>
+                                <p:autoComplete id="lstSelect"    
+                                                value="#{pharmacyController.pharmacyItem}" 
+                                                forceSelection="true"
+                                                class="w-100"
+                                                inputStyleClass="w-100"
+                                                completeMethod="#{ampController.completeAmpByName}" 
+                                                var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" >
+                                    <p:column headerText="Item">
+                                        <h:outputLabel value="#{myItem.name}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Code">
+                                        <h:outputLabel value="#{myItem.code}" ></h:outputLabel>
+                                    </p:column>
+                                    <p:column headerText="Barcode">
+                                        <h:outputLabel value="#{myItem.barcode}" ></h:outputLabel>
+                                    </p:column>
+                                </p:autoComplete>
+
+                                <p:spacer width="3em"></p:spacer>
+                                <h:outputLabel value="From"/>
+                                <p:calendar 
+                                    id="frmDate"
+                                    value="#{pharmacyController.fromDate}" 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    navigator="true"  pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                                </p:calendar>
+
+                                <p:spacer width="3em"></p:spacer>
+                                <h:outputLabel value="To"/>
+                                <p:calendar 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
+                                    id="toDate" 
+                                    value="#{pharmacyController.toDate}" navigator="true" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  >
+                                    <f:ajax event="dateSelect" execute="@this toDate" render="tab"/>
+                                </p:calendar>
+
+
+                            </h:panelGrid>
+                        </div>
+                    </div>
+
                     <h:panelGrid columns="1" class="my-2">
                         <p:commandButton 
                             ajax="false" 
