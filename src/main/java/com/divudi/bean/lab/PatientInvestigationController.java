@@ -73,6 +73,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -291,6 +292,10 @@ public class PatientInvestigationController implements Serializable {
 
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
+    }
+    
+    public String navigateToTestHistory() {
+        return "/lab/lab_test_history?faces-redirect=true";
     }
 
     public String navigateToLabBillItemList() {
@@ -3795,6 +3800,18 @@ public class PatientInvestigationController implements Serializable {
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
     }
+    
+    public String getPatientSample() {
+    List<PatientSampleComponant> pscs = getPatientSampleComponentsByInvestigation(current);
+    
+    if (pscs == null || pscs.isEmpty()) {
+        return "Not generated yet.";
+    }
+    
+    return pscs.stream()
+        .map(psc -> psc.getPatientSample().getIdStr())
+        .collect(Collectors.joining(" | "));
+}
 
     public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {
 //        System.out.println("patientInvestigation = " + patientInvestigation);

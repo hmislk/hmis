@@ -412,6 +412,17 @@
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
                                                 </div>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa fa-history"
+                                                        value="View History" 
+                                                        class="ui-button-success mt-2"
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                                        action="#{patientInvestigationController.navigateToTestHistory()}" >
+                                                        <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </div>
 
                                             </h:panelGroup>
 
@@ -492,6 +503,7 @@
                                                     </div>
                                                 </h:panelGroup>
                                             </h:panelGroup>
+                                            
                                         </p:column>
                                     </p:dataTable>
 
