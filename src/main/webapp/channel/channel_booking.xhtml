@@ -543,11 +543,18 @@
                         </div>
 
                         <script>
-                            console.log("start connection");
-                            const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-                            const wsUrl = protocol + "//" + window.location.host +"/rh/ws/notify";
 
-                            let socket = new WebSocket(wsUrl);
+                            function initializeWebSocket() {
+                                console.log("start connection");
+                                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+                                const wsUrl = protocol + "//" + window.location.host + "/rh/ws/notify";
+
+                                let socket = new WebSocket(wsUrl);
+
+                                return socket;
+                            }
+
+                            const socket = initializeWebSocket();
 
                             socket.onmessage = function (event) {
                                 const message = event.data;
@@ -572,6 +579,22 @@
                                     }
 
                                 }
+
+                            }
+
+                            socket.onclose = function (event) {
+                                console.log("Web socket connection is closed.");
+
+                                setTimeout(initializeWebSocket, 2000);
+                            }
+
+                            socket.onerror = function (event) {
+                                console.log("Web socket connection error occured.");
+
+                            }
+
+                            socket.onopen = function (event) {
+                                console.log("Web socket is connected.");
 
                             }
                         </script>

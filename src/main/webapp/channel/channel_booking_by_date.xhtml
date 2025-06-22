@@ -316,44 +316,46 @@
                                                     window.socket = new WebSocket(window.wsUrl);
                                                 }
 
+                                                window.socket.onmessage = function (event) {
+
+                                                    const message = event.data;
+                                                    const messageParts = message.split(" - ");
+                                                    const sendSessionId = messageParts[1];
+                                                    const sendMessage = messageParts[0];
+
+                                                    if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
+                                                        document.querySelector(".ws-trigger").click();
+                                                        console.log("booking add");
+
+                                                    }
+                                                    if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
+                                                        console.log("line 322 to retire")
+                                                        document.querySelector(".ws-triggers").click();
+                                                    }
+
+                                                }
+
+                                                window.socket.onclose = function (event) {
+                                                    console.log("Web socket connection is closed.");
+
+                                                    setTimeout(initializeWebSocket, 2000);
+                                                }
+
+                                                window.socket.onerror = function (event) {
+                                                    console.log("Web socket connection error occured.");
+
+                                                }
+
+                                                window.socket.onopen = function (event) {
+                                                    console.log("Web socket is connected.");
+
+                                                }
+
                                             }
-                                            
+
                                             initializeWebSocket();
 
-                                            window.socket.onmessage = function (event) {
 
-                                                const message = event.data;
-                                                const messageParts = message.split(" - ");
-                                                const sendSessionId = messageParts[1];
-                                                const sendMessage = messageParts[0];
-
-                                                if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
-                                                    document.querySelector(".ws-trigger").click();
-                                                    console.log("booking add");
-
-                                                }
-                                                if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
-                                                    console.log("line 322 to retire")
-                                                    document.querySelector(".ws-triggers").click();
-                                                }
-
-                                            }
-                                            
-                                            window.socket.onclose = function (event) {
-                                                console.log("Web socket connection is closed.");
-                                                
-                                                setTimeout(initializeWebSocket, 2000);
-                                           }
-                                           
-                                           window.socket.onerror = function (event) {
-                                               console.log("Web socket connection error occured.");
-                                               
-                                           }
-                                           
-                                           window.socket.onopen = function (event) {
-                                               console.log("Web socket is connected.");
-                                               
-                                           }
                                         </script>
 
                                         <p:commandButton id="ws"
