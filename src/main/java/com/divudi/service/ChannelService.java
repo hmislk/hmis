@@ -80,6 +80,7 @@ import javax.ejb.Stateless;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
 import javax.transaction.Transactional;
+import com.divudi.service.WebSocketService;
 
 /**
  *
