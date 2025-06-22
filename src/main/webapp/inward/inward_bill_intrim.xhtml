@@ -521,18 +521,27 @@
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Comments">
-                                            <h:panelGroup id="commentContainer">
-                                                <p:inputText id="commentInput"
-                                                             value="#{iss.comments}"
-                                                             styleClass="w-100"/>
-                                                <p:commandButton id="saveBtn"
-                                                                 icon="fa fa-save"
-                                                                 action="#{billController.save(iss)}"
-                                                                 process="commentContainer"
-                                                                 update="@none"
-                                                                 styleClass="btn btn-sm"
-                                                                 title="Save"/>
+                                        <p:column headerText="Comments"> 
+                                            <h:panelGroup id="commentContainer" layout="block" class="row">
+                                                <div class="row" >
+                                                    <div class="col-8" >
+                                                        <p:inputText id="commentInput"
+                                                                     class="w-100"
+                                                                     value="#{iss.comments}"/>
+                                                    </div>
+                                                    <div class="col-4" >
+                                                        <p:commandButton 
+                                                            id="saveBtn"
+                                                            icon="fa fa-save"
+                                                            class="col-3"
+                                                            action="#{billController.save(iss)}"
+                                                            process="commentContainer"
+                                                            update="@none"
+                                                            title="Save"/>
+                                                    </div>
+                                                </div>
+
+
                                             </h:panelGroup>
                                         </p:column>
                                         <p:column>
