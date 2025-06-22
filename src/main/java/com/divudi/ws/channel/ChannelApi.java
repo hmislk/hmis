@@ -157,7 +157,7 @@ public class ChannelApi {
     PatientService patientService;
     @EJB
     ChannelService channelService;
-    
+
     private static final Logger LOGGER = Logger.getLogger(ChannelApi.class.getName());
 
     /**
@@ -1347,7 +1347,6 @@ public class ChannelApi {
         }
     }
 
-
     @POST
     @Path("/complete")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -1798,7 +1797,11 @@ public class ChannelApi {
 
         SessionInstance session = bs.getSessionInstance();
 
-        WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at cancel booking " + e.getMessage());
+        }
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
