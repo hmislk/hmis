@@ -34,6 +34,7 @@ public class IncomeRow implements Serializable {
     private Bill referanceBill;
     private BillItem billItem;
     private PharmaceuticalBillItem pharmaceuticalBillItem;
+    private com.divudi.core.light.common.BillItemLight billItemLight;
     private BillFee billFee;
     private Payment payment;
 
@@ -205,6 +206,27 @@ public class IncomeRow implements Serializable {
             this.bill = billItem.getBill();
         } else {
             rowType = "BillItem";
+        }
+    }
+
+    public IncomeRow(com.divudi.core.light.common.BillItemLight billItemLight) {
+        this();
+        this.billItemLight = billItemLight;
+        rowType = "BillItemLight";
+        if (billItemLight != null) {
+            this.institution = billItemLight.getInstitution();
+            this.department = billItemLight.getDepartment();
+            this.item = billItemLight.getItem();
+            this.billTypeAtomic = billItemLight.getBillTypeAtomic();
+            if (billItemLight.getQty() != null) {
+                this.qty = billItemLight.getQty();
+            }
+            if (billItemLight.getFreeQty() != null) {
+                this.freeQty = billItemLight.getFreeQty();
+            }
+            if (billItemLight.getNetTotal() != null) {
+                this.netTotal = billItemLight.getNetTotal();
+            }
         }
     }
 
@@ -1057,6 +1079,14 @@ public class IncomeRow implements Serializable {
 
     public void setBillItem(BillItem billItem) {
         this.billItem = billItem;
+    }
+
+    public com.divudi.core.light.common.BillItemLight getBillItemLight() {
+        return billItemLight;
+    }
+
+    public void setBillItemLight(com.divudi.core.light.common.BillItemLight billItemLight) {
+        this.billItemLight = billItemLight;
     }
 
     public Institution getSite() {

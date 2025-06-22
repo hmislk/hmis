@@ -314,6 +314,15 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+    public IncomeBundle(List<com.divudi.core.light.common.BillItemLight> lights) {
+        this();
+        if (lights != null) {
+            for (com.divudi.core.light.common.BillItemLight l : lights) {
+                rows.add(new IncomeRow(l));
+            }
+        }
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;

@@ -647,35 +647,10 @@ public class PharmacySummaryReportController implements Serializable {
         // Instead we will use a DTO
         List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.PHARMACY);
         
-        // this is where all bills are loaded
-        List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        // instead of above line, we have to do this
-        // Create new BillItemLight like BillLight
-        // Create suitable constructor
-        //
-        // create new attribute for BillItemLight in IncomeBundle
-        // 
-        // Load bill Lights with follwing details without iteraging each bill item        
-        
-        bundle = new IncomeBundle(incomeBills);
-        
-        for (IncomeRow r : bundle.getRows()) {
-            if (r.getBillItem()== null) {
-                continue;
-            }
-            BillItem bi = r.getBillItem();
-            Bill b = bi.getBill();
-            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
-            
-            r.setInstitution(b.getInstitution());
-            r.setDepartment(b.getDepartment());
-            r.setItem(b.getItem());
-            r.setBillTypeAtomic(b.getBillTypeAtomic());
-            r.setQty(b.getQty());
-            r.setFreeQty(pbi.getFreeQty());
-            r.setNetTotal(bi.getNetValue());
-            
-        }
+        List<com.divudi.core.light.common.BillItemLight> lights = billService.fetchBillItemLights(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new IncomeBundle(lights);
        
     }
 
