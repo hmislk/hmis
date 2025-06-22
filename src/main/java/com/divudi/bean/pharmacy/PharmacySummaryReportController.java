@@ -641,22 +641,41 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processSingleItemTransactionSummaryByBillType() {
+        // This method needs improvements
+        // Loading bills, bill items and pharmaceutical bill items is resource intensive
+        // Instead we will use a DTO
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        
+        // this is where all bills are loaded
         List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        // instead of above line, we have to do this
+        // Create new BillItemLight like BillLight
+        // Create suitable constructor
+        //
+        // create new attribute for BillItemLight in IncomeBundle
+        // 
+        // Load bill Lights with follwing details without iteraging each bill item        
+        
         bundle = new IncomeBundle(incomeBills);
         
         for (IncomeRow r : bundle.getRows()) {
-            if (r.getBill() == null) {
+            if (r.getBillItem()== null) {
                 continue;
             }
-            r.setInstitution(institution);
-            r.setDepartment(department);
-            r.setItem(item);
-            r.setBillTypeAtomic(billTypeAtomic);
-            r.setQty(0);
+            BillItem bi = r.getBillItem();
+            Bill b = bi.getBill();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            
+            r.setInstitution(b.getInstitution());
+            r.setDepartment(b.getDepartment());
+            r.setItem(b.getItem());
+            r.setBillTypeAtomic(b.getBillTypeAtomic());
+            r.setQty(b.getQty());
+            r.setFreeQty(pbi.getFreeQty());
+            r.setNetTotal(bi.getNetValue());
             
         }
-        bundle.generatePaymentDetailsGroupedByBillType();
+       
     }
 
     public void processPharmacyIncomeReportByBillType() {

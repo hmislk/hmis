@@ -163,6 +163,7 @@ public class IncomeRow implements Serializable {
     private double ccTotal;
 
     private double qty;
+    private double freeQty;
 
     private long duration;
 
@@ -1351,6 +1352,14 @@ public class IncomeRow implements Serializable {
 
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public double getFreeQty() {
+        return freeQty;
+    }
+
+    public void setFreeQty(double freeQty) {
+        this.freeQty = freeQty;
     }
     
     
