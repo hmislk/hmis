@@ -58,6 +58,7 @@ import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.data.HistoricalRecordType;
 import static com.divudi.core.data.ReportViewType.BY_BILL_ITEM;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.StockBill;
@@ -644,7 +645,7 @@ public class PharmacySummaryReportController implements Serializable {
         // This method needs improvements
         // Loading bills, bill items and pharmaceutical bill items is resource intensive
         // Instead we will use a DTO
-        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.PHARMACY);
         
         // this is where all bills are loaded
         List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
