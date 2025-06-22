@@ -127,6 +127,13 @@ public class PurchaseOrderController implements Serializable {
     }
 
     public String navigateToPurchaseOrderApproval() {
+        Bill temRequestedBill = requestedBill;
+        clearList();
+        requestedBill = temRequestedBill;
+        getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
+        getAprovedBill().setToInstitution(getRequestedBill().getToInstitution());
+        getAprovedBill().setCreditDuration(getRequestedBill().getCreditDuration());
+        generateBillComponent();
         printPreview = false;
         return "/pharmacy/pharmacy_purhcase_order_approving?faces-redirect=true";
     }
@@ -144,7 +151,7 @@ public class PurchaseOrderController implements Serializable {
         saveBill();
         totalBillItemsCount = 0;
         saveBillComponent();
-        if (totalBillItemsCount == 0){
+        if (totalBillItemsCount == 0) {
             JsfUtil.addErrorMessage("Please add item quantities for the bill");
             return "";
         }
@@ -213,8 +220,6 @@ public class PurchaseOrderController implements Serializable {
 
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
 
-
-
         try {
             if (getAprovedBill().getId() == null) {
                 getBillFacade().create(getAprovedBill());
@@ -234,7 +239,7 @@ public class PurchaseOrderController implements Serializable {
             i.setNetValue(i.getPharmaceuticalBillItem().getQty() * i.getPharmaceuticalBillItem().getPurchaseRate());
 
             double qty;
-            qty = i.getTmpQty() + i.getPharmaceuticalBillItem().getFreeQty();
+            qty = i.getQty() + i.getPharmaceuticalBillItem().getFreeQty();
             if (qty <= 0.0) {
                 i.setRetired(true);
                 i.setRetirer(sessionController.getLoggedUser());
@@ -285,15 +290,15 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
-            ////// // System.out.println("i.getFreeQty() = " + i.getFreeQty());
+            
             ph.setFreeQty(i.getFreeQty());
-            ph.setQtyInUnit(i.getQtyInUnit());
-            ph.setPurchaseRateInUnit(i.getPurchaseRateInUnit());
-            ph.setRetailRateInUnit(i.getRetailRateInUnit());
+            ph.setQty(i.getQty());
+            ph.setPurchaseRate(i.getPurchaseRate());
+            ph.setRetailRate(i.getRetailRate());
             bi.setPharmaceuticalBillItem(ph);
+//            bi.setTmpQty(ph.getQty());
 
-            bi.setTmpQty(ph.getQtyInUnit());
-
+            
             getBillItems().add(bi);
         }
 
@@ -302,18 +307,20 @@ public class PurchaseOrderController implements Serializable {
     }
 
     public void setRequestedBill(Bill requestedBill) {
-        clearList();
+        // The logic inside getter was taken to the navigator method
+//        clearList();
         this.requestedBill = requestedBill;
-        getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
-        getAprovedBill().setToInstitution(getRequestedBill().getToInstitution());
-        getAprovedBill().setCreditDuration(getRequestedBill().getCreditDuration());
-        generateBillComponent();
+//        getAprovedBill().setPaymentMethod(getRequestedBill().getPaymentMethod());
+//        getAprovedBill().setToInstitution(getRequestedBill().getToInstitution());
+//        getAprovedBill().setCreditDuration(getRequestedBill().getCreditDuration());
+//        generateBillComponent();
     }
 
     public Bill getAprovedBill() {
         if (aprovedBill == null) {
             aprovedBill = new BilledBill();
             aprovedBill.setBillType(BillType.PharmacyOrderApprove);
+            aprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
         }
         return aprovedBill;
     }

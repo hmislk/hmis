@@ -63,6 +63,7 @@
                                                 <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
                                                     <div class="ui-inputgroup mx-1 my-1">
                                                         <p:inputText  
+                                                            onfocus="this.select()"
                                                             value="#{purchaseOrderController.aprovedBill.creditDuration}" style="width: 10em;">
                                                         </p:inputText>
                                                         <div class="ui-inputgroup-addon">Days</div>
@@ -109,48 +110,58 @@
                                 <h:outputText value="#{bi.item.code}" ></h:outputText>
                             </p:column>  
 
-                            <p:column headerText="Qty" styleClass="averageNumericColumn" width="6em">                         
-                                <p:inputText autocomplete="off" id="qty" value="#{bi.tmpQty}" style="width:100%" label="Qty" onfocus="this.select()">
+                            <p:column 
+                                headerText="Qty"  
+                                class="text-end px-1" 
+                                width="6em">                         
+                                <p:inputText
+                                    autocomplete="off"
+                                    id="qty"
+                                    value="#{bi.pharmaceuticalBillItem.qty}" 
+                                    class="w-100 text-end"
+                                    label="Qty" onfocus="this.select()">
                                     <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
                             </p:column>  
-                            <p:column headerText="Free Qty" styleClass="averageNumericColumn" >                         
-                                <p:inputText autocomplete="off" id="freeQty" value="#{bi.pharmaceuticalBillItem.freeQty}" style="width:100%" onfocus="this.select()">
+                            <p:column 
+                                width="6em"
+                                headerText="Free Qty"
+                                class="text-end px-1"  >                         
+                                <p:inputText 
+                                    autocomplete="off"
+                                    id="freeQty" 
+                                    value="#{bi.pharmaceuticalBillItem.freeQty}" 
+                                    class="w-100 text-end"
+                                    onfocus="this.select()">
                                     <f:convertNumber pattern="#,#00"/>
                                     <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this price" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
                                     <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
                                 </p:inputText>
                             </p:column> 
-                            <p:column headerText="Purchse Price"  styleClass="averageNumericColumn" >  
-                                <h:panelGroup id="price">
-                                    <p:inputText autocomplete="off" value="#{bi.pharmaceuticalBillItem.purchaseRate}" onfocus="this.select()">   
-                                        <f:convertNumber pattern="#00.00"/>
-                                        <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
-                                    </p:inputText>
-                                </h:panelGroup>
+                            <p:column 
+                                width="6em"
+                                headerText="Purchase Price"   
+                                class="text-end px-1"  >  
+                                <p:inputText
+                                    id="price"
+                                    class="w-100 text-end"
+                                    style="margin: 0px;"
+                                    autocomplete="off"
+                                    value="#{bi.pharmaceuticalBillItem.purchaseRate}" onfocus="this.select()">   
+                                    <f:convertNumber pattern="#00.00"/>
+                                    <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this" listener="#{purchaseOrderController.onEdit(bi)}" ></f:ajax>
+                                    <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderController.onFocus(bi)}" />
+                                </p:inputText>
                             </p:column>  
 
-
-                            <p:column headerText="Last Sale Price" style="text-align: right;" styleClass="averageNumericColumn" >  
-                                <h:panelGroup >
-                                    <h:outputText value="#{bi.pharmaceuticalBillItem.retailRate}">
-                                        <f:convertNumber pattern="#00.00"/>
-                                    </h:outputText>
-                                </h:panelGroup>
+                            <p:column headerText="Total" width="6em"  class="text-end px-1"  >  
+                                <h:outputText id="total" value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>  
-
-                            <p:column headerText="Total" style="text-align: right;" styleClass="averageNumericColumn" >  
-                                <h:panelGroup id="total">
-                                    <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
-                                        <f:convertNumber pattern="#,##0.00"/>
-                                    </h:outputText>
-                                </h:panelGroup>
-                            </p:column>  
-
-                            <p:column styleClass="averageNumericColumn" width="3em" >
+                            <p:column  class="text-end px-1"  width="4em" >
                                 <p:commandButton  process="itemList" update="itemList :#{p:resolveFirstComponentWithId('po',view).clientId}" icon="fas fa-trash"  class="ui-button-Danger" action="#{purchaseOrderController.removeItem(bi)}"/>
                             </p:column>
                         </p:dataTable> 
