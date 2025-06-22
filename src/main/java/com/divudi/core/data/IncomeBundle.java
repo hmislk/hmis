@@ -314,6 +314,20 @@ public class IncomeBundle implements Serializable {
         }
     }
 
+    /**
+     * Convenience constructor to populate rows from BillItemLight DTOs.
+     * The boolean parameter merely differentiates the signature to avoid
+     * type-erasure clashes with other List-based constructors.
+     */
+    public IncomeBundle(List<com.divudi.core.light.common.BillItemLight> lights, boolean fromLightDto) {
+        this();
+        if (lights != null) {
+            for (com.divudi.core.light.common.BillItemLight l : lights) {
+                rows.add(new IncomeRow(l));
+            }
+        }
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
