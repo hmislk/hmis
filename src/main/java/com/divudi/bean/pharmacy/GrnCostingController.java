@@ -110,6 +110,8 @@ public class GrnCostingController implements Serializable {
 
     /**
      * Wrapper for PharmacyCostingService.calculateProfitMarginForPurchases to be used in JSF.
+     * @param bi
+     * @return 
      */
     public double calcProfitMargin(BillItem bi) {
         return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
