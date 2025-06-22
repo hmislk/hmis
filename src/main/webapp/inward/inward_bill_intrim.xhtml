@@ -20,7 +20,7 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form  >
+                <h:form id="pageForm" >
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
@@ -536,7 +536,7 @@
                                                             class="col-3"
                                                             action="#{billController.save(iss)}"
                                                             process="commentContainer"
-                                                            update="@none"
+                                                            update="pageForm:pageMessages"
                                                             title="Save"/>
                                                     </div>
                                                 </div>
@@ -894,7 +894,7 @@
 
 
 
-
+                    <p:messages id="pageMessages" ></p:messages>
 
 
                 </h:form>

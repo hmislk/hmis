@@ -460,8 +460,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             } catch (Exception e) {
                 getFacade().edit(savingBill);
             }
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             getFacade().edit(savingBill);
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
