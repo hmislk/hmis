@@ -16,20 +16,20 @@ public class LabTestHistoryLight {
     private Date historyAt;
     private String institutionName;
     private String departmentName;
-    private Staff transpoter;
+    private Staff transporter;
     private WebUser user;
 
     public LabTestHistoryLight() {
         
     }
 
-    public LabTestHistoryLight(Long id, TestHistoryType historyType, Date historyAt, String institutionName, String departmentName,Staff transpoter, WebUser user) {
+    public LabTestHistoryLight(Long id, TestHistoryType historyType, Date historyAt, String institutionName, String departmentName,Staff transporter, WebUser user) {
         this.id = id;
         this.historyType = historyType;
         this.historyAt = historyAt;
         this.institutionName = institutionName;
         this.departmentName = departmentName;
-        this.transpoter = transpoter;
+        this.transporter = transporter;
         this.user = user;
     }
     
@@ -103,12 +103,12 @@ public class LabTestHistoryLight {
         this.historyType = historyType;
     }
 
-    public Staff getTranspoter() {
-        return transpoter;
+    public Staff getTransporter() {
+        return transporter;
     }
 
-    public void setTranspoter(Staff transpoter) {
-        this.transpoter = transpoter;
+    public void setTransporter(Staff transporter) {
+        this.transporter = transporter;
     }
 
 }

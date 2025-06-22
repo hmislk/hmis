@@ -32,7 +32,8 @@ import javax.faces.convert.Converter;
 
 /**
  *
- * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan <hkddrajapaksha@gmail.com>
+ * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan
+ * <hkddrajapaksha@gmail.com>
  *
  */
 @Named(value = "labTestHistoryController")
@@ -190,6 +191,9 @@ public class LabTestHistoryController implements Serializable {
         TestHistoryType historyType = enumController.getLabTestHistory(labTestHistory);
 
         if (historyType == null) {
+            return null;
+        }
+        if (patientInvestigation == null) {
             return null;
         }
 
