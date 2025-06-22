@@ -1,5 +1,6 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.AppEmail;
@@ -18,7 +19,9 @@ import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
@@ -32,7 +35,6 @@ import javax.faces.convert.Converter;
  * @author Dr M H B Ariyaratne <buddhika.ari@gmail.com> and H.K. Damith Deshan <hkddrajapaksha@gmail.com>
  *
  */
-
 @Named(value = "labTestHistoryController")
 @SessionScoped
 public class LabTestHistoryController implements Serializable {
@@ -40,10 +42,9 @@ public class LabTestHistoryController implements Serializable {
     /**
      * Creates a new instance of LabTestHistoryController
      */
-    
     public LabTestHistoryController() {
     }
-    
+
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private LabTestHistoryFacade facade;
@@ -62,9 +63,7 @@ public class LabTestHistoryController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
-    
     // <editor-fold defaultstate="collapsed" desc="Billing">
     public void addBillingHistory(PatientInvestigation patientInvestigation, Department toDepartment) {
         addNewHistory(TestHistoryType.ORDERED, null, toDepartment, patientInvestigation, null, null, null, null, null, null, null);
@@ -101,7 +100,6 @@ public class LabTestHistoryController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Report History">
     public void addCreateReportHistory(PatientInvestigation patientInvestigation, PatientReport patientReport) {
         addNewHistory(TestHistoryType.REPORT_CREATED, null, null, patientInvestigation, patientReport, null, null, null, null, null, null);
@@ -134,7 +132,6 @@ public class LabTestHistoryController implements Serializable {
     }
 
     // </editor-fold>
-    
     public void addNewHistory(
             TestHistoryType testHistoryType,
             Department fromDepartment,
@@ -160,7 +157,7 @@ public class LabTestHistoryController implements Serializable {
         current.setEmail(email);
         current.setSampleComponant(sampleComponant);
         current.setAnalyzer(analyzer);
-        
+
         save();
 
     }
@@ -186,7 +183,56 @@ public class LabTestHistoryController implements Serializable {
             JsfUtil.addErrorMessage("Error saving: " + e.getMessage());
         }
     }
+    @Inject
+    EnumController enumController;
 
+    public List<LabTestHistoryLight> getLabTestHistoryByInvestigation(PatientInvestigation patientInvestigation, String labTestHistory) {
+        TestHistoryType historyType = enumController.getLabTestHistory(labTestHistory);
+
+        if (historyType == null) {
+            return null;
+        }
+
+        String jpql = "SELECT new com.divudi.bean.lab.LabTestHistoryLight(his.id, his.testHistoryType, his.createdAt, his.institution.name, his.department.name, his.staff, his.createdBy) "
+                + " FROM LabTestHistory his "
+                + " WHERE his.retired=:retired "
+                + " AND his.testHistoryType=:type"
+                + " AND his.patientInvestigation=:patientInvestigation";
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", historyType);
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+        List<LabTestHistoryLight> labHistory = (List<LabTestHistoryLight>) getFacade().findLightsByJpql(jpql, params);
+        return labHistory;
+    }
+
+    public Long getLabTestHistoryCountByInvestigation(PatientInvestigation patientInvestigation, String labTestHistory) {
+        TestHistoryType historyType = enumController.getLabTestHistory(labTestHistory);
+
+        if (historyType == null || patientInvestigation == null) {
+            return 0L;
+        }
+
+        String jpql = "SELECT COUNT(his.id) "
+                + "FROM LabTestHistory his "
+                + "WHERE his.retired = :retired "
+                + "AND his.testHistoryType = :type "
+                + "AND his.patientInvestigation = :patientInvestigation";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", historyType);
+        params.put("retired", false);
+        params.put("patientInvestigation", patientInvestigation);
+
+        return getFacade().findLongByJpql(jpql, params);
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Show History Data">
+    public void orderedHistoryData(PatientInvestigation patientInvestigation) {
+
+    }
+
+    // </editor-fold>
     @FacesConverter(forClass = LabTestHistory.class)
     public static class LabTestHistoryConverter implements Converter {
 
