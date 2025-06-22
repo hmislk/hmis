@@ -93,6 +93,8 @@ public class PharmacyCostingService {
         billItemFinanceDetails.setLineCostRate(lineCostRate);
         billItemFinanceDetails.setTotalQuantity(totalQty);
 
+        billItemFinanceDetails.setProfitMargin(calculateProfitMarginForPurchasesBigDecimal(billItemFinanceDetails.getBillItem()));
+
         pbi.setRetailRate(billItemFinanceDetails.getRetailSaleRate().doubleValue());
         pbi.setRetailValue(retailValue.doubleValue());
     }
@@ -100,6 +102,7 @@ public class PharmacyCostingService {
     /**
      * Distribute bill-level values (discounts, expenses, taxes) proportionally
      * to items.
+     *
      * @param billItems
      * @param bill
      */
@@ -114,7 +117,7 @@ public class PharmacyCostingService {
         if (bill.getBillFinanceDetails() == null) {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
-        
+
         System.out.println("bill.getDiscount() = " + bill.getDiscount());
 
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
@@ -244,18 +247,21 @@ public class PharmacyCostingService {
                     : BigDecimal.ZERO;
             f.setNetRate(netRate);
         }
-        
-        
+
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
+        return calculateProfitMarginForPurchasesBigDecimal(bi).doubleValue();
+    }
+
+    public BigDecimal calculateProfitMarginForPurchasesBigDecimal(BillItem bi) {
         if (bi == null) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
         if (f == null) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
         BigDecimal purchaseRate = f.getLineNetRate();
@@ -264,7 +270,7 @@ public class PharmacyCostingService {
         BigDecimal freeQty = f.getFreeQuantity();
 
         if (purchaseRate == null || retailRate == null || qty == null || freeQty == null) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
         BigDecimal totalQty = qty.add(freeQty);
@@ -272,18 +278,14 @@ public class PharmacyCostingService {
         BigDecimal retailValue = retailRate.multiply(totalQty);
 
         if (purchaseValue.compareTo(BigDecimal.ZERO) == 0) {
-            return 0.0;
+            return BigDecimal.ZERO;
         }
 
-        BigDecimal margin = retailValue.subtract(purchaseValue)
+        return retailValue.subtract(purchaseValue)
                 .divide(purchaseValue, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
-
-
-        return margin.doubleValue();
     }
 
-    
     public void calculateBillTotalsFromItemsForPurchases(Bill bill, List<BillItem> billItems) {
         System.out.println("calculateBillTotalsFromItemsForPurchases");
         int serialNo = 0;

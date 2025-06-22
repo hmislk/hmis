@@ -148,11 +148,19 @@ public class StockController implements Serializable {
             List<Amp> amps = new ArrayList<>();
             amps.add(amp);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
+            List<Amp> amps = new ArrayList<>();
+            if (amp != null) {
+                amps.add(amp);
+            }
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else {
-            //TO Do for Ampp, Vmpp,
+            //TO Do for Vmpp
         }
         expiaringStockQty = calculateStockQty(selectedItemExpiaringStocks);
     }

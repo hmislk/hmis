@@ -122,10 +122,10 @@
                                 </p:column>  
 
                                 <p:column 
-                                    headerText="Stock" 
-                                    width="5em" 
+                                    headerText="Stock in Units" 
+                                    width="6em" 
                                     style="padding: 0;" 
-                                    class="text-end">
+                                    class="text-end px-1">
                                     <p:commandLink 
                                         value="#{stockController.findStock(bi.item)}"
                                         oncomplete="PF('stockDetailsDialog').show();"
@@ -135,7 +135,10 @@
                                     </p:commandLink>
                                 </p:column>
 
-                                <p:column headerText="Expiry" style="width:4em; text-align: right; padding: 0;">
+                                <p:column headerText="Expiring" 
+                                          width="6em" 
+                                          style="padding: 0;" 
+                                          class="text-end px-1">
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
                                                    process="itemList"
@@ -145,10 +148,10 @@
                                     </p:commandLink>
                                 </p:column>
 
-
-
-
-                                <p:column headerText="Usage" style="width:4em; text-align: right; padding: 0;">
+                                <p:column 
+                                    headerText="Usage" width="6em" 
+                                    style="padding: 0;" 
+                                    class="text-end px-1">
                                     <p:outputLabel value="#{pharmacyController.findAllOutTransactions(bi.item)}" style="width:4em; text-align: right;"/>                            
                                 </p:column>
 

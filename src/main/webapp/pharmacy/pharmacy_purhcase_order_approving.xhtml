@@ -63,6 +63,7 @@
                                                 <h:panelGroup rendered="#{purchaseOrderController.aprovedBill.paymentMethod eq 'Credit'}" id="duration" class="w-100" >
                                                     <div class="ui-inputgroup mx-1 my-1">
                                                         <p:inputText  
+                                                            onfocus="this.select()"
                                                             value="#{purchaseOrderController.aprovedBill.creditDuration}" style="width: 10em;">
                                                         </p:inputText>
                                                         <div class="ui-inputgroup-addon">Days</div>

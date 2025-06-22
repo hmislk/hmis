@@ -253,6 +253,10 @@ public class BillItemFinanceDetails implements Serializable {
 //    private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
 
+    
+    @Column(precision = 18, scale = 4)
+    private BigDecimal profitMargin = BigDecimal.ZERO;
+    
     @Override
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
@@ -357,6 +361,9 @@ public class BillItemFinanceDetails implements Serializable {
         // ------------------ RETURN TOTALS ------------------
         cloned.returnGrossTotal = this.returnGrossTotal;
         cloned.returnNetTotal = this.returnNetTotal;
+        
+        //Profit
+        cloned.profitMargin = this.profitMargin;
 
         // ------------------ PAYMENT METHODS ------------------
 //        cloned.totalPaidAsCash = this.totalPaidAsCash;
@@ -879,5 +886,14 @@ public class BillItemFinanceDetails implements Serializable {
         this.totalReturnQuantity = totalReturnQuantity;
     }
 
+    public BigDecimal getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(BigDecimal profitMargin) {
+        this.profitMargin = profitMargin;
+    }
+
+    
 
 }
