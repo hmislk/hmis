@@ -318,20 +318,24 @@
 
                                                 window.socket.onmessage = function (event) {
 
-                                                    const message = event.data;
-                                                    const messageParts = message.split(" - ");
-                                                    const sendSessionId = messageParts[1];
-                                                    const sendMessage = messageParts[0];
+                                                    try {
+                                                        const message = event.data;
+                                                        const messageParts = message.split(" - ");
+                                                        const sendSessionId = messageParts[1];
+                                                        const sendMessage = messageParts[0];
 
-                                                    if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
-                                                        document.querySelector(".ws-trigger").click();
-                                                        console.log("booking add");
+                                                        if (sendMessage === "Online Booking Completed" || sendMessage === "Online Temporary Booking Added" || sendMessage === "Online Booking Cancelled") {
+                                                            document.querySelector(".ws-trigger").click();
+                                                         
 
+                                                        }
+                                                        if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
+                                                            document.querySelector(".ws-triggers").click();
+                                                        }
+
+                                                    } catch (e) {
+                                                        console.error("Error in WebSocket onmessage:", error);
                                                     }
-                                                    if (sendMessage === "Temporary Booking Retired" || sendMessage === "Online Temporary Booking Added") {
-                                                        document.querySelector(".ws-triggers").click();
-                                                    }
-
                                                 }
 
                                                 window.socket.onclose = function (event) {
