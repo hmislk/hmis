@@ -303,16 +303,22 @@
                                         </p:dataTable>
 
                                         <script>
-                                            console.log("start connection");
 
-                                            if (typeof window.wsUrl === "undefined") {
-                                                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'; 
-                                                window.wsUrl = protocol + "//" + window.location.host +"/rh/ws/notify";
-                                            }
+                                            function initializeWebSocket() {
+                                                console.log("start connection");
 
-                                            if (typeof window.socket === "undefined") {
-                                                window.socket = new WebSocket(window.wsUrl);
+                                                if (typeof window.wsUrl === "undefined") {
+                                                    const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+                                                    window.wsUrl = protocol + "//" + window.location.host + "/rh/ws/notify";
+                                                }
+
+                                                if (typeof window.socket === "undefined") {
+                                                    window.socket = new WebSocket(window.wsUrl);
+                                                }
+
                                             }
+                                            
+                                            initializeWebSocket();
 
                                             window.socket.onmessage = function (event) {
 
@@ -332,6 +338,22 @@
                                                 }
 
                                             }
+                                            
+                                            window.socket.onclose = function (event) {
+                                                console.log("Web socket connection is closed.");
+                                                
+                                                setTimeout(initializeWebSocket, 2000);
+                                           }
+                                           
+                                           window.socket.onerror = function (event) {
+                                               console.log("Web socket connection error occured.");
+                                               
+                                           }
+                                           
+                                           window.socket.onopen = function (event) {
+                                               console.log("Web socket is connected.");
+                                               
+                                           }
                                         </script>
 
                                         <p:commandButton id="ws"
