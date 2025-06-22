@@ -310,6 +310,8 @@
                             <p:outputLabel value="Invoice Total"/>
                             <p:inputText 
                                 id="insv"  
+                                class="text-end"
+                                onfocus="this.select()"
                                 value="#{grnCostingController.insTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                                 <p:ajax 
@@ -319,7 +321,10 @@
                                     listener="#{grnCostingController.calDifference()}"/>
                             </p:inputText>
                             <p:outputLabel value="Difference"/>
-                            <p:inputText autocomplete="off" disabled="true" id="diff" value="#{grnCostingController.difference}"
+                            <p:inputText 
+                                autocomplete="off" 
+                                class="text-end"
+                                         disabled="true" id="diff" value="#{grnCostingController.difference}"
                                          style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
@@ -328,31 +333,32 @@
                             <f:facet name="header" >
                                 <h:outputText value="GRN Details" ></h:outputText>
                             </f:facet>
-                            <p:outputLabel value="Gross Total"/>
+                            <p:outputLabel value="Sum of Line Net Totals"/>
                             <p:outputLabel 
                                 id="gro" 
                                 class="text-end w-100"
                                 value="#{grnCostingController.grnBill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
-                            <p:outputLabel value="Discount"/>
+                            <p:outputLabel value="Bill Discount"/>
                             <p:inputText
                                 autocomplete="off"
                                 id="txtBillDiscount"
                                 class="text-end w-100"
+                                onfocus="this.select()"
                                 value="#{grnCostingController.grnBill.discount}" >
                                 <p:ajax
                                     process="@this"
                                     update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
                                     event="keyup"
                                     listener="#{grnCostingController.discountChangedLitener()}"/>
-                            </p:inputText>
-                            <p:outputLabel value="Net Total"/>
-                            <p:outputLabel
-                                id="txtBillNetTotal"
-                                value="#{grnCostingController.grnBill.netTotal}"
-                                class="text-end w-100">
                                 <f:convertNumber pattern="#,##0.00" />
+                            </p:inputText>
+                            <p:outputLabel value="Sum of Line Discounts"/>
+                            <p:outputLabel
+                                id="txtLineDiscountTotal"
+                                class="text-end w-100"
+                                value="#{grnCostingController.grnBill.billFinanceDetails.lineDiscount}" >
                             </p:outputLabel>
 
                             <p:outputLabel value="Total Discount"/>
@@ -362,6 +368,16 @@
                                 class="text-end w-100">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:outputLabel>
+
+                            <p:outputLabel value="Net Total"/>
+                            <p:outputLabel
+                                id="txtBillNetTotal"
+                                value="#{grnCostingController.grnBill.netTotal}"
+                                class="text-end w-100">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:outputLabel>
+
+
 
                         </p:panelGrid>
                         <p:panel  id="billFinanceDetails"  header="Financial Summary">

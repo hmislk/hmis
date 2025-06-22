@@ -103,15 +103,16 @@ public class GrnCostingController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-
     public boolean isShowProfitInGrnBill() {
         return configOptionApplicationController.getBooleanValueByKey("Show Profit Percentage in GRN", true);
     }
 
     /**
-     * Wrapper for PharmacyCostingService.calculateProfitMarginForPurchases to be used in JSF.
+     * Wrapper for PharmacyCostingService.calculateProfitMarginForPurchases to
+     * be used in JSF.
+     *
      * @param bi
-     * @return 
+     * @return
      */
     public double calcProfitMargin(BillItem bi) {
         return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
@@ -157,7 +158,6 @@ public class GrnCostingController implements Serializable {
         difference = 0;
         insTotal = 0;
     }
-
 
     public void removeItem(BillItem bi) {
         getBillItems().remove(bi.getSearialNo());
@@ -258,8 +258,6 @@ public class GrnCostingController implements Serializable {
             pid.getPharmaceuticalBillItem().setStringValue(reportDate);
         }
     }
-
-
 
     public void request() {
 //        if (Math.abs(difference) > 1) {
@@ -875,6 +873,11 @@ public class GrnCostingController implements Serializable {
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
+
+            if (i.getBillItem() == null) {
+                continue;
+            }
+
             double calculatedReturns = getPharmacyCalculation().calculateRemainigQtyFromOrder(i);
             double remains = Math.abs(i.getQtyInUnit()) - Math.abs(calculatedReturns);
             double remainFreeQty = i.getFreeQty() - getPharmacyCalculation().calculateRemainingFreeQtyFromOrder(i);
@@ -993,9 +996,8 @@ public class GrnCostingController implements Serializable {
                 ph.setDoe(i.getDoe());
                 ph.setStringValue(i.getStringValue());
 
-
                 double wr = getWholesaleRate(
-                    ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit());
+                        ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit());
                 ph.setWholesaleRate(wr);
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
@@ -1050,7 +1052,7 @@ public class GrnCostingController implements Serializable {
             ph.setRetailRate(i.getRetailRate());
 
             double wr = getWholesaleRate(
-                ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit());
+                    ph.getPurchaseRate(), ph.getQtyInUnit(), ph.getFreeQtyInUnit());
             ph.setWholesaleRate(wr);
 
             ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
@@ -1089,7 +1091,6 @@ public class GrnCostingController implements Serializable {
     public void calculateBillTotalsFromItems() {
         int serialNo = 0;
 
-        
         // Bill-level inputs: do not calculate here
         BigDecimal billDiscount = BigDecimal.valueOf(getGrnBill().getDiscount());
         BigDecimal billExpense = BigDecimal.ZERO;
@@ -1136,7 +1137,6 @@ public class GrnCostingController implements Serializable {
             bi.setSearialNo(serialNo++);
             double netValue = bi.getQty() * bi.getRate();
             bi.setNetValue(0 - netValue);
-
 
             if (f != null) {
                 BigDecimal qty = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
@@ -1256,8 +1256,8 @@ public class GrnCostingController implements Serializable {
     }
 
     private double getWholesaleRate(double purchaseRate, double qtyInUnit, double freeQtyInUnit) {
-        double wholesaleFactor =
-            configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+        double wholesaleFactor
+                = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
         return (purchaseRate * wholesaleFactor) * qtyInUnit / (freeQtyInUnit + qtyInUnit);
     }
 
@@ -1402,7 +1402,6 @@ public class GrnCostingController implements Serializable {
         calculateBillTotalsFromItems();
         calDifference();
     }
-
 
     public void saveBillFee(BillItem bi) {
         saveBillFee(bi, null);
@@ -1646,7 +1645,6 @@ public class GrnCostingController implements Serializable {
         this.ampFacade = ampFacade;
     }
 
-
     public boolean isPrintPreview() {
         return printPreview;
     }
@@ -1796,7 +1794,6 @@ public class GrnCostingController implements Serializable {
     public void setInvoiceNumber(String invoiceNumber) {
         this.invoiceNumber = invoiceNumber;
     }
-
 
     public List<BillItem> getBillExpenses() {
         if (billExpenses == null) {

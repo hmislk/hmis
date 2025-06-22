@@ -123,11 +123,12 @@
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Batch No.</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Qty</th>
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
-                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Price</th>
-                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Price</th>
-                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">GP Profit%</th>
-                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Purchase Value</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Rate</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Discount Rate</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Net Value</th>
+                            <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Cost Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
+                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>
                         </tr>
                     </thead>
 
@@ -156,84 +157,63 @@
                                 </td>
 
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.qty}">
+                                    <h:outputText value="#{bip.qty}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.freeQuantity}">
                                         <f:convertNumber pattern="#,##0"/>
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.lineGrossRate}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate}">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.lineDiscountRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
-                                    <h:outputText id="profMargin" value="#{((bip.pharmaceuticalBillItem.retailRate - bip.pharmaceuticalBillItem.purchaseRate ) / bip.pharmaceuticalBillItem.purchaseRate)*100}" >
+                                    <h:outputText value="#{bip.billItemFinanceDetails.lineNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.totalCost}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
+                                    <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
                                         <f:convertNumber pattern="0.0" ></f:convertNumber>
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.purchaseRate*bip.pharmaceuticalBillItem.qty}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
-                                <td style="text-align: right;">
-                                    <h:outputText value="#{bip.pharmaceuticalBillItem.retailRate*bip.pharmaceuticalBillItem.qty}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </td>
+
                             </tr>
                         </ui:repeat>
                     </tbody>
                 </table>
-                
+
                 <table class="my-3">
 
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left; ">Total Sale Value</td>
+                        <td colspan="9" style="text-align: left; ">Sum of Line Net Totals</td>
                         <td colspan="2" style="text-align: right; ">
-
-                            <h:outputText value="#{cc.attrs.bill.saleValue}">
-
+                            <h:outputText value="#{cc.attrs.bill.total}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
 
-                    <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Total Purchase Value</td>
-                        <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{0-cc.attrs.bill.total}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </td>
-                    </tr>
-
-                    <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Free Quantity (Sale Value) </td>
-                        <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{grnController.calFreeQuantitySaleValue(cc.attrs.bill)}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </td>
-                    </tr>
-
-                    <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left;">Free Quantity (Purchase Value) </td>
-                        <td colspan="2" style="text-align: right;">
-                            <h:outputText value="#{grnController.calFreeQuantityPurchaseValue(cc.attrs.bill)}">
-                                <f:convertNumber pattern="#,##0.00" />
-                            </h:outputText>
-                        </td>
-                    </tr>
 
                     <tr style="font-size: 15px">
                         <td colspan="9" style="text-align: left; ">Expenses</td>
@@ -253,10 +233,12 @@
                         </td>
                     </tr>
 
+
+
                     <tr style="font-size: 15px">
-                        <td colspan="9" style="text-align: left; ">Discount</td>
+                        <td colspan="9" style="text-align: left; ">Bill Discount</td>
                         <td colspan="2" style="text-align: right; ">
-                            <h:outputText value="#{0-cc.attrs.bill.discount}">
+                            <h:outputText value="#{cc.attrs.bill.discount}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
@@ -265,11 +247,33 @@
                     <tr style="font-size: 15px">
                         <td colspan="9" style="text-align: left; font-weight: bold!important;">Net Total</td>
                         <td colspan="2" style="text-align: right; font-weight: bold!important;">
-                            <h:outputText value="#{0-cc.attrs.bill.netTotal}">
+                            <h:outputText value="#{cc.attrs.bill.netTotal}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputText>
                         </td>
                     </tr>
+
+                </table>
+                <table class="my-3">
+
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left; ">Total Cost</td>
+                        <td colspan="2" style="text-align: right; ">
+                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalCostValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
+                    <tr style="font-size: 15px">
+                        <td colspan="9" style="text-align: left;">Total Retail Value</td>
+                        <td colspan="2" style="text-align: right;">
+                            <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </td>
+                    </tr>
+
 
 
                 </table>
@@ -320,7 +324,10 @@
 
             <div class="mb-4">
                 <h:outputLabel value="Approved By : #{cc.attrs.bill.approveUser.webUserPerson.nameWithTitle}" style="text-align: right!important;" rendered="#{!empty cc.attrs.bill.approveAt}"/>
-                <h:outputLabel value="Printed At : #{sessionController.currentDate}" style="text-align: right!important;"/>
+                <h:outputLabel value="Printed At : &nbsp;" style="text-align: right!important;"/>
+                <h:outputLabel value="#{sessionController.currentDate}" style="text-align: right!important;">
+                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
+                </h:outputLabel>
             </div>
 
 
