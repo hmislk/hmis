@@ -557,6 +557,7 @@
                             const socket = initializeWebSocket();
 
                             socket.onmessage = function (event) {
+ 
                                 const message = event.data;
                                 const messageParts = message.split(" - ");
                                 const sendSessionId = messageParts[1];
