@@ -418,7 +418,7 @@
                                                         value="View History" 
                                                         class="ui-button-success mt-2"
                                                         ajax="false" 
-                                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                                        rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
                                                         action="#{patientInvestigationController.navigateToTestHistory()}" >
                                                         <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
                                                     </p:commandButton>
