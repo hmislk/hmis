@@ -427,10 +427,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and bf.referenceBillFee=:bf "
                 + " and bf.billItem.retired=:ret "
                 + " and bf.bill.retired=:ret ";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("bf", bf);
-        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, params);
         if (rbf != null) {
             refunded = true;
         }
