@@ -227,12 +227,6 @@ public class LabTestHistoryController implements Serializable {
         return getFacade().findLongByJpql(jpql, params);
     }
 
-    // <editor-fold defaultstate="collapsed" desc="Show History Data">
-    public void orderedHistoryData(PatientInvestigation patientInvestigation) {
-
-    }
-
-    // </editor-fold>
     @FacesConverter(forClass = LabTestHistory.class)
     public static class LabTestHistoryConverter implements Converter {
 
