@@ -377,61 +377,70 @@ public class DirectPurchaseReturnController implements Serializable {
 
     }
 
+    // ChatGPT Contribution
     private void saveBillItems() {
         for (BillItem i : getBillItems()) {
-            if (i.getItem() instanceof Ampp) {
-                i.getPharmaceuticalBillItem().setQty(0
-                        - (i.getBillItemFinanceDetails().getQuantity().doubleValue()
-                        * i.getBillItemFinanceDetails().getUnitsPerPack().doubleValue()));
-                i.getPharmaceuticalBillItem().setFreeQty(0
-                        - (i.getBillItemFinanceDetails().getFreeQuantity().doubleValue()
-                        * i.getBillItemFinanceDetails().getUnitsPerPack().doubleValue()));
-            } else {
-                i.getPharmaceuticalBillItem().setQty(0
-                        - (i.getBillItemFinanceDetails().getQuantity().doubleValue()));
-                i.getPharmaceuticalBillItem().setFreeQty(0
-                        - (i.getPharmaceuticalBillItem().getFreeQty()));
+            BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
+            BillItem ref = i.getReferanceBillItem();
+            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
+
+            if (fd == null || refFd == null) {
+                continue; // Skip if finance details are missing
             }
 
-            i.getReferanceBillItem().getBillItemFinanceDetails().setReturnQuantityTotal(
-                    i.getReferanceBillItem().getBillItemFinanceDetails().getReturnQuantityTotal().add(i.getBillItemFinanceDetails().getQuantity()));
-            i.getReferanceBillItem().getBillItemFinanceDetails().setReturnFreeQuantityTotal(
-                    i.getReferanceBillItem().getBillItemFinanceDetails().getReturnFreeQuantityTotal().add(i.getBillItemFinanceDetails().getFreeQuantity()));
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
 
-            double rate = i.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-            i.setNetValue(i.getPharmaceuticalBillItem().getQty() * rate);
+            double qty = fd.getQuantity().doubleValue();
+            double freeQty = fd.getFreeQuantity().doubleValue();
+            double unitsPerPack = fd.getUnitsPerPack().doubleValue();
+            double rate = fd.getLineGrossRate().doubleValue();
 
+            if (i.getItem() instanceof Ampp) {
+                pbi.setQty(-qty * unitsPerPack);
+                pbi.setFreeQty(-freeQty * unitsPerPack);
+            } else {
+                pbi.setQty(-qty);
+                pbi.setFreeQty(-pbi.getFreeQty());
+            }
+
+            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().add(fd.getQuantity()));
+            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().add(fd.getFreeQuantity()));
+
+            i.setNetValue(pbi.getQty() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
-            PharmaceuticalBillItem tmpPharmaceuticalBillItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
 
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
 
-            tmpPharmaceuticalBillItem.setBillItem(i);
+            pbi.setBillItem(i);
 
-            if (tmpPharmaceuticalBillItem.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPharmaceuticalBillItem);
+            if (pbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(pbi);
             }
 
-            i.setPharmaceuticalBillItem(tmpPharmaceuticalBillItem);
+            i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
 
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue()),
-                    i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+            boolean returnFlag = getPharmacyBean().deductFromStock(
+                    pbi.getStock(),
+                    Math.abs(fd.getTotalQuantityByUnits().doubleValue()),
+                    pbi,
+                    getSessionController().getDepartment()
+            );
+
             if (!returnFlag) {
-                //  TODO: Add To Error Log
-                getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+                getPharmaceuticalBillItemFacade().edit(pbi);
                 getBillItemFacade().edit(i);
+                // TODO: Log error
             }
+
             saveBillFee(i);
             getReturnBill().getBillItems().add(i);
         }
-
     }
 
     private void fillData() {
