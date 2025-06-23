@@ -114,6 +114,8 @@ public class PharmacyBean {
     VirtualProductIngredientFacade virtualProductIngredientFacade;
     @EJB
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -124,9 +126,6 @@ public class PharmacyBean {
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-
-    @EJB
-    IssueRateMarginsFacade issueRateMarginsFacade;
 
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
@@ -151,6 +150,34 @@ public class PharmacyBean {
             issueRateMarginsFacade.create(m);
         }
         return m;
+    }
+
+    // ChatGPT Contribution
+    public boolean isReturnQuantityExceedingAvailableStock(PharmaceuticalBillItem item, Department department) {
+        double availableStock = getStockQty(item.getItemBatch(), department);
+        double returnQty = item.getQty() + item.getFreeQty();
+        return returnQty > availableStock;
+    }
+
+// ChatGPT Contribution
+    public boolean isInsufficientStockForReturn(Bill bill) {
+        for (BillItem bi : bill.getBillItems()) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+
+            if (bi.getItem() instanceof Ampp) {
+                pbi.setQty(fd.getQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
+                pbi.setFreeQty(fd.getFreeQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
+            } else {
+                pbi.setQty(fd.getQuantity().doubleValue());
+                pbi.setFreeQty(fd.getFreeQuantity().doubleValue());
+            }
+
+            if (isReturnQuantityExceedingAvailableStock(pbi, bill.getDepartment())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {

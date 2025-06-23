@@ -278,13 +278,15 @@ public class DirectPurchaseReturnController implements Serializable {
     }
 
     private void saveReturnBill() {
+        getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
         getReturnBill().setInvoiceDate(getBill().getInvoiceDate());
         getReturnBill().setReferenceBill(getBill());
         getReturnBill().setToInstitution(getBill().getFromInstitution());
         getReturnBill().setToDepartment(getBill().getFromDepartment());
         getReturnBill().setFromInstitution(getBill().getToInstitution());
-        getReturnBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PurchaseReturn, BillClassType.BilledBill, BillNumberSuffix.PURRET));
-        getReturnBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PurchaseReturn, BillClassType.BilledBill, BillNumberSuffix.PURRET));
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        getReturnBill().setDeptId(deptId);
+        getReturnBill().setInsId(deptId); // for insId also dept Id is used intentionally
 
         getReturnBill().setInstitution(getSessionController().getInstitution());
         getReturnBill().setDepartment(getSessionController().getDepartment());
@@ -375,17 +377,30 @@ public class DirectPurchaseReturnController implements Serializable {
 
     }
 
-    private void saveComponent(Payment p) {
+    private void saveBillItems() {
         for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
-            i.getPharmaceuticalBillItem().setFreeQtyInUnit(0 - i.getPharmaceuticalBillItem().getFreeQty());
-
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
-                continue;
+            if (i.getItem() instanceof Ampp) {
+                i.getPharmaceuticalBillItem().setQty(0
+                        - (i.getBillItemFinanceDetails().getQuantity().doubleValue()
+                        * i.getBillItemFinanceDetails().getUnitsPerPack().doubleValue()));
+                i.getPharmaceuticalBillItem().setFreeQty(0
+                        - (i.getBillItemFinanceDetails().getFreeQuantity().doubleValue()
+                        * i.getBillItemFinanceDetails().getUnitsPerPack().doubleValue()));
+            } else {
+                i.getPharmaceuticalBillItem().setQty(0
+                        - (i.getBillItemFinanceDetails().getQuantity().doubleValue()));
+                i.getPharmaceuticalBillItem().setFreeQty(0
+                        - (i.getPharmaceuticalBillItem().getFreeQty()));
             }
 
-            double rate = getReturnRate(i).doubleValue();
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
+            i.getReferanceBillItem().getBillItemFinanceDetails().setReturnQuantityTotal(
+                    i.getReferanceBillItem().getBillItemFinanceDetails().getReturnQuantityTotal().add(i.getBillItemFinanceDetails().getQuantity()));
+            i.getReferanceBillItem().getBillItemFinanceDetails().setReturnFreeQuantityTotal(
+                    i.getReferanceBillItem().getBillItemFinanceDetails().getReturnFreeQuantityTotal().add(i.getBillItemFinanceDetails().getFreeQuantity()));
+
+            double rate = i.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            i.setNetValue(i.getPharmaceuticalBillItem().getQty() * rate);
+
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
 
@@ -405,54 +420,45 @@ public class DirectPurchaseReturnController implements Serializable {
             i.setPharmaceuticalBillItem(tmpPharmaceuticalBillItem);
             getBillItemFacade().edit(i);
 
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
-
+            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(),
+                    Math.abs(i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue()),
+                    i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
             if (!returnFlag) {
-                i.setTmpQty(0);
+                //  TODO: Add To Error Log
                 getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
                 getBillItemFacade().edit(i);
             }
-
-            saveBillFee(i, p);
-
+            saveBillFee(i);
             getReturnBill().getBillItems().add(i);
         }
 
     }
 
-    private boolean checkStock(PharmaceuticalBillItem pharmaceuticalBillItem) {
-        double stockQty = getPharmacyBean().getStockQty(pharmaceuticalBillItem.getItemBatch(), getBill().getDepartment());
-
-        if (pharmaceuticalBillItem.getQtyInUnit() > stockQty) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean checkGrnItems() {
+    private void fillData() {
         for (BillItem bi : getBillItems()) {
-            bi.getPharmaceuticalBillItem().setQty(bi.getQty());
-            if (checkStock(bi.getPharmaceuticalBillItem())) {
-                return true;
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            if (bi.getItem() instanceof Ampp) {
+                pbi.setQty(fd.getQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
+                pbi.setFreeQty(fd.getFreeQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
+            } else {
+                pbi.setQty(fd.getQuantity().doubleValue());
+                pbi.setFreeQty(fd.getFreeQuantity().doubleValue());
             }
         }
-
-        return false;
     }
 
     public void settle() {
-        if (checkGrnItems()) {
-            JsfUtil.addErrorMessage("Items for this GRN Already issued so you can't cancel ");
+        fillData();
+        if (getPharmacyBean().isInsufficientStockForReturn(getBill())) {
+            JsfUtil.addErrorMessage("Insufficient stock available to return these items.");
             return;
-
         }
-        saveReturnBill();
-        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
-        saveComponent(p);
-
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
-        returnBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+        saveReturnBill();
+        saveBillItems();
+        Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
+
         getBillFacade().edit(getReturnBill());
         getBillFacade().edit(getBill());
 
@@ -554,7 +560,6 @@ public class DirectPurchaseReturnController implements Serializable {
             PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemInReturnBill.copy(pbiOfBilledBill);
             newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
-            
 
             double originalQty = pbiOfBilledBill.getQty();
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
@@ -668,7 +673,7 @@ public class DirectPurchaseReturnController implements Serializable {
         returningBillItem.setQty(f.getQuantityByUnits().doubleValue());
         returningBillItem.setRate(f.getLineGrossRate().doubleValue());
     }
-    
+
     private void callculateBillDetails() {
         if (returnBill == null) {
             return;
@@ -706,13 +711,11 @@ public class DirectPurchaseReturnController implements Serializable {
     public void onReturningFreeQtyChange(BillItem bi) {
         onEdit(bi);
     }
-    
+
     // Have to have onedit methods for the following components in the  page direct_purchase_return
     // txtReturnRate, txtReturningTotalQty, txtReturningQty, txtReturningFreeQty
     // These should update bill item lelvel txtLineReturnValue and Bill Level panelReturnBillDetails
-
     // have to prefil 
-    
     public void onEditItem(PharmacyItemData tmp) {
         double pur = getPharmacyBean().getLastPurchaseRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
         double ret = getPharmacyBean().getLastRetailRate(tmp.getPharmaceuticalBillItem().getBillItem().getItem(), tmp.getPharmaceuticalBillItem().getBillItem().getReferanceBillItem().getBill().getDepartment());
@@ -747,7 +750,7 @@ public class DirectPurchaseReturnController implements Serializable {
 
     }
 
-    public void saveBillFee(BillItem bi, Payment p) {
+    public void saveBillFee(BillItem bi) {
         BillFee bf = new BillFee();
         bf.setCreatedAt(Calendar.getInstance().getTime());
         bf.setCreater(getSessionController().getLoggedUser());
@@ -765,21 +768,20 @@ public class DirectPurchaseReturnController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-        createBillFeePaymentAndPayment(bf, p);
+//        createBillFeePaymentAndPayment(bf, p); // Retired Concept. No Loger Used
     }
 
-    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(getSessionController().getInstitution());
-        bfp.setDepartment(getSessionController().getDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
-    }
-
+//    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
+//        BillFeePayment bfp = new BillFeePayment();
+//        bfp.setBillFee(bf);
+//        bfp.setAmount(bf.getSettleValue());
+//        bfp.setInstitution(getSessionController().getInstitution());
+//        bfp.setDepartment(getSessionController().getDepartment());
+//        bfp.setCreater(getSessionController().getLoggedUser());
+//        bfp.setCreatedAt(new Date());
+//        bfp.setPayment(p);
+//        getBillFeePaymentFacade().create(bfp);
+//    }
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }
