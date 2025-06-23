@@ -313,8 +313,6 @@ public class BillService {
 
         }
 
-
-
         bi.setCollectingCentreFee(collectingCentreFeesCalculateByBillFees);
         bi.setStaffFee(staffFeesCalculatedByBillFees);
         bi.setHospitalFee(hospitalFeeCalculatedByBillFess);
@@ -596,7 +594,6 @@ public class BillService {
         return btas;
     }
 
-    
     public List<BillTypeAtomic> fetchBillTypeAtomicsForPharmacyRetailSaleAndOpdSaleBills() {
         List<BillTypeAtomic> btas = new ArrayList<>();
 
@@ -1024,18 +1021,18 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
 
-        String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO(" +
-                " b.id, b.deptId, b.billTypeAtomic, " +
-                " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, " +
-                " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) " +
-                " from Bill b " +
-                " left join b.billFinanceDetails bfd " +
-                " left join b.patient pat " +
-                " left join pat.person pers " +
-                " left join b.patientEncounter pe " +
-                " where b.retired=:ret " +
-                " and b.billTypeAtomic in :billTypesAtomics " +
-                " and b.createdAt between :fromDate and :toDate ";
+        String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO("
+                + " b.id, b.deptId, b.billTypeAtomic, "
+                + " coalesce(pers.name,'N/A'), coalesce(pe.bhtNo,''), b.createdAt, "
+                + " coalesce(bfd.totalRetailSaleValue,0), coalesce(bfd.totalPurchaseValue,0)) "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " left join b.patientEncounter pe "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
 
         Map params = new HashMap();
         params.put("ret", false);
@@ -1811,7 +1808,7 @@ public class BillService {
 
         double billNetTotal = Math.abs(bill.getNetTotal());
         double billItemNetTotal = bill.getBillItems().stream()
-                .filter(Objects::nonNull)
+                .filter(bi -> bi != null && !bi.isRetired())
                 .mapToDouble(bi -> Math.abs(bi.getNetValue()))
                 .sum();
 
@@ -1833,7 +1830,7 @@ public class BillService {
 
         double billCcTotal = Math.abs(bill.getTotalCenterFee());
         double billItemCcTotal = bill.getBillItems().stream()
-                .filter(Objects::nonNull)
+                .filter(bi -> bi != null && !bi.isRetired())
                 .mapToDouble(bi -> Math.abs(bi.getCollectingCentreFee()))
                 .sum();
 
@@ -1855,7 +1852,7 @@ public class BillService {
 
         double billHospitalTotal = Math.abs(bill.getTotalHospitalFee());
         double billItemHospitalTotal = bill.getBillItems().stream()
-                .filter(Objects::nonNull)
+                .filter(bi -> bi != null && !bi.isRetired())
                 .mapToDouble(bi -> Math.abs(bi.getHospitalFee()))
                 .sum();
 
@@ -1944,7 +1941,7 @@ public class BillService {
 
         Double saleValue = 0.0;
         Double purchaseValue = 0.0;
-        
+
         List<BillItem> billItems = new ArrayList<>();
         billItems = fetchBillItems(b);
 

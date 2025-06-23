@@ -966,7 +966,7 @@ public class PharmacyBean {
         if (item == null) {
             return;
         }
-        
+
         Item amp = item instanceof Ampp ? ((Ampp) item).getAmp() : item;
 
         StockHistory sh = new StockHistory();
@@ -1649,6 +1649,15 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastRetailRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
+
+    public double getLastPurchaseRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
