@@ -324,8 +324,8 @@ public class PurchaseOrderRequestController implements Serializable {
     public void finalizeBillComponent() {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
-            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRate());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate());
             b.setBill(getCurrentBill());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
@@ -435,10 +435,6 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void requestFinalize() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
