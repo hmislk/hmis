@@ -130,7 +130,7 @@
             </p:column>
             
             <p:column headerText="Sale Value" style="text-align: right;"  >
-                <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}?faces-redirect=true" >
+                <h:commandLink action="#{pharmacyBillSearch.navigateToPharmacyGrnReprint()}" >
                     <h:outputLabel value="#{bill.saleValue}" >
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
