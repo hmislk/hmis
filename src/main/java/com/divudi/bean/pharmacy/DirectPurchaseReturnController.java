@@ -335,48 +335,47 @@ public class DirectPurchaseReturnController implements Serializable {
         return "Purchase Rate";
     }
 
-    private void saveComponent() {
-        for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
-
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
-                continue;
-            }
-
-            double rate = getReturnRate(i).doubleValue();
-            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-
-            PharmaceuticalBillItem tmpPharmaceuticalBillItem = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
-            }
-
-            tmpPharmaceuticalBillItem.setBillItem(i);
-
-            if (tmpPharmaceuticalBillItem.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPharmaceuticalBillItem);
-            }
-
-            i.setPharmaceuticalBillItem(tmpPharmaceuticalBillItem);
-            getBillItemFacade().edit(i);
-
-            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
-
-            if (!returnFlag) {
-                i.setTmpQty(0);
-                getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
-                getBillItemFacade().edit(i);
-            }
-
-            getReturnBill().getBillItems().add(i);
-        }
-
-    }
-
+//    private void saveComponent() {
+//        for (BillItem i : getBillItems()) {
+//            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getQty());
+//
+//            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0) {
+//                continue;
+//            }
+//
+//            double rate = getReturnRate(i).doubleValue();
+//            i.setNetValue(i.getPharmaceuticalBillItem().getQtyInUnit() * rate);
+//            i.setCreatedAt(Calendar.getInstance().getTime());
+//            i.setCreater(getSessionController().getLoggedUser());
+//
+//            PharmaceuticalBillItem tmpPharmaceuticalBillItem = i.getPharmaceuticalBillItem();
+//            i.setPharmaceuticalBillItem(null);
+//
+//            if (i.getId() == null) {
+//                getBillItemFacade().create(i);
+//            }
+//
+//            tmpPharmaceuticalBillItem.setBillItem(i);
+//
+//            if (tmpPharmaceuticalBillItem.getId() == null) {
+//                getPharmaceuticalBillItemFacade().create(tmpPharmaceuticalBillItem);
+//            }
+//
+//            i.setPharmaceuticalBillItem(tmpPharmaceuticalBillItem);
+//            getBillItemFacade().edit(i);
+//
+//            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem().getStock(), Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), i.getPharmaceuticalBillItem(), getSessionController().getDepartment());
+//
+//            if (!returnFlag) {
+//                i.setTmpQty(0);
+//                getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+//                getBillItemFacade().edit(i);
+//            }
+//
+//            getReturnBill().getBillItems().add(i);
+//        }
+//
+//    }
     // ChatGPT Contribution
     private void saveBillItems() {
         for (BillItem i : getBillItems()) {
@@ -439,6 +438,15 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
             saveBillFee(i);
+            getBillItemFacade().edit(ref);
+
+            BillItemFinanceDetails savedFd = ref.getBillItemFinanceDetails();
+            System.out.println("=== Post-Save Check ===");
+            System.out.println("Ref Item ID                : " + ref.getId());
+            System.out.println("Saved Return Qty Total     : " + savedFd.getReturnQuantityTotal());
+            System.out.println("Saved Return Free Qty Total: " + savedFd.getReturnFreeQuantityTotal());
+            System.out.println("=========================");
+
             getReturnBill().getBillItems().add(i);
         }
     }
@@ -459,8 +467,12 @@ public class DirectPurchaseReturnController implements Serializable {
 
     public void settle() {
         fillData();
-        if (getPharmacyBean().isInsufficientStockForReturn(getBill())) {
+        if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
             JsfUtil.addErrorMessage("Insufficient stock available to return these items.");
+            return;
+        }
+        if (getPharmacyBean().isReturingMoreThanPurchased(getBillItems())) {
+            JsfUtil.addErrorMessage("Returning more than purchased.");
             return;
         }
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());

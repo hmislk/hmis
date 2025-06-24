@@ -66,6 +66,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import java.math.BigDecimal;
 
 /**
  *
@@ -152,31 +153,119 @@ public class PharmacyBean {
         return m;
     }
 
-    // ChatGPT Contribution
+// ChatGPT Contribution
     public boolean isReturnQuantityExceedingAvailableStock(PharmaceuticalBillItem item, Department department) {
         double availableStock = getStockQty(item.getItemBatch(), department);
         double returnQty = item.getQty() + item.getFreeQty();
+
+        System.out.println("=== Checking Stock Availability ===");
+        System.out.println("Item Name           : " + (item.getItemBatch() != null && item.getItemBatch().getItem() != null
+                ? item.getItemBatch().getItem().getName() : "Unknown"));
+        System.out.println("Batch Number        : " + (item.getItemBatch() != null ? item.getItemBatch().getBatchNo() : "null"));
+        System.out.println("Department          : " + (department != null ? department.getName() : "null"));
+        System.out.println("Available Stock     : " + availableStock);
+        System.out.println("Returning Qty       : " + item.getQty());
+        System.out.println("Returning Free Qty  : " + item.getFreeQty());
+        System.out.println("Total Return Qty    : " + returnQty);
+        System.out.println("Exceeds Stock?      : " + (returnQty > availableStock));
+        System.out.println("===================================");
+
         return returnQty > availableStock;
     }
 
 // ChatGPT Contribution
-    public boolean isInsufficientStockForReturn(Bill bill) {
-        for (BillItem bi : bill.getBillItems()) {
+    public boolean isInsufficientStockForReturn(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
 
-            if (bi.getItem() instanceof Ampp) {
-                pbi.setQty(fd.getQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
-                pbi.setFreeQty(fd.getFreeQuantity().doubleValue() * fd.getUnitsPerPack().doubleValue());
-            } else {
-                pbi.setQty(fd.getQuantity().doubleValue());
-                pbi.setFreeQty(fd.getFreeQuantity().doubleValue());
+            if (pbi == null || fd == null || bi.getBill() == null || bi.getBill().getDepartment() == null) {
+                System.out.println("Skipping BillItem due to null references.");
+                continue;
             }
 
-            if (isReturnQuantityExceedingAvailableStock(pbi, bill.getDepartment())) {
+            System.out.println("--- Processing BillItem ---");
+            System.out.println("Item: " + (bi.getItem() != null ? bi.getItem().getName() : "Unknown"));
+            System.out.println("Reference Bill ID: " + bi.getBill().getId());
+
+            boolean exceeds = isReturnQuantityExceedingAvailableStock(pbi, bi.getBill().getDepartment());
+
+            if (exceeds) {
+                System.out.println("!! Insufficient stock for return detected for this item.");
                 return true;
+            } else {
+                System.out.println("Stock is sufficient for this item.");
+            }
+            System.out.println("---------------------------");
+        }
+
+        System.out.println("All items have sufficient stock.");
+        return false;
+    }
+
+// ChatGPT Contribution
+    // ChatGPT Contribution
+    public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+        System.out.println("Checking returns. Mode: " + (checkTotalQuantity ? "Total combined quantity" : "Separate quantity and free quantity"));
+
+        for (BillItem returningBillItem : billItems) {
+            BillItem billedBillItem = returningBillItem.getReferanceBillItem();
+            if (billedBillItem == null) {
+                System.out.println("Skipping item: reference bill item is null.");
+                continue;
+            }
+
+            BillItemFinanceDetails billedFd = billedBillItem.getBillItemFinanceDetails();
+            BillItemFinanceDetails returningFd = returningBillItem.getBillItemFinanceDetails();
+
+            if (billedFd == null || returningFd == null) {
+                System.out.println("Skipping item: finance details missing.");
+                continue;
+            }
+
+            System.out.println("Processing item: " + returningBillItem.getItem().getName());
+
+            BigDecimal billedQty = billedFd.getQuantity();
+            BigDecimal billedFreeQty = billedFd.getFreeQuantity();
+            BigDecimal returnQtySoFar = billedFd.getReturnQuantityTotal();
+            BigDecimal returnFreeQtySoFar = billedFd.getReturnFreeQuantityTotal();
+
+            BigDecimal returningQty = returningFd.getQuantity();
+            BigDecimal returningFreeQty = returningFd.getFreeQuantity();
+
+            BigDecimal updatedReturnQty = returnQtySoFar.add(returningQty);
+            BigDecimal updatedReturnFreeQty = returnFreeQtySoFar.add(returningFreeQty);
+
+            System.out.println("  Billed Qty       = " + billedQty);
+            System.out.println("  Billed Free Qty  = " + billedFreeQty);
+            System.out.println("  Return Qty SoFar = " + returnQtySoFar);
+            System.out.println("  Return Free SoFar= " + returnFreeQtySoFar);
+            System.out.println("  This Return Qty  = " + returningQty);
+            System.out.println("  This Free Qty    = " + returningFreeQty);
+            System.out.println("  Total Return Qty = " + updatedReturnQty);
+            System.out.println("  Total Free Qty   = " + updatedReturnFreeQty);
+
+            if (checkTotalQuantity) {
+                BigDecimal totalReturning = updatedReturnQty.add(updatedReturnFreeQty);
+                BigDecimal totalPurchased = billedQty.add(billedFreeQty);
+                System.out.println("  >> Total returning = " + totalReturning + ", Total purchased = " + totalPurchased);
+                if (totalReturning.compareTo(totalPurchased) > 0) {
+                    System.out.println("  >> Return exceeds total purchased. Returning TRUE.");
+                    return true;
+                }
+            } else {
+                System.out.println("  >> Comparing separately:");
+                System.out.println("     - Updated Return Qty > Billed Qty? " + (updatedReturnQty.compareTo(billedQty) > 0));
+                System.out.println("     - Updated Return Free > Billed Free? " + (updatedReturnFreeQty.compareTo(billedFreeQty) > 0));
+                if (updatedReturnQty.compareTo(billedQty) > 0 || updatedReturnFreeQty.compareTo(billedFreeQty) > 0) {
+                    System.out.println("  >> Return exceeds either quantity or free quantity. Returning TRUE.");
+                    return true;
+                }
             }
         }
+
+        System.out.println("All items validated. No return exceeds original purchase. Returning FALSE.");
         return false;
     }
 
