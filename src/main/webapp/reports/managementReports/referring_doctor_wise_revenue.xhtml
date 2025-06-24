@@ -312,6 +312,7 @@
                                 <p:selectOneMenu
                                 value="#{reportController.toInstitution}"
                                 filter="true"
+                                filterMatchMode="contains"
                                 style="width: 100%">
                                 <f:selectItem itemLabel="All"/>
                                 <f:selectItems value="#{institutionController.companies}"
@@ -334,6 +335,8 @@
                                 <p:selectOneMenu 
                                     value="#{reportController.toDepartment}" 
                                     class="w-100" 
+                                    filter="true"
+                                    filterMatchMode="contains"
                                     style="max-width: 100%">
                                     <f:selectItem itemLabel="Any"></f:selectItem>
                                     <f:selectItems value="#{departmentController.getInstitutionDepartments(reportController.toInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
