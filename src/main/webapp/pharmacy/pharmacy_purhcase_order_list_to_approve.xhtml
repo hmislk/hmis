@@ -152,7 +152,7 @@
                                     id="view"
                                     ajax="false"
                                     icon="fas fa-eye"
-                                    action="pharmacy_reprint_po" 
+                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
                                     disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
                                     <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
                                 </p:commandButton>

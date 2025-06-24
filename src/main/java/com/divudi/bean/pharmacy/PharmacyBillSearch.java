@@ -163,6 +163,14 @@ public class PharmacyBillSearch implements Serializable {
         }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
+    
+     public String navigateToReprintPharmacyPurchaseOrder() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
+    }
 
     public String navigateToImportBillsFromJson() {
         return "/pharmacy/admin/import_bill?faces-redirect=true";
