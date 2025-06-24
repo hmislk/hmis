@@ -3146,8 +3146,7 @@ public class PharmacyReportController implements Serializable {
                     .append("WHERE b.retired = false ")
                     .append("AND b.billTypeAtomic = :bType ")
                     .append("AND b.createdAt BETWEEN :fd AND :td ")
-                    .append("AND b.paymentMethod IN (:cash, :credit) ")
-                    .append("GROUP BY b.paymentMethod");
+                    .append("AND b.paymentMethod IN (:cash, :credit) ");
 
             Map<String, Object> params = new HashMap<>();
             params.put("bType", BillTypeAtomic.PHARMACY_GRN);
@@ -3159,6 +3158,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
+            jpql.append(" GROUP BY b.paymentMethod");
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
 
