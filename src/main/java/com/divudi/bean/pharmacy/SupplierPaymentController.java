@@ -1897,7 +1897,7 @@ public class SupplierPaymentController implements Serializable {
             getBillItems().add(currentBillItem);
         }
 
-        return "/dealerPayment/approve_bill_for_payment?faces-redirect=true;";
+        return "/dealerPayment/approve_bill_for_payment?faces-redirect=true";
     }
 
     public String approvePayment() {
@@ -1929,7 +1929,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return null;
         }
-        return "/dealerPayment/complete_bill_payment?faces-redirect=true;";
+        return "/dealerPayment/complete_bill_payment?faces-redirect=true";
     }
 
     public String completePayment() {

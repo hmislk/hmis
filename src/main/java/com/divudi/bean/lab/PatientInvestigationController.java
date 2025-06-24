@@ -3949,7 +3949,7 @@ public class PatientInvestigationController implements Serializable {
         if (currentPatientSample == null) {
             return null;
         }
-        return "/lab/patient_sample?faces-redirect=true;";
+        return "/lab/patient_sample?faces-redirect=true";
     }
 
     public void prepareSampleCollectionByRequest() {
