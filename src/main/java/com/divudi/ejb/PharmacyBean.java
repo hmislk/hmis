@@ -1720,7 +1720,7 @@ public class PharmacyBean {
     public double getLastPurchaseRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
-            return getLastRetailRateByBillItemFinanceDetails(item, dept);
+            return getLastPurchaseRate(item, dept);
         } else {
             return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
         }
@@ -1887,8 +1887,17 @@ public class PharmacyBean {
         }
 
     }
-
+    
     public double getLastRetailRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastRetailRate(item, dept);
+        } else {
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
+
+    public double getLastRetailRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
