@@ -268,24 +268,31 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
-        if (items == null) {
+        if (items == null || items.isEmpty()) {
             return;
         }
-        if (items.isEmpty()) {
-            return;
+
+        if (getBillItems() == null) {
+            setBillItems(new ArrayList<>());
         }
-        setBillItems(new ArrayList<>());
+
+        int serialStart = getBillItems().size();
+
         for (Item i : items) {
             BillItem bi = new BillItem();
             bi.setItem(i);
+
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
-            bi.setSearialNo(getBillItems().size());
-            bi.getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-            bi.getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
             bi.setPharmaceuticalBillItem(tmp);
+
+            bi.setSearialNo(serialStart++);
+            tmp.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(i, getSessionController().getDepartment()));
+            tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
+
             getBillItems().add(bi);
         }
+
         calTotal();
     }
 
