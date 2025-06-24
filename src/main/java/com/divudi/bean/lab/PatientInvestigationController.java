@@ -307,7 +307,7 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
-
+    
     public void sendToOutLabSample() {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -325,6 +325,11 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        if (sampleTransportedToLabByStaff == null) {
+            JsfUtil.addErrorMessage("Samples Transporter is Empty");
+            return;
+        }
 
         List<PatientSample> canSentOutLabSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
@@ -332,6 +337,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
+            
             if (ps.getDepartment() != sessionController.getDepartment()) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
@@ -395,7 +401,7 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
             billFacade.edit(tb);
         }
-
+        
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canSentOutLabSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
