@@ -853,7 +853,7 @@ public class StaffController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false  and"
                     + " ((p.person.name) like :q or  "
-                    + " (p.code) like :q or "
+                    + " (p.staffCode) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
             //////System.out.println(sql);
