@@ -61,6 +61,7 @@ import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.ChannelService;
 import com.divudi.service.PatientService;
+import com.divudi.service.WebSocketService;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -73,6 +74,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
@@ -156,6 +158,8 @@ public class ChannelApi {
     @EJB
     ChannelService channelService;
 
+    private static final Logger LOGGER = Logger.getLogger(ChannelApi.class.getName());
+
     /**
      * Creates a new instance of Api
      */
@@ -177,7 +181,7 @@ public class ChannelApi {
             String json = response.toString();
             return Response.status(Response.Status.ACCEPTED).entity(response.toString()).build();
         }
-        
+
         try {
             validateAndFetchAgency(null, bookingChannel);
         } catch (ValidationException e) {
@@ -294,14 +298,14 @@ public class ChannelApi {
             String json = responseError.toString();
             return Response.status(Response.Status.UNAUTHORIZED).entity(responseError.toString()).build();
         }
-        
+
         try {
             validateAndFetchAgency(null, bookingChannel);
         } catch (ValidationException e) {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(response.toString()).build();
         }
-        
+
         // Get the list of institutions from the controller
         List<Institution> institutions = channelService.findHospitals();
         if (institutions == null || institutions.isEmpty()) {
@@ -429,7 +433,7 @@ public class ChannelApi {
         String specIDStr = (String) requestBody.get("specID");
         String dateStr = (String) requestBody.get("date");
         String name = (String) requestBody.get("name");
-        
+
         try {
             validateAndFetchAgency(null, agencyCode);
         } catch (ValidationException e) {
@@ -956,7 +960,7 @@ public class ChannelApi {
         Map<String, String> patientDetails = (Map<String, String>) requestBody.get("patient");
         String sessionId = requestBody.get("sessionID").toString();
         Map<String, String> payment = (Map<String, String>) requestBody.get("payment");
-        
+
         String agencyCode = payment.get("paymentChannel");
         try {
             validateAndFetchAgency(null, agencyCode);
@@ -1058,6 +1062,12 @@ public class ChannelApi {
         newBooking.setAddress(address);
 
         Bill bill = channelService.addToReserveAgentBookingThroughApi(false, newBooking, session, clientsReferanceNo, null, bookingAgency);
+
+        try {
+            WebSocketService.broadcastToSessions("Online Temporary Booking Added - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at temporary booking" + e.getMessage());
+        }
 
         if (bill == null) {
             JSONObject response = commonFunctionToErrorResponse("Can't create booking. Session is not confirmed yet.");
@@ -1226,6 +1236,12 @@ public class ChannelApi {
 
         Bill temporaryBill = channelService.findBillFromOnlineBooking(editedBooking);
         SessionInstance session = temporaryBill.getSingleBillSession().getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Edited - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at edit booking" + e.getMessage());
+        }
 
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
@@ -1428,6 +1444,12 @@ public class ChannelApi {
         OnlineBooking bookingDetails = completedBill.getReferenceBill().getOnlineBooking();
         SessionInstance session = completedBill.getSingleBillSession().getSessionInstance();
 
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Completed - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at complete booking " + e.getMessage());
+        }
+
         SimpleDateFormat forDate = new SimpleDateFormat("yyyy-MM-dd");
         SimpleDateFormat forTime = new SimpleDateFormat("HH:mm:ss");
         SimpleDateFormat forDay = new SimpleDateFormat("E");
@@ -1617,6 +1639,8 @@ public class ChannelApi {
             bookingStatus = "Doctor Canceled";
         } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.COMPLETED) {
             bookingStatus = "Completed";
+        } else if (bookingDetails.getOnlineBookingStatus() == OnlineBookingStatus.ABSENT) {
+            bookingStatus = "Absent";
         }
 
         Map<String, Object> appoinment = new HashMap<>();
@@ -1772,6 +1796,12 @@ public class ChannelApi {
         BillSession bs = channelService.cancelBookingBill(completedSaveBill, bookingData);
 
         SessionInstance session = bs.getSessionInstance();
+
+        try {
+            WebSocketService.broadcastToSessions("Online Booking Cancelled - " + session.getId());
+        } catch (Exception e) {
+            LOGGER.severe("Web socket communication error at cancel booking " + e.getMessage());
+        }
 
         String sessionStatus = SessionStatusForOnlineBooking.Available.toString();
         if (session.isDoctorHoliday()) {
@@ -2047,7 +2077,7 @@ public class ChannelApi {
     public Response getApiKeyWithRenewal(@Context HttpServletRequest requestContext, Map<String, Object> requestBody) {
         String bookingChannel = (String) requestBody.get("bookingChannel");
 
-         try {
+        try {
             validateAndFetchAgency(null, bookingChannel);
         } catch (ValidationException e) {
             JSONObject response = commonFunctionToErrorResponse(e.getField() + e.getMessage());

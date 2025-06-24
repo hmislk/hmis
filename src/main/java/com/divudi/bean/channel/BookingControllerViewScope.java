@@ -1181,25 +1181,25 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (sessions != null) {
             if (cancelStatus) {
                 for (SessionInstance session : sessions) {
-                    if(session.isCancelled()){
+                    if (session.isCancelled()) {
                         continue;
                     }
                     selectedSessionInstance = session;
                     fillBillSessions();
-                    cancelSession();  
+                    cancelSession();
                 }
-                
+
             } else {
                 for (SessionInstance session : sessions) {
-                    if(!session.isCancelled()){
+                    if (!session.isCancelled()) {
                         continue;
                     }
                     selectedSessionInstance = session;
                     fillBillSessions();
                     reopenCancelSession();
-                }  
+                }
             }
-        }   
+        }
     }
 
     public void cancelSession() {
@@ -1221,7 +1221,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), true);
         sendSmsChannelSessionCancelNotification();
-        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName()+ "is": "")+" Cancelled");
+        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName() + "is" : "") + " Cancelled");
 
     }
 
@@ -1244,7 +1244,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         sessionInstanceController.save(selectedSessionInstance);
         cancelAllOnlineBookings(getBillSessions(), false);
         //sendSmsChannelSessionCancelNotification();
-        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName()+ "is": "")+" Re-Opened"); 
+        JsfUtil.addSuccessMessage((selectedSessionInstance != null ? selectedSessionInstance.getName() + "is" : "") + " Re-Opened");
 
     }
 
@@ -1258,20 +1258,20 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 OnlineBooking booking = bs.getBill().getReferenceBill().getOnlineBooking();
 
                 if (cancelStatus) {
-                    if(booking.isCanceled()){
+                    if (booking.isCanceled()) {
                         continue;
                     }
                     booking.setCanceled(true);
-                    booking.setCancelledBy("From System Cancelled by: " + getSessionController().getLoggedUser().getName() + " at "+new Date());
+                    booking.setCancelledBy("From System Cancelled by: " + getSessionController().getLoggedUser().getName() + " at " + new Date());
                     booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
                     getOnlineBookingFacade().edit(booking);
-                }else{
-                    if(!booking.isCanceled()){
+                } else {
+                    if (!booking.isCanceled()) {
                         continue;
                     }
                     booking.setCanceled(false);
                     booking.setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
-                    booking.setCancelledBy((booking.getCancelledBy() != null ?booking.getCancelledBy():"") +" Re-OpenedBy : " + getSessionController().getLoggedUser().getName());
+                    booking.setCancelledBy((booking.getCancelledBy() != null ? booking.getCancelledBy() : "") + " Re-OpenedBy : " + getSessionController().getLoggedUser().getName());
                     getOnlineBookingFacade().edit(booking);
                 }
 
@@ -1651,6 +1651,34 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return "/channel/channel_booking_by_date?faces-redirect=true";
         }
         return "";
+    }
+
+    public void refreshSessionsForUpdates(SessionInstance selectSession) {
+
+        if (selectSession == null || sessionInstancesFiltered.size() > 1) {
+            loadSessionInstances();
+            addBillSessionData();
+        } else {
+            listAndFilterSessionInstances();
+            selectedSessionInstance = selectSession;
+            sessionInstanceSelected();
+            fillBillSessions();
+            sessionInstancesFiltered = new ArrayList<>();
+            sessionInstancesFiltered.add(selectSession);
+        }
+
+    }
+
+    private SessionInstance refetchSessionInstance(SessionInstance session) {
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret"
+                + " and i.id = :id");
+
+        // Initializing the parameters map
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("id", session.getId());
+
+        return sessionInstanceFacade.findFirstByJpql(jpql.toString(), params);
     }
 
     public void listAndFilterSessionInstances() {
@@ -2573,7 +2601,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public String navigateBackToBookingsFromBillSession() {
         viewScopeDataTransferController.setSelectedBillSession(selectedBillSession);
-        viewScopeDataTransferController.setSelectedSessionInstance(printingBill.getSingleBillSession().getSessionInstance());
+        if (printingBill != null) {
+            viewScopeDataTransferController.setSelectedSessionInstance(printingBill.getSingleBillSession().getSessionInstance());
+        }
+
         viewScopeDataTransferController.setSessionInstanceFilter(sessionInstanceFilter);
         viewScopeDataTransferController.setFromDate(fromDate);
         viewScopeDataTransferController.setToDate(toDate);
@@ -8666,8 +8697,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
     public void calculateSelectedBillSessionTotal() {
         SessionInstance session = getSelectedSessionInstance() != null ? getSelectedSessionInstance() : getBillSession() != null ? getBillSession().getSessionInstance() : null;
-        System.out.println("line 8665 "+session+getSelectedSessionInstance()+getBillSession());
-        if(session == null){
+        System.out.println("line 8665 " + session + getSelectedSessionInstance() + getBillSession());
+        if (session == null) {
             return;
         }
         PaymentSchemeDiscount paymentSchemeDiscount = priceMatrixController.fetchChannellingMemberShipDiscount(paymentMethod, paymentScheme, session.getOriginatingSession().getCategory());
