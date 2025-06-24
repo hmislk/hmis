@@ -165,7 +165,7 @@
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputText value="Issue Details" ></h:outputText>
-                                
+
                                 <p:commandButton  
                                     value="Issue" 
                                     icon="fas fa-check" 
@@ -206,7 +206,7 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
-                                
+
                                 <h:outputLabel value="Comment" />
                                 <h:outputLabel value=": &nbsp;"/>
                                 <p:inputTextarea value="#{transferIssueController.issuedBill.comments}" rows="3" cols="20"/>
@@ -269,8 +269,13 @@
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
- 
-<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
+
+                    <h:panelGroup 
+                        id="gpBillTemplate" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></pharmacy_transfer_issue_receipt>
+                    </h:panelGroup>
+
 
                 </h:panelGroup>
 

@@ -548,7 +548,10 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
-
+        if(getBillItems()==null||getBillItems().isEmpty()){
+            JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
+            return;
+        }
         for (BillItem bi : getBillItems()) {
             if (bi.getPharmaceuticalBillItem().getItemBatch() != null) {
                 if (bi.getPharmaceuticalBillItem().getStock().getStock() < bi.getPharmaceuticalBillItem().getQty()) {

@@ -79,7 +79,7 @@
 
                             <h:panelGroup 
                                 id="gpBillTemplate" 
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',true)}"> 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
                                 <ph:pharmacy_transfer_issue_receipt bill="#{pharmacyBillSearch.bill}" duplicate="true"></pharmacy_transfer_issue_receipt>
                             </h:panelGroup>
 
