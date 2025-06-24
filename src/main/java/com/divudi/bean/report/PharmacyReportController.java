@@ -2321,7 +2321,7 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per itemBatch
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        ids = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         System.out.println("jpql = " + jpql.toString());
         System.out.println("params = " + params);
@@ -2615,7 +2615,7 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        ids = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         rows = new ArrayList<>();
 
