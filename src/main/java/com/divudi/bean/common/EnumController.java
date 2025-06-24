@@ -78,6 +78,10 @@ public class EnumController implements Serializable {
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
     }
+    
+    public Sex[] getSex() {
+        return Sex.values();
+    }
 
     public Sex[] getSex() {
         return Sex.values();
