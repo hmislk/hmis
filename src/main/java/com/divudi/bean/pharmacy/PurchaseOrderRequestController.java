@@ -392,10 +392,6 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
@@ -436,24 +432,46 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void requestFinalize() {
         if (getCurrentBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please Select Paymntmethod");
+            JsfUtil.addErrorMessage("Please select a payment method.");
             return;
         }
+
         if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please add bill items");
+            JsfUtil.addErrorMessage("Please add bill items.");
+            return;
+        }
+
+        if (!allBillItemsValid(billItems)) {
+            JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
 
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
+
         if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
             return;
         }
-        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
-        printPreview = true;
 
+        JsfUtil.addSuccessMessage("Request successfully finalized.");
+        printPreview = true;
+    }
+
+    private boolean allBillItemsValid(List<BillItem> items) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        for (BillItem bi : items) {
+            if ((bi.getQty() + bi.getPharmaceuticalBillItem().getFreeQty()) < 1) {
+                return false;
+            }
+            if (bi.getPharmaceuticalBillItem().getPurchaseRate() < 0.00001) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void calTotal() {
