@@ -93,7 +93,7 @@
             <div >
                 <p:spacer height="15px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont" 
-                             value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">                                     
+                             value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip" style=" text-align: center;">                                     
                     <p:column style="text-align: left!important;"  >
                         <f:facet name="header">
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
@@ -113,8 +113,8 @@
                         <f:facet name="header">                           
                             <h:outputLabel value="Before Qty" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.stock}">
-                            <f:convertNumber pattern="#,##" ></f:convertNumber>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}">
+                            <f:convertNumber pattern="#,###" ></f:convertNumber>
                         </h:outputLabel>
                     </p:column>                  
 
@@ -132,7 +132,7 @@
                         <f:facet name="header">                           
                             <h:outputLabel value="After QTY" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty + bip.pharmaceuticalBillItem.stock.stock}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}">
                             <f:convertNumber pattern="#,###.##"/>
                         </h:outputLabel>
                     </p:column>                  

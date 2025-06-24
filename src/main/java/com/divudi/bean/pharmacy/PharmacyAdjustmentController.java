@@ -552,8 +552,11 @@ public class PharmacyAdjustmentController implements Serializable {
         double changingQty;
 
         changingQty = qty - stockQty;
-
+        
+        //set before, after values
+        getBillItem().getPharmaceuticalBillItem().setBeforeAdjustmentValue(stockQty);
         getBillItem().getPharmaceuticalBillItem().setQty(changingQty);
+        getBillItem().getPharmaceuticalBillItem().setAfterAdjustmentValue(stockQty + changingQty);
 
         //Rates
         //Values
