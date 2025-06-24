@@ -1,5 +1,5 @@
 /*
-* Dr M H B Ariyaratne
+ * Dr M H B Ariyaratne
  * buddhika.ari@gmail.com
  */
 package com.divudi.core.entity;
@@ -21,7 +21,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 
 /**
- *
  * @author buddhika
  */
 @Entity
@@ -299,7 +298,7 @@ public class Department implements Serializable {
         this.departmentCode = departmentCode;
     }
 
-//    public double getMaxDiscount() {
+    //    public double getMaxDiscount() {
 //        return maxDiscount;
 //    }
 //
@@ -370,4 +369,10 @@ public class Department implements Serializable {
         this.site = site;
     }
 
+    public String trim() {
+        if (name != null) {
+            return name.trim();
+        }
+        return null;
+    }
 }

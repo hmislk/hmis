@@ -72,7 +72,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -291,6 +293,10 @@ public class PatientInvestigationController implements Serializable {
 
     public String navigateToPrintBarcodeFromMenu() {
         return "/lab/sample_barcode_printing?faces-redirect=true";
+    }
+
+    public String navigateToTestHistory() {
+        return "/lab/lab_test_history?faces-redirect=true";
     }
 
     public String navigateToLabBillItemList() {
@@ -1595,7 +1601,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         List<PatientSample> canCollectSamples = new ArrayList<>();
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
@@ -1668,12 +1674,12 @@ public class PatientInvestigationController implements Serializable {
 
     public void sendSamplesToLab() {
         List<PatientSample> canSentSamples = new ArrayList<>();
-        
+
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
@@ -1753,7 +1759,7 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void receiveSamplesAtLab() {
-        
+
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -3794,6 +3800,19 @@ public class PatientInvestigationController implements Serializable {
         params.put("patientInvestigation", patientInvestigation);
         List<PatientSampleComponant> pscs = patientSampleComponantFacade.findByJpql(jpql, params);
         return pscs;
+    }
+
+    public String getPatientSample() {
+        List<PatientSampleComponant> pscs = getPatientSampleComponentsByInvestigation(current);
+
+        if (pscs == null || pscs.isEmpty()) {
+            return "Not generated yet.";
+        }
+
+        return pscs.stream()
+                .map(psc -> psc.getPatientSample() != null ? psc.getPatientSample().getIdStr() : "N/A")
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining(" | "));
     }
 
     public List<PatientSample> getPatientSamplesByInvestigation(PatientInvestigation patientInvestigation) {

@@ -12,10 +12,10 @@
         <ui:define name="content">
 
             <h:form>
-                <p:panel header="Pharmacy Transfer Issue Bills Print View" styleClass="w-100">
+                <p:panel header="Agent Channel Bookings Print View" styleClass="w-100">
                     <f:facet name="header">
                         <div class="d-flex justify-content-between">
-                            <h:outputText value="Pharmacy Transfer Issue Bills Print View" class="mt-2"/>
+                            <h:outputText value="Agent Channel Bookings Print View" class="mt-2"/>
                             <div class="d-flex gap-2">
                                 <p:commandButton
                                         icon="fa-solid fa-print"
@@ -31,7 +31,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="pharmacy_report_transfer_issue_bill?faces-redirect=true">
+                                        action="agent_channel_bookings?faces-redirect=true">
                                 </p:commandButton>
                             </div>
 
@@ -134,26 +134,18 @@
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 400; font-size: 20px;margin-bottom: 5px;">
-                                    <h:outputText value="Pharmacy Transfer Issue Bills"/>
-                                </div>
-                                <div class="d-flex justify-content-center text-5 gap-2"
-                                     style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
-                                    <h:outputText value="From - "/>
-                                    <h:outputText value="#{reportsTransfer.fromDepartment.name}"/>
-                                    <h:outputText value="" style="width: 2em!important;" class="text-center"/>
-                                    <h:outputText value="To - "/>
-                                    <h:outputText value="#{reportsTransfer.toDepartment.name}"/>
+                                    <h:outputText value="Agent Channel Bookings"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5 gap-2"
                                      style="font-weight: 600; font-size: 15px;margin-bottom: 5px;">
                                     <h:outputText value="From Date - "/>
-                                    <h:outputText value="#{reportsTransfer.fromDate}">
+                                    <h:outputText value="#{searchController.fromDate}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
                                     <h:outputText value="" style="width: 2em!important;" class="text-center"/>
                                     <h:outputText value="To Date - "/>
-                                    <h:outputText value="#{reportsTransfer.toDate}">
+                                    <h:outputText value="#{searchController.toDate}">
                                         <f:convertDateTime
                                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                     </h:outputText>
@@ -164,65 +156,92 @@
                                 <table style="width: 100%; border-collapse: collapse;">
                                     <thead>
                                     <tr>
-                                        <th style="text-align: left;">Bill No</th>
-                                        <th style="text-align: left;">Date/Time</th>
-                                        <th style="text-align: left;">Sent from</th>
-                                        <th style="text-align: left;">To be Received by</th>
-                                        <th style="text-align: left;">Transporter</th>
-                                        <th style="text-align: left;">Remarks</th>
-                                        <th style="text-align: right;">Purchase Value</th>
-                                        <th style="text-align: right;">Sale Value</th>
+                                        <th style="text-align: center;">Serial</th>
+                                        <th style="text-align: center;">Date/Time</th>
+                                        <th style="text-align: center;">Bill No</th>
+                                        <th style="text-align: center;">Patient</th>
+                                        <th style="text-align: center;">Agent</th>
+                                        <th style="text-align: center;">Hospital Fee</th>
+                                        <th style="text-align: center;">Staff Fee</th>
+                                        <th style="text-align: center;">Gross Total</th>
+                                        <th style="text-align: center;">Discount</th>
+                                        <th style="text-align: center;">Net Total</th>
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    <ui:repeat value="#{reportsTransfer.transferBills}" var="i">
+                                    <ui:repeat rowIndexVar="n" value="#{searchController.bills}" var="b">
                                         <tr>
-                                            <td><h:outputText value="#{i.deptId}"/></td>
+                                            <td><h:outputText value="#{n+1}"/></td>
                                             <td>
-                                                <h:outputText value="#{i.createdAt}">
+                                                <h:outputText value="#{b.createdAt}">
                                                     <f:convertDateTime
                                                             pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                                 </h:outputText>
                                             </td>
-                                            <td><h:outputText value="#{i.fromDepartment.name}"/></td>
-                                            <td><h:outputText value="#{i.toDepartment.name}"/></td>
-                                            <td><h:outputText value="#{i.toStaff.person.nameWithTitle}"/></td>
                                             <td>
-                                                <h:panelGroup rendered="#{i.cancelled}">
-                                                    <h:outputText value="Cancelled "/>
-                                                    <h:outputLabel value="#{i.cancelledBill.deptId}"/>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{i.refunded}">
-                                                    <h:outputText value="Returned"/>
-                                                </h:panelGroup>
+                                                <h:outputText value="#{b.deptId}"/>
+                                                <p:badge value="Cancelled" severity="danger" rendered="#{b.cancelled}"/>
+                                                <p:badge value="Refunded" severity="warning" rendered="#{b.refunded}"/>
                                             </td>
-                                            <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.netTotal}">
+                                            <td><h:outputText value="#{b.patient.person.nameWithTitle}"/></td>
+                                            <td><h:outputText value="#{b.creditCompany.name}"/></td>
+                                            <td style="text-align: right">
+                                                <h:outputText value="#{b.hospitalFee}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
                                             </td>
-                                            <td style="text-align: right;">
-                                                <h:outputLabel value="#{-i.saleValue}">
+                                            <td style="text-align: right">
+                                                <h:outputText value="#{b.staffFee}">
                                                     <f:convertNumber pattern="#,##0.00"/>
-                                                </h:outputLabel>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right">
+                                                <h:outputText value="#{b.hospitalFee + b.staffFee}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right">
+                                                <h:outputText value="#{b.discount}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="text-align: right">
+                                                <h:outputText value="#{b.netTotal}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputText>
                                             </td>
                                         </tr>
                                     </ui:repeat>
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <td colspan="6" style="text-align: left; font-weight: 700;">
+                                        <td colspan="5" style="text-align: left; font-weight: 700;">
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.netTotalValues}">
+                                            <h:outputText value="#{searchController.hosTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
                                         </td>
                                         <td style="text-align: right;">
-                                            <h:outputLabel value="#{-reportsTransfer.totalsValue}">
+                                            <h:outputText value="#{searchController.staffTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
-                                            </h:outputLabel>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{searchController.grossTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{searchController.discountTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
+                                        </td>
+                                        <td style="text-align: right;">
+                                            <h:outputText value="#{searchController.amountTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputText>
                                         </td>
                                     </tr>
                                     </tfoot>
