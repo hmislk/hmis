@@ -211,10 +211,10 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal returnNetTotal = BigDecimal.ZERO;
 
 // Return Quantity-based Totals (for clarity if needed separately)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
+//    @Column(precision = 18, scale = 4)
+//    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
+//    @Column(precision = 18, scale = 4)
+//    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
 
     // Taxes
     // Payment method values
@@ -355,8 +355,8 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.returnQuantity = this.returnQuantity;
         cloned.returnFreeQuantity = this.returnFreeQuantity;
         cloned.totalReturnQuantity = this.totalReturnQuantity;
-        cloned.returnQuantityTotal = this.returnQuantityTotal;
-        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
+//        cloned.returnQuantityTotal = this.returnQuantityTotal;
+//        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
 
         // ------------------ RETURN TOTALS ------------------
         cloned.returnGrossTotal = this.returnGrossTotal;
@@ -510,21 +510,21 @@ public class BillItemFinanceDetails implements Serializable {
         this.returnNetTotal = returnNetTotal;
     }
 
-    public BigDecimal getReturnQuantityTotal() {
-        return returnQuantityTotal;
-    }
-
-    public void setReturnQuantityTotal(BigDecimal returnQuantityTotal) {
-        this.returnQuantityTotal = returnQuantityTotal;
-    }
-
-    public BigDecimal getReturnFreeQuantityTotal() {
-        return returnFreeQuantityTotal;
-    }
-
-    public void setReturnFreeQuantityTotal(BigDecimal returnFreeQuantityTotal) {
-        this.returnFreeQuantityTotal = returnFreeQuantityTotal;
-    }
+//    public BigDecimal getReturnQuantityTotal() {
+//        return returnQuantityTotal;
+//    }
+//
+//    public void setReturnQuantityTotal(BigDecimal returnQuantityTotal) {
+//        this.returnQuantityTotal = returnQuantityTotal;
+//    }
+//
+//    public BigDecimal getReturnFreeQuantityTotal() {
+//        return returnFreeQuantityTotal;
+//    }
+//
+//    public void setReturnFreeQuantityTotal(BigDecimal returnFreeQuantityTotal) {
+//        this.returnFreeQuantityTotal = returnFreeQuantityTotal;
+//    }
 
     public BigDecimal getBillTaxRate() {
         return billTaxRate;

@@ -439,12 +439,6 @@ public class DirectPurchaseReturnController implements Serializable {
             getBillItemFacade().editAndCommit(ref);
 
             BillItemFinanceDetails savedFd = ref.getBillItemFinanceDetails();
-            System.out.println("=== Post-Save Check ===");
-            System.out.println("Ref Item ID                : " + ref.getId());
-            System.out.println("Ref Bil Item Finance Details ID                : " + savedFd.getId());
-            System.out.println("Saved Return Qty Total     : " + savedFd.getReturnQuantityTotal());
-            System.out.println("Saved Return Free Qty Total: " + savedFd.getReturnFreeQuantityTotal());
-            System.out.println("=========================");
 
             getReturnBill().getBillItems().add(i);
         }
@@ -474,8 +468,8 @@ public class DirectPurchaseReturnController implements Serializable {
                 continue;
             }
 
-            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().add(fd.getQuantity()));
-            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().add(fd.getFreeQuantity()));
+            refFd.setReturnQuantity(refFd.getReturnQuantity().add(fd.getQuantity()));
+            refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().add(fd.getFreeQuantity()));
         }
     }
 
@@ -489,8 +483,8 @@ public class DirectPurchaseReturnController implements Serializable {
                 continue;
             }
 
-            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().subtract(fd.getQuantity()));
-            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().subtract(fd.getFreeQuantity()));
+            refFd.setReturnQuantity(refFd.getReturnQuantity().subtract(fd.getQuantity()));
+            refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().subtract(fd.getFreeQuantity()));
         }
     }
 
