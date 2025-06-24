@@ -389,6 +389,7 @@
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
+                            filterMatchMode="contains"
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
@@ -547,7 +548,9 @@
                             function initializeWebSocket() {
                                 console.log("start connection");
                                 const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
-                                const wsUrl = protocol + "//" + window.location.host + "/rh/ws/notify";
+                                const pathName = window.location.pathname;
+                                const contextPath = pathName.split('/')[1];
+                                const wsUrl = protocol + "//" + window.location.host + "/"+ contextPath + "/ws/notify";
 
                                 let socket = new WebSocket(wsUrl);
 
