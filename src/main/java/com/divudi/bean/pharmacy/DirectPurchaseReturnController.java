@@ -399,7 +399,7 @@ public class DirectPurchaseReturnController implements Serializable {
                 pbi.setFreeQty(-freeQty * unitsPerPack);
             } else {
                 pbi.setQty(-qty);
-                pbi.setFreeQty(-pbi.getFreeQty());
+                pbi.setFreeQty(-freeQty);
             }
 
 
