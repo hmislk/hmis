@@ -402,8 +402,6 @@ public class DirectPurchaseReturnController implements Serializable {
                 pbi.setFreeQty(-pbi.getFreeQty());
             }
 
-            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().add(fd.getQuantity()));
-            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().add(fd.getFreeQuantity()));
 
             i.setNetValue(pbi.getQty() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -465,13 +463,46 @@ public class DirectPurchaseReturnController implements Serializable {
         }
     }
 
+    private void applyPendingReturnTotals() {
+        for (BillItem i : getBillItems()) {
+            BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
+            BillItem ref = i.getReferanceBillItem();
+            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
+
+            if (fd == null || refFd == null) {
+                continue;
+            }
+
+            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().add(fd.getQuantity()));
+            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().add(fd.getFreeQuantity()));
+        }
+    }
+
+    private void revertPendingReturnTotals() {
+        for (BillItem i : getBillItems()) {
+            BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
+            BillItem ref = i.getReferanceBillItem();
+            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
+
+            if (fd == null || refFd == null) {
+                continue;
+            }
+
+            refFd.setReturnQuantityTotal(refFd.getReturnQuantityTotal().subtract(fd.getQuantity()));
+            refFd.setReturnFreeQuantityTotal(refFd.getReturnFreeQuantityTotal().subtract(fd.getFreeQuantity()));
+        }
+    }
+
     public void settle() {
         fillData();
+        applyPendingReturnTotals();
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
+            revertPendingReturnTotals();
             JsfUtil.addErrorMessage("Insufficient stock available to return these items.");
             return;
         }
         if (getPharmacyBean().isReturingMoreThanPurchased(getBillItems())) {
+            revertPendingReturnTotals();
             JsfUtil.addErrorMessage("Returning more than purchased.");
             return;
         }
