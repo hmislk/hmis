@@ -66,6 +66,7 @@ import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.inject.Inject;
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import java.math.BigDecimal;
 
 /**
  *
@@ -114,6 +115,8 @@ public class PharmacyBean {
     VirtualProductIngredientFacade virtualProductIngredientFacade;
     @EJB
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
@@ -124,9 +127,6 @@ public class PharmacyBean {
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-
-    @EJB
-    IssueRateMarginsFacade issueRateMarginsFacade;
 
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
@@ -151,6 +151,75 @@ public class PharmacyBean {
             issueRateMarginsFacade.create(m);
         }
         return m;
+    }
+
+// ChatGPT Contribution
+    public boolean isReturnQuantityExceedingAvailableStock(PharmaceuticalBillItem item, Department department) {
+        double availableStock = getStockQty(item.getItemBatch(), department);
+        double returnQty = item.getQty() + item.getFreeQty();
+        return returnQty > availableStock;
+    }
+
+// ChatGPT Contribution
+    public boolean isInsufficientStockForReturn(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+
+            if (pbi == null || fd == null || bi.getBill() == null || bi.getBill().getDepartment() == null) {
+                continue;
+            }
+
+
+            boolean exceeds = isReturnQuantityExceedingAvailableStock(pbi, bi.getBill().getDepartment());
+
+            if (exceeds) {
+                return true;
+            } else {
+            }
+        }
+
+        return false;
+    }
+
+// ChatGPT Contribution
+    // ChatGPT Contribution
+    public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+
+        for (BillItem returningBillItem : billItems) {
+            BillItem billedBillItem = returningBillItem.getReferanceBillItem();
+            if (billedBillItem == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails billedFd = billedBillItem.getBillItemFinanceDetails();
+
+            if (billedFd == null) {
+                continue;
+            }
+
+
+            BigDecimal billedQty = billedFd.getQuantity();
+            BigDecimal billedFreeQty = billedFd.getFreeQuantity();
+            BigDecimal totalReturnedQty = billedFd.getReturnQuantity();
+            BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantity();
+
+
+            if (checkTotalQuantity) {
+                BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
+                BigDecimal totalPurchased = billedQty.add(billedFreeQty);
+                if (totalReturning.compareTo(totalPurchased) > 0) {
+                    return true;
+                }
+            } else {
+                if (totalReturnedQty.compareTo(billedQty) > 0 || totalReturnedFreeQty.compareTo(billedFreeQty) > 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {

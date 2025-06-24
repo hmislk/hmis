@@ -63,22 +63,6 @@
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" class="d-flex justify-content-center">
-<!--                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                                    <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                                </h:panelGroup>
-
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                                    <ph:transferIssue_detailed bill="#{pharmacyBillSearch.bill}"/>
-                                </h:panelGroup>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                                <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
-                                    <ph:Pharmacy_department_Issue_pos_bill bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
-                                </h:panelGroup>
-                            </h:panelGroup>-->
-
                             <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                                 <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
                                     <ph:transferIssue bill="#{pharmacyBillSearch.bill}" duplicate="true"/>
@@ -91,6 +75,12 @@
 
                             <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
                                 <ph:saleBill_Header_Transfer bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:saleBill_Header_Transfer>
+                            </h:panelGroup>
+
+                            <h:panelGroup 
+                                id="gpBillTemplate" 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
+                                <ph:pharmacy_transfer_issue_receipt bill="#{pharmacyBillSearch.bill}" duplicate="true"></ph:pharmacy_transfer_issue_receipt>
                             </h:panelGroup>
 
                         </h:panelGroup>
