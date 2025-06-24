@@ -169,28 +169,28 @@ public class LaborataryReportController implements Serializable {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
-        return "/reportLab/lab_inward_order_report?faces-redirect=true;";
+        return "/reportLab/lab_inward_order_report?faces-redirect=true";
     }
 
     public String navigateToLaborataryIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
-        return "/reportLab/laboratary_income_report?faces-redirect=true;";
+        return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
 
     public String navigateToLaboratarySummaryFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         opdReportController.setToInstitution(sessionController.getInstitution());
         opdReportController.setToDepartment(sessionController.getDepartment());
-        return "/reportLab/laboratary_summary?faces-redirect=true;";
+        return "/reportLab/laboratary_summary?faces-redirect=true";
     }
 
     public String navigateToLaborataryTestWiseCountReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
-        return "/reportLab/test_wise_count?faces-redirect=true;";
+        return "/reportLab/test_wise_count?faces-redirect=true";
     }
 
     // </editor-fold>
