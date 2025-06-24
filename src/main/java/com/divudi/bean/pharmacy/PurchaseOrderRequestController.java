@@ -459,15 +459,23 @@ public class PurchaseOrderRequestController implements Serializable {
         printPreview = true;
     }
 
+    // Extracted magic number for clarity
+    private static final double MIN_PURCHASE_RATE = 0.00001;
+
     private boolean allBillItemsValid(List<BillItem> items) {
         if (items == null || items.isEmpty()) {
             return false;
         }
         for (BillItem bi : items) {
+            // Null‐check to avoid NPE when accessing pharmaceutical details
+            if (bi.getPharmaceuticalBillItem() == null) {
+                return false;
+            }
             if ((bi.getQty() + bi.getPharmaceuticalBillItem().getFreeQty()) < 1) {
                 return false;
             }
-            if (bi.getPharmaceuticalBillItem().getPurchaseRate() < 0.00001) {
+            // Use named constant instead of hardcoded threshold
+            if (bi.getPharmaceuticalBillItem().getPurchaseRate() < MIN_PURCHASE_RATE) {
                 return false;
             }
         }
