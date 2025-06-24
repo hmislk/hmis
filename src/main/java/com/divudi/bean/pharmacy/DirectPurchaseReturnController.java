@@ -436,11 +436,12 @@ public class DirectPurchaseReturnController implements Serializable {
             }
 
             saveBillFee(i);
-            getBillItemFacade().edit(ref);
+            getBillItemFacade().editAndCommit(ref);
 
             BillItemFinanceDetails savedFd = ref.getBillItemFinanceDetails();
             System.out.println("=== Post-Save Check ===");
             System.out.println("Ref Item ID                : " + ref.getId());
+            System.out.println("Ref Bil Item Finance Details ID                : " + savedFd.getId());
             System.out.println("Saved Return Qty Total     : " + savedFd.getReturnQuantityTotal());
             System.out.println("Saved Return Free Qty Total: " + savedFd.getReturnFreeQuantityTotal());
             System.out.println("=========================");
