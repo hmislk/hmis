@@ -217,9 +217,8 @@ public class PharmacyBean {
             }
 
             BillItemFinanceDetails billedFd = billedBillItem.getBillItemFinanceDetails();
-            BillItemFinanceDetails returningFd = returningBillItem.getBillItemFinanceDetails();
 
-            if (billedFd == null || returningFd == null) {
+            if (billedFd == null) {
                 System.out.println("Skipping item: finance details missing.");
                 continue;
             }
@@ -228,26 +227,16 @@ public class PharmacyBean {
 
             BigDecimal billedQty = billedFd.getQuantity();
             BigDecimal billedFreeQty = billedFd.getFreeQuantity();
-            BigDecimal returnQtySoFar = billedFd.getReturnQuantityTotal();
-            BigDecimal returnFreeQtySoFar = billedFd.getReturnFreeQuantityTotal();
+            BigDecimal totalReturnedQty = billedFd.getReturnQuantityTotal();
+            BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantityTotal();
 
-            BigDecimal returningQty = returningFd.getQuantity();
-            BigDecimal returningFreeQty = returningFd.getFreeQuantity();
-
-            BigDecimal updatedReturnQty = returnQtySoFar.add(returningQty);
-            BigDecimal updatedReturnFreeQty = returnFreeQtySoFar.add(returningFreeQty);
-
-            System.out.println("  Billed Qty       = " + billedQty);
-            System.out.println("  Billed Free Qty  = " + billedFreeQty);
-            System.out.println("  Return Qty SoFar = " + returnQtySoFar);
-            System.out.println("  Return Free SoFar= " + returnFreeQtySoFar);
-            System.out.println("  This Return Qty  = " + returningQty);
-            System.out.println("  This Free Qty    = " + returningFreeQty);
-            System.out.println("  Total Return Qty = " + updatedReturnQty);
-            System.out.println("  Total Free Qty   = " + updatedReturnFreeQty);
+            System.out.println("  Billed Qty          = " + billedQty);
+            System.out.println("  Billed Free Qty     = " + billedFreeQty);
+            System.out.println("  Total Returned Qty  = " + totalReturnedQty);
+            System.out.println("  Total Returned Free = " + totalReturnedFreeQty);
 
             if (checkTotalQuantity) {
-                BigDecimal totalReturning = updatedReturnQty.add(updatedReturnFreeQty);
+                BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
                 BigDecimal totalPurchased = billedQty.add(billedFreeQty);
                 System.out.println("  >> Total returning = " + totalReturning + ", Total purchased = " + totalPurchased);
                 if (totalReturning.compareTo(totalPurchased) > 0) {
@@ -256,9 +245,9 @@ public class PharmacyBean {
                 }
             } else {
                 System.out.println("  >> Comparing separately:");
-                System.out.println("     - Updated Return Qty > Billed Qty? " + (updatedReturnQty.compareTo(billedQty) > 0));
-                System.out.println("     - Updated Return Free > Billed Free? " + (updatedReturnFreeQty.compareTo(billedFreeQty) > 0));
-                if (updatedReturnQty.compareTo(billedQty) > 0 || updatedReturnFreeQty.compareTo(billedFreeQty) > 0) {
+                System.out.println("     - Returned Qty  > Billed Qty?  " + (totalReturnedQty.compareTo(billedQty) > 0));
+                System.out.println("     - Returned Free > Billed Free? " + (totalReturnedFreeQty.compareTo(billedFreeQty) > 0));
+                if (totalReturnedQty.compareTo(billedQty) > 0 || totalReturnedFreeQty.compareTo(billedFreeQty) > 0) {
                     System.out.println("  >> Return exceeds either quantity or free quantity. Returning TRUE.");
                     return true;
                 }
