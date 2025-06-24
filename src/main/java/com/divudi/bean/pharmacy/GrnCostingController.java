@@ -459,7 +459,6 @@ public class GrnCostingController implements Serializable {
         if (!validateInputs()) {
             return;
         }
-
         saveGrnBill();
         distributeValuesToItems();
         processBillItems();
@@ -494,6 +493,53 @@ public class GrnCostingController implements Serializable {
         if (getGrnBill().getInvoiceDate() == null) {
             getGrnBill().setInvoiceDate(getApproveBill().getCreatedAt());
         }
+
+        if (billItems == null || billItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No items found in the GRN.");
+            return false;
+        }
+
+        for (BillItem bi : billItems) {
+            if (bi == null || bi.getBillItemFinanceDetails() == null || bi.getPharmaceuticalBillItem() == null) {
+                JsfUtil.addErrorMessage("Invalid item data found.");
+                return false;
+            }
+
+            BigDecimal qty = bi.getBillItemFinanceDetails().getQuantity();
+            BigDecimal freeQty = bi.getBillItemFinanceDetails().getFreeQuantity();
+            BigDecimal grossRate = bi.getBillItemFinanceDetails().getLineGrossRate();
+            BigDecimal retailRate = bi.getBillItemFinanceDetails().getRetailSaleRate();
+            Date doe = bi.getPharmaceuticalBillItem().getDoe();
+            String batch = bi.getPharmaceuticalBillItem().getStringValue();
+
+            if ((qty == null ? BigDecimal.ZERO : qty)
+                    .add(freeQty == null ? BigDecimal.ZERO : freeQty)
+                    .compareTo(BigDecimal.ZERO) <= 0) {
+                JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " has zero or negative quantity.");
+                return false;
+            }
+
+            if (grossRate == null || grossRate.compareTo(BigDecimal.ZERO) <= 0) {
+                JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " has zero or missing purchase rate.");
+                return false;
+            }
+
+            if (retailRate == null || retailRate.compareTo(BigDecimal.ZERO) <= 0) {
+                JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " has zero or missing retail rate.");
+                return false;
+            }
+
+            if (doe == null) {
+                JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " is missing expiry date.");
+                return false;
+            }
+
+            if (batch == null || batch.trim().isEmpty()) {
+                JsfUtil.addErrorMessage("Item " + bi.getItem().getName() + " is missing batch number.");
+                return false;
+            }
+        }
+
         return true;
     }
 
