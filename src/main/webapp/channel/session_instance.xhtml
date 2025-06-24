@@ -14,7 +14,9 @@
                 <h:form id="form">
                     <p:growl id="msg" ></p:growl>
 
-                    <div class="d-flex justify-content-between align-items-center bg-light">
+
+
+                    <div class="d-flex justify-content-between align-items-center bg-light" style="position: sticky; top: 0; z-index: 1000">
                         <div class="my-2 mx-1" style="font-weight: bolder">
                             <div class="d-flex align-items-center">
                                 <h:outputLabel class="mx-1" value="#{bookingControllerViewScope.selectedSessionInstance.staff.person.nameWithTitle}" ></h:outputLabel>
@@ -86,8 +88,8 @@
                                              styleClass="ui-button-success mx-1"
                                              icon="fa fa-check"
                                              onclick="return confirm('Are you sure you want to complete this session?');" />
-                            
-                             <p:commandButton action="/channel/channel_booking?faces-redirect=true"
+
+                            <p:commandButton action="/channel/channel_booking?faces-redirect=true"
                                              value="Back to Booking view"
                                              ajax="false"
                                              class="ui-button-secondary mx-1"
@@ -104,6 +106,11 @@
 
                         </div>
                     </div>
+
+                    <div id="global-notification" style="position: fixed; right: 10px; top:155px ; z-index: 9999; display: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); ">
+                        Online booking received!
+                    </div>
+
                     <div class="row">
                         <div class="col-7">
                             <p:panel class="my-2">
@@ -112,7 +119,7 @@
                                 <p:tabView >
                                     <p:tab >
                                         <f:facet name="title">
-                                            <h:outputText value="Bookings " />
+                                            <h:outputText value="Bookings "/>
                                             <p:badge id="BookingCount" value="#{bookingControllerViewScope.billSessions.size()}" severity="warning"/>
                                         </f:facet>
                                         <p:dataTable id="acBookings" 
@@ -246,11 +253,12 @@
 
 
                                         </p:dataTable>
-                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:poll>
+<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:poll>-->
 
                                     </p:tab>
                                     <!--                                    temporary bookings tab-->
                                     <p:ajax event="tabChange" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings acBookings temporaryBookingCount BookingCount"></p:ajax>
+
                                     <p:tab >
 
                                         <f:facet name="title">
@@ -332,7 +340,88 @@
 
 
                                         </p:dataTable>
-<!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
+
+                                        <script>
+
+                                            function initializeWebSocket() {
+                                                console.log("start connection");
+                                                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+                                                const wsUrl = protocol + "//" + window.location.host + "/rh/ws/notify";
+
+                                                const socket = new WebSocket(wsUrl);
+
+                                                return socket;
+                                            }
+
+                                            const socket = initializeWebSocket();
+
+                                            socket.onmessage = function (event) {
+
+                                                try {
+                                                    const message = event.data;
+                                                    const messageParts = message.split(" - ");
+                                                    const sendSessionId = messageParts[1];
+                                                    const sendMessage = messageParts[0];
+
+                                                    if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Cancelled") {
+                                                        const selectedSessionId = '#{bookingControllerViewScope.selectedSessionInstance.id}';
+
+                                                        if (selectedSessionId == sendSessionId) {
+                                                            document.querySelector('.ws-trigger').click();
+
+                                                        }
+
+                                                        if (sendMessage === "Online Booking Completed") {
+                                                            const notify = document.getElementById('global-notification');
+                                                            notify.style.display = 'block';
+                                                            setTimeout(() => {
+                                                                notify.style.display = 'none';
+                                                                notify.style.transition = 'all 0.6s ease';
+                                                            }, 3000);
+
+                                                        } else if (sendMessage === "Online Booking Cancelled") {
+                                                            const notify = document.getElementById('global-notification');
+                                                            notify.style.display = 'block';
+                                                            notify.style.backgroundColor = '#c23616';
+                                                            notify.innerHTML = "Online Booking Cancelled";
+                                                            setTimeout(() => {
+                                                                notify.style.display = 'none';
+                                                                notify.style.transition = 'all 0.6s ease';
+                                                            }, 3000);
+                                                        }
+                                                    }
+
+                                                } catch (e) {
+                                                    console.error("Error in WebSocket onmessage:", error);
+                                                }
+
+                                            }
+
+                                            socket.onclose = function (event) {
+                                                console.log("Web socket connection is closed.");
+
+                                                setTimeout(initializeWebSocket, 2000);
+                                            }
+
+                                            socket.onerror = function (event) {
+                                                console.log("Web socket connection error occured.");
+
+                                            }
+
+                                            socket.onopen = function (event) {
+                                                console.log("Web socket is connected.");
+
+                                            }
+
+                                        </script>
+
+                                        <p:commandButton id="ws"
+                                                         action="#{bookingControllerViewScope.loadBillSessions}"
+                                                         process="@this"
+                                                         styleClass="ws-trigger"
+                                                         update="acBookings temporaryBookingCount BookingCount"
+                                                         style="display:none"/>
+                    <!--                                        <p:poll interval="15" listener="#{bookingControllerViewScope.loadBillSessions()}" update="temporaryBookings temporaryBookingCount" onactivated="console.log('poll started')"></p:poll>-->
                                     </p:tab>
 
                                     <p:tab title="Nurse View" >
@@ -849,7 +938,7 @@
 
                                                 <p:outputLabel value="Accept Online Bookings"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.acceptOnlineBookings}"/>
-                                                
+
                                                 <p:outputLabel value="Doctor on Holiday"/>
                                                 <p:selectBooleanCheckbox value="#{bookingControllerViewScope.selectedSessionInstance.doctorHoliday}"/>
 
@@ -1119,6 +1208,8 @@
                             </div>
                         </div>
                     </div>
+
+
 
                 </h:form>
             </ui:define>
