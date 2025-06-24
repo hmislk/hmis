@@ -309,7 +309,11 @@
 
                                                 if (typeof window.wsUrl === "undefined") {
                                                     const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-                                                    window.wsUrl = protocol + "//" + window.location.host + "/rh/ws/notify";
+                                                    
+                                                    const pathName = window.location.pathname;
+                                                    const contextPath = pathName.split('/')[1];
+                                 
+                                                    window.wsUrl = protocol + "//" + window.location.host + "/" + contextPath + "/ws/notify";
                                                 }
 
                                                 if (typeof window.socket === "undefined") {
