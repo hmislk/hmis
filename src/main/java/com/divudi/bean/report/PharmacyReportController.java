@@ -2014,6 +2014,9 @@ public class PharmacyReportController implements Serializable {
     public void processSaleCreditCard() {
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Card));
     }
+    public void processSaleCash() {
+        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Cash));
+    }
 
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
