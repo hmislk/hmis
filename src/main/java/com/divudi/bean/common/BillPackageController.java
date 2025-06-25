@@ -831,7 +831,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethod = PaymentMethod.Cash;
         }
         printPreview = false;
-        return "/opd/opd_package_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_bill_cancel?faces-redirect=true";
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -1814,7 +1814,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             billService.initiateBillItemsAndBillFees(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_package_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToCancelOpdPackageBatchBill() {
@@ -1829,7 +1829,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
-        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {

@@ -755,7 +755,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String fillItemsWithoutInstitution() {
@@ -799,7 +799,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String fillItemsWithoutDepartment() {
@@ -844,7 +844,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String navigateToListItemsOfSelectedDepartment() {

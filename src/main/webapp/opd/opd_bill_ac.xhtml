@@ -1170,7 +1170,7 @@
                                                                 completeMethod="#{staffController.completeStaff}" 
                                                                 var="mys" 
                                                                 class="w-100"
-                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                placeholder="Staff (Type at least 3 letters to search)"
                                                                 inputStyleClass="form-control"
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
@@ -1178,8 +1178,8 @@
                                                                 <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" style="padding: 2px;">
-                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
+                                                                <p:column headerText="Code" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.staffCode}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >

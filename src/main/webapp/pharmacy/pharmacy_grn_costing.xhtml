@@ -97,11 +97,11 @@
                     <p:column 
                         width="2em"
                         selectionBox="true"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"/>
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"/>
                     <p:column
                         headerText="Item Name"
                         width="20em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                         <h:outputText id="item" value="#{bi.item.name}" />
                         <p:commandLink
                             styleClass="ms-1"
@@ -126,14 +126,14 @@
                         headerText="Code" 
                         width="4em"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used', true)}"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}"> 
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}"> 
                         <h:outputText id="code" value="#{bi.item.code}" >                                   
                         </h:outputText>
                     </p:column> 
                     <p:column 
                         width="4em"
                         headerText="Ordered Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                         <h:outputLabel
                             class="w-100 text-end text-secondary"
                             value="#{bi.referanceBillItem.pharmaceuticalBillItem.qtyInUnit}"/>
@@ -142,7 +142,7 @@
                     <p:column 
                         width="4em"
                         headerText="Ordered Free Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                         <h:outputLabel 
                             class="w-100 text-end text-secondary"
                             value="#{bi.referanceBillItem.pharmaceuticalBillItem.freeQtyInUnit}"/>
@@ -151,7 +151,7 @@
                     <p:column 
                         width="6em"
                         headerText="Receiving Qty" 
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                         <p:inputText 
                             id="txtQty"
                             onfocus="this.select();"
@@ -167,7 +167,7 @@
                     <p:column
                         width="6em"
                         headerText="Received Free Qty"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">   
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">   
                         <p:inputText
                             autocomplete="off" 
                             class="text-end text-primary w-100"
@@ -181,7 +181,7 @@
                     <p:column
                         width="8em"
                         headerText="Purchase Rate"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                         <p:inputText
                             autocomplete="off"
                             class="text-end text-primary w-100"
@@ -193,7 +193,7 @@
                     <p:column
                         width="8em"
                         headerText="Discount Rate"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                         <p:inputText
                             autocomplete="off"
                             class="text-end text-primary w-100"
@@ -206,7 +206,7 @@
                     <p:column
                         headerText="Retail Rate"
                         width="8em"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                         <p:inputText
                             autocomplete="off"
                             id="rRate"
@@ -222,7 +222,7 @@
                     <p:column 
                         headerText="Total" 
                         width="8em"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                         <h:panelGroup id="total">
                             <h:outputLabel
                                 class="text-end text-secondary w-100"
@@ -235,7 +235,7 @@
                     <p:column 
                         headerText="Date Of Expiry" 
                         width="8em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}" >  
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >  
                         <p:calendar  value="#{bi.pharmaceuticalBillItem.doe}" 
                                      id="doeDateOnlyShort"
                                      class="text-center text-primary w-100"
@@ -249,7 +249,7 @@
                     <p:column 
                         width="9em"
                         headerText="Batch No"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             class="w-100"
                             autocomplete="off" value="#{bi.pharmaceuticalBillItem.stringValue}" id="batch">  
@@ -258,7 +258,7 @@
                     <p:column 
                         headerText="Comments"
                         width="5em"
-                        styleClass="#{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
+                        styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
                             class="w-100"
                             autocomplete="off"
@@ -269,7 +269,7 @@
                         width="4em"
                         headerText="Profit %"
                         rendered="#{grnCostingController.showProfitInGrnBill}"
-                        styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-end #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                         <h:outputLabel
                             id="profMargin"
                             class="text-end w-100 text-secondary"
@@ -281,7 +281,7 @@
                     <p:column 
                         headerText="Actions"
                         width="7em"
-                        styleClass="text-center #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">
+                        styleClass="text-center #{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}">
                         <p:commandButton 
                             process=":#{p:resolveFirstComponentWithId('itemList',view).clientId}"
                             update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('itemList',view).clientId} "
@@ -467,7 +467,7 @@
                 </f:facet>
 
                 <h:panelGroup  id="gpBillPreview"   style="border: none; width: 214mm;" >
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="d-flex justify-content-center">
+                    <h:panelGroup class="d-flex justify-content-center">
                         <pha:grn_with_costing bill="#{grnCostingController.grnBill}"/>
                     </h:panelGroup>
                 </h:panelGroup>

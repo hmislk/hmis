@@ -246,7 +246,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
 //    public String navigateToPharmacySaleWithoutStocks() {
 //        prepareForPharmacySaleWithoutStock();
-//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true;";
+//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
@@ -258,18 +258,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             } else {
                 setBillSettlingStarted(false);
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             }
         } else {
             resetAll();
             setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
         }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
         setBillSettlingStarted(false);
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToBillCancellationView() {
@@ -805,7 +805,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         paymentScheme = ps;
         setPatient(getPatient());
         setBillSettlingStarted(false);
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyRetailSaleForCashier(Patient pt, PaymentScheme ps) {

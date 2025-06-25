@@ -548,7 +548,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void billDiscountChangedByUser() {
-        System.out.println("billDiscountChangedByUser");
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
         calculateBillTotalsFromItems();
     }
@@ -668,7 +667,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
 
             double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
-            System.out.println(" i.getBillItemFinanceDetails().getTotalQuantityByUnits() = " + i.getBillItemFinanceDetails().getTotalQuantityByUnits());
 
             pbi.setItemBatch(itemBatch);
 
