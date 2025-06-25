@@ -20,29 +20,8 @@ import com.divudi.core.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.core.data.dataStructure.StockAverage;
 
 import com.divudi.core.entity.*;
-import com.divudi.core.entity.pharmacy.Amp;
-import com.divudi.core.entity.pharmacy.Ampp;
-import com.divudi.core.entity.pharmacy.Atm;
-import com.divudi.core.entity.pharmacy.MeasurementUnit;
-import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
-import com.divudi.core.entity.pharmacy.Stock;
-import com.divudi.core.entity.pharmacy.Vmp;
-import com.divudi.core.entity.pharmacy.Vmpp;
-import com.divudi.core.entity.pharmacy.Vtm;
-import com.divudi.core.facade.AmpFacade;
-import com.divudi.core.facade.AmppFacade;
-import com.divudi.core.facade.AtmFacade;
-import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.DepartmentFacade;
-import com.divudi.core.facade.InstitutionFacade;
-import com.divudi.core.facade.ItemFacade;
-import com.divudi.core.facade.PharmaceuticalBillItemFacade;
-import com.divudi.core.facade.PharmaceuticalItemFacade;
-import com.divudi.core.facade.StockFacade;
-import com.divudi.core.facade.VmpFacade;
-import com.divudi.core.facade.VmppFacade;
-import com.divudi.core.facade.VtmFacade;
+import com.divudi.core.entity.pharmacy.*;
+import com.divudi.core.facade.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
@@ -67,6 +46,8 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -134,6 +115,8 @@ public class PharmacyController implements Serializable {
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
+    @EJB
+    private ItemBatchFacade itemBatchFacade;
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -739,6 +722,7 @@ public class PharmacyController implements Serializable {
     private double totalCostValue;
     private Item item;
     private List<BillItem> billItems;
+    private List<PharmacyRow> pharmacyRows;
     private List<PharmacySummery> departmentSummaries;
     private List<CategoryWithItem> issueDepartmentCategoryWiseItems;
     private List<DepartmentCategoryWiseItems> resultsList;
@@ -1004,6 +988,7 @@ public class PharmacyController implements Serializable {
         billItems = null;
         departmentSummaries = null;
         issueDepartmentCategoryWiseItems = null;
+        pharmacyRows = null;
         resultsList = null;
         totalCreditPurchaseValue = 0.0;
         totalCashPurchaseValue = 0.0;
@@ -2113,46 +2098,74 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateReportByBillItems(BillType billType) {
-        billItems = new ArrayList<>();
-        Map<String, Object> parameters = new HashMap<>();
-        StringBuilder sql = new StringBuilder();
-
-        // Constructing the base query
-        sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
-                .append("AND bi.bill.retired = false ")
-                .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
-                .append("AND bi.bill.billType = :billType ");
-
-        // Adding mandatory parameters
-        parameters.put("fromDate", fromDate);
-        parameters.put("toDate", toDate);
-        parameters.put("billType", billType);
-
-        // Dynamically adding optional filters
-        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
-        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
-        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
-        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
-        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
-        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
-        addFilter(sql, parameters, "bi.item", "item", item);
-
-        // Adding the ordering clause
-        sql.append(" ORDER BY bi.id DESC");
-
-        // Executing the query
         try {
+            pharmacyRows = new ArrayList<>();
+            billItems = new ArrayList<>();
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder sql = new StringBuilder();
+
+            sql.append("SELECT bi FROM BillItem bi WHERE bi.retired = false ")
+                    .append("AND bi.bill.retired = false ")
+                    .append("AND bi.bill.createdAt BETWEEN :fromDate AND :toDate ")
+                    .append("AND bi.bill.billType = :billType ");
+
+            parameters.put("fromDate", fromDate);
+            parameters.put("toDate", toDate);
+            parameters.put("billType", billType);
+
+            addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+            addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+            addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+            addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+            addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+            addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+            addFilter(sql, parameters, "bi.item", "item", item);
+
+            sql.append(" ORDER BY bi.id DESC");
+
             billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+
+            if (billItems.isEmpty()) {
+                return;
+            }
+
+            List<Item> items = billItems.stream()
+                    .map(BillItem::getItem)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            if (!items.isEmpty()) {
+                Map<String, Object> batchParams = new HashMap<>();
+                batchParams.put("items", items);
+
+                String batchQuery = "SELECT ib FROM ItemBatch ib WHERE ib.item IN :items";
+                List<ItemBatch> allBatches = itemBatchFacade.findByJpql(batchQuery, batchParams);
+
+                Map<Long, ItemBatch> latestBatchMap = allBatches.stream()
+                        .filter(ib -> ib.getItem() != null)
+                        .collect(Collectors.toMap(ib -> ib.getItem().getId(), Function.identity(),
+                                BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))));
+
+                pharmacyRows = billItems.stream()
+                        .map(bi -> {
+                            ItemBatch latestBatch = latestBatchMap.get(
+                                    bi.getItem() != null ? bi.getItem().getId() : null
+                            );
+                            return new PharmacyRow(bi, latestBatch);
+                        })
+                        .collect(Collectors.toList());
+
+                totalPurchase = pharmacyRows.stream()
+                        .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
+                        .mapToDouble(r -> r.getQuantity() * r.getPurchaseValue())
+                        .sum();
+            }
         } catch (Exception e) {
             FacesContext.getCurrentInstance().addMessage(null,
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
-            e.printStackTrace();
+            Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating report by bill items", e);
         }
-
-        // Calculating total purchase
-        totalPurchase = billItems.stream()
-                .mapToDouble(i -> i.getQty() * i.getPharmaceuticalBillItem().getPurchaseRate())
-                .sum();
     }
 
     public void generateReportAsSummary(BillType billType) {
@@ -4957,6 +4970,14 @@ public class PharmacyController implements Serializable {
 
     public void setBillItems(List<BillItem> billItems) {
         this.billItems = billItems;
+    }
+
+    public List<PharmacyRow> getPharmacyRows() {
+        return pharmacyRows;
+    }
+
+    public void setPharmacyRows(List<PharmacyRow> pharmacyRows) {
+        this.pharmacyRows = pharmacyRows;
     }
 
     public List<PharmacySummery> getDepartmentSummaries() {
