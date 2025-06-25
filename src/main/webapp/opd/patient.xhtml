@@ -24,9 +24,26 @@
                         <p:panel>
                             <f:facet name="header">
                                 <p:outputLabel value="Patient Profile" class="my-2"/>
-                                <p:commandButton icon="fas fa-pencil" value="Edit" action="#{patientController.navigateToOpdPatientEdit()}" class="mx-2 ui-button-success" style="float: right;"></p:commandButton>
-                                <p:commandButton icon="fas fa-search" value="Search" action="#{opdBillController.navigateToSearchPatients()}"  class="mx-2 ui-button-warning" style="float: right;"></p:commandButton>
-                                <p:commandButton icon="pi pi-print" value="Print" class="p-0 m-1 ui-button-info" >
+                                <p:commandButton 
+                                    icon="fas fa-pencil"
+                                    ajax="false" 
+                                    value="Edit" 
+                                    action="#{patientController.navigateToOpdPatientEdit()}" 
+                                    class="mx-2 ui-button-success" 
+                                    style="float: right;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="fas fa-search" 
+                                    value="Search" 
+                                    ajax="false" 
+                                    action="#{opdBillController.navigateToSearchPatients()}"  
+                                    class="mx-2 ui-button-warning" 
+                                    style="float: right;">
+                                </p:commandButton>
+                                <p:commandButton 
+                                    icon="pi pi-print" 
+                                    value="Print" 
+                                    class="p-0 m-1 ui-button-info" >
                                     <p:printer target="groupPatientCard"/>
                                 </p:commandButton>
                                 <p:commandButton 
