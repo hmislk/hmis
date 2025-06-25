@@ -2131,6 +2131,7 @@ public class PharmacyController implements Serializable {
             billItems = getBillItemFacade().findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             if (billItems.isEmpty()) {
+                pharmacyRows = new ArrayList<>();
                 return;
             }
 

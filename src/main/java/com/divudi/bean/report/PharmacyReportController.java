@@ -2165,12 +2165,13 @@ public class PharmacyReportController implements Serializable {
             if (reportType.equals("issueCancel")) {
                 addFilter(sql, "and bi.bill.cancelled = true");
             }
-            System.out.println("dccdjidci" + showData);
+
             sql.append(" order by bi.bill.id ");
 
             billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
             if (billItems.isEmpty()) {
+                pharmacyRows = new ArrayList<>();
                 return;
             }
 
