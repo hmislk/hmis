@@ -1046,7 +1046,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
-            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+            Bill manageBill = billFacade.find(selectedBillSession.getBillItem().getBill().getPaidBill().getId());
+            billFacade.edit(manageBill);
         } else {
 //            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
         }
