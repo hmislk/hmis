@@ -228,7 +228,7 @@ public class PharmacySaleBhtController implements Serializable {
             return "";
         }
         
-        return "/inward/bht_bill_cancel?faces-redirect=true;";
+        return "/inward/bht_bill_cancel?faces-redirect=true";
     }
 
     public void onEdit(RowEditEvent event) {
@@ -326,6 +326,34 @@ public class PharmacySaleBhtController implements Serializable {
         tmp.getPharmaceuticalBillItem().setQtyInUnit(0 - tmp.getQty());
 //        calculateBillItemForEditing(tmp);
         calTotal();
+    }
+    
+    public void changeBillItem(BillItem bi, Stock tempStock){
+        if (bi == null) {
+            JsfUtil.addErrorMessage("Bill item is required");
+            return;
+        }
+        if (tempStock == null) {
+            JsfUtil.addErrorMessage("Item?");
+            return;
+        }
+        if (tempStock.getItemBatch() == null) {
+            JsfUtil.addErrorMessage("Invalid stock - missing batch information");
+            return;
+        }
+        if (tempStock.getItemBatch().getDateOfExpire().before(CommonFunctions.getCurrentDateTime())) {
+            JsfUtil.addErrorMessage("Please not select Expired Items");
+            return;
+        }
+        if (tempStock.getStock() <= 0) {
+            JsfUtil.addErrorMessage("No sufficient stock available");
+            return;
+        }
+        bi.getPharmaceuticalBillItem().setItemBatch(tempStock.getItemBatch());
+        bi.getPharmaceuticalBillItem().setStock(tempStock);
+        bi.setItem(tempStock.getItemBatch().getItem());
+        calculateRates(bi);
+        calCurrentBillItemTotal(getBillItems());
     }
 
     public Title[] getTitle() {
@@ -1532,7 +1560,7 @@ public class PharmacySaleBhtController implements Serializable {
             return "";
         }
         generateIssueBillComponentsForBhtRequest(bhtRequestBill);
-        return "/ward/ward_pharmacy_bht_issue?faces-redirect=true;";
+        return "/ward/ward_pharmacy_bht_issue?faces-redirect=true";
     }
 
     public void generateIssueBillComponentsForBhtRequest(Bill b) {

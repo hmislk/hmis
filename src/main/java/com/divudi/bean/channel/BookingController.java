@@ -1874,7 +1874,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
                 return "/channel/channel_booking?faces-redirect=true";
             }
         }
-        return "";
+        return "/channel/channel_booking?faces-redirect=true";
     }
 
     public void markHolidayForSessionInstances(boolean mark) {
@@ -4100,6 +4100,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         //setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {

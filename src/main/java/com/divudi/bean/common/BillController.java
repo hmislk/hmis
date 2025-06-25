@@ -427,10 +427,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and bf.referenceBillFee=:bf "
                 + " and bf.billItem.retired=:ret "
                 + " and bf.bill.retired=:ret ";
-        Map m = new HashMap();
-        m.put("ret", false);
-        m.put("bf", bf);
-        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, m);
+        Map params = new HashMap();
+        params.put("ret", false);
+        params.put("bf", bf);
+        BillFee rbf = billFeeFacade.findFirstByJpql(jpql, params);
         if (rbf != null) {
             refunded = true;
         }
@@ -460,8 +460,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             } catch (Exception e) {
                 getFacade().edit(savingBill);
             }
+            JsfUtil.addSuccessMessage("Saved");
         } else {
             getFacade().edit(savingBill);
+            JsfUtil.addSuccessMessage("Updated");
         }
     }
 
@@ -1888,7 +1890,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
-        return "/opd/batch_bill_cancel?faces-redirect=true;";
+        return "/opd/batch_bill_cancel?faces-redirect=true";
     }
     
     private List<Bill> cancelSingleBills = new ArrayList<>();
@@ -4067,7 +4069,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         paymentMethod = PaymentMethod.Cash;
 
         collectingCentreBillController.setCollectingCentre(null);
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public void makeNull() {

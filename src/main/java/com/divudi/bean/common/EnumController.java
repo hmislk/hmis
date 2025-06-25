@@ -18,6 +18,7 @@ import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
 import com.divudi.service.BillService;
@@ -77,6 +78,7 @@ public class EnumController implements Serializable {
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
     }
+    
 
     public Sex[] getSex() {
         return Sex.values();
@@ -1202,6 +1204,19 @@ public class EnumController implements Serializable {
 
     public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
         this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
+    }
+    
+    public TestHistoryType[] getLabTestHistoryList() {
+        return TestHistoryType.values();
+    }
+    
+    public TestHistoryType getLabTestHistory(String name) {
+        for (TestHistoryType type : TestHistoryType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
     }
 
 }

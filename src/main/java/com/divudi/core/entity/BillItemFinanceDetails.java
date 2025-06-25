@@ -89,7 +89,6 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal totalCostRate = BigDecimal.ZERO;
 
     // ------------------ TOTALS ------------------
-    // Value before deductions
     @Column(precision = 18, scale = 4)
     private BigDecimal lineGrossTotal = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
@@ -97,7 +96,6 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal grossTotal = BigDecimal.ZERO;
 
-    // Value after deductions
     @Column(precision = 18, scale = 4)
     private BigDecimal lineNetTotal = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
@@ -105,7 +103,6 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal netTotal = BigDecimal.ZERO;
 
-    // Absolute discount values
     @Column(precision = 18, scale = 4)
     private BigDecimal lineDiscount = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
@@ -214,10 +211,10 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal returnNetTotal = BigDecimal.ZERO;
 
 // Return Quantity-based Totals (for clarity if needed separately)
-    @Column(precision = 18, scale = 4)
-    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
-    @Column(precision = 18, scale = 4)
-    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
+//    @Column(precision = 18, scale = 4)
+//    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
+//    @Column(precision = 18, scale = 4)
+//    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
 
     // Taxes
     // Payment method values
@@ -256,6 +253,10 @@ public class BillItemFinanceDetails implements Serializable {
 //    private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
 
+    
+    @Column(precision = 18, scale = 4)
+    private BigDecimal profitMargin = BigDecimal.ZERO;
+    
     @Override
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
@@ -354,12 +355,15 @@ public class BillItemFinanceDetails implements Serializable {
         cloned.returnQuantity = this.returnQuantity;
         cloned.returnFreeQuantity = this.returnFreeQuantity;
         cloned.totalReturnQuantity = this.totalReturnQuantity;
-        cloned.returnQuantityTotal = this.returnQuantityTotal;
-        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
+//        cloned.returnQuantityTotal = this.returnQuantityTotal;
+//        cloned.returnFreeQuantityTotal = this.returnFreeQuantityTotal;
 
         // ------------------ RETURN TOTALS ------------------
         cloned.returnGrossTotal = this.returnGrossTotal;
         cloned.returnNetTotal = this.returnNetTotal;
+        
+        //Profit
+        cloned.profitMargin = this.profitMargin;
 
         // ------------------ PAYMENT METHODS ------------------
 //        cloned.totalPaidAsCash = this.totalPaidAsCash;
@@ -506,21 +510,21 @@ public class BillItemFinanceDetails implements Serializable {
         this.returnNetTotal = returnNetTotal;
     }
 
-    public BigDecimal getReturnQuantityTotal() {
-        return returnQuantityTotal;
-    }
-
-    public void setReturnQuantityTotal(BigDecimal returnQuantityTotal) {
-        this.returnQuantityTotal = returnQuantityTotal;
-    }
-
-    public BigDecimal getReturnFreeQuantityTotal() {
-        return returnFreeQuantityTotal;
-    }
-
-    public void setReturnFreeQuantityTotal(BigDecimal returnFreeQuantityTotal) {
-        this.returnFreeQuantityTotal = returnFreeQuantityTotal;
-    }
+//    public BigDecimal getReturnQuantityTotal() {
+//        return returnQuantityTotal;
+//    }
+//
+//    public void setReturnQuantityTotal(BigDecimal returnQuantityTotal) {
+//        this.returnQuantityTotal = returnQuantityTotal;
+//    }
+//
+//    public BigDecimal getReturnFreeQuantityTotal() {
+//        return returnFreeQuantityTotal;
+//    }
+//
+//    public void setReturnFreeQuantityTotal(BigDecimal returnFreeQuantityTotal) {
+//        this.returnFreeQuantityTotal = returnFreeQuantityTotal;
+//    }
 
     public BigDecimal getBillTaxRate() {
         return billTaxRate;
@@ -882,5 +886,14 @@ public class BillItemFinanceDetails implements Serializable {
         this.totalReturnQuantity = totalReturnQuantity;
     }
 
+    public BigDecimal getProfitMargin() {
+        return profitMargin;
+    }
+
+    public void setProfitMargin(BigDecimal profitMargin) {
+        this.profitMargin = profitMargin;
+    }
+
+    
 
 }

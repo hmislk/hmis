@@ -23,6 +23,7 @@ public class StockBill implements Serializable {
 
     private double stockValueAtPurchaseRates;
     private double stockValueAsSaleRate;
+    private double stockValueAsCostRate;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private Bill bill;
@@ -103,5 +104,15 @@ public class StockBill implements Serializable {
     public void setBill(Bill bill) {
         this.bill = bill;
     }
+
+    public double getStockValueAsCostRate() {
+        return stockValueAsCostRate;
+    }
+
+    public void setStockValueAsCostRate(double stockValueAsCostRate) {
+        this.stockValueAsCostRate = stockValueAsCostRate;
+    }
+    
+    
 
 }

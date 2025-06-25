@@ -3,6 +3,7 @@ package com.divudi.bean.common;
 // <editor-fold defaultstate="collapsed" desc="Template">
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Imports">
+
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
@@ -21,6 +22,7 @@ import com.divudi.core.data.hr.ReportKeyWord;
 
 import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.CashierReports;
+import com.divudi.core.data.reports.ProfessionalPaymentReport;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.AuditEvent;
 import com.divudi.core.entity.Bill;
@@ -472,7 +474,7 @@ public class SearchController implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 billSearch.setBill(bill);
-                navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true;";
+                navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true";
                 break;
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
@@ -6843,9 +6845,9 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Expanding the headers to include all necessary fields
         String[] headers = {
-            "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
-            "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
+                "Bill ID", "Insitution Name", "Department Name", "Patient Name", "Staff Name", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value",
+                "Fee Name", "Fee Type", "Fee Value", "Institution Name", "Department Name", "Staff Name"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
@@ -8232,7 +8234,6 @@ public class SearchController implements Serializable {
     }
 
     /**
-     *
      * @param bill need to find paid bills
      * @return paid bill list associate with bill This method added due to avoid
      * cache and get fresh bill entity from db. Otherwise it is not updated even
@@ -8820,13 +8821,15 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdProfessionalPaymentBills() {
-        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
-        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
-        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
-        bundle.calculateTotalByBills();
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+            bundle = createBundleByKeywordForBills(billTypesAtomics, institution, department, null, null, null, null);
+            bundle.calculateTotalByBills();
+        }, ProfessionalPaymentReport.OPD_PROFESSIONAL_PAYMENTS_REPORT, sessionController.getLoggedUser());
     }
 
     public void searchMyProfessionalPaymentBills() {
@@ -8854,17 +8857,19 @@ public class SearchController implements Serializable {
     }
 
     public void processWhtReport() {
-        switch (reportType) {
-            case "individualReceipts":
-                processWhtReceipts();
-                break;
-            case "monthlySummary":
-                processWhtMonthlySymmary();
-                break;
-            case "consultantSummary":
-                processWhtConsultantSymmary();
-                break;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            switch (reportType) {
+                case "individualReceipts":
+                    processWhtReceipts();
+                    break;
+                case "monthlySummary":
+                    processWhtMonthlySymmary();
+                    break;
+                case "consultantSummary":
+                    processWhtConsultantSymmary();
+                    break;
+            }
+        }, FinancialReport.WITHHOLDING_TAX_REPORT, sessionController.getLoggedUser());
     }
 
     public void processWhtReceipts() {
@@ -9083,13 +9088,15 @@ public class SearchController implements Serializable {
     }
 
     public void searchOpdProfessionalPaymentBillFees() {
-        List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
-        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
-        billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
-        billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
-        bundle = createBundleByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
-        bundle.calculateTotalsForProfessionalFees();
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL);
+            billTypesAtomics.add(BillTypeAtomic.OPD_PROFESSIONAL_PAYMENT_BILL_RETURN);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES);
+            billTypesAtomics.add(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN);
+            bundle = createBundleByKeywordForBillFees(billTypesAtomics, institution, department, null, null, null, null, category);
+            bundle.calculateTotalsForProfessionalFees();
+        }, ProfessionalPaymentReport.OPD_PROFESSIONAL_FEE_PAYMENTS_REPORT, sessionController.getLoggedUser());
     }
 
     public String searchOpdProfessionalPayments() {
@@ -9323,9 +9330,9 @@ public class SearchController implements Serializable {
     }
 
     public void listBills(BillType billType, Class billClass, Boolean onlyCancelledBills, Boolean onlyReturnedBills,
-            Institution fromInstitution, Department fromDepartment,
-            Institution toInstitution, Department toDepartment,
-            Doctor referredDoctor, Institution referredInstitution) {
+                          Institution fromInstitution, Department fromDepartment,
+                          Institution toInstitution, Department toDepartment,
+                          Doctor referredDoctor, Institution referredInstitution) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9575,21 +9582,21 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                                                 Institution ins, Department dep,
+                                                                 Institution fromIns,
+                                                                 Department fromDep,
+                                                                 Institution toIns,
+                                                                 Department toDep) {
         return billService.createBundleByKeywordForBills(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null, fromDate, toDate, searchKeyword);
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins,
-            Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                                        Institution ins,
+                                                        Department dep,
+                                                        Institution fromIns,
+                                                        Department fromDep,
+                                                        Institution toIns,
+                                                        Department toDep) {
         return createBundleForBills(
                 billTypesAtomics,
                 ins,
@@ -9605,15 +9612,15 @@ public class SearchController implements Serializable {
     }
 
     public ReportTemplateRowBundle createBundleForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins,
-            Department dep,
-            Institution site,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Speciality paramSpeciality,
-            Staff paramStaff) {
+                                                        Institution ins,
+                                                        Department dep,
+                                                        Institution site,
+                                                        Institution fromIns,
+                                                        Department fromDep,
+                                                        Institution toIns,
+                                                        Department toDep,
+                                                        Speciality paramSpeciality,
+                                                        Staff paramStaff) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         bills = null;
@@ -9686,11 +9693,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                     Institution ins, Department dep,
+                                     Institution fromIns,
+                                     Department fromDep,
+                                     Institution toIns,
+                                     Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9775,13 +9782,13 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForChannelBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Staff consultant,
-            Speciality speciality
+                                                    Institution ins, Department dep,
+                                                    Institution fromIns,
+                                                    Department fromDep,
+                                                    Institution toIns,
+                                                    Department toDep,
+                                                    Staff consultant,
+                                                    Speciality speciality
     ) {
         bills = null;
         String sql;
@@ -9869,12 +9876,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywords(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Staff stf) {
+                                      Institution ins, Department dep,
+                                      Institution fromIns,
+                                      Department fromDep,
+                                      Institution toIns,
+                                      Department toDep,
+                                      Staff stf) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -9931,21 +9938,21 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                                Institution ins, Department dep,
+                                                Institution fromIns,
+                                                Department fromDep,
+                                                Institution toIns,
+                                                Department toDep) {
         createTableByKeywordForBillFees(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, null);
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Category cat) {
+                                                                    Institution ins, Department dep,
+                                                                    Institution fromIns,
+                                                                    Department fromDep,
+                                                                    Institution toIns,
+                                                                    Department toDep,
+                                                                    Category cat) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String sql;
@@ -10034,12 +10041,12 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFees(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Category cat) {
+                                                Institution ins, Department dep,
+                                                Institution fromIns,
+                                                Department fromDep,
+                                                Institution toIns,
+                                                Department toDep,
+                                                Category cat) {
 
         String sql;
         Map temMap = new HashMap();
@@ -10121,22 +10128,22 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillFee(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Staff stf) {
+                                               Institution ins, Department dep,
+                                               Institution fromIns,
+                                               Department fromDep,
+                                               Institution toIns,
+                                               Department toDep,
+                                               Staff stf) {
         createTableByKeywordBillFee(billTypesAtomics, ins, dep, fromIns, fromDep, toIns, toDep, stf);
     }
 
     public void createTableByKeywordBillFee(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            Staff stf) {
+                                            Institution ins, Department dep,
+                                            Institution fromIns,
+                                            Department fromDep,
+                                            Institution toIns,
+                                            Department toDep,
+                                            Staff stf) {
 
         String sql;
         Map temMap = new HashMap();
@@ -10193,11 +10200,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeywordForBillsWithoutToStaff(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                                           Institution ins, Department dep,
+                                                           Institution fromIns,
+                                                           Department fromDep,
+                                                           Institution toIns,
+                                                           Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -10275,11 +10282,11 @@ public class SearchController implements Serializable {
     }
 
     public void createTableByKeyword(BillType billType,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep) {
+                                     Institution ins, Department dep,
+                                     Institution fromIns,
+                                     Department fromDep,
+                                     Institution toIns,
+                                     Department toDep) {
         bills = null;
         String sql;
         Map temMap = new HashMap();
@@ -11602,7 +11609,7 @@ public class SearchController implements Serializable {
 
     public String navigateToListBillsWithErrors() {
         bills = null;
-        return "/dataAdmin/bills_with_errors?faces-redirect=true;";
+        return "/dataAdmin/bills_with_errors?faces-redirect=true";
     }
 
     public void findAllBillsWithErrors() {
@@ -11986,7 +11993,7 @@ public class SearchController implements Serializable {
 
     public String viewOPD(Bill b) {
         if (b.getBillType() == BillType.OpdBill) {
-            return "/opd/bill_reprint?faces-redirect=true;";
+            return "/opd/bill_reprint?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Please Search Again and View Bill");
             bills = new ArrayList<>();
@@ -12732,11 +12739,11 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-            BillType.ChannelOnCall,
-            BillType.ChannelCash,
-            BillType.ChannelAgent,
-            BillType.ChannelStaff,
-            BillType.ChannelCredit,};
+                BillType.ChannelOnCall,
+                BillType.ChannelCash,
+                BillType.ChannelAgent,
+                BillType.ChannelStaff,
+                BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -12801,12 +12808,12 @@ public class SearchController implements Serializable {
         Map m = new HashMap();
 
         BillType[] bt = {
-            BillType.ChannelOnCall,
-            BillType.ChannelCash,
-            BillType.ChannelAgent,
-            BillType.ChannelStaff,
-            BillType.ChannelPaid,
-            BillType.ChannelCredit,};
+                BillType.ChannelOnCall,
+                BillType.ChannelCash,
+                BillType.ChannelAgent,
+                BillType.ChannelStaff,
+                BillType.ChannelPaid,
+                BillType.ChannelCredit,};
 
         List<BillType> bts = Arrays.asList(bt);
 
@@ -14577,6 +14584,9 @@ public class SearchController implements Serializable {
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+
                 bundle.setName("Staff Welfare Bills");
                 bundle.setBundleType("billList");
                 bundle = generatePaymentMethodColumnsByStaffWelfareBills(opdBts, staffPaymentMethods);
@@ -14597,6 +14607,9 @@ public class SearchController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
                 bundle.setName("Staff Welfare Bill Items");
                 bundle.setBundleType("billItemList");
@@ -18912,38 +18925,40 @@ public class SearchController implements Serializable {
     }
 
     public void generateShiftStartEndSummary() {
-        Map<String, Object> parameters = new HashMap<>();
-        String jpql = "SELECT b"
-                + " FROM Bill b"
-                + " WHERE b.retired =:ret";
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> parameters = new HashMap<>();
+            String jpql = "SELECT b"
+                    + " FROM Bill b"
+                    + " WHERE b.retired =:ret";
 
-        parameters.put("ret", false);
+            parameters.put("ret", false);
 
-        if (institution != null) {
-            jpql += " AND b.department.institution=:ins";
-            parameters.put("ins", institution);
-        }
-        if (department != null) {
-            jpql += " AND b.department=:dep";
-            parameters.put("dep", department);
-        }
-        if (site != null) {
-            jpql += " AND b.department.site=:site";
-            parameters.put("site", site);
-        }
-        if (webUser != null) {
-            jpql += " AND b.creater =:wu";
-            parameters.put("wu", webUser);
-        }
-        jpql += " AND b.billTypeAtomic=:bta ";
-        parameters.put("bta", BillTypeAtomic.FUND_SHIFT_END_BILL);
+            if (institution != null) {
+                jpql += " AND b.department.institution=:ins";
+                parameters.put("ins", institution);
+            }
+            if (department != null) {
+                jpql += " AND b.department=:dep";
+                parameters.put("dep", department);
+            }
+            if (site != null) {
+                jpql += " AND b.department.site=:site";
+                parameters.put("site", site);
+            }
+            if (webUser != null) {
+                jpql += " AND b.creater =:wu";
+                parameters.put("wu", webUser);
+            }
+            jpql += " AND b.billTypeAtomic=:bta ";
+            parameters.put("bta", BillTypeAtomic.FUND_SHIFT_END_BILL);
 
-        jpql += " AND b.createdAt BETWEEN :fd AND :td";
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+            jpql += " AND b.createdAt BETWEEN :fd AND :td";
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
 
-        bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
-        // System.out.println("bills = " + bills);
+            bills = billFacade.findByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+            // System.out.println("bills = " + bills);
+        }, CashierReports.CASHIER_SHIFT_END_SUMMARY, sessionController.getLoggedUser());
     }
 
     public SearchController() {
@@ -19577,8 +19592,8 @@ public class SearchController implements Serializable {
         Row headerRow = sheet.createRow(rowIdx++);
         // Headers for both bills and bill items
         String[] headers = {
-            "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
-            "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
+                "Bill ID", "Institution Name", "Department Name", "Patient Name", "Staff Name", "User", "Bill Type", "Total", "Discount", "Net Total", "Payment Method",
+                "Bill Item Name", "Bill Item Code", "Item Type", "Quantity", "Rate", "Gross Value", "Bill Item Discount", "Net Value"
         };
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);

@@ -699,48 +699,12 @@
                     </div>
                 </f:facet>
 
-                <style>
-                    @media print{
-                        .purhcaseBill{
-                            width: 297mm!important;
-                        }
-
-                        .hideProfit{
-                            display: none!important;
-                        }
-
-                        .showProfit{
-
-                        }
-
-                        .hideRetailValue{
-                            display: none!important;
-                        }
-
-                        .showRetailValue{
-
-                        }
-
-                    }
-
-                    @media screen{
-                        .purhcaseBill{
-                            width: 100%!important;
-                        }
-
-                        .showProfit{
-
-                        }
-                    }
-
-                </style>
-
                 <h:panelGroup id="gpBillPreview" >
-                    <pharmacy:direct_purhcase
+                    <pharmacy:direct_purhcase_with_costing
                         bill="#{pharmacyDirectPurchaseController.bill}"
                         ShowProfit="#{configOptionApplicationController.getBooleanValueByKey('Show Profit % in Direct Purchase Bill', true)}"
                         ShowRetailValue="#{configOptionApplicationController.getBooleanValueByKey('Show Retail Value in Direct Purchase Bill', true)}">
-                    </pharmacy:direct_purhcase>
+                    </pharmacy:direct_purhcase_with_costing>
                 </h:panelGroup>
 
             </p:panel>

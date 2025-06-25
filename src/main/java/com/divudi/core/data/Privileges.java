@@ -189,6 +189,7 @@ public enum Privileges {
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
+    AccessLabTestHistory("Access Lab Test History"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -739,6 +740,7 @@ public enum Privileges {
             case LabReportSearchByDepartment:
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
+            case AccessLabTestHistory:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
