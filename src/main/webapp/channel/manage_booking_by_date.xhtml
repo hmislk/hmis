@@ -525,6 +525,7 @@
                                                         <p:commandButton
                                                             value="Mark Foreigner"
                                                             class="mx-2 my-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsForeignerWithBillUpdate()}"
                                                             rendered="#{!bookingControllerViewScope.foriegn}"
                                                             process="@this"
@@ -534,6 +535,7 @@
                                                         <p:commandButton
                                                             value="Mark Local"
                                                             class="mx-2"
+                                                            disabled="#{bookingControllerViewScope.selectedSessionInstance.originatingSession.category ne 'Scanning'}"
                                                             action="#{bookingControllerViewScope.markAsLocalWithBillUpdate()}"
                                                             rendered="#{bookingControllerViewScope.foriegn}"
                                                             process="@this"
@@ -823,7 +825,7 @@
                                                         id="btnRemove"
                                                         ajax="false"
                                                         icon="fas fa-trash"
-                                                        disabled="#{bi.netValue eq 0}"
+                                                        disabled="#{bookingControllerViewScope.checkItemIsSessionInstance(bi)}"
                                                         class="ui-button-danger"
                                                         action="#{bookingControllerViewScope.removeAddedAditionalItem()}"
                                                         >

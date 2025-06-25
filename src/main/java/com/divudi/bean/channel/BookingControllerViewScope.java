@@ -3456,6 +3456,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         itemToAddToBooking = null;
     }
+    
+    public boolean checkItemIsSessionInstance(BillItem bi){
+        if(bi.getItem() != null){
+            if(bi.getItem() instanceof ServiceSession){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void removeAddedAditionalItem() {
         if (selectedBillItem == null) {
