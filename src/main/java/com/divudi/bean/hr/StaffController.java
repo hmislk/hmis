@@ -204,12 +204,12 @@ public class StaffController implements Serializable {
 
     public String navigateToListStaff() {
         fillItems();
-        return "/admin/staff/staff_list?faces-redirect=true;";
+        return "/admin/staff/staff_list?faces-redirect=true";
     }
 
     public String navigateToStaffWelfareEligibilityAdjustmentList() {
         fillItems();
-        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true;";
+        return "/admin/staff/staff_welfare_eligibility_adjustment_list?faces-redirect=true";
     }
 
     public String navigateToManageStaff(Staff staff) {
@@ -223,14 +223,14 @@ public class StaffController implements Serializable {
             currentPerson = new Person();
             current.setPerson(currentPerson);
         }
-        return "/admin/staff/staff?faces-redirect=true;";
+        return "/admin/staff/staff?faces-redirect=true";
     }
 
     public String navigateToAddNewStaff() {
         current = new Staff();
         currentPerson = new Person();
         current.setPerson(currentPerson);
-        return "/admin/staff/staff?faces-redirect=true;";
+        return "/admin/staff/staff?faces-redirect=true";
     }
 
     public void saveCurrentStaff() {

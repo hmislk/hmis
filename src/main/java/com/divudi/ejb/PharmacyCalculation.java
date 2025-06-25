@@ -100,21 +100,21 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public List<Item> getItemsForDealor(Institution i) {
-        String temSql;
-        HashMap hm = new HashMap();
-        List<Item> tmp;
-        hm.put("ins", i);
-        temSql = "SELECT i.item FROM ItemsDistributors i "
+        String jpql;
+        HashMap params = new HashMap();
+        List<Item> dealerItems;
+        params.put("ins", i);
+        jpql = "SELECT i.item FROM ItemsDistributors i "
                 + " where i.retired=false "
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findByJpql(temSql, hm);
+        dealerItems = getItemFacade().findByJpql(jpql, params);
 
-        if (tmp == null) {
-            tmp = new ArrayList<>();
+        if (dealerItems == null) {
+            dealerItems = new ArrayList<>();
         }
-        return tmp;
+        return dealerItems;
     }
 
     public boolean checkItem(Institution ins, Item i) {

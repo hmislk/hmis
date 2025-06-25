@@ -367,57 +367,57 @@
                     </div>
 
                     <p:dataTable id="tbl"
-                                 value="#{pharmacyReportController.billItems}" var="bi">
+                                 value="#{pharmacyReportController.pharmacyRows}" var="bi">
                         <p:column headerText="Staff">
                             <f:facet name="header">
                                 <h:outputLabel value="Staff"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.bill.toStaff.person.name}"/>
+                            <h:outputLabel value="#{bi.billItem.bill.toStaff.person.name}"/>
                         </p:column>
                         <p:column headerText="Item">
                             <f:facet name="header">
                                 <h:outputLabel value="Item"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.item.name}"/>
+                            <h:outputLabel value="#{bi.billItem.item.name}"/>
                         </p:column>
                         <p:column headerText="Code">
                             <f:facet name="header">
                                 <h:outputLabel value="Code"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.item.code}"/>
+                            <h:outputLabel value="#{bi.billItem.item.code}"/>
                         </p:column>
                         <p:column headerText="Stock"
-                                  sortBy="#{bi.qty}"
+                                  sortBy="#{bi.billItem.qty}"
                         >
                             <f:facet name="header">
                                 <h:outputLabel value="Stock"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.qty}"/>
+                            <h:outputLabel value="#{bi.billItem.qty}"/>
                         </p:column>
                         <p:column headerText="Expiry"
-                                  sortBy="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                  sortBy="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                             <f:facet name="header">
                                 <h:outputLabel value="Expiry"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="From Department"
-                                  sortBy="#{bi.bill.fromDepartment.name}">
+                                  sortBy="#{bi.billItem.bill.fromDepartment.name}">
                             <f:facet name="header">
                                 <h:outputLabel value="From Department"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.bill.fromDepartment.name}">
+                            <h:outputLabel value="#{bi.billItem.bill.fromDepartment.name}">
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Issued Date"
-                                  sortBy="#{bi.bill.createdAt}">
+                                  sortBy="#{bi.billItem.bill.createdAt}">
                             <f:facet name="header">
                                 <h:outputLabel value="Issued Date"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.bill.createdAt}">
+                            <h:outputLabel value="#{bi.billItem.bill.createdAt}">
                                 <f:convertDateTime timeZone="Asia/Colombo"
                                                    pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                             </h:outputLabel>
@@ -427,7 +427,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Retail Sale Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.qty}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.retailsaleRate * bi.billItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -436,7 +436,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Purchase Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.purcahseRate * bi.qty}">
+                            <h:outputLabel value="#{bi.billItem.pharmaceuticalBillItem.itemBatch.purcahseRate * bi.billItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>
@@ -445,7 +445,7 @@
                             <f:facet name="header">
                                 <h:outputLabel value="Cost Value"/>
                             </f:facet>
-                            <h:outputLabel value="#{bi.billItemFinanceDetails.lineCost}">
+                            <h:outputLabel value="#{bi.itemBatch.costRate * bi.billItem.qty}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputLabel>
                         </p:column>

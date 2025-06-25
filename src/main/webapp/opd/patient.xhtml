@@ -29,7 +29,14 @@
                                 <p:commandButton icon="pi pi-print" value="Print" class="p-0 m-1 ui-button-info" >
                                     <p:printer target="groupPatientCard"/>
                                 </p:commandButton>
-                                <p:commandButton icon="fas fa-plus" value="New Patient" action="#{patientController.navigateToAddNewPatientForOpd()}"  class="mx-2 ui-button-info" style="float: right;"></p:commandButton>
+                                <p:commandButton 
+                                    icon="fas fa-plus" 
+                                    value="New Patient" 
+                                    ajax="false"
+                                    action="#{patientController.navigateToAddNewPatientForOpd()}"  
+                                    class="mx-2 ui-button-info" 
+                                    style="float: right;">
+                                </p:commandButton>
                             </f:facet>
                             <div class="row" >
 

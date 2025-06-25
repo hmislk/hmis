@@ -261,7 +261,7 @@ public class FinancialTransactionController implements Serializable {
     public String navigateToFinancialTransactionIndex() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/index?faces-redirect=true;";
+        return "/cashier/index?faces-redirect=true";
     }
 
     public String navigateToPaymentManagement() {
@@ -283,7 +283,7 @@ public class FinancialTransactionController implements Serializable {
         currentBill = new Bill();
         currentBill.setBillType(BillType.SUPPLEMENTARY_INCOME);
         currentBill.setBillTypeAtomic(BillTypeAtomic.SUPPLEMENTARY_INCOME);
-        return "/cashier/income_bill?faces-redirect=true;";
+        return "/cashier/income_bill?faces-redirect=true";
     }
 
     public String navigateToNewExpenseBill() {
@@ -292,24 +292,24 @@ public class FinancialTransactionController implements Serializable {
         currentBill.setBillType(BillType.OPERATIONAL_EXPENSES);
         currentBill.setBillTypeAtomic(BillTypeAtomic.OPERATIONAL_EXPENSES);
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/expense_bill?faces-redirect=true;";
+        return "/cashier/expense_bill?faces-redirect=true";
     }
 
     public String navigateToTraceIncomeExpenseBills() {
         resetClassVariables();
         fillFundTransferBillsForMeToReceive();
-        return "/cashier/trace_income_expenses?faces-redirect=true;";
+        return "/cashier/trace_income_expenses?faces-redirect=true";
     }
 
     public String navigateToMyDrawer() {
         loggedUserDrawer = null;
-        return "/cashier/my_drawer?faces-redirect=true;";
+        return "/cashier/my_drawer?faces-redirect=true";
     }
 
     public String navigateToCreateNewInitialFundBill() {
         resetClassVariables();
         prepareToAddNewInitialFundBill();
-        return "/cashier/initial_fund_bill?faces-redirect=true;";
+        return "/cashier/initial_fund_bill?faces-redirect=true";
     }
 
     // Method to calculate duration between two Date objects
@@ -614,7 +614,7 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public String navigateToDayEndReport() {
-        return "/cashier/day_end_report?faces-redirect=true;";
+        return "/cashier/day_end_report?faces-redirect=true";
     }
 
     public void processDayEndReport() {
@@ -1129,7 +1129,7 @@ public class FinancialTransactionController implements Serializable {
 
     public String navigateToListShiftEndSummaries() {
         resetClassVariables();
-        return "/cashier/initial_fund_bill_list?faces-redirect=true;";
+        return "/cashier/initial_fund_bill_list?faces-redirect=true";
     }
 
     public void listShiftStartBills() {
@@ -5742,7 +5742,7 @@ public class FinancialTransactionController implements Serializable {
             paymentController.save(p);
         }
         JsfUtil.addSuccessMessage("All shift excess records have been successfully settled.");
-        return "/cashier/record_shift_excess_print?faces-redirect=true;";  // Redirect to a summary page or another relevant page
+        return "/cashier/record_shift_excess_print?faces-redirect=true";  // Redirect to a summary page or another relevant page
     }
 
 // Method to add a new excess record to the current bill
@@ -5916,7 +5916,7 @@ public class FinancialTransactionController implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="WithdrawalFundBill">
     public String navigateToCreateNewFundWithdrawalBill() {
         prepareToAddNewWithdrawalProcessingBill();
-        return "/cashier/fund_withdrawal_bill?faces-redirect=true;";
+        return "/cashier/fund_withdrawal_bill?faces-redirect=true";
     }
 
     private void prepareToAddNewWithdrawalProcessingBill() {
