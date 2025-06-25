@@ -885,37 +885,7 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-//    public void generateBillComponent() {
-//
-//        for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
-//            double remains = getPharmacyCalculation().calQtyInTwoSql(i);
-//
-//            if (i.getQtyInUnit() >= remains && (i.getQtyInUnit() - remains) != 0) {
-//                BillItem bi = new BillItem();
-//                bi.setSearialNo(getBillItems().size());
-//                bi.setItem(i.getBillItem().getItem());
-//                bi.setReferanceBillItem(i.getBillItem());
-//                bi.setQty(i.getQtyInUnit() - remains);
-//                bi.setTmpQty(i.getQtyInUnit() - remains);
-//                //Set Suggession
-////                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
-//
-//                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-//                ph.setBillItem(bi);
-//                double tmpQty = bi.getQty();
-//                ph.setQtyInUnit((double) tmpQty);
-//                ph.setPurchaseRate(i.getPurchaseRate());
-//                ph.setRetailRate(i.getRetailRate());
-//                ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-//
-//                bi.setPharmaceuticalBillItem(ph);
-//
-//                getBillItems().add(bi);
-//                //  getBillItems().r
-//            }
-//
-//        }
-//    }
+
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
@@ -934,10 +904,7 @@ public class GrnCostingController implements Serializable {
                 newlyCreatedBillItemForGrn.setItem(pbiInApprovedOrder.getBillItem().getItem());
                 newlyCreatedBillItemForGrn.setReferanceBillItem(pbiInApprovedOrder.getBillItem());
                 newlyCreatedBillItemForGrn.setQty(remains);
-//                bi.setTmpQty(remains);
                 newlyCreatedBillItemForGrn.setTmpFreeQty(remainFreeQty);
-                //Set Suggession
-//                bi.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(bi.getItem()));
 
                 PharmaceuticalBillItem newlyCreatedPbiForGrn = new PharmaceuticalBillItem();
                 newlyCreatedPbiForGrn.setBillItem(newlyCreatedBillItemForGrn);
@@ -948,41 +915,20 @@ public class GrnCostingController implements Serializable {
                 newlyCreatedBillItemForGrn.setPreviousRecieveFreeQtyInUnit(tmpFreeQty);
 
                 newlyCreatedPbiForGrn.setQty(tmpQty);
-//                ph.setQtyInUnit(tmpQty);
-
-//                ph.setFreeQtyInUnit(tmpFreeQty);
                 newlyCreatedPbiForGrn.setFreeQty(tmpFreeQty);
 
                 double pr = pbiInApprovedOrder.getPurchaseRate();
                 double rr = pbiInApprovedOrder.getRetailRate();
-//                BigDecimal packRate = BigDecimal.ZERO;
 
-//                BillItem lastPurchasedBillItem = getPharmacyBean().getLastPurchaseItem(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
-//                if (lastPurchasedBillItem != null) {
-//                    BillItemFinanceDetails lastDetails = lastPurchasedBillItem.getBillItemFinanceDetails();
-//                    if (lastDetails != null) {
-//                        BigDecimal lineGrossRate = lastDetails.getLineGrossRate();
-//                        BigDecimal lastRetailRate = lastDetails.getRetailSaleRate();
-//
-//                        pr = (lineGrossRate != null) ? lineGrossRate.doubleValue() : 0.0;
-//                        rr = (lastRetailRate != null) ? lastRetailRate.doubleValue() : 0.0;
-//                        packRate = lastRetailRate != null ? lastRetailRate : BigDecimal.ZERO;
-//
-//                    }
-//                }
-
-                // Fallback logic
                 if (pr == 0.0 || rr == 0.0) {
                     double fallbackPr = getPharmacyBean().getLastPurchaseRate(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
                     double fallbackRr = getPharmacyBean().getLastRetailRateByBillItemFinanceDetails(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
                     pr = fallbackPr > 0.0 ? fallbackPr : pr;
                     rr = fallbackRr > 0.0 ? fallbackRr : rr;
-//                    packRate = BigDecimal.valueOf(rr);
                 }
 
                 newlyCreatedPbiForGrn.setPurchaseRate(pr);
                 newlyCreatedPbiForGrn.setRetailRate(rr);
-                //TODO: Maange Wholesalerate as a seperate issue
 
                 newlyCreatedBillItemForGrn.setPharmaceuticalBillItem(newlyCreatedPbiForGrn);
 
@@ -997,7 +943,6 @@ public class GrnCostingController implements Serializable {
                 pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
 
                 getBillItems().add(newlyCreatedBillItemForGrn);
-                //  getBillItems().r
             }
 
         }
