@@ -1890,7 +1890,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
-        return "/opd/batch_bill_cancel?faces-redirect=true;";
+        return "/opd/batch_bill_cancel?faces-redirect=true";
     }
     
     private List<Bill> cancelSingleBills = new ArrayList<>();
@@ -4069,7 +4069,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         paymentMethod = PaymentMethod.Cash;
 
         collectingCentreBillController.setCollectingCentre(null);
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public void makeNull() {

@@ -474,7 +474,7 @@ public class SearchController implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES_RETURN:
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_OPD_SERVICES:
                 billSearch.setBill(bill);
-                navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true;";
+                navigateTo = "/payment_bill_reprint.xhtml?faces-redirect=true";
                 break;
 
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_FOR_AGENCIES:
@@ -11609,7 +11609,7 @@ public class SearchController implements Serializable {
 
     public String navigateToListBillsWithErrors() {
         bills = null;
-        return "/dataAdmin/bills_with_errors?faces-redirect=true;";
+        return "/dataAdmin/bills_with_errors?faces-redirect=true";
     }
 
     public void findAllBillsWithErrors() {
@@ -11993,7 +11993,7 @@ public class SearchController implements Serializable {
 
     public String viewOPD(Bill b) {
         if (b.getBillType() == BillType.OpdBill) {
-            return "/opd/bill_reprint?faces-redirect=true;";
+            return "/opd/bill_reprint?faces-redirect=true";
         } else {
             JsfUtil.addErrorMessage("Please Search Again and View Bill");
             bills = new ArrayList<>();

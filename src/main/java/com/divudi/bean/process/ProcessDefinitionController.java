@@ -81,7 +81,7 @@ public class ProcessDefinitionController implements Serializable {
      */
     public String navigateToManageProcessDefinitions() {
         fillAllProcesses();
-        return "/process/admin/process_definitions?faces-redirect=true;";
+        return "/process/admin/process_definitions?faces-redirect=true";
     }
 
     /**
@@ -92,7 +92,7 @@ public class ProcessDefinitionController implements Serializable {
     @Deprecated // Use Data Administration
     public String navigateToManageProcessIndex() {
         fillAllProcesses();
-        return "/process/admin/index?faces-redirect=true;";
+        return "/process/admin/index?faces-redirect=true";
     }
 
     /**

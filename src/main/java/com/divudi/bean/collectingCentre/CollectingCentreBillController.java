@@ -899,7 +899,7 @@ public class CollectingCentreBillController implements Serializable, ControllerW
         checkBillValues();
 
         ccBillSettlingStarted.set(false);
-        return "/collecting_centre/bill_print?faces-redirect=true;";
+        return "/collecting_centre/bill_print?faces-redirect=true";
 
     }
 
