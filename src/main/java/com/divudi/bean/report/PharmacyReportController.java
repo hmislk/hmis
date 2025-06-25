@@ -2886,14 +2886,12 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateCogsOtherComponents() {
         try {
-            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.netValue) FROM StockHistory sh2 "
+            StringBuilder baseQuery = new StringBuilder("SELECT SUM(sh2.pbItem.billItem.bill.netTotal) FROM StockHistory sh2 "
                     + "WHERE sh2.retired = false "
-                    + "AND sh2.createdAt BETWEEN :fd AND :td "
-                    + "AND (sh2.itemBatch.item.departmentType IS NULL "
-                    + "OR sh2.itemBatch.item.departmentType = :depty) ");
+                    + "AND sh2.createdAt BETWEEN :fd AND :td ");
 
             Map<String, Object> commonParams = new HashMap<>();
-            commonParams.put("depty", DepartmentType.Pharmacy);
+//            commonParams.put("depty", DepartmentType.Pharmacy);
             commonParams.put("fd", fromDate);
             commonParams.put("td", toDate);
 
