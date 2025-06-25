@@ -143,32 +143,52 @@ public class PurchaseOrderController implements Serializable {
             JsfUtil.addErrorMessage("Select Paymentmethod");
             return "";
         }
-        if (getBillItems() == null || getBillItems().isEmpty()) {
+
+        if (billItems == null || billItems.isEmpty()) {
             JsfUtil.addErrorMessage("Please add bill items");
             return "";
         }
+
+        for (BillItem bis : billItems) {
+            PharmaceuticalBillItem pbi = bis.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                JsfUtil.addErrorMessage("Missing pharmaceutical details for item: " + bis.getItem().getName());
+                return "";
+            }
+
+            double totalQty = pbi.getQty() + pbi.getFreeQty();
+            if (totalQty <= 0) {
+                JsfUtil.addErrorMessage("Item '" + bis.getItem().getName() + "' has zero quantity and free quantity");
+                return "";
+            }
+
+            if (pbi.getPurchaseRate() <= 0) {
+                JsfUtil.addErrorMessage("Item '" + bis.getItem().getName() + "' has invalid purchase price");
+                return "";
+            }
+        }
+
         calTotal();
         saveBill();
-        totalBillItemsCount = 0;
         saveBillComponent();
-        if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please add item quantities for the bill");
-            return "";
-        }
-        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+
+        String deptId = billNumberBean.departmentBillNumberGeneratorYearly(
+                getSessionController().getDepartment(),
+                BillTypeAtomic.PHARMACY_ORDER_APPROVAL
+        );
+
         getAprovedBill().setDeptId(deptId);
         getAprovedBill().setInsId(deptId);
         getAprovedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+
         billFacade.edit(getAprovedBill());
         notificationController.createNotification(getAprovedBill());
-        //Update Requested Bill Reference
+
         getRequestedBill().setReferenceBill(getAprovedBill());
         getBillFacade().edit(getRequestedBill());
 
-//      clearList();
         printPreview = true;
         return "";
-
     }
 
     public String viewRequestedList() {
@@ -247,7 +267,7 @@ public class PurchaseOrderController implements Serializable {
                 i.setRetireComments("Retired at Approving PO");
 
             }
-            totalBillItemsCount = totalBillItemsCount + qty;
+//            totalBillItemsCount = totalBillItemsCount + qty;
             PharmaceuticalBillItem phItem = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             try {
@@ -290,7 +310,7 @@ public class PurchaseOrderController implements Serializable {
 
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(bi);
-            
+
             ph.setFreeQty(i.getFreeQty());
             ph.setQty(i.getQty());
             ph.setPurchaseRate(i.getPurchaseRate());
@@ -298,7 +318,6 @@ public class PurchaseOrderController implements Serializable {
             bi.setPharmaceuticalBillItem(ph);
 //            bi.setTmpQty(ph.getQty());
 
-            
             getBillItems().add(bi);
         }
 
