@@ -1327,51 +1327,51 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
     public void createDebtorSettlement() {
         reportTimerController.trackReportExecution(() -> {
-        StringBuilder jpql = new StringBuilder(
-                "SELECT bi FROM BillItem bi "
-                        + "WHERE bi.retired = :ret "
-                        + "AND bi.bill.billTypeAtomic IN :btas");
-        Map<String, Object> m = new HashMap<>();
-        m.put("ret", false);
-        List<BillTypeAtomic> btas = new ArrayList<>();
-        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
-        btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
-        m.put("btas", btas);
-        if (institution != null) {
-            jpql.append(" AND bi.bill.fromInstitution = :cc");
-            m.put("cc", institution);
-        }
-        jpql.append(" AND bi.createdAt BETWEEN :fromDate AND :toDate");
-        m.put("fromDate", getFromDate());
-        m.put("toDate", getToDate());
-
-        billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
-
-        if (selectedVoucherStatusOnDebtorSettlement != null) {
-            // Filter the bills list based on the statusFilter
-            billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
-        }
-
-        Set<Bill> processedBills = new HashSet<>();
-        netTotal = 0.0;
-
-        for (BillItem bi : billItems) {
-            Bill bill = bi.getBill();
-            if (bill != null && !processedBills.contains(bill)) {
-                switch (bi.getBill().getBillTypeAtomic()) {
-                    case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
-                        netTotal += Math.abs(bill.getTotal());
-                        break;
-                    case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
-                        netTotal -= Math.abs(bill.getTotal());
-                        break;
-                    default:
-                        continue;
-                }
-
-                processedBills.add(bill);
+            StringBuilder jpql = new StringBuilder(
+                    "SELECT bi FROM BillItem bi "
+                    + "WHERE bi.retired = :ret "
+                    + "AND bi.bill.billTypeAtomic IN :btas");
+            Map<String, Object> m = new HashMap<>();
+            m.put("ret", false);
+            List<BillTypeAtomic> btas = new ArrayList<>();
+            btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_RECEIVED);
+            btas.add(BillTypeAtomic.OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION);
+            m.put("btas", btas);
+            if (institution != null) {
+                jpql.append(" AND bi.bill.fromInstitution = :cc");
+                m.put("cc", institution);
             }
-        }
+            jpql.append(" AND bi.createdAt BETWEEN :fromDate AND :toDate");
+            m.put("fromDate", getFromDate());
+            m.put("toDate", getToDate());
+
+            billItems = billItemFacade.findByJpql(jpql.toString(), m, TemporalType.TIMESTAMP);
+
+            if (selectedVoucherStatusOnDebtorSettlement != null) {
+                // Filter the bills list based on the statusFilter
+                billItems = filterBillsByStatus(billItems, selectedVoucherStatusOnDebtorSettlement);
+            }
+
+            Set<Bill> processedBills = new HashSet<>();
+            netTotal = 0.0;
+
+            for (BillItem bi : billItems) {
+                Bill bill = bi.getBill();
+                if (bill != null && !processedBills.contains(bill)) {
+                    switch (bi.getBill().getBillTypeAtomic()) {
+                        case OPD_CREDIT_COMPANY_PAYMENT_RECEIVED:
+                            netTotal += Math.abs(bill.getTotal());
+                            break;
+                        case OPD_CREDIT_COMPANY_PAYMENT_CANCELLATION:
+                            netTotal -= Math.abs(bill.getTotal());
+                            break;
+                        default:
+                            continue;
+                    }
+
+                    processedBills.add(bill);
+                }
+            }
         }, FinancialReport.DEBTOR_SETTLEMENT_REPORT, sessionController.getLoggedUser());
     }
 
@@ -1706,13 +1706,11 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                     BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
                     BillTypeAtomic.INWARD_SERVICE_BILL);
 
-
-
             jpql += " group by bi.item.category.name, bi.item.name ";
             jpql += " order by bi.item.category.name, bi.item.name";
 
             Map<String, Object> qParams = new HashMap<>(baseParams);
-        qParams.put("bType", bTypes);  // Use 'bType' for IN clause// Unchecked cast here
+            qParams.put("bType", bTypes);  // Use 'bType' for IN clause// Unchecked cast here
             List<ItemCount> allLabTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
             if (allLabTestCounts == null) {
@@ -1720,7 +1718,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             }
 
             qParams = new HashMap<>(baseParams);
-        qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
+            qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_CANCELLATION, BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION, BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION, BillTypeAtomic.CC_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION, BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION));
             List<ItemCount> cancelTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
             if (cancelTestCounts == null) {
@@ -1729,7 +1727,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
             // Now fetch results for OpdBillRefund (use a list for single bType)
             qParams = new HashMap<>(baseParams);
-        qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
+            qParams.put("bType", Arrays.asList(BillTypeAtomic.OPD_BILL_REFUND, BillTypeAtomic.PACKAGE_OPD_BILL_REFUND, BillTypeAtomic.CC_BILL_REFUND, BillTypeAtomic.INWARD_SERVICE_BILL_REFUND));
             List<ItemCount> refundTestCounts = (List<ItemCount>) billItemFacade.findLightsByJpql(jpql, qParams, TemporalType.TIMESTAMP);
 
             if (refundTestCounts == null) {
@@ -3014,7 +3012,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
     }
 
     public String navigateToCostOfGoodSoldReports() {
-        pharmacyReportController.setBillItems( new ArrayList<>());
+        pharmacyReportController.setBillItems(new ArrayList<>());
         pharmacyReportController.setNetTotal(0.0);
 
         if (reportTemplateFileIndexName == null) {
@@ -3049,8 +3047,9 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             case "Closing Stock Value":
             case "Opening Stock Value":
                 return "/reports/inventoryReports/closing_stock_report?faces-redirect=true";
-            case "Variance":
             case "Sale Cash":
+                return "/reports/inventoryReports/opd_sale_cash?faces-redirect=true";
+            case "Variance":
             case "Calculated Closing Stock Value":
                 JsfUtil.addErrorMessage("No Given Report Template");
                 return null;

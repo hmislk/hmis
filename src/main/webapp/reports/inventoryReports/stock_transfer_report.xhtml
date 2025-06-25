@@ -382,7 +382,7 @@
 
                     <h:panelGroup class="mt-5" rendered="#{pharmacyController.reportType eq 'detailReport'}">
                         <h5>Stock Issues Detail</h5>
-                        <p:dataTable id="tbl2" value="#{pharmacyController.billItems}"
+                        <p:dataTable id="tbl2" value="#{pharmacyController.pharmacyRows}"
                                      var="i"
                                      rowIndexVar="n"
                                      paginator="true"
@@ -392,71 +392,74 @@
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
                             <p:column headerText="Bill No" width="5em">
-                                <p:commandLink ajax="false" value="#{i.bill.deptId}"
+                                <p:commandLink ajax="false" value="#{i.billItem.bill.deptId}"
                                                action="/pharmacy/pharmacy_reprint_transfer_isssue">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i.bill}"/>
+                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}"
+                                                                 value="#{i.billItem.bill}"/>
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText=" Approval Date" width="6em">
-                                <h:outputText value="#{i.bill.createdAt}">
+                                <h:outputText value="#{i.billItem.bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Ref Bill No" width="6em">
-                                <p:commandLink ajax="false" value="#{i.bill.backwardReferenceBill.deptId}"
+                                <p:commandLink ajax="false" value="#{i.billItem.bill.backwardReferenceBill.deptId}"
                                                action="/pharmacy/pharmacy_reprint_transfer_request">
-                                    <f:setPropertyActionListener value="#{i.bill}" target="#{pharmacyBillSearch.bill}"/>
+                                    <f:setPropertyActionListener value="#{i.billItem.bill}"
+                                                                 target="#{pharmacyBillSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Ref Bill Approved Date and Time" width="6em">
-                                <h:outputText value="#{i.bill.backwardReferenceBill.createdAt}">
+                                <h:outputText value="#{i.billItem.bill.backwardReferenceBill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Item Description" width="10em">
-                                <p:outputLabel value="#{i.item.name}"/>
+                                <p:outputLabel value="#{i.billItem.item.name}"/>
                             </p:column>
                             <p:column headerText="Item Code" width="5em"
                                       style="text-align: right; padding-right: 10px;">
-                                <p:outputLabel value="#{i.item.code}"/>
+                                <p:outputLabel value="#{i.billItem.item.code}"/>
                             </p:column>
                             <p:column headerText="Quantity" width="5em" style="text-align: right; padding-right: 10px;">
-                                <p:outputLabel value="#{i.pharmaceuticalBillItem.qty}"><f:convertNumber
-                                        pattern="#,##0"/></p:outputLabel>
+                                <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.qty}">
+                                    <f:convertNumber pattern="#,##0"/>
+                                </p:outputLabel>
                             </p:column>
                             <p:column headerText="Unit" width="4em" style="text-align: center;">
-                                <h:outputText value="#{i.item.vmp.strengthUnit.name}"/>
+                                <h:outputText value="#{i.billItem.item.vmp.strengthUnit.name}"/>
                             </p:column>
                             <p:column headerText="Purchase rate" width="5em"
                                       style="text-align: right; padding-right: 10px;">
-                                <p:outputLabel value="#{i.pharmaceuticalBillItem.purchaseRate}">
+                                <p:outputLabel value="#{i.billItem.pharmaceuticalBillItem.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Purchase Value" width="5em"
                                       style="text-align: right; padding-right: 10px;">
                                 <p:outputLabel
-                                        value="#{i.pharmaceuticalBillItem.qty * i.pharmaceuticalBillItem.purchaseRate}">
+                                        value="#{i.billItem.pharmaceuticalBillItem.qty * i.billItem.pharmaceuticalBillItem.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Cost rate" width="5em"
                                       style="text-align: right; padding-right: 10px;">
-                                <p:outputLabel value="#{i.billItemFinanceDetails.lineCostRate}">
+                                <p:outputLabel value="#{i.itemBatch.costRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Cost Value" width="5em"
                                       style="text-align: right; padding-right: 10px;">
                                 <p:outputLabel
-                                        value="#{i.billItemFinanceDetails.lineCost}">
+                                        value="#{i.billItem.pharmaceuticalBillItem.qty * i.itemBatch.costRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </p:outputLabel>
                             </p:column>
                             <p:column headerText="Issue Approved User" width="10em">
-                                <h:outputText value="#{i.bill.creater.webUserPerson.name}"/>
+                                <h:outputText value="#{i.billItem.bill.creater.webUserPerson.name}"/>
                             </p:column>
                         </p:dataTable>
                     </h:panelGroup>
