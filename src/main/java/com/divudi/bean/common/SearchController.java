@@ -14584,6 +14584,9 @@ public class SearchController implements Serializable {
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
 
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+
                 bundle.setName("Staff Welfare Bills");
                 bundle.setBundleType("billList");
                 bundle = generatePaymentMethodColumnsByStaffWelfareBills(opdBts, staffPaymentMethods);
@@ -14604,6 +14607,9 @@ public class SearchController implements Serializable {
                 opdBts.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
                 opdBts.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
 
                 bundle.setName("Staff Welfare Bill Items");
                 bundle.setBundleType("billItemList");
