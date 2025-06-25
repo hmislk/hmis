@@ -191,7 +191,7 @@
                                 </h:panelGrid>
                             </div>
                             <div class="col-2">
-                                <h:panelGrid columns="1" class="w-100 mx-2">
+                                <h:panelGrid columns="1" class="w-100">
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.searchBills}"  value="Bills" icon="fas fa-file-invoice-dollar" styleClass="m-1 ui-button-success w-100"/>
                                     <p:commandButton ajax="false" action="#{patientInvestigationController.searchPatientInvestigations}" actionListener="#{patientInvestigationController.clearAlternativeReportData()}" value="Investigations" icon="fas fa-search" styleClass="m-1 ui-button-primary w-100"/>
                                     <hr/>
@@ -412,6 +412,17 @@
                                                         action="#{patientInvestigationController.navigateToPatientReportsFromSelectedInvestigation(patientInvestigation)}" >
                                                     </p:commandButton>
                                                 </div>
+                                                <div class="row">
+                                                    <p:commandButton 
+                                                        icon="fa fa-history"
+                                                        value="View History" 
+                                                        class="ui-button-success mt-2"
+                                                        ajax="false" 
+                                                        rendered="#{webUserController.hasPrivilege('AccessLabTestHistory')}"
+                                                        action="#{patientInvestigationController.navigateToTestHistory()}" >
+                                                        <f:setPropertyActionListener value="#{patientInvestigation}" target="#{patientInvestigationController.current}" ></f:setPropertyActionListener>
+                                                    </p:commandButton>
+                                                </div>
 
                                             </h:panelGroup>
 
@@ -492,6 +503,7 @@
                                                     </div>
                                                 </h:panelGroup>
                                             </h:panelGroup>
+                                            
                                         </p:column>
                                     </p:dataTable>
 
@@ -1331,6 +1343,9 @@
 
                             <div class="col-2" >
                                 <h:panelGrid columns="1" class="w-100">
+
+                                    <hr/>
+
                                     <p:commandButton 
                                         rendered="#{patientInvestigationController.listingEntity eq 'PATIENT_INVESTIGATIONS'}"
                                         id="btnGenerateBarcodes"
@@ -1377,87 +1392,6 @@
 
                                         <hr/>
                                     </h:panelGrid>
-
-                                    <p:dialog 
-                                        header="Send Out Lab Sample" 
-                                        widgetVar="dlg2" 
-                                        minHeight="450" 
-                                        width="850" 
-                                        showEffect="fade" 
-                                        modal="true" 
-                                        closeOnEscape="true">
-
-                                        <div>
-                                            <div class="d-flex gap-3">
-                                                <h:outputLabel class="w-50" value="Sending Institution"/>
-                                                <p:autoComplete 
-                                                    class="w-100" 
-                                                    id="sendSampleIns" 
-                                                    value="#{patientInvestigationController.outLabInstitution}"
-                                                    inputStyleClass="w-100"
-                                                    completeMethod="#{institutionController.completeIns}" 
-                                                    var="oi" 
-                                                    placeholder="OutLab Institution "
-                                                    maxResults="15"
-                                                    itemLabel="#{oi.name}" 
-                                                    itemValue="#{oi}">
-                                                    <p:column style="padding: 4px;">#{oi.institutionCode}</p:column>
-                                                    <p:column style="padding: 4px;">#{oi.name}</p:column>
-                                                    <p:ajax process="sendSampleIns" update="sendSampleDept" ></p:ajax>
-                                                </p:autoComplete>
-                                            </div>
-                                            <div class="d-flex gap-3 my-2">
-                                                <h:outputLabel class="w-50" value="Sending Department"/>
-                                                <p:selectOneMenu
-                                                    filter="true"
-                                                    value="#{patientInvestigationController.outLabDepartment}"
-                                                    filterMatchMode="contains"
-                                                    id="sendSampleDept"
-                                                    class="w-100">
-                                                    <f:selectItem itemLabel="Any"></f:selectItem>
-                                                    <f:selectItems 
-                                                        value="#{departmentController.getInstitutionDepartments(patientInvestigationController.outLabInstitution)}" 
-                                                        var="odpt" 
-                                                        itemLabel="#{odpt.name}" 
-                                                        itemValue="#{odpt}">
-                                                    </f:selectItems>
-                                                </p:selectOneMenu>
-                                            </div>
-
-                                            <div class="d-flex gap-3 my-2">
-                                                <h:outputLabel class="w-50" value="Transporter"/>
-                                                <p:autoComplete 
-                                                    completeMethod="#{staffController.completeStaff}"
-                                                    value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
-                                                    var="mys" 
-                                                    class="w-100" 
-                                                    maxResults="50"
-                                                    placeholder="Sample Transporter"
-                                                    inputStyleClass="form-control"
-                                                    itemLabel="#{mys.person.name}" 
-                                                    panelStyleClass="custom-dropdown-panel"
-                                                    itemValue="#{mys}">
-                                                    <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
-                                                    <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
-                                                </p:autoComplete>
-                                            </div>
-
-                                            <div >
-                                                <p:commandButton
-                                                    disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
-                                                    id="sendSamples"
-                                                    style="float: right;"
-                                                    value="Send Samples"
-                                                    ajax="false"
-                                                    action="#{patientInvestigationController.sendToOutLabSample()}"
-                                                    title="Send Samples"
-                                                    icon="fa fa-paper-plane"
-                                                    styleClass="m-1 ui-button-info" >
-                                                </p:commandButton>
-                                            </div>
-                                        </div>
-
-                                    </p:dialog>
 
                                     <p:autoComplete 
                                         completeMethod="#{staffController.completeStaff}"
@@ -1550,6 +1484,89 @@
                             </div>
 
                         </div>
+                    </h:form>
+
+                    <h:form>
+                        <p:dialog 
+                            header="Send Out Lab Sample" 
+                            widgetVar="dlg2" 
+                            minHeight="450" 
+                            width="850" 
+                            showEffect="fade" 
+                            modal="true" 
+                            closeOnEscape="true">
+
+                            <div>
+                                <div class="d-flex gap-3">
+                                    <h:outputLabel class="w-50" value="Sending Institution"/>
+                                    <p:autoComplete 
+                                        class="w-100" 
+                                        id="sendSampleIns" 
+                                        value="#{patientInvestigationController.outLabInstitution}"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{institutionController.completeIns}" 
+                                        var="oi" 
+                                        placeholder="OutLab Institution "
+                                        maxResults="15"
+                                        itemLabel="#{oi.name}" 
+                                        itemValue="#{oi}">
+                                        <p:column style="padding: 4px;">#{oi.institutionCode}</p:column>
+                                        <p:column style="padding: 4px;">#{oi.name}</p:column>
+                                        <p:ajax process="sendSampleIns" update="sendSampleDept" ></p:ajax>
+                                    </p:autoComplete>
+                                </div>
+                                <div class="d-flex gap-3 my-2">
+                                    <h:outputLabel class="w-50" value="Sending Department"/>
+                                    <p:selectOneMenu
+                                        filter="true"
+                                        value="#{patientInvestigationController.outLabDepartment}"
+                                        filterMatchMode="contains"
+                                        id="sendSampleDept"
+                                        class="w-100">
+                                        <f:selectItem itemLabel="Any"></f:selectItem>
+                                        <f:selectItems 
+                                            value="#{departmentController.getInstitutionDepartments(patientInvestigationController.outLabInstitution)}" 
+                                            var="odpt" 
+                                            itemLabel="#{odpt.name}" 
+                                            itemValue="#{odpt}">
+                                        </f:selectItems>
+                                    </p:selectOneMenu>
+                                </div>
+
+                                <div class="d-flex gap-3 my-2">
+                                    <h:outputLabel class="w-50" value="Transporter"/>
+                                    <p:autoComplete 
+                                        completeMethod="#{staffController.completeStaff}"
+                                        value="#{patientInvestigationController.sampleTransportedToLabByStaff}" 
+                                        var="mys" 
+                                        class="w-100" 
+                                        maxResults="50"
+                                        placeholder="Sample Transporter"
+                                        inputStyleClass="form-control"
+                                        itemLabel="#{mys.person.nameWithTitle}" 
+                                        panelStyleClass="custom-dropdown-panel"
+                                        itemValue="#{mys}">
+                                        <p:column headerText="Code" style="padding: 6px; width: 20px;">#{mys.code}</p:column>
+                                        <p:column headerText="Name" style="padding: 6px; width: 250px;">#{mys.person.nameWithTitle}</p:column>
+                                    </p:autoComplete>
+                                </div>
+
+                                <div >
+                                    <p:commandButton
+                                        disabled="#{patientInvestigationController.listingEntity ne 'PATIENT_SAMPLES'}"
+                                        id="sendSamples"
+                                        style="float: right;"
+                                        value="Send Samples"
+                                        ajax="false"
+                                        action="#{patientInvestigationController.sendToOutLabSample()}"
+                                        title="Send Samples"
+                                        icon="fa fa-paper-plane"
+                                        styleClass="m-1 ui-button-info" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </p:dialog>
+
                     </h:form>
                 </div>
             </h:panelGroup>

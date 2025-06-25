@@ -4100,6 +4100,7 @@ public class BookingController implements Serializable, ControllerWithPatient, C
         //setStaff(null);
         sessionInstances = new ArrayList<>();
         selectedBillSession = null;
+        billSessions = null;
     }
 
     public void listnerStaffRowSelect() {

@@ -2266,7 +2266,7 @@ public class PharmacyReportController implements Serializable {
             jpql += "and s.item=:itm ";
             m.put("itm", item);
         }
-        if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType)) {
+        if ("transferReceiveDoc".equals(documentType) || "transferIssueDoc".equals(documentType) || documentType == null) {
             jpql += " and s.department IS NOT NULL ";
         }
 
@@ -2321,7 +2321,7 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per itemBatch
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        ids = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         System.out.println("jpql = " + jpql.toString());
         System.out.println("params = " + params);
@@ -2615,7 +2615,7 @@ public class PharmacyReportController implements Serializable {
         jpql.append("order by sh.itemBatch.item.name");
 
         // Fetch the IDs of the latest StockHistory rows per ItemBatch
-        ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        ids = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
         rows = new ArrayList<>();
 
@@ -3146,8 +3146,7 @@ public class PharmacyReportController implements Serializable {
                     .append("WHERE b.retired = false ")
                     .append("AND b.billTypeAtomic = :bType ")
                     .append("AND b.createdAt BETWEEN :fd AND :td ")
-                    .append("AND b.paymentMethod IN (:cash, :credit) ")
-                    .append("GROUP BY b.paymentMethod");
+                    .append("AND b.paymentMethod IN (:cash, :credit) ");
 
             Map<String, Object> params = new HashMap<>();
             params.put("bType", BillTypeAtomic.PHARMACY_GRN);
@@ -3159,6 +3158,7 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.institution", "ins", institution);
             addFilter(jpql, params, "b.department.site", "sit", site);
             addFilter(jpql, params, "b.department", "dep", department);
+            jpql.append(" GROUP BY b.paymentMethod");
 
             List<Object[]> results = billFacade.findAggregates(jpql.toString(), params, TemporalType.TIMESTAMP);
 

@@ -48,7 +48,7 @@
                                 <f:selectItem itemLabel="Select Report Type"/>
                                 <f:selectItem itemValue="Detail" itemLabel="Detail Report"/>
                                 <f:selectItem itemValue="Summary" itemLabel="Summary Report"/>
-                                <p:ajax process="@this" update="creditCom ccCom pnlaa toDep toDept"/>
+                                <p:ajax process="@this" update="creditCom ccCom pnlaa toDep toDept toIns toInst"/>
                             </p:selectOneMenu>
 
                             <h:panelGroup>
@@ -303,7 +303,7 @@
                                     </p:column>
                                 </p:autoComplete>
                             </h:panelGroup>
-
+                            
                             <h:panelGroup id="toIns">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
                                 <h:outputLabel class="mx-1" value="Service Institution"/>
@@ -312,6 +312,7 @@
                                 <p:selectOneMenu
                                 value="#{reportController.toInstitution}"
                                 filter="true"
+                                filterMatchMode="contains"
                                 style="width: 100%">
                                 <f:selectItem itemLabel="All"/>
                                 <f:selectItems value="#{institutionController.companies}"
@@ -321,10 +322,10 @@
                                 <p:ajax process="@this" update="toDept"/>
                             </p:selectOneMenu>
                             </h:panelGroup>
-                            
+
 
                             <p:spacer width="2em"></p:spacer>
-
+                            
                             <h:panelGroup id="toDep">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="Service Department" class="mx-1"/>
@@ -334,14 +335,16 @@
                                 <p:selectOneMenu 
                                     value="#{reportController.toDepartment}" 
                                     class="w-100" 
+                                    filter="true"
+                                    filterMatchMode="contains"
                                     style="max-width: 100%">
                                     <f:selectItem itemLabel="Any"></f:selectItem>
                                     <f:selectItems value="#{departmentController.getInstitutionDepartments(reportController.toInstitution)}" var="odpt" itemLabel="#{odpt.name}" itemValue="#{odpt}"></f:selectItems>
                                 </p:selectOneMenu>
                             </h:panelGroup>
-
+                            
                         </h:panelGrid>
-
+                        
                         <div class="my-3">
                             <p:commandButton
                                 ajax="false"
