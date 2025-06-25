@@ -9,6 +9,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.ItemController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.*;
 import com.divudi.core.data.dataStructure.DepartmentSale;
@@ -19,6 +20,7 @@ import com.divudi.core.data.dataStructure.ItemQuantityAndValues;
 import com.divudi.core.data.dataStructure.ItemTransactionSummeryRow;
 import com.divudi.core.data.dataStructure.StockAverage;
 
+import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.pharmacy.*;
 import com.divudi.core.facade.*;
@@ -117,6 +119,8 @@ public class PharmacyController implements Serializable {
     private BillItemFacade billItemFacade;
     @EJB
     private ItemBatchFacade itemBatchFacade;
+    @EJB
+    private ReportTimerController reportTimerController;
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
@@ -1989,31 +1993,32 @@ public class PharmacyController implements Serializable {
     }
 
     public void createStockTransferReport() {
-        resetFields();
-        BillType bt;
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
+            BillType bt;
 
-        if (isInvalidFilter()) {
-            JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
-            return;
-        }
+            if (isInvalidFilter()) {
+                JsfUtil.addErrorMessage("Item filter cannot be applied for 'Summary' or 'Bill' report types. Please remove the item filter or choose a 'Detail' Report.");
+                return;
+            }
 
-        if ("issue".equals(transferType)) {
-            bt = BillType.PharmacyTransferIssue;
-        } else {
-            bt = BillType.PharmacyTransferReceive;
-        }
+            if ("issue".equals(transferType)) {
+                bt = BillType.PharmacyTransferIssue;
+            } else {
+                bt = BillType.PharmacyTransferReceive;
+            }
 
-        if ("summeryReport".equals(reportType)) {
-            generateReportAsSummary(bt);
+            if ("summeryReport".equals(reportType)) {
+                generateReportAsSummary(bt);
 
-        } else if ("detailReport".equals(reportType)) {
-            generateReportByBillItems(bt);
+            } else if ("detailReport".equals(reportType)) {
+                generateReportByBillItems(bt);
 
-        } else if ("byBill".equals(reportType)) {
-            generateReportByDepartmentWiseBill(bt);
+            } else if ("byBill".equals(reportType)) {
+                generateReportByDepartmentWiseBill(bt);
 
-        }
-
+            }
+        }, InventoryReports.STOCK_TRANSFER_REPORT, sessionController.getLoggedUser());
     }
 
     public void generateReportByDepartmentWiseBill(BillType billType) {
@@ -2136,25 +2141,8 @@ public class PharmacyController implements Serializable {
                     .collect(Collectors.toList());
 
             if (!items.isEmpty()) {
-                Map<String, Object> batchParams = new HashMap<>();
-                batchParams.put("items", items);
-
-                String batchQuery = "SELECT ib FROM ItemBatch ib WHERE ib.item IN :items";
-                List<ItemBatch> allBatches = itemBatchFacade.findByJpql(batchQuery, batchParams);
-
-                Map<Long, ItemBatch> latestBatchMap = allBatches.stream()
-                        .filter(ib -> ib.getItem() != null)
-                        .collect(Collectors.toMap(ib -> ib.getItem().getId(), Function.identity(),
-                                BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))));
-
-                pharmacyRows = billItems.stream()
-                        .map(bi -> {
-                            ItemBatch latestBatch = latestBatchMap.get(
-                                    bi.getItem() != null ? bi.getItem().getId() : null
-                            );
-                            return new PharmacyRow(bi, latestBatch);
-                        })
-                        .collect(Collectors.toList());
+                List<ItemBatch> allBatches = getItemBatchesByItems(items);
+                pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
 
                 totalPurchase = pharmacyRows.stream()
                         .filter(r -> r.getQuantity() != null && r.getPurchaseValue() != null)
@@ -2166,6 +2154,30 @@ public class PharmacyController implements Serializable {
                     new FacesMessage(FacesMessage.SEVERITY_ERROR, "Error", "Failed to generate report. Please try again."));
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, "Error generating report by bill items", e);
         }
+    }
+
+    private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
+        Map<String, Object> batchParams = new HashMap<>();
+        batchParams.put("items", items);
+
+        String batchQuery = "SELECT ib FROM ItemBatch ib WHERE ib.item IN :items";
+        return itemBatchFacade.findByJpql(batchQuery, batchParams);
+    }
+
+    private List<PharmacyRow> createPharmacyRowsByBillItemsAndItemBatch(List<BillItem> billItems, List<ItemBatch> itemBatches) {
+        Map<Long, ItemBatch> latestBatchMap = itemBatches.stream()
+                .filter(ib -> ib.getItem() != null)
+                .collect(Collectors.toMap(ib -> ib.getItem().getId(), Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))));
+
+        return billItems.stream()
+                .map(bi -> {
+                    ItemBatch latestBatch = latestBatchMap.get(
+                            bi.getItem() != null ? bi.getItem().getId() : null
+                    );
+                    return new PharmacyRow(bi, latestBatch);
+                })
+                .collect(Collectors.toList());
     }
 
     public void generateReportAsSummary(BillType billType) {

@@ -300,8 +300,10 @@ public class PharmacyRow implements Serializable {
     }
 
     public PharmacyRow(BillItem billItem, ItemBatch itemBatch) {
+        this();
         this.itemBatch = itemBatch;
         this.billItem = billItem;
+        rowType = "BillItemWithBatch";
     }
 
     public PharmacyRow(Payment payment) {

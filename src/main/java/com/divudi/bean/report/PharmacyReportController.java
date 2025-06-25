@@ -1,8 +1,11 @@
 package com.divudi.bean.report;
 
 import com.divudi.bean.common.*;
+import com.divudi.core.data.reports.FinancialReport;
 import com.divudi.core.data.reports.InventoryReports;
 import com.divudi.core.data.reports.PharmacyReports;
+import com.divudi.core.entity.pharmacy.*;
+import com.divudi.core.facade.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillFinanceType;
 import com.divudi.core.data.BillItemStatus;
@@ -51,20 +54,6 @@ import com.divudi.core.entity.channel.AgentReferenceBook;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.Machine;
 import com.divudi.core.entity.lab.PatientInvestigation;
-import com.divudi.core.entity.pharmacy.Amp;
-import com.divudi.core.entity.pharmacy.MeasurementUnit;
-import com.divudi.core.entity.pharmacy.Stock;
-import com.divudi.core.entity.pharmacy.StockHistory;
-import com.divudi.core.facade.AgentHistoryFacade;
-import com.divudi.core.facade.AgentReferenceBookFacade;
-import com.divudi.core.facade.BillFacade;
-import com.divudi.core.facade.BillItemFacade;
-import com.divudi.core.facade.InstitutionFacade;
-import com.divudi.core.facade.PatientDepositHistoryFacade;
-import com.divudi.core.facade.PatientInvestigationFacade;
-import com.divudi.core.facade.PaymentFacade;
-import com.divudi.core.facade.StockFacade;
-import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.PrescriptionSummaryReportRow;
@@ -113,10 +102,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
 
-import com.divudi.core.facade.ItemFacade;
-
 import java.text.DecimalFormat;
 import java.util.LinkedHashMap;
+import java.util.function.BinaryOperator;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -151,6 +140,8 @@ public class PharmacyReportController implements Serializable {
     PharmacyBean pharmacyBean;
     @EJB
     ItemFacade itemFacade;
+    @EJB
+    private ItemBatchFacade itemBatchFacade;
 
     @Inject
     private InstitutionController institutionController;
@@ -320,6 +311,7 @@ public class PharmacyReportController implements Serializable {
     private Institution toSite;
 
     private boolean consignmentItem;
+    private List<PharmacyRow> pharmacyRows;
 
     //Constructor
     public PharmacyReportController() {
@@ -2135,48 +2127,88 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processGoodInTransistReport() {
-        Map<String, Object> parameters = new HashMap<>();
-        StringBuilder sql = new StringBuilder();
-        sql.append("select bi from BillItem bi"
-                + " where bi.bill.billType = :bt"
-                + " and bi.retired = :ret"
-                + " and bi.bill.billedBill is null "
-                + " and bi.bill.createdAt between :fd and :td"
-                + " and bi.bill.toStaff is not null"
-                + " and bi.bill.fromDepartment is not null");
+        reportTimerController.trackReportExecution(() -> {
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder sql = new StringBuilder();
+            sql.append("select bi from BillItem bi"
+                    + " where bi.bill.billType = :bt"
+                    + " and bi.retired = :ret"
+                    + " and bi.bill.billedBill is null "
+                    + " and bi.bill.createdAt between :fd and :td"
+                    + " and bi.bill.toStaff is not null"
+                    + " and bi.bill.fromDepartment is not null");
 
-        parameters.put("bt", BillType.PharmacyTransferIssue);
-        parameters.put("ret", false);
-        parameters.put("fd", fromDate);
-        parameters.put("td", toDate);
+            parameters.put("bt", BillType.PharmacyTransferIssue);
+            parameters.put("ret", false);
+            parameters.put("fd", fromDate);
+            parameters.put("td", toDate);
 
-        addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
-        addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
-        addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
-        addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
-        addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
-        addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
-        addFilter(sql, parameters, "bi.item", "item", item);
-        addFilter(sql, parameters, "bi.item.category", "cat", category);
-        addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
-        if (showData) {
-            reportType = "pending";
-            sql.append(" and bi.bill.forwardReferenceBill Is null ");
-        }
-        if (reportType.equals("pending")) {
-            addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
-        }
-        if (reportType.equals("accepted")) {
-            addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
-        }
-        if (reportType.equals("issueCancel")) {
-            addFilter(sql, "and bi.bill.cancelled = true");
-        }
-        System.out.println("dccdjidci" + showData);
-        sql.append(" order by bi.bill.id ");
+            addFilter(sql, parameters, "bi.bill.fromInstitution", "institution", fromInstitution);
+            addFilter(sql, parameters, "bi.bill.fromDepartment.site", "fSite", fromSite);
+            addFilter(sql, parameters, "bi.bill.fromDepartment", "fDept", fromDepartment);
+            addFilter(sql, parameters, "bi.bill.toInstitution", "tIns", toInstitution);
+            addFilter(sql, parameters, "bi.bill.toDepartment.site", "tSite", toSite);
+            addFilter(sql, parameters, "bi.bill.toDepartment", "tDept", toDepartment);
+            addFilter(sql, parameters, "bi.item", "item", item);
+            addFilter(sql, parameters, "bi.item.category", "cat", category);
+            addFilter(sql, parameters, "bi.bill.toStaff", "user", toStaff);
+            if (showData) {
+                reportType = "pending";
+                sql.append(" and bi.bill.forwardReferenceBill Is null ");
+            }
+            if (reportType.equals("pending")) {
+                addFilter(sql, "and bi.bill.cancelled = false and bi.bill.forwardReferenceBills is empty");
+            }
+            if (reportType.equals("accepted")) {
+                addFilter(sql, "and bi.bill.forwardReferenceBills is not empty");
+            }
+            if (reportType.equals("issueCancel")) {
+                addFilter(sql, "and bi.bill.cancelled = true");
+            }
+            System.out.println("dccdjidci" + showData);
+            sql.append(" order by bi.bill.id ");
 
-        billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
+            billItems = billItemFacade.findByJpql(sql.toString(), parameters, TemporalType.TIMESTAMP);
 
+            if (billItems.isEmpty()) {
+                return;
+            }
+
+            List<Item> items = billItems.stream()
+                    .map(BillItem::getItem)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .collect(Collectors.toList());
+
+            if (!items.isEmpty()) {
+                List<ItemBatch> allBatches = getItemBatchesByItems(items);
+                pharmacyRows = createPharmacyRowsByBillItemsAndItemBatch(billItems, allBatches);
+            }
+        }, InventoryReports.GOOD_IN_TRANSIT_REPORT, sessionController.getLoggedUser());
+    }
+
+    private List<ItemBatch> getItemBatchesByItems(List<Item> items) {
+        Map<String, Object> batchParams = new HashMap<>();
+        batchParams.put("items", items);
+
+        String batchQuery = "SELECT ib FROM ItemBatch ib WHERE ib.item IN :items";
+        return itemBatchFacade.findByJpql(batchQuery, batchParams);
+    }
+
+    private List<PharmacyRow> createPharmacyRowsByBillItemsAndItemBatch(List<BillItem> billItems, List<ItemBatch> itemBatches) {
+        Map<Long, ItemBatch> latestBatchMap = itemBatches.stream()
+                .filter(ib -> ib.getItem() != null)
+                .collect(Collectors.toMap(ib -> ib.getItem().getId(), Function.identity(),
+                        BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))));
+
+        return billItems.stream()
+                .map(bi -> {
+                    ItemBatch latestBatch = latestBatchMap.get(
+                            bi.getItem() != null ? bi.getItem().getId() : null
+                    );
+                    return new PharmacyRow(bi, latestBatch);
+                })
+                .collect(Collectors.toList());
     }
 
     public void processStockLedgerReport() {
@@ -2379,7 +2411,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2435,10 +2467,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                "Closing Stock", "Rate", "Closing Value"
+                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                    "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2723,7 +2755,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
+                    "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -3547,9 +3579,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -3653,8 +3685,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -4835,4 +4867,11 @@ public class PharmacyReportController implements Serializable {
         this.stockCorrectionRows = stockCorrectionRows;
     }
 
+    public List<PharmacyRow> getPharmacyRows() {
+        return pharmacyRows;
+    }
+
+    public void setPharmacyRows(List<PharmacyRow> pharmacyRows) {
+        this.pharmacyRows = pharmacyRows;
+    }
 }
