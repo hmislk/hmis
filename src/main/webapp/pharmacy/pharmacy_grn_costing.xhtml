@@ -327,8 +327,10 @@
                             <p:inputText 
                                 autocomplete="off" 
                                 class="text-end"
-                                         disabled="true" id="diff" value="#{grnCostingController.difference}"
-                                         style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
+                                disabled="true" 
+                                id="diff" 
+                                value="#{grnCostingController.difference}"
+                                style="background-color: #e6e6e6;color: #{grnCostingController.difference > 0 ? 'green' : (grnCostingController.difference == 0 ? 'inherit' : 'red')}">
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
                         </p:panelGrid>                    
@@ -352,7 +354,7 @@
                                 value="#{grnCostingController.grnBill.discount}" >
                                 <p:ajax
                                     process="@this"
-                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
                                     event="keyup"
                                     listener="#{grnCostingController.discountChangedLitener()}"/>
                                 <f:convertNumber pattern="#,##0.00" />
