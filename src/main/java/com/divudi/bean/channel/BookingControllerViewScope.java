@@ -5979,7 +5979,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
                 BillItem aBillItem = createAdditionalItem(savingBill, ai);
-                additionalBillItems.add(aBillItem);
+                getAdditionalBillItems().add(aBillItem);
             }
         }
         BillSession savingBillSession;
@@ -6027,6 +6027,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         savingBill.setBillFees(savingBillFees);
         savingBill.setCashPaid(cashPaid);
         savingBill.setCashBalance(cashBalance);
+        
+        if(additionalBillItems != null && !additionalBillItems.isEmpty()){
+            savingBill.getBillItems().addAll(additionalBillItems);
+        }
+        
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItemForSession, savingBillSession, savingBillItemForSession.getAgentRefNo());
             savingBill.setBalance(0.0);
@@ -9335,6 +9340,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<BillItem> getAdditionalBillItems() {
+        if(additionalBillItems == null){
+            additionalBillItems = new ArrayList<>();
+        }
         return additionalBillItems;
     }
 
