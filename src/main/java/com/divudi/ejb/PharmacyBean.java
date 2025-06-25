@@ -1720,7 +1720,7 @@ public class PharmacyBean {
     public double getLastPurchaseRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
-            return getLastRetailRateByBillItemFinanceDetails(item, dept);
+            return getLastPurchaseRateByBillItemFinanceDetails(item, dept);
         } else {
             return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
         }
@@ -1777,6 +1777,36 @@ public class PharmacyBean {
         }
 
         return f.getRetailSaleRate().doubleValue();
+    }
+    
+       public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getLineGrossRate() == null) {
+            return 0.0;
+        }
+
+        return f.getLineGrossRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
@@ -1887,8 +1917,17 @@ public class PharmacyBean {
         }
 
     }
-
+    
     public double getLastRetailRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastRetailRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
+
+    public double getLastRetailRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
