@@ -187,7 +187,11 @@
                             class="text-end text-primary w-100"
                             value="#{bi.billItemFinanceDetails.lineGrossRate}"
                             id="pRate" >
-                            <f:ajax event="blur" execute="pRate" render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                            <f:ajax 
+                                event="blur" 
+                                execute="pRate" 
+                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column>
                     <p:column
