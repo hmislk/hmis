@@ -1163,7 +1163,7 @@
                                                     <div class="row mt-1">
                                                         <div class="col-12">
                                                             <p:autoComplete  
-                                                                minQueryLength="3"
+                                                                minQueryLength="1"
                                                                 forceSelection="true" 
                                                                 value="#{opdBillController.toStaff}" 
                                                                 id="welfareStaff"
@@ -1180,6 +1180,9 @@
                                                                 </p:column>
                                                                 <p:column headerText="Code" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF No" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.annualWelfareQualified}" >
