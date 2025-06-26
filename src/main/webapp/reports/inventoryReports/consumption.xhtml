@@ -384,7 +384,7 @@
 
                     <h:panelGroup rendered="#{pharmacyController.reportType eq 'byBill'}">
                         <h5 class="mt-3">Department unit issue by Bill No</h5>
-                        <p:dataTable id="tbl2" value="#{pharmacyController.bills}"
+                        <p:dataTable id="tbl2" value="#{pharmacyController.pharmacyRows}"
                                      var="b"
                                      rowIndexVar="n"
                                      paginator="true"
@@ -397,32 +397,32 @@
                                     headerText="Bill No"
                                     width="10em"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.deptId}"
-                                    filterBy="#{b.deptId}">
-                                <h:outputText value="#{b.deptId}"/>
+                                    sortBy="#{b.bill.deptId}"
+                                    filterBy="#{b.bill.deptId}">
+                                <h:outputText value="#{b.bill.deptId}"/>
                             </p:column>
 
                             <p:column
                                     headerText="Consumption Department"
                                     width="10em"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.toDepartment.name}"
-                                    filterBy="#{b.toDepartment.name}">
-                                <h:outputText value="#{b.toDepartment.name}"/>
+                                    sortBy="#{b.bill.toDepartment.name}"
+                                    filterBy="#{b.bill.toDepartment.name}">
+                                <h:outputText value="#{b.bill.toDepartment.name}"/>
                             </p:column>
 
                             <p:column
                                     headerText="Request No"
                                     width="6em"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.invoiceNumber}"
-                                    filterBy="#{b.invoiceNumber}">
-                                <h:outputText value="#{b.invoiceNumber}"/>
+                                    sortBy="#{b.bill.invoiceNumber}"
+                                    filterBy="#{b.bill.invoiceNumber}">
+                                <h:outputText value="#{b.bill.invoiceNumber}"/>
                             </p:column>
 
                             <p:column headerText="Cancel/Refund No" width="5em">
-                                <h:outputText value="#{b.cancelledBill.deptId}" style="color: red;"/>
-                                <h:outputText value="#{b.refundedBill.deptId}" style="color: orange;"/>
+                                <h:outputText value="#{b.bill.cancelledBill.deptId}" style="color: red;"/>
+                                <h:outputText value="#{b.bill.refundedBill.deptId}" style="color: orange;"/>
                             </p:column>
 
                             <p:column
@@ -430,9 +430,9 @@
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{-1 * b.stockBill.stockValueAtPurchaseRates}"
-                                    filterBy="#{-1 * b.stockBill.stockValueAtPurchaseRates}">
-                                <h:outputText value="#{-1 * b.stockBill.stockValueAtPurchaseRates}">
+                                    sortBy="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}"
+                                    filterBy="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}">
+                                <h:outputText value="#{-1 * b.bill.stockBill.stockValueAtPurchaseRates}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -446,9 +446,9 @@
                                     width="4em"
                                     style="text-align: right;"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.billFinanceDetails.billCostValue}"
-                                    filterBy="#{b.billFinanceDetails.billCostValue}">
-                                <h:outputText value="#{b.billFinanceDetails.billCostValue}">
+                                    sortBy="#{b.costValue}"
+                                    filterBy="#{b.costValue}">
+                                <h:outputText value="#{b.costValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -461,20 +461,20 @@
                                     headerText="Created Date and Time"
                                     width="6em"
                                     filterMatchMode="contains"
-                                    sortBy="#{b.createdAt}"
-                                    filterBy="#{pharmacyController.formatDate(b.createdAt)}">
-                                <h:outputText value="#{b.createdAt}">
+                                    sortBy="#{b.bill.createdAt}"
+                                    filterBy="#{pharmacyController.formatDate(b.bill.createdAt)}">
+                                <h:outputText value="#{b.bill.createdAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Document Created By" width="10em">
-                                <h:outputText value="#{b.creater.webUserPerson.name}"/>
+                                <h:outputText value="#{b.bill.creater.webUserPerson.name}"/>
                             </p:column>
 
                             <p:column headerText="Remarks" width="10em">
-                                <h:outputText value="#{b.comments}"/>
+                                <h:outputText value="#{b.bill.comments}"/>
                             </p:column>
                         </p:dataTable>
                     </h:panelGroup>

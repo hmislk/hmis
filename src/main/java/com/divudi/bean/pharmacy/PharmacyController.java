@@ -1003,63 +1003,106 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateConsumptionReportTableByBill(BillType billType) {
-        bills = new ArrayList<>();
-
-        String sql = "SELECT b FROM Bill b WHERE b.retired = false"
-                + " and b.billType = :btp"
-                + " and b.createdAt between :fromDate and :toDate";
-
-        Map<String, Object> tmp = new HashMap<>();
-
-        tmp.put("btp", billType);
-        tmp.put("fromDate", getFromDate());
-        tmp.put("toDate", getToDate());
-
-        if (institution != null) {
-            sql += " and b.institution = :fIns";
-            tmp.put("fIns", institution);
-        }
-
-        if (site != null) {
-            sql += " and b.department.site = :site";
-            tmp.put("site", site);
-        }
-
-        if (dept != null) {
-            sql += " and b.department = :dept";
-            tmp.put("dept", dept);
-        }
-
-        if (category != null) {
-            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
-            tmp.put("category", category);
-        }
-
-        if (item != null) {
-            sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
-            tmp.put("item", item);
-        }
-
-        if (toDepartment != null) {
-            sql += " AND b.toDepartment = :toDept";
-            tmp.put("toDept", toDepartment);
-        }
-
-        sql += " order by b.createdAt asc";
-
         try {
+            bills = new ArrayList<>();
+
+            String sql = "SELECT b FROM Bill b WHERE b.retired = false"
+                    + " and b.billType = :btp"
+                    + " and b.createdAt between :fromDate and :toDate";
+
+            Map<String, Object> tmp = new HashMap<>();
+
+            tmp.put("btp", billType);
+            tmp.put("fromDate", getFromDate());
+            tmp.put("toDate", getToDate());
+
+            if (institution != null) {
+                sql += " and b.institution = :fIns";
+                tmp.put("fIns", institution);
+            }
+
+            if (site != null) {
+                sql += " and b.department.site = :site";
+                tmp.put("site", site);
+            }
+
+            if (dept != null) {
+                sql += " and b.department = :dept";
+                tmp.put("dept", dept);
+            }
+
+            if (category != null) {
+                sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item.category = :category)";
+                tmp.put("category", category);
+            }
+
+            if (item != null) {
+                sql += " AND EXISTS (SELECT bi FROM BillItem bi WHERE bi.bill = b AND bi.item = :item)";
+                tmp.put("item", item);
+            }
+
+            if (toDepartment != null) {
+                sql += " AND b.toDepartment = :toDept";
+                tmp.put("toDept", toDepartment);
+            }
+
+            sql += " order by b.createdAt asc";
+
             bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP);
 
+            totalPurchase = 0.0;
+            totalCostValue = 0.0;
+
+            pharmacyRows = new ArrayList<>();
+            Set<Item> allUniqueItems = new HashSet<>();
+
+            for (Bill b : bills) {
+                if (b != null && b.getBillItems() != null) {
+                    for (BillItem bi : b.getBillItems()) {
+                        if (bi.getItem() != null) {
+                            allUniqueItems.add(bi.getItem());
+                        }
+                    }
+                }
+            }
+
+            List<ItemBatch> allBatches = getItemBatchesByItems(new ArrayList<>(allUniqueItems));
+
+            Map<Long, ItemBatch> latestBatchMap = allBatches.stream()
+                    .filter(ib -> ib.getItem() != null && ib.getId() != null)
+                    .collect(Collectors.toMap(
+                            ib -> ib.getItem().getId(),
+                            Function.identity(),
+                            BinaryOperator.maxBy(Comparator.comparing(ItemBatch::getId))
+                    ));
+
+            for (Bill b : bills) {
+                if (b != null && b.getBillItems() != null && !b.getBillItems().isEmpty()) {
+                    PharmacyRow row = new PharmacyRow();
+                    row.setBill(b);
+
+                    double costRateTotal = 0.0;
+
+                    for (BillItem bi : b.getBillItems()) {
+                        Item item = bi.getItem();
+                        if (item != null) {
+                            ItemBatch latestBatch = latestBatchMap.get(item.getId());
+
+                            if (latestBatch != null && latestBatch.getCostRate() != null) {
+                                costRateTotal += latestBatch.getCostRate() * bi.getQty();
+                            }
+                        }
+                    }
+
+                    row.setCostValue(costRateTotal);
+                    totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
+                    totalCostValue += costRateTotal;
+
+                    pharmacyRows.add(row);
+                }
+            }
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Wrong!");
-        }
-        totalPurchase = 0.0;
-        totalCostValue = 0.0;
-
-        for (Bill b : bills) {
-            totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
-            totalCostValue += b.getBillFinanceDetails().getBillCostValue() != null ?
-                    b.getBillFinanceDetails().getBillCostValue().doubleValue() : 0;
         }
     }
 
