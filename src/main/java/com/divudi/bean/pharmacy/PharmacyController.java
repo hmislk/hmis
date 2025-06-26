@@ -966,25 +966,27 @@ public class PharmacyController implements Serializable {
     }
 
     public void createConsumptionReportTable() {
-        resetFields();
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
 
-        switch (reportType) {
-            case "byBillItem":
-                generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
-                break;
+            switch (reportType) {
+                case "byBillItem":
+                    generateConsumptionReportTableByBillItems(BillType.PharmacyIssue);
+                    break;
 
-            case "byBill":
-                generateConsumptionReportTableByBill(BillType.PharmacyIssue);
-                break;
+                case "byBill":
+                    generateConsumptionReportTableByBill(BillType.PharmacyIssue);
+                    break;
 
-            case "summeryReport":
-            case "categoryWise":
-                generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
-                break;
+                case "summeryReport":
+                case "categoryWise":
+                    generateConsumptionReportTableByDepartmentAndCategoryWise(BillType.PharmacyIssue);
+                    break;
 
-            default:
-                throw new IllegalArgumentException("Invalid report type: " + reportType);
-        }
+                default:
+                    throw new IllegalArgumentException("Invalid report type: " + reportType);
+            }
+        }, InventoryReports.CONSUMPTION_REPORT, sessionController.getLoggedUser());
     }
 
     private void resetFields() {
