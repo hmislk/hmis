@@ -9,7 +9,7 @@
         <ui:composition template="/reports/index.xhtml">
             <ui:define name="subcontent">
                 <h:form >
-                    <p:panel header="OPD Credit" >
+                    <p:panel header="OPD Sale Cash" >
 
                         <h:panelGrid columns="8" class="w-100">          
 
@@ -166,11 +166,11 @@
                                 icon="fas fa-cogs" 
                                 ajax="false"  
                                 value="Process" 
-                                action="#{pharmacyReportController.processSaleCredit()}">
+                                action="#{pharmacyReportController.processSaleCash()}">
                             </p:commandButton>
 
                             <p:commandButton 
-                                class="ui-button- mx-1" 
+                                class="ui-button-info mx-1" 
                                 icon="fas fa-print" 
                                 ajax="false" 
                                 value="Print All">
@@ -184,7 +184,7 @@
                                 value="Download">
                                 <p:dataExporter 
                                     type="xlsx" 
-                                    fileName="OPD Credit Report" 
+                                    fileName="OPD Sale Report" 
                                     target="tbl"  />
                             </p:commandButton>
 
@@ -196,7 +196,7 @@
                                 <p:dataExporter 
                                     type="pdf" 
                                     target="tbl" 
-                                    fileName="OPD Credit Report" />
+                                    fileName="OPD Sale Report" />
                             </p:commandButton>
 
                         </div>
@@ -220,25 +220,15 @@
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Credit Company">
-                                <h:outputText value="#{f.bill.toInstitution.name}" />
-                            </p:column>
                             <p:column headerText="Item Name">
                                 <h:outputText value="#{f.item.name}" />
-                            </p:column>
-                            <p:column headerText="Doc No">
-                                <p:commandLink 
-                                    value="#{f.bill.deptId}"
-                                    class="m-1 ui-button-info"
-                                    style="width: 100px;"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
-                            </p:column>                
+                            </p:column>                   
                             <p:column headerText="Code">
                                 <h:outputText value="#{f.item.code}" />
-                            </p:column>                
+                            </p:column>
+                            <p:column headerText="Doc No">
+                                <h:outputText value="#{f.bill.deptId}" />
+                            </p:column>
                             <p:column headerText="Batch Code">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
@@ -248,24 +238,27 @@
                             <p:column headerText="Rate">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" />
                             </p:column>
-                            <p:column headerText="Total">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate * f.qty}" />
-                            </p:column>
+                            <p:column headerText="Sale Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
+                            </p:column>  
                             <p:column headerText="Net Total">
                                 <h:outputText value="#{f.bill.netTotal}" />
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.netTotal}" />
-                                </f:facet>                            
+                                </f:facet> 
                             </p:column>
-                            <p:column headerText="Discount">
-                                <h:outputText value="#{f.bill.discount}" />
+                            <p:column headerText="Payment Mode/Methods">
+                                <h:outputText value="#{f.bill.paymentMethod}" />
                             </p:column>
-                            <p:column headerText="Sale Rate">
+                            <p:column headerText="MRP">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
                             </p:column>
-                            <p:column headerText="Sale Value">
+                            <p:column headerText="MRP Value">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
-                            </p:column>                            
+                            </p:column> 
+                            <p:column headerText="Discount">
+                                <h:outputText value="#{f.bill.discount}" />
+                            </p:column> 
 
                         </p:dataTable>
 
