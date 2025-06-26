@@ -14586,6 +14586,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bills");
                 bundle.setBundleType("billList");
@@ -14610,6 +14612,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bill Items");
                 bundle.setBundleType("billItemList");
