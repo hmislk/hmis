@@ -1095,7 +1095,7 @@ public class PharmacyController implements Serializable {
                     }
 
                     row.setCostValue(costRateTotal);
-                    totalPurchase += b.getStockBill().getStockValueAtPurchaseRates();
+                    totalPurchase += b.getStockBill() != null ? b.getStockBill().getStockValueAtPurchaseRates() : 0.0;
                     totalCostValue += costRateTotal;
 
                     pharmacyRows.add(row);
