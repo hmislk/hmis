@@ -1346,6 +1346,7 @@ public class GrnCostingController implements Serializable {
             JsfUtil.addErrorMessage("You cant set retail price below purchase rate");
         }
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
         calculateBillTotalsFromItems();
         calDifference();
     }

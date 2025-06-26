@@ -1046,7 +1046,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrinted(true);
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedAt(new Date());
             selectedBillSession.getBillItem().getBill().getPaidBill().setPrintedUser(sessionController.getLoggedUser());
-            billFacade.edit(selectedBillSession.getBillItem().getBill().getPaidBill());
+            Bill manageBill = billFacade.find(selectedBillSession.getBillItem().getBill().getPaidBill().getId());
+            billFacade.edit(manageBill);
         } else {
 //            System.out.println("Can not mark Paid Bill as Printed = " + selectedBillSession.getBillItem().getBill().getPaidBill());
         }
@@ -3455,6 +3456,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         itemToAddToBooking = null;
     }
+    
+    public boolean checkItemIsSessionInstance(BillItem bi){
+        if(bi.getItem() != null){
+            if(bi.getItem() instanceof ServiceSession){
+                return true;
+            }
+        }
+        return false;
+    }
 
     public void removeAddedAditionalItem() {
         if (selectedBillItem == null) {
@@ -3525,6 +3535,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         List<ItemFee> itemFeesofTheAddingItem = billBeanController.fillFees(itemToAddToBooking);
+
         List<BillFee> billFeesToAdd = null;
         if (itemFeesofTheAddingItem != null) {
             billFeesToAdd = billBeanController.createNewBillFeesAndReturnThem(newBillItem, itemFeesofTheAddingItem, sessionController.getLoggedUser(), null, null, foriegn);
@@ -3537,9 +3548,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
 
         calculateBillTotalsFromBillFees(selectedBillSession.getBillItem().getBill());
+//        fillBaseFees();  
         calculateCashBalance();
+
         itemToAddToBooking = null;
-//        fillBaseFees();
+
     }
 
     public boolean errorCheckForSerial() {
@@ -5978,7 +5991,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (itemsAddedToBooking != null && !itemsAddedToBooking.isEmpty()) {
             for (Item ai : itemsAddedToBooking) {
                 BillItem aBillItem = createAdditionalItem(savingBill, ai);
-                additionalBillItems.add(aBillItem);
+                getAdditionalBillItems().add(aBillItem);
             }
         }
         BillSession savingBillSession;
@@ -6026,6 +6039,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         savingBill.setBillFees(savingBillFees);
         savingBill.setCashPaid(cashPaid);
         savingBill.setCashBalance(cashBalance);
+
+        if (additionalBillItems != null && !additionalBillItems.isEmpty()) {
+            savingBill.getBillItems().addAll(additionalBillItems);
+        }
+
         if (savingBill.getBillType() == BillType.ChannelAgent) {
             updateBallance(savingBill.getCreditCompany(), 0 - savingBill.getNetTotal(), HistoryType.ChannelBooking, savingBill, savingBillItemForSession, savingBillSession, savingBillItemForSession.getAgentRefNo());
             savingBill.setBalance(0.0);
@@ -6658,8 +6676,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (updatingFee == null) {
             return;
         }
+
         //TODO: Until Discount is finalized
-        updatingFee.setFeeValue(updatingFee.getFeeGrossValue());
+        //updatingFee.setFeeValue(updatingFee.getFeeGrossValue());
+        updatingFee.setFeeValue(updatingFee.getFeeValue());
+        updatingFee.setFeeGrossValue(updatingFee.getFeeValue());
 
         billFeeFacade.editAndCommit(updatingFee);
 
@@ -6668,16 +6689,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
         for (BillItem bi : selectedBillSession.getBill().getBillItems()) {
-            System.out.println("bi = " + bi);
+           
             double calculatingGrossBillItemTotal = 0.0;
             double calculatingNetBillItemTotal = 0.0;
             double billItemHospitalFee = 0.0;
             double billItemStaffFee = 0.0;
             for (BillFee iteratingBillFee : billBeanController.getBillFee(bi)) {
 
-                System.out.println("iteratingBillFee = " + updatingFee);
-                System.out.println("iteratingBillFee = " + updatingFee.getId());
-                System.out.println("iteratingBillFee = " + updatingFee.getFeeValue());
                 if (iteratingBillFee.getFee() == null) {
                     continue;
                 }
@@ -6701,11 +6719,13 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         selectedBillSession.getBill().setDiscount(calculatingGrossBillTotal - calculatingNetBillTotal);
         selectedBillSession.getBill().setNetTotal(calculatingNetBillTotal);
-        selectedBillSession.getBill().setTotal(calculatingGrossBillTotal);
+        selectedBillSession.getBill().setTotal(calculatingNetBillTotal);
         getBillFacade().edit(selectedBillSession.getBill());
         feeTotalForSelectedBill = calculatingNetBillTotal;
         billSessionFacade.edit(selectedBillSession);
         selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
+    
+        calculateBillTotalsFromBillFees(selectedBillSession.getBill());
         calculateCashBalance();
     }
 
@@ -6778,6 +6798,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billToCaclculate.setNetTotal(calculatingNetBillTotal);
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
+        feeTotalForSelectedBill = calculatingNetBillTotal;
+  
     }
 
     public void prepareBillSessionForReportLink() {
@@ -7198,11 +7220,19 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public void markAsForeignerWithBillUpdate() {
+        if (selectedBillSession.getBill().getBillFeesWIthoutZeroValue().size() > 0 && selectedSessionInstance.getOriginatingSession().getCategory().getName().equalsIgnoreCase("Scanning")) {
+            JsfUtil.addErrorMessage("First Remove the added item.");
+            return;
+        }
         setForiegn(true);
         calculateSelectedBillSessionTotalWithBillUpdate();
     }
 
     public void markAsLocalWithBillUpdate() {
+        if (selectedBillSession.getBill().getBillFeesWIthoutZeroValue().size() > 0 && selectedSessionInstance.getOriginatingSession().getCategory().getName().equalsIgnoreCase("Scanning")) {
+            JsfUtil.addErrorMessage("First Remove the added item.");
+            return;
+        }
         setForiegn(false);
         calculateSelectedBillSessionTotalWithBillUpdate();
     }
@@ -7748,7 +7778,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     }
                     Double tend = Double.valueOf(strTenderedValue);
                     if (getSelectedBillSession().getBillItem().getBill().getNetTotal() > tend) {
-                        JsfUtil.addErrorMessage("Please Enter Tenderd Amount");
+                        JsfUtil.addErrorMessage("Please Enter correct Tenderd Amount");
                         return;
                     }
                 }
@@ -8779,6 +8809,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedBillSession.getBill().setDiscount(feeDiscountForSelectedBill);
 
         updateBillItemValuesForForeign();
+        calculateCashBalance();
     }
 
     private void updateBillItemValuesForForeign() {
@@ -9334,6 +9365,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public List<BillItem> getAdditionalBillItems() {
+        if (additionalBillItems == null) {
+            additionalBillItems = new ArrayList<>();
+        }
         return additionalBillItems;
     }
 
