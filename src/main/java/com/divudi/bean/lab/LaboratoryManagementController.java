@@ -81,7 +81,6 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -363,7 +362,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -688,11 +686,25 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void nonReceivedSampleList() {
-        selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_SENT);
+        selectedPatientSamples = new ArrayList<>();
 
-        fetchSamples(status);
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.sampleSentToDepartment = :toDepartment "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("toDepartment", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_SENT);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+
         selectAll = false;
     }
 
@@ -783,11 +795,11 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("The transport worker is not included.");
             return;
         }
-        if(sampleSendingDepartment == null){
+        if (sampleSendingDepartment == null) {
             JsfUtil.addErrorMessage("The sending Department is Empty.");
             return;
         }
-        
+
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -854,20 +866,27 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
+        List<PatientSample> availableSamples = new ArrayList<>();
+        
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
         }
-
+        for (PatientSample ps : selectedPatientSamples) {
+            if (ps.getSampleSentToDepartment()== sessionController.getDepartment() && ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                availableSamples.add(ps);
+            }
+        }
+        
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
         Map<Long, Bill> receivedBills = new HashMap<>();
 
         // Update sample details and collect associated patient investigations
-        for (PatientSample ps : selectedPatientSamples) {
+        for (PatientSample ps : availableSamples) {
             ps.setSampleReceivedAtLab(true);
             ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
             ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
@@ -1371,7 +1390,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
-    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1634,13 +1652,21 @@ public class LaboratoryManagementController implements Serializable {
     public void setFilteringStatus(String filteringStatus) {
         this.filteringStatus = filteringStatus;
     }
-// </editor-fold>
 
     public Department getSampleSendingDepartment() {
+        if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
+            if (sessionController.getDepartment().getSuperDepartment() != null) {
+                sampleSendingDepartment = sessionController.getDepartment().getSuperDepartment();
+            } else {
+                sampleSendingDepartment = sessionController.getDepartment();
+            }
+        }
         return sampleSendingDepartment;
     }
 
     public void setSampleSendingDepartment(Department sampleSendingDepartment) {
         this.sampleSendingDepartment = sampleSendingDepartment;
     }
+
+// </editor-fold>
 }
