@@ -372,6 +372,11 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    
+    ChannelSessionMultipleDeletion("Delete Multiple Channel Sessions"),
+    ChannelSessionHolidayMark("Channel Sessions Holidays Mark"),
+    ChannelSessionManagement("Channel Session Management"),
+    ChannelSheduleManagement("Channel Shedule Management"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Clinis">
