@@ -81,6 +81,8 @@ public class PharmacyCalculation implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    private static final int PRICE_SCALE = 6;
+
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
 //
@@ -784,10 +786,18 @@ public class PharmacyCalculation implements Serializable {
             }
 
             BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+
+            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
             BigDecimal prPerUnit = prGiven.divide(
-                    inputBillItem.getBillItemFinanceDetails().getUnitsPerPack(),
-                    RoundingMode.HALF_EVEN);
-            
+                    unitsPerPack,
+                    PRICE_SCALE,
+                    RoundingMode.HALF_EVEN
+            );
+
             purchaseRatePerUnit = prPerUnit.doubleValue();
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
