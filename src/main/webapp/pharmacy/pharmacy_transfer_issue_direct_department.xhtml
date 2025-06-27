@@ -39,7 +39,7 @@
                                             var="i" 
                                             itemLabel="#{i.itemBatch.item.name}" 
                                             itemValue="#{i}"
-                                            maxResults="20"
+                                            maxResults="5"
                                             >
                                             <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
                                                 <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
@@ -51,12 +51,6 @@
                                                 <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
                                                 <h:outputLabel value=") - " ></h:outputLabel>
                                                 <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Rate" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
                                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
@@ -97,7 +91,7 @@
                                             icon="fa fa-plus"
                                             value="Add"
                                             class="ui-button-success"
-                                            action="#{transferIssueController.addBillItemNew}"
+                                            action="#{transferIssueController.addNewBillItem}"
                                             ajax="false"
                                             update="focusItem"
                                             >
@@ -129,44 +123,65 @@
                                 sortBy="#{bItm.searialNo}"  
                                 editable="true">
 
-                                <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />
-                                <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" />
-
-                                <p:column headerText="Item Name" style="width: 50px!important;"  >
-                                    <h:outputText id="item" value="#{bItm.item.name}" >
-                                    </h:outputText>
+                                <p:column headerText="Item Name">
+                                    <h:outputText id="item" value="#{bItm.item.name}" />
+                                    <p:commandButton icon="pi pi-search"
+                                                     title="View Item Details"
+                                                     actionListener="#{transferIssueController.displayItemDetails(bItm)}"
+                                                     update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                                     process="@this"
+                                                     styleClass="p-button-rounded p-button-text p-ml-2" />
                                 </p:column>
 
-                                <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
+                                <p:column 
+                                    headerText="Qty" 
+                                    width="8em" 
+                                    class="text-end">
+                                    <h:outputText 
+                                        id="qty" 
+                                        class="w-100"
+                                        value="#{bItm.qty}" />
                                 </p:column>
 
-                                <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
+
+                                <p:column 
+                                    width="6em"
+                                    headerText="Transfer Rate"  
+                                    class="text-end">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">
+                                <p:column 
+                                    width="6em"
+                                    headerText="Transfer Value"  
+                                    class="text-end">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="DOE"  style="width:50px!important; text-align: center">
+
+
+                                <p:column 
+                                    headerText="DOE" 
+                                    class="text-end"
+                                    width="6em">
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
-
-                                <p:column headerText="Qty" style="width:25px!important; text-align: right;">
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.qty}">
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                    </p:inputText>
+                                <p:column 
+                                    headerText="Batch No" width="6em">
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
                                 </p:column>
-
-                                <p:column style="width: 10px!important;">
-                                    <p:commandButton icon="fas fa-trash" class="ui-button-danger" ajax="false" action="#{transferIssueController.removeBillItem(bItm)}">
+                                <p:column width="3em" class="text-end" >
+                                    <p:commandButton
+                                        icon="fas fa-trash" 
+                                        class="ui-button-danger"
+                                        ajax="false"
+                                        action="#{transferIssueController.removeBillItem(bItm)}">
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
@@ -221,6 +236,22 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
+
+                                <h:outputLabel value="Transfer Value" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <h:outputLabel 
+                                    class="w-100 text-end"
+                                    value="#{transferIssueController.issuedBill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Transfer Cost Value" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <h:outputLabel 
+                                    class="w-100 text-end"
+                                    value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
 
                                 <h:outputLabel value="Comment" />
                                 <h:outputLabel value=": &nbsp;"/>

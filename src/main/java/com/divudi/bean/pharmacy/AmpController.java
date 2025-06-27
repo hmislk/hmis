@@ -436,20 +436,22 @@ public class AmpController implements Serializable {
     }
 
     public List<Amp> completeAmpByName(String qry) {
-
-        Map m = new HashMap();
-        m.put("n", "%" + qry + "%");
+        Map<String, Object> m = new HashMap<>();
+        m.put("q", "%" + qry + "%");
         m.put("dep", DepartmentType.Store);
+
         if (qry != null) {
             ampList = getFacade().findByJpql("select c from Amp c where "
-                    + " c.retired=false and"
-                    + " (c.departmentType is null"
-                    + " or c.departmentType!=:dep )and "
-                    + "((c.name) like :n ) order by c.name", m, 30);
+                    + " c.retired = false and "
+                    + " (c.departmentType is null or c.departmentType != :dep) and "
+                    + " (lower(c.name) like lower(:q) or lower(c.code) like lower(:q)) "
+                    + " order by c.name", m, 15);
         }
+
         if (ampList == null) {
             ampList = new ArrayList<>();
         }
+
         return ampList;
     }
 
@@ -522,7 +524,6 @@ public class AmpController implements Serializable {
 //        }
 //        return ampList;
 //    }
-
     public void prepareAdd() {
         current = new Amp();
         current.setItemType(ItemType.Amp);
@@ -672,22 +673,22 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No AMP is selected");
             return;
         }
-        
-        if(current.getId() != null){
-            if(!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)){
+
+        if (current.getId() != null) {
+            if (!configOptionApplicationController.getBooleanValueByKey("Enable edit and delete AMP from Pharmacy Administration.", false)) {
                 JsfUtil.addErrorMessage("Deleting and Editing is disabled by Configuration Options.");
                 return;
             }
         }
-        
+
         if (current.getName() == null || current.getName().isEmpty()) {
             JsfUtil.addErrorMessage("Please add a name to AMP");
             return;
         }
 
-        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item","4"));
+        int maxCodeLeanth = Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("Minimum Number of Characters to Search for Item", "4"));
 
-        if (current.getCode().trim().length() < maxCodeLeanth){
+        if (current.getCode().trim().length() < maxCodeLeanth) {
             JsfUtil.addErrorMessage("Minimum " + maxCodeLeanth + " characters are Required for Item Code");
             return;
         }
@@ -703,7 +704,7 @@ public class AmpController implements Serializable {
             JsfUtil.addErrorMessage("No VMP selected");
             return;
         }
-     
+
         if (current.getCategory() == null) {
             if (current.getVmp().getCategory() != null) {
                 current.setCategory(current.getVmp().getCategory());
@@ -734,15 +735,15 @@ public class AmpController implements Serializable {
     }
 
     public boolean checkItemCode(String code, Amp savingAmp) {
-        if(savingAmp==null){
+        if (savingAmp == null) {
             return false;
         }
         Map m = new HashMap();
         String jpql = "select c from Amp c "
                 + " where c.retired=false"
                 + " and (c.code is not null and c.code=:icode)";
-        if(savingAmp.getId()!=null){
-            jpql +=" and c.id <> :id ";
+        if (savingAmp.getId() != null) {
+            jpql += " and c.id <> :id ";
             m.put("id", savingAmp.getId());
         }
         m.put("icode", code);
