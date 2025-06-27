@@ -450,13 +450,6 @@ public class TransferIssueController implements Serializable {
                 JsfUtil.addErrorMessage("No adequate stocks for " + bi.getItem().getName());
                 return;
             }
-            if (pharmacyTransferIsByPurchaseRate) {
-
-            } else if (pharmacyTransferIsByCostRate) {
-
-            } else if (pharmacyTransferIsByRetailRate) {
-
-            }
         }
 
         if (getIssuedBill().getId() == null) {
