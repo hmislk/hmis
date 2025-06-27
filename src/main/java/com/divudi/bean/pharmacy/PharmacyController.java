@@ -30,6 +30,7 @@ import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
+import com.divudi.ejb.PharmacyBean;
 import com.divudi.service.BillService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -62,6 +63,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
+import org.primefaces.event.SelectEvent;
 
 /**
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -124,8 +126,11 @@ public class PharmacyController implements Serializable {
 
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
-    // </editor-fold>
 
+    @EJB
+    PharmacyBean pharmacyBean;
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private static final long serialVersionUID = 1L;
     private int pharmacyAdminIndex;
@@ -1881,12 +1886,12 @@ public class PharmacyController implements Serializable {
 
         for (Bill bill : billList) {
             double netTotal = bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) ?
-                    (bill.getNetTotal() > 0.0 ? -bill.getNetTotal() : bill.getNetTotal())
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED)
+                    ? (bill.getNetTotal() > 0.0 ? -bill.getNetTotal() : bill.getNetTotal())
                     : bill.getNetTotal();
             double saleValue = bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_CANCELLED)
-                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED) ?
-                    (bill.getSaleValue() > 0.0 ? -bill.getSaleValue() : bill.getSaleValue())
+                    || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) || bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED)
+                    ? (bill.getSaleValue() > 0.0 ? -bill.getSaleValue() : bill.getSaleValue())
                     : bill.getSaleValue();
 
             if (bill.getPaymentMethod() == null) {
@@ -2092,17 +2097,17 @@ public class PharmacyController implements Serializable {
         Map<String, Object> parameters = new HashMap<>();
         StringBuilder sql = new StringBuilder(
                 "SELECT b.toDepartment, "
-                        + "b.department, "
-                        + "b.deptId, "
-                        + "b.createdAt, "
-                        + "b.backwardReferenceBill, "
-                        + "b.backwardReferenceBill.deptId, "
-                        + "SUM(b.netTotal), "
-                        + "b "
-                        + "FROM Bill b "
-                        + "WHERE b.retired = false "
-                        + "AND b.createdAt BETWEEN :fromDate AND :toDate "
-                        + "AND b.billType = :billType "
+                + "b.department, "
+                + "b.deptId, "
+                + "b.createdAt, "
+                + "b.backwardReferenceBill, "
+                + "b.backwardReferenceBill.deptId, "
+                + "SUM(b.netTotal), "
+                + "b "
+                + "FROM Bill b "
+                + "WHERE b.retired = false "
+                + "AND b.createdAt BETWEEN :fromDate AND :toDate "
+                + "AND b.billType = :billType "
         );
 
         parameters.put("billType", billType);
@@ -2666,12 +2671,12 @@ public class PharmacyController implements Serializable {
     }
 
     public List<ItemQuantityAndValues> findPharmacyTrnasactionQuantityAndValues(Date fromDate,
-                                                                                Date toDate,
-                                                                                Institution ins,
-                                                                                Department department,
-                                                                                Item item,
-                                                                                BillType[] billTypes,
-                                                                                BillType[] referenceBillTypes) {
+            Date toDate,
+            Institution ins,
+            Department department,
+            Item item,
+            BillType[] billTypes,
+            BillType[] referenceBillTypes) {
 
 //        if (false) {
 //            BillItem bi = new BillItem();
@@ -4126,8 +4131,8 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(2).setCellValue(bill.getReferenceBill().getDeptId());
                 emptyRow.createCell(3).setCellValue(
                         bill.getInvoiceNumber() != null ? bill.getInvoiceNumber()
-                                : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
-                                ? bill.getReferenceBill().getInvoiceNumber() : "-"));
+                        : (bill.getReferenceBill() != null && bill.getReferenceBill().getInvoiceNumber() != null
+                        ? bill.getReferenceBill().getInvoiceNumber() : "-"));
                 emptyRow.createCell(4).setCellValue("-");
                 emptyRow.createCell(5).setCellValue("-");
                 emptyRow.createCell(6).setCellValue("-");
@@ -4140,10 +4145,10 @@ public class PharmacyController implements Serializable {
                 emptyRow.createCell(13).setCellValue("-");
                 emptyRow.createCell(14).setCellValue(
                         bill.getBillTypeAtomic() != null && bill.getBillTypeAtomic().equals(BillTypeAtomic.PHARMACY_GRN_RETURN)
-                                ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
-                                ? bill.getToInstitution().getName() : "-")
-                                : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
-                                ? bill.getFromInstitution().getName() : "-"));
+                        ? (bill.getToInstitution() != null && bill.getToInstitution().getName() != null
+                        ? bill.getToInstitution().getName() : "-")
+                        : (bill.getFromInstitution() != null && bill.getFromInstitution().getName() != null
+                        ? bill.getFromInstitution().getName() : "-"));
                 emptyRow.createCell(15).setCellValue("-");
                 emptyRow.createCell(16).setCellValue("-");
                 emptyRow.createCell(17).setCellValue("-");
@@ -4162,12 +4167,12 @@ public class PharmacyController implements Serializable {
                     emptyInnerRow.createCell(3).setCellValue("-");
                     emptyInnerRow.createCell(4).setCellValue(
                             (billItem.getBill() != null && billItem.getBill().getToDepartment() != null && billItem.getBill().getToDepartment().getName() != null)
-                                    ? billItem.getBill().getToDepartment().getName()
-                                    : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null
-                                    && billItem.getBill().getReferenceBill().getToDepartment() != null
-                                    && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
-                                    ? billItem.getBill().getReferenceBill().getToDepartment().getName()
-                                    : "-");
+                            ? billItem.getBill().getToDepartment().getName()
+                            : (billItem.getBill() != null && billItem.getBill().getReferenceBill() != null
+                            && billItem.getBill().getReferenceBill().getToDepartment() != null
+                            && billItem.getBill().getReferenceBill().getToDepartment().getName() != null)
+                            ? billItem.getBill().getReferenceBill().getToDepartment().getName()
+                            : "-");
                     emptyInnerRow.createCell(5).setCellValue(billItem.getItem().getCategory().getName());
                     emptyInnerRow.createCell(6).setCellValue(billItem.getItem().getCode());
                     emptyInnerRow.createCell(7).setCellValue(billItem.getItem().getName());
@@ -4175,8 +4180,8 @@ public class PharmacyController implements Serializable {
                     emptyInnerRow.createCell(9).setCellValue(billItem.getQty());
                     emptyInnerRow.createCell(10).setCellValue(
                             (billItem.getItem() != null && billItem.getItem().getMeasurementUnit() != null
-                                    && billItem.getItem().getMeasurementUnit().getName() != null)
-                                    ? billItem.getItem().getMeasurementUnit().getName() : "-");
+                            && billItem.getItem().getMeasurementUnit().getName() != null)
+                            ? billItem.getItem().getMeasurementUnit().getName() : "-");
                     emptyInnerRow.createCell(11).setCellValue(billItem.getPharmaceuticalBillItem().getPurchaseRate());
                     emptyInnerRow.createCell(12).setCellValue(billItem.getPharmaceuticalBillItem().getItemBatch().getBatchNo());
                     emptyInnerRow.createCell(13).setCellValue(sdf.format(billItem.getPharmaceuticalBillItem().getItemBatch().getDateOfExpire()));
@@ -4199,6 +4204,14 @@ public class PharmacyController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public double getLastPurchaseRate(Item item) {
+        return pharmacyBean.getLastPurchaseRate(item, getSessionController().getDepartment());
+    }
+
+    public double getLastRetailRate(Item item) {
+        return pharmacyBean.getLastRetailRate(item, getSessionController().getDepartment());
     }
 
     public void exportGRNDetailReportToPDF() {
@@ -4336,7 +4349,7 @@ public class PharmacyController implements Serializable {
         createInstitutionIssue();
         createInstitutionTransferReceive();
     }
-    
+
     public void fillItemDetails(Item pharmacyItem) {
         this.pharmacyItem = pharmacyItem;
         createInstitutionSale();
