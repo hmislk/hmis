@@ -377,6 +377,9 @@ public enum Privileges {
     ChannelSessionHolidayMark("Channel Sessions Holidays Mark"),
     ChannelSessionManagement("Channel Session Management"),
     ChannelSheduleManagement("Channel Shedule Management"),
+    ChannelBookingByMonth("Channel Booking by Month"),
+    ChannelDoctorCard("Doctor Card"),
+    ChannelPatientPortal("Patient Portal"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Clinis">
