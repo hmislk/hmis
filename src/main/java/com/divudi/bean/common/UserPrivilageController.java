@@ -309,7 +309,7 @@ public class UserPrivilageController implements Serializable {
         // Channelling Privileges
         TreeNode channellingNode = new DefaultTreeNode(new PrivilegeHolder(null, "Channelling"), allNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.Channelling, "Channelling Menu"), channellingNode);
-        TreeNode channelBooking = new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channellingNode);
+        TreeNode channelBooking = new DefaultTreeNode(new PrivilegeHolder(null, "Channel Booking"), channellingNode);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannellingChannelBooking, "Channel Booking"), channelBooking);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionMultipleDeletion, "Channel Sessions Multiple Deletion"), channelBooking);
         new DefaultTreeNode(new PrivilegeHolder(Privileges.ChannelSessionHolidayMark, "Channel Sessions Holiday Mark"), channelBooking);
