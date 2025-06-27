@@ -20,16 +20,7 @@ import javax.persistence.UniqueConstraint;
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
-@Entity
-@Table(uniqueConstraints = {
-    @UniqueConstraint(columnNames = {
-        "OPTIONKEY",
-        "SCOPE",
-        "INSTITUTION_ID",
-        "DEPARTMENT_ID",
-        "WEBUSER_ID"
-    })
-})
+@Entity // Already duplicates are there, Can not have a unieuq constrain now as deployment fails
 public class ConfigOption implements Serializable {
 
     private static final long serialVersionUID = 1L;
