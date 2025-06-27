@@ -72,6 +72,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -1236,6 +1237,40 @@ public class InvestigationController implements Serializable {
 
     }
 
+    @Transactional
+    public void convertSelectedInvestigationsToServices() {
+        if (selectedInvestigations == null || selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Convert");
+            return;
+        }
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (Investigation ix : selectedInvestigations) {
+            try {
+                String sql = "UPDATE Item SET DTYPE = :dtype WHERE id = :id";
+                Map<String, Object> params = new HashMap<>();
+                params.put("dtype", "Service");
+                params.put("id", ix.getId());
+                itemFacade.executeNativeSql(sql, params);
+                successCount++;
+            } catch (Exception e) {
+                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
+                failureCount++;
+            }
+        }
+
+        itemFacade.flush();
+        selectedInvestigations = null;
+
+        if (failureCount > 0) {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
+        } else {
+            JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        }
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -1266,8 +1301,7 @@ public class InvestigationController implements Serializable {
         parameters.put("codeQuery", "%" + qry + "%");
         parameters.put("ret", false);
 
-        List<Investigation> completeItems = getFacade().findByJpql(jpql,parameters);
-
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, parameters);
 
 //        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
