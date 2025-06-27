@@ -105,6 +105,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyConfigurationDefaults();
         loadPharmacyIssueReceiptConfigurationDefaults();
         loadPharmacyTransferIssueReceiptConfigurationDefaults();
+        loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -205,6 +206,65 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private void loadPharmacyTransferIssueReceiptConfigurationDefaults() {
         getLongTextValueByKey("Pharmacy Transfer Issue Receipt CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "}\n"
+                + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 16px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 11px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-details-table, .receipt-items-table, .receipt-summary-table {\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-items-header {\n"
+                + "    font-weight: bold;\n"
+                + "    border-bottom: 1px solid #ccc;\n"
+                + "}\n"
+                + ".item-name, .item-qty, .item-rate, .item-value {\n"
+                + "    padding: 4px;\n"
+                + "    text-align: left;\n"
+                + "}\n"
+                + ".item-qty, .item-rate, .item-value {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".summary-label {\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".summary-value {\n"
+                + "    text-align: right;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".total-amount {\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".receipt-cashier {\n"
+                + "    margin-top: 20px;\n"
+                + "    text-align: right;\n"
+                + "    text-decoration: overline;\n"
+                + "}"
+        );
+    }
+    
+    private void loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Direct Purchase without Costing Receipt CSS",
                 ".receipt-container {\n"
                 + "    font-family: Verdana, sans-serif;\n"
                 + "    font-size: 12px;\n"
