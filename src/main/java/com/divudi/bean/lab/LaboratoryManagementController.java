@@ -81,6 +81,7 @@ public class LaboratoryManagementController implements Serializable {
     PatientInvestigationController patientInvestigationController;
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Variables">
     private ListingEntity listingEntity;
 
@@ -115,6 +116,7 @@ public class LaboratoryManagementController implements Serializable {
     private String investigationName;
     private String filteringStatus;
     private String comment;
+    private Department sampleSendingDepartment;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -361,6 +363,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Function">
     public void makeNull() {
         this.bills = null;
@@ -388,6 +391,7 @@ public class LaboratoryManagementController implements Serializable {
         this.billBarcodes = null;
         this.type = null;
         this.referringDoctor = null;
+        this.sampleSendingDepartment = null;
     }
 
     public void searchLabBills() {
@@ -779,6 +783,11 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("The transport worker is not included.");
             return;
         }
+        if(sampleSendingDepartment == null){
+            JsfUtil.addErrorMessage("The sending Department is Empty.");
+            return;
+        }
+        
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -809,6 +818,7 @@ public class LaboratoryManagementController implements Serializable {
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
+            ps.setSampleSentToDepartment(sampleSendingDepartment);
             ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             patientSampleFacade.edit(ps);
 
@@ -1361,6 +1371,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     // </editor-fold>
+    
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
         return listingEntity;
@@ -1624,4 +1635,12 @@ public class LaboratoryManagementController implements Serializable {
         this.filteringStatus = filteringStatus;
     }
 // </editor-fold>
+
+    public Department getSampleSendingDepartment() {
+        return sampleSendingDepartment;
+    }
+
+    public void setSampleSendingDepartment(Department sampleSendingDepartment) {
+        this.sampleSendingDepartment = sampleSendingDepartment;
+    }
 }
