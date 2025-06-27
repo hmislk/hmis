@@ -45,6 +45,14 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    public void executeNativeSql(String sql, Map<String, Object> params) throws Exception {
+        Query query = getEntityManager().createNativeQuery(sql);
+        for (Map.Entry<String, Object> entry : params.entrySet()) {
+            query.setParameter(entry.getKey(), entry.getValue());
+        }
+        query.executeUpdate();
+    }
+
     public void flush() {
         getEntityManager().flush();
 
