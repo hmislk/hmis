@@ -439,10 +439,10 @@ public class TransferIssueController implements Serializable {
             return;
         }
         boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
-        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
-        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+        boolean pharmacyTransferIsByCostRate    = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate",    false);
+        boolean pharmacyTransferIsByRetailRate  = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate",  true);
 
-        if (pharmacyTransferIsByPurchaseRate == false && pharmacyTransferIsByCostRate == false && pharmacyTransferIsByRetailRate == false) {
+        if (!pharmacyTransferIsByPurchaseRate && !pharmacyTransferIsByCostRate && !pharmacyTransferIsByRetailRate) {
             pharmacyTransferIsByRetailRate = true;
         }
 
