@@ -7,6 +7,7 @@
 package com.divudi.core.facade;
 
 import com.divudi.core.entity.ConfigOption;
+import java.util.Map;
 import javax.ejb.Stateless;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -27,6 +28,20 @@ public class ConfigOptionFacade extends AbstractFacade<ConfigOption> {
 
     public ConfigOptionFacade() {
         super(ConfigOption.class);
+    }
+
+    public ConfigOption findFirstByJpqlWithLock(String jpql, Map<String, Object> params) {
+        javax.persistence.TypedQuery<ConfigOption> qry = getEntityManager().createQuery(jpql, ConfigOption.class);
+        for (Map.Entry<String, Object> e : params.entrySet()) {
+            qry.setParameter(e.getKey(), e.getValue());
+        }
+        qry.setMaxResults(1);
+        qry.setLockMode(javax.persistence.LockModeType.PESSIMISTIC_WRITE);
+        try {
+            return qry.getSingleResult();
+        } catch (javax.persistence.NoResultException ex) {
+            return null;
+        }
     }
 
 }
