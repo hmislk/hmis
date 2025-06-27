@@ -33,6 +33,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
 import java.io.Serializable;
@@ -710,12 +711,10 @@ public class TransferIssueController implements Serializable {
     private void updateBillItemRateAndValue(BillItem b) {
         BillItemFinanceDetails f = b.getBillItemFinanceDetails();
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
-        
 
         b.setRate(rate);
         b.setQty(b.getPharmaceuticalBillItem().getQty());
         b.setNetValue(rate * b.getPharmaceuticalBillItem().getQty());
-
 
         BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
         BigDecimal rateBig = BigDecimal.valueOf(rate);
@@ -732,7 +731,6 @@ public class TransferIssueController implements Serializable {
 
         getBillItemFacade().edit(b);
     }
-    
 
     private void updateBillItemRateAndValueAndSave(BillItem b) {
         updateBillItemRateAndValue(b);
@@ -779,33 +777,24 @@ public class TransferIssueController implements Serializable {
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
 
-        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
-        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
-        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
-
-        if (pharmacyTransferIsByPurchaseRate) {
-            billItem.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate()));
-        } else if (pharmacyTransferIsByCostRate) {
-            billItem.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
-        } else if (pharmacyTransferIsByRetailRate) {
-            billItem.getBillItemFinanceDetails().setLineGrossRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
-        }
+        billItem.getBillItemFinanceDetails().setLineGrossRate(determineTransferRate(billItem.getPharmaceuticalBillItem().getItemBatch()));
+        
         billItem.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(billItem.getQty()));
 
-        billItem.getBillItemFinanceDetails().setLineGrossTotal( billItem.getBillItemFinanceDetails().getLineGrossRate().multiply( billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setLineGrossTotal(billItem.getBillItemFinanceDetails().getLineGrossRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
 
         billItem.getBillItemFinanceDetails().setLineNetRate(billItem.getBillItemFinanceDetails().getLineGrossRate());
         billItem.getBillItemFinanceDetails().setLineNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
         billItem.getBillItemFinanceDetails().setNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
-        
+
         billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
 
         billItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
         billItem.getBillItemFinanceDetails().setLineCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
         billItem.getBillItemFinanceDetails().setTotalCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        
+
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
-        
+
         billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);
 
@@ -813,6 +802,20 @@ public class TransferIssueController implements Serializable {
         tmpStock = null;
 
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+    }
+
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
     }
 
     @Inject
@@ -839,8 +842,8 @@ public class TransferIssueController implements Serializable {
     public void onFocus(BillItem tmp) {
         getPharmacyController().fillItemDetails(tmp.getItem());
     }
-    
-    public void displayItemDetails(BillItem tmp){
+
+    public void displayItemDetails(BillItem tmp) {
         getPharmacyController().fillItemDetails(tmp.getItem());
     }
 
