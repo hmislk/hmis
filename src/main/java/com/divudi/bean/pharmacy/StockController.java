@@ -209,7 +209,10 @@ public class StockController implements Serializable {
         }
 
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
+        
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+        
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
                 stockSet.addAll(additionalStocks);
