@@ -582,6 +582,11 @@ public class TransferIssueController implements Serializable {
         //Replase the billItem with out Zero Qty Item
         setBillItems(billItemList);
 
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
+            return;
+        }
+
         saveBill();
         for (BillItem i : getBillItems()) {
 
