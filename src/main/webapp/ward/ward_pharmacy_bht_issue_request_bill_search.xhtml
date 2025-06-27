@@ -92,7 +92,7 @@
                                     </h:panelGroup>
                                 </p:column>  
                                 <p:column>
-                                    <p:commandButton ajax="false" value="View Request" action="/ward/ward_pharmacy_reprint_bht_issue_request" class="ui-button-success">
+                                    <p:commandButton ajax="false" value="View Request" action="/ward/ward_pharmacy_reprint_bht_issue_request?faces-redirect=true" class="ui-button-success">
                                         <f:setPropertyActionListener value="#{p}" target="#{pharmacyBillSearch.bill}"/>
                                     </p:commandButton>
                                 </p:column>
@@ -132,7 +132,7 @@
                                             </h:outputLabel>                                  
                                         </p:column>
                                         <p:column>
-                                            <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint" >
+                                            <p:commandButton ajax="false" value="View Bill" action="/ward/ward_pharmacy_reprint_bht_issue_bill_reprint?faces-redirect=true" >
                                                 <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
                                             </p:commandButton>
                                         </p:column>
