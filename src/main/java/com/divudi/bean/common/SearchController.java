@@ -596,6 +596,9 @@ public class SearchController implements Serializable {
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
         bundle = new ReportTemplateRowBundle();
 
@@ -744,6 +747,9 @@ public class SearchController implements Serializable {
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
         bundle = new ReportTemplateRowBundle();
 
@@ -14586,6 +14592,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bills");
                 bundle.setBundleType("billList");
@@ -14610,6 +14618,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bill Items");
                 bundle.setBundleType("billItemList");
