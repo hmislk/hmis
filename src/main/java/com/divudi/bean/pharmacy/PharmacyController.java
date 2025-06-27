@@ -4336,6 +4336,17 @@ public class PharmacyController implements Serializable {
         createInstitutionIssue();
         createInstitutionTransferReceive();
     }
+    
+    public void fillItemDetails(Item pharmacyItem) {
+        this.pharmacyItem = pharmacyItem;
+        createInstitutionSale();
+        createInstitutionWholeSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
+        createInstitutionIssue();
+        createInstitutionTransferReceive();
+    }
 
     public double findPharmacyMovement(Department department, Item itm, BillType[] bts, Date fd, Date td) {
         try {
