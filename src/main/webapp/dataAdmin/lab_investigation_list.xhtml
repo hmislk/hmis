@@ -43,6 +43,7 @@
                     
                     <p:commandButton value="Active Selected" action="#{investigationController.markSelectedActive}" ajax="false" ></p:commandButton>
                     <p:commandButton value="Inactive Selected" action="#{investigationController.markSelectedInactive}" ajax="false" ></p:commandButton>
+                    <p:commandButton icon="pi pi-sync" value="Convert Selected to Services" action="#{investigationController.convertSelectedInvestigationsToServices()}" ajax="false" ></p:commandButton>
 
 
                     <p:dataTable id="tbl" rowIndexVar="rowIndex" value="#{investigationController.items}" var="ix"  

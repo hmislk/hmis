@@ -1236,6 +1236,24 @@ public class InvestigationController implements Serializable {
 
     }
 
+    public void convertSelectedInvestigationsToServices() {
+        if (selectedInvestigations == null || selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Convert");
+            return;
+        }
+        for (Investigation ix : selectedInvestigations) {
+            try {
+                String sql = "UPDATE Item SET DTYPE = 'Service' WHERE id = " + ix.getId();
+                itemFacade.executeNativeSql(sql);
+            } catch (Exception e) {
+                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
+            }
+        }
+        itemFacade.flush();
+        selectedInvestigations = null;
+        JsfUtil.addSuccessMessage("Successfully Converted");
+    }
+
     public Institution getInstitution() {
         return institution;
     }
