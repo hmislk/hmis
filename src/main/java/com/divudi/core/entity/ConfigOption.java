@@ -12,13 +12,24 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Lob;
 import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import javax.persistence.Temporal;
+import javax.persistence.UniqueConstraint;
 
 /**
  *
  * @author Dr M H B Ariyaratne <buddhika.ari at gmail.com>
  */
 @Entity
+@Table(uniqueConstraints = {
+    @UniqueConstraint(columnNames = {
+        "OPTIONKEY",
+        "SCOPE",
+        "INSTITUTION_ID",
+        "DEPARTMENT_ID",
+        "WEBUSER_ID"
+    })
+})
 public class ConfigOption implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -228,7 +239,4 @@ public class ConfigOption implements Serializable {
     public void setEnumValue(String enumValue) {
         this.enumValue = enumValue;
     }
-
-
-
 }

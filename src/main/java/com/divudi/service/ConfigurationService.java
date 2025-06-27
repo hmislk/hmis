@@ -16,6 +16,14 @@ public class ConfigurationService {
     @EJB
     private ConfigOptionFacade optionFacade;
 
+    private ConfigOption findApplicationOptionWithLock(String key) {
+        String jpql = "SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL";
+        Map<String, Object> params = new HashMap<>();
+        params.put("key", key);
+        params.put("scope", OptionScope.APPLICATION);
+        return optionFacade.findFirstByJpqlWithLock(jpql, params);
+    }
+
     public String getShortTextValueByKey(String key, String defaultValue) {
         ConfigOption option = findApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
@@ -117,7 +125,11 @@ public class ConfigurationService {
     }
 
     private ConfigOption createOption(String key, OptionValueType type, String value) {
-        ConfigOption option = new ConfigOption();
+        ConfigOption option = findApplicationOptionWithLock(key);
+        if (option != null) {
+            return option;
+        }
+        option = new ConfigOption();
         option.setCreatedAt(new Date());
         option.setOptionKey(key);
         option.setScope(OptionScope.APPLICATION);
