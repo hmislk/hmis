@@ -228,7 +228,4 @@ public class ConfigOption implements Serializable {
     public void setEnumValue(String enumValue) {
         this.enumValue = enumValue;
     }
-
-
-
 }
