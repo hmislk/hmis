@@ -290,6 +290,10 @@ public class EnumController implements Serializable {
     public List<ScheduledProcess> getScheduledProcesses() {
         return Arrays.asList(ScheduledProcess.values());
     }
+    
+     public List<EmployeeStatus> getEmploymentStatuses() {
+        return Arrays.asList(EmployeeStatus.values());
+    }
 
     public List<ScheduledFrequency> getScheduledFrequencies() {
         return Arrays.asList(ScheduledFrequency.values());
