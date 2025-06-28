@@ -669,19 +669,47 @@ public class LaboratoryManagementController implements Serializable {
 
     public void nonCollectedSampleList() {
         selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_GENERATED);
+        
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.department = :department "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
 
-        fetchSamples(status);
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_GENERATED);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+        
         selectAll = false;
     }
 
     public void pendingSendSampleList() {
         selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
+        
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.department = :department "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
 
-        fetchSamples(status);
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+        
         selectAll = false;
     }
 
@@ -867,17 +895,10 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
-        List<PatientSample> availableSamples = new ArrayList<>();
-        
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
-            }
-        }
-        for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getSampleSentToDepartment()== sessionController.getDepartment() && ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
-                availableSamples.add(ps);
             }
         }
         
@@ -887,7 +908,7 @@ public class LaboratoryManagementController implements Serializable {
         Map<Long, Bill> receivedBills = new HashMap<>();
 
         // Update sample details and collect associated patient investigations
-        for (PatientSample ps : availableSamples) {
+        for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleReceivedAtLab(true);
             ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
             ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
