@@ -91,6 +91,8 @@ public class PatientSample implements Serializable, RetirableEntity {
     private Staff sampleTransportedToLabByStaff;
     @ManyToOne
     private Department sampleSentToDepartment;
+    @ManyToOne
+    private Institution sampleSentToInstitution;
     @Enumerated
     private Priority priority;
 
@@ -796,6 +798,12 @@ public class PatientSample implements Serializable, RetirableEntity {
         this.sampleSentToDepartment = sampleSentToDepartment;
     }
 
+    public Institution getSampleSentToInstitution() {
+        return sampleSentToInstitution;
+    }
 
+    public void setSampleSentToInstitution(Institution sampleSentToInstitution) {
+        this.sampleSentToInstitution = sampleSentToInstitution;
+    }
 
 }

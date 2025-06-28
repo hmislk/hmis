@@ -830,6 +830,7 @@ public class LaboratoryManagementController implements Serializable {
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
+            ps.setSampleSentToInstitution(sampleSendingDepartment.getInstitution());
             ps.setSampleSentToDepartment(sampleSendingDepartment);
             ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             patientSampleFacade.edit(ps);
