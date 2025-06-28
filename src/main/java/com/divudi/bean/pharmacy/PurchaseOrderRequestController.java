@@ -220,6 +220,10 @@ public class PurchaseOrderRequestController implements Serializable {
         calTotal();
     }
 
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
     public void saveBill() {
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
