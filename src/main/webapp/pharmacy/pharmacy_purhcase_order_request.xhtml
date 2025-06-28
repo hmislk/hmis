@@ -47,8 +47,16 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item"  style=" padding: 0;">  
+                                <p:column headerText="Item"  style=" padding: 0;">
                                     <h:outputLabel value="#{bi.item.name}  - #{bi.item.code}" ></h:outputLabel>
+                                    <p:commandButton
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
+                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
 
                                 <p:column 
@@ -66,7 +74,6 @@
                                         onfocus="this.select()">  
                                         <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
                                 </p:column> 
 
@@ -85,7 +92,6 @@
                                         label="Qty">  
                                         <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
                                 </p:column>
 
@@ -103,7 +109,6 @@
                                             class="w-100 text-end">
                                             <f:convertNumber pattern="#,##0.00"/>
                                             <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                         </p:inputText>
                                     </h:panelGroup>
                                 </p:column>  

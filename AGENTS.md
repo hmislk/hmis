@@ -214,6 +214,15 @@ Use the following check to conditionally render a UI component:
 
 These guidelines apply to the entire repository.
 
+## Pharmacy Item History Button
+
+Most pharmacy transaction pages use a dedicated button to view the history of a selected item. The button has the id `btnViewSelectedItemDetails` and should be placed inside the item column next to the item name.
+
+- Clicking the button must invoke `displayItemDetails(bi)` on the page's controller and update the `history` composite component (`<ph:history/>`).
+- Remove any `f:ajax` listeners that trigger item history loading on input focus.
+- Include `<ph:history/>` in the page if it is not already present.
+
+
 ## HTML Output Sanitisation
 
 Dynamic text displayed with `escape="false"` must be sanitised to avoid
