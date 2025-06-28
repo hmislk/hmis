@@ -58,66 +58,76 @@ public class DepartmentController implements Serializable {
     List<Department> itemsToRemove;
 
     public Department findAndSaveDepartmentByName(String name) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Department();
-            i.setName(name);
+            i.setName(cleanedName);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Department findAndSaveDepartmentByName(String name, Institution ins) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Department();
-            i.setName(name);
+            i.setName(cleanedName);
             i.setInstitution(ins);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Department findExistingDepartmentByName(String name, Institution ins) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Department i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Department i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Department i = getFacade().findFirstByJpql(sql, m);
         return i;
     }

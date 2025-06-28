@@ -390,54 +390,61 @@ public class InstitutionController implements Serializable {
     }
 
     public Institution getInstitutionByName(String name, InstitutionType type) {
-        if (name == null) {
+        if (name == null || type == null) {
             return null;
         }
-        if (type == null) {
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("n", name.toUpperCase());
+
+        String sql = "select i from Institution i where upper(i.name)=:n and i.institutionType=:t";
+        Map<String, Object> m = new HashMap<>();
+        m.put("n", cleanedName.toUpperCase());
         m.put("t", type);
-        sql = "select i from Institution i where (i.name) =:n and i.institutionType=:t";
         Institution i = getFacade().findFirstByJpql(sql, m);
+
         if (i == null) {
             i = new Institution();
-            i.setName(name);
+            i.setName(cleanedName);
             i.setInstitutionType(type);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
     public Institution findAndSaveInstitutionByName(String name) {
-        if (name == null || name.trim().equals("")) {
+        if (name == null) {
             return null;
         }
-        String sql;
-        Map m = new HashMap();
-        m.put("name", name);
+
+        String cleanedName = name.trim();
+        if (cleanedName.isEmpty()) {
+            return null;
+        }
+
+        String sql = "select i from Institution i where upper(i.name)=:name and i.retired=:ret";
+        Map<String, Object> m = new HashMap<>();
+        m.put("name", cleanedName.toUpperCase());
         m.put("ret", false);
-        sql = "select i "
-                + " from Institution i "
-                + " where i.name=:name"
-                + " and i.retired=:ret";
         Institution i = getFacade().findFirstByJpql(sql, m);
 
         if (i == null) {
             i = new Institution();
-            i.setName(name);
+            i.setName(cleanedName);
             getFacade().create(i);
-        } else {
+        } else if (i.isRetired()) {
             i.setRetired(false);
             getFacade().edit(i);
         }
+
         return i;
     }
 
