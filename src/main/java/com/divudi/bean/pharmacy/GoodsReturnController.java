@@ -454,6 +454,7 @@ public class GoodsReturnController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setComments(bill.getPaymentMemo());
         setPaymentMethodData(p, pm);
         return p;
     }
