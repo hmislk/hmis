@@ -1237,44 +1237,44 @@ public class InvestigationController implements Serializable {
 
     }
 
-  @Transactional
-public void convertSelectedInvestigationsToServices() {
-    if (selectedInvestigations == null || selectedInvestigations.isEmpty()) {
-        JsfUtil.addErrorMessage("Nothing to Convert");
-        return;
-    }
-
-    int successCount = 0;
-    int failureCount = 0;
-
-    for (Investigation ix : selectedInvestigations) {
-        try {
-            // Native SQL with positional placeholders (?) because MySQL does NOT support :named parameters in native queries
-            String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
-
-            // Prepare positional parameter values in order
-            List<Object> params = Arrays.asList("Service", ix.getId());
-
-            // Execute update using newly modified method
-            itemFacade.executeNativeSql(sql, params);
-
-            successCount++;
-        } catch (Exception e) {
-            Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
-            failureCount++;
+    @Transactional
+    public void convertSelectedInvestigationsToServices() {
+        if (selectedInvestigations == null || selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Convert");
+            return;
         }
-    }
 
-    // Only flush if all operations succeeded
-    if (failureCount == 0) {
-        itemFacade.flush();
-        JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
-    } else {
-        JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
-    }
+        int successCount = 0;
+        int failureCount = 0;
 
-    selectedInvestigations = null;
-}
+        for (Investigation ix : selectedInvestigations) {
+            try {
+                // Native SQL with positional placeholders (?) because MySQL does NOT support :named parameters in native queries
+                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+
+                // Prepare positional parameter values in order
+                List<Object> params = Arrays.asList("Service", ix.getId());
+
+                // Execute update using newly modified method
+                itemFacade.executeNativeSql(sql, params);
+
+                successCount++;
+            } catch (Exception e) {
+                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
+                failureCount++;
+            }
+        }
+
+        // Only flush if all operations succeeded
+        if (failureCount == 0) {
+            itemFacade.flush();
+            JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        } else {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
+        }
+
+        selectedInvestigations = null;
+    }
 
     public Institution getInstitution() {
         return institution;
