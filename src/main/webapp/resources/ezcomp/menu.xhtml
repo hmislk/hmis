@@ -666,15 +666,15 @@
                     <p:menuitem
                         ajax="false"
                         action="#{patientInvestigationController.navigateToGenerateBarcodes()}"
-                        value="Sample Management"
                         icon="fa fa-fw fa-vials"
-                        rendered="#{webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')}" >
+                        value="Sample Management"
+                        rendered="#{(webUserController.hasPrivilege('LabSampleCollecting') or webUserController.hasPrivilege('LabSampleReceiving')) and !configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
                     </p:menuitem>
 
                     <p:menuitem 
                         ajax="false"
                         icon="fa fa-flask"
-                        rendered="#{webUserController.hasPrivilege('DashBoardMenu')}"
+                        rendered="#{webUserController.hasPrivilege('DashBoardMenu') and configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}"
                         action="#{laboratoryManagementController.navigateToLaboratoryManagementDashboard()}"
                         value="Laboratory Dashboard">
                     </p:menuitem>

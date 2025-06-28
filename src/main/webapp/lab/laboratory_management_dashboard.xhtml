@@ -16,11 +16,11 @@
                 </style>
             </h:head>
 
-            <h:panelGroup rendered="#{!webUserController.hasPrivilege('DashBoardMenu')}" >
+            <h:panelGroup rendered="#{!webUserController.hasPrivilege('DashBoardMenu') or !configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
                 <na:not_authorize />
             </h:panelGroup>
 
-            <h:panelGroup rendered="#{webUserController.hasPrivilege('DashBoardMenu')}" >
+            <h:panelGroup rendered="#{webUserController.hasPrivilege('DashBoardMenu') and configOptionApplicationController.getBooleanValueByKey('The system uses the Laboratory Dashboard as its default interface')}" >
                 <h:form>
                     <p:megaMenu orientation="horizontal" autoDisplay="false"  class="d-flex justify-content-center mt-3">
 
