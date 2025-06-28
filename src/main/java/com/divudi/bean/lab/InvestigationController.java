@@ -1249,11 +1249,15 @@ public class InvestigationController implements Serializable {
 
         for (Investigation ix : selectedInvestigations) {
             try {
-                String sql = "UPDATE Item SET DTYPE = :dtype WHERE id = :id";
-                Map<String, Object> params = new HashMap<>();
-                params.put("dtype", "Service");
-                params.put("id", ix.getId());
+                // Native SQL with positional placeholders (?) because MySQL does NOT support :named parameters in native queries
+                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+
+                // Prepare positional parameter values in order
+                List<Object> params = Arrays.asList("Service", ix.getId());
+
+                // Execute update using newly modified method
                 itemFacade.executeNativeSql(sql, params);
+
                 successCount++;
             } catch (Exception e) {
                 Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
@@ -1261,6 +1265,7 @@ public class InvestigationController implements Serializable {
             }
         }
 
+        // Only flush if all operations succeeded
         if (failureCount == 0) {
             itemFacade.flush();
             JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
