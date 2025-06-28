@@ -120,7 +120,11 @@
                     </h:panelGroup>
 
 
-                    <div class="col-3">
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="groupSaleBlock"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Pharmacy Sale
@@ -206,10 +210,14 @@
                                     </p:row>
                                 </p:columnGroup>
 
-                            </p:dataTable> 
+                            </p:dataTable>
                         </p:panel>
-                    </div>
-                    <div class="col-3">
+                    </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="groupBhtIssueBlock"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 BHT Issue
@@ -295,11 +303,15 @@
                                     </p:row>
                                 </p:columnGroup>
 
-                            </p:dataTable>   
+                            </p:dataTable>
 
                         </p:panel>
-                    </div>
-                    <div class="col-3" >
+                    </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="groupWholeSaleBlock"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Pharmacy Whole Sale
@@ -385,13 +397,17 @@
                                     </p:row>
                                 </p:columnGroup>
 
-                            </p:dataTable>                
+                            </p:dataTable>
 
                         </p:panel>
-                    </div>
+                    </h:panelGroup>
 
 
-                    <div class="col-3">
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="groupTransferIssueBlock"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Block', true)}" >
                         <p:panel >
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Transfer Issue
@@ -479,7 +495,7 @@
 
                             </p:dataTable> 
                         </p:panel>
-                    </div>
+                    </h:panelGroup>
                 </div>
             </h:panelGroup>
 
