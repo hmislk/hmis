@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -56,6 +57,8 @@ public class DepartmentController implements Serializable {
     private Department superDepartment;
 
     List<Department> itemsToRemove;
+
+    private List<DepartmentDuplicateGroup> duplicateGroups;
 
     public Department findAndSaveDepartmentByName(String name) {
         if (name == null) {
@@ -371,6 +374,17 @@ public class DepartmentController implements Serializable {
     public String saveSelectedDepartment() {
         if (current == null) {
             JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        if (current.getName() != null) {
+            current.setName(current.getName().trim());
+        }
+        String sql = "select d from Department d where upper(d.name)=:nm and d.retired=false";
+        Map<String, Object> m = new HashMap<>();
+        m.put("nm", current.getName() == null ? "" : current.getName().toUpperCase());
+        Department existing = getFacade().findFirstByJpql(sql, m);
+        if (existing != null && (current.getId() == null || !existing.getId().equals(current.getId()))) {
+            JsfUtil.addErrorMessage("Department with same name already exists");
             return "";
         }
         if (current.getId() == null) {
@@ -863,6 +877,58 @@ public class DepartmentController implements Serializable {
 
     public void setSuperDepartment(Department superDepartment) {
         this.superDepartment = superDepartment;
+    }
+
+    public List<DepartmentDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public String navigateToDuplicateDepartments() {
+        detectDuplicateDepartments();
+        return "/admin/institutions/department_duplicates?faces-redirect=true";
+    }
+
+    public void detectDuplicateDepartments() {
+        String jpql = "SELECT d FROM Department d WHERE d.retired=false ORDER BY UPPER(TRIM(d.name)), d.id";
+        List<Department> all = getFacade().findByJpql(jpql);
+        Map<String, List<Department>> grouped = all.stream()
+                .collect(Collectors.groupingBy(d -> d.getName() == null ? "" : d.getName().trim().toUpperCase()));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new DepartmentDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(DepartmentDuplicateGroup g) {
+        if (g == null || g.getDepartments() == null || g.getDepartments().size() < 2) {
+            return;
+        }
+        g.getDepartments().sort((a, b) -> a.getId().compareTo(b.getId()));
+        for (int i = 1; i < g.getDepartments().size(); i++) {
+            Department d = g.getDepartments().get(i);
+            d.setRetired(true);
+            d.setRetiredAt(new Date());
+            d.setRetirer(sessionController.getLoggedUser());
+            getFacade().edit(d);
+        }
+        detectDuplicateDepartments();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + g.getName());
+    }
+
+    public static class DepartmentDuplicateGroup {
+        private List<Department> departments;
+
+        public DepartmentDuplicateGroup(List<Department> departments) {
+            this.departments = departments;
+        }
+
+        public List<Department> getDepartments() {
+            return departments;
+        }
+
+        public String getName() {
+            return departments.get(0).getName();
+        }
     }
 
     /**
