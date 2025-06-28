@@ -1261,14 +1261,14 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        itemFacade.flush();
-        selectedInvestigations = null;
-
-        if (failureCount > 0) {
-            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
-        } else {
+        if (failureCount == 0) {
+            itemFacade.flush();
             JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        } else {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
         }
+
+        selectedInvestigations = null;
     }
 
     public Institution getInstitution() {
