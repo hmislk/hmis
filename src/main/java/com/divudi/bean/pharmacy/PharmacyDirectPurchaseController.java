@@ -146,6 +146,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
+        if (pbi.getDoe() != null) {
+            if (pbi.getDoe().getTime() < Calendar.getInstance().getTimeInMillis()) {
+                JsfUtil.addErrorMessage("Check Date of Expiry");
+                return;
+            }
+        }
+
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
