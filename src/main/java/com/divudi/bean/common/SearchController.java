@@ -7850,6 +7850,11 @@ public class SearchController implements Serializable {
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and exists (select t from Token t where t.bill=b and upper(t.tokenNumber) like :token)";
+            temMap.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.department=:dep ";
             temMap.put("dep", getReportKeyWord().getDepartment());
@@ -8183,6 +8188,11 @@ public class SearchController implements Serializable {
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         sql += " order by token.tokenAt desc";
 
         List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
@@ -8230,6 +8240,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((token.bill.total) like :total )";
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
         }
 
         sql += " order by token.tokenAt desc";
