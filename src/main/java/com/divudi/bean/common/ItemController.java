@@ -3455,6 +3455,14 @@ public class ItemController implements Serializable {
         }
         return deptItems;
     }
+    
+    public void reloadItemsFromDatabase(){
+        itemApplicationController.fillAllItemsBypassingCache();
+        // Clear this controller’s cached copies to avoid stale data
+        recreateModel();
+        reloadItems();
+        JsfUtil.addSuccessMessage("Items reloaded from database.");
+    }
 
     public List<ItemLight> fillItemsByInstitution(Institution institution) {
         List<ItemLight> insItems = new ArrayList<>();
