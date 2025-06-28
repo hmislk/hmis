@@ -224,6 +224,10 @@
                                         ajax="false" 
                                         value="Investigation List" 
                                         action="#{investigationController.navigateToManageInvestigationsForDevelopers}"  />
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="Reload Items from Database" 
+                                        action="#{itemController.reloadItemsFromDatabase()}"  />
                                 </div>
                             </p:tab>
                         </p:accordionPanel>

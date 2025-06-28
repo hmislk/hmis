@@ -3455,6 +3455,10 @@ public class ItemController implements Serializable {
         }
         return deptItems;
     }
+    
+    public void reloadItemsFromDatabase(){
+        itemApplicationController.fillAllItemsBypassingCache();
+    }
 
     public List<ItemLight> fillItemsByInstitution(Institution institution) {
         List<ItemLight> insItems = new ArrayList<>();

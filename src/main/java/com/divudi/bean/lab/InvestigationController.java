@@ -9,6 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -107,6 +108,8 @@ public class InvestigationController implements Serializable {
     PatientReportController patientReportController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /**
      * EJBs
      */
@@ -1268,12 +1271,15 @@ public class InvestigationController implements Serializable {
         // Only flush if all operations succeeded
         if (failureCount == 0) {
             itemFacade.flush();
+            fillItemsFromDatabaseWithoutCache();
+            itemApplicationController.fillAllItemsBypassingCache();
             JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
         } else {
             JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
         }
 
         selectedInvestigations = null;
+        
     }
 
     public Institution getInstitution() {
@@ -1888,6 +1894,11 @@ public class InvestigationController implements Serializable {
     public void fillItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
         items = getFacade().findByJpql(sql);
+    }
+    
+    public void fillItemsFromDatabaseWithoutCache() {
+        String sql = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findByJpql(sql, true);
     }
 
     public List<Investigation> fillAllItems() {
