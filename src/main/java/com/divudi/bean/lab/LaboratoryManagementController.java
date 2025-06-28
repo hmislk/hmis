@@ -1687,8 +1687,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public Department getSampleSendingDepartment() {
-        getDefaultSampleSendingDepartment();
-        return sampleSendingDepartment;
+        return getDefaultSampleSendingDepartment();
     }
 
     public void setSampleSendingDepartment(Department sampleSendingDepartment) {
