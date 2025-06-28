@@ -45,12 +45,24 @@ public abstract class AbstractFacade<T> {
         }
     }
 
-    public void executeNativeSql(String sql, Map<String, Object> params) throws Exception {
-        Query query = getEntityManager().createNativeQuery(sql);
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            query.setParameter(entry.getKey(), entry.getValue());
+    /**
+     * Executes native SQL using positional parameters, suitable for MySQL.
+     *
+     * @param sql The SQL with positional placeholders (e.g., "UPDATE table SET
+     * col = ? WHERE id = ?")
+     * @param parameters List of parameter values in exact order.
+     * @throws Exception if query fails.
+     */
+    public void executeNativeSql(String sql, List<Object> parameters) throws Exception {
+        try {
+            Query query = getEntityManager().createNativeQuery(sql);
+            for (int i = 0; i < parameters.size(); i++) {
+                query.setParameter(i + 1, parameters.get(i));
+            }
+            query.executeUpdate();
+        } catch (Exception e) {
+            throw e;
         }
-        query.executeUpdate();
     }
 
     public void flush() {
