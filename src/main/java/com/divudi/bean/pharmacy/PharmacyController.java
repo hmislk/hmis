@@ -3305,6 +3305,41 @@ public class PharmacyController implements Serializable {
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
     }
 
+    public List<Object[]> calDepartmentSalesAllInstitutions(List<Institution> institutions) {
+        Item selectedItem;
+        if (pharmacyItem instanceof Ampp) {
+            selectedItem = ((Ampp) pharmacyItem).getAmp();
+        } else {
+            selectedItem = pharmacyItem;
+        }
+
+        String sql = "select i.bill.department.institution, i.bill.department,"
+                + " sum(i.netValue),"
+                + " sum(i.pharmaceuticalBillItem.qty) "
+                + " from BillItem i "
+                + " where i.bill.referenceBill.billType=:refType "
+                + " and i.bill.referenceBill.cancelled=false "
+                + " and i.item=:itm "
+                + " and i.bill.billType=:btp "
+                + " and i.createdAt between :frm and :to ";
+
+        Map m = new HashMap();
+        m.put("itm", selectedItem);
+        m.put("frm", getFromDate());
+        m.put("to", getToDate());
+        m.put("btp", BillType.PharmacyPre);
+        m.put("refType", BillType.PharmacySale);
+
+        if (institutions != null && !institutions.isEmpty()) {
+            sql += " and i.bill.department.institution in :ins";
+            m.put("ins", institutions);
+        }
+
+        sql += " group by i.bill.department.institution, i.bill.department";
+
+        return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
+    }
+
     public List<Object[]> calDepartmentWholeSale(Institution institution) {
         Item item;
 
@@ -3516,30 +3551,48 @@ public class PharmacyController implements Serializable {
         institutionSales = new ArrayList<>();
         grantSaleQty = 0;
         grantSaleValue = 0;
+
+        Map<Institution, InstitutionSale> saleMap = new LinkedHashMap<>();
         for (Institution ins : insList) {
-            InstitutionSale newTable = new InstitutionSale();
-            List<DepartmentSale> list = new ArrayList<>();
-            double totalValue = 0;
-            double totalQty = 0;
-            List<Object[]> objs = calDepartmentSale(ins);
-            for (Object[] obj : objs) {
-                DepartmentSale r = new DepartmentSale();
-                r.setDepartment((Department) obj[0]);
-                r.setSaleValue((Double) obj[1]);
-                r.setSaleQty((Double) obj[2]);
-                list.add(r);
-                //Total Institution Stock
-                totalValue += r.getSaleValue();
-                totalQty += r.getSaleQty();
-                grantSaleValue += r.getSaleValue();
-                grantSaleQty += r.getSaleQty();
+            InstitutionSale is = new InstitutionSale();
+            is.setInstitution(ins);
+            is.setDepartmentSales(new ArrayList<>());
+            saleMap.put(ins, is);
+        }
+
+        List<Object[]> results = calDepartmentSalesAllInstitutions(insList);
+
+        for (Object[] obj : results) {
+            Institution ins = (Institution) obj[0];
+            Department dep = (Department) obj[1];
+            double val = (Double) obj[2];
+            double qty = (Double) obj[3];
+
+            InstitutionSale insSale = saleMap.get(ins);
+            if (insSale == null) {
+                insSale = new InstitutionSale();
+                insSale.setInstitution(ins);
+                insSale.setDepartmentSales(new ArrayList<>());
+                saleMap.put(ins, insSale);
             }
-            if (totalQty != 0 || totalValue != 0) {
-                newTable.setDepartmentSales(list);
-                newTable.setInstitution(ins);
-                newTable.setInstitutionQty(totalQty);
-                newTable.setInstitutionValue(totalValue);
-                institutionSales.add(newTable);
+
+            DepartmentSale dSale = new DepartmentSale();
+            dSale.setDepartment(dep);
+            dSale.setSaleValue(val);
+            dSale.setSaleQty(qty);
+            insSale.getDepartmentSales().add(dSale);
+
+            insSale.setInstitutionValue(insSale.getInstitutionValue() + val);
+            insSale.setInstitutionQty(insSale.getInstitutionQty() + qty);
+
+            grantSaleValue += val;
+            grantSaleQty += qty;
+        }
+
+        for (Institution ins : insList) {
+            InstitutionSale is = saleMap.get(ins);
+            if (is != null && (is.getInstitutionQty() != 0 || is.getInstitutionValue() != 0)) {
+                institutionSales.add(is);
             }
         }
     }
