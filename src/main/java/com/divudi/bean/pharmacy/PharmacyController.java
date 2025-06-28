@@ -3277,47 +3277,20 @@ public class PharmacyController implements Serializable {
     }
 
     public List<Object[]> calDepartmentSale(Institution institution) {
-        Item item;
-
+        Item selectedItem;
         if (pharmacyItem instanceof Ampp) {
-            item = ((Ampp) pharmacyItem).getAmp();
+            selectedItem = ((Ampp) pharmacyItem).getAmp();
         } else {
-            item = pharmacyItem;
+            selectedItem = pharmacyItem;
         }
-
         String sql;
-
-//        sql = "select i "
-//                + " from BillItem i "
-//                + " where i.bill.department.institution=:ins"
-//                + " and i.bill.referenceBill.billType=:refType "
-//                + " and i.bill.referenceBill.cancelled=false "
-//                + " and i.item=:itm "
-//                + " and i.bill.billType=:btp "
-//                + " and i.createdAt between :frm and :to  "
-//                + " order by i.bill.department.name,i.bill.insId ";
         Map m = new HashMap();
-
-        m.put("itm", item);
+        m.put("itm", selectedItem);
         m.put("ins", institution);
         m.put("frm", getFromDate());
         m.put("to", getToDate());
         m.put("btp", BillType.PharmacyPre);
         m.put("refType", BillType.PharmacySale);
-//
-//        List<BillItem> billItems=getBillItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
-//        if (billItems!=null) {
-//            grns.addAll(billItems);
-//        }
-//        //System.out.println("billItems = " + billItems);
-//        //System.out.println("institution.getName() = " + institution.getName());
-
-//        for (BillItem bi : billItems) {
-//            //System.out.println("bi.getBill().getDepartment().getName() = " + bi.getBill().getDepartment().getName());
-//            //System.out.println("bi.getInsId() = " + bi.getInsId());
-//            //System.out.println("bi.getDeptId() = " + bi.getDeptId());
-//            //System.out.println("bi.getPharmaceuticalBillItem().getQty() = " + bi.getPharmaceuticalBillItem().getQty());
-//        }
         sql = "select i.bill.department,"
                 + " sum(i.netValue),"
                 + " sum(i.pharmaceuticalBillItem.qty) "
@@ -3329,9 +3302,7 @@ public class PharmacyController implements Serializable {
                 + " and i.bill.billType=:btp "
                 + " and i.createdAt between :frm and :to  "
                 + " group by i.bill.department";
-
         return getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
-
     }
 
     public List<Object[]> calDepartmentWholeSale(Institution institution) {
@@ -3542,18 +3513,15 @@ public class PharmacyController implements Serializable {
 
     public void createInstitutionSale() {
         List<Institution> insList = getCompany();
-
         institutionSales = new ArrayList<>();
         grantSaleQty = 0;
         grantSaleValue = 0;
-
         for (Institution ins : insList) {
             InstitutionSale newTable = new InstitutionSale();
             List<DepartmentSale> list = new ArrayList<>();
             double totalValue = 0;
             double totalQty = 0;
             List<Object[]> objs = calDepartmentSale(ins);
-
             for (Object[] obj : objs) {
                 DepartmentSale r = new DepartmentSale();
                 r.setDepartment((Department) obj[0]);
@@ -3565,20 +3533,15 @@ public class PharmacyController implements Serializable {
                 totalQty += r.getSaleQty();
                 grantSaleValue += r.getSaleValue();
                 grantSaleQty += r.getSaleQty();
-
             }
-
             if (totalQty != 0 || totalValue != 0) {
                 newTable.setDepartmentSales(list);
                 newTable.setInstitution(ins);
                 newTable.setInstitutionQty(totalQty);
                 newTable.setInstitutionValue(totalValue);
-
                 institutionSales.add(newTable);
-
             }
         }
-
     }
 
     public void createInstitutionWholeSale() {
