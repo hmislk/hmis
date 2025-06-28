@@ -3885,6 +3885,10 @@ public class PharmacyController implements Serializable {
         createInstitutionTransferIssue();
         createInstitutionIssue();
         createInstitutionTransferReceive();
+        // Ensure related purchase details are also loaded
+        createGrnTable();
+        createPoTable();
+        createDirectPurchaseTable();
     }
 
     public void createGrnTable() {
