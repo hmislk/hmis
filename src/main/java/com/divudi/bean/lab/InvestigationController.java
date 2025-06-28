@@ -563,11 +563,11 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-//        if (current == null) {
-//            JsfUtil.addErrorMessage("Please select investigation");
-//            return "";
-//        }
         return "/admin/lims/pathology_format?faces-redirect=true";
+    }
+
+    public String navigateToManageInvestigationsForDevelopers() {
+        return "/admin/lims/developers/lab_investigation_list_for_developers?faces-redirect=true";
     }
 
     public String navigateToManageCalculations() {
