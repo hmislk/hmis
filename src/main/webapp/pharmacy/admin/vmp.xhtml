@@ -158,11 +158,17 @@
                                     <f:selectItems value="#{measurementUnitController.issueUnits}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>  
 
+                                <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
+                                <h:inputTextarea id="txtComments"
+                                                 value="#{vmpController.current.comments}"
+                                                 required="false"
+                                                 class="w-100" />
+
                                 <p:outputLabel for="txtIns" value="Instructions" class="form-label"></p:outputLabel>
-                                <h:inputTextarea 
-                                    id="txtIns" 
-                                    value="#{vmpController.current.instructions}" 
-                                    required="false" 
+                                <h:inputTextarea
+                                    id="txtIns"
+                                    value="#{vmpController.current.instructions}"
+                                    required="false"
                                     class="form-control" ></h:inputTextarea>
 
                             </h:panelGrid>

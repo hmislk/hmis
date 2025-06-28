@@ -24,7 +24,7 @@
                         style="float: right;"
                         icon="fas fa-pen"
                         value="Edit Request"
-                        disabled="#{not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded}"
+                        disabled="#{configOptionApplicationController.getBooleanValueByKey('Disable Edit Button on Pharmacy Request Reprint',false) or (not empty pharmacyBillSearch.bill.listOfBill or pharmacyBillSearch.bill.cancelled or pharmacyBillSearch.bill.refunded)}"
                         action="#{pharmacyBillSearch.editInwardPharmacyRequestBill()}"
                         ajax="false">
                     </p:commandButton>

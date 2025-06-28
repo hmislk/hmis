@@ -46,7 +46,7 @@
                             value="Process"
                             icon="fa-solid fa-arrows-rotate"
                             disabled="true"
-                        class="ui-button-warning"
+                            class="ui-button-warning"
                             action="#{pharmacySaleReportController.createGRNBillItemTable()}"/>
                         <p:commandButton 
                             actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}" 
@@ -54,16 +54,31 @@
                             value="Excel"
                             disabled="true"
                             icon="fa-solid fa-file-excel"
-                        class="ui-button-success mx-2" >
+                            class="ui-button-success mx-2" >
                             <p:dataExporter type="xlsx" target="sum1" fileName="report_pharmacy_sale_by_date_summery_payment_method"  />
                         </p:commandButton>
                         <p:commandButton 
                             ajax="false" 
                             value="Print" 
                             icon="fa-solid fa-print"
-                        class="ui-button-info">
+                            class="ui-button-info">
                             <p:printer target="panelPrint" />
+                       </p:commandButton>
+                  
+                        <p:commandButton 
+                            actionListener="#{pharmacySaleReportController.createGRNBillItemTable()}" 
+                            ajax="false"
+                            value="Download"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-download" >
+                            <p:dataExporter type="xlsx" target="sum1" fileName="GRN_Bill_Item_Report"  />
                         </p:commandButton>
+                  
+                        <p:commandButton
+                                value="To Print"
+                                styleClass="ui-button-warning m-1"
+                                icon="pi pi-print"
+                                action="pharmacy_report_grn_billitem_print?faces-redirect=true"/>
                     
                 </h:panelGrid>
 

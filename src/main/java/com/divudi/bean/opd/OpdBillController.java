@@ -556,7 +556,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToViewOpdBatchBill() {
@@ -683,7 +683,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().checkBillItemFeesInitiated(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     /**
@@ -2817,10 +2817,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         calTotals();
 
-        if (bi.getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
-            return;
-        }
+        // Previously the system blocked adding items with a zero value. This
+        // restriction prevented recording fees that intentionally have no
+        // charge. Issue #12544 requires allowing such entries, so the check for
+        // a zero net value is removed. Items with a value of 0 are now
+        // permitted and will be processed like any other item.
 
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);

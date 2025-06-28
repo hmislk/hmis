@@ -164,6 +164,14 @@ public class PharmacyBillSearch implements Serializable {
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
     }
 
+    public String navigateToReprintPharmacyPurchaseOrder() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
+    }
+
     public String navigateToImportBillsFromJson() {
         return "/pharmacy/admin/import_bill?faces-redirect=true";
     }
@@ -187,6 +195,14 @@ public class PharmacyBillSearch implements Serializable {
 
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
+    }
+
+    public String navigateToPharmacyGrnReprint() {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
     public String navigateToViewPharmacyTransferReqest() {
@@ -359,7 +375,7 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
 
-        return "/inward/bht_bill_cancel?faces-redirect=true;";
+        return "/inward/bht_bill_cancel?faces-redirect=true";
     }
 
     public void markAsChecked() {
@@ -921,7 +937,11 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToViewPharmacyGrn() {
-        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true;";
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
     public String navigateToViewPurchaseOrder() {
@@ -938,6 +958,12 @@ public class PharmacyBillSearch implements Serializable {
             tmp += tmp2;
         }
         bill.setTransTotalSaleValue(tmp);
+
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
@@ -2735,6 +2761,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            cb.setPaymentMethod(PaymentMethod.None);
             cb.setReferenceBill(getBill());
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
@@ -3365,31 +3392,35 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String viewBill() {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
 
         if (bill != null) {
             switch (bill.getBillType()) {
                 case PharmacyPre:
                 case PharmacyBhtPre:
                 case PharmacyWholesalePre:
-                    return "pharmacy_reprint_bill_sale";
+                    return "pharmacy_reprint_bill_sale?faces-redirect=true";
                 case PharmacyIssue:
-                    return "pharmacy_reprint_bill_unit_issue";
+                    return "pharmacy_reprint_bill_unit_issue?faces-redirect=true";
                 case PharmacyTransferIssue:
-                    return "pharmacy_reprint_transfer_isssue";
+                    return "pharmacy_reprint_transfer_isssue?faces-redirect=true";
                 case PharmacyTransferReceive:
-                    return "pharmacy_reprint_transfer_receive";
+                    return "pharmacy_reprint_transfer_receive?faces-redirect=true";
                 case PharmacyPurchaseBill:
-                    return "pharmacy_reprint_purchase";
+                    return "pharmacy_reprint_purchase?faces-redirect=true";
                 case PharmacyGrnBill:
-                    return "pharmacy_reprint_grn";
+                    if (manageCosting) {
+                        return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+                    }
+                    return "pharmacy_reprint_grn?faces-redirect=true";
                 case PharmacyGrnReturn:
-                    return "pharmacy_reprint_grn_return";
+                    return "pharmacy_reprint_grn_return?faces-redirect=true";
                 case PurchaseReturn:
-                    return "pharmacy_reprint_purchase_return";
+                    return "pharmacy_reprint_purchase_return?faces-redirect=true";
                 case PharmacyAdjustment:
-                    return "pharmacy_reprint_adjustment";
+                    return "pharmacy_reprint_adjustment?faces-redirect=true";
                 default:
-                    return "pharmacy_reprint_bill_sale";
+                    return "pharmacy_reprint_bill_sale?faces-redirect=true";
             }
         } else {
 

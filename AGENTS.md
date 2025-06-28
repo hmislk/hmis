@@ -1,5 +1,26 @@
 # Development Notes
 
+## Branch Naming Convention
+
+All development branches must be created based on the related GitHub issue when the issue name is available. The naming convention is as follows:
+
+- Begin with the issue number.
+- Follow with a hyphen `-` and the issue title in lowercase.
+- Replace all spaces in the title with hyphens `-`.
+- Use only hyphens and underscores; avoid other special characters.
+### Examples
+
+- `12875-implement-full-lab-workflow-history-tracking`
+- `11964-implement-scheduled-historical-record-processing-and-recording-framework`
+- `12881-refactor-calsalerte-method-in-pharmacydirectpurchasecontroller-for-better-maintainability`
+- `12790-incorrect-retail-rate-and-sale-value-displayed-for-pack-purchases-in-direct-purchase-with-costing`
+- `12888-need-to-display-consultant-name-and-credit-company-name`
+- `12746-return-item-only-with-discount-accept-pharmacy-refund-updated-incorrect-in-pharmacy-income-report`
+
+## Closing Issues with Pull Requests
+
+After creating a branch and opening a pull request, include a closing phrase such as `Closes #<issue-number>` in the PR description or a follow-up comment. This ensures GitHub Actions will automatically move the issue through project workflows when the PR is merged.
+
 ## Adding User Icons
 
 1. Add a new constant to `src/main/java/com/divudi/core/data/Icon.java`. The value should be the label displayed to users.
@@ -143,6 +164,8 @@ In XHTML pages, configuration values can be checked or used directly for renderi
 - Use `.getBooleanValueByKey()` for true/false logic.
 - Use `.getShortTextValueByKey(key, true)` for text values.
 - Missing keys will be auto-created with default values if provided.
+- `setLongTextValueByKey` sanitises HTML input using JSoup's basic Safelist
+  before storing long text configuration options.
 
 
 ## Adding and Managing Privileges
@@ -190,3 +213,14 @@ Use the following check to conditionally render a UI component:
 - All new privileges must be assigned manually via the User Privileges page.
 
 These guidelines apply to the entire repository.
+
+## HTML Output Sanitisation
+
+Dynamic text displayed with `escape="false"` must be sanitised to avoid
+cross-site scripting vulnerabilities. Use
+`CommonFunctionsProxy.escapeHtml(String)` before rendering user-provided content
+that doesn't intentionally include HTML tags.
+
+**Note:** The escaping method converts `<` and `>` characters to HTML entities,
+so it should not be used when the string contains markup that must be rendered,
+such as `<br>` or style elements.

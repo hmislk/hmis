@@ -48,6 +48,12 @@ Commercial support was introduced to enhance the system's reach and reliability,
 * Inventory Management System
 * Assets and Consumable Management System
 
+### Scheduled Processes
+Scheduled tasks such as stock value recordings run automatically based on
+configured frequencies. The date calculations for these schedules are handled
+by `ScheduledProcessService`. The `Year End` calculation now correctly sets the
+next run to December 31st of the following year.
+
 
 ## Installation
 
@@ -56,6 +62,12 @@ The installation is very easy for testing. In a development setting, simply clon
 ## Usage
 
 The features available to different roles of the users are stated in detail in the User Manual.
+
+### Sanitizing Admin-Defined HTML
+
+Text values saved via `setLongTextValueByKey` are cleaned with JSoup's basic
+safelist before being stored. This prevents administrators from accidentally
+introducing unsafe markup.
 
 ## Request Originators 
 * Dr M H B Ariyaratne
