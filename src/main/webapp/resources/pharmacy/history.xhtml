@@ -46,11 +46,9 @@
             <h:panelGroup 
                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Blocks', true)}">
                 <div class="row">
-
-                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
-
-
-
+                    <h:panelGroup 
+                        id="groupStocksBlock"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
                         <div class="col-3">
                             <p:panel class="w-100" style="font-size: 15px;" >
                                 <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
@@ -492,6 +490,7 @@
                 style="border: 1px solid lightgray; padding: 10px;">
                 <p:tab 
                     title="Stock" 
+                    id="groupStocksTab"
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Tab', true)}">
                     <p:panel header="Stock">
                         <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins" class="w-100">
