@@ -317,6 +317,23 @@ public class TransferIssueController implements Serializable {
                 phItem.setQty(sq.getQty());
                 bItem.setPharmaceuticalBillItem(phItem);
 
+                // Set transfer rate and related finance details
+                BigDecimal qty = BigDecimal.valueOf(phItem.getQty());
+                BigDecimal rate = determineTransferRate(phItem.getItemBatch());
+
+                bItem.getBillItemFinanceDetails().setQuantity(qty);
+                bItem.getBillItemFinanceDetails().setTotalQuantity(qty);
+                bItem.getBillItemFinanceDetails().setLineGrossRate(rate);
+                bItem.getBillItemFinanceDetails().setLineNetRate(rate);
+                bItem.getBillItemFinanceDetails().setLineGrossTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setLineNetTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setNetTotal(rate.multiply(qty));
+                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
+                bItem.getBillItemFinanceDetails().setLineCostRate(costRate);
+                bItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate()));
+
                 //USER STOCK
                 UserStock us = userStockController.saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
                 bItem.setTransUserStock(us);
