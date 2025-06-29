@@ -70,16 +70,9 @@
 
                             </div>
                         </div>
-
-
-                        <!--                    <h:panelGrid columns="4" style="min-width: 100%;" >
-                                                <h:outputLabel value="To :#{transferRequestController.bill.toDepartment.name} " />
-
-
-                                            </h:panelGrid>-->
                     </f:facet>
                     <div class="row">
-                        <div class="col-10">
+                        <div class="col-12">
                             <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-cube" />
@@ -90,25 +83,30 @@
                                         <p:autoComplete
                                             id="items"
                                             value="#{transferRequestController.currentBillItem.item}"
-                                                         forceSelection="true"
-                                                         class="w-100"
-                                                         maxResults="50"
-                                                         scrollHeight="600"
-                                                         inputStyleClass="w-100"
-                                                         completeMethod="#{itemController.completeAmpAndAmppItem}"
-                                                         var="vt"
-                                                         itemLabel="#{vt.name}"
-                                                         itemValue="#{vt}"
-                                                         >
+                                            forceSelection="true"
+                                            class="w-100"
+                                            maxResults="50"
+                                            scrollHeight="600"
+                                            inputStyleClass="w-100"
+                                            completeMethod="#{itemController.completeAmpAndAmppItem}"
+                                            var="vt"
+                                            itemLabel="#{vt.name}"
+                                            itemValue="#{vt}"
+                                            >
                                             <p:column headerText="Item" style="padding: 6px;">
                                                 <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                             </p:column>
                                             <p:column headerText="Code"  style="padding: 6px;">
                                                 <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Pack Size" style="padding: 6px;" rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" >
-                                                <p:outputLabel value=" X #{vt.dblValue}"
-                                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
+                                            <p:column headerText="Pack Size" 
+                                                      style="padding: 6px;" >
+                                                <p:outputLabel value="#{vt.dblValue}"
+                                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                                    <f:convertNumber pattern="0.#" ></f:convertNumber>
+                                                </p:outputLabel>
+                                                <p:outputLabel value="1"
+                                                               rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
                                             </p:column>
                                             <p:ajax event="itemSelect" update="focusQty" ></p:ajax>
                                         </p:autoComplete>
@@ -133,7 +131,6 @@
                                 <p:focus id="focusItem" for="items" ></p:focus>
                             </p:panel>
                         </div>
-
                     </div>
 
                     <p:panel class="my-2">
@@ -157,6 +154,16 @@
                                     update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
                                     process="@this"
                                     class="ui-button-icon-only mx-3"/>
+                            </p:column>
+
+                            <p:column headerText="Pack Size" >
+                                <p:outputLabel 
+                                    value="#{bi.item.dblValue}"
+                                    rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                    <f:convertNumber pattern="0.#" ></f:convertNumber>
+                                </p:outputLabel>
+                                <p:outputLabel value="1"
+                                               rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
                             </p:column>
 
                             <p:column headerText="Qty" >
@@ -196,7 +203,7 @@
                     <p:printer target="gpBillPreview"></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:transferRequest  bill="#{transferRequestController.bill}" />
+                    <ph:transferRequest id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.bill}" />
                 </h:panelGroup>
             </p:panel>
 
