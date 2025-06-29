@@ -124,21 +124,10 @@
                             </p:column> 
 
                             <p:column headerText="Actions" width="9em">
-                                <p:commandButton 
-                                    id="edit"
-                                    ajax="false"
-                                    icon="fas fa-edit"
-                                    class="ui-button-warning "
-                                    action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
-                                    disabled="#{b.checkedBy ne null or b.referenceBill.creater ne null and b.referenceBill.cancelled eq false or b.cancelled eq true}">
-                                    <f:setPropertyActionListener 
-                                        target="#{purchaseOrderRequestController.currentBill}"
-                                        value="#{b}"/>
-                                </p:commandButton>
-
                                 <p:commandButton
                                     id="finalize"
                                     ajax="false"
+                                    title="Edit and Finalize Purchase Order"
                                     icon="fas fa-check-circle"
                                     class="ui-button-success mx-2"
                                     action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
@@ -146,14 +135,6 @@
                                     <f:setPropertyActionListener target="#{purchaseOrderRequestController.currentBill}" value="#{b}"/>
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    id="view"
-                                    ajax="false"
-                                    icon="fas fa-eye"
-                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
-                                    disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
-                                </p:commandButton>
 
                                 <p:tooltip for="finalize" value="Go to Finalize the PO"  showDelay="0" hideDelay="0"></p:tooltip>
                                 <p:tooltip for="edit" value="Edit PO"  showDelay="0" hideDelay="0"></p:tooltip>

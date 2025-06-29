@@ -915,15 +915,16 @@
                         <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToPurchaseOrderFinalize}"
-                            value="Finalize Purchase Orders"
+                            value="To Finalize Purchase Orders"
                             icon="fas fa-tasks"
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{searchController.navigateToPurchaseOrderApprove}"
-                            value="Purchase Orders Approval"
+                            value="To Approve Purchase Orders"
                             icon="fas fa-clipboard-check"
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true"
@@ -1487,7 +1488,7 @@
                         icon="fa fa-cart-arrow-down"
                         rendered="#{webUserController.hasPrivilege('PaymentBilling')}" >
                     </p:menuitem>
-                    
+
                     <p:menuitem  
                         ajax="false"  
                         action="/online_booking_agent_management/index?faces-redirect=true"
@@ -1674,11 +1675,11 @@
                     <p:menuitem  
                         ajax="false"  
                         action="#{processController.navigateToProcessIndex}" 
-                         icon="fa fa-cogs" value="Processes"  />
+                        icon="fa fa-cogs" value="Processes"  />
                     <p:menuitem  
                         ajax="false"  
                         action="/hr/hr_reports" 
-                         icon="fa fa-chart-bar" value="HR Analytics" 
+                        icon="fa fa-chart-bar" value="HR Analytics" 
                         rendered="#{webUserController.hasPrivilege('HrReports')}" />
 
                 </p:submenu>
