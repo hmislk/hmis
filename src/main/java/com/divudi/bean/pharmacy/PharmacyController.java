@@ -3966,12 +3966,10 @@ public class PharmacyController implements Serializable {
 
     @Deprecated // Will remove later when all bill corrected to add bill item finance details
     public void debugGrnReturnData() {
-        System.out.println("debugGrnReturnData");
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
 
         if (relatedItems == null || relatedItems.isEmpty()) {
-            System.out.println("No related items found for pharmacyItem = " + pharmacyItem);
             return;
         }
 
@@ -4000,7 +3998,6 @@ public class PharmacyController implements Serializable {
         List<Object[]> results = getBillItemFacade().findRawResultsByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (results == null || results.isEmpty()) {
-            System.out.println("No results found.");
             return;
         }
 
@@ -4009,18 +4006,10 @@ public class PharmacyController implements Serializable {
             BillItemFinanceDetails fd = (BillItemFinanceDetails) row[1];
             PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) row[2];
 
-            System.out.println("BI ID: " + bi.getId()
-                    + " | DeptId: " + (bi.getBill() != null ? bi.getBill().getDeptId() : "null")
-                    + " | Dept Name: " + (bi.getBill() != null && bi.getBill().getDepartment() != null ? bi.getBill().getDepartment().getName() : "null")
-                    + " | Supplier: " + (bi.getBill() != null && bi.getBill().getFromInstitution() != null ? bi.getBill().getFromInstitution().getName() : "null")
-                    + " | Item: " + (bi.getItem() != null ? bi.getItem().getName() : "null")
-                    + " | FD: " + (fd == null ? "null" : "OK")
-                    + " | PBI: " + (pbi == null ? "null" : "OK"));
         }
     }
 
     public void createGrnReturnTable() {
-        System.out.println("createGrnReturnTable");
 
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
         if (relatedItems == null || relatedItems.isEmpty()) {
@@ -4051,8 +4040,6 @@ public class PharmacyController implements Serializable {
         params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
 
         List<BillItem> billItems = (List<BillItem>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         grnReturnDtos = new ArrayList<>();
@@ -4080,7 +4067,6 @@ public class PharmacyController implements Serializable {
             grnReturnDtos.add(dto);
         }
 
-        System.out.println("grnReturnDtos = " + grnReturnDtos);
     }
 
     public void createDirectPurchaseTable() {

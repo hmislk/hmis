@@ -297,9 +297,7 @@ public class TransferIssueController implements Serializable {
 
                 if (stockQtys.size() > 1) {
                     double billedIssueByItemBatch = getPharmacyCalculation().getBilledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
-                    System.out.println(billedIssueByItemBatch + " billedIssueByItemBatch");
                     double cancelledIssueByItemBatch = getPharmacyCalculation().getCancelledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
-                    System.out.println(cancelledIssueByItemBatch + " cancelledIssueByItemBatch");
                     bItem.setIssuedPhamaceuticalItemQty(Math.abs(billedIssueByItemBatch) + Math.abs(cancelledIssueByItemBatch));
                 }
 
@@ -523,10 +521,9 @@ public class TransferIssueController implements Serializable {
 //            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
-                //Addinng Staff
+//Addinng Staff
 //                System.out.println("//Addinng Staff = ");
-                System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
