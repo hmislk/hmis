@@ -237,6 +237,27 @@ public class PharmacyService {
         return items;
     }
 
+    /**
+     * Fetch related items for a given Item (Amp or Ampp). Delegates to the
+     * appropriate method based on instance type.
+     *
+     * @param item the item to find related items for
+     * @return List of related items or empty list if type is not supported or
+     * item is null
+     */
+    public List<Item> findRelatedItems(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        if (item instanceof Amp) {
+            return findRelatedItems((Amp) item);
+        }
+        if (item instanceof Ampp) {
+            return findRelatedItems((Ampp) item);
+        }
+        return new ArrayList<>();
+    }
+
     public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
         System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");

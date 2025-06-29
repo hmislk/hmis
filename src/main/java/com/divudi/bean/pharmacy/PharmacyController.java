@@ -27,10 +27,12 @@ import com.divudi.core.facade.*;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
+import com.divudi.core.data.dto.PharmacyGrnItemDTO;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
 import com.divudi.ejb.PharmacyBean;
+import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
@@ -63,7 +65,6 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import javax.servlet.http.HttpServletResponse;
-import org.primefaces.event.SelectEvent;
 
 /**
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -91,7 +92,6 @@ public class PharmacyController implements Serializable {
     @Inject
     VmpController vmpController;
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     BillService billService;
@@ -129,6 +129,9 @@ public class PharmacyController implements Serializable {
 
     @EJB
     PharmacyBean pharmacyBean;
+    
+    @EJB
+    PharmacyService pharmacyService;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -3910,28 +3913,29 @@ public class PharmacyController implements Serializable {
     }
 
     public void createGrnTable() {
-        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnItemDTO(" +
-                "b.bill.deptId, " +
-                "b.bill.department.name, " +
-                "b.bill.createdAt, " +
-                "b.bill.referenceBill.deptId, " +
-                "b.bill.fromInstitution.name, " +
-                "b.item.name, " +
-                "b.billItemFinanceDetails.quantity, " +
-                "b.billItemFinanceDetails.freeQuantity, " +
-                "b.pharmaceuticalBillItem.purchaseRate, " +
-                "b.billItemFinanceDetails.totalCostRate, " +
-                "b.billItemFinanceDetails.retailSaleRate, " +
-                "b.billItemFinanceDetails.netTotal) " +
-                "FROM BillItem b " +
-                "WHERE type(b.bill)=:class " +
-                "AND b.bill.creater is not null " +
-                "AND b.bill.cancelled=false " +
-                "AND b.retired=false " +
-                "AND b.item=:i " +
-                "AND b.bill.billTypeAtomic IN :btas " +
-                "AND b.createdAt between :frm and :to " +
-                "order by b.id desc";
+        List<Item> relatedAmpAndAmpps = pharmacyService.findRelatedItems(pharmacyItem);
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnItemDTO("
+                + "b.bill.deptId, "
+                + "b.bill.department.name, "
+                + "b.bill.createdAt, "
+                + "b.bill.referenceBill.deptId, "
+                + "b.bill.fromInstitution.name, "
+                + "b.item.name, "
+                + "b.billItemFinanceDetails.quantity, "
+                + "b.billItemFinanceDetails.freeQuantity, "
+                + "b.pharmaceuticalBillItem.purchaseRate, "
+                + "b.billItemFinanceDetails.totalCostRate, "
+                + "b.billItemFinanceDetails.retailSaleRate, "
+                + "b.billItemFinanceDetails.netTotal) "
+                + "FROM BillItem b "
+                + "WHERE type(b.bill)=:class "
+                + "AND b.bill.creater is not null "
+                + "AND b.bill.cancelled=false "
+                + "AND b.retired=false "
+                + "AND b.item IN :relatedAmpAndAmpps "
+                + "AND b.bill.billTypeAtomic IN :btas "
+                + "AND b.createdAt between :frm and :to "
+                + "order by b.id desc";
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_GRN);
@@ -3941,13 +3945,13 @@ public class PharmacyController implements Serializable {
         btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("i", pharmacyItem);
+        params.put("relatedAmpAndAmpps", relatedAmpAndAmpps);
         params.put("frm", getFromDate());
         params.put("to", getToDate());
         params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-        grnDtos = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     //    public void createPhrmacyIssueTable() {
