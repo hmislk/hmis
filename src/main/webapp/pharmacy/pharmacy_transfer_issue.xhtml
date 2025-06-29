@@ -58,13 +58,13 @@
                                 </p:column>
 
                                 <p:column headerText="Purchase Rate" width="100px;">  
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">                        
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Cost Rate" width="100px;">  
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>  
@@ -76,7 +76,19 @@
                                 </p:column>
 
                                 <p:column headerText="Qty" width="70px;">                   
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+                                </p:column> 
+
+                                <p:column headerText="Rate" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+                                </p:column> 
+
+                                <p:column headerText="Value" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="netValue" value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100">
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
                                     </p:inputText>
                                 </p:column> 
