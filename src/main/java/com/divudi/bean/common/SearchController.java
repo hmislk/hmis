@@ -14371,6 +14371,12 @@ public class SearchController implements Serializable {
 
     public String navigateToPurchaseOrderApprove() {
         makeNull();
+        makeListNull();
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderApprove() {
+        makeListNull();
         return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
     }
 
