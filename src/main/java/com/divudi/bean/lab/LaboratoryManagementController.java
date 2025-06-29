@@ -115,6 +115,7 @@ public class LaboratoryManagementController implements Serializable {
     private String investigationName;
     private String filteringStatus;
     private String comment;
+    private Department sampleSendingDepartment;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -388,6 +389,7 @@ public class LaboratoryManagementController implements Serializable {
         this.billBarcodes = null;
         this.type = null;
         this.referringDoctor = null;
+        this.sampleSendingDepartment = null;
     }
 
     public void searchLabBills() {
@@ -667,28 +669,70 @@ public class LaboratoryManagementController implements Serializable {
 
     public void nonCollectedSampleList() {
         selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_GENERATED);
+        
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.department = :department "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
 
-        fetchSamples(status);
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_GENERATED);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+        
         selectAll = false;
     }
 
     public void pendingSendSampleList() {
         selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_COLLECTED);
+        
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.department = :department "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
 
-        fetchSamples(status);
+        Map<String, Object> params = new HashMap<>();
+        params.put("department", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+        
         selectAll = false;
     }
 
     public void nonReceivedSampleList() {
-        selectedPatientSamples = new ArrayList();
-        List<PatientInvestigationStatus> status = new ArrayList();
-        status.add(PatientInvestigationStatus.SAMPLE_SENT);
+        selectedPatientSamples = new ArrayList<>();
 
-        fetchSamples(status);
+        String jpql = "SELECT ps FROM PatientSample ps "
+                + "WHERE ps.retired = :ret "
+                + "AND ps.sampleSentToDepartment = :toDepartment "
+                + "AND ps.status = :status "
+                + "ORDER BY ps.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("toDepartment", sessionController.getDepartment());
+        params.put("ret", false);
+        params.put("status", PatientInvestigationStatus.SAMPLE_SENT);
+
+        patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (patientSamples == null) {
+            patientSamples = new ArrayList<>();
+        }
+
         selectAll = false;
     }
 
@@ -779,6 +823,11 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("The transport worker is not included.");
             return;
         }
+        if (sampleSendingDepartment == null) {
+            JsfUtil.addErrorMessage("The sending Department is Empty.");
+            return;
+        }
+
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -809,6 +858,8 @@ public class LaboratoryManagementController implements Serializable {
             ps.setSampleSent(true);
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
+            ps.setSampleSentToInstitution(sampleSendingDepartment.getInstitution());
+            ps.setSampleSentToDepartment(sampleSendingDepartment);
             ps.setStatus(PatientInvestigationStatus.SAMPLE_SENT);
             patientSampleFacade.edit(ps);
 
@@ -850,7 +901,7 @@ public class LaboratoryManagementController implements Serializable {
                 return;
             }
         }
-
+        
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> receivedPtixs = new HashMap<>();
@@ -1623,5 +1674,21 @@ public class LaboratoryManagementController implements Serializable {
     public void setFilteringStatus(String filteringStatus) {
         this.filteringStatus = filteringStatus;
     }
+
+    public Department getSampleSendingDepartment() {
+        if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
+            if (sessionController.getDepartment().getSuperDepartment() != null) {
+                sampleSendingDepartment = sessionController.getDepartment().getSuperDepartment();
+            } else {
+                sampleSendingDepartment = sessionController.getDepartment();
+            }
+        }
+        return sampleSendingDepartment;
+    }
+
+    public void setSampleSendingDepartment(Department sampleSendingDepartment) {
+        this.sampleSendingDepartment = sampleSendingDepartment;
+    }
+
 // </editor-fold>
 }
