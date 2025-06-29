@@ -148,6 +148,7 @@ public class PharmacyController implements Serializable {
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
+    private List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
     private List<Bill> bills;
@@ -3877,6 +3878,14 @@ public class PharmacyController implements Serializable {
         return grns;
     }
 
+    public List<com.divudi.core.data.dto.PharmacyGrnItemDTO> getGrnDtos() {
+        return grnDtos;
+    }
+
+    public void setGrnDtos(List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos) {
+        this.grnDtos = grnDtos;
+    }
+
     public void fillDetails() {
         Date startTime = new Date();
 
@@ -3905,22 +3914,44 @@ public class PharmacyController implements Serializable {
 
     public void createGrnTable() {
 
-        // //System.err.println("Getting GRNS : ");
-        String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
-                + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
-                + " and (b.bill.billType=:btp or b.bill.billType=:btp2) and b.createdAt between :frm and :to order by b.id desc ";
-        HashMap hm = new HashMap();
-        hm.put("i", pharmacyItem);
-        hm.put("frm", getFromDate());
-        hm.put("to", getToDate());
-        hm
-                .put("class", BilledBill.class
-                );
-        hm.put("btp", BillType.PharmacyGrnBill);
-        hm.put("btp2", BillType.PharmacyGrnReturn);
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnItemDTO(" +
+                "b.bill.deptId, " +
+                "b.bill.department.name, " +
+                "b.bill.createdAt, " +
+                "b.bill.referenceBill.deptId, " +
+                "b.bill.fromInstitution.name, " +
+                "b.item.name, " +
+                "b.billItemFinanceDetails.quantity, " +
+                "b.billItemFinanceDetails.freeQuantity, " +
+                "b.pharmaceuticalBillItem.purchaseRate, " +
+                "b.billItemFinanceDetails.totalCostRate, " +
+                "b.billItemFinanceDetails.retailSaleRate, " +
+                "b.billItemFinanceDetails.netTotal) " +
+                "FROM BillItem b " +
+                "WHERE type(b.bill)=:class " +
+                "AND b.bill.creater is not null " +
+                "AND b.bill.cancelled=false " +
+                "AND b.retired=false " +
+                "AND b.item=:i " +
+                "AND b.bill.billTypeAtomic IN :btas " +
+                "AND b.createdAt between :frm and :to " +
+                "order by b.id desc";
 
-        grns = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_GRN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_WHOLESALE);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL);
+        btas.add(BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED);
 
+        Map<String, Object> params = new HashMap<>();
+        params.put("i", pharmacyItem);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        params.put("class", BilledBill.class);
+        params.put("btas", btas);
+
+        grnDtos = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     //    public void createPhrmacyIssueTable() {
