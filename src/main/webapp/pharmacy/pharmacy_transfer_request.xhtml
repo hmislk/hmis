@@ -87,16 +87,17 @@
                                 </f:facet>
                                 <div class="row">
                                     <div class="col-7">
-                                        <p:autoComplete  
-                                            id="items" 
+                                        <p:autoComplete
+                                            id="items"
                                             value="#{transferRequestController.currentBillItem.item}"
-                                                         forceSelection="true"  
-                                                         class="w-100" 
-                                                         maxResults="15"
+                                                         forceSelection="true"
+                                                         class="w-100"
+                                                         maxResults="50"
+                                                         scrollHeight="600"
                                                          inputStyleClass="w-100"
-                                                         completeMethod="#{itemController.completeAmpItem}"
-                                                         var="vt" 
-                                                         itemLabel="#{vt.name}" 
+                                                         completeMethod="#{itemController.completeAmpAndAmppItem}"
+                                                         var="vt"
+                                                         itemLabel="#{vt.name}"
                                                          itemValue="#{vt}"
                                                          >
                                             <p:column headerText="Item" style="padding: 6px;">
@@ -109,7 +110,6 @@
                                                 <p:outputLabel value=" X #{vt.dblValue}"
                                                                rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}"/>
                                             </p:column>
-                                            <f:ajax execute="@this" event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{transferRequestController.onEdit()}"/>
                                             <p:ajax event="itemSelect" update="focusQty" ></p:ajax>
                                         </p:autoComplete>
                                     </div>
@@ -161,7 +161,6 @@
 
                             <p:column headerText="Qty" >
                                 <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" label="Qty">
-                                    <f:ajax event="blur" render=":#{p:resolveFirstComponentWithId('tab',view).clientId} "  execute="@this" listener="#{transferRequestController.onEdit(bi)}" ></f:ajax>
                                 </p:inputText>
                             </p:column>
 
