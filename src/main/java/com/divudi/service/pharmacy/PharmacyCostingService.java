@@ -107,9 +107,6 @@ public class PharmacyCostingService {
      * @param bill
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
-        System.out.println("distributeProportionalBillValuesToItems");
-        System.out.println("bill = " + bill);
-        System.out.println("billItems = " + billItems);
         if (bill == null) {
             return;
         }
@@ -118,7 +115,6 @@ public class PharmacyCostingService {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
 
-        System.out.println("bill.getDiscount() = " + bill.getDiscount());
 
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
@@ -148,7 +144,6 @@ public class PharmacyCostingService {
         }
 
         BigDecimal billDiscountTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillDiscount()).orElse(BigDecimal.ZERO);
-        System.out.println("billDiscountTotal = " + billDiscountTotal);
         BigDecimal billExpenseTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillExpense()).orElse(BigDecimal.ZERO);
         BigDecimal billTaxTotal = Optional.ofNullable(bill.getBillFinanceDetails().getBillTaxValue()).orElse(BigDecimal.ZERO);
 
@@ -287,12 +282,10 @@ public class PharmacyCostingService {
     }
 
     public void calculateBillTotalsFromItemsForPurchases(Bill bill, List<BillItem> billItems) {
-        System.out.println("calculateBillTotalsFromItemsForPurchases");
         int serialNo = 0;
 
         // Only bill-level values provided by user
         BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount());
-        System.out.println("billDiscount = " + billDiscount);
         BigDecimal billExpense = BigDecimal.valueOf(bill.getExpenseTotal());
         BigDecimal billTax = BigDecimal.valueOf(bill.getTax());
         BigDecimal billCost = billDiscount.subtract(billExpense.add(billTax));
@@ -382,7 +375,6 @@ public class PharmacyCostingService {
         // Set legacy totals on Bill
         bill.setTotal(grossTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         bill.setSaleValue(totalRetail.doubleValue());
 
         // Ensure BillFinanceDetails is present
@@ -394,7 +386,6 @@ public class PharmacyCostingService {
 
         // Set calculated values
         bfd.setBillDiscount(billDiscount);
-        System.out.println("bfd.getBillDiscount() = " + bfd.getBillDiscount());
         bfd.setBillExpense(billExpense);
         bfd.setBillTaxValue(billTax);
         bfd.setBillCostValue(billCost);
@@ -519,7 +510,6 @@ public class PharmacyCostingService {
         // Set legacy totals on Bill
         bill.setTotal(grossTotal.doubleValue());
         bill.setNetTotal(netTotal.doubleValue());
-        System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
         bill.setSaleValue(totalRetail.doubleValue());
 
         // Ensure BillFinanceDetails is present
@@ -531,7 +521,6 @@ public class PharmacyCostingService {
 
         // Set calculated values
         bfd.setBillDiscount(billDiscount);
-        System.out.println("bfd.getBillDiscount() = " + bfd.getBillDiscount());
         bfd.setBillExpense(billExpense);
         bfd.setBillTaxValue(billTax);
         bfd.setBillCostValue(billCost);
