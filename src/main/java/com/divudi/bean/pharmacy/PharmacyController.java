@@ -48,6 +48,7 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -947,7 +948,6 @@ public class PharmacyController implements Serializable {
         }
 
         jpql += " order by b.id desc";
-
 
         try {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
@@ -3961,34 +3961,83 @@ public class PharmacyController implements Serializable {
         params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-
         grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    public void createGrnReturnTable() {
+    @Deprecated // Will remove later when all bill corrected to add bill item finance details
+    public void debugGrnReturnData() {
+        System.out.println("debugGrnReturnData");
+
         List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
 
-        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
-                + "b.bill.deptId, "
-                + "b.bill.department.name, "
-                + "b.bill.createdAt, "
-                + "b.bill.fromInstitution.name, "
-                + "b.item.name, "
-                + "b.billItemFinanceDetails.quantity, "
-                + "b.billItemFinanceDetails.freeQuantity, "
-                + "b.pharmaceuticalBillItem.purchaseRate, "
-                + "b.billItemFinanceDetails.retailSaleRate, "
-                + "b.billItemFinanceDetails.netRate, "
-                + "b.billItemFinanceDetails.netTotal) "
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            System.out.println("No related items found for pharmacyItem = " + pharmacyItem);
+            return;
+        }
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+
+        String jpql = "SELECT b, b.billItemFinanceDetails, b.pharmaceuticalBillItem "
                 + "FROM BillItem b "
                 + "WHERE type(b.bill)=:class "
-                + "AND b.bill.creater is not null "
-                + "AND b.bill.cancelled=false "
+                + "AND b.bill.creater IS NOT NULL "
                 + "AND b.retired=false "
                 + "AND b.item IN :relatedItems "
                 + "AND b.bill.billTypeAtomic IN :btas "
-                + "AND b.createdAt between :frm and :to "
-                + "order by b.id desc";
+                + "AND b.createdAt BETWEEN :frm AND :to "
+                + "ORDER BY b.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("relatedItems", relatedItems);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        params.put("class", BilledBill.class);
+        params.put("btas", btas);
+
+        List<Object[]> results = getBillItemFacade().findRawResultsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        if (results == null || results.isEmpty()) {
+            System.out.println("No results found.");
+            return;
+        }
+
+        for (Object[] row : results) {
+            BillItem bi = (BillItem) row[0];
+            BillItemFinanceDetails fd = (BillItemFinanceDetails) row[1];
+            PharmaceuticalBillItem pbi = (PharmaceuticalBillItem) row[2];
+
+            System.out.println("BI ID: " + bi.getId()
+                    + " | DeptId: " + (bi.getBill() != null ? bi.getBill().getDeptId() : "null")
+                    + " | Dept Name: " + (bi.getBill() != null && bi.getBill().getDepartment() != null ? bi.getBill().getDepartment().getName() : "null")
+                    + " | Supplier: " + (bi.getBill() != null && bi.getBill().getFromInstitution() != null ? bi.getBill().getFromInstitution().getName() : "null")
+                    + " | Item: " + (bi.getItem() != null ? bi.getItem().getName() : "null")
+                    + " | FD: " + (fd == null ? "null" : "OK")
+                    + " | PBI: " + (pbi == null ? "null" : "OK"));
+        }
+    }
+
+    public void createGrnReturnTable() {
+        System.out.println("createGrnReturnTable");
+
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            grnReturnDtos = new ArrayList<>();
+            return;
+        }
+
+        // TODO: Once all old BillItems are updated with BillItemFinanceDetails,
+        //       this method should be changed back to use JPQL DTO projection for better performance.
+        String jpql = "SELECT b FROM BillItem b "
+                + "WHERE type(b.bill)=:class "
+                + "AND b.bill.creater IS NOT NULL "
+                + "AND b.retired=false "
+                + "AND b.item IN :relatedItems "
+                + "AND b.bill.billTypeAtomic IN :btas "
+                + "AND b.createdAt BETWEEN :frm AND :to "
+                + "ORDER BY b.id DESC";
 
         List<BillTypeAtomic> btas = new ArrayList<>();
         btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
@@ -4002,25 +4051,38 @@ public class PharmacyController implements Serializable {
         params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-        grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
+
+        List<BillItem> billItems = (List<BillItem>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        grnReturnDtos = new ArrayList<>();
+
+        for (BillItem b : billItems) {
+            BillItemFinanceDetails fd = b.getBillItemFinanceDetails();
+            PharmaceuticalBillItem pbi = b.getPharmaceuticalBillItem();
+
+            PharmacyGrnReturnItemDTO dto = new PharmacyGrnReturnItemDTO();
+
+            dto.setGrnReturnNo(b.getBill() != null ? b.getBill().getDeptId() : null);
+            dto.setDepartmentName(b.getBill() != null && b.getBill().getDepartment() != null ? b.getBill().getDepartment().getName() : null);
+            dto.setCreatedAt(b.getBill() != null ? b.getBill().getCreatedAt() : null);
+            dto.setSupplierName(b.getBill() != null && b.getBill().getFromInstitution() != null ? b.getBill().getFromInstitution().getName() : null);
+            dto.setItemName(b.getItem() != null ? b.getItem().getName() : null);
+
+            // TODO: These values are missing for old bills without BillItemFinanceDetails
+            dto.setQuantityReturned(fd != null ? fd.getQuantity() : BigDecimal.ZERO);
+            dto.setFreeQuantityReturned(fd != null ? fd.getFreeQuantity() : BigDecimal.ZERO);
+            dto.setPurchaseRate(pbi != null ? pbi.getPurchaseRate() : null);
+            dto.setSaleRate(fd != null ? fd.getRetailSaleRate() : null);
+            dto.setReturnedRate(fd != null ? fd.getNetRate() : null);
+            dto.setReturnValue(fd != null ? fd.getNetTotal() : null);
+
+            grnReturnDtos.add(dto);
+        }
+
+        System.out.println("grnReturnDtos = " + grnReturnDtos);
     }
 
-    //    public void createPhrmacyIssueTable() {
-//
-//        // //System.err.println("Getting GRNS : ");
-//        String sql = "Select b From BillItem b where type(b.bill)=:class and b.bill.creater is not null "
-//                + " and b.bill.cancelled=false and b.retired=false and b.item=:i "
-//                + " and b.bill.billType=:btp and b.createdAt between :frm and :to order by b.id desc ";
-//        HashMap hm = new HashMap();
-//        hm.put("i", pharmacyItem);
-//        hm.put("frm", getFromDate());
-//        hm.put("to", getToDate());
-//        hm.put("class", BilledBill.class);
-//        hm.put("btp", BillType.PharmacyIssue);
-//
-//        institutionIssue = getBillItemFacade().findByJpql(sql, hm, TemporalType.TIMESTAMP);
-//
-//    }
     public void createDirectPurchaseTable() {
 
         // //System.err.println("Getting GRNS : ");
