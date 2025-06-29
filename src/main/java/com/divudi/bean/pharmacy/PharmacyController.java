@@ -3887,8 +3887,6 @@ public class PharmacyController implements Serializable {
     }
 
     public void fillDetails() {
-        Date startTime = new Date();
-
         createInstitutionSale();
         createInstitutionBhtIssue();
         createInstitutionStock();
@@ -3899,7 +3897,6 @@ public class PharmacyController implements Serializable {
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
-
     }
 
     public void createTable() {
@@ -3913,7 +3910,6 @@ public class PharmacyController implements Serializable {
     }
 
     public void createGrnTable() {
-
         String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnItemDTO(" +
                 "b.bill.deptId, " +
                 "b.bill.department.name, " +
