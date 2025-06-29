@@ -3921,12 +3921,12 @@ public class PharmacyController implements Serializable {
                 + "b.bill.referenceBill.deptId, "
                 + "b.bill.fromInstitution.name, "
                 + "b.item.name, "
-                + "CAST(b.billItemFinanceDetails.quantity AS double), "
-                + "CAST(b.billItemFinanceDetails.freeQuantity AS double), "
-                + "CAST(b.pharmaceuticalBillItem.purchaseRate AS double), "
-                + "CAST(b.billItemFinanceDetails.totalCostRate AS double), "
-                + "CAST(b.billItemFinanceDetails.retailSaleRate AS double), "
-                + "CAST(b.billItemFinanceDetails.netTotal AS double)) "
+                + "b.billItemFinanceDetails.quantity, "
+                + "b.billItemFinanceDetails.freeQuantity, "
+                + "b.pharmaceuticalBillItem.purchaseRate, "
+                + "b.billItemFinanceDetails.totalCostRate, "
+                + "b.billItemFinanceDetails.retailSaleRate, "
+                + "b.billItemFinanceDetails.netTotal) "
                 + "FROM BillItem b "
                 + "WHERE type(b.bill)=:class "
                 + "AND b.bill.creater is not null "
@@ -3950,8 +3950,10 @@ public class PharmacyController implements Serializable {
         params.put("to", getToDate());
         params.put("class", BilledBill.class);
         params.put("btas", btas);
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
+
+        System.out.println("JPQL = " + jpql);
+        System.out.println("Params = " + params);
+
         grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
         System.out.println("grnDtos = " + grnDtos);
     }
