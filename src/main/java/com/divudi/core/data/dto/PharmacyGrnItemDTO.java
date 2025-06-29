@@ -1,7 +1,6 @@
 package com.divudi.core.data.dto;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.util.Date;
 
 public class PharmacyGrnItemDTO implements Serializable {
@@ -11,21 +10,21 @@ public class PharmacyGrnItemDTO implements Serializable {
     private String poNo;
     private String supplierName;
     private String itemName;
-    private BigDecimal quantity;
-    private BigDecimal freeQuantity;
-    private BigDecimal purchaseRate;
-    private BigDecimal totalCostRate;
-    private BigDecimal retailSaleRate;
-    private BigDecimal netTotal;
+    private Double quantity;
+    private Double freeQuantity;
+    private Double purchaseRate;
+    private Double totalCostRate;
+    private Double retailSaleRate;
+    private Double netTotal;
 
     public PharmacyGrnItemDTO() {
     }
 
     public PharmacyGrnItemDTO(String grnNo, String departmentName, Date createdAt,
                               String poNo, String supplierName, String itemName,
-                              BigDecimal quantity, BigDecimal freeQuantity,
-                              BigDecimal purchaseRate, BigDecimal totalCostRate,
-                              BigDecimal retailSaleRate, BigDecimal netTotal) {
+                              Double quantity, Double freeQuantity,
+                              Double purchaseRate, Double totalCostRate,
+                              Double retailSaleRate, Double netTotal) {
         this.grnNo = grnNo;
         this.departmentName = departmentName;
         this.createdAt = createdAt;
@@ -88,51 +87,51 @@ public class PharmacyGrnItemDTO implements Serializable {
         this.itemName = itemName;
     }
 
-    public BigDecimal getQuantity() {
+    public Double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(BigDecimal quantity) {
+    public void setQuantity(Double quantity) {
         this.quantity = quantity;
     }
 
-    public BigDecimal getFreeQuantity() {
+    public Double getFreeQuantity() {
         return freeQuantity;
     }
 
-    public void setFreeQuantity(BigDecimal freeQuantity) {
+    public void setFreeQuantity(Double freeQuantity) {
         this.freeQuantity = freeQuantity;
     }
 
-    public BigDecimal getPurchaseRate() {
+    public Double getPurchaseRate() {
         return purchaseRate;
     }
 
-    public void setPurchaseRate(BigDecimal purchaseRate) {
+    public void setPurchaseRate(Double purchaseRate) {
         this.purchaseRate = purchaseRate;
     }
 
-    public BigDecimal getTotalCostRate() {
+    public Double getTotalCostRate() {
         return totalCostRate;
     }
 
-    public void setTotalCostRate(BigDecimal totalCostRate) {
+    public void setTotalCostRate(Double totalCostRate) {
         this.totalCostRate = totalCostRate;
     }
 
-    public BigDecimal getRetailSaleRate() {
+    public Double getRetailSaleRate() {
         return retailSaleRate;
     }
 
-    public void setRetailSaleRate(BigDecimal retailSaleRate) {
+    public void setRetailSaleRate(Double retailSaleRate) {
         this.retailSaleRate = retailSaleRate;
     }
 
-    public BigDecimal getNetTotal() {
+    public Double getNetTotal() {
         return netTotal;
     }
 
-    public void setNetTotal(BigDecimal netTotal) {
+    public void setNetTotal(Double netTotal) {
         this.netTotal = netTotal;
     }
 }
