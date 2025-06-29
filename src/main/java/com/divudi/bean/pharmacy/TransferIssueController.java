@@ -33,6 +33,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.StockBill;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
