@@ -3891,6 +3891,20 @@ public class PharmacyController implements Serializable {
 
     public void fillDetails() {
         createInstitutionSale();
+        createInstitutionWholeSale();
+        createInstitutionBhtIssue();
+        createInstitutionStock();
+        createInstitutionTransferIssue();
+        createInstitutionTransferReceive();
+        createGrnTable();
+        createPoTable();
+        createDirectPurchaseTable();
+        createInstitutionIssue();
+    }
+
+    @Deprecated // Use fillDetails
+    public void createTable() {
+        createInstitutionSale();
         createInstitutionBhtIssue();
         createInstitutionStock();
         createInstitutionTransferIssue();
@@ -3900,16 +3914,6 @@ public class PharmacyController implements Serializable {
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
-    }
-
-    public void createTable() {
-        createInstitutionSale();
-        createInstitutionWholeSale();
-        createInstitutionBhtIssue();
-        createInstitutionStock();
-        createInstitutionTransferIssue();
-        createInstitutionIssue();
-        createInstitutionTransferReceive();
     }
 
     public void createGrnTable() {
@@ -4392,24 +4396,12 @@ public class PharmacyController implements Serializable {
         makeNull();
         grns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
-        createInstitutionSale();
-        createInstitutionWholeSale();
-        createInstitutionBhtIssue();
-        createInstitutionStock();
-        createInstitutionTransferIssue();
-        createInstitutionIssue();
-        createInstitutionTransferReceive();
+        fillDetails();
     }
 
     public void fillItemDetails(Item pharmacyItem) {
         this.pharmacyItem = pharmacyItem;
-        createInstitutionSale();
-        createInstitutionWholeSale();
-        createInstitutionBhtIssue();
-        createInstitutionStock();
-        createInstitutionTransferIssue();
-        createInstitutionIssue();
-        createInstitutionTransferReceive();
+        fillDetails();
     }
 
     public double findPharmacyMovement(Department department, Item itm, BillType[] bts, Date fd, Date td) {

@@ -32,10 +32,7 @@
 
                         </p:calendar>
                         <p:commandButton 
-                            update=":#{p:resolveFirstComponentWithId('grn',view).clientId} :#{p:resolveFirstComponentWithId('po',view).clientId} :#{p:resolveFirstComponentWithId('dp',view).clientId}
-                            :#{p:resolveFirstComponentWithId('depIssue',view).clientId} :#{p:resolveFirstComponentWithId('phSale',view).clientId}
-                            :#{p:resolveFirstComponentWithId('stock',view).clientId} :#{p:resolveFirstComponentWithId('bht',view).clientId}
-                            :#{p:resolveFirstComponentWithId('phWhSale',view).clientId}" 
+                            update=":#{p:resolveFirstComponentWithId('tab',view).clientId}" 
                             process="@this frmDate toDate" 
                             action="#{pharmacyController.fillDetails()}"
                             class="ui-button-info" icon="far fa-eye" value="View Detail"/>
