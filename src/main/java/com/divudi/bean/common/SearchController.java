@@ -14364,6 +14364,16 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
     }
 
+    public String navigateToPurchaseOrderFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_purhcase_order_list?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderApprove() {
+        makeNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
+    }
+
     public void createDocPaymentDue() {
         if (getReportKeyWord().getString().equals("0")) {
             fetchDueFeeTable(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}, false);
