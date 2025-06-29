@@ -203,6 +203,10 @@ public class TransferRequestController implements Serializable {
         getPharmacyController().setPharmacyItem(getCurrentBillItem().getItem());
     }
 
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
     public void saveBill() {
         if (getBill().getId() == null) {
 
