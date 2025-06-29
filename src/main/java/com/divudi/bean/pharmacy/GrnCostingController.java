@@ -613,7 +613,7 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setCreatedAt(Calendar.getInstance().getTime());
         getGrnBill().setBillExpenses(billExpenses);
         getGrnBill().setExpenseTotal(calExpenses());
-        calGrossTotal();
+//        calGrossTotal();
         getGrnBill().setNetTotal(getGrnBill().getNetTotal() - calExpenses());
         pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getGrnBill());
         updateBalanceForGrn(getGrnBill());
