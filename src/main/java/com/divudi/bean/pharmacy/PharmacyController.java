@@ -946,12 +946,9 @@ public class PharmacyController implements Serializable {
 
         jpql += " order by b.id desc";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
 
         try {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-            System.out.println("bills = " + bills);
         } catch (Exception e) {
             JsfUtil.addErrorMessage(e, " Something Went Worng!");
         }
@@ -1356,7 +1353,6 @@ public class PharmacyController implements Serializable {
 
                 issueDepartmentCategoryWiseItems.add(report);
             }
-            System.out.println("Report generated successfully. Records: " + issueDepartmentCategoryWiseItems.size());
         } catch (Exception e) {
             e.printStackTrace();
             FacesContext.getCurrentInstance().addMessage(null,
@@ -3954,11 +3950,8 @@ public class PharmacyController implements Serializable {
         params.put("class", BilledBill.class);
         params.put("btas", btas);
 
-        System.out.println("JPQL = " + jpql);
-        System.out.println("Params = " + params);
 
         grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("grnDtos = " + grnDtos);
     }
 
     //    public void createPhrmacyIssueTable() {
