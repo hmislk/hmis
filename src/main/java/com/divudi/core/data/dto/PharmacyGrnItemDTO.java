@@ -1,6 +1,7 @@
 package com.divudi.core.data.dto;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class PharmacyGrnItemDTO implements Serializable {
@@ -10,21 +11,21 @@ public class PharmacyGrnItemDTO implements Serializable {
     private String poNo;
     private String supplierName;
     private String itemName;
-    private Double quantity;
-    private Double freeQuantity;
+    private BigDecimal quantity;
+    private BigDecimal freeQuantity;
     private Double purchaseRate;
-    private Double totalCostRate;
-    private Double retailSaleRate;
-    private Double netTotal;
+    private BigDecimal totalCostRate;
+    private BigDecimal retailSaleRate;
+    private BigDecimal netTotal;
 
     public PharmacyGrnItemDTO() {
     }
 
     public PharmacyGrnItemDTO(String grnNo, String departmentName, Date createdAt,
                               String poNo, String supplierName, String itemName,
-                              Double quantity, Double freeQuantity,
-                              Double purchaseRate, Double totalCostRate,
-                              Double retailSaleRate, Double netTotal) {
+                              BigDecimal quantity, BigDecimal freeQuantity,
+                              Double purchaseRate, BigDecimal totalCostRate,
+                              BigDecimal retailSaleRate, BigDecimal netTotal) {
         this.grnNo = grnNo;
         this.departmentName = departmentName;
         this.createdAt = createdAt;
@@ -87,19 +88,19 @@ public class PharmacyGrnItemDTO implements Serializable {
         this.itemName = itemName;
     }
 
-    public Double getQuantity() {
+    public BigDecimal getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(Double quantity) {
+    public void setQuantity(BigDecimal quantity) {
         this.quantity = quantity;
     }
 
-    public Double getFreeQuantity() {
+    public BigDecimal getFreeQuantity() {
         return freeQuantity;
     }
 
-    public void setFreeQuantity(Double freeQuantity) {
+    public void setFreeQuantity(BigDecimal freeQuantity) {
         this.freeQuantity = freeQuantity;
     }
 
@@ -111,27 +112,27 @@ public class PharmacyGrnItemDTO implements Serializable {
         this.purchaseRate = purchaseRate;
     }
 
-    public Double getTotalCostRate() {
+    public BigDecimal getTotalCostRate() {
         return totalCostRate;
     }
 
-    public void setTotalCostRate(Double totalCostRate) {
+    public void setTotalCostRate(BigDecimal totalCostRate) {
         this.totalCostRate = totalCostRate;
     }
 
-    public Double getRetailSaleRate() {
+    public BigDecimal getRetailSaleRate() {
         return retailSaleRate;
     }
 
-    public void setRetailSaleRate(Double retailSaleRate) {
+    public void setRetailSaleRate(BigDecimal retailSaleRate) {
         this.retailSaleRate = retailSaleRate;
     }
 
-    public Double getNetTotal() {
+    public BigDecimal getNetTotal() {
         return netTotal;
     }
 
-    public void setNetTotal(Double netTotal) {
+    public void setNetTotal(BigDecimal netTotal) {
         this.netTotal = netTotal;
     }
 }
