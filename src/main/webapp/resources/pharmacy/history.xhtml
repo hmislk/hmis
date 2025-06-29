@@ -49,9 +49,8 @@
                     <h:panelGroup 
                         layout="block"
                         class="col-3"
-                        id="groupStocksBlock"
+                        id="itemDetailsBlockStocks"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Block', true)}" >
-
                         <p:panel class="w-100" style="font-size: 15px;" >
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Stock
@@ -115,15 +114,11 @@
 
                             </p:dataTable> 
                         </p:panel>
-
-
                     </h:panelGroup>
-
-
                     <h:panelGroup
                         layout="block"
                         class="col-3"
-                        id="groupSaleBlock"
+                        id="itemDetailsBlockSales"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
@@ -216,7 +211,7 @@
                     <h:panelGroup
                         layout="block"
                         class="col-3"
-                        id="groupBhtIssueBlock"
+                        id="itemDetailsBlockInpatientIssue"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
@@ -310,7 +305,7 @@
                     <h:panelGroup
                         layout="block"
                         class="col-3"
-                        id="groupWholeSaleBlock"
+                        id="itemDetailsBlockWholesale"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Block', true)}" >
                         <p:panel>
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
@@ -401,12 +396,10 @@
 
                         </p:panel>
                     </h:panelGroup>
-
-
                     <h:panelGroup
                         layout="block"
                         class="col-3"
-                        id="groupTransferIssueBlock"
+                        id="itemDetailsBlockIssue"
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Block', true)}" >
                         <p:panel >
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
@@ -498,9 +491,6 @@
                     </h:panelGroup>
                 </div>
             </h:panelGroup>
-
-
-
             <p:tabView  
                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Tabview', true)}"
                 class="w-100"  
@@ -508,7 +498,7 @@
                 style="border: 1px solid lightgray; padding: 10px;">
                 <p:tab 
                     title="Stock" 
-                    id="groupStocksTab"
+                    id="itemDetailsTabStocks"
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Stocks Tab', true)}">
                     <p:panel header="Stock">
                         <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionStocks}" var="ins" class="w-100">
@@ -572,8 +562,10 @@
                     </p:panel>
 
                 </p:tab>
-
-                <p:tab title="Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
+                <p:tab 
+                    title="Sale" 
+                    id="itemDetailsTabSales"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Tab', true)}">
                     <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionSales}" var="ins">
                         <p:columnGroup type="header">
                             <p:row>
@@ -657,8 +649,11 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-                <p:tab title="Sale Bill Item" class="w-100" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Bill Item Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabSales"
+                    title="Sale Bill Item" 
+                    class="w-100"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Sale Bill Item Tab', true)}">
 
                     <p:commandButton ajax="false" icon="fas fa-file-excel"
                                      class="ui-button-success" value="Excel" action="#{pharmacyController.createTable()}" >
@@ -699,8 +694,9 @@
 
                     </p:dataTable>
                 </p:tab>
-
-                <p:tab title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabWholesale"
+                    title="Whole Sale" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Whole Sale Tab', true)}">
                     <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionWholeSales}" var="ins">
                         <p:columnGroup type="header">
                             <p:row>
@@ -784,8 +780,10 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-                <p:tab title="BHT Issue" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabInpatient"
+                    title="BHT Issue"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display BHT Issue Tab', true)}">
                     <p:dataTable styleClass="noBorder" value="#{pharmacyController.institutionBhtIssue}" var="ins">
                         <p:columnGroup type="header">
                             <p:row>
@@ -869,9 +867,10 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-
-                <p:tab title="Transfer Issue" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabTransferIssue"
+                    title="Transfer Issue" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
                     <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins">
                         <p:columnGroup type="header">
                             <p:row>
@@ -955,8 +954,10 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-                <p:tab title="Transfer Receive" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Receive Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabTransferReceive"
+                    title="Transfer Receive"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Receive Tab', true)}">
                     <p:dataTable styleClass="noBorder" id="trRceive" 
                                  value="#{pharmacyController.institutionTransferReceive}" var="ins">
                         <p:columnGroup type="header">
@@ -1041,8 +1042,10 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-                <p:tab title="Department Issue" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Issue Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabConsuption"
+                    title="Department Issue" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Department Issue Tab', true)}">
                     <p:dataTable styleClass="noBorder" id="depIssue"
                                  value="#{pharmacyController.institutionIssue}" var="ins">
                         <p:columnGroup type="header">
@@ -1127,8 +1130,10 @@
 
                     </p:dataTable>                
                 </p:tab>
-
-                <p:tab title="GRN" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabGrn"
+                    title="GRN" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Tab', true)}">
 
                     <p:dataTable styleClass="noBorder" id="grn" value="#{pharmacyController.grns}" 
                                  var="dd2" scrollable="true"  paginator="true" 
@@ -1148,26 +1153,41 @@
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="PO No">
-                            #{dd2.bill.referenceBill.deptId}
+                            <h:outputText value="#{dd2.bill.referenceBill.deptId}" />
                         </p:column>
                         <p:column headerText="Supplier">
-                            #{dd2.bill.fromInstitution.name}
+                            <h:outputText value="#{dd2.bill.fromInstitution.name}" />
+                        </p:column>
+                        <p:column headerText="Item">
+                            <h:outputText value="#{dd2.item.name}" />
                         </p:column>
                         <p:column headerText="Qty">
-                            #{dd2.qty}
+                            <h:outputText value="#{dd2.billItemFinanceDetails.quantity}" />
                         </p:column>
                         <p:column headerText="Fr. Qty">
-                            #{dd2.pharmaceuticalBillItem.freeQty}
+                            <h:outputText value="#{dd2.billItemFinanceDetails.freeQuantity}" />
                         </p:column>
                         <p:column headerText="Purchase Rate">
-                            <h:outputLabel value="#{dd2.pharmaceuticalBillItem.purchaseRateInUnit}" ></h:outputLabel>
+                            <h:outputText value="#{dd2.billItemFinanceDetails.purchaseRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Cost Rate per unit">
+                            <h:outputText value="#{dd2.billItemFinanceDetails.totalCostRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
                         <p:column headerText="Sale Rate">
-                            #{dd2.pharmaceuticalBillItem.retailRateInUnit}
+                            <h:outputText value="#{dd2.billItemFinanceDetails.retailSaleRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
                         <p:column headerText="Value">
-                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
+                            <h:outputText value="#{dd2.billItemFinanceDetails.netTotal}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
                         </p:column>
+
                     </p:dataTable>
                 </p:tab>
 
