@@ -307,9 +307,16 @@
                                 <h:outputText value="Invoice Details" ></h:outputText>
                             </f:facet>
                             <p:outputLabel value="Invoice No "/>
-                            <p:inputText autocomplete="off" value="#{grnCostingController.invoiceNumber}" />
+                            <p:inputText autocomplete="off" value="#{grnCostingController.invoiceNumber}" >
+                                <p:ajax process="@this" event="keyup"></p:ajax>
+                            </p:inputText>
                             <p:outputLabel value="Invoice Date"/>
-                            <p:calendar  value="#{grnCostingController.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" /> 
+                            <p:calendar  
+                                value="#{grnCostingController.invoiceDate}"
+                                navigator="true"
+                                pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                <p:ajax process="@this" ></p:ajax>
+                            </p:calendar>
                             <p:outputLabel value="Invoice Total"/>
                             <p:inputText 
                                 id="insv"  
