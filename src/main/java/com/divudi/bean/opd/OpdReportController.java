@@ -221,7 +221,7 @@ public class OpdReportController implements Serializable {
     // Numeric variables
     private int maxResult = 50;
     private int tabIndex;
-    
+
     private double totalAdditionCashValue = 0.0;
     private double totalAdditionCardValue = 0.0;
     private double totalAdditionFundTransferValue = 0.0;
@@ -231,7 +231,7 @@ public class OpdReportController implements Serializable {
     private double totalAdditionTotalValue = 0.0;
     private double totalAdditionDiscountValue = 0.0;
     private double totalAdditionServiceChargeValue = 0.0;
-    
+
     private double totalDeductionCashValue = 0.0;
     private double totalDeductionCardValue = 0.0;
     private double totalDeductionFundTransferValue = 0.0;
@@ -241,7 +241,6 @@ public class OpdReportController implements Serializable {
     private double totalDeductionTotalValue = 0.0;
     private double totalDeductionDiscountValue = 0.0;
     private double totalDeductionServiceChargeValue = 0.0;
-    
 
     //transferOuts;
     //adjustments;
@@ -617,7 +616,7 @@ public class OpdReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBillsAndBatchBillsByDate();
     }
-    
+
     public void generateDailyLabSummaryByDepartment() {
 
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
@@ -661,22 +660,22 @@ public class OpdReportController implements Serializable {
         ReportTemplateRow normalIncomeRow = new ReportTemplateRow();
         normalIncomeRow.setItemName("Normal Income");
         initializeRows(normalIncomeRow);
-        
+
         for (Bill b : fetchedBills) {
             if (b.getPaymentScheme() != null) {
                 paymentSchemeIncomeList.add(b);
-            }else{
+            } else {
                 normalIncomeList.add(b);
             }
         }
-        
+
         normalIncomeRow = genarateRowBundle(normalIncomeList, normalIncomeRow);
         bundleReport.getReportTemplateRows().add(normalIncomeRow);
-        
+
         List<PaymentScheme> pss = paymentSchemeController.getPaymentSchemesForOPD();
         Map<PaymentScheme, List<Bill>> billsByPaymentScheme = paymentSchemeIncomeList.stream().collect(Collectors.groupingBy(b -> b.getPaymentScheme()));
-        
-        for(PaymentScheme ps : pss){
+
+        for (PaymentScheme ps : pss) {
             ReportTemplateRow paymentSchemeIncomeRow = new ReportTemplateRow();
             paymentSchemeIncomeRow.setItemName(ps.getName() + " Income");
             initializeRows(paymentSchemeIncomeRow);
@@ -696,96 +695,55 @@ public class OpdReportController implements Serializable {
             inwardIncomeRow = genarateRowBundleInward(billsByAdmissionType.getOrDefault(at, new ArrayList<>()), inwardIncomeRow);
             bundleReport.getReportTemplateRows().add(inwardIncomeRow);
         }
-        
+
         //outpatientIncome (CC)
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, ccBillTypeAtomics, null, null, null, null, null);
         ReportTemplateRow outPatientIncomeRow = new ReportTemplateRow();
         outPatientIncomeRow.setItemName("Outpatient Income");
         initializeRows(outPatientIncomeRow);
-        outPatientIncomeRow = genarateRowBundle(fetchedBills,outPatientIncomeRow);
+        outPatientIncomeRow = genarateRowBundle(fetchedBills, outPatientIncomeRow);
         bundleReport.getReportTemplateRows().add(outPatientIncomeRow);
-        
+
         //Other
         List<BillTypeAtomic> otherbillTypeAtomics = new ArrayList<>();
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED);
-        
+
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, otherbillTypeAtomics, null, null, null, null, null);
         ReportTemplateRow otherIncomeRow = new ReportTemplateRow();
         otherIncomeRow.setItemName("Other Income");
         initializeRows(otherIncomeRow);
-        otherIncomeRow = genarateRowBundleOther(fetchedBills,otherIncomeRow);
+        otherIncomeRow = genarateRowBundleOther(fetchedBills, otherIncomeRow);
         bundleReport.getReportTemplateRows().add(otherIncomeRow);
-        
+
         //calculate Addition Totals
-        totalAdditionCashValue = 0.0;
-        totalAdditionCardValue = 0.0;
-        totalAdditionFundTransferValue = 0.0;
-        totalAdditionCreditValue = 0.0;
-        totalAdditionInwardCreditValue = 0.0;
-        totalAdditionOtherValue = 0.0;
-        totalAdditionTotalValue = 0.0;
-        totalAdditionDiscountValue = 0.0;
-        totalAdditionServiceChargeValue = 0.0;
-        
-        for(ReportTemplateRow rtr : bundleReport.getReportTemplateRows()){
-            totalAdditionCashValue += rtr.getCashValue();
-            totalAdditionCardValue += rtr.getCardValue();
-            totalAdditionFundTransferValue += rtr.getLong1().doubleValue();
-            totalAdditionCreditValue += rtr.getCreditValue();
-            totalAdditionInwardCreditValue += rtr.getLong2().doubleValue();
-            totalAdditionOtherValue += rtr.getLong3().doubleValue();
-            totalAdditionTotalValue += rtr.getTotal();
-            totalAdditionDiscountValue += rtr.getDiscount();
-            totalAdditionServiceChargeValue += rtr.getServiceCharge();
-        }
-        
-        
-        //deductions
-        
+        calculateTotalsFromRows(bundleReport.getReportTemplateRows(),true);
+
+        //Deductions
         bundle = new IncomeBundle();
-        
-        //deducations Voucher
+
+        //Deducations Voucher
         List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
-        
+
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
         IncomeRow voucherDeductionRow = new IncomeRow();
         voucherDeductionRow.setItemName("Voucher");
         initializeDeductionRows(voucherDeductionRow);
-        voucherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,voucherDeductionRow);
+        voucherDeductionRow = genarateDeductionRowBundleOther(fetchedBills, voucherDeductionRow);
         bundle.getRows().add(voucherDeductionRow);
-        
-        //deducations Other
+
+        //Deducations Other
         IncomeRow otherDeductionRow = new IncomeRow();
         otherDeductionRow.setItemName("Other");
         initializeDeductionRows(otherDeductionRow);
         //otherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,otherDeductionRow);
         bundle.getRows().add(otherDeductionRow);
         
-        totalDeductionCashValue = 0.0;
-        totalDeductionCardValue = 0.0;
-        totalDeductionFundTransferValue = 0.0;
-        totalDeductionCreditValue = 0.0;
-        totalDeductionInwardCreditValue = 0.0;
-        totalDeductionOtherValue = 0.0;
-        totalDeductionTotalValue = 0.0;
-        totalDeductionDiscountValue = 0.0;
-        totalDeductionServiceChargeValue = 0.0;
-        
-        for(IncomeRow ir : bundle.getRows()){
-            totalDeductionCashValue += ir.getCashValue();
-            totalDeductionCardValue += ir.getCardValue();
-            totalDeductionFundTransferValue += ir.getLong1().doubleValue();
-            totalDeductionCreditValue += ir.getCreditValue();
-            totalDeductionInwardCreditValue += ir.getLong2().doubleValue();
-            totalDeductionOtherValue += ir.getLong3().doubleValue();
-            totalDeductionTotalValue += ir.getNetTotal();
-            totalDeductionDiscountValue += ir.getDiscount();
-            totalDeductionServiceChargeValue += ir.getServiceCharge();
-        }
-        
+        //calculate Deducations Totals
+        calculateTotalsFromRows(bundle.getRows(),false);
+
     }
 
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
@@ -847,7 +805,7 @@ public class OpdReportController implements Serializable {
         }
         return row;
     }
-    
+
     public ReportTemplateRow genarateRowBundleOther(List<Bill> bills, ReportTemplateRow row) {
         for (Bill b : bills) {
             row.setLong1(row.getLong1() + (long) Math.abs(b.getNetTotal()));
@@ -855,7 +813,7 @@ public class OpdReportController implements Serializable {
         }
         return row;
     }
-    
+
     public IncomeRow genarateDeductionRowBundleOther(List<Bill> bills, IncomeRow row) {
         for (Bill b : bills) {
             row.setLong1(row.getLong1() + (long) Math.abs(b.getNetTotal()));
@@ -875,7 +833,7 @@ public class OpdReportController implements Serializable {
         row.setDiscount(0.0);
         row.setServiceCharge(0.0);
     }
-    
+
     public void initializeDeductionRows(IncomeRow row) {
         row.setCashValue(0.0);
         row.setCardValue(0.0);
@@ -886,6 +844,66 @@ public class OpdReportController implements Serializable {
         row.setNetTotal(0.0);
         row.setDiscount(0.0);
         row.setServiceCharge(0.0);
+    }
+
+    private void calculateTotalsFromRows(List<? extends Object> rows, boolean isAddition) {
+        double cashValue = 0.0;
+        double cardValue = 0.0;
+        double fundTransferValue = 0.0;
+        double creditValue = 0.0;
+        double inwardCreditValue = 0.0;
+        double otherValue = 0.0;
+        double totalValue = 0.0;
+        double discountValue = 0.0;
+        double serviceChargeValue = 0.0;
+
+        for (Object row : rows) {
+            if (row instanceof ReportTemplateRow) {
+                ReportTemplateRow rtr = (ReportTemplateRow) row;
+                cashValue += rtr.getCashValue();
+                cardValue += rtr.getCardValue();
+                fundTransferValue += rtr.getLong1() != null ? rtr.getLong1().doubleValue() : 0.0;
+                creditValue += rtr.getCreditValue();
+                inwardCreditValue += rtr.getLong2() != null ? rtr.getLong2().doubleValue() : 0.0;
+                otherValue += rtr.getLong3() != null ? rtr.getLong3().doubleValue() : 0.0;
+                totalValue += rtr.getTotal();
+                discountValue += rtr.getDiscount();
+                serviceChargeValue += rtr.getServiceCharge();
+            } else if (row instanceof IncomeRow) {
+                IncomeRow ir = (IncomeRow) row;
+                cashValue += ir.getCashValue();
+                cardValue += ir.getCardValue();
+                fundTransferValue += ir.getLong1() != null ? ir.getLong1().doubleValue() : 0.0;
+                creditValue += ir.getCreditValue();
+                inwardCreditValue += ir.getLong2() != null ? ir.getLong2().doubleValue() : 0.0;
+                otherValue += ir.getLong3() != null ? ir.getLong3().doubleValue() : 0.0;
+                totalValue += ir.getNetTotal();
+                discountValue += ir.getDiscount();
+                serviceChargeValue += ir.getServiceCharge();
+            }
+        }
+
+        if (isAddition) {
+            totalAdditionCashValue = cashValue;
+            totalAdditionCardValue = cardValue;
+            totalAdditionFundTransferValue = fundTransferValue;
+            totalAdditionCreditValue = creditValue;
+            totalAdditionInwardCreditValue = inwardCreditValue;
+            totalAdditionOtherValue = otherValue;
+            totalAdditionTotalValue = totalValue;
+            totalAdditionDiscountValue = discountValue;
+            totalAdditionServiceChargeValue = serviceChargeValue;
+        } else {
+            totalDeductionCashValue = cashValue;
+            totalDeductionCardValue = cardValue;
+            totalDeductionFundTransferValue = fundTransferValue;
+            totalDeductionCreditValue = creditValue;
+            totalDeductionInwardCreditValue = inwardCreditValue;
+            totalDeductionOtherValue = otherValue;
+            totalDeductionTotalValue = totalValue;
+            totalDeductionDiscountValue = discountValue;
+            totalDeductionServiceChargeValue = serviceChargeValue;
+        }
     }
 
 // </editor-fold>
