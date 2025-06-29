@@ -14364,6 +14364,38 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
     }
 
+    public String navigateToPurchaseOrderFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true";
+    }
+
+    // ToDo: TO Be Linked to command buttons where the file name is used without calling a backend method
+    /**
+     * Samples of places to be updated as follows
+     * <p:commandButton
+                                ajax="false"
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}"
+                                value="Back to PO List">
+                            </p:commandButton>
+     */
+    
+    /**
+     * 
+     * @return 
+     */
+    public String navigateToListPurchaseOrdersToReceive() {
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
+    }
+
     public void createDocPaymentDue() {
         if (getReportKeyWord().getString().equals("0")) {
             fetchDueFeeTable(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}, false);
