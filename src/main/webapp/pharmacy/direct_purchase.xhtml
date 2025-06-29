@@ -499,10 +499,18 @@
                                     itemLabel="#{vt.name}"
                                     itemValue="#{vt}" />
 
-                                <p:outputLabel value="Invoice No  "/>
-                                <p:inputText class="w-100" autocomplete="off" value="#{pharmacyDirectPurchaseController.bill.invoiceNumber}" />
+                                <p:outputLabel value="Invoice No"/>
+                                <p:inputText class="w-100" autocomplete="off" value="#{pharmacyDirectPurchaseController.bill.invoiceNumber}" >
+                                    <p:ajax process="@this" event="keyup"></p:ajax>
+                                </p:inputText>
                                 <p:outputLabel value="Invoice Date"/>
-                                <p:calendar class="w-100" inputStyleClass="w-100" value="#{pharmacyDirectPurchaseController.bill.invoiceDate}"   navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                <p:calendar class="w-100" 
+                                            inputStyleClass="w-100" 
+                                            value="#{pharmacyDirectPurchaseController.bill.invoiceDate}"  
+                                            navigator="true"
+                                            pattern="#{sessionController.applicationPreference.shortDateFormat}" >
+                                    <p:ajax process="@this" ></p:ajax>
+                                </p:calendar>
 
                                 <h:outputLabel value="Payment Method" class="mb-2"/>
                                 <p:selectOneMenu style="width: 300px;" id="cmbPs" value="#{pharmacyDirectPurchaseController.bill.paymentMethod}">
@@ -580,7 +588,7 @@
                                     <h:panelGroup id="billFinanceDetails" >
                                         <ph:bill_finance_details bill="#{pharmacyDirectPurchaseController.bill}" ></ph:bill_finance_details>
                                     </h:panelGroup>
-                                    
+
                                 </p:tab>
 
                             </p:tabView>

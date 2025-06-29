@@ -49,6 +49,7 @@ public class SearchKeyword {
     private String insId;
     private String deptId;
     private String serialNumber;
+    private String tokenNumber;
     private String serviceName;
     private PatientEncounter patientEncounter;
     private PaymentMethod paymentMethod;
@@ -422,6 +423,14 @@ public class SearchKeyword {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public String getTokenNumber() {
+        return tokenNumber;
+    }
+
+    public void setTokenNumber(String tokenNumber) {
+        this.tokenNumber = tokenNumber;
     }
 
     public Department getItemDepartment() {

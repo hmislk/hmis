@@ -35,6 +35,7 @@ import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -79,6 +80,8 @@ public class PharmacyCalculation implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+
+    private static final int PRICE_SCALE = 6;
 
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
@@ -783,8 +786,18 @@ public class PharmacyCalculation implements Serializable {
             }
 
             BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
-            BigDecimal prPerUnit = prGiven.divide(inputBillItem.getBillItemFinanceDetails().getUnitsPerPack());
-            
+
+            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
+            BigDecimal prPerUnit = prGiven.divide(
+                    unitsPerPack,
+                    PRICE_SCALE,
+                    RoundingMode.HALF_EVEN
+            );
+
             purchaseRatePerUnit = prPerUnit.doubleValue();
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();

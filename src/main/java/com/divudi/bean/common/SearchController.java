@@ -596,6 +596,9 @@ public class SearchController implements Serializable {
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
         bundle = new ReportTemplateRowBundle();
 
@@ -744,6 +747,9 @@ public class SearchController implements Serializable {
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
 //        billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomic.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        billTypeAtomic.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
 
         bundle = new ReportTemplateRowBundle();
 
@@ -7844,6 +7850,11 @@ public class SearchController implements Serializable {
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and exists (select t from Token t where t.bill=b and upper(t.tokenNumber) like :token)";
+            temMap.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.department=:dep ";
             temMap.put("dep", getReportKeyWord().getDepartment());
@@ -8177,6 +8188,11 @@ public class SearchController implements Serializable {
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         sql += " order by token.tokenAt desc";
 
         List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
@@ -8224,6 +8240,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((token.bill.total) like :total )";
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
         }
 
         sql += " order by token.tokenAt desc";
@@ -14343,6 +14364,38 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
     }
 
+    public String navigateToPurchaseOrderFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true";
+    }
+
+    // ToDo: TO Be Linked to command buttons where the file name is used without calling a backend method
+    /**
+     * Samples of places to be updated as follows
+     * <p:commandButton
+                                ajax="false"
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}"
+                                value="Back to PO List">
+                            </p:commandButton>
+     */
+    
+    /**
+     * 
+     * @return 
+     */
+    public String navigateToListPurchaseOrdersToReceive() {
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
+    }
+
     public void createDocPaymentDue() {
         if (getReportKeyWord().getString().equals("0")) {
             fetchDueFeeTable(new BillType[]{BillType.OpdBill, BillType.CollectingCentreBill}, false);
@@ -14586,6 +14639,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bills");
                 bundle.setBundleType("billList");
@@ -14610,6 +14665,8 @@ public class SearchController implements Serializable {
 
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
                 opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+                opdBts.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
 
                 bundle.setName("Staff Welfare Bill Items");
                 bundle.setBundleType("billItemList");

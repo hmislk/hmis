@@ -102,7 +102,12 @@ public class PatientSample implements Serializable, RetirableEntity {
     private WebUser outsourceSentUser;
     @ManyToOne
     private Staff outsourceSampleTransporter;
-    
+
+    @ManyToOne
+    private Department sampleSentToDepartment;
+    @ManyToOne
+    private Institution sampleSentToInstitution;
+
     @Enumerated
     private Priority priority;
 
@@ -844,6 +849,23 @@ public class PatientSample implements Serializable, RetirableEntity {
 
     public void setOutsourceSampleTransporter(Staff outsourceSampleTransporter) {
         this.outsourceSampleTransporter = outsourceSampleTransporter;
+    }
+    
+    public Department getSampleSentToDepartment() {
+        return sampleSentToDepartment;
+    }
+
+    public void setSampleSentToDepartment(Department sampleSentToDepartment) {
+        this.sampleSentToDepartment = sampleSentToDepartment;
+    }
+
+    public Institution getSampleSentToInstitution() {
+        return sampleSentToInstitution;
+    }
+
+    public void setSampleSentToInstitution(Institution sampleSentToInstitution) {
+        this.sampleSentToInstitution = sampleSentToInstitution;
+
     }
 
 }
