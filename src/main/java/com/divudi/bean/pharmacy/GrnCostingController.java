@@ -553,10 +553,6 @@ public class GrnCostingController implements Serializable {
 
     private void processBillItems() {
         for (BillItem i : getBillItems()) {
-            if ((i.getTmpQty() == 0.0 && i.getTmpFreeQty() == 0.0)
-                    || (i.getTmpQty() < 0.0 && i.getTmpFreeQty() < 0.0)) {
-                continue;
-            }
             applyFinanceDetailsToPharmaceutical(i);
             PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
