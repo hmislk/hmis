@@ -912,12 +912,17 @@
                             rendered="#{webUserController.hasPrivilege('DirectPurchase') and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}" >
                         </p:menuitem>
 
-                        <p:menuitem  
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"  
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToPurchaseOrderFinalize}"
+                            value="Finalize Purchase Orders"
+                            icon="fas fa-tasks"
+                            rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="#{searchController.navigateToPurchaseOrderApprove}"
                             value="Purchase Orders Approval"
                             icon="fas fa-clipboard-check"
-                            actionListener="#{searchController.makeListNull()}" 
                             rendered="#{webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
