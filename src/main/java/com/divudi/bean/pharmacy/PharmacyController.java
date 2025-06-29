@@ -28,6 +28,7 @@ import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.dataStructure.CategoryWithItem;
 import com.divudi.core.data.dataStructure.PharmacySummery;
 import com.divudi.core.data.dto.PharmacyGrnItemDTO;
+import com.divudi.core.data.dto.PharmacyGrnReturnItemDTO;
 import com.divudi.core.data.table.String1Value1;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.pharmacy.PharmaceuticalItemLight;
@@ -152,6 +153,7 @@ public class PharmacyController implements Serializable {
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
     private List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos;
+    private List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos;
     private List<BillItem> pos;
     private List<BillItem> directPurchase;
     private List<Bill> bills;
@@ -3884,6 +3886,14 @@ public class PharmacyController implements Serializable {
         this.grnDtos = grnDtos;
     }
 
+    public List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> getGrnReturnDtos() {
+        return grnReturnDtos;
+    }
+
+    public void setGrnReturnDtos(List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos) {
+        this.grnReturnDtos = grnReturnDtos;
+    }
+
     public void fillDetails() {
         createInstitutionSale();
         createInstitutionWholeSale();
@@ -3892,6 +3902,7 @@ public class PharmacyController implements Serializable {
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
         createGrnTable();
+        createGrnReturnTable();
         createPoTable();
         createDirectPurchaseTable();
         createInstitutionIssue();
@@ -3952,6 +3963,46 @@ public class PharmacyController implements Serializable {
 
 
         grnDtos = (List<PharmacyGrnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
+    public void createGrnReturnTable() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+
+        String jpql = "SELECT new com.divudi.core.data.dto.PharmacyGrnReturnItemDTO("
+                + "b.bill.deptId, "
+                + "b.bill.department.name, "
+                + "b.bill.createdAt, "
+                + "b.bill.fromInstitution.name, "
+                + "b.item.name, "
+                + "b.billItemFinanceDetails.quantity, "
+                + "b.billItemFinanceDetails.freeQuantity, "
+                + "b.pharmaceuticalBillItem.purchaseRate, "
+                + "b.billItemFinanceDetails.retailSaleRate, "
+                + "b.billItemFinanceDetails.netRate, "
+                + "b.billItemFinanceDetails.netTotal) "
+                + "FROM BillItem b "
+                + "WHERE type(b.bill)=:class "
+                + "AND b.bill.creater is not null "
+                + "AND b.bill.cancelled=false "
+                + "AND b.retired=false "
+                + "AND b.item IN :relatedItems "
+                + "AND b.bill.billTypeAtomic IN :btas "
+                + "AND b.createdAt between :frm and :to "
+                + "order by b.id desc";
+
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
+        btas.add(BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION);
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("relatedItems", relatedItems);
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+        params.put("class", BilledBill.class);
+        params.put("btas", btas);
+
+        grnReturnDtos = (List<PharmacyGrnReturnItemDTO>) getBillItemFacade().findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     //    public void createPhrmacyIssueTable() {
