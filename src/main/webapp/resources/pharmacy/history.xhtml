@@ -101,7 +101,7 @@
                                         </p:column>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel id="grantTotal" value="#{pharmacyController.grantStock}">
+                                                <h:outputLabel id="grandTotalBlock" value="#{pharmacyController.grantStock}"> 
                                                     <f:convertNumber integerOnly="true" />
                                                 </h:outputLabel>
                                             </f:facet>
@@ -402,7 +402,7 @@
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Transfer Issue
                             </div>
-                            <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                            <p:dataTable styleClass="noBorder" id="trIssueBlock" value="#{pharmacyController.institutionTransferIssue}" var="ins">
                                 <p:columnGroup type="header">
                                     <p:row>
                                         <p:column >
@@ -573,7 +573,7 @@
                                     </p:column>
                                     <p:column style="text-align: right;">
                                         <f:facet name="footer">
-                                            <h:outputLabel id="grantTotal" value="#{pharmacyController.grantStock}">
+                                            <h:outputLabel id="grandTotalTab" value="#{pharmacyController.grantStock}">
                                                 <f:convertNumber integerOnly="true" />
                                             </h:outputLabel>
                                         </f:facet>
@@ -894,7 +894,7 @@
                     id="itemDetailsTabTransferIssue"
                     title="Transfer Issue" 
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Transfer Issue Tab', true)}">
-                    <p:dataTable styleClass="noBorder" id="trIssue" value="#{pharmacyController.institutionTransferIssue}" var="ins">
+                    <p:dataTable styleClass="noBorder" id="trIssueTab" value="#{pharmacyController.institutionTransferIssue}" var="ins">
                         <p:columnGroup type="header">
                             <p:row>
                                 <p:column >

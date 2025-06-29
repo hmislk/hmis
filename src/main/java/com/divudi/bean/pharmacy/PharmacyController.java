@@ -2870,11 +2870,10 @@ public class PharmacyController implements Serializable {
 
     }
 
-    private double grantStock;
+    private double grantStock; // TODO: This is a typo. Will correct in later iterations
 
-    public double getGrantStock() {
+    public double getGrantStock() { // TODO: This is a typo. Will correct in later iterations
         return grantStock;
-
     }
 
     public double getTransferIssueValueByInstitution(Institution toIns, Item i) {
