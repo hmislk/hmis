@@ -565,6 +565,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
@@ -715,6 +716,7 @@ public class TransferIssueController implements Serializable {
 
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -768,6 +770,31 @@ public class TransferIssueController implements Serializable {
             b.setSearialNo(serialNo++);
         }
         return value;
+    }
+
+    private void updateStockBillValues() {
+        double retailValue = 0.0;
+        double purchaseValue = 0.0;
+        double costValue = 0.0;
+
+        for (BillItem bi : getIssuedBill().getBillItems()) {
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            ItemBatch batch = bi.getPharmaceuticalBillItem().getItemBatch();
+            if (batch == null) {
+                continue;
+            }
+            double qty = bi.getPharmaceuticalBillItem().getQty();
+            retailValue += batch.getRetailsaleRate() * qty;
+            purchaseValue += batch.getPurcahseRate() * qty;
+            costValue += batch.getCostRate() * qty;
+        }
+
+        StockBill sb = getIssuedBill().getStockBill();
+        sb.setStockValueAsSaleRate(retailValue);
+        sb.setStockValueAtPurchaseRates(purchaseValue);
+        sb.setStockValueAsCostRate(costValue);
     }
 
     public void addNewBillItem() {
