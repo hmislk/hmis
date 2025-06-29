@@ -1260,7 +1260,10 @@
                     </p:dataTable>
                 </p:tab>
 
-                <p:tab title="GRN Return" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
+                <p:tab 
+                    title="GRN Return" 
+                    id="itemDetailsTabGrnReturn"
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display GRN Return Tab', true)}">
 
                     <p:dataTable styleClass="noBorder" id="grnr" value="#{pharmacyController.grns}"
                                  var="dd2" scrollable="true"  paginator="true"
