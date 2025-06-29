@@ -616,45 +616,51 @@ public class OpdReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBillsAndBatchBillsByDate();
     }
-
-    public void generateDailyLabSummaryByDepartment() {
-
+    
+    public List<BillTypeAtomic> getOpdAndPackageBillTypeAtomics(){
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-
-        //Add All Package BillTypes
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-
+        
+        return billTypeAtomics;
+    }
+    
+    public List<BillTypeAtomic> getOutPatientBillTypeAtomics(){
         List<BillTypeAtomic> ccBillTypeAtomics = new ArrayList<>();
-
-        //Add All CC BillTypes
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL);
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
-
-        List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
-
-        //Add All Inward BillTypes
+        
+        return ccBillTypeAtomics;
+    }
+    
+    public List<BillTypeAtomic> getInwardtBillTypeAtomics(){
+         List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+        
+        return inwardBillTypeAtomics;
+    }
+    
 
+    public void generateDailyLabSummaryByDepartment() {
+        
         bundleReport = new ReportTemplateRowBundle();
 
         //create Normal,Membership,Staff Incomes
-        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, billTypeAtomics, null, null, null, null, null);
+        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getOpdAndPackageBillTypeAtomics(), null, null, null, null, null);
         List<Bill> normalIncomeList = new ArrayList<>();
         List<Bill> paymentSchemeIncomeList = new ArrayList<>();
         ReportTemplateRow normalIncomeRow = new ReportTemplateRow();
@@ -684,7 +690,7 @@ public class OpdReportController implements Serializable {
         }
 
         //Create Inward rows
-        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, inwardBillTypeAtomics, null, null, null, null, null);
+        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getInwardtBillTypeAtomics(), null, null, null, null, null);
         List<AdmissionType> ats = admissionTypeController.getItems();
         Map<AdmissionType, List<Bill>> billsByAdmissionType = fetchedBills.stream().collect(Collectors.groupingBy(b -> b.getPatientEncounter().getAdmissionType()));
 
@@ -697,7 +703,7 @@ public class OpdReportController implements Serializable {
         }
 
         //outpatientIncome (CC)
-        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, ccBillTypeAtomics, null, null, null, null, null);
+        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null, null, null, null, null);
         ReportTemplateRow outPatientIncomeRow = new ReportTemplateRow();
         outPatientIncomeRow.setItemName("Outpatient Income");
         initializeRows(outPatientIncomeRow);
