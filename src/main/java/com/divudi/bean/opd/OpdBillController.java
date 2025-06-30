@@ -2405,6 +2405,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
                     break;
+                case OnlineSettlement:
+                    // Need to create pm.getPaymentMethodData().getOnlinePayment().setTotalValue(remainAmount);
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
             }
