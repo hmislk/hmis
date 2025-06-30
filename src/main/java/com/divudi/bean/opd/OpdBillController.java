@@ -2205,11 +2205,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         String deptId ;
         
-        boolean opdBillNumberGenarateStragy
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepaertment and BillTypes", false);
+        boolean opdBillNumberGenerateStrategy
+            = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
         
-        if(opdBillNumberGenarateStragy){
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFronDepartmentAndToDepartment(bt,sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+
+        if(opdBillNumberGenerateStrategy){
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt,sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         }else{
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         }

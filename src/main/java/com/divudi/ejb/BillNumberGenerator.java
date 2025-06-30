@@ -1754,7 +1754,7 @@ public class BillNumberGenerator {
         boolean separateBillNumberForBillTypesOnly
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
         boolean separateBillNumberForFromDepartmentToDepaertmentAndBillTypeAtomic
-                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepaertment and BillTypes", false);
+                = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
 
         
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
@@ -1821,7 +1821,7 @@ public class BillNumberGenerator {
         return result.toString();
     }
 
-    public String departmentBillNumberGeneratorYearlyByFronDepartmentAndToDepartment(Department dep, Department billingDepartment, BillTypeAtomic billType) {
+    public String departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(Department dep, Department billingDepartment, BillTypeAtomic billType) {
         if (dep == null) {
             return "";
         }
