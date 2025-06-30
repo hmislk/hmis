@@ -249,16 +249,16 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="GRN VALUE">
-                                <h:outputText value="#{bi.netValue}">
+                                <h:outputText value="#{0.0 - bi.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Total">
-                                <h:outputText value="#{bi.bill.netTotal}">
+                                <h:outputText value="#{0.0 - bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{0.0 - pharmacyReportController.netTotal}" />
                                 </f:facet>
                             </p:column>
 
