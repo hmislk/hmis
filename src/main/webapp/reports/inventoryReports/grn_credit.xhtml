@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -228,7 +228,14 @@
                                 <h:outputText value="#{bi.item.code}" />
                             </p:column>
                             <p:column headerText="GRN No">
-                                <h:outputText value="#{bi.bill.insId}" />
+                                <p:commandLink 
+                                    value="#{bi.bill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{bi.bill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>                            
                             </p:column>
                             <p:column headerText="BATCH CODE">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
@@ -237,7 +244,7 @@
                                 <h:outputText value="#{bi.qty}" />
                             </p:column>
                             <p:column headerText="RATE">
-                                <h:outputText value="#{bi.rate}">
+                                <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
