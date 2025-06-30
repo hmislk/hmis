@@ -254,12 +254,12 @@
 
                             <p:column headerText="QTY">
                                 <h:outputText value="#{row.qty}">
-                                    <f:convertNumber pattern="#,##0.00" />
+                                    <f:convertNumber pattern="#,##0" />
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Rate">
-                                <h:outputText value="#{row.rate}">
+                                <h:outputText value="#{0.0 - row.rate}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
@@ -286,7 +286,7 @@
                             </p:column>
 
                             <p:column headerText="MRP Value">
-                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
+                                <h:outputText value="#{0.0 - row.pharmaceuticalBillItem.retailRate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
                             </p:column>
