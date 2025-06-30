@@ -127,8 +127,8 @@
 @media print {
     .receipt-container {
         border: none;
-        width: 10cm!important;
-        height: 9.5cm!important;
+        width: 12cm!important;
+        height: 14cm!important;
         margin-left: 0cm!important;
         margin-right: 2.5cm!important;
         margin-bottom: 1.0cm!important;
