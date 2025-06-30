@@ -218,7 +218,7 @@
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="ITEMNAME">
+                            <p:column headerText="ITEM NAME">
                                 <h:outputText value="#{bi.item.name}" />
                             </p:column>
                             <p:column headerText="CODE">
@@ -227,7 +227,7 @@
                             <p:column headerText="GRN No">
                                 <h:outputText value="#{bi.bill.insId}" />
                             </p:column>
-                            <p:column headerText="BATCHCODE">
+                            <p:column headerText="BATCH CODE">
                                 <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="QTY">
@@ -238,7 +238,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="GRNVALUE">
+                            <p:column headerText="GRN VALUE">
                                 <h:outputText value="#{bi.netValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
