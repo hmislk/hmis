@@ -165,13 +165,13 @@
 
                             <p:commandButton value="Doctor Holiday" icon="pi pi-table"
                                              class="mx-1"
-                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false)}"
+                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false) and webUserController.hasPrivilege('ChannelSessionHolidayMark')}"
                                              oncomplete="PF('holidayMarkWidget').show()" 
                                              update="dialogContentForHolidayMark doctorNameForHoliday" />
                             <p:menuButton icon="fa-solid fa-sliders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Channel Management from channel Booking', false)}">
-                                <p:menuitem value="Channel Schedule Management" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
-                                <p:menuitem value="Channel Session Management" action="#{channelScheduleController.navigateSessionManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"   icon="fa fa-users"/> 
-                                <p:menuitem value="Multiple Session Cancellation" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Multiple Session Cancellation in Channel Booking', false)}" oncomplete="PF('sessionCancellationWidget').show()"  update="dialogContentForCancellation doctorNameForHoliday"   icon="fa-solid fa-trash"/> 
+                                <p:menuitem value="Channel Schedule Management" rendered="#{webUserController.hasPrivilege('ChannelSheduleManagement')}" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
+                                <p:menuitem value="Channel Session Management" rendered="#{webUserController.hasPrivilege('ChannelSessionManagement')}" action="#{channelScheduleController.navigateSessionManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"   icon="fa fa-users"/> 
+                                <p:menuitem value="Multiple Session Cancellation" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Multiple Session Cancellation in Channel Booking', false) and webUserController.hasPrivilege('ChannelSessionMultipleDeletion')}" oncomplete="PF('sessionCancellationWidget').show()"  update="dialogContentForCancellation doctorNameForHoliday"   icon="fa-solid fa-trash"/> 
                             </p:menuButton>
 
                         </div>
