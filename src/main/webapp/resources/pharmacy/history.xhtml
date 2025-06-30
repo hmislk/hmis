@@ -564,6 +564,32 @@
 
                         </p:panel>
                     </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="itemDetailsBlockPurchaseOrders"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Block', true)}" >
+                        <p:panel>
+                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                Purchase Order Details
+                            </div>
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po">
+                                <p:column headerText="Order No">#{po.bill.deptId}</p:column>
+                                <p:column headerText="Order at">
+                                    <h:outputLabel value="#{po.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Supplier">#{po.bill.toInstitution.name}</p:column>
+                                <p:column headerText="Qty Ordered">
+                                    <h:outputText value="#{po.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+                    </h:panelGroup>
                 </div>
             </h:panelGroup>
             <p:tabView  
@@ -1368,23 +1394,33 @@
                                  paginatorPosition="bottom"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="Po No">
+                        <p:column headerText="Order Number">
                             #{dd3.bill.deptId}
                         </p:column>
-                        <p:column headerText="Order Date">
-                            <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                        <p:column headerText="Order Department">
+                            #{dd3.bill.department.name}
+                        </p:column>
+                        <p:column headerText="Order at">
+                            <p:outputLabel value="#{dd3.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Supplier">
                             #{dd3.bill.toInstitution.name}
                         </p:column>
-                        <p:column headerText="PO Qty">
-                            #{dd3.pharmaceuticalBillItem.qty}
-                        </p:column>                           
-                        <p:column headerText="Grn Qty">
-                            #{dd3.totalGrnQty}
-                        </p:column>                            
+                        <p:column headerText="Item">
+                            #{dd3.item.name}
+                        </p:column>
+                        <p:column headerText="Qty Ordered">
+                            <h:outputText value="#{dd3.pharmaceuticalBillItem.qty}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Free Qty Ordered">
+                            <h:outputText value="#{dd3.pharmaceuticalBillItem.freeQty}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputText>
+                        </p:column>
                     </p:dataTable>
                 </p:tab>
 
