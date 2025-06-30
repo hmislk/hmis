@@ -1240,7 +1240,10 @@
                     </p:dataTable>
                 </p:tab>
 
-                <p:tab title="Pending GRN" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabPendingGrn"
+                    title="Pending GRN" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
 
                     <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.grns}"
                                  var="dd2" scrollable="true"  paginator="true"
