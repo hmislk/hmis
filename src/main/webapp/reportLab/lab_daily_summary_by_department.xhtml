@@ -203,27 +203,27 @@
                     </p:panel>
 
                     <p:panel>
-                        <h:panelGroup id="printPanel" class="w-100">
+                        <h:panelGroup id="printPanel" class="w-100" style="">
                             <div class="header">
                                 <div class="d-flex justify-content-center text-5"
-                                     style="font-weight: 700; font-size: 22px;">
+                                     style="font-weight: 700; font-size: 16px;">
                                     <h:outputText value="#{sessionController.institution.name}"/>
                                 </div>
-                                <div class="d-flex justify-content-center text-5"
-                                     style="font-weight: 700; font-size: 20px;">
+                                <div class="d-flex justify-content-center text-2"
+                                     style="font-weight: 700; font-size: 12px;">
                                     <h:outputText value="#{sessionController.institution.address}"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5"
-                                     style="font-weight: 400; font-size: 20px;">
+                                     style="font-weight: 400; font-size: 14px;">
                                     <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Printing Name','Daily Lab Summmary Report')}"/>
                                 </div>
                                 <div class="d-flex justify-content-center text-5"
-                                     style="font-weight: 700; font-size: 20px;">
+                                     style="font-weight: 700; font-size: 14px;">
                                     <h:outputText value="#{sessionController.department.name}"/>
                                 </div>
                                 
                             </div>
-                            <h:panelGrid class="w-100" columns="8">
+                            <h:panelGrid class="w-100" columns="8" style="font-size: 12px;">
                                 <h:outputLabel value="Department"/>
                                 <h:outputLabel value=":"/>
                                 <h:outputLabel value="#{opdReportController.department.name}"/>
@@ -245,14 +245,14 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </h:panelGrid>
-                            <h:outputLabel value="Cash In Hand" />
-                            <table class="table table-hover">
+                            <h:outputLabel style="font-size: 12px" value="Cash In Hand" />
+                            <table class="table table-hover" style="font-size: 12px;">
                                 <thead>
-                                    <tr>
+                                    <tr style="font-size: 12px;">
                                         <th>(+) Additions </th>
                                         <th class="text-end"> Cash </th>
                                         <th class="text-end"> Card </th>
-                                        <th class="text-end"> Fund Transfer </th>
+                                        <th class="text-end"> Online Settlement </th>
                                         <th class="text-end"> Credit </th>
                                         <th class="text-end"> Inward Credit </th>
                                         <th class="text-end"> Other </th>
@@ -263,7 +263,7 @@
                                 </thead>
                                 <tbody>
                                     <ui:repeat value="#{opdReportController.bundleReport.reportTemplateRows}" var="row">
-                                        <tr>
+                                        <tr style="font-size: 12px;">
                                             <td>#{row.itemName}</td>
                                             <td class="text-end"><h:outputLabel value="#{row.cashValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -303,7 +303,7 @@
                                             </td>
                                         </tr>
                                     </ui:repeat>
-                                    <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid;">
+                                    <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid; font-size: 12px;">
                                         <td style="" >Total Additions</td>
                                         <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -342,11 +342,11 @@
                                             </h:outputLabel>
                                         </td>
                                     </tr>
-                                    <tr style="font-weight: 700;">
+                                    <tr style="font-weight: 700; font-size: 12px;">
                                         <td colspan="10" >(-) Deductions</td>  
                                     </tr>
                                     <ui:repeat value="#{opdReportController.bundle.rows}" var="rows">
-                                        <tr>
+                                        <tr style="font-size: 12px;">
                                             <td>#{rows.itemName}</td>
                                             <td class="text-end"><h:outputLabel value="#{rows.cashValue}">
                                                     <f:convertNumber pattern="#,##0.00" />
@@ -386,7 +386,7 @@
                                             </td>
                                         </tr>
                                     </ui:repeat>
-                                    <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid;">
+                                    <tr style="font-weight: 700; border-bottom: 1px solid; border-top: 2px solid; font-size: 12px;">
                                         <td style="" >Total Deductions</td>
                                         <td class="text-end"><h:outputLabel value="#{opdReportController.totalDeductionCashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
@@ -425,46 +425,46 @@
                                             </h:outputLabel>
                                         </td>
                                     </tr>
-                                    <tr style="font-weight: 700; border-bottom: 1px double black;">
+                                    <tr style="font-weight: 700; border-bottom: 1px double black; font-size: 12px;">
                                         <td style="" >Cash Balance (According to System)</td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCashValue - opdReportController.totalDeductionCashValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCashValue + opdReportController.totalDeductionCashValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCardValue - opdReportController.totalDeductionCardValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCardValue + opdReportController.totalDeductionCardValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionFundTransferValue - opdReportController.totalDeductionFundTransferValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionFundTransferValue + opdReportController.totalDeductionFundTransferValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCreditValue - opdReportController.totalDeductionCreditValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionCreditValue + opdReportController.totalDeductionCreditValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionInwardCreditValue - opdReportController.totalDeductionInwardCreditValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionInwardCreditValue + opdReportController.totalDeductionInwardCreditValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionOtherValue - opdReportController.totalDeductionOtherValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionOtherValue + opdReportController.totalDeductionOtherValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionTotalValue - opdReportController.totalDeductionTotalValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionTotalValue + opdReportController.totalDeductionTotalValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionDiscountValue - opdReportController.totalDeductionDiscountValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionDiscountValue + opdReportController.totalDeductionDiscountValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
-                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionServiceChargeValue - opdReportController.totalDeductionServiceChargeValue}">
+                                        <td class="text-end"><h:outputLabel value="#{opdReportController.totalAdditionServiceChargeValue + opdReportController.totalDeductionServiceChargeValue}">
                                                 <f:convertNumber pattern="#,##0.00" />
                                             </h:outputLabel>
                                         </td>
                                     </tr>
-                                    <tr style="font-weight: 500;">
+                                    <tr style="font-weight: 500; font-size: 12px">
                                         <td style="" >Actual Cash in hand</td>
                                         <td class="text-end"></td>
                                         <td class="text-end"></td>
@@ -476,7 +476,7 @@
                                         <td class="text-end"></td>
                                         <td class="text-end"></td>
                                     </tr>
-                                    <tr style="font-weight: 500;">
+                                    <tr style="font-weight: 500; font-size: 12px">
                                         <td style="" >Excess/Shortage</td>
                                         <td class="text-end"></td>
                                         <td class="text-end"></td>
@@ -490,7 +490,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                            <div class="text-end text-capitalize">
+                            <div class="text-end text-capitalize" style="font-size: 12px">
                                 Printed @ <h:outputLabel value="#{sessionController.currentDate}"><f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" /></h:outputLabel> by #{sessionController.loggedUser.name}
                             </div>
                            
