@@ -2212,7 +2212,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             }
         }
 
-        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt,sessionController.getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
