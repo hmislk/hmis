@@ -844,6 +844,8 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+        getGrnBill().setBillType(BillType.PharmacyGrnBill);
+        
 
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
