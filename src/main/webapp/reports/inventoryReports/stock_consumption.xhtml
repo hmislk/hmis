@@ -230,11 +230,25 @@
                             </p:column>
                             
                             <p:column headerText="Doc No" width="5em">
-                                <h:outputText value="#{f.referenceBill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.bill.referenceBill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             
                             <p:column headerText="Ref. Doc No (Original bill No)" width="5em">
-                                <h:outputText value="#{f.bill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.bill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             
                             <p:column headerText="QTY" width="5em">

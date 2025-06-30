@@ -9,6 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -107,6 +108,8 @@ public class InvestigationController implements Serializable {
     PatientReportController patientReportController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /**
      * EJBs
      */
@@ -563,11 +566,11 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-//        if (current == null) {
-//            JsfUtil.addErrorMessage("Please select investigation");
-//            return "";
-//        }
         return "/admin/lims/pathology_format?faces-redirect=true";
+    }
+
+    public String navigateToManageInvestigationsForDevelopers() {
+        return "/admin/lims/developers/lab_investigation_list_for_developers?faces-redirect=true";
     }
 
     public String navigateToManageCalculations() {
@@ -1249,11 +1252,15 @@ public class InvestigationController implements Serializable {
 
         for (Investigation ix : selectedInvestigations) {
             try {
-                String sql = "UPDATE Item SET DTYPE = :dtype WHERE id = :id";
-                Map<String, Object> params = new HashMap<>();
-                params.put("dtype", "Service");
-                params.put("id", ix.getId());
+                // Native SQL with positional placeholders (?) because MySQL does NOT support :named parameters in native queries
+                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+
+                // Prepare positional parameter values in order
+                List<Object> params = Arrays.asList("Service", ix.getId());
+
+                // Execute update using newly modified method
                 itemFacade.executeNativeSql(sql, params);
+
                 successCount++;
             } catch (Exception e) {
                 Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
@@ -1261,14 +1268,18 @@ public class InvestigationController implements Serializable {
             }
         }
 
-        itemFacade.flush();
-        selectedInvestigations = null;
-
-        if (failureCount > 0) {
-            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
-        } else {
+        // Only flush if all operations succeeded
+        if (failureCount == 0) {
+            itemFacade.flush();
+            fillItemsFromDatabaseWithoutCache();
+            itemApplicationController.fillAllItemsBypassingCache();
             JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        } else {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
         }
+
+        selectedInvestigations = null;
+        
     }
 
     public Institution getInstitution() {
@@ -1883,6 +1894,11 @@ public class InvestigationController implements Serializable {
     public void fillItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
         items = getFacade().findByJpql(sql);
+    }
+    
+    public void fillItemsFromDatabaseWithoutCache() {
+        String sql = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findByJpql(sql, true);
     }
 
     public List<Investigation> fillAllItems() {

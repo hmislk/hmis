@@ -7850,6 +7850,11 @@ public class SearchController implements Serializable {
             temMap.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and exists (select t from Token t where t.bill=b and upper(t.tokenNumber) like :token)";
+            temMap.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         if (getReportKeyWord().getDepartment() != null) {
             sql += " and b.department=:dep ";
             temMap.put("dep", getReportKeyWord().getDepartment());
@@ -8183,6 +8188,11 @@ public class SearchController implements Serializable {
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
         }
 
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
+        }
+
         sql += " order by token.tokenAt desc";
 
         List<Token> tokenList = tokenFacade.findByJpqlWithoutCache(sql, parameters, TemporalType.TIMESTAMP, 25);
@@ -8230,6 +8240,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getTotal() != null && !getSearchKeyword().getTotal().trim().equals("")) {
             sql += " and  ((token.bill.total) like :total )";
             parameters.put("total", "%" + getSearchKeyword().getTotal().trim().toUpperCase() + "%");
+        }
+
+        if (getSearchKeyword().getTokenNumber() != null && !getSearchKeyword().getTokenNumber().trim().equals("")) {
+            sql += " and  (upper(token.tokenNumber) like :token)";
+            parameters.put("token", "%" + getSearchKeyword().getTokenNumber().trim().toUpperCase() + "%");
         }
 
         sql += " order by token.tokenAt desc";
@@ -14347,6 +14362,38 @@ public class SearchController implements Serializable {
         c2.set(Calendar.MONTH, c2.get(Calendar.MONTH) - 1);
         toDate = c2.getTime();
         return "/pharmacy/pharmacy_purhcase_order_list_to_cancel?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true";
+    }
+
+    // ToDo: TO Be Linked to command buttons where the file name is used without calling a backend method
+    /**
+     * Samples of places to be updated as follows
+     * <p:commandButton
+                                ajax="false"
+                                action="pharmacy_purchase_order_list_for_recieve"
+                                rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"
+                                class="ui-button-warning"
+                                icon="fa fa-arrow-left"
+                                actionListener="#{grnController.viewPoList()}"
+                                value="Back to PO List">
+                            </p:commandButton>
+     */
+    
+    /**
+     * 
+     * @return 
+     */
+    public String navigateToListPurchaseOrdersToReceive() {
+        return "/pharmacy/pharmacy_purchase_order_list_for_recieve?faces-redirect=true";
+    }
+
+    public String navigateToPurchaseOrderApprove() {
+        makeListNull();
+        return "/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true";
     }
 
     public void createDocPaymentDue() {

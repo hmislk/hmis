@@ -10,7 +10,7 @@
         <h:form>
             <p:panel >
                 <f:facet name="header">
-                    <p:outputLabel value="Approve Purchase Orders"/>
+                    <p:outputLabel value="Finalize Purchase Orders"/>
                 </f:facet>
                 <div class="row">
                     <div class="col-2">
@@ -35,9 +35,7 @@
                             <p:inputText class="w-100"  autocomplete="off" value="#{searchController.searchKeyword.netTotal}"/>
                             <h:outputLabel value="Max Result"/>
                             <p:inputText class="w-100" autocomplete="off" value="#{searchController.maxResult}"/>
-                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search"  value="Search All Requests" action="#{searchController.createPoRequestedAndApprovedPharmacy()}" ajax="false" ></p:commandButton>
-                            <p:commandButton class="w-100 ui-button-warning" icon="fas fa-search" value="Search Approved Requests" action="#{searchController.createApprovedPharmacy()}" ajax="false" ></p:commandButton>
-                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search" value="Search To Approve Requests" action="#{searchController.fillOnlyFinalizedPharmacyPo()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="w-100 ui-button-warning my-2" icon="fas fa-search"  value="Search Saved PO" action="#{searchController.fillOnlySavedPharmacyPo()}" ajax="false" ></p:commandButton>
                         </h:panelGrid>
                     </div>
                     <div class="col-10">
@@ -52,14 +50,11 @@
                             rowsPerPageTemplate="5,10,15"
                             >
                             <p:column headerText="Requested At"  >
-                                <h:commandLink action="pharmacy_reprint_order_request" >
-                                    <h:outputLabel value="#{b.createdAt}" >
-                                        <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}"/>
-                                </h:commandLink>
-                                <br/>
+                                <h:outputLabel value="#{b.createdAt}" >
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>
                                 <h:panelGroup rendered="#{b.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled At " />
                                     <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                    value="#{b.cancelledBill.createdAt}" >
@@ -69,13 +64,10 @@
                             </p:column> 
 
                             <p:column headerText="Requested By" >
-                                <h:commandLink action="pharmacy_reprint_order_request" >
-                                    <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
-                                    </h:outputLabel>
-                                    <f:setPropertyActionListener value="#{b}" target="#{billSearch.bill}"/>
-                                </h:commandLink>
-                                <br/>
+                                <h:outputLabel value="#{b.creater.webUserPerson.name}" >                                      
+                                </h:outputLabel>
                                 <h:panelGroup rendered="#{b.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled By " />
                                     <h:outputLabel style="color: red;" rendered="#{b.cancelled}"
                                                    value="#{b.cancelledBill.creater.webUserPerson.name}" >                                       
@@ -84,21 +76,17 @@
                             </p:column>    
 
                             <p:column headerText="Supplier" >
-                                <h:commandLink action="pharmacy_reprint_order_request" >
-                                    #{b.toInstitution.name}
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                </h:commandLink>
+                                <h:outputLabel value="#{b.toInstitution.name}" >                                      
+                                </h:outputLabel>
                             </p:column>
 
-                            <p:column headerText="Supplier" >
-                                <h:outputText value="#{b.paymentMethod}" ></h:outputText>
+                            <p:column headerText="Payment Method" >
+                                <h:outputText value="#{b.paymentMethod.label}" ></h:outputText>
                             </p:column>
 
                             <p:column headerText="Requested Deprtment" >
-                                <h:commandLink action="pharmacy_reprint_order_request" >
-                                    #{b.department.name}
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                </h:commandLink>
+                                <h:outputLabel value="#{b.department.name}" >                                      
+                                </h:outputLabel>
                             </p:column> 
 
                             <p:column headerText="Requested Value" >
@@ -108,12 +96,8 @@
                             </p:column>
 
                             <p:column headerText="Approved Person"  >
-                                <h:commandLink 
-                                    action="pharmacy_reprint_order_request" 
-                                    value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}"
-                                    rendered="#{b.referenceBill.cancelled eq false}" >
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                </h:commandLink>
+                                 <h:outputLabel value="#{b.referenceBill.creater.webUserPerson.nameWithTitle}" >                                      
+                                </h:outputLabel>
                             </p:column> 
 
                             <p:column headerText="PO Number" >                       
@@ -126,24 +110,15 @@
                             </p:column> 
 
                             <p:column headerText="Actions" width="9em">
-                                <p:commandButton 
-                                    id="approve"
+                                <p:commandButton
+                                    id="finalize"
                                     ajax="false"
+                                    title="Edit and Finalize Purchase Order"
                                     icon="fas fa-check-circle"
                                     class="ui-button-success mx-2"
-                                    title="To Approve Purchase Order"
-                                    action="#{purchaseOrderController.navigateToPurchaseOrderApproval}"
-                                    disabled="#{b.checkedBy eq null or b.referenceBill.creater ne null or b.referenceBill.cancelled eq false or b.cancelled eq true or !webUserController.hasPrivilege('PurchaseOrdersApprovel')}">
-                                    <f:setPropertyActionListener target="#{purchaseOrderController.requestedBill}" value="#{b}"/>
-                                </p:commandButton>
-                                <p:commandButton 
-                                    id="view"
-                                    ajax="false"
-                                    icon="fas fa-eye"
-                                    title="To View Approved Purchase Order"
-                                    action="#{pharmacyBillSearch.navigateToReprintPharmacyPurchaseOrder}" 
-                                    disabled="#{b.referenceBill.creater eq null or b.referenceBill.referenceBill eq null}">
-                                    <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b.referenceBill}"/>
+                                    action="#{purchaseOrderRequestController.navigateToUpdatePurchaseOrder()}"
+                                    disabled="#{b.checkedBy ne null or b.cancelled eq true}">
+                                    <f:setPropertyActionListener target="#{purchaseOrderRequestController.currentBill}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>

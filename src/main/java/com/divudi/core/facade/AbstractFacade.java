@@ -45,12 +45,24 @@ public abstract class AbstractFacade<T> {
         }
     }
 
-    public void executeNativeSql(String sql, Map<String, Object> params) throws Exception {
-        Query query = getEntityManager().createNativeQuery(sql);
-        for (Map.Entry<String, Object> entry : params.entrySet()) {
-            query.setParameter(entry.getKey(), entry.getValue());
+    /**
+     * Executes native SQL using positional parameters, suitable for MySQL.
+     *
+     * @param sql The SQL with positional placeholders (e.g., "UPDATE table SET
+     * col = ? WHERE id = ?")
+     * @param parameters List of parameter values in exact order.
+     * @throws Exception if query fails.
+     */
+    public void executeNativeSql(String sql, List<Object> parameters) throws Exception {
+        try {
+            Query query = getEntityManager().createNativeQuery(sql);
+            for (int i = 0; i < parameters.size(); i++) {
+                query.setParameter(i + 1, parameters.get(i));
+            }
+            query.executeUpdate();
+        } catch (Exception e) {
+            throw e;
         }
-        query.executeUpdate();
     }
 
     public void flush() {
@@ -404,6 +416,18 @@ public abstract class AbstractFacade<T> {
         return qry.getResultList();
     }
 
+    // ChatGPT Contribution - Overloaded method to support optional cache bypass and refresh
+    public List<T> findByJpql(String jpql, boolean noCache) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
+        return qry.getResultList();
+    }
+
     // ChatGPT contributed - 2025-05
     public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
         return getEntityManager()
@@ -480,6 +504,36 @@ public abstract class AbstractFacade<T> {
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
 
         for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    // ChatGPT Contribution - Overloaded method to support optional cache bypass and refresh
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, boolean noCache) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             String paramName = entry.getKey();
             Object paramValue = entry.getValue();
 
