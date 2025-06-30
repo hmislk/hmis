@@ -647,7 +647,7 @@ public class OpdReportController implements Serializable {
         return ccBillTypeAtomics;
     }
 
-    public List<BillTypeAtomic> getInwardtBillTypeAtomics() {
+    public List<BillTypeAtomic> getInwardBillTypeAtomics() {
         List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
@@ -692,7 +692,7 @@ public class OpdReportController implements Serializable {
         }
 
         //Create Inward rows
-        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getInwardtBillTypeAtomics(), null, null, null, null, null);
+        fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getInwardBillTypeAtomics(), null, null, null, null, null);
         List<AdmissionType> ats = admissionTypeController.getItems();
         Map<AdmissionType, List<Bill>> billsByAdmissionType = fetchedBills.stream().collect(Collectors.groupingBy(b -> b.getPatientEncounter().getAdmissionType()));
 
