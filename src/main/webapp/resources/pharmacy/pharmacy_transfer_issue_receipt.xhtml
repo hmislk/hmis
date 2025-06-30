@@ -137,24 +137,6 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    <h:panelGroup rendered="#{cc.attrs.bill.discount ne 0.0}">
-                        <tr>
-                            <td class="summary-label">Discount</td>
-                            <td class="summary-value">
-                                <h:outputLabel value="#{-cc.attrs.bill.discount}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="summary-label">Net Total</td>
-                            <td class="summary-value">
-                                <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputLabel>
-                            </td>
-                        </tr>
-                    </h:panelGroup>
                     <tr>
                         <td class="summary-label">Number of Items</td>
                         <td class="summary-value">

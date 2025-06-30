@@ -33,6 +33,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.StockBill;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
@@ -315,6 +316,23 @@ public class TransferIssueController implements Serializable {
                 phItem.setQty(sq.getQty());
                 bItem.setPharmaceuticalBillItem(phItem);
 
+                // Set transfer rate and related finance details
+                BigDecimal qty = BigDecimal.valueOf(phItem.getQty());
+                BigDecimal rate = determineTransferRate(phItem.getItemBatch());
+
+                bItem.getBillItemFinanceDetails().setQuantity(qty);
+                bItem.getBillItemFinanceDetails().setTotalQuantity(qty);
+                bItem.getBillItemFinanceDetails().setLineGrossRate(rate);
+                bItem.getBillItemFinanceDetails().setLineNetRate(rate);
+                bItem.getBillItemFinanceDetails().setLineGrossTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setLineNetTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setNetTotal(rate.multiply(qty));
+                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
+                bItem.getBillItemFinanceDetails().setLineCostRate(costRate);
+                bItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate()));
+
                 //USER STOCK
                 UserStock us = userStockController.saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
                 bItem.setTransUserStock(us);
@@ -545,6 +563,7 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
@@ -695,6 +714,7 @@ public class TransferIssueController implements Serializable {
 
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -748,6 +768,31 @@ public class TransferIssueController implements Serializable {
             b.setSearialNo(serialNo++);
         }
         return value;
+    }
+
+    private void updateStockBillValues() {
+        double retailValue = 0.0;
+        double purchaseValue = 0.0;
+        double costValue = 0.0;
+
+        for (BillItem bi : getIssuedBill().getBillItems()) {
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            ItemBatch batch = bi.getPharmaceuticalBillItem().getItemBatch();
+            if (batch == null) {
+                continue;
+            }
+            double qty = bi.getPharmaceuticalBillItem().getQty();
+            retailValue += batch.getRetailsaleRate() * qty;
+            purchaseValue += batch.getPurcahseRate() * qty;
+            costValue += batch.getCostRate() * qty;
+        }
+
+        StockBill sb = getIssuedBill().getStockBill();
+        sb.setStockValueAsSaleRate(retailValue);
+        sb.setStockValueAtPurchaseRates(purchaseValue);
+        sb.setStockValueAsCostRate(costValue);
     }
 
     public void addNewBillItem() {
