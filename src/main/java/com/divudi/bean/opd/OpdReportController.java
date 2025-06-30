@@ -799,7 +799,7 @@ public class OpdReportController implements Serializable {
                         row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
                         break;
                     case OnlineSettlement:
-                        row.setLong1(row.getLong1() + (long) bi.getNetValue());
+                        row.setLong1(row.getLong1() + Math.round(bi.getNetValue()));
                         row.setTotal(row.getTotal() + bi.getNetValue());
                         row.setDiscount(row.getDiscount() + bi.getDiscount());
                         row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -811,7 +811,7 @@ public class OpdReportController implements Serializable {
                         }
                         break;
                     default:
-                        row.setLong3(row.getLong3() + (long) bi.getNetValue());
+                        row.setLong3(row.getLong3() + Math.round(bi.getNetValue()));
                         row.setTotal(row.getTotal() + bi.getNetValue());
                         row.setDiscount(row.getDiscount() + bi.getDiscount());
                         row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -831,7 +831,7 @@ public class OpdReportController implements Serializable {
             if (!(bi.getItem() instanceof Investigation)) {
                 continue;
             }
-            row.setLong2(row.getLong2() + (long) bi.getNetValue());
+            row.setLong2(row.getLong2() + Math.round( bi.getNetValue()));
             row.setTotal(row.getTotal() + bi.getNetValue());
             row.setDiscount(row.getDiscount() + bi.getDiscount());
             row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -861,11 +861,11 @@ public class OpdReportController implements Serializable {
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                         default:
-                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setLong3(row.getLong3() + Math.round(p.getPaidValue()));
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                     }
@@ -897,11 +897,11 @@ public class OpdReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setLong1(row.getLong1() + Math.round( p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
-                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setLong3(row.getLong3() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                     }
@@ -937,11 +937,11 @@ public class OpdReportController implements Serializable {
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                         default:
-                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setLong3(row.getLong3() + Math.round(p.getPaidValue()));
                             row.setTotal(row.getTotal() + p.getPaidValue());
                             break;
                     }
@@ -976,11 +976,11 @@ public class OpdReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
-                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setLong3(row.getLong3() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                     }
