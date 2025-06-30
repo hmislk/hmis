@@ -108,10 +108,10 @@
                             </h:column>
                             <h:column>
                                 <f:facet name="header">Pack Size</f:facet>
-                                <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
+                                <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
                                     <f:convertNumber pattern="0.#" />
                                 </h:outputText>
-                                <h:outputText value="1" rendered="#{bip.item.class eq 'class com.divudi.core.entity.pharmacy.Amp'}" />
+                                <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
                             </h:column>
                             <h:column>
                                 <f:facet name="header">Qty</f:facet>
