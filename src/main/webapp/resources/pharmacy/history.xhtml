@@ -538,6 +538,58 @@
                             </p:dataTable>
                         </p:panel>
                     </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="itemDetailsBlockPendingGrn"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Block', true)}" >
+                        <p:panel>
+                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                Pending GRN Details
+                            </div>
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="g">
+                                <p:column headerText="Order No">#{g.bill.deptId}</p:column>
+                                <p:column headerText="Order Dept">#{g.bill.department.name}</p:column>
+                                <p:column headerText="Order at">
+                                    <h:outputLabel value="#{g.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Supplier">#{g.bill.fromInstitution.name}</p:column>
+                                <p:column headerText="Item">#{g.item.name}</p:column>
+                                <p:column headerText="Qty Ordered">
+                                    <h:outputText value="#{g.billItemFinanceDetails.quantity}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Free Qty Ordered">
+                                    <h:outputText value="#{g.billItemFinanceDetails.freeQuantity}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Purchase Rate">
+                                    <h:outputText value="#{g.pharmaceuticalBillItem.purchaseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Sale Rate">
+                                    <h:outputText value="#{g.billItemFinanceDetails.retailSaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Returned Rate">
+                                    <h:outputText value="#{g.billItemFinanceDetails.netRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                                <p:column headerText="Return Value">
+                                    <h:outputText value="#{g.billItemFinanceDetails.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+                        </p:panel>
+                    </h:panelGroup>
                 </div>
             </h:panelGroup>
             <p:tabView  
@@ -1245,7 +1297,7 @@
                     title="Pending GRN" 
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
 
-                    <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.grns}"
+                    <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.pendingGrns}"
                                  var="dd2" scrollable="true"  paginator="true"
                                  rows="10"
                                  paginatorPosition="bottom"
