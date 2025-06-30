@@ -217,6 +217,9 @@
                                 <h:outputText value="#{row.bill.createdAt}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="Net Amount" />
+                                </f:facet>
                             </p:column>
 
                             <p:column headerText="Item Name">
@@ -251,14 +254,17 @@
                                 <h:outputText value="#{row.rate * row.qty}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
+                            </p:column>
 
+                            <p:column headerText="Net Total">
+                                <h:outputText value="#{row.bill.netTotal}" />
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.netTotal}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-
+                            
                             <p:column headerText="MRP">
                                 <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
                                     <f:convertNumber pattern="#,##0.00" />
@@ -271,9 +277,6 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Payment Mode">
-                                <h:outputText value="#{row.bill.paymentMethod}" />
-                            </p:column>
 
                             <p:column headerText="Discount">
                                 <h:outputText value="#{row.discount}">
