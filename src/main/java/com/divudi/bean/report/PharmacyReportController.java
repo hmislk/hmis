@@ -73,6 +73,7 @@ import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import com.itextpdf.text.pdf.PdfWriter;
+import java.lang.reflect.Method;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -2014,8 +2015,143 @@ public class PharmacyReportController implements Serializable {
     public void processSaleCreditCard() {
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Card));
     }
+
     public void processSaleCash() {
         retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Cash));
+    }
+
+    public void exportIpDrugReturnPdf() {
+        List<String> headers = Arrays.asList(
+                "Date", "Item Name", "Code", "Doc No", "Ref Doc No",
+                "QTY", "Rate", "Total", "Net Total", "MRP", "MRP Value", "Discount"
+        );
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=IP_Drug_Return_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Title
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph titlePara = new Paragraph("IP Drug Return Report", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(20);
+            document.add(titlePara);
+
+            // Table setup
+            PdfPTable table = new PdfPTable(headers.size());
+            table.setWidthPercentage(100);
+
+            // Header row
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // Row data
+            Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            DecimalFormat qtyFormat = new DecimalFormat("#,##0");
+            DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
+
+            double netTotalSum = 0.0;
+
+            for (BillItem row : billItems) {
+                // Date
+                table.addCell(new Phrase(
+                        row.getBill() != null && row.getBill().getCreatedAt() != null
+                        ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
+
+                // Item Name
+                table.addCell(new Phrase(
+                        row.getItem() != null ? row.getItem().getName() : "", cellFont));
+
+                // Code
+                table.addCell(new Phrase(
+                        row.getItem() != null ? row.getItem().getCode() : "", cellFont));
+
+                // Doc No
+                table.addCell(new Phrase(
+                        row.getBill() != null ? row.getBill().getDeptId() : "", cellFont));
+
+                // Ref Doc No
+                table.addCell(new Phrase(
+                        row.getBill() != null && row.getBill().getReferenceBill() != null
+                        ? row.getBill().getReferenceBill().getDeptId() : "", cellFont));
+
+                // QTY
+                table.addCell(new Phrase(
+                        row.getQty() != null ? qtyFormat.format(row.getQty()) : "", cellFont));
+
+                // Rate (as negative)
+                Double qty = row.getQty();
+                Double rate = row.getRate();
+                Double total = (rate != null && qty != null) ? rate * qty : null;
+                table.addCell(new Phrase(
+                        rate != null ? moneyFormat.format(0.0 - rate) : "", cellFont));
+
+                // Total (rate * qty)
+                table.addCell(new Phrase(
+                        total != null ? moneyFormat.format(total) : "", cellFont));
+
+                // Net Total
+                Double netTotal = row.getBill() != null ? row.getBill().getNetTotal() : null;
+                table.addCell(new Phrase(
+                        netTotal != null ? moneyFormat.format(netTotal) : "", cellFont));
+                netTotalSum += netTotal;
+
+                // MRP
+                Double mrp = (row.getPharmaceuticalBillItem() != null)
+                        ? row.getPharmaceuticalBillItem().getRetailRate() : null;
+                table.addCell(new Phrase(
+                        mrp != null ? moneyFormat.format(mrp) : "", cellFont));
+
+                // MRP Value (negative)
+                Double mrpValue = (mrp != null && qty != null) ? 0.0 - (mrp * qty) : null;
+                table.addCell(new Phrase(
+                        mrpValue != null ? moneyFormat.format(mrpValue) : "", cellFont));
+
+                // Discount
+                Double discount = row.getDiscount();
+                table.addCell(new Phrase(
+                        discount != null ? moneyFormat.format(discount) : "", cellFont));
+            }
+            
+            for (int i = 0; i < headers.size(); i++) {
+                PdfPCell footerCell;
+                if (i == 0) {
+                    footerCell = new PdfPCell(new Phrase("Net Amount", headerFont));
+                    footerCell.setColspan(8);
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                } else if (i == 1) { // "Net Total" column
+                    footerCell = new PdfPCell(new Phrase(moneyFormat.format(netTotalSum), headerFont));
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                } else {
+                    footerCell = new PdfPCell(new Phrase(""));
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                }
+                table.addCell(footerCell);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void processCollectingCentreTestWiseCountReport() {
@@ -2415,7 +2551,7 @@ public class PharmacyReportController implements Serializable {
     }
 
     private static final float[] STOCK_LEDGER_COLUMN_WIDTHS = new float[]{
-            1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
+        1, 2, 2, 1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2
     };
 
     private void addTableHeaders(PdfPTable table, Font headerFont, String[] headers) {
@@ -2471,10 +2607,10 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(STOCK_LEDGER_COLUMN_WIDTHS);
 
             String[] headers = {
-                    "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
-                    "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
-                    "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
-                    "Closing Stock", "Rate", "Closing Value"
+                "S.No.", "Department", "Item Category", "Item Code", "Item Name", "UOM",
+                "Transaction", "Doc No", "Doc Date", "Ref Doc No", "Ref Doc Date",
+                "From Store", "To Store", "Doc Type", "Stock In Qty", "Stock Out Qty",
+                "Closing Stock", "Rate", "Closing Value"
             };
 
             addTableHeaders(table, headerFont, headers);
@@ -2759,7 +2895,7 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"S.No", "Item Category", "Item Code", "Item Name", "UOM", "Expiry", "Batch No", "Qty",
-                    "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
+                "Purchase Rate", "Purchase Value", "Cost Rate", "Cost Value", "Sale Rate", "Sale Value"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
@@ -3581,9 +3717,9 @@ public class PharmacyReportController implements Serializable {
             Row headerRow = sheet.createRow(rowIndex++);
 
             String[] headers = {"Department/Staff", "Item Category Code", "Item Category Name", "Item Code", "Item Name",
-                    "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
-                    "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
-                    "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
+                "Base UOM", "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier",
+                "Shelf life remaining (Days)", "Rate", "MRP", "Quantity", "Item Value",
+                "Batch wise Item Value", "Batch wise Qty", "Item wise total", "Item wise Qty"};
 
             for (int i = 0; i < headers.length; i++) {
                 headerRow.createCell(i).setCellValue(headers[i]);
@@ -3687,8 +3823,8 @@ public class PharmacyReportController implements Serializable {
             table.setWidths(columnWidths);
 
             String[] headers = {"Department/Staff", "Item Cat Code", "Item Cat Name", "Item Code", "Item Name", "Base UOM",
-                    "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
-                    "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
+                "Item Type", "Batch No", "Batch Date", "Expiry Date", "Supplier", "Shelf Life (Days)", "Rate", "MRP",
+                "Quantity", "Item Value", "Batch Wise Item Value", "Batch Wise Qty", "Item Wise Total", "Item Wise Qty"};
 
             for (String header : headers) {
                 PdfPCell cell = new PdfPCell(new Phrase(header, FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10)));
