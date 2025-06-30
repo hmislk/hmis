@@ -151,8 +151,9 @@
                                     <thead>
                                     <tr>
                                         <th style="text-align: center;">Serial</th>
-                                        <th style="text-align: center;">Date &amp; Time</th>
+                                        <th style="text-align: center;">Date / Time</th>
                                         <th style="text-align: center;">Bill No</th>
+                                        <th style="text-align: center;">Bill Type</th>
                                         <th style="text-align: center;">Patient</th>
                                         <th style="text-align: center;">Hospital Fee</th>
                                         <th style="text-align: center;">Staff Fee</th>
@@ -184,6 +185,9 @@
                                                 <h:panelGroup rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}">
                                                     <span style="color: red; font-weight: bold;"> [Cancel Bill]</span>
                                                 </h:panelGroup>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{row.bill.billTypeAtomic}"/>
                                             </td>
                                             <td>
                                                 <h:outputText rendered="#{row.bill.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.patient.person.nameWithTitle}"/>
@@ -224,17 +228,17 @@
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.hospitalFee}">
+                                            <h:outputText value="#{searchController.bundle.hospitalTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.staffFee}">
+                                            <h:outputText value="#{searchController.bundle.staffTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.total}">
+                                            <h:outputText value="#{searchController.bundle.grossTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
@@ -244,7 +248,7 @@
                                             </h:outputText>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
-                                            <h:outputText value="#{searchController.bundle.netTotal}">
+                                            <h:outputText value="#{searchController.bundle.total}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputText>
                                         </td>
