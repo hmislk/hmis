@@ -217,6 +217,9 @@
                                 <h:outputText value="#{bi.bill.createdAt}">
                                     <f:convertDateTime pattern="dd/MM/yyyy"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="Net Amount" />
+                                </f:facet>
                             </p:column>
                             <p:column headerText="ITEM NAME">
                                 <h:outputText value="#{bi.item.name}" />
@@ -247,6 +250,9 @@
                                 <h:outputText value="#{bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                </f:facet>
                             </p:column>
 
                         </p:dataTable>
