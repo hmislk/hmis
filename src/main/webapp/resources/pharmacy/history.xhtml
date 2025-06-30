@@ -1300,36 +1300,37 @@
                     <p:dataTable 
                         id="pendinggrn" 
                         value="#{pharmacyController.pendingGrns}"
-                        var="dd2" scrollable="true"  paginator="true"
+                        var="pendingGrnRow" scrollable="true"  paginator="true"
                         rows="10"
                         paginatorPosition="bottom"
                         paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                         rowsPerPageTemplate="5,10,15" >
+
                         <p:column headerText="PO Number">
-                            #{dd2.bill.deptId}
+                            #{pendingGrnRow.bill.deptId}
                         </p:column>
                         <p:column headerText="Department">
-                            #{dd2.bill.department.name}
+                            #{pendingGrnRow.bill.department.name}
                         </p:column>
                         <p:column headerText="Date">
-                            <h:outputLabel value="#{dd2.bill.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                         </p:column>
                         <p:column headerText="Supplier">
-                            #{dd2.bill.fromInstitution.name}
+                            #{pendingGrnRow.bill.fromInstitution.name}
                         </p:column>
                         <p:column headerText="Item">
-                            #{dd2.itemName}
+                            #{pendingGrnRow.item.name}
                         </p:column>
-
                         <p:column headerText="Qty">
-                            #{dd2.qty}
+                            #{pendingGrnRow.qty}
                         </p:column>
                         <p:column headerText="Fr. Qty">
-                            #{dd2.pharmaceuticalBillItem.freeQty}
+                            #{pendingGrnRow.pharmaceuticalBillItem.freeQty}
                         </p:column>
                     </p:dataTable>
+
                 </p:tab>
 
                 <p:tab
