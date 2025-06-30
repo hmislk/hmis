@@ -3,7 +3,6 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
 
@@ -128,7 +127,7 @@
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Net Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Cost Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
-                            <th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>
+                            <!--<th style="width: 4%; text-align: right!important; font-weight: bold!important;">Profit %</th>-->
                         </tr>
                     </thead>
 
@@ -192,11 +191,11 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-                                <td style="text-align: right;">
+<!--                                <td style="text-align: right;">
                                     <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
                                         <f:convertNumber pattern="0.0" ></f:convertNumber>
                                     </h:outputText>
-                                </td>
+                                </td>-->
 
                             </tr>
                         </ui:repeat>

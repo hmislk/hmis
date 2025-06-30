@@ -9,6 +9,7 @@
 package com.divudi.bean.lab;
 
 import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ItemApplicationController;
 import com.divudi.bean.common.ItemFeeManager;
 import com.divudi.bean.common.ItemForItemController;
 import com.divudi.bean.common.SessionController;
@@ -72,6 +73,7 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.servlet.http.HttpServletResponse;
+import javax.transaction.Transactional;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -106,6 +108,8 @@ public class InvestigationController implements Serializable {
     PatientReportController patientReportController;
     @Inject
     ItemForItemController itemForItemController;
+    @Inject
+    ItemApplicationController itemApplicationController;
     /**
      * EJBs
      */
@@ -562,11 +566,11 @@ public class InvestigationController implements Serializable {
     }
 
     public String navigateToEditPathologyFormat() {
-//        if (current == null) {
-//            JsfUtil.addErrorMessage("Please select investigation");
-//            return "";
-//        }
         return "/admin/lims/pathology_format?faces-redirect=true";
+    }
+
+    public String navigateToManageInvestigationsForDevelopers() {
+        return "/admin/lims/developers/lab_investigation_list_for_developers?faces-redirect=true";
     }
 
     public String navigateToManageCalculations() {
@@ -1236,6 +1240,48 @@ public class InvestigationController implements Serializable {
 
     }
 
+    @Transactional
+    public void convertSelectedInvestigationsToServices() {
+        if (selectedInvestigations == null || selectedInvestigations.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Convert");
+            return;
+        }
+
+        int successCount = 0;
+        int failureCount = 0;
+
+        for (Investigation ix : selectedInvestigations) {
+            try {
+                // Native SQL with positional placeholders (?) because MySQL does NOT support :named parameters in native queries
+                String sql = "UPDATE Item SET DTYPE = ? WHERE id = ?";
+
+                // Prepare positional parameter values in order
+                List<Object> params = Arrays.asList("Service", ix.getId());
+
+                // Execute update using newly modified method
+                itemFacade.executeNativeSql(sql, params);
+
+                successCount++;
+            } catch (Exception e) {
+                Logger.getLogger(InvestigationController.class.getName()).log(Level.SEVERE, null, e);
+                failureCount++;
+            }
+        }
+
+        // Only flush if all operations succeeded
+        if (failureCount == 0) {
+            itemFacade.flush();
+            fillItemsFromDatabaseWithoutCache();
+            itemApplicationController.fillAllItemsBypassingCache();
+            JsfUtil.addSuccessMessage("Successfully converted " + successCount + " investigations to services");
+        } else {
+            JsfUtil.addErrorMessage("Conversion completed with " + successCount + " successes and " + failureCount + " failures. Check logs for details.");
+        }
+
+        selectedInvestigations = null;
+        
+    }
+
     public Institution getInstitution() {
         return institution;
     }
@@ -1266,8 +1312,7 @@ public class InvestigationController implements Serializable {
         parameters.put("codeQuery", "%" + qry + "%");
         parameters.put("ret", false);
 
-        List<Investigation> completeItems = getFacade().findByJpql(jpql,parameters);
-
+        List<Investigation> completeItems = getFacade().findByJpql(jpql, parameters);
 
 //        List<Investigation> completeItems = getFacade().findByJpql("select c from Item c where ( type(c) = Investigation or type(c) = Packege ) and c.retired=false and (c.name) like '%" + qry.toUpperCase() + "%' or (c.code) like '%" + qry + "%' and  order by c.name");
         return completeItems;
@@ -1849,6 +1894,11 @@ public class InvestigationController implements Serializable {
     public void fillItems() {
         String sql = "select i from Investigation i where i.retired=false order by i.name";
         items = getFacade().findByJpql(sql);
+    }
+    
+    public void fillItemsFromDatabaseWithoutCache() {
+        String sql = "select i from Investigation i where i.retired=false order by i.name";
+        items = getFacade().findByJpql(sql, true);
     }
 
     public List<Investigation> fillAllItems() {

@@ -33,6 +33,9 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.core.entity.BillItemFinanceDetails;
+import com.divudi.core.entity.StockBill;
+import com.divudi.core.entity.pharmacy.ItemBatch;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -85,6 +88,8 @@ public class TransferIssueController implements Serializable {
     private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private BillService billService;
+    @EJB
+    PharmacyCostingService pharmacyCostingService;
 
     private List<BillItem> billItems;
     private BillItem billItem;
@@ -203,6 +208,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem b : getBillItems()) {
             b.setSearialNo(serialNo++);
         }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     public void makeNull() {
@@ -292,9 +298,7 @@ public class TransferIssueController implements Serializable {
 
                 if (stockQtys.size() > 1) {
                     double billedIssueByItemBatch = getPharmacyCalculation().getBilledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
-                    System.out.println(billedIssueByItemBatch + " billedIssueByItemBatch");
                     double cancelledIssueByItemBatch = getPharmacyCalculation().getCancelledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
-                    System.out.println(cancelledIssueByItemBatch + " cancelledIssueByItemBatch");
                     bItem.setIssuedPhamaceuticalItemQty(Math.abs(billedIssueByItemBatch) + Math.abs(cancelledIssueByItemBatch));
                 }
 
@@ -311,6 +315,23 @@ public class TransferIssueController implements Serializable {
                 phItem.setItemBatch(sq.getStock().getItemBatch());
                 phItem.setQty(sq.getQty());
                 bItem.setPharmaceuticalBillItem(phItem);
+
+                // Set transfer rate and related finance details
+                BigDecimal qty = BigDecimal.valueOf(phItem.getQty());
+                BigDecimal rate = determineTransferRate(phItem.getItemBatch());
+
+                bItem.getBillItemFinanceDetails().setQuantity(qty);
+                bItem.getBillItemFinanceDetails().setTotalQuantity(qty);
+                bItem.getBillItemFinanceDetails().setLineGrossRate(rate);
+                bItem.getBillItemFinanceDetails().setLineNetRate(rate);
+                bItem.getBillItemFinanceDetails().setLineGrossTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setLineNetTotal(rate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setNetTotal(rate.multiply(qty));
+                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
+                bItem.getBillItemFinanceDetails().setLineCostRate(costRate);
+                bItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty));
+                bItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate()));
 
                 //USER STOCK
                 UserStock us = userStockController.saveUserStock(bItem, getSessionController().getLoggedUser(), usc);
@@ -429,6 +450,24 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
+        if (getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Please add items");
+            return;
+        }
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate    = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate",    false);
+        boolean pharmacyTransferIsByRetailRate  = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate",  true);
+
+        if (!pharmacyTransferIsByPurchaseRate && !pharmacyTransferIsByCostRate && !pharmacyTransferIsByRetailRate) {
+            pharmacyTransferIsByRetailRate = true;
+        }
+
+        for (BillItem bi : getBillItems()) {
+            if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getPharmaceuticalBillItem().getQty(), getSessionController().getLoggedUser())) {
+                JsfUtil.addErrorMessage("No adequate stocks for " + bi.getItem().getName());
+                return;
+            }
+        }
 
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
@@ -441,7 +480,7 @@ public class TransferIssueController implements Serializable {
         }
         for (BillItem i : getBillItems()) {
 
-            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
+            i.getPharmaceuticalBillItem().setQty(0 - i.getPharmaceuticalBillItem().getQty());
 
             if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
@@ -467,8 +506,8 @@ public class TransferIssueController implements Serializable {
             getBillItemFacade().edit(i);
 
             //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQtyInUnit(), getSessionController().getLoggedUser())) {
-                i.setTmpQty(0);
+            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQty(), getSessionController().getLoggedUser())) {
+                i.setQty(0.0);
                 getBillItemFacade().edit(i);
                 getIssuedBill().getBillItems().add(i);
                 continue;
@@ -483,10 +522,9 @@ public class TransferIssueController implements Serializable {
 //            System.out.println("returnFlag = " + returnFlag);
             if (returnFlag) {
 
-                //Addinng Staff
+//Addinng Staff
 //                System.out.println("//Addinng Staff = ");
-                System.out.println(i.getPharmaceuticalBillItem() + " 1 " + i.getPharmaceuticalBillItem().getQtyInUnit() + " " + getIssuedBill().getToStaff());
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
+                                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
                         Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
@@ -501,7 +539,7 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValue);
+        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSave);
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
@@ -519,12 +557,13 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
         getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        getIssuedBill().setNetTotal(calTotal());
+        getIssuedBill().setNetTotal(calculateBillNetTotal());
 
 //        getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_DIRECT_ISSUE);
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
         notificationController.createNotification(issuedBill);
 
         //Update ReferenceBill
@@ -548,7 +587,7 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("Please Select Staff");
             return;
         }
-        if(getBillItems()==null||getBillItems().isEmpty()){
+        if (getBillItems() == null || getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
             return;
         }
@@ -581,6 +620,11 @@ public class TransferIssueController implements Serializable {
 
         //Replase the billItem with out Zero Qty Item
         setBillItems(billItemList);
+
+        if (getBillItems() == null || getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Items are added to Transfer");
+            return;
+        }
 
         saveBill();
         for (BillItem i : getBillItems()) {
@@ -641,7 +685,7 @@ public class TransferIssueController implements Serializable {
             getIssuedBill().getBillItems().add(i);
         }
 
-        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValue);
+        getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSave);
 
         getIssuedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferIssue, BillClassType.BilledBill, BillNumberSuffix.PHTI));
 
@@ -663,13 +707,14 @@ public class TransferIssueController implements Serializable {
         getIssuedBill().setCreater(getSessionController().getLoggedUser());
         getIssuedBill().setCreatedAt(Calendar.getInstance().getTime());
 
-        getIssuedBill().setNetTotal(calTotal());
+        getIssuedBill().setNetTotal(calculateBillNetTotal());
 
         getIssuedBill().setBackwardReferenceBill(getRequestedBill());
         getIssuedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_ISSUE);
 
         getBillFacade().edit(getIssuedBill());
         billService.createBillFinancialDetailsForPharmacyBill(getIssuedBill());
+        updateStockBillValues();
 
         //Update ReferenceBill
         //     getRequestedBill().setReferenceBill(getIssuedBill());
@@ -685,32 +730,13 @@ public class TransferIssueController implements Serializable {
 
     }
 
-    private double getPreferredRate(BillItem b) {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Based On Purchase Rate", false)) {
-            return b.getPharmaceuticalBillItem().getPurchaseRate();
-        }
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Issue Based On Cost Rate", false)) {
-            BillItemFinanceDetails f = b.getBillItemFinanceDetails();
-            if (f != null && f.getLineCostRate() != null) {
-                return f.getLineCostRate().doubleValue();
-            }
-            return b.getPharmaceuticalBillItem().getPurchaseRate();
-        }
-        return b.getPharmaceuticalBillItem().getRetailRate();
-    }
-
     private void updateBillItemRateAndValue(BillItem b) {
-        double rate = getPreferredRate(b);
+        BillItemFinanceDetails f = b.getBillItemFinanceDetails();
+        double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
 
         b.setRate(rate);
         b.setQty(b.getPharmaceuticalBillItem().getQty());
         b.setNetValue(rate * b.getPharmaceuticalBillItem().getQty());
-
-        BillItemFinanceDetails f = b.getBillItemFinanceDetails();
-        if (f == null) {
-            f = new BillItemFinanceDetails(b);
-            b.setBillItemFinanceDetails(f);
-        }
 
         BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
         BigDecimal rateBig = BigDecimal.valueOf(rate);
@@ -728,26 +754,49 @@ public class TransferIssueController implements Serializable {
         getBillItemFacade().edit(b);
     }
 
-    private double calTotal() {
+    private void updateBillItemRateAndValueAndSave(BillItem b) {
+        updateBillItemRateAndValue(b);
+        getBillItemFacade().edit(b);
+    }
+
+    private double calculateBillNetTotal() {
         double value = 0;
         int serialNo = 0;
-
         for (BillItem b : getIssuedBill().getBillItems()) {
-            double rate = getPreferredRate(b);
+            double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
             value += rate * b.getPharmaceuticalBillItem().getQty();
             b.setSearialNo(serialNo++);
         }
-
         return value;
-
     }
 
-    public void addBillItemNew() {
+    private void updateStockBillValues() {
+        double retailValue = 0.0;
+        double purchaseValue = 0.0;
+        double costValue = 0.0;
 
-        billItem = new BillItem();
-        if (billItem.getPharmaceuticalBillItem() == null) {
-            return;
+        for (BillItem bi : getIssuedBill().getBillItems()) {
+            if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+                continue;
+            }
+            ItemBatch batch = bi.getPharmaceuticalBillItem().getItemBatch();
+            if (batch == null) {
+                continue;
+            }
+            double qty = bi.getPharmaceuticalBillItem().getQty();
+            retailValue += batch.getRetailsaleRate() * qty;
+            purchaseValue += batch.getPurcahseRate() * qty;
+            costValue += batch.getCostRate() * qty;
         }
+
+        StockBill sb = getIssuedBill().getStockBill();
+        sb.setStockValueAsSaleRate(retailValue);
+        sb.setStockValueAtPurchaseRates(purchaseValue);
+        sb.setStockValueAsCostRate(costValue);
+    }
+
+    public void addNewBillItem() {
+        billItem = new BillItem();
         if (getTmpStock() == null) {
             JsfUtil.addErrorMessage("Item?");
             return;
@@ -764,38 +813,56 @@ public class TransferIssueController implements Serializable {
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
-
-//        if (checkItemBatch()) {
-//            errorMessage = "This batch is already there in the bill.";
-//            UtilityController.addErrorMessage("Already added this item batch");
-//            return;
-//        }
-//        if (CheckDateAfterOneMonthCurrentDateTime(getStock().getItemBatch().getDateOfExpire())) {
-//            errorMessage = "This batch is Expire With in 31 Days.";
-//            UtilityController.addErrorMessage("This batch is Expire With in 31 Days.");
-//            return;
-//        }
-        //Checking User Stock Entity
         if (!userStockController.isStockAvailable(getTmpStock(), getQty(), getSessionController().getLoggedUser())) {
             JsfUtil.addErrorMessage("Sorry Already Other User Try to Billing This Stock You Cant Add");
             return;
         }
-        billItem.getPharmaceuticalBillItem().setQtyInUnit(qty);
+        billItem.getPharmaceuticalBillItem().setQty(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
 
-//        calculateBillItem();
-        ////System.out.println("Rate*****" + billItem.getRate());
-//        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
-//        billItem.setBill(getPreBill());
+
+        billItem.getBillItemFinanceDetails().setLineGrossRate(determineTransferRate(billItem.getPharmaceuticalBillItem().getItemBatch()));
+        
+        billItem.getBillItemFinanceDetails().setQuantity(BigDecimal.valueOf(billItem.getQty()));
+
+        billItem.getBillItemFinanceDetails().setLineGrossTotal(billItem.getBillItemFinanceDetails().getLineGrossRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+
+        billItem.getBillItemFinanceDetails().setLineNetRate(billItem.getBillItemFinanceDetails().getLineGrossRate());
+        billItem.getBillItemFinanceDetails().setLineNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
+        billItem.getBillItemFinanceDetails().setNetTotal(billItem.getBillItemFinanceDetails().getLineGrossTotal());
+
+        billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
+
+        billItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
+        billItem.getBillItemFinanceDetails().setLineCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+
+        billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
 
         billItem.setSearialNo(getBillItems().size() + 1);
         getBillItems().add(billItem);
 
         qty = null;
         tmpStock = null;
+
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
+    }
+
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
     }
 
     @Inject
@@ -819,27 +886,12 @@ public class TransferIssueController implements Serializable {
 
     }
 
-    public void onEdit(RowEditEvent event) {
-        BillItem tmp = (BillItem) event.getObject();
-        double availableStock = pharmacyBean.getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getSessionController().getDepartment());
-
-        if (availableStock < tmp.getPharmaceuticalBillItem().getQtyInUnit()) {
-            tmp.setTmpQty(0.0);
-            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
-        }
-
-        //Check Is There Any Other User using same Stock
-        if (!userStockController.isStockAvailable(tmp.getPharmaceuticalBillItem().getStock(), tmp.getQty(), getSessionController().getLoggedUser())) {
-            tmp.setTmpQty(0.0);
-            JsfUtil.addErrorMessage("You cant issue over than Stock Qty setted Old Value");
-        }
-
-        userStockController.updateUserStock(tmp.getTransUserStock(), tmp.getQty());
-
+    public void onFocus(BillItem tmp) {
+        getPharmacyController().fillItemDetails(tmp.getItem());
     }
 
-    public void onFocus(BillItem tmp) {
-        getPharmacyController().setPharmacyItem(tmp.getItem());
+    public void displayItemDetails(BillItem tmp) {
+        getPharmacyController().fillItemDetails(tmp.getItem());
     }
 
     public void removeAll() {

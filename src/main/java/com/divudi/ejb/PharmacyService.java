@@ -20,6 +20,8 @@ import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vtm;
 import com.divudi.core.facade.ClinicalFindingValueFacade;
+import com.divudi.core.facade.AmpFacade;
+import com.divudi.core.facade.AmppFacade;
 import com.divudi.service.BillService;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,6 +44,12 @@ public class PharmacyService {
 
     @EJB
     BillService billService;
+
+    @EJB
+    private AmppFacade amppFacade;
+
+    @EJB
+    private AmpFacade ampFacade;
 
     public List<ClinicalFindingValue> getAllergyListForPatient(Patient patient) {
 
@@ -180,6 +188,74 @@ public class PharmacyService {
 
         }
         billItem.setInstructions(instrcutions);
+    }
+
+    /**
+     * Fetch the given AMP together with all associated AMPPs.
+     *
+     * @param amp the AMP to search for
+     * @return List containing the AMP and all related AMPPs
+     */
+    public List<Item> findRelatedItems(Amp amp) {
+        List<Item> items = new ArrayList<>();
+        if (amp == null) {
+            return items;
+        }
+
+        items.add(amp);
+
+        String jpql = "select a from Ampp a where a.retired=:ret and a.amp=:amp";
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("amp", amp);
+        List<Ampp> ampps = amppFacade.findByJpql(jpql, params);
+        if (ampps != null) {
+            items.addAll(ampps);
+        }
+
+        return items;
+    }
+
+    /**
+     * Fetch the AMP of the given AMPP and return it together with all AMPPs
+     * related to that AMP, including the provided AMPP.
+     *
+     * @param ampp the AMPP to use as reference
+     * @return List containing the AMP and all related AMPPs
+     */
+    public List<Item> findRelatedItems(Ampp ampp) {
+        if (ampp == null) {
+            return new ArrayList<>();
+        }
+
+        List<Item> items = findRelatedItems(ampp.getAmp());
+
+        if (!items.contains(ampp)) {
+            items.add(ampp);
+        }
+
+        return items;
+    }
+
+    /**
+     * Fetch related items for a given Item (Amp or Ampp). Delegates to the
+     * appropriate method based on instance type.
+     *
+     * @param item the item to find related items for
+     * @return List of related items or empty list if type is not supported or
+     * item is null
+     */
+    public List<Item> findRelatedItems(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+        if (item instanceof Amp) {
+            return findRelatedItems((Amp) item);
+        }
+        if (item instanceof Ampp) {
+            return findRelatedItems((Ampp) item);
+        }
+        return new ArrayList<>();
     }
 
     public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {

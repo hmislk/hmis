@@ -45,6 +45,51 @@ public class ConfigOptionApplicationController implements Serializable {
 
     private Map<String, ConfigOption> applicationOptions;
 
+    private ConfigOption findActiveOptionWithLock(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
+        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.retired=false AND o.optionKey=:key AND o.scope=:scope");
+        Map<String, Object> params = new HashMap<>();
+        params.put("key", key);
+        params.put("scope", scope);
+        if (institution != null) {
+            jpql.append(" AND o.institution = :institution");
+            params.put("institution", institution);
+        } else {
+            jpql.append(" AND o.institution IS NULL");
+        }
+        if (department != null) {
+            jpql.append(" AND o.department = :department");
+            params.put("department", department);
+        } else {
+            jpql.append(" AND o.department IS NULL");
+        }
+        if (webUser != null) {
+            jpql.append(" AND o.webUser = :webUser");
+            params.put("webUser", webUser);
+        } else {
+            jpql.append(" AND o.webUser IS NULL");
+        }
+        return optionFacade.findFirstByJpqlWithLock(jpql.toString(), params);
+    }
+
+    private ConfigOption createApplicationOptionIfAbsent(String key, OptionValueType type, String value) {
+        ConfigOption option = findActiveOptionWithLock(key, OptionScope.APPLICATION, null, null, null);
+        if (option != null) {
+            return option;
+        }
+        option = new ConfigOption();
+        option.setCreatedAt(new Date());
+        option.setOptionKey(key);
+        option.setScope(OptionScope.APPLICATION);
+        option.setInstitution(null);
+        option.setDepartment(null);
+        option.setWebUser(null);
+        option.setValueType(type);
+        option.setOptionValue(value);
+        optionFacade.create(option);
+        loadApplicationOptions();
+        return option;
+    }
+
     @PostConstruct
     public void init() {
         loadApplicationOptions();
@@ -60,6 +105,8 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyConfigurationDefaults();
         loadPharmacyIssueReceiptConfigurationDefaults();
         loadPharmacyTransferIssueReceiptConfigurationDefaults();
+        loadPharmacyTransferRequestReceiptConfigurationDefaults();
+        loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -217,6 +264,151 @@ public class ConfigOptionApplicationController implements Serializable {
         );
     }
 
+    private void loadPharmacyTransferRequestReceiptConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Transfer Request Receipt CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "}\n"
+                + ".receipt-header, .receipt-title, .receipt-separator, .receipt-summary {\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 16px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 11px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-details-table, .receipt-items-table, .receipt-summary-table {\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-items-header {\n"
+                + "    font-weight: bold;\n"
+                + "    border-bottom: 1px solid #ccc;\n"
+                + "}\n"
+                + ".item-name, .item-qty, .item-rate, .item-value {\n"
+                + "    padding: 4px;\n"
+                + "    text-align: left;\n"
+                + "}\n"
+                + ".item-qty, .item-rate, .item-value {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".summary-label {\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".summary-value {\n"
+                + "    text-align: right;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".total-amount {\n"
+                + "    font-size: 14px;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".receipt-cashier {\n"
+                + "    margin-top: 20px;\n"
+                + "    text-align: right;\n"
+                + "    text-decoration: overline;\n"
+                + "}"
+        );
+    }
+
+    private void loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Direct Purchase without Costing Receipt CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "    page-break-inside: avoid;\n"
+                + "}\n"
+                + ".receipt-header-section {\n"
+                + "    padding: 10px 0;\n"
+                + "    page-break-after: avoid;\n"
+                + "}\n"
+                + ".receipt-body-section {\n"
+                + "    padding: 10px 0;\n"
+                + "    page-break-after: always;\n"
+                + "}\n"
+                + ".receipt-footer-section {\n"
+                + "    padding: 10px 0;\n"
+                + "    page-break-before: always;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 23px;\n"
+                + "    text-align: center;\n"
+                + "    font-family: monospace;\n"
+                + "    text-transform: capitalize;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 16px;\n"
+                + "    font-family: monospace;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 18px;\n"
+                + "    font-weight: bold;\n"
+                + "}\n"
+                + ".receipt-details-table {\n"
+                + "    font-size: 16px;\n"
+                + "    font-family: sans-serif;\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-items-table {\n"
+                + "    font-size: 16px;\n"
+                + "    width: 100%;\n"
+                + "    border-collapse: collapse;\n"
+                + "    margin-left: 3%;\n"
+                + "    margin-right: 3%;\n"
+                + "}\n"
+                + ".receipt-items-table td, .receipt-items-table th {\n"
+                + "    padding: 4px;\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".receipt-items-table td:first-child {\n"
+                + "    text-align: left;\n"
+                + "}\n"
+                + ".receipt-cashier {\n"
+                + "    margin-top: 20px;\n"
+                + "    margin-left: 3%;\n"
+                + "    margin-right: 3%;\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + ".showRetailValue {\n"
+                + "    display: table-cell;\n"
+                + "}\n"
+                + ".hideRetailValue {\n"
+                + "    display: none;\n"
+                + "}\n"
+                + ".showProfit {\n"
+                + "    display: table-cell;\n"
+                + "}\n"
+                + ".hideProfit {\n"
+                + "    display: none;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "  .receipt-body-section {\n"
+                + "    page-break-after: always;\n"
+                + "  }\n"
+                + "  .receipt-footer-section {\n"
+                + "    page-break-before: always;\n"
+                + "  }\n"
+                + "}"
+        );
+    }
+
     public ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
@@ -250,17 +442,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.SHORT_TEXT);
-            option.setOptionValue(value);
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, value);
         }
     }
 
@@ -286,18 +468,9 @@ public class ConfigOptionApplicationController implements Serializable {
     public <E extends Enum<E>> E getEnumValueByKey(String key, Class<E> enumClass) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM || !option.getEnumType().equals(enumClass.getName())) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.ENUM);
+            option = createApplicationOptionIfAbsent(key, OptionValueType.ENUM, "");
             option.setEnumType(enumClass.getName());
-            optionFacade.create(option); // Persist the new ConfigOption entity
-            loadApplicationOptions();
+            optionFacade.edit(option);
         }
 
         return getEnumValue(option, enumClass);
@@ -306,17 +479,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public Integer getIntegerValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.INTEGER) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.INTEGER);
-            option.setOptionValue("0");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, "0");
         }
         try {
             return Integer.valueOf(option.getOptionValue());
@@ -328,21 +491,8 @@ public class ConfigOptionApplicationController implements Serializable {
     public Integer getIntegerValueByKey(String key, Integer defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.INTEGER) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.INTEGER);
-            if (defaultValue == null) {
-                option.setOptionValue("");
-            } else {
-                option.setOptionValue(defaultValue + "");
-            }
-            optionFacade.create(option);
-            loadApplicationOptions();
+            String dv = defaultValue == null ? "" : defaultValue + "";
+            option = createApplicationOptionIfAbsent(key, OptionValueType.INTEGER, dv);
         }
         try {
             return Integer.valueOf(option.getOptionValue());
@@ -354,17 +504,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public Double getDoubleValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.DOUBLE);
-            option.setOptionValue("0.0");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, "0.0");
         }
         try {
             return Double.valueOf(option.getOptionValue());
@@ -376,21 +516,8 @@ public class ConfigOptionApplicationController implements Serializable {
     public Double getDoubleValueByKey(String key, Double defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.DOUBLE) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.DOUBLE);
-            if (defaultValue == null) {
-                option.setOptionValue("");
-            } else {
-                option.setOptionValue(defaultValue + "");
-            }
-            optionFacade.create(option);
-            loadApplicationOptions();
+            String dv = defaultValue == null ? "" : defaultValue + "";
+            option = createApplicationOptionIfAbsent(key, OptionValueType.DOUBLE, dv);
         }
         try {
             return Double.valueOf(option.getOptionValue());
@@ -402,18 +529,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getLongTextValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.LONG_TEXT);
-            option.setOptionValue(""); // Assuming an empty string is an appropriate default. Adjust as necessary.
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG_TEXT, "");
         }
         return option.getOptionValue();
     }
@@ -421,14 +537,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getLongTextValueByKey(String key, String defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setValueType(OptionValueType.LONG_TEXT);
-            option.setOptionValue(defaultValue);
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG_TEXT, defaultValue);
         }
         return option.getOptionValue();
     }
@@ -436,12 +545,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void setLongTextValueByKey(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setValueType(OptionValueType.LONG_TEXT);
-            optionFacade.create(option);
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG_TEXT, "");
         }
         String sanitized = Jsoup.clean(value, Safelist.basic());
         option.setOptionValue(sanitized);
@@ -452,17 +556,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getShortTextValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.SHORT_TEXT);
-            option.setOptionValue("");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, "");
         }
         return option.getOptionValue();
     }
@@ -470,17 +564,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getShortTextValueByKey(String key, String defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.SHORT_TEXT) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.SHORT_TEXT);
-            option.setOptionValue(defaultValue);
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.SHORT_TEXT, defaultValue);
         }
         return option.getOptionValue();
     }
@@ -488,17 +572,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getColorValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.COLOR);
-            option.setOptionValue("");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.COLOR, "");
         }
         return option.getOptionValue();
     }
@@ -506,17 +580,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getColorValueByKey(String key, String defaultColorHashCode) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.COLOR) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.COLOR);
-            option.setOptionValue(defaultColorHashCode);
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.COLOR, defaultColorHashCode);
         }
         return option.getOptionValue();
     }
@@ -524,17 +588,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public String getEnumValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.ENUM) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.ENUM);
-            option.setOptionValue("");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.ENUM, "");
         }
         return option.getOptionValue();
     }
@@ -542,17 +596,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public Long getLongValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.LONG);
-            option.setOptionValue("0");
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG, "0");
         }
 
         try {
@@ -567,21 +611,8 @@ public class ConfigOptionApplicationController implements Serializable {
     public Long getLongValueByKey(String key, Long defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.LONG) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.LONG);
-            if (defaultValue != null) {
-                option.setOptionValue("" + defaultValue);
-            } else {
-                option.setOptionValue("0");
-            }
-            optionFacade.create(option);
-            loadApplicationOptions();
+            String dv = defaultValue != null ? "" + defaultValue : "0";
+            option = createApplicationOptionIfAbsent(key, OptionValueType.LONG, dv);
         }
         try {
             return Long.parseLong(option.getOptionValue());
@@ -608,17 +639,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public Boolean getBooleanValueByKey(String key) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.BOOLEAN);
-            option.setOptionValue("false"); // Defaulting to false. Adjust as necessary.
-            optionFacade.create(option);
-            loadApplicationOptions();
+            option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, "false");
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }
@@ -626,21 +647,8 @@ public class ConfigOptionApplicationController implements Serializable {
     public Boolean getBooleanValueByKey(String key, boolean defaultValue) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.BOOLEAN);
-            if (defaultValue) {
-                option.setOptionValue("true");
-            } else {
-                option.setOptionValue("false");
-            }
-            optionFacade.create(option);
-            loadApplicationOptions();
+            String dv = defaultValue ? "true" : "false";
+            option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, dv);
         }
         return Boolean.parseBoolean(option.getOptionValue());
     }
@@ -648,15 +656,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void setBooleanValueByKey(String key, boolean value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null || option.getValueType() != OptionValueType.BOOLEAN) {
-            option = new ConfigOption();
-            option.setCreatedAt(new Date());
-            option.setOptionKey(key);
-            option.setScope(OptionScope.APPLICATION);
-            option.setInstitution(null);
-            option.setDepartment(null);
-            option.setWebUser(null);
-            option.setValueType(OptionValueType.BOOLEAN);
-            optionFacade.create(option);
+            option = createApplicationOptionIfAbsent(key, OptionValueType.BOOLEAN, Boolean.toString(value));
         }
         option.setOptionValue(Boolean.toString(value));
         optionFacade.edit(option);

@@ -224,10 +224,24 @@
                                 <h:outputText value="#{f.item.name}" />
                             </p:column>
                             <p:column headerText="Doc No">
-                                <h:outputText value="#{f.bill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.bill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Ref Doc No (Request Doc No)">
-                                <h:outputText value="#{f.bill.referenceBill.deptId}" />
+                                <p:commandLink 
+                                    value="#{f.bill.referenceBill.deptId}" 
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}"  target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
                             <p:column headerText="Request Department">
                                 <h:outputText value="#{f.bill.toDepartment.name}" />
