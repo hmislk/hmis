@@ -4152,15 +4152,7 @@ public class PharmacyController implements Serializable {
         pendingGrns = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    //    private PharmaceuticalBillItem getPoQty(BillItem b) {
-//        String sql = "Select b From PharmaceuticalBillItem b where b.billItem=:bt";
-//
-//        HashMap hm = new HashMap();
-//        hm.put("bt", b);
-//
-//        return getPharmaceuticalBillItemFacade().findFirstByJpql(sql, hm);
-//    }
-    private double getGrnQty(BillItem b) {
+   private double getGrnQty(BillItem b) {
         String sql = "Select sum(b.pharmaceuticalBillItem.qty) From BillItem b where b.retired=false and b.creater is not null"
                 + " and b.bill.cancelled=false and b.bill.billType=:btp and "
                 + " b.referanceBillItem=:ref";
@@ -4168,10 +4160,6 @@ public class PharmacyController implements Serializable {
         hm.put("ref", b);
         hm.put("btp", BillType.PharmacyGrnBill);
         double value = getBillFacade().findDoubleByJpql(sql, hm);
-
-//        if (pharmacyItem instanceof Ampp) {
-//            value = value / pharmacyItem.getDblValue();
-//        }
         return value;
     }
 

@@ -547,47 +547,48 @@
                             <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
                                 Pending GRN Details
                             </div>
-                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="g">
-                                <p:column headerText="Order No">#{g.bill.deptId}</p:column>
-                                <p:column headerText="Order Dept">#{g.bill.department.name}</p:column>
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
+                                <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
+                                <p:column headerText="Order Dept">#{pendingGrn.bill.department.name}</p:column>
                                 <p:column headerText="Order at">
-                                    <h:outputLabel value="#{g.bill.createdAt}">
+                                    <h:outputLabel value="#{pendingGrn.bill.createdAt}">
                                         <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                                     </h:outputLabel>
                                 </p:column>
-                                <p:column headerText="Supplier">#{g.bill.fromInstitution.name}</p:column>
-                                <p:column headerText="Item">#{g.item.name}</p:column>
+                                <p:column headerText="Supplier">#{pendingGrn.bill.fromInstitution.name}</p:column>
+                                <p:column headerText="Item">#{pendingGrn.item.name}</p:column>
                                 <p:column headerText="Qty Ordered">
-                                    <h:outputText value="#{g.billItemFinanceDetails.quantity}">
+                                    <h:outputText value="#{pendingGrn.billItemFinanceDetails.quantity}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Free Qty Ordered">
-                                    <h:outputText value="#{g.billItemFinanceDetails.freeQuantity}">
+                                    <h:outputText value="#{pendingGrn.billItemFinanceDetails.freeQuantity}">
                                         <f:convertNumber integerOnly="true" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Purchase Rate">
-                                    <h:outputText value="#{g.pharmaceuticalBillItem.purchaseRate}">
+                                    <h:outputText value="#{pendingGrn.pharmaceuticalBillItem.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Sale Rate">
-                                    <h:outputText value="#{g.billItemFinanceDetails.retailSaleRate}">
+                                    <h:outputText value="#{pendingGrn.billItemFinanceDetails.retailSaleRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Returned Rate">
-                                    <h:outputText value="#{g.billItemFinanceDetails.netRate}">
+                                    <h:outputText value="#{pendingGrn.billItemFinanceDetails.netRate}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Return Value">
-                                    <h:outputText value="#{g.billItemFinanceDetails.netTotal}">
+                                    <h:outputText value="#{pendingGrn.billItemFinanceDetails.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </p:column>
                             </p:dataTable>
+
                         </p:panel>
                     </h:panelGroup>
                 </div>
@@ -1296,14 +1297,15 @@
                     id="itemDetailsTabPendingGrn"
                     title="Pending GRN" 
                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
-
-                    <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.pendingGrns}"
-                                 var="dd2" scrollable="true"  paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="GRN No">
+                    <p:dataTable 
+                        id="pendinggrn" 
+                        value="#{pharmacyController.pendingGrns}"
+                        var="dd2" scrollable="true"  paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,15" >
+                        <p:column headerText="PO Number">
                             #{dd2.bill.deptId}
                         </p:column>
                         <p:column headerText="Department">
@@ -1314,29 +1316,18 @@
                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="PO No">
-                            #{dd2.bill.referenceBill.deptId}
-                        </p:column>
                         <p:column headerText="Supplier">
                             #{dd2.bill.fromInstitution.name}
                         </p:column>
+                        <p:column headerText="Item">
+                            #{dd2.itemName}
+                        </p:column>
+
                         <p:column headerText="Qty">
                             #{dd2.qty}
                         </p:column>
                         <p:column headerText="Fr. Qty">
                             #{dd2.pharmaceuticalBillItem.freeQty}
-                        </p:column>
-                        <p:column headerText="Purchase Rate">
-                            <h:outputLabel value="#{dd2.pharmaceuticalBillItem.purchaseRateInUnit}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Sale Rate">
-                            #{dd2.pharmaceuticalBillItem.retailRateInUnit}
-                        </p:column>
-                        <p:column headerText="Value">
-                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Status">
-                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
                         </p:column>
                     </p:dataTable>
                 </p:tab>
