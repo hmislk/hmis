@@ -83,6 +83,8 @@
                                             <p:commandButton ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
+                                            <p:commandButton ajax="false" value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" action="lab_daily_summary_by_department?faces-redirect=true" >
+                                            </p:commandButton>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/>
@@ -102,25 +104,25 @@
                                                 value="Test Wise Count Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" >
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Laboratory Order Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryInwardOrderReportFromLabAnalytics}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Laboratory Summary" 
                                                 action="#{laborataryReportController.navigateToLaboratarySummaryFromLabAnalytics}">
                                             </p:commandButton>
-                                            
+
                                             <p:commandButton ajax="false" value="Daily Summary By Bill Types" action="report_opd_service_summery_by_bill_types?faces-redirect=true"/> 
                                             <p:commandButton ajax="false" value="Daily Summary" action="report_opd_service_summery?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily Summary Inward and Opd" action="report_investigation_summery_by_inward_opd?faces-redirect=true"/>
@@ -134,7 +136,7 @@
                                     <h:form>
                                         <h:panelGroup>
                                             <p:commandButton 
-                                                
+
                                                 ajax="false" 
                                                 value="Bills Cancelled after Approving Reports"
                                                 action="/lab/report_cancelled_bill_search?faces-redirect=true"> 
@@ -156,13 +158,13 @@
 
                             </p:accordionPanel>
                         </div>
-                        
+
                         <div class="col-10">  
                             <ui:insert name="subcontent" >
 
                             </ui:insert>
                         </div>
-                        
+
                     </div>
                 </p:panel> 
             </ui:define>
