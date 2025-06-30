@@ -1192,15 +1192,15 @@
                                                 <div class="my-1" id="credit">
                                                     <div class="row mt-1">
                                                         <div class="col-12">
-                                                            <p:autoComplete  
-                                                                minQueryLength="3"
+                                                            <p:autoComplete
+                                                                minQueryLength="1"
                                                                 forceSelection="true" 
                                                                 value="#{opdBillController.toStaff}" 
                                                                 id="welfareStaff"
                                                                 completeMethod="#{staffController.completeStaff}" 
                                                                 var="mys" 
                                                                 class="w-100"
-                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                placeholder="Staff (Type Name, Code or EPF No to search)"
                                                                 inputStyleClass="form-control"
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
@@ -1208,7 +1208,10 @@
                                                                 <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" style="padding: 2px;">
+                                                                <p:column headerText="Code" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF No" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement" style="padding: 2px;">
@@ -1234,7 +1237,7 @@
                                                 class="row my-1"
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
@@ -1271,7 +1274,10 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
+                                                <pa:multiple_payment_methods
+                                                    controller="#{opdBillController}"
+                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"
+                                                    class="w-100"/>
 
                                             </h:panelGroup>
 
