@@ -36,12 +36,15 @@ import com.divudi.core.data.IncomeRow;
 import static com.divudi.core.data.PaymentMethod.Card;
 import static com.divudi.core.data.PaymentMethod.Cash;
 import static com.divudi.core.data.PaymentMethod.Credit;
+import static com.divudi.core.data.PaymentMethod.MultiplePaymentMethods;
+import static com.divudi.core.data.PaymentMethod.OnlineSettlement;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -616,8 +619,8 @@ public class OpdReportController implements Serializable {
         }
         bundle.generatePaymentDetailsForBillsAndBatchBillsByDate();
     }
-    
-    public List<BillTypeAtomic> getOpdAndPackageBillTypeAtomics(){
+
+    public List<BillTypeAtomic> getOpdAndPackageBillTypeAtomics() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
@@ -631,32 +634,31 @@ public class OpdReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
         billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
-        
+
         return billTypeAtomics;
     }
-    
-    public List<BillTypeAtomic> getOutPatientBillTypeAtomics(){
+
+    public List<BillTypeAtomic> getOutPatientBillTypeAtomics() {
         List<BillTypeAtomic> ccBillTypeAtomics = new ArrayList<>();
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL);
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         ccBillTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
-        
+
         return ccBillTypeAtomics;
     }
-    
-    public List<BillTypeAtomic> getInwardtBillTypeAtomics(){
-         List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
+
+    public List<BillTypeAtomic> getInwardtBillTypeAtomics() {
+        List<BillTypeAtomic> inwardBillTypeAtomics = new ArrayList<>();
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
         inwardBillTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
-        
+
         return inwardBillTypeAtomics;
     }
-    
 
     public void generateDailyLabSummaryByDepartment() {
-        
+
         bundleReport = new ReportTemplateRowBundle();
 
         //create Normal,Membership,Staff Incomes
@@ -716,14 +718,19 @@ public class OpdReportController implements Serializable {
         otherbillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED);
 
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, otherbillTypeAtomics, null, null, null, null, null);
+        ReportTemplateRow floatReceiveIncomeRow = new ReportTemplateRow();
+        floatReceiveIncomeRow.setItemName("Float Receive");
+        initializeRows(floatReceiveIncomeRow);
+        floatReceiveIncomeRow = genarateRowBundleOther(fetchedBills, floatReceiveIncomeRow);
+        bundleReport.getReportTemplateRows().add(floatReceiveIncomeRow);
+
         ReportTemplateRow otherIncomeRow = new ReportTemplateRow();
         otherIncomeRow.setItemName("Other Income");
         initializeRows(otherIncomeRow);
-        otherIncomeRow = genarateRowBundleOther(fetchedBills, otherIncomeRow);
         bundleReport.getReportTemplateRows().add(otherIncomeRow);
 
         //calculate Addition Totals
-        calculateTotalsFromRows(bundleReport.getReportTemplateRows(),true);
+        calculateTotalsFromRows(bundleReport.getReportTemplateRows(), true);
 
         //Deductions
         bundle = new IncomeBundle();
@@ -734,10 +741,17 @@ public class OpdReportController implements Serializable {
         voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
 
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
+        IncomeRow floatTransferDeductionRow = new IncomeRow();
+        floatTransferDeductionRow.setItemName("Float Transfer");
+        initializeDeductionRows(floatTransferDeductionRow);
+        floatTransferDeductionRow = genarateDeductionRowBundleOther(fetchedBills, floatTransferDeductionRow);
+        bundle.getRows().add(floatTransferDeductionRow);
+
+        //Deducations Voucher
         IncomeRow voucherDeductionRow = new IncomeRow();
         voucherDeductionRow.setItemName("Voucher");
         initializeDeductionRows(voucherDeductionRow);
-        voucherDeductionRow = genarateDeductionRowBundleOther(fetchedBills, voucherDeductionRow);
+        //otherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,otherDeductionRow);
         bundle.getRows().add(voucherDeductionRow);
 
         //Deducations Other
@@ -746,14 +760,15 @@ public class OpdReportController implements Serializable {
         initializeDeductionRows(otherDeductionRow);
         //otherDeductionRow = genarateDeductionRowBundleOther(fetchedBills,otherDeductionRow);
         bundle.getRows().add(otherDeductionRow);
-        
+
         //calculate Deducations Totals
-        calculateTotalsFromRows(bundle.getRows(),false);
+        calculateTotalsFromRows(bundle.getRows(), false);
 
     }
 
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
         List<BillItem> billItems = new ArrayList<>();
+        Set<Bill> processedMultipleBills = new HashSet<>();
         for (Bill b : bills) {
             billItems.addAll(billBean.fillBillItems(b));
         }
@@ -782,6 +797,18 @@ public class OpdReportController implements Serializable {
                         row.setTotal(row.getTotal() + bi.getNetValue());
                         row.setDiscount(row.getDiscount() + bi.getDiscount());
                         row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case OnlineSettlement:
+                        row.setLong1(row.getLong1() + (long) bi.getNetValue());
+                        row.setTotal(row.getTotal() + bi.getNetValue());
+                        row.setDiscount(row.getDiscount() + bi.getDiscount());
+                        row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
+                        break;
+                    case MultiplePaymentMethods:
+                        if (!processedMultipleBills.contains(bi.getBill())) {
+                            processMultiplePaymentBill(bi.getBill(), row);
+                            processedMultipleBills.add(bi.getBill());
+                        }
                         break;
                     default:
                         row.setLong3(row.getLong3() + (long) bi.getNetValue());
@@ -814,18 +841,152 @@ public class OpdReportController implements Serializable {
 
     public ReportTemplateRow genarateRowBundleOther(List<Bill> bills, ReportTemplateRow row) {
         for (Bill b : bills) {
-            row.setLong1(row.getLong1() + (long) Math.abs(b.getNetTotal()));
-            row.setTotal(row.getTotal() + Math.abs(b.getNetTotal()));
+            List<Payment> payments = new ArrayList<>();
+            payments = billService.fetchBillPayments(b);
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
         }
         return row;
     }
 
     public IncomeRow genarateDeductionRowBundleOther(List<Bill> bills, IncomeRow row) {
         for (Bill b : bills) {
-            row.setLong1(row.getLong1() + (long) Math.abs(b.getNetTotal()));
-            row.setNetTotal(row.getNetTotal() + Math.abs(b.getNetTotal()));
+            List<Payment> payments = new ArrayList<>();
+            payments = billService.fetchBillPayments(b);
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
         }
         return row;
+    }
+
+    private void processMultiplePaymentBill(Bill bill, ReportTemplateRow row) {
+        List<Payment> payments = new ArrayList<>();
+        if (getOpdAndPackageBillTypeAtomics().contains(bill.getBillTypeAtomic())) {
+            bill = bill.getBackwardReferenceBill();
+        }
+        payments = billService.fetchBillPayments(bill);
+
+        if (!payments.isEmpty()) {
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setTotal(row.getTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
+        }
+    }
+
+    private void processMultiplePaymentBill(Bill bill, IncomeRow row) {
+        List<Payment> payments = new ArrayList<>();
+        if (getOpdAndPackageBillTypeAtomics().contains(bill.getBillTypeAtomic())) {
+            bill = bill.getBackwardReferenceBill();
+        }
+        payments = billService.fetchBillPayments(bill);
+
+        if (!payments.isEmpty()) {
+            for (Payment p : payments) {
+                if (null == p.getPaymentMethod()) {
+                    continue;
+                } else {
+                    switch (p.getPaymentMethod()) {
+                        case Cash:
+                            row.setCashValue(row.getCashValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Card:
+                            row.setCardValue(row.getCardValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case Credit:
+                            row.setCreditValue(row.getCreditValue() + p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        case OnlineSettlement:
+                            row.setLong1(row.getLong1() + (long) p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                        default:
+                            row.setLong3(row.getLong3() + (long) p.getPaidValue());
+                            row.setNetTotal(row.getNetTotal() + p.getPaidValue());
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     public void initializeRows(ReportTemplateRow row) {
