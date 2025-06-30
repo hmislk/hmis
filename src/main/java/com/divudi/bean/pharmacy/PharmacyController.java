@@ -153,6 +153,7 @@ public class PharmacyController implements Serializable {
     //List<DepartmentStock> departmentStocks;
     private List<DepartmentSale> departmentSale;
     private List<BillItem> grns;
+    private List<BillItem> pendingGrns;
     private List<com.divudi.core.data.dto.PharmacyGrnItemDTO> grnDtos;
     private List<com.divudi.core.data.dto.PharmacyGrnReturnItemDTO> grnReturnDtos;
     private List<BillItem> pos;
@@ -774,6 +775,7 @@ public class PharmacyController implements Serializable {
         institutionStocks = null;
         institutionSales = null;
         grns = null;
+        pendingGrns = null;
         institutionWholeSales = null;
         institutionBhtIssue = null;
         institutionTransferIssue = null;
@@ -2444,6 +2446,7 @@ public class PharmacyController implements Serializable {
 //        departmentStocks = null;
         pos = null;
         grns = null;
+        pendingGrns = null;
         institutionSales = null;
         institutionStocks = null;
         institutionTransferIssue = null;
@@ -3878,6 +3881,10 @@ public class PharmacyController implements Serializable {
         return grns;
     }
 
+    public List<BillItem> getPendingGrns() {
+        return pendingGrns;
+    }
+
     public List<com.divudi.core.data.dto.PharmacyGrnItemDTO> getGrnDtos() {
         return grnDtos;
     }
@@ -3901,6 +3908,7 @@ public class PharmacyController implements Serializable {
         createInstitutionStock();
         createInstitutionTransferIssue();
         createInstitutionTransferReceive();
+        createPendingGrnTable();
         createGrnTable();
         createGrnReturnTable();
         createPoTable();
@@ -4112,6 +4120,36 @@ public class PharmacyController implements Serializable {
             t.setTotalGrnQty(getGrnQty(t));
         }
 
+    }
+
+    public void createPendingGrnTable() {
+        List<Item> relatedItems = pharmacyService.findRelatedItems(pharmacyItem);
+        if (relatedItems == null || relatedItems.isEmpty()) {
+            pendingGrns = new ArrayList<>();
+            return;
+        }
+
+        String jpql = "SELECT b FROM BillItem b "
+                + "WHERE type(b.bill)=:class "
+                + "AND b.bill.creater IS NOT NULL "
+                + "AND b.bill.cancelled=false "
+                + "AND b.retired=false "
+                + "AND b.item IN :relatedItems "
+                + "AND b.bill.billTypeAtomic=:bta "
+                + "AND (b.bill.referenceBill IS NULL "
+                + "     OR b.bill.referenceBill.billTypeAtomic NOT IN :refBtas) "
+                + "AND b.createdAt BETWEEN :frm AND :to "
+                + "ORDER BY b.id DESC";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("class", BilledBill.class);
+        params.put("relatedItems", relatedItems);
+        params.put("bta", BillTypeAtomic.PHARMACY_ORDER_APPROVAL);
+        params.put("refBtas", Arrays.asList(BillTypeAtomic.PHARMACY_GRN_PRE, BillTypeAtomic.PHARMACY_GRN));
+        params.put("frm", getFromDate());
+        params.put("to", getToDate());
+
+        pendingGrns = getBillItemFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     //    private PharmaceuticalBillItem getPoQty(BillItem b) {
@@ -4486,6 +4524,7 @@ public class PharmacyController implements Serializable {
     public void setPharmacyItem(Item pharmacyItem) {
         makeNull();
         grns = new ArrayList<>();
+        pendingGrns = new ArrayList<>();
         this.pharmacyItem = pharmacyItem;
         fillDetails();
     }
@@ -4669,6 +4708,10 @@ public class PharmacyController implements Serializable {
 
     public void setGrns(List<BillItem> grns) {
         this.grns = grns;
+    }
+
+    public void setPendingGrns(List<BillItem> pendingGrns) {
+        this.pendingGrns = pendingGrns;
     }
 
     public void setPos(List<BillItem> pos) {
