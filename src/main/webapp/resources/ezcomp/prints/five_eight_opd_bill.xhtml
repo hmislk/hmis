@@ -169,7 +169,6 @@
 
                 <!-- Separator Line -->
                 <div class="separator"></div>
-
                 <div class="d-flex">
                     <div style="width: 8.0cm">
                         <h:panelGroup rendered="#{cc.attrs.bill.patientEncounter eq null and cc.attrs.billCount eq 1 }">
@@ -181,6 +180,7 @@
                                         <td></td>
                                     </tr>
                                 </thead>
+                                
                                 <ui:repeat value="#{billSearch.fetchBillPayments(cc.attrs.bill.backwardReferenceBill)}" var="ps">
                                     <tr>
                                         <td style="width: 4cm;">
@@ -201,7 +201,7 @@
                         </h:panelGroup>
                     </div>
                     <div class="w-100">
-                        <table class="total-table">
+                        <table class="total-table" style="line-height: 1.0;">
                             <tr>
                                 <td >Total Amount</td>
                                 <td  style="text-align: right;">

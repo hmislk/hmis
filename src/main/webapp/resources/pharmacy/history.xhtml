@@ -538,6 +538,58 @@
                             </p:dataTable>
                         </p:panel>
                     </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="itemDetailsBlockPendingGrn"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Block', true)}" >
+                        <p:panel>
+                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                Pending GRN Details
+                            </div>
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pendingGrns}" var="pendingGrn">
+                                <p:column headerText="Order No">#{pendingGrn.bill.deptId}</p:column>
+                                <p:column headerText="Order at">
+                                    <h:outputLabel value="#{pendingGrn.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Supplier">#{pendingGrn.bill.toInstitution.name}</p:column>
+                                <p:column headerText="Qty Ordered">
+                                    <h:outputText value="#{pendingGrn.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+                    </h:panelGroup>
+                    <h:panelGroup
+                        layout="block"
+                        class="col-3"
+                        id="itemDetailsBlockPurchaseOrders"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Purchase Orders Block', true)}" >
+                        <p:panel>
+                            <div style="background-color: #337357; padding: 10px; font-weight: bold; color: white; text-align: center;">
+                                Purchase Order Details
+                            </div>
+                            <p:dataTable styleClass="noBorder" value="#{pharmacyController.pos}" var="po">
+                                <p:column headerText="Order No">#{po.bill.deptId}</p:column>
+                                <p:column headerText="Order at">
+                                    <h:outputLabel value="#{po.bill.createdAt}">
+                                        <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputLabel>
+                                </p:column>
+                                <p:column headerText="Supplier">#{po.bill.toInstitution.name}</p:column>
+                                <p:column headerText="Qty Ordered">
+                                    <h:outputText value="#{po.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </p:column>
+                            </p:dataTable>
+
+                        </p:panel>
+                    </h:panelGroup>
                 </div>
             </h:panelGroup>
             <p:tabView  
@@ -1240,50 +1292,41 @@
                     </p:dataTable>
                 </p:tab>
 
-                <p:tab title="Pending GRN" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
+                <p:tab 
+                    id="itemDetailsTabPendingGrn"
+                    title="Pending GRN" 
+                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Item Details Section - Display Pending GRN Tab', true)}">
+                    <p:dataTable 
+                        id="pendinggrn" 
+                        value="#{pharmacyController.pendingGrns}"
+                        var="pendingGrnRow" scrollable="true"  paginator="true"
+                        rows="10"
+                        paginatorPosition="bottom"
+                        paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                        rowsPerPageTemplate="5,10,15" >
 
-                    <p:dataTable styleClass="noBorder" id="pendinggrn" value="#{pharmacyController.grns}"
-                                 var="dd2" scrollable="true"  paginator="true"
-                                 rows="10"
-                                 paginatorPosition="bottom"
-                                 paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                 rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="GRN No">
-                            #{dd2.bill.deptId}
+                        <p:column headerText="PO Number">
+                            #{pendingGrnRow.bill.deptId}
                         </p:column>
                         <p:column headerText="Department">
-                            #{dd2.bill.department.name}
+                            #{pendingGrnRow.bill.department.name}
                         </p:column>
                         <p:column headerText="Date">
-                            <h:outputLabel value="#{dd2.bill.createdAt}" >
-                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" ></f:convertDateTime>
+                            <h:outputLabel value="#{pendingGrnRow.bill.createdAt}" >
+                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </h:outputLabel>
                         </p:column>
-                        <p:column headerText="PO No">
-                            #{dd2.bill.referenceBill.deptId}
-                        </p:column>
                         <p:column headerText="Supplier">
-                            #{dd2.bill.fromInstitution.name}
+                            #{pendingGrnRow.bill.toInstitution.name}
+                        </p:column>
+                        <p:column headerText="Item">
+                            #{pendingGrnRow.item.name}
                         </p:column>
                         <p:column headerText="Qty">
-                            #{dd2.qty}
-                        </p:column>
-                        <p:column headerText="Fr. Qty">
-                            #{dd2.pharmaceuticalBillItem.freeQty}
-                        </p:column>
-                        <p:column headerText="Purchase Rate">
-                            <h:outputLabel value="#{dd2.pharmaceuticalBillItem.purchaseRateInUnit}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Sale Rate">
-                            #{dd2.pharmaceuticalBillItem.retailRateInUnit}
-                        </p:column>
-                        <p:column headerText="Value">
-                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
-                        </p:column>
-                        <p:column headerText="Status">
-                            <h:outputLabel value= "#{0-dd2.netValue}" ></h:outputLabel>
+                            #{pendingGrnRow.qty}
                         </p:column>
                     </p:dataTable>
+
                 </p:tab>
 
                 <p:tab
@@ -1351,23 +1394,33 @@
                                  paginatorPosition="bottom"
                                  paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                  rowsPerPageTemplate="5,10,15" >
-                        <p:column headerText="Po No">
+                        <p:column headerText="Order Number">
                             #{dd3.bill.deptId}
                         </p:column>
-                        <p:column headerText="Order Date">
-                            <p:outputLabel value="#{dd3.bill.createdAt}" >
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"></f:convertDateTime>
+                        <p:column headerText="Order Department">
+                            #{dd3.bill.department.name}
+                        </p:column>
+                        <p:column headerText="Order at">
+                            <p:outputLabel value="#{dd3.bill.createdAt}">
+                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
                             </p:outputLabel>
                         </p:column>
                         <p:column headerText="Supplier">
                             #{dd3.bill.toInstitution.name}
                         </p:column>
-                        <p:column headerText="PO Qty">
-                            #{dd3.pharmaceuticalBillItem.qty}
-                        </p:column>                           
-                        <p:column headerText="Grn Qty">
-                            #{dd3.totalGrnQty}
-                        </p:column>                            
+                        <p:column headerText="Item">
+                            #{dd3.item.name}
+                        </p:column>
+                        <p:column headerText="Qty Ordered">
+                            <h:outputText value="#{dd3.pharmaceuticalBillItem.qty}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Free Qty Ordered">
+                            <h:outputText value="#{dd3.pharmaceuticalBillItem.freeQty}">
+                                <f:convertNumber integerOnly="true" />
+                            </h:outputText>
+                        </p:column>
                     </p:dataTable>
                 </p:tab>
 
