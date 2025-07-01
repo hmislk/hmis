@@ -266,6 +266,15 @@
                                     value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}">
                             </h:outputText>
                         </p:column>
+                        
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Cashier"/>
+                            </f:facet>
+                            <h:outputText value="#{row.bill.creater.name}">
+                               
+                            </h:outputText>
+                        </p:column>
 
                         <p:column class="text-end">
                             <f:facet name="header">
@@ -312,7 +321,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                             <f:facet name="header">
                                 <h:outputText value="Discount"/>
                             </f:facet>
@@ -326,7 +335,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                             <f:facet name="header">
                                 <h:outputText value="Net Total"/>
                             </f:facet>
