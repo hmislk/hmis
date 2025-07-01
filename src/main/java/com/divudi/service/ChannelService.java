@@ -766,6 +766,33 @@ public class ChannelService {
         return billItemFacade.findByJpql(jpql, params);
 
     }
+    
+    //this is for physical agentBookings not for online bookings
+    public boolean checkDupliacteAgentRefNo(Institution creditCompany, String refNo){
+
+        Map params = new HashMap();
+        params.put("type", BillType.ChannelAgent);
+        params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+        params.put("retire", false);
+        params.put("refNo", refNo);
+        
+        StringBuilder sql = new StringBuilder("Select count(bill) from Bill bill where "
+                + " bill.billType = :type and bill.billTypeAtomic = :bta and bill.agentRefNo = :refNo and"
+                + " bill.retired = :retire");
+        
+        if(creditCompany != null){
+            sql.append(" and bill.creditCompany = :company");
+            params.put("company", creditCompany);
+        }
+        
+        Long count = getBillFacade().countByJpql(sql.toString(), params);
+        
+        if(count != null && count > 0){
+            return true;
+        }
+        
+        return false;
+    }
 
     private BillItem createSessionItem(Bill bill, String refNo, SessionInstance session) {
         BillItem bi = new BillItem();

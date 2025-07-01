@@ -4057,6 +4057,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Please add Agent Reference No. ");
                 return;
             }
+            
+            if(channelService.checkDupliacteAgentRefNo(institution, agentRefNo)){
+                JsfUtil.addErrorMessage("Please add different Agent Reference No. ");
+                return;
+            }
 
         }
         if (getAssignedReleasedAppoinmentNumber() != 0L) {
@@ -4095,7 +4100,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Channel Booking Added.");
-    }
+    } 
 
     public long totalReservedNumberCount(SessionInstance s) {
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
