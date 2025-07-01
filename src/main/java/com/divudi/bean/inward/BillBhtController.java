@@ -1320,36 +1320,75 @@ public class BillBhtController implements Serializable {
         return billNumberBean;
     }
 
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
+        this.billNumberBean = billNumberBean;
+
+    }
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
+    }
+
+    public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
+        this.billComponentFacade = billComponentFacade;
     }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
 
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
+    }
+
+    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
+        this.patientInvestigationFacade = patientInvestigationFacade;
     }
 
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
     }
 
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+
+    }
+
     public PatientEncounter getPatientEncounter() {
         return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+
     }
 
     public PriceMatrixFacade getPriceAdjustmentFacade() {
         return priceAdjustmentFacade;
     }
 
+    public void setPriceAdjustmentFacade(PriceMatrixFacade priceAdjustmentFacade) {
+        this.priceAdjustmentFacade = priceAdjustmentFacade;
+    }
+
     public FeeFacade getFeeFacade() {
         return feeFacade;
     }
 
+    public void setFeeFacade(FeeFacade feeFacade) {
+        this.feeFacade = feeFacade;
+    }
+
     public ItemFeeFacade getItemFeeFacade() {
         return itemFeeFacade;
+    }
+
+    public void setItemFeeFacade(ItemFeeFacade itemFeeFacade) {
+        this.itemFeeFacade = itemFeeFacade;
     }
 
     public boolean isPrintPreview() {
