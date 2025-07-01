@@ -109,14 +109,20 @@
                                             <p:commandButton class="w-100" value="Stock Report by Batch" action="pharmacy_report_department_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Expiring Stock Report by Batch" action="pharmacy_report_department?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Stock Report by Expiry" action="pharmacy_report_department_stock_by_batch_expiary?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Suppliers Expiring Stocks" action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton
+                                                class="w-100"
+                                                icon="fa fa-cubes"
+                                                value="Zero Stock Item Report"
+                                                action="#{reportsStock.navigateToPharmacyReportDepartmentStockByZeroItem()}"
+                                                ajax="false" />
+                                            <p:commandButton class="w-100" value="Suppliers Expiring Stocks" action="pharmacy_report_supplier_expiary_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton 
                                                 class="w-100"
                                                 value="Stock Report by Item"
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItem()}"
                                                 ajax="false"/>
                                             <p:commandButton 
-                                                class="w-100 ui-button-warning"
+                                                class="w-100"
                                                 value="Stock Report by Item - Order by VMP"
                                                 action="#{reportsStock.navigateToPharmacyReportDepartmentStockByItemOrderByVmp()}"
                                                 ajax="false" />
@@ -124,8 +130,10 @@
                                             <p:commandButton class="w-100" value="Stock Report of Single Product" action="pharmacy_report_department_stock_by_single_product?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Supplier Stock Report" action="pharmacy_report_supplier_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Suppliers Stock Summary" action="pharmacy_report_all_supplier_stock?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" />
-                                            <p:commandButton class="w-100 ui-button-warning" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" />
+
+                                            <p:commandButton class="w-100" value="Category Stock Report" action="pharmacy_report_category_stock_by_batch?faces-redirect=true" ajax="false" />
+                                            <p:commandButton class="w-100" value="Category Stock Summary" action="pharmacy_report_category_stock_by_category?faces-redirect=true" ajax="false" />
+
                                             <p:commandButton class="w-100" value="All Staff Stock" action="pharmacy_report_all_staff_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Stock History" action="#{stockHistoryController.viewPharmacyStockHistory}" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" value="Before Stock Taking Report" action="pharmacy_report_before_stock_taking?faces-redirect=true" ajax="false"/>
@@ -290,8 +298,8 @@
                                             <p:commandButton class="w-100 ui-button-warning" value="GRN Purchase Items by Supplier" action="/pharmacy/pharmacy_report_grn_free_items_by_supplier?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Summary By Supplier" action="#{pharmacySaleReportController.navigatePharmacyReportGrnDetailBySupplier()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
-                                            <p:commandButton class="w-100 ui-button-warning" ajax="false"
-                                                             value="GRN Bill Item Report" action="#{pharmacySaleReportController.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReportController.makeNull}" disabled="true"/>
+                                            <p:commandButton class="w-100" ajax="false"
+                                                             value="GRN Bill Item Report" action="#{pharmacySaleReportController.navigatePharmacyReportGrnBillItem()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
                                             <p:commandButton class="w-100 ui-button-warning" ajax="false"
                                                              value="GRN Registry" action="#{pharmacySaleReportController.navigatePharmacyReportGrnRegistory()}" />
                                             <p:commandButton class="w-100 ui-button-warning" ajax="false"  value="GRN Return List" action="#{pharmacySaleReportController.navigateToPharmacyGrnReturn()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
@@ -369,7 +377,7 @@
                                             </p:commandButton>        
 
                                             <p:commandButton class="w-100 ui-button-warning" value="Transfer Receive by Bill(Summary)" action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true" ajax="false"/>
-                                            <p:commandButton class="w-100 ui-button-warning" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
+                                            <p:commandButton class="w-100" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" />
                                             <p:commandButton class="w-100 ui-button-warning" ajax="false"
                                                              value="Transfer Report Summary" action="#{commonReport.navigateToPharmacyTransferReportSummary()}" actionListener="#{commonReport.makeNull}"/>

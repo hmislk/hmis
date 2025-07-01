@@ -3,28 +3,23 @@ package com.divudi.core.entity;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import com.divudi.core.data.HistoricalRecordType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.Index;
 import javax.persistence.ManyToOne;
-import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import javax.validation.constraints.NotNull;
 
 /**
  *
  * @author Buddhika & OpenAI ChatGPT
  */
 @Entity
-@Table(indexes = {
-    @Index(name = "idx_historical_record_variable_record_date", columnList = "variableName,recordDate"),
-    @Index(name = "idx_historical_record_institution", columnList = "institution"),
-    @Index(name = "idx_historical_record_site", columnList = "site"),
-    @Index(name = "idx_historical_record_department", columnList = "department")
-})
 public class HistoricalRecord implements Serializable {
 
     private static final long serialVersionUID = 1L;
@@ -32,9 +27,15 @@ public class HistoricalRecord implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @NotNull
-    @Size(min = 1, max = 255)
+    /**
+     * @deprecated use {@link #historicalRecordType} instead.
+     */
+    @Deprecated
+    @Size(max = 255)
     private String variableName;
+
+    @Enumerated(EnumType.STRING)
+    private HistoricalRecordType historicalRecordType;
 
     @NotNull
     private Double recordValue;
@@ -48,8 +49,17 @@ public class HistoricalRecord implements Serializable {
     @ManyToOne
     private Department department;
 
+    @ManyToOne
+    private WebUser webUser;
+
+    @ManyToOne
+    private Institution collectionCentre;
+
     @Temporal(TemporalType.DATE)
     private Date recordDate;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date recordDateTime;
 
     private Boolean retired = false;
 
@@ -65,6 +75,8 @@ public class HistoricalRecord implements Serializable {
     @ManyToOne
     private WebUser retiredBy;
 
+    
+    
     public Long getId() {
         return id;
     }
@@ -98,12 +110,28 @@ public class HistoricalRecord implements Serializable {
         return "com.divudi.core.entity.HistoricalRecord[ id=" + id + " ]";
     }
 
+    /**
+     * @deprecated use {@link #historicalRecordType}
+     */
+    @Deprecated
     public String getVariableName() {
         return variableName;
     }
 
+    /**
+     * @deprecated use {@link #historicalRecordType}
+     */
+    @Deprecated
     public void setVariableName(String variableName) {
         this.variableName = variableName;
+    }
+
+    public HistoricalRecordType getHistoricalRecordType() {
+        return historicalRecordType;
+    }
+
+    public void setHistoricalRecordType(HistoricalRecordType historicalRecordType) {
+        this.historicalRecordType = historicalRecordType;
     }
 
     public Double getRecordValue() {
@@ -136,6 +164,22 @@ public class HistoricalRecord implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+    }
+
+    public WebUser getWebUser() {
+        return webUser;
+    }
+
+    public void setWebUser(WebUser webUser) {
+        this.webUser = webUser;
+    }
+
+    public Institution getCollectionCentre() {
+        return collectionCentre;
+    }
+
+    public void setCollectionCentre(Institution collectionCentre) {
+        this.collectionCentre = collectionCentre;
     }
 
     public Date getRecordDate() {
@@ -184,6 +228,14 @@ public class HistoricalRecord implements Serializable {
 
     public void setRetiredBy(WebUser retiredBy) {
         this.retiredBy = retiredBy;
+    }
+
+    public Date getRecordDateTime() {
+        return recordDateTime;
+    }
+
+    public void setRecordDateTime(Date recordDateTime) {
+        this.recordDateTime = recordDateTime;
     }
 
 }

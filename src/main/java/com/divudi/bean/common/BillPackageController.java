@@ -529,29 +529,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            if (!checkCancelBill(getBill())) {
-                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                if (getWebUserController().hasPrivilege("BillCancel")) {
-                    JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                } else {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            } else {
-                if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                    JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                    batchBillCancellationStarted = false;
-                    return "";
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                batchBillCancellationStarted = false;
-                return "";
-            }
+        if (!hasPrivilegeToCancelPackageBill(getBill())) {
+            batchBillCancellationStarted = false;
+            return "";
         }
 
         if (errorsPresentOnOpdBillCancellation()) {
@@ -708,6 +688,27 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         return canCancelBill;
     }
 
+    private boolean hasPrivilegeToCancelPackageBill(Bill billToCancel) {
+        boolean labStatusOk = checkCancelBill(billToCancel);
+
+        if (!labStatusOk) {
+            if (!getWebUserController().hasPrivilege("OpdPackageBillCancel")) {
+                JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+        } else {
+            if (!getWebUserController().hasPrivilege("OpdCancel")) {
+                JsfUtil.addErrorMessage(
+                        "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public String cancelPackageBatchBill() {
         batchBillCancellationStarted = true;
         if (getBatchBill() == null) {
@@ -730,28 +731,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         }
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Enable the Special Privilege of Canceling Package Bills", false)) {
-            for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
-                if (!checkCancelBill(singleBill)) {
-                    JsfUtil.addErrorMessage("This bill is processed in the Laboratory.");
-                    if (getWebUserController().hasPrivilege("BillCancel")) {
-                        JsfUtil.addErrorMessage("You have Special privilege to cancel This Bill");
-                    } else {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                } else {
-                    if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                        JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
-                        batchBillCancellationStarted = false;
-                        return "";
-                    }
-                }
-            }
-        } else {
-            if (!getWebUserController().hasPrivilege("OpdCancel")) {
-                JsfUtil.addErrorMessage("You have no Privilege to Cancel OPD Bills. Please Contact System Administrator.");
+        for (Bill singleBill : billBean.validBillsOfBatchBill(getBatchBill())) {
+            if (!hasPrivilegeToCancelPackageBill(singleBill)) {
                 batchBillCancellationStarted = false;
                 return "";
             }
@@ -850,7 +831,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             paymentMethod = PaymentMethod.Cash;
         }
         printPreview = false;
-        return "/opd/opd_package_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_bill_cancel?faces-redirect=true";
     }
 
     public void cancelSingleBillWhenCancellingPackageBatchBill(Bill originalBill, Bill cancellationBatchBill) {
@@ -1307,6 +1288,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
@@ -1365,6 +1347,9 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     break;
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
@@ -1833,7 +1818,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             billService.initiateBillItemsAndBillFees(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_package_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToCancelOpdPackageBatchBill() {
@@ -1848,7 +1833,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         comment = null;
         printPreview = false;
         batchBillCancellationStarted = false;
-        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true;";
+        return "/opd/opd_package_batch_bill_cancel?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromMenu() {

@@ -762,6 +762,7 @@ public class BillItem implements Serializable, RetirableEntity {
         }
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public void setTmpQty(double tmpQty) {
         qty = tmpQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {

@@ -6,6 +6,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.ScheduledProcess;
+import com.divudi.core.data.ScheduledFrequency;
 import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.hr.*;
@@ -16,6 +18,7 @@ import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
 import com.divudi.service.BillService;
@@ -74,6 +77,11 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+    
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
@@ -277,6 +285,18 @@ public class EnumController implements Serializable {
 
     public List<HistoryType> getHistoryTypes() {
         return Arrays.asList(HistoryType.values());
+    }
+
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
+    }
+    
+     public List<EmployeeStatus> getEmploymentStatuses() {
+        return Arrays.asList(EmployeeStatus.values());
+    }
+
+    public List<ScheduledFrequency> getScheduledFrequencies() {
+        return Arrays.asList(ScheduledFrequency.values());
     }
 
     public Dashboard[] getDashboardTypes() {
@@ -556,10 +576,6 @@ public class EnumController implements Serializable {
             Title.Mrs,
             Title.Other,};
         return tem;
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
     }
 
     public Sex[] getGender() {
@@ -1192,6 +1208,19 @@ public class EnumController implements Serializable {
 
     public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
         this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
+    }
+    
+    public TestHistoryType[] getLabTestHistoryList() {
+        return TestHistoryType.values();
+    }
+    
+    public TestHistoryType getLabTestHistory(String name) {
+        for (TestHistoryType type : TestHistoryType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
+            }
+        }
+        return null;
     }
 
 }

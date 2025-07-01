@@ -44,7 +44,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
                                 />
 
-                            
+
                             <p:spacer width="20"></p:spacer>  
                             <p:spacer width="20"></p:spacer>
                             <p:spacer width="20"></p:spacer>
@@ -65,10 +65,10 @@
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
                                 <p:ajax process="phmIns" update="phmDept" />
                             </p:selectOneMenu>        
-                            
-                            
+
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
@@ -84,9 +84,9 @@
                                 <p:ajax process="phmSite" update="phmDept" />
                             </p:selectOneMenu>
 
-                            
+
                             <p:spacer width="20"></p:spacer>
-                            
+
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText styleClass="fa fa-building mr-2" />
@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process" 
+                                action="#{pharmacyReportController.processTransferReceive()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -202,7 +203,7 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="" 
+                                     value="#{pharmacyReportController.billItems}" 
                                      var="f" 
                                      rowIndexVar="n" 
                                      paginator="true" 
@@ -214,38 +215,55 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.bill.createdAt}" />
                                 <f:facet name="footer">
                                     <h:outputText value="Total" />
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Item Name">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.name}" />
                             </p:column>
                             <p:column headerText="Doc No">
-                                <h:outputText value="" />
+                                <p:commandLink 
+                                    value="#{f.bill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
                             </p:column>
-                            <p:column headerText="Ref Doc No (Issue Doc No)">
-                                <h:outputText value="" />
-                            </p:column>                          
-                            <p:column headerText="Issue Department">
-                                <h:outputText value="" />
-                            </p:column>                   
+                            <p:column headerText="Ref Doc No (Request Doc No)">
+                                <p:commandLink 
+                                    value="#{f.bill.referenceBill.deptId}"
+                                    class="m-1 ui-button-info"
+                                    style="width: 100px;"
+                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                    ajax="false">
+                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}" target="#{billSearch.bill}" />
+                                </p:commandLink>
+                            </p:column>
+                            <p:column headerText="Request Department">
+                                <h:outputText value="#{f.bill.fromDepartment.name}" />
+                            </p:column>
                             <p:column headerText="Code">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.item.code}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.qty}" />
                             </p:column>
                             <p:column headerText="Rate">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
                             </p:column>
                             <p:column headerText="Total">
-                                <h:outputText value="" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
                             </p:column>
                             <p:column headerText="Net Total">
-                                <h:outputText value="" />
-                            </p:column>                            
+                                <h:outputText value="#{f.bill.netTotal}" />
+                                <f:facet name="footer">
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                </f:facet>
+                            </p:column>                          
 
                         </p:dataTable>
 

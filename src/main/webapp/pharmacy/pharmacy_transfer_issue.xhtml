@@ -57,20 +57,38 @@
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
                                 </p:column>
 
+                                <p:column headerText="Purchase Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Cost Rate" width="100px;">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.costRate}" style="text-align: right;">                        
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </p:column>  
+
                                 <p:column headerText="Sale Rate" width="100px;">  
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cost Rate" width="100px;">  
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">                        
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </p:column>  
-
                                 <p:column headerText="Qty" width="70px;">                   
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.pharmaceuticalBillItem.qty}" class="w-100">
+                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+                                </p:column> 
+
+                                <p:column headerText="Rate" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100">
+                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
+                                    </p:inputText>
+                                </p:column> 
+
+                                <p:column headerText="Value" width="70px;">                   
+                                    <p:inputText autocomplete="off" id="netValue" value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100">
                                         <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
                                     </p:inputText>
                                 </p:column> 
@@ -152,23 +170,22 @@
                 </p:commandButton>
 
                 <h:panelGroup   id="gpBillPreview" >
-
-<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
-
                     <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                         <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
                             <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
-
                         <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
                             <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
-
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
-
+                    <h:panelGroup 
+                        id="gpBillTemplate" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+                    </h:panelGroup>
                 </h:panelGroup>
 
             </p:panel>

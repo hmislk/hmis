@@ -11,10 +11,10 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:panelGroup rendered="#{!(webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier'))}" >
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('LabEditPatient') and patientController.current.id ne null}" >
                     <na:not_authorize />
                 </h:panelGroup>
-                <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdBilling') or webUserController.hasPrivilege('LabCashier')}" styleClass="opdPanel" >
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('LabEditPatient') or patientController.current.id eq null}" styleClass="opdPanel" >
                     <h:panelGroup rendered="#{patientController.current ne null}">
                         <h:form>
                             <p:panel >

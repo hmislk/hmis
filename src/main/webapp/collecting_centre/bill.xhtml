@@ -356,16 +356,15 @@
                                     </p:commandButton>
                                     <p:focus id="focusIx" for=":#{p:resolveFirstComponentWithId('acIx',view).clientId}" />
 
-                                    <p:commandButton  
+                                    <p:commandButton
                                         style="float: right;"
-                                        value="Settle" 
+                                        value="Settle"
                                         icon="fa fa-check"
-                                        action="#{collectingCentreBillController.settleCcBill()}" 
-                                        ajax="false" 
+                                        action="#{collectingCentreBillController.settleCcBill()}"
+                                        ajax="false"
+                                        class="ui-button-success "
                                         onclick="if (!confirm('Are you sure you want to Settle This Bill ?'))
-                                                    return false;"
-
-                                        class="ui-button-success ">
+                                                    return false;">
                                     </p:commandButton>
 
                                 </f:facet>
@@ -476,7 +475,7 @@
                                             class="form-control" >
                                         </p:inputText>
                                     </div>
-                                    
+
                                     <div class="col-md-3">
                                         <h:panelGroup>
                                             <p:outputLabel value="Referring Doctor"></p:outputLabel>
