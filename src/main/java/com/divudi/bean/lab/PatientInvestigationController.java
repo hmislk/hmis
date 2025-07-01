@@ -5672,6 +5672,7 @@ public class PatientInvestigationController implements Serializable {
                         pts.setInstitution(sessionController.getInstitution());
                         pts.setDepartment(sessionController.getDepartment());
                         pts.setMachine(ixi.getMachine());
+                        pts.setDepartment(sessionController.getDepartment());
                         pts.setPatient(barcodeBill.getPatient());
                         pts.setBill(barcodeBill);
                         pts.setInvestigationComponant(ixi.getSampleComponent());
