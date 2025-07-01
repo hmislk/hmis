@@ -2066,35 +2066,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setIndication(indication);
         newBatchBill.setIpOpOrCc("OP");
         boolean billNumberByYear;
-        String insId;
+        String batchBillId;
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         if (billNumberByYear) {
-            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+            batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
+            newBatchBill.setInsId(batchBillId);
+            newBatchBill.setDeptId(batchBillId);
+            
         } else {
-            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+            batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+            
+            newBatchBill.setInsId(batchBillId);
+            newBatchBill.setDeptId(batchBillId);
         }
 
-        newBatchBill.setInsId(insId);
-
-        String deptId;
-
-        if (billNumberByYear) {
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
-                    getSessionController().getInstitution(),
-                    getSessionController().getDepartment(),
-                    BillType.OpdBathcBill,
-                    BillClassType.BilledBill);
-        } else {
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        }
-        newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2115,7 +2107,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (Bill b : bills) {
             b.setBackwardReferenceBill(newBatchBill);
             if (billNumberByYear) {
-                b.setDeptId(deptId + "/" + String.format("%02d", billCount));
+                b.setDeptId(batchBillId + "/" + String.format("%02d", billCount));
             }
             billCount++;
             dbl += b.getNetTotal();
@@ -2211,8 +2203,18 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 newBill.setComments(comment);
             }
         }
+        String deptId ;
+        
+        boolean opdBillNumberGenerateStrategy
+            = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+        
 
-        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        if(opdBillNumberGenerateStrategy){
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt,sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        }else{
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        }
+        
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);

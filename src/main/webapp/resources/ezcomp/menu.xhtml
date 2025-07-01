@@ -1314,7 +1314,7 @@
                         ajax="false"  
                         value="Channel Booking - By Month"  
                         action="#{bookingControllerViewScopeMonth.navigateToChannelBookingFromMenuByMonth()}" 
-                        rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}" icon="fa fa-calendar-alt" >
+                        rendered="#{webUserController.hasPrivilege('ChannelBookingByMonth')}" icon="fa fa-calendar-alt" >
                     </p:menuitem>
                     <p:menuitem 
                         ajax="false"  
@@ -1344,6 +1344,7 @@
                     <p:menuitem  
                         ajax="false"  
                         value="Channel Scheduling"
+                        rendered="#{webUserController.hasPrivilege('ChannelCreateSessions')}"
                         action="/channel/channel_scheduling/index?faces-redirect=true"   icon="fa fa-calendar-check" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Channel Fees"  action="/channel/channel_fee?faces-redirect=true" rendered="false"  icon="fa fa-file-invoice-dollar" ></p:menuitem>
                     <p:menuitem  ajax="false"  value="Doctor Session View"  action="/channel/channel_doctor_session_report?faces-redirect=true" actionListener="#{channelScheduleController.prepareAdd}" rendered="false" icon="fa fa-user-md" ></p:menuitem>
@@ -1376,8 +1377,8 @@
                         icon="pi pi-chart-bar" 
                         rendered="#{webUserController.hasPrivilege('ChannelSummery')}" ></p:menuitem>
                     <p:menuitem ajax="false" action="/channel/management_index?faces-redirect=true" value="Management" rendered="#{webUserController.hasPrivilege('ChannelManagement')}"  icon="fa fa-cogs" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" value="Patient Portal"  icon="fa fa-user" ></p:menuitem>
-                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" value="Doctor Card"  icon="fa fa-id-card" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/patient_portal?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelPatientPortal')}" value="Patient Portal"  icon="fa fa-user" ></p:menuitem>
+                    <p:menuitem ajax="false" action="/channel/doctor_card?faces-redirect=true" rendered="#{webUserController.hasPrivilege('ChannelDoctorCard')}" value="Doctor Card"  icon="fa fa-id-card" ></p:menuitem>
                     <p:menuitem 
                         ajax="false"
                         styleClass="#{financialTransactionController.nonClosedShiftStartFundBill eq null ? 'bg-warning text-white font-weight-bold' : ''}"
