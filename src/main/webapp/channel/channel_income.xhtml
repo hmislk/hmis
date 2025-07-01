@@ -246,6 +246,21 @@
                             </f:facet>
                             <h:outputText value="#{row.bill.billTypeAtomic}"/>
                         </p:column>
+                        
+                        <p:column>
+                            <f:facet name="header">
+                                <h:outputText value="Bill Type"/>
+                            </f:facet>
+                            <h:outputText value="Dr Payment" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION'}"/>
+                            <h:outputText value="Dr Payment Return" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'}"/>
+                            <h:outputText value="OB Agent Payment To Hospital" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'}"/>
+                            <h:outputText value="OB Agent Cancel Payment To Hospital" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'}"/>
+                            <h:outputText value="Channel Bill" style="font-weight: bold" rendered="#{row.bill.billTypeAtomic ne 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                                                            and row.bill.billTypeAtomic ne 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                                            and row.bill.billTypeAtomic ne 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                                            and row.bill.billTypeAtomic ne 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                            }"/>
+                        </p:column>
 
                         <p:column>
                             <f:facet name="header">
