@@ -768,7 +768,7 @@ public class ChannelService {
     }
     
     //this is for physical agentBookings not for online bookings
-    public boolean checkDupliacteAgentRefNo(Institution creditCompany, String refNo){
+    public boolean checkDupliacateAgentRefNo(Institution creditCompany, String refNo){
 
         Map params = new HashMap();
         params.put("type", BillType.ChannelAgent);

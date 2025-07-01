@@ -4058,7 +4058,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 return;
             }
             
-            if(channelService.checkDupliacteAgentRefNo(institution, agentRefNo)){
+            if(channelService.checkDuplicateAgentRefNo(institution, agentRefNo)){
                 JsfUtil.addErrorMessage("Please add different Agent Reference No. ");
                 return;
             }
