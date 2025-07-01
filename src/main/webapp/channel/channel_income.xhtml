@@ -223,15 +223,23 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column filterMatchMode="contains" filterBy="#{row.bill.deptId}" width="8em">
+                        <p:column  filterMatchMode="contains" filterBy="#{row.bill.deptId}" width="8em">
                             <f:facet name="header">
                                 <h:outputText value="Bill No"/>
                             </f:facet>
                             <p:commandLink
+                                    id="billNo"
+                                    disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                                                            or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                            }"
                                     ajax="false"
+                                    style="font-weight: bold"
                                     value="#{row.bill.deptId}"
                                     action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
                             </p:commandLink>
+                            <p:tooltip for="billNo" value="#{row.bill.deptId}"></p:tooltip>
 
                             <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                             <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>

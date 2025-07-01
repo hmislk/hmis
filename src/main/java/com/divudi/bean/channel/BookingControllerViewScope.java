@@ -2088,7 +2088,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void fillAdditionalFeesFromSelectedBillSession() {
         if (selectedBillSession != null) {  // at manage booking
             for (BillFee billFee : selectedBillSession.getBill().getBillFees()) {
-                if (billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
+                if (billFee.getFee() != null && billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
                     if (foriegn) {
                         feeTotalForSelectedBill += billFee.getFee().getFfee();
                     } else {
