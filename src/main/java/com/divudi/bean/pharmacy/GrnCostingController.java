@@ -147,6 +147,10 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
         return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
     }
+    
+    public double calculateProfitMargin(BillItem bi) {
+        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
+    }
 
     public void clear() {
         billExpenses = null;
