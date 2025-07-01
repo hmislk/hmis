@@ -624,10 +624,6 @@ public class BillBhtController implements Serializable {
                 = configOptionApplicationController.getBooleanValueByKey(
                         "InpatientServiceBillNumberGenerateStrategy:Default", false);
 
-        boolean inpatientServiceBillNumberGenerateStrategyLegacy
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:Legacy", false);
-
         String deptId;
         String insId;
 
