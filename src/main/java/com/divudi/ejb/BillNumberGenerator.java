@@ -1766,7 +1766,7 @@ public class BillNumberGenerator {
                 = configOptionApplicationController.getBooleanValueByKey("Bill Number Generation Strategy - Separate Bill Number for Bill Types Only", false);
 
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
-            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, null);
+            billNumber = fetchLastBillNumberForYear(dep.getInstitution(), null, (BillTypeAtomic) null);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
         } else if (separateBillNumberForInstitutionsOnly) {
@@ -1908,7 +1908,7 @@ public class BillNumberGenerator {
 
         
         if (commonBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
-            billNumber = fetchLastBillNumberForYear(null, null, null);
+            billNumber = fetchLastBillNumberForYear(null, null, (BillTypeAtomic) null);
         } else if (separateBillNumberForAllDepartmentsInstitutionsBillTypeAtomic) {
             billNumber = fetchLastBillNumberForYear(dep.getInstitution(), dep, billType);
         } else if (separateBillNumberForInstitutionsOnly) {
