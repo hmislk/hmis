@@ -2088,7 +2088,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void fillAdditionalFeesFromSelectedBillSession() {
         if (selectedBillSession != null) {  // at manage booking
             for (BillFee billFee : selectedBillSession.getBill().getBillFees()) {
-                if (billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
+                if (billFee.getFee() != null && billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
                     if (foriegn) {
                         feeTotalForSelectedBill += billFee.getFee().getFfee();
                     } else {
@@ -4147,7 +4147,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setBill(printingBill);
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
-        e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
+        
+        String phoneNo = "";
+        if(printingBill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                && printingBill.getReferenceBill() != null && printingBill.getReferenceBill().getOnlineBooking() != null){
+            phoneNo = printingBill.getReferenceBill().getOnlineBooking().getPhoneNo();
+        }else{
+            phoneNo = printingBill.getPatient().getPerson().getPhone();
+        }
+        
+        e.setReceipientNumber(phoneNo);
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());
