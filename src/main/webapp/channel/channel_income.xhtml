@@ -221,7 +221,7 @@
                             </h:outputText>
                         </p:column>
 
-                        <p:column>
+                        <p:column filterMatchMode="contains" filterBy="#{row.bill.deptId}">
                             <f:facet name="header">
                                 <h:outputText value="Bill No"/>
                             </f:facet>
@@ -236,7 +236,7 @@
                             <p:badge value="Refund Bill" severity="warning"
                                      rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_REFUND_WITH_PAYMENT'}"/>
                             <p:badge value="Cancel Bill" severity="danger"
-                                     rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}"/>
+                                     rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
 
                         </p:column>
 
@@ -272,7 +272,8 @@
                                 <h:outputText value="Cashier"/>
                             </f:facet>
                             <h:outputText value="#{row.bill.creater.name}">
-                               
+                            </h:outputText>
+                            <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
                             </h:outputText>
                         </p:column>
 

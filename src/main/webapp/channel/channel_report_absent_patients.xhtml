@@ -83,7 +83,9 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Patient Name" />
                             </f:facet>
-                            <p:outputLabel value="#{b.patient.person.name}" />                                    
+                            <p:outputLabel value="#{b.patient.person.name}" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" /> 
+                            <p:outputLabel value="#{b.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" />
+                            <p:outputLabel value="#{b.billedBill.referenceBill.onlineBooking.patientName}" rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" />
                         </p:column>
 
                         <p:column style="text-align: center;" >
