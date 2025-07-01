@@ -340,7 +340,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Hospital Fee"/>
                             </f:facet>
-                            <h:outputText value="#{b.hospitalFee}">
+                            <h:outputText value="#{b.hospitalFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -354,7 +354,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Doctor Fee"/>
                             </f:facet>
-                            <h:outputText value="#{b.staffFee}">
+                            <h:outputText value="#{b.staffFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -368,7 +368,7 @@
                             <f:facet name="header">
                                 <h:outputText value="Gross Total"/>
                             </f:facet>
-                            <h:outputText value="#{b.hospitalFee + b.staffFee}">
+                            <h:outputText value="#{b.hospitalFee + b.staffFee}" style="color: #{b.cancelled ? 'red' : 'black'}">
                                 <f:convertNumber pattern="#,##0.00"/>
                             </h:outputText>
                             <f:facet name="footer">
@@ -378,7 +378,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                             <f:facet name="header">
                                 <h:outputText value="Discount"/>
                             </f:facet>
@@ -392,7 +392,7 @@
                             </f:facet>
                         </p:column>
 
-                        <p:column class="text-end">
+                        <p:column class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Add discount column to the channel income report', false)}">
                             <f:facet name="header">
                                 <h:outputText value="Net Total"/>
                             </f:facet>
