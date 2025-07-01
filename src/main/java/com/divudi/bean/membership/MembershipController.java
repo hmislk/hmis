@@ -30,15 +30,15 @@ public class MembershipController implements Serializable {
     }
 
     public String navigateToMembershipAdministrationIndex() {
-        return "/membership/admin/index?faces-redirect=true;";
+        return "/membership/admin/index?faces-redirect=true";
     }
 
     public String navigateToManageMembershipScheme() {
-        return "/membership/admin/membership_scheme?faces-redirect=true;";
+        return "/membership/admin/membership_scheme?faces-redirect=true";
     }
 
     public String navigateToManageRelationships() {
-        return "/membership/admin/relationships?faces-redirect=true;";
+        return "/membership/admin/relationships?faces-redirect=true";
     }
 
 }

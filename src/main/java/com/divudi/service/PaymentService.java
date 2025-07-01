@@ -231,10 +231,13 @@ public class PaymentService {
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
                 break;
             case OnCall:
-            case OnlineSettlement:
             case Staff:
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                 payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                break;
+            case OnlineSettlement:
+                payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
                 break;
             case IOU:
                 payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
@@ -665,6 +668,7 @@ public class PaymentService {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);

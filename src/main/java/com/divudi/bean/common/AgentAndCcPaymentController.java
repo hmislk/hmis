@@ -285,7 +285,7 @@ public class AgentAndCcPaymentController implements Serializable {
         
         if ((getCurrent().getNetTotal() > (ccToResetAllowedCredit.getMaxCreditLimit() - ccToResetAllowedCredit.getStandardCreditLimit())) && (ccToResetAllowedCredit.getMaxCreditLimit() != ccToResetAllowedCredit.getStandardCreditLimit())) {
             ccToResetAllowedCredit.setAllowedCredit(getCurrent().getFromInstitution().getStandardCreditLimit());
-            getInstitutionFacade().edit(ccToResetAllowedCredit);
+            getInstitutionFacade().editAndCommit(ccToResetAllowedCredit);
         }
         JsfUtil.addSuccessMessage("Bill Saved");
         ccDepositSettlingStarted = false;
@@ -357,7 +357,6 @@ public class AgentAndCcPaymentController implements Serializable {
         }
 
         updateBallance(current.getFromInstitution(), current.getNetTotal(), HistoryType.AgentBalanceUpdateBill, current);
-        System.out.println(current.getFromInstitution().getBallance());
         saveBillItem();
 
         List<Payment> p = billService.createPayment(current, getCurrent().getPaymentMethod(), paymentMethodData);

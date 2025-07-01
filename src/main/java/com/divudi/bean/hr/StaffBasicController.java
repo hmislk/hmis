@@ -380,8 +380,6 @@ public class StaffBasicController implements Serializable {
         items = getStaffPaysheetComponentFacade().findByJpql(sql, hm, TemporalType.DATE);
         calTotal(items);
 
-
-
     }
 
     public void calTotal(List<StaffPaysheetComponent> staffPaysheetComponents) {
@@ -612,6 +610,10 @@ public class StaffBasicController implements Serializable {
 
     public String navigateToHrRoster() {
         return "/hr/hr_roster?faces-redirect=true";
+    }
+
+    public String navigateToHrStaffRoster() {
+        return "/hr/hr_staff_roster?faces-redirect=true";
     }
 
     public String navigateToHrShift() {
