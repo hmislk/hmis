@@ -67,7 +67,7 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
