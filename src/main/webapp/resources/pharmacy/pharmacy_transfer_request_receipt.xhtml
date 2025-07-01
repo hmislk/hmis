@@ -89,37 +89,35 @@
                             <th class="item-name">Item Name</th>
                             <th>Item Code</th>
                             <th>Pack Size</th>
-                            <th class="item-qty">Qty</th>
+                            <th>Qty</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <h:dataTable value="#{cc.attrs.bill.billItems}" var="bip" varStatus="status">
-                            <h:column>
-                                <f:facet name="header">#</f:facet>
-                                <h:outputText value="#{status.index + 1}" />
-                            </h:column>
-                            <h:column>
-                                <f:facet name="header">Item Name</f:facet>
-                                <h:outputText value="#{bip.item.name}" />
-                            </h:column>
-                            <h:column>
-                                <f:facet name="header">Item Code</f:facet>
-                                <h:outputText value="#{bip.item.code}" />
-                            </h:column>
-                            <h:column>
-                                <f:facet name="header">Pack Size</f:facet>
-                                <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
-                                    <f:convertNumber pattern="0.#" />
-                                </h:outputText>
-                                <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
-                            </h:column>
-                            <h:column>
-                                <f:facet name="header">Qty</f:facet>
-                                <h:outputText value="#{bip.qty}">
-                                    <f:convertNumber integerOnly="true" />
-                                </h:outputText>
-                            </h:column>
-                        </h:dataTable>
+                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="bip" rowIndexVar="n">
+                            <tr>
+                                <td>
+                                    <h:outputText value="#{n+1}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{bip.item.name}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{bip.item.code}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{bip.item.dblValue}" rendered="#{bip.item.class.simpleName eq 'Ampp'}">
+                                        <f:convertNumber pattern="0.#" />
+                                    </h:outputText>
+                                    <h:outputText value="1" rendered="#{bip.item.class.simpleName eq 'Amp'}" />
+                                </td>
+                                <td>
+                                    <h:outputText value="#{bip.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputText>
+                                </td>
+                            </tr>
+                        </ui:repeat>
+
                     </tbody>
                 </table>
             </div>

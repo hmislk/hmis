@@ -229,7 +229,7 @@ public class FinancialTransactionController implements Serializable {
     private List<BillItem> billItems;
     private BillItem removingBillItem;
     private List<Department> cashbookDepartments;
-    private List<PaymentMethodValue> handingOverPaymentMethodValues;
+    private List<com.divudi.core.data.PaymentMethodValue> handingOverPaymentMethodValues;
 
     private ReportTemplateRowBundle paymentSummaryBundle;
 
@@ -5944,9 +5944,9 @@ public class FinancialTransactionController implements Serializable {
         }
 
         // Create the list of PaymentMethodValue
-        List<PaymentMethodValue> pmvs = new ArrayList<>();
+        List<com.divudi.core.data.PaymentMethodValue> pmvs = new ArrayList<>();
         for (Map.Entry<PaymentMethod, Double> entry : paymentMethodTotals.entrySet()) {
-            PaymentMethodValue pmv = new PaymentMethodValue();
+            com.divudi.core.data.PaymentMethodValue pmv = new com.divudi.core.data.PaymentMethodValue();
             pmv.setPaymentMethod(entry.getKey());
             pmv.setAmount(entry.getValue());
             pmv.setCreatedAt(new Date());
@@ -6640,11 +6640,11 @@ public class FinancialTransactionController implements Serializable {
         this.cashbookDepartments = cashbookDepartments;
     }
 
-    public List<PaymentMethodValue> getHandingOverPaymentMethodValues() {
+    public List<com.divudi.core.data.PaymentMethodValue> getHandingOverPaymentMethodValues() {
         return handingOverPaymentMethodValues;
     }
 
-    public void setHandingOverPaymentMethodValues(List<PaymentMethodValue> handingOverPaymentMethodValues) {
+    public void setHandingOverPaymentMethodValues(List<com.divudi.core.data.PaymentMethodValue> handingOverPaymentMethodValues) {
         this.handingOverPaymentMethodValues = handingOverPaymentMethodValues;
     }
 

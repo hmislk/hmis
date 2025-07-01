@@ -844,6 +844,7 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setDepartment(getSessionController().getDepartment());
         getGrnBill().setInstitution(getSessionController().getInstitution());
         getGrnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_GRN);
+        getGrnBill().setBillType(BillType.PharmacyGrnBill);
 
         if (getGrnBill().getId() == null) {
             getBillFacade().create(getGrnBill());
@@ -881,7 +882,6 @@ public class GrnCostingController implements Serializable {
         }
     }
 
-
     public void generateBillComponent() {
 
         for (PharmaceuticalBillItem pbiInApprovedOrder : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getApproveBill())) {
@@ -916,11 +916,18 @@ public class GrnCostingController implements Serializable {
                 double pr = pbiInApprovedOrder.getPurchaseRate();
                 double rr = pbiInApprovedOrder.getRetailRate();
 
-                if (pr == 0.0 || rr == 0.0) {
+                if (pr == 0.0) {
                     double fallbackPr = getPharmacyBean().getLastPurchaseRate(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
+                    if (fallbackPr > 0.0) {
+                        pr = fallbackPr;
+                    }
+                }
+
+                if (rr == 0.0) {
                     double fallbackRr = getPharmacyBean().getLastRetailRateByBillItemFinanceDetails(newlyCreatedBillItemForGrn.getItem(), sessionController.getDepartment());
-                    pr = fallbackPr > 0.0 ? fallbackPr : pr;
-                    rr = fallbackRr > 0.0 ? fallbackRr : rr;
+                    if (fallbackRr > 0.0) {
+                        rr = fallbackRr;
+                    }
                 }
 
                 newlyCreatedPbiForGrn.setPurchaseRate(pr);
@@ -934,6 +941,8 @@ public class GrnCostingController implements Serializable {
                 fd.setLineGrossRate(java.math.BigDecimal.valueOf(pr));
                 fd.setLineDiscountRate(java.math.BigDecimal.ZERO);
                 fd.setRetailSaleRate(java.math.BigDecimal.valueOf(rr));
+                fd.setLineGrossRate(BigDecimal.valueOf(pr));
+                fd.setLineNetRate(BigDecimal.valueOf(pr));
 
                 newlyCreatedBillItemForGrn.setBillItemFinanceDetails(fd);
                 pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
