@@ -239,7 +239,7 @@
                                     value="#{row.bill.deptId}"
                                     action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
                             </p:commandLink>
-                            <p:tooltip for="billNo" value="#{row.bill.deptId}"></p:tooltip>
+                            <p:tooltip for="billNo" value="#{row.bill.deptId}"/>
 
                             <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                             <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
