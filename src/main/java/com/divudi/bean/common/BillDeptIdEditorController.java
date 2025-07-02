@@ -29,6 +29,7 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
     private SessionController sessionController;
 
     private List<Bill> bills;
+    private List<ReportViewType> reportViewTypes;
 
     private Date fromDate;
     private Date toDate;
@@ -179,4 +180,10 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
     public void setBills(List<Bill> bills) {
         this.bills = bills;
     }
+
+    public List<ReportViewType> getReportViewTypes() {
+        reportViewTypes = new ArrayList<>(Arrays.asList(ReportViewType.values()));
+        return reportViewTypes;
+    }
+
 }

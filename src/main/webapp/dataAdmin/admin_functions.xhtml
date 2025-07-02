@@ -37,7 +37,17 @@
                 </div>
 
                 <p:accordionPanel >
-
+                    <p:tab title="Admin">
+                        <div class="d-grid gap-2">
+                            <h:form>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Bill DeptId Editor"
+                                    action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
+                                    class="w-100 m-1" />
+                            </h:form>
+                        </div>
+                    </p:tab>
                     <p:tab title="Pharmacy" >
                         <table class="table table-sm table-bordered w-100">
                             <thead class="table-light">
@@ -95,7 +105,7 @@
                                 </tr>
 
 
-                                
+
                             </tbody>
                         </table>
 
@@ -393,7 +403,7 @@
                             </div>
 
                             <div class="col-12 col-md-4 col-lg-2 p-1">
-                            <p:commandButton
+                                <p:commandButton
                                     ajax="false"
                                     disabled="true"
                                     action="#{staffShiftController.updateStaffShiftWithoutRoster()}"
@@ -402,15 +412,7 @@
 
                         </div>
                     </p:tab>
-                    <p:tab title="Admin">
-                        <div class="d-grid gap-2">
-                            <p:commandButton
-                                ajax="false"
-                                value="Bill DeptId Editor"
-                                action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
-                                class="w-100 m-1" />
-                        </div>
-                    </p:tab>
+
 
                 </p:accordionPanel>
 
