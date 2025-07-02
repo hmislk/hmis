@@ -2216,7 +2216,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, opdAndInpatientBills);
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
         } else {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         }

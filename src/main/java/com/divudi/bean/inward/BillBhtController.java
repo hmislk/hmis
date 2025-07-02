@@ -614,15 +614,15 @@ public class BillBhtController implements Serializable {
 
         boolean inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
+                        "Inpatient Service Bill Number Generate Strategy : FromDepartment ToDepartment BillTypes", false);
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
+                        "Inpatient Service Bill Number Generate Strategy : Single Number For Opd And Inpatient Investigations And Services", false);
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:Default", false);
+                        "Inpatient Service Bill Number Generate Strategy : Default", false);
 
         String deptId;
         String insId;
@@ -635,7 +635,7 @@ public class BillBhtController implements Serializable {
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> types = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
-            deptId = bnb.departmentBillNumberGeneratorYearly(bt, types);
+            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), types);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
             deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
@@ -1338,6 +1338,10 @@ public class BillBhtController implements Serializable {
 
     public PatientEncounter getPatientEncounter() {
         return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
     }
 
     public PriceMatrixFacade getPriceAdjustmentFacade() {
