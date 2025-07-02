@@ -1911,7 +1911,7 @@ public class BillNumberGenerator {
         }
 
         BillNumber billNumber;
-        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for OPD and Inpatient Bills ", "OPIP");
+        String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for OPD and Inpatient Bills", "OPIP");
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
