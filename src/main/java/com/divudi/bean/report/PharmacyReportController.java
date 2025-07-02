@@ -1880,17 +1880,17 @@ public class PharmacyReportController implements Serializable {
 
     public void processGrnCash() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_GRN,
-                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
-            );
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
         retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void processGrnCredit() {
         List<BillTypeAtomic> billTypes = Arrays.asList(
-                    BillTypeAtomic.PHARMACY_GRN,
-                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
-            );
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
         retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
     }
 
@@ -1955,7 +1955,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department", "dep", department);
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2134,7 +2138,7 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(new Phrase(
                         discount != null ? moneyFormat.format(discount) : "", cellFont));
             }
-            
+
             for (int i = 0; i < headers.size(); i++) {
                 PdfPCell footerCell;
                 if (i == 0) {
