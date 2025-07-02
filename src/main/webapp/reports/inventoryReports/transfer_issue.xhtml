@@ -217,7 +217,7 @@
                             <p:column headerText="Date">
                                 <h:outputText value="#{f.bill.createdAt}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="Total" />
+                                    <h:outputText value="Net Amount" />
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Item Name">
@@ -253,15 +253,23 @@
                                 <h:outputText value="#{f.qty}" />
                             </p:column>
                             <p:column headerText="Rate">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Total">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Net Total">
-                                <h:outputText value="#{f.bill.netTotal}" />
+                                <h:outputText value="#{f.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 </f:facet>
                             </p:column>                          
 
