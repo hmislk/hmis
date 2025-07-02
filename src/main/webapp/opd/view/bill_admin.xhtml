@@ -32,7 +32,11 @@
                                 <p:tabView orientation="left">
                                     <p:tab title="Summary" >
                                         <p:panel header="Bill Summary">
-                                            <p:panelGrid columns="2" styleClass="w-100" columnClasses="w-25,w-75">
+                                            <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-25,w-75">
+
+                                                <h:outputLabel value="Bill Number:" />
+                                                <h:outputText value="#{billSearch.viewingBill.deptId}" />
+
 
                                                 <h:outputLabel value="Bill Type Atomic:" />
                                                 <h:outputText value="#{billSearch.viewingBill.billTypeAtomic}" />
@@ -78,7 +82,7 @@
                                                 <h:outputLabel value="Refunded?" />
                                                 <h:outputText value="#{billSearch.viewingBill.refunded ? 'Yes' : 'No'}" />
 
-                                            </p:panelGrid>
+                                            </h:panelGrid>
                                         </p:panel>
 
                                     </p:tab>
@@ -88,7 +92,7 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
-                                            <view:out bill="#{billSearch.viewingBill}"/>
+                                            <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >

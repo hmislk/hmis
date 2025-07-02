@@ -49,6 +49,7 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import org.primefaces.event.RowEditEvent;
 
 /**
@@ -89,6 +90,8 @@ public class GrnController implements Serializable {
     PaymentFacade paymentFacade;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
     /////////////////
     private Institution dealor;
     private Bill approveBill;
@@ -121,7 +124,7 @@ public class GrnController implements Serializable {
     BillItem currentExpense;
     List<BillItem> billExpenses;
 
-    public void closeSelectedPurchesOrder() {
+    public void closeSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -132,7 +135,7 @@ public class GrnController implements Serializable {
 
     }
 
-    public void openSelectedPurchesOrder() {
+    public void openSelectedPurchaseOrder() {
         if (closeBill == null) {
             JsfUtil.addErrorMessage("Bill is Not Valid !");
             return;
@@ -1025,7 +1028,8 @@ public class GrnController implements Serializable {
                 ph.setPurchaseRate(i.getPurchaseRate());
                 ph.setRetailRate(i.getRetailRate());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1077,7 +1081,8 @@ public class GrnController implements Serializable {
                 ph.setDoe(i.getDoe());
                 ph.setStringValue(i.getStringValue());
 
-                ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+                double wholesaleFactor2 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+                ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor2) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
                 ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
 
@@ -1117,7 +1122,8 @@ public class GrnController implements Serializable {
             ph.setPurchaseRate(i.getPurchaseRate());
             ph.setRetailRate(i.getRetailRate());
 
-            ph.setWholesaleRate((ph.getPurchaseRate() * 1.08) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
+            double wholesaleFactor3 = configOptionApplicationController.getDoubleValueByKey("Wholesale Rate Factor", 1.08);
+            ph.setWholesaleRate((ph.getPurchaseRate() * wholesaleFactor3) * ph.getQtyInUnit() / (ph.getFreeQtyInUnit() + ph.getQtyInUnit()));
 
             ph.setLastPurchaseRate(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
             ph.setFreeQty(i.getFreeQty());

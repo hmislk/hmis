@@ -723,6 +723,14 @@
                                 <p:column headerText="Purchase Value">
                                     #{-dd3.netValue}
                                 </p:column> 
+                                <p:column headerText="Free Qty">
+                                    #{dd3.pharmaceuticalBillItem.freeQty}
+                                </p:column>
+                                <p:column headerText="Expiry Date">
+                                    <p:outputLabel value="#{dd3.pharmaceuticalBillItem.doe}" >
+                                        <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                    </p:outputLabel>                                                                 
+                                </p:column>
                             </p:dataTable>
                         </p:tab>
 

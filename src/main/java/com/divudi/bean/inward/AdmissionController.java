@@ -938,13 +938,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             loggedDepartment = sessionController.getLoggedUser().getDepartment();
         }
         clearSearchValues();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
         searchAdmissions();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public void listCurrentInpatients() {

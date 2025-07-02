@@ -35,7 +35,7 @@ public class SearchKeyword {
     private String fromInstitution;
     private String fromDepartment;
     private String toInstitution;
-    private String toDepartment;
+    private Department toDepartment;
     private String creator;
     private String bank;
     private String number;
@@ -49,6 +49,7 @@ public class SearchKeyword {
     private String insId;
     private String deptId;
     private String serialNumber;
+    private String tokenNumber;
     private String serviceName;
     private PatientEncounter patientEncounter;
     private PaymentMethod paymentMethod;
@@ -271,11 +272,11 @@ public class SearchKeyword {
         this.bhtNo = bhtNo;
     }
 
-    public String getToDepartment() {
+    public Department getToDepartment() {
         return toDepartment;
     }
 
-    public void setToDepartment(String toDepartment) {
+    public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
     }
 
@@ -422,6 +423,14 @@ public class SearchKeyword {
 
     public void setSerialNumber(String serialNumber) {
         this.serialNumber = serialNumber;
+    }
+
+    public String getTokenNumber() {
+        return tokenNumber;
+    }
+
+    public void setTokenNumber(String tokenNumber) {
+        this.tokenNumber = tokenNumber;
     }
 
     public Department getItemDepartment() {

@@ -165,13 +165,13 @@
 
                             <p:commandButton value="Doctor Holiday" icon="pi pi-table"
                                              class="mx-1"
-                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false)}"
+                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable mark doctor holiday from channel view', false) and webUserController.hasPrivilege('ChannelSessionHolidayMark')}"
                                              oncomplete="PF('holidayMarkWidget').show()" 
-                                             update="dialogContentForHolidayMark doctorNameCancellation" />
+                                             update="dialogContentForHolidayMark doctorNameForHoliday" />
                             <p:menuButton icon="fa-solid fa-sliders" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Channel Management from channel Booking', false)}">
-                                <p:menuitem value="Channel Schedule Management" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
-                                <p:menuitem value="Channel Session Management" action="#{channelScheduleController.navigateSessionManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"   icon="fa fa-users"/> 
-                                <p:menuitem value="Multiple Session Cancellation" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Multiple Session Cancellation in Channel Booking', false)}" oncomplete="PF('sessionCancellationWidget').show()"  update="dialogContentForCancellation doctorNameForHoliday"   icon="fa-solid fa-trash"/> 
+                                <p:menuitem value="Channel Schedule Management" rendered="#{webUserController.hasPrivilege('ChannelSheduleManagement')}" action="#{channelScheduleController.navigateSheduleManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"  icon="fa fa-calendar-alt"/>
+                                <p:menuitem value="Channel Session Management" rendered="#{webUserController.hasPrivilege('ChannelSessionManagement')}" action="#{channelScheduleController.navigateSessionManagementFromChannelBooking(bookingController.speciality, bookingController.staff, bookingController.selectedSessionInstance)}" ajax="false"   icon="fa fa-users"/> 
+                                <p:menuitem value="Multiple Session Cancellation" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Multiple Session Cancellation in Channel Booking', false) and webUserController.hasPrivilege('ChannelSessionMultipleDeletion')}" oncomplete="PF('sessionCancellationWidget').show()"  update="dialogContentForCancellation doctorNameForHoliday"   icon="fa-solid fa-trash"/> 
                             </p:menuButton>
 
                         </div>
@@ -389,6 +389,7 @@
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
+                            filterMatchMode="contains"
                             value="#{bookingController.selectedSessionInstance}" 
                             class="w-100 fullHeightListbox"
                             var="s">
@@ -406,6 +407,7 @@
                                 </f:facet>
                                 <div class="d-flex align-items-center gap-2">
                                     <h:outputText value="#{s.name}" />
+                                    <p:tag severity="warning" value="Scanning" rendered="#{s.originatingSession.category eq 'Scanning'}"></p:tag>
                                     <h:outputText class="mx-1" style="font-weight: bold; color: red; border: 3px solid #fbc531; border-radius: 10px; padding: 4px 8px" value="Holiday" rendered="#{s.doctorHoliday}"/>
 
                                 </div>
@@ -523,7 +525,7 @@
                             </p:column>
 
                             <p:column style="width: 10px!important;">
-                                <p:outputLabel value="Absent" rendered="#{bs.absent}"/>
+                                <p:outputLabel value="Absent" rendered="#{bs.absent}" style='color:red; font-weight: bold'/>
                             </p:column>
 
                             <p:column style="width: 10px!important;">
@@ -536,7 +538,81 @@
                             </p:column>
 
                         </p:selectOneListbox>
-                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>
+
+                        <div id="global-notification" style="position: fixed; top: 100px; right: 1000px; z-index: 9999; display: none; padding: 10px 20px; background-color: #28a745; color: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.2); ">
+                            Online booking received!
+                        </div>
+
+                        <script>
+
+                            function initializeWebSocket() {
+                                console.log("start connection");
+                                const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:'
+                                const pathName = window.location.pathname;
+                                const contextPath = pathName.split('/')[1];
+                                const wsUrl = protocol + "//" + window.location.host + "/"+ contextPath + "/ws/notify";
+
+                                let socket = new WebSocket(wsUrl);
+
+                                return socket;
+                            }
+
+                            const socket = initializeWebSocket();
+
+                            socket.onmessage = function (event) {
+
+                                try {
+                                    const message = event.data;
+                                    const messageParts = message.split(" - ");
+                                    const sendSessionId = messageParts[1];
+                                    const sendMessage = messageParts[0];
+
+                                    if (sendMessage === "Online Booking Completed" || sendMessage === "Online Booking Cancelled") {
+                                        const selectedSessionId = '#{bookingController.selectedSessionInstance.id}';
+
+                                        if (selectedSessionId == sendSessionId) {
+                                            document.querySelector('.ws-trigger').click();
+                                        }
+
+                                        if (sendMessage === "Online Booking Completed") {
+                                            const notify = document.getElementById('global-notification');
+                                            notify.style.display = 'block';
+                                            setTimeout(() => {
+                                                notify.style.display = 'none';
+                                                notify.style.transition = 'all 0.6s ease';
+                                            }, 3000);
+                                        }
+
+                                    }
+                                } catch (e) {
+                                    console.error("Error in WebSocket onmessage:", error);
+                                }
+                            }
+
+                            socket.onclose = function (event) {
+                                console.log("Web socket connection is closed.");
+
+                                setTimeout(initializeWebSocket, 2000);
+                            }
+
+                            socket.onerror = function (event) {
+                                console.log("Web socket connection error occured.");
+
+                            }
+
+                            socket.onopen = function (event) {
+                                console.log("Web socket is connected.");
+
+                            }
+                        </script>
+
+                        <p:commandButton id="ws"
+                                         action="#{bookingController.fillBillSessions}"
+                                         process="@this"
+                                         styleClass="ws-trigger"
+                                         update="acBookings "
+                                         style="display:none"/>
+<!--                        <p:poll interval="15" update="acBookings" listener="#{bookingController.fillBillSessions}"></p:poll>-->
                     </div>
                 </div>
 

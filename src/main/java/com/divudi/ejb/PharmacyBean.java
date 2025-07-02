@@ -64,6 +64,9 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
+import javax.inject.Inject;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import java.math.BigDecimal;
 
 /**
  *
@@ -112,6 +115,10 @@ public class PharmacyBean {
     VirtualProductIngredientFacade virtualProductIngredientFacade;
     @EJB
     PharmaceuticalItemTypeFacade pharmaceuticalItemTypeFacade;
+    @EJB
+    IssueRateMarginsFacade issueRateMarginsFacade;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
@@ -120,9 +127,6 @@ public class PharmacyBean {
     public void setBillNumberBean(BillNumberGenerator billNumberBean) {
         this.billNumberBean = billNumberBean;
     }
-
-    @EJB
-    IssueRateMarginsFacade issueRateMarginsFacade;
 
     public IssueRateMargins fetchIssueRateMargins(Department fromDepartment, Department toDepartment) {
         String sql;
@@ -147,6 +151,75 @@ public class PharmacyBean {
             issueRateMarginsFacade.create(m);
         }
         return m;
+    }
+
+// ChatGPT Contribution
+    public boolean isReturnQuantityExceedingAvailableStock(PharmaceuticalBillItem item, Department department) {
+        double availableStock = getStockQty(item.getItemBatch(), department);
+        double returnQty = item.getQty() + item.getFreeQty();
+        return returnQty > availableStock;
+    }
+
+// ChatGPT Contribution
+    public boolean isInsufficientStockForReturn(List<BillItem> billItems) {
+        for (BillItem bi : billItems) {
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+
+            if (pbi == null || fd == null || bi.getBill() == null || bi.getBill().getDepartment() == null) {
+                continue;
+            }
+
+
+            boolean exceeds = isReturnQuantityExceedingAvailableStock(pbi, bi.getBill().getDepartment());
+
+            if (exceeds) {
+                return true;
+            } else {
+            }
+        }
+
+        return false;
+    }
+
+// ChatGPT Contribution
+    // ChatGPT Contribution
+    public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
+        boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+
+        for (BillItem returningBillItem : billItems) {
+            BillItem billedBillItem = returningBillItem.getReferanceBillItem();
+            if (billedBillItem == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails billedFd = billedBillItem.getBillItemFinanceDetails();
+
+            if (billedFd == null) {
+                continue;
+            }
+
+
+            BigDecimal billedQty = billedFd.getQuantity();
+            BigDecimal billedFreeQty = billedFd.getFreeQuantity();
+            BigDecimal totalReturnedQty = billedFd.getReturnQuantity();
+            BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantity();
+
+
+            if (checkTotalQuantity) {
+                BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
+                BigDecimal totalPurchased = billedQty.add(billedFreeQty);
+                if (totalReturning.compareTo(totalPurchased) > 0) {
+                    return true;
+                }
+            } else {
+                if (totalReturnedQty.compareTo(billedQty) > 0 || totalReturnedFreeQty.compareTo(billedFreeQty) > 0) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
@@ -563,34 +636,47 @@ public class PharmacyBean {
         if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
             s = new Stock();
             s.setDepartment(department);
-            s.setCode(pharmaceuticalBillItem.getCode());
             s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
             s.setStock(qty);
             s.setCode(pharmaceuticalBillItem.getCode());
-            ItemBatch ib = pharmaceuticalBillItem.getItemBatch();
-            Item i = null;
-            if (ib != null) {
-                i = ib.getItem();
-            }
-            if (i != null) {
-                s.setItemName(i.getName() != null ? i.getName() : "UNKNOWN");
-                s.setBarcode(i.getBarcode() != null ? i.getBarcode() : "");
-                String code = i.getCode();
-                Long longCode = CommonFunctions.stringToLong(code);
-                s.setLongCode(longCode);
-                s.setDateOfExpire(ib.getDateOfExpire());
-                s.setRetailsaleRate(ib.getRetailsaleRate());
-            } else {
-                s.setItemName("UNKNOWN");
-                s.setBarcode("");
-                s.setLongCode(0L);
-            }
             getStockFacade().createAndFlush(s);
         } else {
             s.setStock(s.getStock() + qty);
             getStockFacade().editAndCommit(s);
         }
         addToStockHistory(pharmaceuticalBillItem, s, department);
+        return s;
+    }
+
+    public Stock addToStockForCosting(BillItem billItem, double qty, Department department) {
+        if (billItem == null) {
+            return null;
+        }
+        PharmaceuticalBillItem pharmaceuticalBillItem = billItem.getPharmaceuticalBillItem();
+        if (pharmaceuticalBillItem == null) {
+            return null;
+        }
+        BillItemFinanceDetails billItemFinanceDetails = billItem.getBillItemFinanceDetails();
+        if (billItemFinanceDetails == null) {
+            return null;
+        }
+        String jpql;
+        HashMap params = new HashMap();
+        jpql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
+        params.put("bch", pharmaceuticalBillItem.getItemBatch());
+        params.put("dep", department);
+        Stock s = getStockFacade().findFirstByJpql(jpql, params, true);
+        if (s == null || pharmaceuticalBillItem.getBillItem().getItem().getDepartmentType() == DepartmentType.Inventry) {
+            s = new Stock();
+            s.setDepartment(department);
+            s.setItemBatch(pharmaceuticalBillItem.getItemBatch());
+            s.setStock(qty);
+            getStockFacade().createAndFlush(s);
+        } else {
+            s.setStock(s.getStock() + qty);
+            getStockFacade().editAndCommit(s);
+        }
+        addToStockHistoryForCosting(billItem, s, department);
         return s;
     }
 
@@ -937,6 +1023,57 @@ public class PharmacyBean {
         getPharmaceuticalBillItemFacade().editAndCommit(phItem);
     }
 
+    public void addToStockHistoryForCosting(BillItem billItem, Stock stock, Department d) {
+        if (billItem == null) {
+            return;
+        }
+        PharmaceuticalBillItem phItem = billItem.getPharmaceuticalBillItem();
+        if (phItem == null) {
+            return;
+        }
+        Item item = billItem.getItem();
+        if (item == null) {
+            return;
+        }
+
+        Item amp = item instanceof Ampp ? ((Ampp) item).getAmp() : item;
+
+        StockHistory sh = new StockHistory();
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+
+        sh.setFromDate(now);
+        sh.setPbItem(phItem);
+        sh.setHxDate(cal.get(Calendar.DATE));
+        sh.setHxMonth(cal.get(Calendar.MONTH));
+        sh.setHxWeek(cal.get(Calendar.WEEK_OF_YEAR));
+        sh.setHxYear(cal.get(Calendar.YEAR));
+
+        sh.setStockAt(now);
+        sh.setCreatedAt(now);
+        sh.setDepartment(d);
+        sh.setInstitution(d.getInstitution());
+
+        Stock fetchedStock = getStockFacade().findWithoutCache(stock.getId());
+        sh.setStockQty(fetchedStock.getStock());
+
+        // Ensure AMP is used for item tracking
+        sh.setItem(amp);
+        sh.setItemBatch(fetchedStock.getItemBatch());
+        sh.setItemStock(getStockQty(amp, d));
+        sh.setInstitutionItemStock(getStockQty(amp, d.getInstitution()));
+        sh.setTotalItemStock(getStockQty(amp));
+
+        if (sh.getId() == null) {
+            getStockHistoryFacade().createAndFlush(sh);
+        } else {
+            getStockHistoryFacade().editAndCommit(sh);
+        }
+
+        phItem.setStockHistory(sh);
+        getPharmaceuticalBillItemFacade().editAndCommit(phItem);
+    }
+
     public void addToStockHistory(PharmaceuticalBillItem phItem, Stock stock, Staff staff) {
         if (phItem == null) {
             return;
@@ -1165,7 +1302,7 @@ public class PharmacyBean {
     }
 
     public double getMaximumRetailPriceChange() {
-        return 15.0;
+        return configOptionApplicationController.getDoubleValueByKey("Maximum Retail Price Change Percentage", 15.0);
     }
 
     public void setMaximumGrnPriceChange() {
@@ -1581,6 +1718,15 @@ public class PharmacyBean {
     }
 
     public double getLastPurchaseRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastPurchaseRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
+
+    public double getLastPurchaseRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }
@@ -1631,6 +1777,36 @@ public class PharmacyBean {
         }
 
         return f.getRetailSaleRate().doubleValue();
+    }
+    
+       public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getLineGrossRate() == null) {
+            return 0.0;
+        }
+
+        return f.getLineGrossRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
@@ -1741,8 +1917,17 @@ public class PharmacyBean {
         }
 
     }
-
+    
     public double getLastRetailRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastRetailRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastRetailRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
+
+    public double getLastRetailRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
             item = ((Ampp) item).getAmp();
         }

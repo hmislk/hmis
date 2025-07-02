@@ -97,6 +97,13 @@
                                     <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
+                                <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
+                                <h:inputTextarea
+                                    id="txtComments"
+                                    value="#{vmppController.current.comments}"
+                                    required="false"
+                                    class="w-100" ></h:inputTextarea>
+
 
 
                             </h:panelGrid>

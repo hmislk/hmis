@@ -89,10 +89,25 @@ public class PatientSample implements Serializable, RetirableEntity {
     private Date sampleSentAt;
     @ManyToOne
     private Staff sampleTransportedToLabByStaff;
+
+    //outsourced
+    private Boolean outsourced = false;
+    @ManyToOne
+    private Institution outsourceInstitution;
+    @ManyToOne
+    private Department outsourceDepartment;
+    @Temporal(javax.persistence.TemporalType.TIMESTAMP)
+    private Date outsourcedAt;
+    @ManyToOne
+    private WebUser outsourceSentUser;
+    @ManyToOne
+    private Staff outsourceSampleTransporter;
+
     @ManyToOne
     private Department sampleSentToDepartment;
     @ManyToOne
     private Institution sampleSentToInstitution;
+
     @Enumerated
     private Priority priority;
 
@@ -221,8 +236,6 @@ public class PatientSample implements Serializable, RetirableEntity {
         }
         return true;
     }
-
-
 
     @Override
     public String toString() {
@@ -790,6 +803,54 @@ public class PatientSample implements Serializable, RetirableEntity {
         this.sampleRejectionComment = sampleRejectionComment;
     }
 
+    public Boolean getOutsourced() {
+        return outsourced;
+    }
+
+    public void setOutsourced(Boolean outsourced) {
+        this.outsourced = outsourced;
+    }
+
+    public Institution getOutsourceInstitution() {
+        return outsourceInstitution;
+    }
+
+    public void setOutsourceInstitution(Institution outsourceInstitution) {
+        this.outsourceInstitution = outsourceInstitution;
+    }
+
+    public Department getOutsourceDepartment() {
+        return outsourceDepartment;
+    }
+
+    public void setOutsourceDepartment(Department outsourceDepartment) {
+        this.outsourceDepartment = outsourceDepartment;
+    }
+
+    public Date getOutsourcedAt() {
+        return outsourcedAt;
+    }
+
+    public void setOutsourcedAt(Date outsourcedAt) {
+        this.outsourcedAt = outsourcedAt;
+    }
+
+    public WebUser getOutsourceSentUser() {
+        return outsourceSentUser;
+    }
+
+    public void setOutsourceSentUser(WebUser outsourceSentUser) {
+        this.outsourceSentUser = outsourceSentUser;
+    }
+
+    public Staff getOutsourceSampleTransporter() {
+        return outsourceSampleTransporter;
+    }
+
+    public void setOutsourceSampleTransporter(Staff outsourceSampleTransporter) {
+        this.outsourceSampleTransporter = outsourceSampleTransporter;
+    }
+    
     public Department getSampleSentToDepartment() {
         return sampleSentToDepartment;
     }
@@ -804,6 +865,7 @@ public class PatientSample implements Serializable, RetirableEntity {
 
     public void setSampleSentToInstitution(Institution sampleSentToInstitution) {
         this.sampleSentToInstitution = sampleSentToInstitution;
+
     }
 
 }

@@ -755,7 +755,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String fillItemsWithoutInstitution() {
@@ -799,7 +799,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String fillItemsWithoutDepartment() {
@@ -844,7 +844,7 @@ public class ItemController implements Serializable {
             filteredItems = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, parameters);
         }
 
-        return "/admin/items/list?faces-redirect=true;";
+        return "/admin/items/list?faces-redirect=true";
     }
 
     public String navigateToListItemsOfSelectedDepartment() {
@@ -3454,6 +3454,14 @@ public class ItemController implements Serializable {
             }
         }
         return deptItems;
+    }
+    
+    public void reloadItemsFromDatabase(){
+        itemApplicationController.fillAllItemsBypassingCache();
+        // Clear this controller’s cached copies to avoid stale data
+        recreateModel();
+        reloadItems();
+        JsfUtil.addSuccessMessage("Items reloaded from database.");
     }
 
     public List<ItemLight> fillItemsByInstitution(Institution institution) {

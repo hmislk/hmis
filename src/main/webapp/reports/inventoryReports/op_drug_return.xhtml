@@ -165,7 +165,8 @@
                                 class="ui-button-warning mx-1" 
                                 icon="fas fa-cogs" 
                                 ajax="false"  
-                                value="Process" >
+                                value="Process" 
+                                action="#{pharmacyReportController.processOpDrugReturn()}">
                             </p:commandButton>
 
                             <p:commandButton 
@@ -202,8 +203,8 @@
 
 
                         <p:dataTable id="tbl" 
-                                     value="" 
-                                     var="f" 
+                                     value="#{pharmacyReportController.billItems}" 
+                                     var="row" 
                                      rowIndexVar="n" 
                                      paginator="true" 
                                      paginatorPosition="bottom"
@@ -212,48 +213,72 @@
                                      currentPageReportTemplate="Showing {startRecord} to {endRecord} of {totalRecords}" 
                                      rowsPerPageTemplate="5,10,15,25,50,100,500,1000">
 
-
                             <p:column headerText="Date">
-                                <h:outputText value="" />
+                                <h:outputText value="#{row.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Item Name">
+                                <h:outputText value="#{row.item.name}" />
+                            </p:column>
+
+                            <p:column headerText="Code">
+                                <h:outputText value="#{row.item.code}" />
+                            </p:column>
+
+                            <p:column headerText="Doc No">
+                                <h:outputText value="#{row.bill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="Ref Doc No">
+                                <h:outputText value="#{row.bill.referenceBill.deptId}" />
+                            </p:column>
+
+                            <p:column headerText="QTY">
+                                <h:outputText value="#{row.qty}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Rate">
+                                <h:outputText value="#{row.rate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Total">
+                                <h:outputText value="#{row.rate * row.qty}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
+
                                 <f:facet name="footer">
-                                    <h:outputText value="Total" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
-                            <p:column headerText="Item Name">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Code">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Doc No">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Ref Doc No (Original Bill No)">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="QTY">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Rate">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Total">
-                                <h:outputText value="" />
-                            </p:column>
-                            <p:column headerText="Net Total">
-                                <h:outputText value="" />
-                            </p:column>
+
                             <p:column headerText="MRP">
-                                <h:outputText value="" />
+                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
+
                             <p:column headerText="MRP Value">
-                                <h:outputText value="" />
+                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate * row.qty}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
+
                             <p:column headerText="Payment Mode">
-                                <h:outputText value="" />
+                                <h:outputText value="#{row.bill.paymentMethod}" />
                             </p:column>
+
                             <p:column headerText="Discount">
-                                <h:outputText value="" />
+                                <h:outputText value="#{row.discount}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
 
                         </p:dataTable>
