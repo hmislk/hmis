@@ -117,11 +117,10 @@ public class GrnCostingController implements Serializable {
     public double calculateProfitMargin(BillItem bi) {
         return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
     }
-    
+
 //    public double calculateProfitMargin(BillItem bi) {
 //        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
 //    }
-    
     /////////////////
     private Bill approveBill;
     private Bill grnBill;
@@ -152,7 +151,6 @@ public class GrnCostingController implements Serializable {
         getGrnBill().setCreditDuration(getApproveBill().getCreditDuration());
         return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
     }
-
 
     public void clear() {
         billExpenses = null;
@@ -211,8 +209,8 @@ public class GrnCostingController implements Serializable {
         List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
 
         for (BillItem bi : tmpBillItems) {
-            totalQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getQuantity());
-            totalFreeQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getFreeQuantity());
+            totalQuantityOfBillItemsRefernceToOriginalItem = totalQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getQuantity());
+            totalFreeQuantityOfBillItemsRefernceToOriginalItem = totalFreeQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getFreeQuantity());
         }
         remainQty = BigDecimal.valueOf(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit()).subtract(totalQuantityOfBillItemsRefernceToOriginalItem);
         remainFreeQty = BigDecimal.valueOf(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit()).subtract(totalFreeQuantityOfBillItemsRefernceToOriginalItem);
