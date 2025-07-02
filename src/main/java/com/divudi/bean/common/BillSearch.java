@@ -5540,7 +5540,7 @@ public class BillSearch implements Serializable {
     }
 
     public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill){
-        return billService.fetchPatientInvestigations(batchBill); // this will not list patient investigations as we pass the batch bill. We have to have a method to list patient invetigations by accepting a batch bill in bill service 
+        return billService.fetchPatientInvestigationsOfBatchBill(batchBill);
     }
     
     public Bill getViewingBill() {
