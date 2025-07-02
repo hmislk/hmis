@@ -1879,11 +1879,19 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processGrnCash() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Cash));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_GRN,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+            );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void processGrnCredit() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Credit));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                    BillTypeAtomic.PHARMACY_GRN,
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+            );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
     }
 
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
