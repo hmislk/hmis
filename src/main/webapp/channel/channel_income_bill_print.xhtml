@@ -155,6 +155,7 @@
                                         <th style="text-align: center;">Bill No</th>
                                         <th style="text-align: center;">Bill Type</th>
                                         <th style="text-align: center;">Patient</th>
+                                        <th style="text-align: center;">Cashier</th>
                                         <th style="text-align: center;">Hospital Fee</th>
                                         <th style="text-align: center;">Staff Fee</th>
                                         <th style="text-align: center;">Gross Total</th>
@@ -194,6 +195,12 @@
                                                 <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{row.bill.referenceBill.onlineBooking.patientName}"/>
                                                 <h:outputText rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}" value="#{row.bill.billedBill.referenceBill.onlineBooking.patientName}"/>
                                             </td>
+                                            <td>
+                                                <h:outputText value="#{row.bill.creater.name}">
+                                                </h:outputText>
+                                                <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
+                                                </h:outputText>
+                                            </td>
                                             <td style="text-align: right;">
                                                 <h:outputText value="#{row.bill.hospitalFee}">
                                                     <f:convertNumber pattern="#,##0.00"/>
@@ -224,7 +231,7 @@
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <td colspan="4" style="text-align: center; font-weight: 700;">
+                                        <td colspan="6" style="text-align: center; font-weight: 700;">
                                             <h:outputText value="Total"/>
                                         </td>
                                         <td style="text-align: right; font-weight: 700;">
