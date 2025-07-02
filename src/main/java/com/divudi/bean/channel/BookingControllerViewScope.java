@@ -1085,6 +1085,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
 
             }
             return feeTotalForSelectedBill - multiplePaymentMethodTotalValue;
@@ -1113,6 +1114,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
                 pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
             }
 
         }
@@ -2085,7 +2088,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void fillAdditionalFeesFromSelectedBillSession() {
         if (selectedBillSession != null) {  // at manage booking
             for (BillFee billFee : selectedBillSession.getBill().getBillFees()) {
-                if (billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
+                if (billFee.getFee() != null && billFee.getFee().getServiceSession() == null) {     // adding additional items which are not service session bound
                     if (foriegn) {
                         feeTotalForSelectedBill += billFee.getFee().getFfee();
                     } else {
@@ -4057,6 +4060,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Please add Agent Reference No. ");
                 return;
             }
+            
+            if(channelService.checkDuplicateAgentRefNo(institution, agentRefNo)){
+                JsfUtil.addErrorMessage("Please add different Agent Reference No. ");
+                return;
+            }
 
         }
         if (getAssignedReleasedAppoinmentNumber() != 0L) {
@@ -4095,7 +4103,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Channel Booking Added.");
-    }
+    } 
 
     public long totalReservedNumberCount(SessionInstance s) {
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
@@ -4139,7 +4147,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setBill(printingBill);
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
-        e.setReceipientNumber(printingBill.getPatient().getPerson().getPhone());
+        
+        String phoneNo = "";
+        if(printingBill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                && printingBill.getReferenceBill() != null && printingBill.getReferenceBill().getOnlineBooking() != null){
+            phoneNo = printingBill.getReferenceBill().getOnlineBooking().getPhoneNo();
+        }else{
+            phoneNo = printingBill.getPatient().getPerson().getPhone();
+        }
+        
+        e.setReceipientNumber(phoneNo);
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
         e.setInstitution(getSessionController().getLoggedUser().getInstitution());

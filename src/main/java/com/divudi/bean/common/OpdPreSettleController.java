@@ -473,6 +473,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -1148,6 +1149,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 pm.getPaymentMethodData().getCredit().setTotalValue(remainAmount);
             } else if (pm.getPaymentMethod() == PaymentMethod.Staff) {
                 pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+            } else if (pm.getPaymentMethod() == PaymentMethod.OnlineSettlement) {
+                pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
             }
 
         }
