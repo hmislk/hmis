@@ -114,9 +114,14 @@ public class GrnCostingController implements Serializable {
      * @param bi
      * @return
      */
-    public double calcProfitMargin(BillItem bi) {
+    public double calculateProfitMargin(BillItem bi) {
         return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
     }
+    
+//    public double calculateProfitMargin(BillItem bi) {
+//        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
+//    }
+    
     /////////////////
     private Bill approveBill;
     private Bill grnBill;
@@ -148,9 +153,6 @@ public class GrnCostingController implements Serializable {
         return "/pharmacy/pharmacy_grn_costing?faces-redirect=true";
     }
 
-    public double calculateProfitMargin(BillItem bi) {
-        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
-    }
 
     public void clear() {
         billExpenses = null;
