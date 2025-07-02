@@ -1916,7 +1916,7 @@ public class BillNumberGenerator {
             billSuffix = "";
         }
 
-        billNumber = fetchLastBillNumberForYear(null, dep, billTypes);
+        billNumber = fetchLastBillNumberForYearForLoggedDepartment(dep, billTypes);
 
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
