@@ -244,7 +244,7 @@
                         <h:panelGroup id="total">
                             <h:outputLabel
                                 class="text-end text-secondary w-100"
-                                value="#{bi.billItemFinanceDetails.lineGrossTotal}" >
+                                value="#{bi.billItemFinanceDetails.lineNetTotal}" >
                                 <f:convertNumber pattern="#,##0.00" />
                             </h:outputLabel>
                         </h:panelGroup>
@@ -314,7 +314,10 @@
 
                     </p:column>
 
-                </p:dataTable>  
+                </p:dataTable>
+                <div>
+                    <ph:history/>
+                </div>
                 <p:panel header="Bill Details" class="m-1">
                     <p:panelGrid  id="panelBillDetails" columns="3" class="w-100" >
                         <p:panelGrid columns="2" layout="tabular" class="w-100">
