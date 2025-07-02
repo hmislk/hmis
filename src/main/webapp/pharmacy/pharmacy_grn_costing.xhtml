@@ -104,7 +104,7 @@
                         styleClass="#{bi.item.category.profitMargin > bi.billItemFinanceDetails.profitMargin ? 'ui-messages-fatal' : ''}" >
                         <h:outputText id="item" value="#{bi.item.name}" />
                         <p:commandLink
-                            styleClass="ms-1"
+                            styleClass="mx-2"
                             title="View Finance Details"
                             oncomplete="PF('dialog#{i}').show()"
                             process="@this"
@@ -158,7 +158,11 @@
                             autocomplete="off" 
                             class="text-end text-primary w-100"
                             value="#{bi.billItemFinanceDetails.quantity}" >
-                            <f:ajax event="blur" execute="txtQty" render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total ordQty doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
+                            <f:ajax 
+                                event="blur" 
+                                execute="txtQty"
+                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                listener="#{grnCostingController.qtyChangedListner(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column>  
 
@@ -174,7 +178,11 @@
                             onfocus="this.select();"
                             value="#{bi.billItemFinanceDetails.freeQuantity}"
                             id="freeQty" >
-                            <f:ajax event="blur" execute="freeQty" render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total freeQty doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" listener="#{grnCostingController.checkQty(bi)}"></f:ajax>
+                            <f:ajax 
+                                event="blur" 
+                                execute="freeQty" 
+                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} profMargin :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                listener="#{grnCostingController.freeQtyChangedListner(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column> 
                     <p:column
@@ -203,7 +211,11 @@
                             value="#{bi.billItemFinanceDetails.lineDiscountRate}"
                             id="dRate"
                             onfocus="this.select()">
-                            <f:ajax event="blur" execute="dRate" render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                            <f:ajax 
+                                event="blur" 
+                                execute="dRate" 
+                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                listener="#{grnCostingController.lineDiscountRateChangedListner(bi)}"></f:ajax>
                         </p:inputText>
                     </p:column>
                     <p:column
@@ -216,8 +228,11 @@
                             class="text-end text-primary w-100"
                             value="#{bi.billItemFinanceDetails.retailSaleRate}"  
                             onfocus="this.select()">
-                            <f:ajax event="blur" execute="rRate" render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total doeDateOnlyShort profMargin batch pRate rRate diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
-                                    listener="#{grnCostingController.onEdit(bi)}"></f:ajax>
+                            <f:ajax 
+                                event="blur"
+                                execute="rRate" 
+                                render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} total profMargin diff :#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}" 
+                                listener="#{grnCostingController.retailRateChangedListner(bi)}"></f:ajax>
                             <f:convertNumber pattern="#,##0.00" />
                         </p:inputText>
                     </p:column>
