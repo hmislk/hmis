@@ -11,6 +11,7 @@ import static com.divudi.core.data.BillType.PharmacyGrnBill;
 import static com.divudi.core.data.BillType.PharmacyPre;
 import static com.divudi.core.data.BillType.PharmacyPurchaseBill;
 import static com.divudi.core.data.BillType.PharmacyWholeSale;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -331,6 +332,16 @@ public enum BillTypeAtomic {
     SUPPLIER_PAYMENT_PREPERATION("Supplier Payment Preperation", BillCategory.PREBILL, ServiceType.SETTLEMENT, BillFinanceType.NO_FINANCE_TRANSACTIONS, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NO_PAYMENT, BillType.GrnPaymentPreparation),
     SUPPLIER_PAYMENT_CANCELLED("GRN Payment Cancelled", BillCategory.CANCELLATION, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),
     SUPPLIER_PAYMENT_RETURNED("Supplier Payment Returned", BillCategory.REFUND, ServiceType.SETTLEMENT, BillFinanceType.CASH_IN, CountedServiceType.SUPPLIER_PAYMENT, PaymentCategory.NON_CREDIT_COLLECTION, BillType.GrnPayment),;
+
+    public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationBillTypes() {
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(OPD_BILL_WITH_PAYMENT);
+        btas.add(OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
+        btas.add(PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(INWARD_SERVICE_BILL);
+        return btas;
+    }
 
     private final String label;
     private final BillCategory billCategory;
