@@ -15,6 +15,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:form>
+                    <h:panelGroup rendered="#{webUserController.hasPrivilege('OpdPackageBillCancel')}">
                     <h:panelGroup rendered="#{!billPackageController.printPreview}" styleClass="alignTop">
                         <p:panel>
                             <f:facet name="header">
@@ -235,7 +236,8 @@
 
                         </h:panelGroup>
                     </p:panel>
-                </h:form>                
+                    </h:panelGroup>
+                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

@@ -112,6 +112,8 @@ public class Bill implements Serializable, RetirableEntity {
     @Lob
     private String comments;
     @Lob
+    private String paymentMemo;
+    @Lob
     private String indication;
     // Bank Detail
     private String creditCardRefNo;
@@ -943,6 +945,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -1018,6 +1021,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -1193,7 +1197,7 @@ public class Bill implements Serializable, RetirableEntity {
     public void setBalance(double balance) {
         this.balance = balance;
     }
-    
+
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -1759,6 +1763,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getPaymentMemo() {
+        return paymentMemo;
+    }
+
+    public void setPaymentMemo(String paymentMemo) {
+        this.paymentMemo = paymentMemo;
     }
 
     public Bill getReferenceBill() {

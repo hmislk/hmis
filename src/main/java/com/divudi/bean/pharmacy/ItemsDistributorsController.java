@@ -62,17 +62,17 @@ public class ItemsDistributorsController implements Serializable {
     private SearchKeyword searchKeyword;
 //    private List<PackageFee> charges;
     //private List<Packege> packegeList = null;
-    Institution currentInstituion;
+    Institution currentInstitution;
     private Item currentItem;
     private PackageFee currentFee;
     private Double total = 0.0;
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
     }
 
     /**
@@ -83,7 +83,7 @@ public class ItemsDistributorsController implements Serializable {
 
     private boolean checkItem() {
         String sql = "Select i from ItemsDistributors i where i.retired=false"
-                + " and i.institution.id= " + getCurrentInstituion().getId() + " and "
+                + " and i.institution.id= " + getCurrentInstitution().getId() + " and "
                 + " i.item.id=" + getCurrentItem().getId();
         ItemsDistributors tmp = getFacade().findFirstByJpql(sql);
         if (tmp != null) {
@@ -108,7 +108,7 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void addItemToDistributor() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -124,7 +124,7 @@ public class ItemsDistributorsController implements Serializable {
 
         ItemsDistributors pi = new ItemsDistributors();
 
-        pi.setInstitution(getCurrentInstituion());
+        pi.setInstitution(getCurrentInstitution());
         pi.setItem(getCurrentItem());
         pi.setCreatedAt(new Date());
         pi.setCreater(getSessionController().getLoggedUser());
@@ -137,7 +137,7 @@ public class ItemsDistributorsController implements Serializable {
     }
 
     public void removeFromPackage() {
-        if (getCurrentInstituion() == null) {
+        if (getCurrentInstitution() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
@@ -242,7 +242,7 @@ public class ItemsDistributorsController implements Serializable {
                 + " and i.institution=:ins "
                 + " order by i.item.name";
 
-        hm.put("ins", getCurrentInstituion());
+        hm.put("ins", getCurrentInstitution());
 
         items = getFacade().findByJpql(temSql, hm);
 

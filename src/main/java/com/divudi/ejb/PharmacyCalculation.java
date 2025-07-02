@@ -43,7 +43,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -82,6 +81,8 @@ public class PharmacyCalculation implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    private static final int PRICE_SCALE = 6;
+
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
 //
@@ -102,21 +103,21 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public List<Item> getItemsForDealor(Institution i) {
-        String temSql;
-        HashMap hm = new HashMap();
-        List<Item> tmp;
-        hm.put("ins", i);
-        temSql = "SELECT i.item FROM ItemsDistributors i "
+        String jpql;
+        HashMap params = new HashMap();
+        List<Item> dealerItems;
+        params.put("ins", i);
+        jpql = "SELECT i.item FROM ItemsDistributors i "
                 + " where i.retired=false "
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findByJpql(temSql, hm);
+        dealerItems = getItemFacade().findByJpql(jpql, params);
 
-        if (tmp == null) {
-            tmp = new ArrayList<>();
+        if (dealerItems == null) {
+            dealerItems = new ArrayList<>();
         }
-        return tmp;
+        return dealerItems;
     }
 
     public boolean checkItem(Institution ins, Item i) {
@@ -784,7 +785,20 @@ public class PharmacyCalculation implements Serializable {
                 return null;
             }
 
-            purchaseRatePerUnit = inputBillItem.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit();
+
+            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
+            BigDecimal prPerUnit = prGiven.divide(
+                    unitsPerPack,
+                    PRICE_SCALE,
+                    RoundingMode.HALF_EVEN
+            );
+
+            purchaseRatePerUnit = prPerUnit.doubleValue();
             retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
             costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
 

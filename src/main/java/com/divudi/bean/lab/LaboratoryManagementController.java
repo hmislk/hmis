@@ -1422,6 +1422,17 @@ public class LaboratoryManagementController implements Serializable {
 
     }
 
+    public Department getDefaultSampleSendingDepartment() {
+        if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
+            if (sessionController.getDepartment().getSuperDepartment() != null) {
+                return sessionController.getDepartment().getSuperDepartment();
+            } else {
+                return sessionController.getDepartment();
+            }
+        }
+        return sampleSendingDepartment;
+    }
+
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getter & Setter">
     public ListingEntity getListingEntity() {
@@ -1687,14 +1698,7 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public Department getSampleSendingDepartment() {
-        if (configOptionApplicationController.getBooleanValueByKey("Set the default sample department as the parent department (Super Department) of the current department.", false)) {
-            if (sessionController.getDepartment().getSuperDepartment() != null) {
-                sampleSendingDepartment = sessionController.getDepartment().getSuperDepartment();
-            } else {
-                sampleSendingDepartment = sessionController.getDepartment();
-            }
-        }
-        return sampleSendingDepartment;
+        return getDefaultSampleSendingDepartment();
     }
 
     public void setSampleSendingDepartment(Department sampleSendingDepartment) {

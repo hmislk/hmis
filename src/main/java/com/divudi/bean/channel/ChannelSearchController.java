@@ -309,7 +309,7 @@ public class ChannelSearchController implements Serializable {
             return "";
         }
         printPreview = false;
-        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true;";
+        return "/channel/channel_payment_staff_bill_cancel?faces-redirect=true";
     }
 
     private boolean errorCheck() {
