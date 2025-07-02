@@ -70,6 +70,18 @@ public class BillNumberGenerator {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name();
     }
 
+    private String getLockKey(Department department, List<BillTypeAtomic> billTypes) {
+        String departmentId = department != null ? department.getId().toString() : "null";
+        String billTypeLabel = "null";
+        if (billTypes != null && !billTypes.isEmpty()) {
+            billTypeLabel = billTypes.stream()
+                    .map(bt -> bt != null ? bt.name() : "null")
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("null");
+        }
+        return departmentId + "-" + billTypeLabel;
+    }
+
     private String getLockKey(Institution institution, Department toDepartment, BillTypeAtomic billType, PaymentMethod paymentMethod) {
         return institution.getId() + "-" + toDepartment.getId() + "-" + billType.name() + "-" + paymentMethod.getLabel();
     }
@@ -166,6 +178,18 @@ public class BillNumberGenerator {
         lock.lock();
         try {
             return fetchLastBillNumberSynchronized(institution, toDepartment, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public BillNumber fetchLastBillNumberForYearForLoggedDepartment(Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronized(department, billTypes);
         } finally {
             lock.unlock();
         }
@@ -450,6 +474,64 @@ public class BillNumberGenerator {
             hm.put("bTp", billType);
             hm.put("ins", institution);
             hm.put("tDep", toDepartment);
+            hm.put("startOfYear", startOfYear.getTime());
+            hm.put("endOfYear", endOfYear.getTime());
+
+            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
+            if (dd == null) {
+                dd = 0L;
+            }
+            billNumber.setLastBillNumber(dd);
+            billNumberFacade.createAndFlush(billNumber);
+        } else {
+            Long newBillNumberLong = billNumber.getLastBillNumber();
+            if (newBillNumberLong == null) {
+                newBillNumberLong = 0L;
+            }
+            billNumber.setLastBillNumber(newBillNumberLong);
+            billNumberFacade.editAndFlush(billNumber);
+        }
+
+        return billNumber;
+    }
+
+    private BillNumber fetchLastBillNumberSynchronized(Department department, List<BillTypeAtomic> billTypes) {
+        int currentYear = Calendar.getInstance().get(Calendar.YEAR);
+
+        String sql = "SELECT b FROM "
+                + " BillNumber b "
+                + " where b.retired=false "
+                + " and b.billTypeAtomic is null "
+                + " AND b.department=:dep"
+                + " AND b.billYear=:yr";
+
+        HashMap<String, Object> hm = new HashMap<>();
+        hm.put("dep", department);
+        hm.put("yr", currentYear);
+
+        BillNumber billNumber = billNumberFacade.findFreshByJpql(sql, hm);
+
+        if (billNumber == null) {
+            billNumber = new BillNumber();
+            billNumber.setBillTypeAtomic(null);
+            billNumber.setDepartment(department);
+            billNumber.setBillYear(currentYear);
+
+            sql = "SELECT count(b) FROM Bill b "
+                    + " where b.billTypeAtomic in :bTp "
+                    + " and b.retired=false"
+                    + " and b.department=:dep"
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear";
+
+            Calendar startOfYear = Calendar.getInstance();
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            Calendar endOfYear = Calendar.getInstance();
+            endOfYear.set(Calendar.MONTH, 11);
+            endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+
+            hm = new HashMap<>();
+            hm.put("bTp", billTypes);
+            hm.put("dep", department);
             hm.put("startOfYear", startOfYear.getTime());
             hm.put("endOfYear", endOfYear.getTime());
 
