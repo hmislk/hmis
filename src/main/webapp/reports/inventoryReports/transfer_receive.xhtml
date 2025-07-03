@@ -233,7 +233,7 @@
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Ref Doc No (Request Doc No)">
+                            <p:column headerText="Refrance Doument No(Issue Doc No)">
                                 <p:commandLink 
                                     value="#{f.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
@@ -243,7 +243,7 @@
                                     <f:setPropertyActionListener value="#{f.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Request Department">
+                            <p:column headerText="Issue Department">
                                 <h:outputText value="#{f.bill.fromDepartment.name}" />
                             </p:column>
                             <p:column headerText="Code">
