@@ -459,12 +459,10 @@ public class TransferRequestController implements Serializable {
             return "";
         }
 
-        billItems = new ArrayList<>();
-        billItems.addAll(getTransferRequestBillPre().getBillItems());
+        billItems = fetchBillItems(getTransferRequestBillPre());
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
-            billItemFacade.edit(bi);
         }
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
@@ -551,6 +549,18 @@ public class TransferRequestController implements Serializable {
             bi.setSearialNo(serialNo++);
         }
 
+    }
+
+    private List<BillItem> fetchBillItems(Bill bill) {
+        List<BillItem> items = new ArrayList<>();
+        if (bill == null) {
+            return items;
+        }
+        String jpql = "select bi from BillItem bi where bi.bill=:bill and bi.retired=false";
+        Map m = new HashMap();
+        m.put("bill", bill);
+        items = billItemFacade.findByJpql(jpql, m);
+        return items;
     }
 
     public TransferRequestController() {
