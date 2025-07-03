@@ -107,6 +107,7 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyTransferIssueReceiptConfigurationDefaults();
         loadPharmacyTransferRequestReceiptConfigurationDefaults();
         loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
+        loadPatientNameConfigurationDefaults();
     }
 
     private void loadEmailGatewayConfigurationDefaults() {
@@ -407,6 +408,11 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "  }\n"
                 + "}"
         );
+    }
+
+    private void loadPatientNameConfigurationDefaults() {
+        getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
     }
 
     public ConfigOption getApplicationOption(String key) {
