@@ -48,20 +48,37 @@
                                         class="ui-button-icon-only mx-3"/>
                                 </p:column>
 
-                                <p:column headerText="Req. Qty" width="70px;">
-                                    <h:outputLabel value="#{bItm.referanceBillItem.qty}"/>                        
+                                <p:column
+                                    class="text-warning"
+                                    headerText="Reuested Qty" 
+                                    width="4em">
+                                    <h:outputLabel 
+                                        value="#{bItm.referanceBillItem.qty}"
+                                        />                        
                                 </p:column>
-
-                                <p:column headerText="Stock. Qty" width="70px;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.stock}"/>                        
+                                <p:column 
+                                    class="text-success"
+                                    headerText="Issued Qty" width="4em">
+                                    <h:outputLabel 
+                                        value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
-
-                                <p:column headerText="Issued Qty" width="80px;">
+                                <p:column 
+                                    headerText="Remaining Qty" 
+                                    class="text-danger"
+                                    width="80px;">
                                     <h:outputLabel value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
-                                <p:column headerText="Batch No" width="100px;">  
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>                        
+                                <p:column headerText="Stock" width="4em">
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.stock}">
+                                        <f:convertNumber pattern="#,###.#" ></f:convertNumber>
+                                    </h:outputLabel>
+                                </p:column>
+
+                                <p:column headerText="Expiary" width="4em">  
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >
+                                        <f:convertDateTime pattern="MM YYYY" ></f:convertDateTime>
+                                    </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Purchase Rate" width="100px;">  
