@@ -158,7 +158,7 @@
                             style="max-width: 100%">
                             <f:selectItem itemLabel="Any"></f:selectItem>
                             <f:selectItems 
-                                value="#{departmentController.getInstitutionDepartments(laboratoryManagementController.performingInstitution)}" 
+                                value="#{departmentController.getInstitutionLabDepartments(laboratoryManagementController.performingInstitution)}" 
                                 var="pdpt"
                                 itemLabel="#{pdpt.name}" 
                                 itemValue="#{pdpt}">
@@ -535,7 +535,7 @@
                                 class="w-100 mb-2">
                                 <f:selectItem itemLabel="Select From Department"></f:selectItem>
                                 <f:selectItems 
-                                    value="#{departmentController.listAllDepatrments()}" 
+                                    value="#{departmentController.listAllLabDepartments()}" 
                                     var="odpt" 
                                     itemLabel="#{odpt.name}" 
                                     itemValue="#{odpt}">
@@ -644,7 +644,7 @@
                                     class="w-100">
                                     <f:selectItem itemLabel="Any"></f:selectItem>
                                     <f:selectItems 
-                                        value="#{departmentController.listAllDepatrments()}" 
+                                        value="#{departmentController.listAllLabDepartments()}" 
                                         var="odpt" 
                                         itemLabel="#{odpt.name}" 
                                         itemValue="#{odpt}">
