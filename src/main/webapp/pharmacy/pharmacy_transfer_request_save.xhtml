@@ -45,7 +45,7 @@
                         <div class="d-flex align-items-center justify-content-between">
                             <div>
                                 <h:outputLabel styleClass="fas fa-arrow-right-arrow-left" />
-                                <h:outputLabel value="Transfer Request To #{transferRequestController.transerRequestBillPre.toDepartment} From #{sessionController.department}" class="mx-4" />
+                                <h:outputLabel value="Transfer Request To #{transferRequestController.transferRequestBillPre.toDepartment} From #{sessionController.department}" class="mx-4" />
                             </div>
                             <div>
                                 <p:commandButton
@@ -192,7 +192,7 @@
                     <p:printer target="gpBillPreview"></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:transferRequest  bill="#{transferRequestController.transerRequestBillPre}" />
+                    <ph:transferRequest  bill="#{transferRequestController.transferRequestBillPre}" />
                 </h:panelGroup>
             </p:panel>
 
