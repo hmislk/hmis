@@ -1879,11 +1879,19 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processGrnCash() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Cash));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void processGrnCredit() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_GRN), Collections.singletonList(PaymentMethod.Credit));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_GRN,
+                BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Credit));
     }
 
     private void retrieveBillItems(String billTypeField, Object billTypeValue) {
@@ -1911,7 +1919,12 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department", "dep", department);
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
+//            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -1947,7 +1960,11 @@ public class PharmacyReportController implements Serializable {
             addFilter(jpql, params, "b.department", "dep", department);
 
             billItems = billItemFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            netTotal = billItems.stream().mapToDouble(BillItem::getNetValue).sum();
+            netTotal = billItems.stream()
+                    .map(BillItem::getBill)
+                    .distinct()
+                    .mapToDouble(Bill::getNetTotal)
+                    .sum();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -2126,7 +2143,7 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(new Phrase(
                         discount != null ? moneyFormat.format(discount) : "", cellFont));
             }
-            
+
             for (int i = 0; i < headers.size(); i++) {
                 PdfPCell footerCell;
                 if (i == 0) {
@@ -3312,14 +3329,18 @@ public class PharmacyReportController implements Serializable {
 
     private void calculateGrnCashAndCredit() {
         try {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
+            billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+            
             StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
                     .append("WHERE b.retired = false ")
-                    .append("AND b.billTypeAtomic = :bType ")
+                    .append("AND b.billTypeAtomic IN :bType ")
                     .append("AND b.createdAt BETWEEN :fd AND :td ")
                     .append("AND b.paymentMethod IN (:cash, :credit) ");
 
             Map<String, Object> params = new HashMap<>();
-            params.put("bType", BillTypeAtomic.PHARMACY_GRN);
+            params.put("bType", billTypeAtomics);
             params.put("fd", fromDate);
             params.put("td", toDate);
             params.put("cash", PaymentMethod.Cash);
