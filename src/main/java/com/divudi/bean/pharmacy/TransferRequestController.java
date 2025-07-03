@@ -488,7 +488,7 @@ public class TransferRequestController implements Serializable {
     }
 
     public void finalizeTranserRequest() {
-        if (transerRequestBillPre == null) {
+        if (transferRequestBillPre == null) {
             JsfUtil.addErrorMessage("No Bill! Save the Bill First");
             return;
         }
