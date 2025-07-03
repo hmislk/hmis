@@ -92,7 +92,14 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
                 continue;
             }
             String beforeDeptId = original.getDeptId();
-            original.setDeptId(b.getDeptId());
+            String newDeptId = b.getDeptId();
+
+            if (Objects.equals(beforeDeptId, newDeptId)) {
+                // No change in department id; skip persisting and auditing
+                continue;
+            }
+
+            original.setDeptId(newDeptId);
             billFacade.edit(original);
 
             Map<String, String> before = new HashMap<>();
