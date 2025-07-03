@@ -50,23 +50,29 @@
                                 <h:outputLabel value="Transfer Request To #{transferRequestController.toDepartment} From #{sessionController.department}" class="mx-4" />
                             </div>
                             <div>
+                                <p:defaultCommand target="btnSave" />
                                 <p:commandButton
-                                    value="Request"
-                                    action="#{transferRequestController.request}"
+                                    id="btnSave"
+                                    value="Save"
+                                    action="#{transferRequestController.saveTranserRequest()}"
                                     ajax="false"
-                                    icon="fas fa-check"
-                                    class="mx-1 ui-button-success">
-                                </p:commandButton>
+                                    icon="pi pi-save"
+                                    class="mx-1 ui-button-success"/>
+                                <p:commandButton
+                                    value="Finalize"
+                                    action="#{transferRequestController.finalizeTranserRequest()}"
+                                    ajax="false"
+                                    icon="pi pi-check"
+                                    class="mx-1 ui-button-warning"/>
                                 <p:commandButton
                                     value="New Bill"
                                     action="#{transferRequestController.recreate}"
                                     ajax="false"
-                                    icon="fas fa-plus"
-                                    class="ui-button-warning">
-                                </p:commandButton>
+                                    icon="pi pi-plus"
+                                    class="ui-button-danger"/>
 
-                                <p:commandButton value="Change Department" class="ui-button-primary mx-1" ajax="false" icon="fas fa-refresh"
-                                                 action="#{transferRequestController.changeDepartment()}" ></p:commandButton>
+                                <p:commandButton value="Change Department" class="ui-button-primary mx-1" ajax="false" icon="pi pi-refresh"
+                                                 action="#{transferRequestController.changeDepartment()}" />
 
                             </div>
                         </div>

@@ -33,6 +33,8 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -54,6 +56,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class TransferRequestController implements Serializable {
+
+    private static final Logger LOGGER = Logger.getLogger(TransferRequestController.class.getName());
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -89,7 +93,7 @@ public class TransferRequestController implements Serializable {
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
-    private Bill transerRequestBillPre;
+    private Bill transferRequestBillPre;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
@@ -107,7 +111,7 @@ public class TransferRequestController implements Serializable {
         dealor = null;
         billItems = null;
         printPreview = false;
-        transerRequestBillPre = null;
+        transferRequestBillPre = null;
 
     }
 
@@ -263,15 +267,15 @@ public class TransferRequestController implements Serializable {
     }
 
     public void approveTransferRequestBill() {
-        transerRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        transerRequestBillPre.setApproveAt(new Date());
-        transerRequestBillPre.setCheckedBy(sessionController.getLoggedUser());
-        transerRequestBillPre.setCheckeAt(new Date());
-        transerRequestBillPre.setApproveUser(sessionController.getLoggedUser());
-        billFacade.edit(transerRequestBillPre);
-        JsfUtil.addSuccessMessage("Approval done. Send the request to " + transerRequestBillPre.getToDepartment());
+        transferRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        transferRequestBillPre.setApproveAt(new Date());
+        transferRequestBillPre.setCheckedBy(sessionController.getLoggedUser());
+        transferRequestBillPre.setCheckeAt(new Date());
+        transferRequestBillPre.setApproveUser(sessionController.getLoggedUser());
+        billFacade.edit(transferRequestBillPre);
+        JsfUtil.addSuccessMessage("Approval done. Send the request to " + transferRequestBillPre.getToDepartment());
 
-        bill = transerRequestBillPre;
+        bill = transferRequestBillPre;
         printPreview = true;
 
     }
@@ -319,10 +323,10 @@ public class TransferRequestController implements Serializable {
         }
 
         saveBill();
-        if (transerRequestBillPre != null) {
-            transerRequestBillPre.setForwardReferenceBill(getBill());
-            getBill().setReferenceBill(transerRequestBillPre);
-            getBillFacade().edit(getTranserRequestBillPre());
+        if (transferRequestBillPre != null) {
+            transferRequestBillPre.setForwardReferenceBill(getBill());
+            getBill().setReferenceBill(transferRequestBillPre);
+            getBillFacade().edit(getTransferRequestBillPre());
         }
 
         getBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
@@ -382,12 +386,12 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Select Requested Department");
             return;
         }
-        getTranserRequestBillPre().setToDepartment(toDepartment);
-        getTranserRequestBillPre().setToInstitution(getTranserRequestBillPre().getToDepartment().getInstitution());
-        getTranserRequestBillPre().setFromDepartment(getSessionController().getDepartment());
-        getTranserRequestBillPre().setFromInstitution(getSessionController().getInstitution());
+        getTransferRequestBillPre().setToDepartment(toDepartment);
+        getTransferRequestBillPre().setToInstitution(getTransferRequestBillPre().getToDepartment().getInstitution());
+        getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
+        getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
 
-        if (getToDepartment().equals(getTranserRequestBillPre().getFromDepartment())) {
+        if (getToDepartment().equals(getTransferRequestBillPre().getFromDepartment())) {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
         }
@@ -404,23 +408,23 @@ public class TransferRequestController implements Serializable {
             }
         }
 
-        getTranserRequestBillPre().setInstitution(getSessionController().getInstitution());
-        getTranserRequestBillPre().setDepartment(getSessionController().getDepartment());
-        if (getTranserRequestBillPre().getId() == null) {
-            getBillFacade().create(getTranserRequestBillPre());
+        getTransferRequestBillPre().setInstitution(getSessionController().getInstitution());
+        getTransferRequestBillPre().setDepartment(getSessionController().getDepartment());
+        if (getTransferRequestBillPre().getId() == null) {
+            getBillFacade().create(getTransferRequestBillPre());
         }
-        getTranserRequestBillPre().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
-        getTranserRequestBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
+        getTransferRequestBillPre().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
+        getTransferRequestBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
 
-        getTranserRequestBillPre().setCreater(getSessionController().getLoggedUser());
-        getTranserRequestBillPre().setCreatedAt(Calendar.getInstance().getTime());
+        getTransferRequestBillPre().setCreater(getSessionController().getLoggedUser());
+        getTransferRequestBillPre().setCreatedAt(Calendar.getInstance().getTime());
 
-        getBillFacade().edit(getTranserRequestBillPre());
-        if (getTranserRequestBillPre().getBillItems().size() != 0) {
-            getTranserRequestBillPre().setBillItems(new ArrayList<>());
+        getBillFacade().edit(getTransferRequestBillPre());
+        if (getTransferRequestBillPre().getBillItems().size() != 0) {
+            getTransferRequestBillPre().setBillItems(new ArrayList<>());
         }
         for (BillItem b : getBillItems()) {
-            b.setBill(getTranserRequestBillPre());
+            b.setBill(getTransferRequestBillPre());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
@@ -438,64 +442,63 @@ public class TransferRequestController implements Serializable {
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBillItemFacade().edit(b);
-            getTranserRequestBillPre().getBillItems().add(b);
+            getTransferRequestBillPre().getBillItems().add(b);
         }
-        getTranserRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-        getBillFacade().edit(getTranserRequestBillPre());
+        getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+        LOGGER.log(Level.FINE, "Finalizing transfer request with {0} items", getBillItems().size());
+        getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
     }
 
     public String navigateToEditRequest() {
-        Bill tranferRequestBillTemp = transerRequestBillPre;
+        Bill transferRequestBillTemp = transferRequestBillPre;
         recreate();
-        transerRequestBillPre = tranferRequestBillTemp;
-        if (transerRequestBillPre == null) {
+        transferRequestBillPre = transferRequestBillTemp;
+        if (transferRequestBillPre == null) {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
-        billItems = fetchBillItems(transerRequestBillPre);
+        billItems = fetchBillItems(getTransferRequestBillPre());
+        LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
-        setToDepartment(getTranserRequestBillPre().getToDepartment());
+        setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
 
     public String navigateToApproveRequest() {
-        Bill tranferRequestBillTemp = transerRequestBillPre;
+        Bill transferRequestBillTemp = transferRequestBillPre;
         recreate();
-        transerRequestBillPre = tranferRequestBillTemp;
-        if (transerRequestBillPre == null) {
+        transferRequestBillPre = transferRequestBillTemp;
+        if (transferRequestBillPre == null) {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
         billItems = new ArrayList<>();
-        billItems.addAll(getTranserRequestBillPre().getBillItems());
+        billItems.addAll(getTransferRequestBillPre().getBillItems());
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
-        setToDepartment(getTranserRequestBillPre().getToDepartment());
+        setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
-    public String finalizeTranserRequest() {
-        if (transerRequestBillPre == null) {
+    public void finalizeTranserRequest() {
+        if (transferRequestBillPre == null) {
             JsfUtil.addErrorMessage("No Bill! Save the Bill First");
-            return "";
+            return;
         }
-        if (transerRequestBillPre.getId() == null) {
+        if (transferRequestBillPre.getId() == null) {
             saveTranserRequest();
         }
-        if (getTranserRequestBillPre().getBillItems().size() != 0) {
-            getTranserRequestBillPre().setBillItems(new ArrayList<>());
+        if (getTransferRequestBillPre().getBillItems().size() != 0) {
+            getTransferRequestBillPre().setBillItems(new ArrayList<>());
         }
-        getTranserRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-        System.out.println("line 436");
-        System.out.println(transerRequestBillPre.getBillItems().size());
+        getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
 
         for (BillItem b : getBillItems()) {
-            //System.out.println(b.getPharmaceuticalBillItem().getItemBatch().getItem().getName());
-            b.setBill(getTranserRequestBillPre());
+            b.setBill(getTransferRequestBillPre());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
 
@@ -513,18 +516,17 @@ public class TransferRequestController implements Serializable {
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBillItemFacade().edit(b);
-            getTranserRequestBillPre().getBillItems().add(b);
+            getTransferRequestBillPre().getBillItems().add(b);
         }
-        System.out.println("line 461");
-        getTranserRequestBillPre().setEditedAt(new Date());
-        getTranserRequestBillPre().setEditor(sessionController.getLoggedUser());
-        getTranserRequestBillPre().setCheckeAt(new Date());
-        getTranserRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
-        getBillFacade().edit(getTranserRequestBillPre());
+        getTransferRequestBillPre().setEditedAt(new Date());
+        getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
+        getTransferRequestBillPre().setCheckeAt(new Date());
+        getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
+        getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
         searchController.fillSavedTranserRequestBills();
-        return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
+        printPreview = true;
     }
 
     public String processTransferRequest() {
@@ -549,11 +551,15 @@ public class TransferRequestController implements Serializable {
     }
 
     private List<BillItem> fetchBillItems(Bill bill) {
-        String jpql = "select bi from BillItem bi where bi.retired=:retired and bi.bill=:bill";
+        List<BillItem> items = new ArrayList<>();
+        if (bill == null) {
+            return items;
+        }
+        String jpql = "select bi from BillItem bi where bi.bill=:bill and bi.retired=false";
         Map m = new HashMap();
         m.put("bill", bill);
-        m.put("retired", false);
-        return billItemFacade.findByJpql(jpql, m);
+        items = billItemFacade.findByJpql(jpql, m);
+        return items;
     }
 
     public TransferRequestController() {
@@ -706,17 +712,17 @@ public class TransferRequestController implements Serializable {
         this.printPreview = printPreview;
     }
 
-    public Bill getTranserRequestBillPre() {
-        if (transerRequestBillPre == null) {
-            transerRequestBillPre = new BilledBill();
-            transerRequestBillPre.setBillType(BillType.PharmacyTransferRequest);
+    public Bill getTransferRequestBillPre() {
+        if (transferRequestBillPre == null) {
+            transferRequestBillPre = new BilledBill();
+            transferRequestBillPre.setBillType(BillType.PharmacyTransferRequest);
         }
 
-        return transerRequestBillPre;
+        return transferRequestBillPre;
     }
 
-    public void setTranserRequestBillPre(Bill transerRequestBillPre) {
-        this.transerRequestBillPre = transerRequestBillPre;
+    public void setTransferRequestBillPre(Bill transferRequestBillPre) {
+        this.transferRequestBillPre = transferRequestBillPre;
     }
 
     public Department getToDepartment() {
