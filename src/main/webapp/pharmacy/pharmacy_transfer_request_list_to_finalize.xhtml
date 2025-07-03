@@ -73,7 +73,7 @@
                                                  icon="fas fa-check-circle" class="ui-button-success mx-2"
                                                  action="#{transferRequestController.navigateToEditRequest}"
                                                  disabled="#{b.checkedBy ne null or b.cancelled eq true}">
-                                    <f:setPropertyActionListener target="#{transferRequestController.transerRequestBillPre}" value="#{b}"/>
+                                    <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
                         </p:dataTable>
