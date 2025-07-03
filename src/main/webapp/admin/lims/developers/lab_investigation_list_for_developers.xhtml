@@ -63,12 +63,12 @@
                         styleClass="ui-button-info me-2" />
 
 
-                    <p:dataTable 
+                    <p:dataTable
                         id="tbl"
-                        value="#{investigationController.items}" 
+                        value="#{investigationController.investigationDtos}"
                         var="ix"
                         rowIndexVar="rowIndex"
-                        selection="#{investigationController.selectedInvestigations}"
+                        selection="#{investigationController.selectedInvestigationDtos}"
                         selectionMode="multiple"
                         rowKey="#{ix.id}"
                         paginator="true"
@@ -91,24 +91,24 @@
                             <h:outputText value="#{ix.name}" />
                         </p:column>
 
-                        <p:column headerText="Category" filterBy="#{ix.investigationCategory.name}" sortBy="#{ix.investigationCategory.name}" style="width:20em">
-                            <h:outputText value="#{ix.investigationCategory.name}" />
+                        <p:column headerText="Category" filterBy="#{ix.categoryName}" sortBy="#{ix.categoryName}" style="width:20em">
+                            <h:outputText value="#{ix.categoryName}" />
                         </p:column>
 
-                        <p:column headerText="Institution Name" filterBy="#{ix.institution.name}" sortBy="#{ix.institution.name}" style="width:20em">
-                            <h:outputText value="#{ix.institution.name}" />
+                        <p:column headerText="Institution Name" filterBy="#{ix.institutionName}" sortBy="#{ix.institutionName}" style="width:20em">
+                            <h:outputText value="#{ix.institutionName}" />
                         </p:column>
 
-                        <p:column headerText="Machine Name" filterBy="#{ix.machine.name}" sortBy="#{ix.machine.name}" style="width:20em">
-                            <h:outputText value="#{ix.machine.name}" />
+                        <p:column headerText="Machine Name" filterBy="#{ix.machineName}" sortBy="#{ix.machineName}" style="width:20em">
+                            <h:outputText value="#{ix.machineName}" />
                         </p:column>
 
                         <p:column headerText="Retired" filterBy="#{ix.retired}" sortBy="#{ix.retired}" style="width:8em">
                             <h:outputText value="#{ix.retired}" />
                         </p:column>
 
-                        <p:column headerText="Department Name" filterBy="#{ix.department.name}" sortBy="#{ix.department.name}" style="width:20em">
-                            <h:outputText value="#{ix.department.name}" />
+                        <p:column headerText="Department Name" filterBy="#{ix.departmentName}" sortBy="#{ix.departmentName}" style="width:20em">
+                            <h:outputText value="#{ix.departmentName}" />
                         </p:column>
 
                     </p:dataTable>
