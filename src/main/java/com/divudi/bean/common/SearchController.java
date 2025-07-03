@@ -14369,6 +14369,11 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true";
     }
 
+    public String navigateToTransferRequestFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_transfer_request_list_to_finalize?faces-redirect=true";
+    }
+
     // ToDo: TO Be Linked to command buttons where the file name is used without calling a backend method
     /**
      * Samples of places to be updated as follows

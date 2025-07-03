@@ -1000,11 +1000,18 @@
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"  
-                                    value="Search Transer Request" 
-                                    actionListener="#{searchController.makeListNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}" 
+                                    action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
+                                    value="Search Transer Request"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
+
+                        <p:menuitem ajax="false"
+                                    action="#{searchController.navigateToTransferRequestFinalize}"
+                                    value="To Finalize Transfer Requests"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
+                                    icon="fas fa-tasks"></p:menuitem>
 
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  

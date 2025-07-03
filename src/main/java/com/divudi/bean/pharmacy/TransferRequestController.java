@@ -453,14 +453,9 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
-
-        billItems = new ArrayList<>();
-        billItems.addAll(getTranserRequestBillPre().getBillItems());
-        System.out.println("line 401");
-        System.out.println(billItems.size());
+        billItems = fetchBillItems(transerRequestBillPre);
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
-            billItemFacade.edit(bi);
         }
         setToDepartment(getTranserRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
@@ -551,6 +546,14 @@ public class TransferRequestController implements Serializable {
             bi.setSearialNo(serialNo++);
         }
 
+    }
+
+    private List<BillItem> fetchBillItems(Bill bill) {
+        String jpql = "select bi from BillItem bi where bi.retired=:retired and bi.bill=:bill";
+        Map m = new HashMap();
+        m.put("bill", bill);
+        m.put("retired", false);
+        return billItemFacade.findByJpql(jpql, m);
     }
 
     public TransferRequestController() {
