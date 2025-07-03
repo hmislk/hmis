@@ -9,6 +9,7 @@ import com.divudi.core.data.ReportViewType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.service.AuditService;
 import java.io.Serializable;
 import java.util.*;
 import javax.ejb.EJB;
@@ -25,6 +26,9 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
 
     @EJB
     private BillFacade billFacade;
+
+    @EJB
+    private AuditService auditService;
 
     @Inject
     private SessionController sessionController;
@@ -87,8 +91,19 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
             if (original == null) {
                 continue;
             }
+            String beforeDeptId = original.getDeptId();
             original.setDeptId(b.getDeptId());
             billFacade.edit(original);
+
+            Map<String, String> before = new HashMap<>();
+            before.put("billId", String.valueOf(original.getId()));
+            before.put("deptId", beforeDeptId);
+
+            Map<String, String> after = new HashMap<>();
+            after.put("billId", String.valueOf(original.getId()));
+            after.put("deptId", original.getDeptId());
+
+            auditService.logAudit(before, after, sessionController.getLoggedUser(), Bill.class.getSimpleName(), "Update Bill DeptId");
         }
         JsfUtil.addSuccessMessage("Bill DeptIds updated");
     }
