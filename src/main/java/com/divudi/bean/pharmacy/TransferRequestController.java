@@ -414,7 +414,10 @@ public class TransferRequestController implements Serializable {
             b.setPharmaceuticalBillItem(tmpPh);
             getPharmaceuticalBillItemFacade().edit(tmpPh);
             getBillItemFacade().edit(b);
-            getTransferRequestBillPre().getBillItems().add(b);
+
+            if (b.getId() == null || !getTransferRequestBillPre().getBillItems().contains(b)) {
+                getTransferRequestBillPre().getBillItems().add(b);
+            }
         }
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         LOGGER.log(Level.FINE, "Finalizing transfer request with {0} items", getBillItems().size());
