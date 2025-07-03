@@ -118,7 +118,7 @@
                                             </p:column>
                                             <p:ajax event="itemSelect"
                                                     listener="#{transferRequestController.populateRatesOnItemSelect}"
-                                                    update="txtLineCostRate txtLineGrossRate focusQty"/>
+                                                    update="txtLineCostRate txtLineGrossRate txtLineNetValue requestTotals focusQty"/>
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-1">
@@ -127,6 +127,7 @@
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
                                             <p:ajax event="change" update="focusItem" />
+                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -134,6 +135,7 @@
                                         <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                      value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
