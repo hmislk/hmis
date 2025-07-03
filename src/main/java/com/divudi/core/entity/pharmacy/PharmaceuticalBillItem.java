@@ -53,6 +53,9 @@ public class PharmaceuticalBillItem implements Serializable {
     private double remainingFreeQty;
     private double remainingFreeQtyPack;
 
+    private double remainingQty;
+    private double remainingQtyPack;
+
     private double purchaseRate;
     private double purchaseRatePack;
 
@@ -280,6 +283,8 @@ public class PharmaceuticalBillItem implements Serializable {
 
         remainingFreeQty = ph.remainingFreeQty;
         remainingFreeQtyPack = ph.remainingFreeQtyPack;
+        remainingQty = ph.remainingQty;
+        remainingQtyPack = ph.remainingQtyPack;
 
         wholesaleRate = ph.wholesaleRate;
         wholesaleRatePack = ph.wholesaleRatePack;
@@ -291,7 +296,7 @@ public class PharmaceuticalBillItem implements Serializable {
         stock = ph.getStock();
         staffStock = ph.getStaffStock();
         stringValue = ph.getStringValue();
-        //  remainingQty=ph.getRemainingQty();
+
 
         make = ph.getMake();
         model = ph.getModel();
@@ -652,6 +657,22 @@ public class PharmaceuticalBillItem implements Serializable {
 
     public void setRemainingFreeQtyPack(double remainingFreeQtyPack) {
         this.remainingFreeQtyPack = remainingFreeQtyPack;
+    }
+
+    public double getRemainingQty() {
+        return remainingQty;
+    }
+
+    public void setRemainingQty(double remainingQty) {
+        this.remainingQty = remainingQty;
+    }
+
+    public double getRemainingQtyPack() {
+        return remainingQtyPack;
+    }
+
+    public void setRemainingQtyPack(double remainingQtyPack) {
+        this.remainingQtyPack = remainingQtyPack;
     }
 
     public double getWholesaleRatePack() {
