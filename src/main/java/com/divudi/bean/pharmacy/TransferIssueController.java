@@ -26,6 +26,9 @@ import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -274,8 +277,22 @@ public class TransferIssueController implements Serializable {
 
             double issuableQty = i.getQty() - (Math.abs(billedIssue) - Math.abs(cancelledIssue));
 
+            Item stockItem = i.getItem();
+            double packSize = 1.0;
+            double unitQty = issuableQty;
+
+            if (stockItem instanceof Ampp) {
+                packSize = stockItem.getDblValue();
+                stockItem = ((Ampp) stockItem).getAmp();
+                unitQty = issuableQty * packSize;
+            } else if (stockItem instanceof Vmpp) {
+                packSize = stockItem.getDblValue();
+                stockItem = ((Vmpp) stockItem).getVmp();
+                unitQty = issuableQty * packSize;
+            }
+
             //i.setIssuedPhamaceuticalItemQty(i.getQty() - issuableQty);
-            List<StockQty> stockQtys = pharmacyBean.getStockByQty(i.getItem(), issuableQty, getSessionController().getDepartment());
+            List<StockQty> stockQtys = pharmacyBean.getStockByQty(stockItem, unitQty, getSessionController().getDepartment());
 
             for (StockQty sq : stockQtys) {
 
@@ -294,7 +311,13 @@ public class TransferIssueController implements Serializable {
                 bItem.setReferanceBillItem(i);
                 bItem.setQty(i.getQty());
                 bItem.setTmpQty(sq.getQty());
-                bItem.setIssuedPhamaceuticalItemQty(i.getQty() - sq.getQty());
+
+                double alreadyIssued = stockQtys.size() > 1
+                        ? 0
+                        : (i.getItem() instanceof Ampp || i.getItem() instanceof Vmpp)
+                                ? (i.getQty() * packSize - sq.getQty())
+                                : (i.getQty() - sq.getQty());
+                bItem.setIssuedPhamaceuticalItemQty(alreadyIssued);
 
                 if (stockQtys.size() > 1) {
                     double billedIssueByItemBatch = getPharmacyCalculation().getBilledIssuedByRequestedItemBatch(i, BillType.PharmacyTransferIssue, sq.getStock().getItemBatch());
@@ -314,6 +337,9 @@ public class TransferIssueController implements Serializable {
                 phItem.setItemBatch(sq.getStock().getItemBatch());
                 phItem.setItemBatch(sq.getStock().getItemBatch());
                 phItem.setQty(sq.getQty());
+                if (packSize != 1.0) {
+                    phItem.setQtyPacks(sq.getQty() / packSize);
+                }
                 bItem.setPharmaceuticalBillItem(phItem);
 
                 // Set transfer rate and related finance details
