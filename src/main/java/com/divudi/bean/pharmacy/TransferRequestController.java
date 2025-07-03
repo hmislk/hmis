@@ -487,10 +487,10 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
-    public String finalizeTranserRequest() {
-        if (transferRequestBillPre == null) {
+    public void finalizeTranserRequest() {
+        if (transerRequestBillPre == null) {
             JsfUtil.addErrorMessage("No Bill! Save the Bill First");
-            return "";
+            return;
         }
         if (transferRequestBillPre.getId() == null) {
             saveTranserRequest();
@@ -529,7 +529,7 @@ public class TransferRequestController implements Serializable {
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
 
         searchController.fillSavedTranserRequestBills();
-        return "/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true";
+        printPreview = true;
     }
 
     public String processTransferRequest() {
