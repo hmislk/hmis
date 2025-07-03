@@ -170,7 +170,6 @@ public class PharmacyBean {
                 continue;
             }
 
-
             boolean exceeds = isReturnQuantityExceedingAvailableStock(pbi, bi.getBill().getDepartment());
 
             if (exceeds) {
@@ -199,12 +198,10 @@ public class PharmacyBean {
                 continue;
             }
 
-
             BigDecimal billedQty = billedFd.getQuantity();
             BigDecimal billedFreeQty = billedFd.getFreeQuantity();
             BigDecimal totalReturnedQty = billedFd.getReturnQuantity();
             BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantity();
-
 
             if (checkTotalQuantity) {
                 BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
@@ -884,6 +881,38 @@ public class PharmacyBean {
             }
         }
         return list;
+    }
+
+    public List<Stock> getStockByQty(Item item, Department department) {
+        String jpql = "";
+        Map params = new HashMap();
+
+        params.put("d", department);
+        params.put("q", 1.0);
+        if (item instanceof Amp) {
+            jpql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item=:amp "
+                    + " and s.department=:d and s.stock >=:q "
+                    + " and s.itemBatch.dateOfExpire > :doe "
+                    + " order by s.itemBatch.dateOfExpire ";
+            params.put("amp", item);
+            params.put("doe", new Date());
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            jpql = "select s "
+                    + " from Stock s "
+                    + " where s.itemBatch.item in :amps "
+                    + " and s.itemBatch.dateOfExpire > :doe"
+                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
+            params.put("amps", amps);
+            params.put("doe", new Date());
+        } else {
+            JsfUtil.addErrorMessage("Not supported yet");
+            return new ArrayList<>();
+        }
+        List<Stock> stocks = getStockFacade().findByJpqlWithoutCache(jpql, params);
+        return stocks;
     }
 
     public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
@@ -1778,8 +1807,8 @@ public class PharmacyBean {
 
         return f.getRetailSaleRate().doubleValue();
     }
-    
-       public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
+
+    public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
         if (item == null) {
             return 0.0;
         }
@@ -1917,7 +1946,7 @@ public class PharmacyBean {
         }
 
     }
-    
+
     public double getLastRetailRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
