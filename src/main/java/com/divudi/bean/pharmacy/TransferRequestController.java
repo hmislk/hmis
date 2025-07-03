@@ -30,6 +30,8 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
@@ -76,6 +78,8 @@ public class TransferRequestController implements Serializable {
     private ItemsDistributorsFacade itemsDistributorsFacade;
     @EJB
     private StockFacade stockFacade;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -89,6 +93,8 @@ public class TransferRequestController implements Serializable {
     private PharmacyController pharmacyController;
     @Inject
     private SearchController searchController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -219,14 +225,17 @@ public class TransferRequestController implements Serializable {
         bi.setSearialNo(getBillItems().size());
         ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
         ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
-
+        updateFinancials(bi);
         getBillItems().add(bi);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
 
         currentBillItem = null;
     }
 
     public void onEdit(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
+        updateFinancials(tmp);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     public void onEdit() {
@@ -441,6 +450,7 @@ public class TransferRequestController implements Serializable {
             return "";
         }
         billItems = fetchBillItems(getTransferRequestBillPre());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
@@ -459,6 +469,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
@@ -495,6 +506,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : getBillItems()) {
             bi.setSearialNo(serialNo++);
         }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
 
     }
 
@@ -679,6 +691,63 @@ public class TransferRequestController implements Serializable {
 
     public void setToDepartment(Department toDepartment) {
         this.toDepartment = toDepartment;
+    }
+
+    private void updateFinancials(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+
+        PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        Item item = bi.getItem();
+
+        double enteredQty = bi.getTmpQty();
+        double unitsPerPack = 1.0;
+        if (item instanceof Ampp || item instanceof Vmpp) {
+            unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+        }
+
+        double qtyInUnits = enteredQty * unitsPerPack;
+
+        ph.setQty(qtyInUnits);
+        ph.setQtyPacks(enteredQty);
+
+        if (fd != null) {
+            fd.setUnitsPerPack(BigDecimal.valueOf(unitsPerPack));
+            fd.setQuantity(BigDecimal.valueOf(enteredQty));
+            fd.setTotalQuantity(BigDecimal.valueOf(enteredQty));
+            fd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+            fd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+
+            BigDecimal rate = determineTransferRate(item);
+            fd.setLineGrossRate(rate);
+            fd.setLineNetRate(rate);
+            fd.setLineGrossTotal(rate.multiply(BigDecimal.valueOf(enteredQty)));
+            fd.setLineNetTotal(fd.getLineGrossTotal());
+            fd.setNetTotal(fd.getLineNetTotal());
+
+            BigDecimal costRate = BigDecimal.valueOf(ph.getPurchaseRate());
+            fd.setLineCostRate(costRate);
+            fd.setLineCost(costRate.multiply(BigDecimal.valueOf(enteredQty)));
+            fd.setTotalCost(costRate.multiply(BigDecimal.valueOf(enteredQty)));
+
+            fd.setRetailSaleRate(BigDecimal.valueOf(ph.getRetailRateInUnit()));
+        }
+    }
+
+    private BigDecimal determineTransferRate(Item item) {
+        boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean byRetail = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (byPurchase) {
+            return BigDecimal.valueOf(pharmacyBean.getLastPurchaseRate(item, sessionController.getDepartment()));
+        } else if (byCost) {
+            return BigDecimal.valueOf(pharmacyBean.getLastPurchaseRate(item, sessionController.getDepartment()));
+        } else {
+            return BigDecimal.valueOf(pharmacyBean.getLastRetailRate(item, sessionController.getDepartment()));
+        }
     }
 
 }
