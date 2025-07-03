@@ -705,6 +705,47 @@ public class TransferRequestController implements Serializable {
         bi.setTmpQty(fd.getQuantity().doubleValue());
     }
 
+    // ChatGPT contributed - Populate default rates when an item is selected
+    public void populateRatesOnItemSelect() {
+        BillItem bi = getCurrentBillItem();
+        if (bi == null || bi.getItem() == null) {
+            return;
+        }
+
+        PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
+        if (ph == null) {
+            ph = new PharmaceuticalBillItem();
+            ph.setBillItem(bi);
+            bi.setPharmaceuticalBillItem(ph);
+        }
+
+        ph.setPurchaseRate(pharmacyBean.getLastPurchaseRate(bi.getItem(), sessionController.getDepartment()));
+        ph.setRetailRateInUnit(pharmacyBean.getLastRetailRate(bi.getItem(), sessionController.getDepartment()));
+
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        if (fd == null) {
+            fd = new BillItemFinanceDetails(bi);
+            bi.setBillItemFinanceDetails(fd);
+        }
+
+        fd.setLineCostRate(BigDecimal.valueOf(ph.getPurchaseRate()));
+        fd.setLineGrossRate(determineTransferRate(bi.getItem()));
+
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+    }
+
+    // ChatGPT contributed - Recalculate item totals when gross rate changes
+    public void onLineGrossRateChange(BillItem bi) {
+        if (bi == null || bi.getBillItemFinanceDetails() == null) {
+            return;
+        }
+
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+    }
+
     private BigDecimal determineTransferRate(Item item) {
         boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
