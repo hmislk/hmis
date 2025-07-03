@@ -148,7 +148,7 @@
                                     id="btnViewSelectedItemDetails"
                                     title="View Item Details"
                                     action="#{transferRequestController.displayItemDetails(bi)}"
-                                    update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                    update="history"
                                     process="@this"
                                     class="ui-button-icon-only mx-3"/>
                             </p:column>
@@ -171,7 +171,7 @@
                         </p:dataTable>
                     </p:panel>
 
-                    <ph:history/>
+                    <ph:history id="history"/>
 
 
                 </p:panel>
