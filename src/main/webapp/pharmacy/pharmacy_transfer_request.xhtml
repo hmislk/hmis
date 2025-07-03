@@ -117,7 +117,9 @@
                                                 <p:outputLabel value="1"
                                                                rendered="#{vt.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
                                             </p:column>
-                                            <p:ajax event="itemSelect" update="focusQty" ></p:ajax>
+                                            <p:ajax event="itemSelect"
+                                                    listener="#{transferRequestController.populateRatesOnItemSelect}"
+                                                    update="txtLineCostRate txtLineGrossRate focusQty"/>
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-2">
@@ -127,7 +129,19 @@
                                             <p:ajax event="change" update="focusItem" />
                                         </p:inputText>
                                     </div>
-                                    <div class="col-3">
+                                    <div class="col-2">
+                                        <p:inputText id="txtLineCostRate" class="w-100 text-end"
+                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineCostRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-2">
+                                        <p:inputText id="txtLineGrossRate" class="w-100 text-end"
+                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>
+                                    <div class="col-2">
                                         <p:commandButton
                                             value="Add Item"
                                             icon="fas fa-plus"
@@ -184,9 +198,10 @@
                                     </p:column>
 
                                     <p:column headerText="Transfer Rate" class="text-end">
-                                        <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossRate}">
+                                        <p:inputText value="#{bi.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                             <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
+                                            <p:ajax event="blur" listener="#{transferRequestController.onLineGrossRateChange(bi)}" update="itemList requestTotals"/>
+                                        </p:inputText>
                                     </p:column>
 
                                     <p:column headerText="Transfer Value" class="text-end">
