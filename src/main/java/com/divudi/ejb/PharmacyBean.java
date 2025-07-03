@@ -842,7 +842,7 @@ public class PharmacyBean {
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
         String jpql = "";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         params.put("d", department);
         params.put("q", 1.0);
@@ -884,35 +884,26 @@ public class PharmacyBean {
     }
 
     public List<Stock> getStockByQty(Item item, Department department) {
-        String jpql = "";
-        Map params = new HashMap();
-
-        params.put("d", department);
-        params.put("q", 1.0);
-        if (item instanceof Amp) {
-            jpql = "select s "
-                    + " from Stock s "
-                    + " where s.itemBatch.item=:amp "
-                    + " and s.department=:d and s.stock >=:q "
-                    + " and s.itemBatch.dateOfExpire > :doe "
-                    + " order by s.itemBatch.dateOfExpire ";
-            params.put("amp", item);
-            params.put("doe", new Date());
-        } else if (item instanceof Vmp) {
-            List<Amp> amps = findAmpsForVmp((Vmp) item);
-            jpql = "select s "
-                    + " from Stock s "
-                    + " where s.itemBatch.item in :amps "
-                    + " and s.itemBatch.dateOfExpire > :doe"
-                    + " and s.department=:d and s.stock >=:q order by s.itemBatch.dateOfExpire ";
-            params.put("amps", amps);
-            params.put("doe", new Date());
-        } else {
-            JsfUtil.addErrorMessage("Not supported yet");
+        List<Amp> amps = resolveAmps(item);
+        if (amps == null || amps.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Stock> stocks = getStockFacade().findByJpqlWithoutCache(jpql, params);
-        return stocks;
+
+        String jpql = "select s "
+                + " from Stock s "
+                + " where s.itemBatch.item in :amps "
+                + " and s.department=:d"
+                + " and s.stock >=:q"
+                + " and s.itemBatch.dateOfExpire > :doe"
+                + " order by s.itemBatch.dateOfExpire";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amps", amps);
+        params.put("d", department);
+        params.put("q", 1.0);
+        params.put("doe", new Date());
+
+        return getStockFacade().findByJpqlWithoutCache(jpql, params);
     }
 
     public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
@@ -932,15 +923,59 @@ public class PharmacyBean {
     }
 
     public List<Amp> findAmpsForVmp(Vmp vmp) {
-        String jpql;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("vmp", vmp);
         m.put("ret", false);
-        jpql = "select amp "
+        String jpql = "select amp "
                 + " from Amp amp "
                 + " where amp.retired=:ret "
                 + " and amp.vmp=:vmp";
         return ampFacade.findByJpql(jpql, m);
+    }
+
+    /**
+     * Resolve the underlying AMP records for any pharmacy Item subclass.
+     *
+     * @param item item to resolve
+     * @return list of AMP objects, or an empty list if none found
+     */
+    public List<Amp> resolveAmps(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+
+        if (item instanceof Amp) {
+            List<Amp> list = new ArrayList<>();
+            list.add((Amp) item);
+            return list;
+        }
+
+        if (item instanceof Ampp) {
+            Amp amp = ((Ampp) item).getAmp();
+            if (amp == null) {
+                return new ArrayList<>();
+            }
+            List<Amp> list = new ArrayList<>();
+            list.add(amp);
+            return list;
+        }
+
+        if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            return amps == null ? new ArrayList<>() : amps;
+        }
+
+        if (item instanceof Vmpp) {
+            Vmpp vmpp = (Vmpp) item;
+            Vmp vmp = vmpp.getVmp();
+            if (vmp == null) {
+                return new ArrayList<>();
+            }
+            List<Amp> amps = findAmpsForVmp(vmp);
+            return amps == null ? new ArrayList<>() : amps;
+        }
+
+        return new ArrayList<>();
     }
 
     public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
