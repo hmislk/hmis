@@ -173,6 +173,20 @@ public class LaboratoryManagementController implements Serializable {
         performingDepartment = null;
         patientInvestigationStatus = null;
     }
+    
+    public String navigateToOtherPatientReport(Bill bill) {
+        activeIndex = 4;
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        navigateToPatientReportsFromSelectedBill(bill);
+        return "/lab/laboratory_management_dashboard?faces-redirect=true";
+    }
+    
+    public String navigateToOtherPatientInvestigations(Bill bill) {
+        activeIndex = 4;
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        navigateToInvestigationsFromSelectedBill(bill);
+        return "/lab/laboratory_management_dashboard?faces-redirect=true";
+    }
 
     public String navigateToEditReport(Long patientReportID) {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
@@ -313,6 +327,8 @@ public class LaboratoryManagementController implements Serializable {
 
         items.add(patientInvestigation);
     }
+    
+    
 
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
@@ -331,6 +347,8 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
+    
+    
 
     public String navigateToBackFormPatientReportEditingView() {
         if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
