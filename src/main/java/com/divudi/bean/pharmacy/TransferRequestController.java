@@ -19,8 +19,11 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
@@ -30,6 +33,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
+import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -51,8 +55,7 @@ import javax.inject.Named;
 @SessionScoped
 public class TransferRequestController implements Serializable {
 
-    @Inject
-    private SessionController sessionController;
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private ItemFacade itemFacade;
     @EJB
@@ -67,20 +70,32 @@ public class TransferRequestController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
+    @EJB
+    private StockFacade stockFacade;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Controllers">
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private PharmacyCalculation pharmacyBillBean;
+    @Inject
+    private NotificationController notificationController;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private SearchController searchController;
+    // </editor-fold>
+
+    // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private Bill bill;
     private Bill transerRequestBillPre;
     private Institution dealor;
     private BillItem currentBillItem;
     private List<BillItem> billItems;
-    @Inject
-    private PharmacyCalculation pharmacyBillBean;
     private boolean printPreview;
-    @Inject
-    NotificationController notificationController;
-    @Inject
-    private PharmacyController pharmacyController;
-
     private Department toDepartment;
+    // </editor-fold>
 
     public void recreate() {
         Date startTime = new Date();
@@ -145,8 +160,6 @@ public class TransferRequestController implements Serializable {
 
     }
 
-    @EJB
-    StockFacade stockFacade;
 
     public void addAllItem() {
 
@@ -184,23 +197,43 @@ public class TransferRequestController implements Serializable {
             currentBillItem = null;
             return;
         }
-        
+
         // User Input is getCurrentBillItem().getQty() > We should NOT change this programmitically
         // This user input needed to be recorded in pharmaceutical bill item and bill item Finance Details
         // pharmaceutical bill item qty will always be in units
         // If Ampp or Vmpp > have to multiply by pack size and write the qty in units in pharmaceutical bill item
         // have to add all quantity related data for bill Item Financial Details - No pricing related data is required
-        
-        getCurrentBillItem().setSearialNo(getBillItems().size());
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
-        getCurrentBillItem().setQty(getCurrentBillItem().getTmpQty());
-        getCurrentBillItem().getBillItemFinanceDetails();
-        
-        getBillItems().add(getCurrentBillItem());
-        
-        
-        
+
+        BillItem bi = getCurrentBillItem();
+        PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
+        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+        Item item = bi.getItem();
+
+        double enteredQty = bi.getQty();
+        double unitsPerPack = 1.0;
+        if (item instanceof Ampp || item instanceof Vmpp) {
+            unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+        }
+        double qtyInUnits = enteredQty * unitsPerPack;
+
+        ph.setQty(qtyInUnits);
+        ph.setQtyPacks(enteredQty);
+
+        if (fd != null) {
+            fd.setUnitsPerPack(BigDecimal.valueOf(unitsPerPack));
+            fd.setQuantity(BigDecimal.valueOf(enteredQty));
+            fd.setTotalQuantity(BigDecimal.valueOf(enteredQty));
+            fd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+            fd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+        }
+
+        bi.setTmpQty(enteredQty);
+        bi.setSearialNo(getBillItems().size());
+        ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
+        ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
+
+        getBillItems().add(bi);
+
         currentBillItem = null;
     }
 
@@ -433,9 +466,6 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
     }
 
-    @Inject
-    private SearchController searchController;
-
     public String navigateToApproveRequest() {
         Bill tranferRequestBillTemp = transerRequestBillPre;
         recreate();
@@ -640,6 +670,8 @@ public class TransferRequestController implements Serializable {
             PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
             ph.setBillItem(currentBillItem);
             currentBillItem.setPharmaceuticalBillItem(ph);
+            BillItemFinanceDetails fd = new BillItemFinanceDetails(currentBillItem);
+            currentBillItem.setBillItemFinanceDetails(fd);
         }
         return currentBillItem;
     }
