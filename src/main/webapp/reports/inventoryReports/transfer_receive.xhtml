@@ -192,11 +192,8 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Transfer Receive Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportTransferReceivePdf()}">
                             </p:commandButton>
 
                         </div>
@@ -270,8 +267,8 @@
                                 </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="#{pharmacyReportController.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00"/>
-                                </h:outputText>
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>                          
 
