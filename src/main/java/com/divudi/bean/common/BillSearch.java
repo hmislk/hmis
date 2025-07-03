@@ -5539,6 +5539,10 @@ public class BillSearch implements Serializable {
         viewingReferanceBills = billService.fetchAllReferanceBills(bill);
     }
 
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill){
+        return billService.fetchPatientInvestigationsOfBatchBill(batchBill);
+    }
+    
     public Bill getViewingBill() {
         return viewingBill;
     }

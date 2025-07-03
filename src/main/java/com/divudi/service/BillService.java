@@ -1889,6 +1889,21 @@ public class BillService {
         return ptix;
     }
 
+    public List<PatientInvestigation> fetchPatientInvestigationsOfBatchBill(Bill batchBill) {
+        if (batchBill == null) {
+            return new ArrayList<>();
+        }
+        String jpql = "SELECT pbi "
+                + "FROM PatientInvestigation pbi "
+                + "WHERE pbi.billItem.bill IN ("
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb" 
+                + ") "
+                + "ORDER BY pbi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bb", batchBill);
+        return patientInvestigationFacade.findByJpql(jpql, params);
+    }
+
     public List<BillItem> checkCreditBillPaymentReciveFromCreditCompany(Bill bill) {
         List<BillItem> billItems = new ArrayList<>();
 
