@@ -917,7 +917,9 @@ public class PharmacyBean {
         }
         for (Amp a : amps) {
             List<StockQty> sq = getStockByQty(a, qty, department);
-
+            if (sq != null) {
+                stocks.addAll(sq);
+            }
         }
         return stocks;
     }
