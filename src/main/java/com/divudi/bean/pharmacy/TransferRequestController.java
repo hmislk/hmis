@@ -233,7 +233,7 @@ public class TransferRequestController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
-        getPharmacyController().setPharmacyItem(tmp.getItem());
+//        getPharmacyController().setPharmacyItem(tmp.getItem());
         updateFinancials(tmp);
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
@@ -702,7 +702,7 @@ public class TransferRequestController implements Serializable {
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         Item item = bi.getItem();
 
-        double enteredQty = bi.getTmpQty();
+        double enteredQty = bi.getQty();
         double unitsPerPack = 1.0;
         if (item instanceof Ampp || item instanceof Vmpp) {
             unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
@@ -744,7 +744,7 @@ public class TransferRequestController implements Serializable {
         if (byPurchase) {
             return BigDecimal.valueOf(pharmacyBean.getLastPurchaseRate(item, sessionController.getDepartment()));
         } else if (byCost) {
-            return BigDecimal.valueOf(pharmacyBean.getLastPurchaseRate(item, sessionController.getDepartment()));
+            return BigDecimal.valueOf(pharmacyBean.getLastCostRate(item, sessionController.getDepartment()));
         } else {
             return BigDecimal.valueOf(pharmacyBean.getLastRetailRate(item, sessionController.getDepartment()));
         }

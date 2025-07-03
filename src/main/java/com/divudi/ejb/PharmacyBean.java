@@ -1791,6 +1791,15 @@ public class PharmacyBean {
             return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
         }
     }
+    
+    public double getLastCostRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastCostRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
 
     public double getLastPurchaseRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
@@ -1873,6 +1882,36 @@ public class PharmacyBean {
         }
 
         return f.getLineGrossRate().doubleValue();
+    }
+    
+    public double getLastCostRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getTotalCostRate()== null) {
+            return 0.0;
+        }
+
+        return f.getTotalCostRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
