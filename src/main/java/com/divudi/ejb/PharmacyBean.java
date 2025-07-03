@@ -658,7 +658,7 @@ public class PharmacyBean {
             return null;
         }
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
         params.put("bch", pharmaceuticalBillItem.getItemBatch());
         params.put("dep", department);
@@ -772,7 +772,7 @@ public class PharmacyBean {
         }
         String jpql;
         jpql = "Select s from Stock s where s.itemBatch.id = :batchId and s.department.id = :deptId ";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("batchId", batch.getId());
         params.put("deptId", department.getId());
         Stock s = getStockFacade().findFirstByJpql(jpql, params, true);
@@ -842,7 +842,7 @@ public class PharmacyBean {
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
         String jpql = "";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         params.put("d", department);
         params.put("q", 1.0);
@@ -885,7 +885,7 @@ public class PharmacyBean {
 
     public List<Stock> getStockByQty(Item item, Department department) {
         String jpql = "";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         params.put("d", department);
         params.put("q", 1.0);
@@ -1247,7 +1247,7 @@ public class PharmacyBean {
             item = ((Ampp) item).getAmp();
         }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.batchNo=:batchNo";
         params.put("i", item);
         params.put("batchNo", batchNo);
@@ -1268,7 +1268,7 @@ public class PharmacyBean {
             item = ((Ampp) item).getAmp();
         }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.purcahseRate=:pr and ib.retailsaleRate=:rr";
         params.put("i", item);
         params.put("pr", purchasePrice);
@@ -1296,7 +1296,7 @@ public class PharmacyBean {
 
     public Vmpp getVmpp(Ampp ampp, MeasurementUnit packUnit) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("vmp", ampp.getAmp().getVmp());
         params.put("s", packUnit);
         params.put("d", ampp.getDblValue());
