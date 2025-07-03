@@ -102,7 +102,7 @@
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText styleClass="fa fa-user-tie ml-5"/>
-                            <p:outputLabel value="Suplier" class="mx-3" for="phmSuplier">
+                            <p:outputLabel value="Supplier" class="mx-3" for="phmSuplier">
                             </p:outputLabel>
                         </h:panelGroup>
                         <p:autoComplete
@@ -131,7 +131,7 @@
                             <f:selectItem itemLabel="Detail" itemValue="detailReport"/>
                             <f:selectItem itemLabel="Return" itemValue="returnReport"/>
                             <f:selectItem itemLabel="Cancel" itemValue="cancellationReport"/>
-                            <f:selectItem itemLabel="Summery" itemValue="summeryReport"/>
+                            <f:selectItem itemLabel="Summary" itemValue="summeryReport"/>
                         </p:selectOneMenu>
 
                         <!-- To do Requirements
@@ -269,7 +269,7 @@
                             <!-- Supplier Name -->
                             <p:column headerText="Supplier Name" width="8em">
                                 <h:outputText
-                                        value="#{b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' ? b.toInstitution.name : b.fromInstitution.name}"/>
+                                        value="#{b.fromInstitution.name ne null ? b.fromInstitution.name : b.toInstitution.name}"/>
                             </p:column>
 
                             <!-- Institution -->
@@ -299,14 +299,34 @@
                             <!-- Purchase Value Cash -->
                             <p:column headerText="Purchase Value Cash" width="6em" style="text-align: right;">
                                 <h:outputLabel
-                                        rendered="#{b.paymentMethod=='Cash'}"
-                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                ? (b.netTotal gt 0 ? -1 * b.netTotal : b.netTotal)
-                                                : b.netTotal}">
+                                                and (b.referenceBill.paymentMethod eq 'Cash')}"
+                                        value="#{(b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.referenceBill.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <!--                                <h:outputLabel-->
+                                <!--                                        rendered="#{b.paymentMethod=='Cash'}"-->
+                                <!--                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'-->
+                                <!--                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')-->
+                                <!--                                                ? (b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)-->
+                                <!--                                                : b.netTotal}">-->
+                                <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                                <!--                                </h:outputLabel>-->
+                                <!--                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>-->
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacyController.totalCashPurchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -317,14 +337,34 @@
                             <!-- Purchase Value Credit -->
                             <p:column headerText="Purchase Value Credit" width="6em" style="text-align: right;">
                                 <h:outputLabel
-                                        rendered="#{b.paymentMethod=='Credit'}"
-                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                ? (b.netTotal gt 0 ? -1 * b.netTotal : b.netTotal)
-                                                : b.netTotal}">
+                                                and (b.referenceBill.paymentMethod eq 'Credit')}"
+                                        value="#{(b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{b.netTotal}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.referenceBill.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <!--                                <h:outputLabel-->
+                                <!--                                        rendered="#{b.paymentMethod=='Credit'}"-->
+                                <!--                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'-->
+                                <!--                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')-->
+                                <!--                                                ? (b.referenceBill.netTotal gt 0 ? -1 * b.referenceBill.netTotal : b.referenceBill.netTotal)-->
+                                <!--                                                : b.netTotal}">-->
+                                <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                                <!--                                </h:outputLabel>-->
+                                <!--                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>-->
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacyController.totalCreditPurchaseValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -335,14 +375,34 @@
                             <!-- Sale Value Cash -->
                             <p:column headerText="Sale Value Cash" width="6em" style="text-align: right;">
                                 <h:outputLabel
-                                        rendered="#{b.paymentMethod=='Cash'}"
-                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                ? (b.saleValue gt 0 ? -1 * b.saleValue : b.saleValue)
-                                                : b.saleValue}">
+                                                and (b.referenceBill.paymentMethod eq 'Cash')}"
+                                        value="#{(b.referenceBill.saleValue gt 0 ? -1 * b.referenceBill.saleValue : b.referenceBill.saleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Cash')}"
+                                        value="#{b.saleValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.referenceBill.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Cash')}" value="0.00"/>
+                                <!--                                <h:outputLabel-->
+                                <!--                                        rendered="#{b.paymentMethod=='Cash'}"-->
+                                <!--                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'-->
+                                <!--                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')-->
+                                <!--                                                ? (b.saleValue gt 0 ? -1 * b.saleValue : b.saleValue)-->
+                                <!--                                                : b.saleValue}">-->
+                                <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                                <!--                                </h:outputLabel>-->
+                                <!--                                <h:outputLabel rendered="#{b.paymentMethod!='Cash'}" value="0.00"/>-->
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacyController.totalCashSaleValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -353,14 +413,34 @@
                             <!-- Sale Value Credit -->
                             <p:column headerText="Sale Value Credit" width="6em" style="text-align: right;">
                                 <h:outputLabel
-                                        rendered="#{b.paymentMethod == 'Credit'}"
-                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                        rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
                                                 or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
-                                                ? (b.saleValue gt 0 ? -1 * b.saleValue : b.saleValue)
-                                                : b.saleValue}">
+                                                and (b.referenceBill.paymentMethod eq 'Credit')}"
+                                        value="#{(b.referenceBill.saleValue gt 0 ? -1 * b.referenceBill.saleValue : b.referenceBill.saleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
-                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>
+                                <h:outputLabel
+                                        rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod eq 'Credit')}"
+                                        value="#{b.saleValue}">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputLabel>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'
+                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.referenceBill.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <h:outputLabel rendered="#{(b.billTypeAtomic ne 'PHARMACY_GRN_RETURN' and b.billTypeAtomic ne 'PHARMACY_GRN_CANCELLED'
+                                                and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_REFUND' and b.billTypeAtomic ne 'PHARMACY_DIRECT_PURCHASE_CANCELLED')
+                                                and (b.paymentMethod ne 'Credit')}" value="0.00"/>
+                                <!--                                <h:outputLabel-->
+                                <!--                                        rendered="#{b.paymentMethod == 'Credit'}"-->
+                                <!--                                        value="#{(b.billTypeAtomic eq 'PHARMACY_GRN_RETURN' or b.billTypeAtomic eq 'PHARMACY_GRN_CANCELLED'-->
+                                <!--                                                or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_REFUND' or b.billTypeAtomic eq 'PHARMACY_DIRECT_PURCHASE_CANCELLED')-->
+                                <!--                                                ? (b.saleValue gt 0 ? -1 * b.saleValue : b.saleValue)-->
+                                <!--                                                : b.saleValue}">-->
+                                <!--                                    <f:convertNumber pattern="#,##0.00"/>-->
+                                <!--                                </h:outputLabel>-->
+                                <!--                                <h:outputLabel rendered="#{b.paymentMethod!='Credit'}" value="0.00"/>-->
                                 <f:facet name="footer">
                                     <h:outputLabel value="#{pharmacyController.totalCreditSaleValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
@@ -467,7 +547,8 @@
                                 <h:outputText value="#{r.toInstitution.name}"/>
                             </p:column>
                             <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
-                                <h:outputText value="#{r.netTotal gt 0 ? -1 * r.netTotal : r.netTotal}">
+                                <h:outputText
+                                        value="#{r.referenceBill.netTotal gt 0 ? -1 * r.referenceBill.netTotal : r.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
 
@@ -478,7 +559,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Sale Value" width="6em" style="text-align: right;">
-                                <h:outputText value="#{r.saleValue gt 0 ? -1 * r.saleValue : r.saleValue}">
+                                <h:outputText
+                                        value="#{r.referenceBill.saleValue gt 0 ? -1 * r.referenceBill.saleValue : r.referenceBill.saleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -580,7 +662,8 @@
                                 <h:outputLabel value="#{cb.fromInstitution.name}"/>
                             </p:column>
                             <p:column headerText="Purchase Value" width="6em" style="text-align: right;">
-                                <h:outputText value="#{cb.netTotal gt 0 ? -1 * cb.netTotal : cb.netTotal}">
+                                <h:outputText
+                                        value="#{cb.referenceBill.netTotal gt 0 ? -1 * cb.referenceBill.netTotal : cb.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
 
@@ -591,7 +674,8 @@
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Sale Value" width="6em" style="text-align: right;">
-                                <h:outputText value="#{cb.saleValue gt 0 ? -1 * cb.saleValue : cb.saleValue}">
+                                <h:outputText
+                                        value="#{cb.referenceBill.saleValue gt 0 ? -1 * cb.referenceBill.saleValue : cb.referenceBill.saleValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
