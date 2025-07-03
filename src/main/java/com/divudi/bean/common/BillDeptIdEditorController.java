@@ -7,6 +7,7 @@ import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.data.ReportViewType;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.*;
@@ -95,6 +96,9 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
     // Getters and Setters
     @Override
     public Date getFromDate() {
+        if (fromDate == null) {
+            fromDate = CommonFunctions.getStartOfDay();
+        }
         return fromDate;
     }
 
@@ -105,6 +109,9 @@ public class BillDeptIdEditorController implements Serializable, ControllerWithR
 
     @Override
     public Date getToDate() {
+        if (toDate == null) {
+            toDate = CommonFunctions.getEndOfDay();
+        }
         return toDate;
     }
 
