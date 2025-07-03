@@ -36,7 +36,6 @@ public class PharmaceuticalBillItem implements Serializable {
     private Long id;
 
     @OneToOne(fetch = FetchType.EAGER)
-//    @JoinColumn(name = "bill_item_id") // This is the owning side, so it should have the @JoinColumn annotation.
     private BillItem billItem;
 
     @Temporal(javax.persistence.TemporalType.DATE)
