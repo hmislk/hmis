@@ -203,29 +203,12 @@ public class TransferRequestController implements Serializable {
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         Item item = bi.getItem();
 
-        double enteredQty = bi.getQty();
-        double unitsPerPack = 1.0;
-        if (item instanceof Ampp || item instanceof Vmpp) {
-            unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
-        }
-        double qtyInUnits = enteredQty * unitsPerPack;
-
-        ph.setQty(qtyInUnits);
-        ph.setQtyPacks(enteredQty);
-
-        if (fd != null) {
-            fd.setUnitsPerPack(BigDecimal.valueOf(unitsPerPack));
-            fd.setQuantity(BigDecimal.valueOf(enteredQty));
-            fd.setTotalQuantity(BigDecimal.valueOf(enteredQty));
-            fd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
-            fd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
-        }
-
-        bi.setTmpQty(enteredQty);
+        bi.setTmpQty(bi.getQty());
         bi.setSearialNo(getBillItems().size());
         ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
         ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
-        updateFinancials(bi);
+
+        updateFinancials(fd);
         getBillItems().add(bi);
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
 
@@ -234,7 +217,7 @@ public class TransferRequestController implements Serializable {
 
     public void onEdit(BillItem tmp) {
 //        getPharmacyController().setPharmacyItem(tmp.getItem());
-        updateFinancials(tmp);
+        updateFinancials(tmp.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
@@ -693,47 +676,33 @@ public class TransferRequestController implements Serializable {
         this.toDepartment = toDepartment;
     }
 
-    private void updateFinancials(BillItem bi) {
-        if (bi == null) {
+    private void updateFinancials(BillItemFinanceDetails fd) {
+        if (fd == null || fd.getBillItem() == null) {
             return;
         }
 
+        BillItem bi = fd.getBillItem();
         PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
-        BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         Item item = bi.getItem();
 
-        double enteredQty = bi.getQty();
-        double unitsPerPack = 1.0;
+        BigDecimal qty = BigDecimal.valueOf(bi.getQty());
+        BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Ampp || item instanceof Vmpp) {
-            unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
         }
 
-        double qtyInUnits = enteredQty * unitsPerPack;
+        fd.setUnitsPerPack(unitsPerPack);
+        fd.setQuantity(qty);
+        fd.setTotalQuantity(qty);
 
-        ph.setQty(qtyInUnits);
-        ph.setQtyPacks(enteredQty);
+        fd.setLineGrossRate(determineTransferRate(item));
+        fd.setRetailSaleRate(BigDecimal.valueOf(ph.getRetailRateInUnit()));
 
-        if (fd != null) {
-            fd.setUnitsPerPack(BigDecimal.valueOf(unitsPerPack));
-            fd.setQuantity(BigDecimal.valueOf(enteredQty));
-            fd.setTotalQuantity(BigDecimal.valueOf(enteredQty));
-            fd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
-            fd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
 
-            BigDecimal rate = determineTransferRate(item);
-            fd.setLineGrossRate(rate);
-            fd.setLineNetRate(rate);
-            fd.setLineGrossTotal(rate.multiply(BigDecimal.valueOf(enteredQty)));
-            fd.setLineNetTotal(fd.getLineGrossTotal());
-            fd.setNetTotal(fd.getLineNetTotal());
-
-            BigDecimal costRate = BigDecimal.valueOf(ph.getPurchaseRate());
-            fd.setLineCostRate(costRate);
-            fd.setLineCost(costRate.multiply(BigDecimal.valueOf(enteredQty)));
-            fd.setTotalCost(costRate.multiply(BigDecimal.valueOf(enteredQty)));
-
-            fd.setRetailSaleRate(BigDecimal.valueOf(ph.getRetailRateInUnit()));
-        }
+        ph.setQty(fd.getQuantityByUnits().doubleValue());
+        ph.setQtyPacks(fd.getQuantity().doubleValue());
+        bi.setTmpQty(fd.getQuantity().doubleValue());
     }
 
     private BigDecimal determineTransferRate(Item item) {
