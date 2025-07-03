@@ -746,6 +746,38 @@ public class TransferRequestController implements Serializable {
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
+    // ************************************
+    // Newly added helper methods
+    // ************************************
+
+    public void onCurrentQtyChange() {
+        if (currentBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails fd = currentBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return;
+        }
+
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+    }
+
+    public void onCurrentLineGrossRateChange() {
+        if (currentBillItem == null) {
+            return;
+        }
+
+        BillItemFinanceDetails fd = currentBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return;
+        }
+
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+    }
+
     private BigDecimal determineTransferRate(Item item) {
         boolean byPurchase = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
         boolean byCost = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
