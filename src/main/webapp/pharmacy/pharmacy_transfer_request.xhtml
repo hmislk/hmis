@@ -85,14 +85,13 @@
                                     <h:outputLabel value="Add Items" class="mx-4" />
                                 </f:facet>
                                 <div class="row">
-                                    <div class="col-7">
+                                    <div class="col-8">
+                                        <p:outputLabel value="Item" for="items"/>
                                         <p:autoComplete
                                             id="items"
                                             value="#{transferRequestController.currentBillItem.item}"
                                             forceSelection="true"
                                             class="w-100"
-                                            maxResults="50"
-                                            scrollHeight="600"
                                             inputStyleClass="w-100"
                                             completeMethod="#{itemController.completeAmpAmppVmpVmppItems}"
                                             var="vt"
@@ -122,26 +121,31 @@
                                                     update="txtLineCostRate txtLineGrossRate focusQty"/>
                                         </p:autoComplete>
                                     </div>
-                                    <div class="col-2">
+                                    <div class="col-1">
+                                        <p:outputLabel value="Quantity" for="txtQty"/>
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
                                             <p:ajax event="change" update="focusItem" />
                                         </p:inputText>
                                     </div>
-                                    <div class="col-2">
-                                        <p:inputText id="txtLineCostRate" class="w-100 text-end"
-                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineCostRate}">
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </p:inputText>
-                                    </div>
-                                    <div class="col-2">
+                                    <div class="col-1">
+                                        <p:outputLabel value="Rate" for="txtLineGrossRate"/>
                                         <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                      value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </p:inputText>
                                     </div>
-                                    <div class="col-2">
+                                    <div class="col-1">
+                                        <p:outputLabel value="Value" for="txtLineNetValue"/>
+                                        <p:inputText id="txtLineNetValue" class="w-100 text-end"
+                                                     value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineNetTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:inputText>
+                                    </div>                                                                       
+
+                                    <div class="col-1">
+                                        <p:outputLabel value="&nbsp;"/>
                                         <p:commandButton
                                             value="Add Item"
                                             icon="fas fa-plus"
