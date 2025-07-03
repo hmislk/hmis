@@ -1008,10 +1008,10 @@
 
                         <p:menuitem ajax="false"
                                     action="#{searchController.navigateToTransferRequestFinalize}"
-                                    value="Finalize Transer Requests"
-                                    icon="fas fa-tasks"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}"></p:menuitem>
-
+                                    value="To Finalize Transfer Requests"
+                                    actionListener="#{searchController.makeListNull()}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
+                                    icon="fas fa-tasks"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
                                     value="Issue for Requests" 

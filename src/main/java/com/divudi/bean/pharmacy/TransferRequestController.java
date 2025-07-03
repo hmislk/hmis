@@ -458,7 +458,6 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
-
         billItems = fetchBillItems(getTransferRequestBillPre());
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         for (BillItem bi : billItems) {
