@@ -642,60 +642,60 @@ public class TransferIssueController implements Serializable {
         }
 
         saveBill();
-        for (BillItem i : getBillItems()) {
-            i.getPharmaceuticalBillItem().setQty(0 - Math.abs(i.getPharmaceuticalBillItem().getQty()));
-            if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+        for (BillItem billItemsInIssue : getBillItems()) {
+            billItemsInIssue.getPharmaceuticalBillItem().setQty(0 - Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()));
+            if (billItemsInIssue.getQty() == 0.0 || billItemsInIssue.getItem() instanceof Vmpp || billItemsInIssue.getItem() instanceof Vmp) {
                 continue;
             }
 
-            i.setBill(getIssuedBill());
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-            i.setPharmaceuticalBillItem(i.getPharmaceuticalBillItem());
+            billItemsInIssue.setBill(getIssuedBill());
+            billItemsInIssue.setCreatedAt(Calendar.getInstance().getTime());
+            billItemsInIssue.setCreater(getSessionController().getLoggedUser());
+            billItemsInIssue.setPharmaceuticalBillItem(billItemsInIssue.getPharmaceuticalBillItem());
 
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
+            PharmaceuticalBillItem tmpPh = billItemsInIssue.getPharmaceuticalBillItem();
+            billItemsInIssue.setPharmaceuticalBillItem(null);
 
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
+            if (billItemsInIssue.getId() == null) {
+                getBillItemFacade().create(billItemsInIssue);
             }
 
             if (tmpPh.getId() == null) {
                 getPharmaceuticalBillItemFacade().create(tmpPh);
             }
 
-            i.setPharmaceuticalBillItem(tmpPh);
-            getBillItemFacade().edit(i);
+            billItemsInIssue.setPharmaceuticalBillItem(tmpPh);
+            getBillItemFacade().edit(billItemsInIssue);
 
             //Checking User Stock Entity
             if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQty(), getSessionController().getLoggedUser())) {
-                i.setTmpQty(0);
-                getBillItemFacade().edit(i);
-                getIssuedBill().getBillItems().add(i);
+                billItemsInIssue.setTmpQty(0);
+                getBillItemFacade().edit(billItemsInIssue);
+                getIssuedBill().getBillItems().add(billItemsInIssue);
                 continue;
             }
 
             //Remove Department Stock
-            boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(i.getPharmaceuticalBillItem().getQty()),
-                    i.getPharmaceuticalBillItem(),
+            boolean returnFlag = pharmacyBean.deductFromStock(billItemsInIssue.getPharmaceuticalBillItem().getStock(),
+                    Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()),
+                    billItemsInIssue.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
             if (returnFlag) {
 
                 //Addinng Staff
-                Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
-                        Math.abs(i.getPharmaceuticalBillItem().getQty()), getIssuedBill().getToStaff());
+                Stock staffStock = pharmacyBean.addToStock(billItemsInIssue.getPharmaceuticalBillItem(),
+                        Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()), getIssuedBill().getToStaff());
 
-                i.getPharmaceuticalBillItem().setStaffStock(staffStock);
+                billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
             } else {
-                i.setTmpQty(0);
-                getBillItemFacade().edit(i);
+                billItemsInIssue.setTmpQty(0);
+                getBillItemFacade().edit(billItemsInIssue);
             }
 
-            getPharmaceuticalBillItemFacade().edit(i.getPharmaceuticalBillItem());
+            getPharmaceuticalBillItemFacade().edit(billItemsInIssue.getPharmaceuticalBillItem());
 
-            getIssuedBill().getBillItems().add(i);
+            getIssuedBill().getBillItems().add(billItemsInIssue);
         }
 
         getIssuedBill().getBillItems().forEach(this::updateBillItemRateAndValueAndSave);

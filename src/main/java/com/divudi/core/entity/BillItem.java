@@ -754,6 +754,7 @@ public class BillItem implements Serializable, RetirableEntity {
         this.tmpSuggession = tmpSuggession;
     }
 
+     @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public double getTmpQty() {
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             return tmpQty / getItem().getDblValue();

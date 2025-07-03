@@ -1411,7 +1411,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1471,7 +1471,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1896,7 +1896,7 @@ public class BillService {
         String jpql = "SELECT pbi "
                 + "FROM PatientInvestigation pbi "
                 + "WHERE pbi.billItem.bill IN ("
-                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb" 
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
                 + ") "
                 + "ORDER BY pbi.id";
         Map<String, Object> params = new HashMap<>();

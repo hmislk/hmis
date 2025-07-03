@@ -77,6 +77,9 @@ public class TransferRequestController implements Serializable {
     private boolean printPreview;
     @Inject
     NotificationController notificationController;
+    @Inject
+    private PharmacyController pharmacyController;
+
     private Department toDepartment;
 
     public void recreate() {
@@ -177,23 +180,29 @@ public class TransferRequestController implements Serializable {
     }
 
     public void addItem() {
-
         if (errorCheck()) {
             currentBillItem = null;
             return;
         }
-
+        
+        // User Input is getCurrentBillItem().getQty() > We should NOT change this programmitically
+        // This user input needed to be recorded in pharmaceutical bill item and bill item Finance Details
+        // pharmaceutical bill item qty will always be in units
+        // If Ampp or Vmpp > have to multiply by pack size and write the qty in units in pharmaceutical bill item
+        // have to add all quantity related data for bill Item Financial Details - No pricing related data is required
+        
         getCurrentBillItem().setSearialNo(getBillItems().size());
-
-        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
+        getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRateInUnit(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().setQty(getCurrentBillItem().getTmpQty());
+        getCurrentBillItem().getBillItemFinanceDetails();
+        
         getBillItems().add(getCurrentBillItem());
-
+        
+        
+        
         currentBillItem = null;
     }
-    @Inject
-    private PharmacyController pharmacyController;
 
     public void onEdit(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
@@ -220,18 +229,17 @@ public class TransferRequestController implements Serializable {
 
     }
 
-    public void approveTransferRequestBill(){
+    public void approveTransferRequestBill() {
         transerRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         transerRequestBillPre.setApproveAt(new Date());
         transerRequestBillPre.setCheckedBy(sessionController.getLoggedUser());
         transerRequestBillPre.setCheckeAt(new Date());
         transerRequestBillPre.setApproveUser(sessionController.getLoggedUser());
         billFacade.edit(transerRequestBillPre);
-        JsfUtil.addSuccessMessage("Approval done. Send the request to "+ transerRequestBillPre.getToDepartment());
+        JsfUtil.addSuccessMessage("Approval done. Send the request to " + transerRequestBillPre.getToDepartment());
 
         bill = transerRequestBillPre;
         printPreview = true;
-
 
     }
 
