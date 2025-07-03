@@ -190,6 +190,25 @@ public class DepartmentController implements Serializable {
         return deps;
     }
 
+    public List<Department> getInstitutionLabDepartments(Institution ins) {
+        List<Department> deps;
+        if (ins == null) {
+            deps = new ArrayList<>();
+        } else {
+            Map<String, Object> m = new HashMap<>();
+            m.put("ins", ins);
+            m.put("type", DepartmentType.Lab);
+            String jpql = "Select d From Department d "
+                    + " where d.retired=false "
+                    + " and d.institution=:ins "
+                    + " and d.departmentType=:type "
+                    + " and TYPE(d) <> Route "
+                    + " order by d.name";
+            deps = getFacade().findByJpql(jpql, m);
+        }
+        return deps;
+    }
+
     public List<Department> getAllDepartmentsWithInstitutionFilter(Institution ins) {
         List<Department> deps;
         Map<String, Object> m = new HashMap<>();
@@ -473,6 +492,17 @@ public class DepartmentController implements Serializable {
         String sql = "Select d From Department d "
                 + " where d.retired=false ";
         departments = getFacade().findByJpql(sql);
+        return departments;
+    }
+
+    public List<Department> listAllLabDepartments() {
+        List<Department> departments;
+        Map<String, Object> m = new HashMap<>();
+        m.put("type", DepartmentType.Lab);
+        String sql = "Select d From Department d "
+                + " where d.retired=false "
+                + " and d.departmentType=:type";
+        departments = getFacade().findByJpql(sql, m);
         return departments;
     }
 
@@ -916,6 +946,7 @@ public class DepartmentController implements Serializable {
     }
 
     public static class DepartmentDuplicateGroup {
+
         private List<Department> departments;
 
         public DepartmentDuplicateGroup(List<Department> departments) {

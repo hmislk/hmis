@@ -158,7 +158,7 @@
                             style="max-width: 100%">
                             <f:selectItem itemLabel="Any"></f:selectItem>
                             <f:selectItems 
-                                value="#{departmentController.getInstitutionDepartments(laboratoryManagementController.performingInstitution)}" 
+                                value="#{departmentController.getInstitutionLabDepartments(laboratoryManagementController.performingInstitution)}" 
                                 var="pdpt"
                                 itemLabel="#{pdpt.name}" 
                                 itemValue="#{pdpt}">
@@ -527,6 +527,22 @@
                         rendered="#{webUserController.hasPrivilege('LabSampleReceiving')}"
                         >
                         <div class="d-flex gap-2">
+                            <p:selectOneMenu
+                                filter="true"
+                                value="#{laboratoryManagementController.sampleReceiveFromDepartment}"
+                                filterMatchMode="contains"
+                                id="receiveSampleDept"
+                                class="w-100 mb-2">
+                                <f:selectItem itemLabel="Select From Department"></f:selectItem>
+                                <f:selectItems 
+                                    value="#{departmentController.listAllLabDepartments()}" 
+                                    var="odpt" 
+                                    itemLabel="#{odpt.name}" 
+                                    itemValue="#{odpt}">
+                                </f:selectItems>
+                            </p:selectOneMenu>
+                        </div>
+                        <div class="d-flex gap-2">
                             <p:commandButton 
                                 value="Non Received Samples"
                                 ajax="false"
@@ -628,7 +644,7 @@
                                     class="w-100">
                                     <f:selectItem itemLabel="Any"></f:selectItem>
                                     <f:selectItems 
-                                        value="#{departmentController.listAllDepatrments()}" 
+                                        value="#{departmentController.listAllLabDepartments()}" 
                                         var="odpt" 
                                         itemLabel="#{odpt.name}" 
                                         itemValue="#{odpt}">
