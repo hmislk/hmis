@@ -106,12 +106,10 @@ public class TransferIssueController implements Serializable {
             return "";
         }
         createRequestIssueBillItems(requestedBill);
-
         if (isFullyIssued(requestedBill)) {
             JsfUtil.addErrorMessage("All items have already been issued.");
             return "";
         }
-
         return "/pharmacy/pharmacy_transfer_issue?faces-redirect=true";
     }
 
@@ -262,14 +260,14 @@ public class TransferIssueController implements Serializable {
         // Save the user stock container if this is a new bill
         UserStockContainer usc = userStockController.saveUserStockContainer(getUserStockContainer(), getSessionController().getLoggedUser());
 
-        List<BillItem> bis = billController.billItemsOfBill(getRequestedBill());
+        List<BillItem> billItemsOfRequest = billController.billItemsOfBill(getRequestedBill());
 
         // Setup department details
         getIssuedBill().setDepartment(requestedBill.getDepartment());
         getIssuedBill().setFromDepartment(getSessionController().getDepartment());
         getIssuedBill().setToDepartment(requestedBill.getDepartment());
 
-        for (BillItem billItemInRequest : bis) {
+        for (BillItem billItemInRequest : billItemsOfRequest) {
             boolean flagStockFound = false;
 
             // Calculate pending quantity to issue
@@ -645,9 +643,7 @@ public class TransferIssueController implements Serializable {
 
         saveBill();
         for (BillItem i : getBillItems()) {
-
-            i.getPharmaceuticalBillItem().setQtyInUnit(0 - i.getPharmaceuticalBillItem().getQtyInUnit());
-
+            i.getPharmaceuticalBillItem().setQty(0 - Math.abs(i.getPharmaceuticalBillItem().getQty()));
             if (i.getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
@@ -672,7 +668,7 @@ public class TransferIssueController implements Serializable {
             getBillItemFacade().edit(i);
 
             //Checking User Stock Entity
-            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQtyInUnit(), getSessionController().getLoggedUser())) {
+            if (!userStockController.isStockAvailable(tmpPh.getStock(), tmpPh.getQty(), getSessionController().getLoggedUser())) {
                 i.setTmpQty(0);
                 getBillItemFacade().edit(i);
                 getIssuedBill().getBillItems().add(i);
@@ -681,14 +677,14 @@ public class TransferIssueController implements Serializable {
 
             //Remove Department Stock
             boolean returnFlag = pharmacyBean.deductFromStock(i.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()),
+                    Math.abs(i.getPharmaceuticalBillItem().getQty()),
                     i.getPharmaceuticalBillItem(),
                     getSessionController().getDepartment());
             if (returnFlag) {
 
                 //Addinng Staff
                 Stock staffStock = pharmacyBean.addToStock(i.getPharmaceuticalBillItem(),
-                        Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit()), getIssuedBill().getToStaff());
+                        Math.abs(i.getPharmaceuticalBillItem().getQty()), getIssuedBill().getToStaff());
 
                 i.getPharmaceuticalBillItem().setStaffStock(staffStock);
 
