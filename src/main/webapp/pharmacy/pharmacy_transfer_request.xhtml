@@ -54,13 +54,13 @@
                                 <p:commandButton
                                     id="btnSave"
                                     value="Save"
-                                    action="#{transferRequestController.saveTranserRequest()}"
+                                    action="#{transferRequestController.saveTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-save"
                                     class="mx-1 ui-button-success"/>
                                 <p:commandButton
                                     value="Finalize"
-                                    action="#{transferRequestController.finalizeTranserRequest()}"
+                                    action="#{transferRequestController.finalizeTranserRequestPreBill()}"
                                     ajax="false"
                                     icon="pi pi-check"
                                     class="mx-1 ui-button-warning"/>
@@ -212,7 +212,7 @@
                     <p:printer target="gpBillPreview"></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.bill}" />
+                    <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
                 </h:panelGroup>
             </p:panel>
 

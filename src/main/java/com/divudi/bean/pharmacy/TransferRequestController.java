@@ -102,9 +102,6 @@ public class TransferRequestController implements Serializable {
     // </editor-fold>
 
     public void recreate() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
         toDepartment = null;
         bill = null;
         currentBillItem = null;
@@ -112,7 +109,6 @@ public class TransferRequestController implements Serializable {
         billItems = null;
         printPreview = false;
         transferRequestBillPre = null;
-
     }
 
     public void changeDepartment() {
@@ -139,31 +135,20 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("U can't request same department");
             return true;
         }
-
         if (getCurrentBillItem().getItem() == null) {
             JsfUtil.addErrorMessage("Select Item");
             return true;
         }
-
-        if (getCurrentBillItem().getTmpQty() == 0) {
+        if (getCurrentBillItem().getQty() == 0) {
             JsfUtil.addErrorMessage("Set Ordering Qty");
             return true;
         }
-
         if (checkItems(getCurrentBillItem().getItem())) {
             JsfUtil.addErrorMessage("Item is Already Added");
             return true;
         }
-
-        if (getBillItems().size() >= 50) {
-            JsfUtil.addErrorMessage("You Can Only Add 50 Items For this Request.");
-            return true;
-        }
-
         return false;
-
     }
-
 
     public void addAllItem() {
 
@@ -207,7 +192,6 @@ public class TransferRequestController implements Serializable {
         // pharmaceutical bill item qty will always be in units
         // If Ampp or Vmpp > have to multiply by pack size and write the qty in units in pharmaceutical bill item
         // have to add all quantity related data for bill Item Financial Details - No pricing related data is required
-
         BillItem bi = getCurrentBillItem();
         PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
@@ -367,27 +351,27 @@ public class TransferRequestController implements Serializable {
 
     }
 
-    public void saveTranserRequest() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
+    public boolean errorsPresent() {
         if (getBillItems() == null) {
             JsfUtil.addErrorMessage("No Item Selected to Request");
-            return;
+            return true;
         }
-
         if (getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Item Selected to Request");
-            return;
+            return true;
         }
-
         if (getToDepartment() == null) {
             JsfUtil.addErrorMessage("Select Requested Department");
-            return;
+            return true;
         }
-        getTransferRequestBillPre().setToDepartment(toDepartment);
-        getTransferRequestBillPre().setToInstitution(getTransferRequestBillPre().getToDepartment().getInstitution());
+        return false;
+    }
+
+    public void saveTransferRequestPreBillAndBillItems() {
+        getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
+        getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
+        getTransferRequestBillPre().setToDepartment(getToDepartment());
+        getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
         getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
 
@@ -395,19 +379,12 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
         }
-
-        if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("No Items Requested");
-            return;
-        }
-
         for (BillItem bi : getBillItems()) {
             if (bi.getQty() == 0.0) {
                 JsfUtil.addErrorMessage("Some Items Have Zero Quantities");
                 return;
             }
         }
-
         getTransferRequestBillPre().setInstitution(getSessionController().getInstitution());
         getTransferRequestBillPre().setDepartment(getSessionController().getDepartment());
         if (getTransferRequestBillPre().getId() == null) {
@@ -415,14 +392,9 @@ public class TransferRequestController implements Serializable {
         }
         getTransferRequestBillPre().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
         getTransferRequestBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
-
         getTransferRequestBillPre().setCreater(getSessionController().getLoggedUser());
         getTransferRequestBillPre().setCreatedAt(Calendar.getInstance().getTime());
-
         getBillFacade().edit(getTransferRequestBillPre());
-        if (getTransferRequestBillPre().getBillItems().size() != 0) {
-            getTransferRequestBillPre().setBillItems(new ArrayList<>());
-        }
         for (BillItem b : getBillItems()) {
             b.setBill(getTransferRequestBillPre());
             b.setCreatedAt(new Date());
@@ -447,6 +419,13 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         LOGGER.log(Level.FINE, "Finalizing transfer request with {0} items", getBillItems().size());
         getBillFacade().edit(getTransferRequestBillPre());
+    }
+
+    public void saveTranserRequestPreBill() {
+        if (errorsPresent()) {
+            return;
+        }
+        saveTransferRequestPreBillAndBillItems();
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Created");
     }
 
@@ -460,11 +439,8 @@ public class TransferRequestController implements Serializable {
         }
         billItems = fetchBillItems(getTransferRequestBillPre());
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
-        for (BillItem bi : billItems) {
-            bi.setTmpQty(bi.getQty());
-        }
         setToDepartment(getTransferRequestBillPre().getToDepartment());
-        return "/pharmacy/pharmacy_transfer_request_save?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
     }
 
     public String navigateToApproveRequest() {
@@ -484,48 +460,17 @@ public class TransferRequestController implements Serializable {
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
 
-    public void finalizeTranserRequest() {
-        if (transferRequestBillPre == null) {
-            JsfUtil.addErrorMessage("No Bill! Save the Bill First");
+    public void finalizeTranserRequestPreBill() {
+        if (errorsPresent()) {
             return;
         }
-        if (transferRequestBillPre.getId() == null) {
-            saveTranserRequest();
-        }
-        if (getTransferRequestBillPre().getBillItems().size() != 0) {
-            getTransferRequestBillPre().setBillItems(new ArrayList<>());
-        }
-        getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
-
-        for (BillItem b : getBillItems()) {
-            b.setBill(getTransferRequestBillPre());
-            b.setCreatedAt(new Date());
-            b.setCreater(getSessionController().getLoggedUser());
-
-            PharmaceuticalBillItem tmpPh = b.getPharmaceuticalBillItem();
-            b.setPharmaceuticalBillItem(null);
-
-            if (b.getId() == null) {
-                getBillItemFacade().create(b);
-            }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-
-            b.setPharmaceuticalBillItem(tmpPh);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
-            getBillItemFacade().edit(b);
-            getTransferRequestBillPre().getBillItems().add(b);
-        }
+        saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
         getTransferRequestBillPre().setCheckeAt(new Date());
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
-
-        searchController.fillSavedTranserRequestBills();
         printPreview = true;
     }
 
