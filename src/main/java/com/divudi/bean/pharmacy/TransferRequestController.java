@@ -528,6 +528,10 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Cannot Make a Request with the Same Department");
             return "";
         }
+        getTransferRequestBillPre().setFromInstitution(sessionController.getInstitution());
+        getTransferRequestBillPre().setFromDepartment(sessionController.getDepartment());
+        getTransferRequestBillPre().setToDepartment(toDepartment);
+        getTransferRequestBillPre().setToInstitution(toDepartment.getInstitution());
         return "/pharmacy/pharmacy_transfer_request";
     }
 

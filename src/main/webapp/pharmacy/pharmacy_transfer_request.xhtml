@@ -14,30 +14,44 @@
                     <p:panel >
                         <f:facet name="header">
                             <h:outputLabel styleClass="fas fa-building" />
-                            <h:outputLabel value="Select Department" class="mx-4" />
+                            <h:outputLabel value="Select Department to Request" class="mx-4" />
                         </f:facet>
                         <div class="row" >
+                            <div class="col-3" ></div>
                             <div class="col-6" >
-                                <h:outputLabel value="Select a Department to Request : "/>
-                                <p:autoComplete  value="#{transferRequestController.toDepartment}"
-                                                 forceSelection="true" size="30" inputStyleClass="w-100" class="mx-2"
-                                                 completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
-                                                 >
-                                    <p:ajax process="@this" update="btn"></p:ajax>
-                                </p:autoComplete>
-                                <h:panelGroup id="btn">
-                                    <p:commandButton
-                                        id="btnSelect"
-                                        ajax="false"
-                                        value="Select"
-                                        action="#{transferRequestController.processTransferRequest}"
-                                        />
-                                </h:panelGroup>
+                                <p:panelGrid columns="3" layout="tabular" class="w-100 my-1" >
+                                    <f:facet name="header">
+                                        <h:outputLabel styleClass="fas fa-building" />
+                                        <h:outputLabel value="Select Department" class="mx-4" />
+                                    </f:facet>
+                                    <h:outputLabel value="Select a Department to Request : "/>
+                                    <p:autoComplete 
+                                        value="#{transferRequestController.toDepartment}"
+                                        forceSelection="true" 
+                                        size="30" 
+                                        inputStyleClass="w-100"
+                                        class="mx-2 w-100"
+                                        completeMethod="#{departmentController.completeDept}" 
+                                        var="vt" 
+                                        itemLabel="#{vt.name}" 
+                                        itemValue="#{vt}"
+                                        >
+                                        <p:ajax process="@this" update="btn"></p:ajax>
+                                    </p:autoComplete>
+                                    <h:panelGroup id="btn">
+                                        <p:commandButton
+                                            id="btnSelect"
+                                            ajax="false"
+                                            value="Select"
+                                            action="#{transferRequestController.processTransferRequest}"
+                                            />
+                                    </h:panelGroup>
 
-                            </div>
-                            <div class="col-2" ></div>
-                            <div class="col-4" >
+                                </p:panelGrid>
+
+
                                 <p:panel 
+                                    class="text-center my-1"
                                     header="Departments with Recent Requets Sent To"
                                     rendered="#{not empty transferRequestController.recentToDepartments}">
                                     <ui:repeat value="#{transferRequestController.recentToDepartments}" var="d">
@@ -85,8 +99,12 @@
                                     icon="pi pi-plus"
                                     class="ui-button-danger"/>
 
-                                <p:commandButton value="Change Department" class="ui-button-primary mx-1" ajax="false" icon="pi pi-refresh"
-                                                 action="#{transferRequestController.changeDepartment()}" />
+                                <p:commandButton 
+                                    value="Change Department" 
+                                    class="ui-button-primary mx-1"
+                                    ajax="false" 
+                                    icon="pi pi-refresh"
+                                    action="#{transferRequestController.changeDepartment()}" />
 
                             </div>
                         </div>
@@ -252,17 +270,25 @@
                                     <h:outputLabel value="Request Details" class="mx-4" />
                                 </f:facet>
                                 <h:panelGrid columns="3" class="w-100">
-                                    <h:outputLabel value="Transfer Value" />
+                                    <h:outputLabel value="Request From" />
+                                    <h:outputLabel value=": &nbsp;"/>
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromInstitution.name}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Request To" />
+                                    <h:outputLabel value=": &nbsp;"/>
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toInstitution.name}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Approximate Request Value" />
                                     <h:outputLabel value=": &nbsp;"/>
                                     <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Transfer Cost Value" />
-                                    <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.billFinanceDetails.totalCostValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
+
                                 </h:panelGrid>
                             </p:panel>
                         </div>
