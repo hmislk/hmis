@@ -27,10 +27,10 @@
                             </div>
                         </div>
                     </f:facet>
-             
+
 
                     <div class="row">
-                        <div class="col-09">
+                        <div class="col-9">
                             <p:panel class="my-2">
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-money-bill" />
@@ -104,22 +104,26 @@
                                 </p:dataTable>
                             </p:panel>
                         </div>
-                        <div class="col-09">
+                        <div class="col-3">
                             <p:panel id="requestTotals" class="my-2">
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-list" />
                                     <h:outputLabel value="Request Details" class="mx-4" />
                                 </f:facet>
                                 <h:panelGrid columns="3" class="w-100">
-                                    <h:outputLabel value="Transfer Value" />
+                                    <h:outputLabel value="Request From" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromDepartment.name}">
                                     </h:outputLabel>
 
-                                    <h:outputLabel value="Transfer Cost Value" />
+                                    <h:outputLabel value="Request To" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.billFinanceDetails.totalCostValue}">
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toDepartment.name}">
+                                    </h:outputLabel>
+
+                                    <h:outputLabel value="Approximate Transfer Value" />
+                                    <h:outputLabel value=": &nbsp;"/>
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </h:panelGrid>
@@ -157,7 +161,7 @@
                     </div>
                 </div>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:transferRequest  bill="#{transferRequestController.bill}" />
+                    <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.bill}" />
                 </h:panelGroup>
             </p:panel>
 

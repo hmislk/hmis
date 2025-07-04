@@ -110,7 +110,7 @@
                         </div>
                     </f:facet>
                     <div class="row">
-                        <div class="col-09">
+                        <div class="col-9">
                             <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-cube" />
@@ -263,7 +263,7 @@
                                 </p:dataTable>
                             </p:panel>
                         </div>
-                        <div class="col-09">
+                        <div class="col-3">
                             <p:panel id="requestTotals" class="my-2">
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-list" />
@@ -272,14 +272,12 @@
                                 <h:panelGrid columns="3" class="w-100">
                                     <h:outputLabel value="Request From" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromInstitution.name}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.fromDepartment.name}">
                                     </h:outputLabel>
 
                                     <h:outputLabel value="Request To" />
                                     <h:outputLabel value=": &nbsp;"/>
-                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toInstitution.name}">
-                                        <f:convertNumber pattern="#,##0.00" />
+                                    <h:outputLabel class="w-100 text-end" value="#{transferRequestController.transferRequestBillPre.toDepartment.name}">
                                     </h:outputLabel>
 
                                     <h:outputLabel value="Approximate Request Value" />

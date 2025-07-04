@@ -35,13 +35,13 @@
                                      paginator="true"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,15" paginatorPosition="bottom">
-                            <p:column headerText="Request No" width="100px">
+                            <p:column headerText="Request No" >
                                 <h:outputLabel value="#{b.deptId}"/>
                             </p:column>
-                            <p:column headerText="To Department" width="150px">
+                            <p:column headerText="To Department" >
                                 <h:outputLabel value="#{b.toDepartment.name}"/>
                             </p:column>
-                            <p:column headerText="Requested At" width="130px">
+                            <p:column headerText="Requested At" >
                                 <h:outputLabel value="#{b.createdAt}">
                                     <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputLabel>
@@ -54,7 +54,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="Requested By" width="150px">
+                            <p:column headerText="Requested By" >
                                 <h:outputLabel value="#{b.creater.webUserPerson.name}"/>
                                 <br/>
                                 <h:panelGroup rendered="#{b.cancelled}">
@@ -63,16 +63,20 @@
                                                    value="#{b.cancelledBill.creater.webUserPerson.name}"/>
                                 </h:panelGroup>
                             </p:column>
-                            <p:column headerText="Requested Value">
+                            <p:column headerText="Requested Value" class="text-end">
                                 <h:outputLabel value="#{b.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Actions" width="9em">
-                                <p:commandButton id="finalize" ajax="false" title="Edit and Finalize Request"
-                                                 icon="fas fa-check-circle" class="ui-button-success mx-2"
-                                                 action="#{transferRequestController.navigateToEditRequest}"
-                                                 disabled="#{b.checkedBy ne null or b.cancelled eq true}">
+                            <p:column headerText="Actions" >
+                                <p:commandButton 
+                                    id="finalize"
+                                    ajax="false" 
+                                    value="Edit and Finalize Request"
+                                    title="Edit and Finalize Request"
+                                    icon="fas fa-check-circle" class="ui-button-success mx-2"
+                                    action="#{transferRequestController.navigateToEditRequest}"
+                                    disabled="#{b.checkedBy ne null or b.cancelled eq true}">
                                     <f:setPropertyActionListener target="#{transferRequestController.transferRequestBillPre}" value="#{b}"/>
                                 </p:commandButton>
                             </p:column>
