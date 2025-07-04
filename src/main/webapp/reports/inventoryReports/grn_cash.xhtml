@@ -244,11 +244,13 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Total">
-                                <h:outputText value="#{0.0-bi.bill.netTotal}">
+                                <h:outputText value="#{bi.bill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{0.0-pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>
                         </p:dataTable>

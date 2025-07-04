@@ -114,9 +114,13 @@ public class GrnCostingController implements Serializable {
      * @param bi
      * @return
      */
-    public double calcProfitMargin(BillItem bi) {
+    public double calculateProfitMargin(BillItem bi) {
         return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
     }
+
+//    public double calculateProfitMargin(BillItem bi) {
+//        return pharmacyCostingService.calculateProfitMarginForPurchases(bi);
+//    }
     /////////////////
     private Bill approveBill;
     private Bill grnBill;
@@ -175,43 +179,59 @@ public class GrnCostingController implements Serializable {
     }
 
     public void duplicateItem(BillItem originalBillItemToDuplicate) {
-        BillItem newBillItemCreatedByDuplication = new BillItem();
-        double totalQuantityOfBillItemsRefernceToOriginalItem = 0.0;
-        double totalFreeQuantityOfBillItemsRefernceToOriginalItem = 0.0;
-
-        double remainFreeQty;
-        double remainQty;
-        if (originalBillItemToDuplicate != null) {
-            PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
-            newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
-            newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
-            newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
-            newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
-            newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
-
-            List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
-
-            for (BillItem bi : tmpBillItems) {
-                totalQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getQtyInUnit();
-                totalFreeQuantityOfBillItemsRefernceToOriginalItem += bi.getPharmaceuticalBillItem().getFreeQtyInUnit();
-            }
-            remainQty = originalBillItemToDuplicate.getPreviousRecieveQtyInUnit() - totalQuantityOfBillItemsRefernceToOriginalItem;
-            remainFreeQty = originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit() - totalFreeQuantityOfBillItemsRefernceToOriginalItem;
-
-            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty);
-            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty);
-
-            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQty(remainFreeQty);
-            newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty);
-
-            newBillItemCreatedByDuplication.setTmpQty(remainQty);
-            newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty);
-
-            newBillItemCreatedByDuplication.setPreviousRecieveQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
-            newBillItemCreatedByDuplication.setPreviousRecieveFreeQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit());
-            getBillItems().add(newBillItemCreatedByDuplication);
+        if (originalBillItemToDuplicate == null) {
+            return;
         }
-        calGrossTotal();
+        BigDecimal totalQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantityOfBillItemsRefernceToOriginalItem = BigDecimal.ZERO;
+
+        BigDecimal remainFreeQty = BigDecimal.ZERO;
+        BigDecimal remainQty = BigDecimal.ZERO;
+
+        BillItem newBillItemCreatedByDuplication = new BillItem();
+        newBillItemCreatedByDuplication.copy(originalBillItemToDuplicate);
+        newBillItemCreatedByDuplication.setId(null);
+
+        BillItemFinanceDetails newBifd = originalBillItemToDuplicate.getBillItemFinanceDetails().clone();
+        newBifd.setId(null);
+        newBifd.setBillItem(newBillItemCreatedByDuplication);
+
+        PharmaceuticalBillItem newPharmaceuticalBillItemCreatedByDuplication = new PharmaceuticalBillItem();
+        newPharmaceuticalBillItemCreatedByDuplication.copy(originalBillItemToDuplicate.getPharmaceuticalBillItem());
+        newPharmaceuticalBillItemCreatedByDuplication.setId(null);
+        newPharmaceuticalBillItemCreatedByDuplication.setBillItem(newBillItemCreatedByDuplication);
+
+        newBillItemCreatedByDuplication.setItem(originalBillItemToDuplicate.getItem());
+        newBillItemCreatedByDuplication.setReferanceBillItem(originalBillItemToDuplicate.getReferanceBillItem());
+        newBillItemCreatedByDuplication.setPharmaceuticalBillItem(newPharmaceuticalBillItemCreatedByDuplication);
+        newBillItemCreatedByDuplication.setBillItemFinanceDetails(newBifd);
+
+        List<BillItem> tmpBillItems = findAllBillItemsRefernceToOriginalItem(originalBillItemToDuplicate.getReferanceBillItem());
+
+        for (BillItem bi : tmpBillItems) {
+            totalQuantityOfBillItemsRefernceToOriginalItem = totalQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getQuantity());
+            totalFreeQuantityOfBillItemsRefernceToOriginalItem = totalFreeQuantityOfBillItemsRefernceToOriginalItem.add(bi.getBillItemFinanceDetails().getFreeQuantity());
+        }
+        remainQty = BigDecimal.valueOf(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit()).subtract(totalQuantityOfBillItemsRefernceToOriginalItem);
+        remainFreeQty = BigDecimal.valueOf(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit()).subtract(totalFreeQuantityOfBillItemsRefernceToOriginalItem);
+
+        newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQty(remainQty.doubleValue());
+        newBifd.setQuantity(remainQty);
+        newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setQtyInUnit(remainQty.doubleValue());
+        newBifd.setFreeQuantity(remainFreeQty);
+
+        newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQty(remainFreeQty.doubleValue());
+        newBillItemCreatedByDuplication.getPharmaceuticalBillItem().setFreeQtyInUnit(remainFreeQty.doubleValue());
+
+        newBillItemCreatedByDuplication.setTmpQty(remainQty.doubleValue());
+        newBillItemCreatedByDuplication.setTmpFreeQty(remainFreeQty.doubleValue());
+
+        newBillItemCreatedByDuplication.setPreviousRecieveQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveQtyInUnit());
+        newBillItemCreatedByDuplication.setPreviousRecieveFreeQtyInUnit(originalBillItemToDuplicate.getPreviousRecieveFreeQtyInUnit());
+        getBillItems().add(newBillItemCreatedByDuplication);
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(newBillItemCreatedByDuplication.getBillItemFinanceDetails());
+        calculateBillTotalsFromItems();
+        calDifference();
     }
 
     public void removeSelected() {
@@ -1352,6 +1372,46 @@ public class GrnCostingController implements Serializable {
         }
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getGrnBill());
+        calculateBillTotalsFromItems();
+        calDifference();
+    }
+
+    public void lineDiscountRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        calculateBillTotalsFromItems();
+        calDifference();
+    }
+
+    public void retailRateChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        calculateBillTotalsFromItems();
+        calDifference();
+    }
+
+    public void freeQtyChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
+        calculateBillTotalsFromItems();
+        calDifference();
+    }
+
+    public void qtyChangedListner(BillItem tmp) {
+        BillItemFinanceDetails f = tmp.getBillItemFinanceDetails();
+        if (f == null) {
+            return;
+        }
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         calculateBillTotalsFromItems();
         calDifference();
     }

@@ -116,6 +116,7 @@ public class LaboratoryManagementController implements Serializable {
     private String filteringStatus;
     private String comment;
     private Department sampleSendingDepartment;
+    private Department sampleReceiveFromDepartment;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
@@ -171,6 +172,20 @@ public class LaboratoryManagementController implements Serializable {
         performingInstitution = null;
         performingDepartment = null;
         patientInvestigationStatus = null;
+    }
+    
+    public String navigateToOtherPatientReport(Bill bill) {
+        activeIndex = 4;
+        listingEntity = ListingEntity.PATIENT_REPORTS;
+        navigateToPatientReportsFromSelectedBill(bill);
+        return "/lab/laboratory_management_dashboard?faces-redirect=true";
+    }
+    
+    public String navigateToOtherPatientInvestigations(Bill bill) {
+        activeIndex = 4;
+        listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
+        navigateToInvestigationsFromSelectedBill(bill);
+        return "/lab/laboratory_management_dashboard?faces-redirect=true";
     }
 
     public String navigateToEditReport(Long patientReportID) {
@@ -312,6 +327,8 @@ public class LaboratoryManagementController implements Serializable {
 
         items.add(patientInvestigation);
     }
+    
+    
 
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
@@ -330,6 +347,8 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
+    
+    
 
     public String navigateToBackFormPatientReportEditingView() {
         if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -714,16 +733,24 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void nonReceivedSampleList() {
+        if (sampleReceiveFromDepartment == null) {
+            JsfUtil.addErrorMessage("Please Select Sample from Department.");
+            patientSamples = new ArrayList<>();
+            return;
+        }
+        
         selectedPatientSamples = new ArrayList<>();
 
         String jpql = "SELECT ps FROM PatientSample ps "
                 + "WHERE ps.retired = :ret "
                 + "AND ps.sampleSentToDepartment = :toDepartment "
+                + "AND ps.department = :fromDepartment "
                 + "AND ps.status = :status "
                 + "ORDER BY ps.id DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("toDepartment", sessionController.getDepartment());
+        params.put("fromDepartment", sampleReceiveFromDepartment);
         params.put("ret", false);
         params.put("status", PatientInvestigationStatus.SAMPLE_SENT);
 
@@ -734,6 +761,7 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         selectAll = false;
+        sampleReceiveFromDepartment = null;
     }
 
     public void selectAllSamples() {
@@ -784,7 +812,7 @@ public class LaboratoryManagementController implements Serializable {
             if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
 
             }
-
+            ps.setDepartment(sessionController.getDepartment());
             ps.setSampleCollected(true);
             ps.setSampleCollectedAt(new Date());
             ps.setSampleCollectedDepartment(sessionController.getDepartment());
@@ -856,6 +884,7 @@ public class LaboratoryManagementController implements Serializable {
         for (PatientSample ps : selectedPatientSamples) {
             ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             ps.setSampleSent(true);
+            ps.setDepartment(sessionController.getDepartment());
             ps.setSampleSentBy(sessionController.getLoggedUser());
             ps.setSampleSentAt(new Date());
             ps.setSampleSentToInstitution(sampleSendingDepartment.getInstitution());
@@ -1695,4 +1724,12 @@ public class LaboratoryManagementController implements Serializable {
     }
 
 // </editor-fold>
+
+    public Department getSampleReceiveFromDepartment() {
+        return sampleReceiveFromDepartment;
+    }
+
+    public void setSampleReceiveFromDepartment(Department sampleReceiveFromDepartment) {
+        this.sampleReceiveFromDepartment = sampleReceiveFromDepartment;
+    }
 }

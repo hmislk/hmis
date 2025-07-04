@@ -36,6 +36,8 @@ public class PharmacyCostingService {
         }
         PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
 
+        Double prPerUnit;
+        Double rrPerUnit;
         BigDecimal qty = Optional.ofNullable(billItemFinanceDetails.getQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal freeQty = Optional.ofNullable(billItemFinanceDetails.getFreeQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal lineGrossRate = Optional.ofNullable(billItemFinanceDetails.getLineGrossRate()).orElse(BigDecimal.ZERO);
@@ -55,11 +57,15 @@ public class PharmacyCostingService {
             qtyInUnits = qty.multiply(unitsPerPack);
             freeQtyInUnits = freeQty.multiply(unitsPerPack);
             totalQtyInUnits = totalQty.multiply(unitsPerPack);
+            prPerUnit=lineGrossRate.divide(unitsPerPack).doubleValue();
+            rrPerUnit=retailRate.divide(unitsPerPack).doubleValue();
         } else {
             unitsPerPack = BigDecimal.ONE;
             qtyInUnits = qty;
             freeQtyInUnits = freeQty;
             totalQtyInUnits = totalQty;
+            prPerUnit=lineGrossRate.doubleValue();
+            rrPerUnit=retailRate.doubleValue();
         }
 
         billItemFinanceDetails.setUnitsPerPack(unitsPerPack);
@@ -95,8 +101,20 @@ public class PharmacyCostingService {
 
         billItemFinanceDetails.setProfitMargin(calculateProfitMarginForPurchasesBigDecimal(billItemFinanceDetails.getBillItem()));
 
-        pbi.setRetailRate(billItemFinanceDetails.getRetailSaleRate().doubleValue());
+        pbi.setRetailRate(retailRate.doubleValue());
+        pbi.setRetailRateInUnit(rrPerUnit);
+        pbi.setRetailRatePack(retailRate.doubleValue());
+        
+        pbi.setRetailPackValue(retailValue.doubleValue());
         pbi.setRetailValue(retailValue.doubleValue());
+        
+        pbi.setPurchaseRate(prPerUnit);
+        pbi.setPurchaseRatePack(lineGrossRate.doubleValue());
+        
+        pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
+        pbi.setPurchaseValue(lineGrossTotal.doubleValue());
+        
+        
     }
 
     /**

@@ -179,7 +179,7 @@
                                     class="m-1 ui-button-success"
                                     icon="fas fa-file-excel"
                                     ajax="false" value="Export to Excel">
-                                <p:dataExporter type="xlsx" target="tbl" fileName="agent_channel_bookings"/>
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Channel_income_report"/>
                             </p:commandButton>
                         </div>
                     </div>
@@ -239,7 +239,7 @@
                                     value="#{row.bill.deptId}"
                                     action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
                             </p:commandLink>
-                            <p:tooltip for="billNo" value="#{row.bill.deptId}"></p:tooltip>
+                            <p:tooltip for="billNo" value="#{row.bill.deptId}"/>
 
                             <p:badge value="Cancelled" severity="danger" rendered="#{row.bill.cancelled}"/>
                             <p:badge value="Refunded" severity="warning" rendered="#{row.bill.refunded}"/>
