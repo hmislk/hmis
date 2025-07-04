@@ -17,23 +17,14 @@
                             <h:outputLabel value="Select Department" class="mx-4" />
                         </f:facet>
                         <div class="row" >
-                            <div class="col-12" >
+                            <div class="col-6" >
                                 <h:outputLabel value="Select a Department to Request : "/>
-
                                 <p:autoComplete  value="#{transferRequestController.toDepartment}"
                                                  forceSelection="true" size="30" inputStyleClass="w-100" class="mx-2"
                                                  completeMethod="#{departmentController.completeDept}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}"
                                                  >
                                     <p:ajax process="@this" update="btn"></p:ajax>
                                 </p:autoComplete>
-                                <h:panelGroup rendered="#{not empty transferRequestController.recentToDepartments}">
-                                    <ui:repeat value="#{transferRequestController.recentToDepartments}" var="d">
-                                        <p:commandButton value="#{d.name}" icon="pi pi-building"
-                                                         class="m-1 p-button-sm p-button-outlined"
-                                                         action="#{transferRequestController.selectFromRecentDepartment(d)}"
-                                                         ajax="false"/>
-                                    </ui:repeat>
-                                </h:panelGroup>
                                 <h:panelGroup id="btn">
                                     <p:commandButton
                                         id="btnSelect"
@@ -43,6 +34,21 @@
                                         />
                                 </h:panelGroup>
 
+                            </div>
+                            <div class="col-2" ></div>
+                            <div class="col-4" >
+                                <p:panel 
+                                    header="Departments with Recent Requets Sent To"
+                                    rendered="#{not empty transferRequestController.recentToDepartments}">
+                                    <ui:repeat value="#{transferRequestController.recentToDepartments}" var="d">
+                                        <p:commandButton 
+                                            value="#{d.name}" 
+                                            icon="pi pi-building"
+                                            class="m-1 ui-button-success rounded-pill fw-bold px-3"
+                                            action="#{transferRequestController.selectFromRecentDepartment(d)}"
+                                            ajax="false"/>
+                                    </ui:repeat>
+                                </p:panel>
                             </div>
                         </div>
                     </p:panel>
@@ -134,8 +140,7 @@
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
-                                            <p:ajax event="change" update="focusItem" />
-                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
+                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -143,7 +148,7 @@
                                         <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                      value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
+                                            <p:ajax event="keyup" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
