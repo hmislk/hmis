@@ -197,7 +197,7 @@
                                             class="ui-button-icon-only mx-3"/>
                                     </p:column>
 
-                                    <p:column headerText="Pack Size" >
+                                    <p:column headerText="Pack Size"  width="8em" >
                                         <p:outputLabel 
                                             value="#{bi.item.dblValue}"
                                             rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}">
@@ -207,8 +207,13 @@
                                                        rendered="#{bi.item.class eq 'class com.divudi.core.entity.pharmacy.Amp'}"/>
                                     </p:column>
 
-                                    <p:column headerText="Qty" >
-                                        <p:inputText autocomplete="off"  id="qty" value="#{bi.tmpQty}" label="Qty">
+                                    <p:column headerText="Qty"  class="text-end" width="8em">
+                                        <p:inputText 
+                                            autocomplete="off" 
+                                            id="qty" 
+                                            class="w-100 text-end"
+                                            value="#{bi.qty}"
+                                            label="Qty">
                                             <p:ajax 
                                                 event="blur" 
                                                 update="itemList requestTotals" 
@@ -216,20 +221,20 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Rate" class="text-end">
+                                    <p:column headerText="Transfer Rate" class="text-end" width="8em">
                                         <p:inputText value="#{bi.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax event="blur" listener="#{transferRequestController.onLineGrossRateChange(bi)}" update="itemList requestTotals"/>
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Transfer Value" class="text-end">
+                                    <p:column headerText="Transfer Value" class="text-end" width="8em">
                                         <h:outputLabel value="#{bi.billItemFinanceDetails.lineGrossTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </p:column>
 
-                                    <p:column>
+                                    <p:column width="8em">
                                         <p:commandButton
                                             ajax="false"
                                             value="Remove"

@@ -36,10 +36,13 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Vmp;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -213,14 +216,14 @@ public class TransferRequestController implements Serializable {
 
         updateFinancials(fd);
         getBillItems().add(bi);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
 
         currentBillItem = null;
     }
 
     public void onEdit(BillItem tmp) {
         updateFinancials(tmp.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
     }
 
     public void displayItemDetails(BillItem bi) {
@@ -431,7 +434,7 @@ public class TransferRequestController implements Serializable {
             return "";
         }
         billItems = fetchBillItems(getTransferRequestBillPre());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
@@ -450,7 +453,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : billItems) {
             bi.setTmpQty(bi.getQty());
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), billItems);
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
@@ -487,7 +490,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : getBillItems()) {
             bi.setSearialNo(serialNo++);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
 
     }
 
@@ -683,7 +686,10 @@ public class TransferRequestController implements Serializable {
         PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
         Item item = bi.getItem();
 
+        // Quantity entered by user
         BigDecimal qty = BigDecimal.valueOf(bi.getQty());
+
+        // Determine units per pack for Ampp or Vmpp
         BigDecimal unitsPerPack = BigDecimal.ONE;
         if (item instanceof Ampp || item instanceof Vmpp) {
             unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
@@ -693,14 +699,50 @@ public class TransferRequestController implements Serializable {
         fd.setQuantity(qty);
         fd.setTotalQuantity(qty);
 
-        fd.setLineGrossRate(determineTransferRate(item));
+        // Line Gross Rate is expected to be entered manually or by caller
+        BigDecimal grossRate = fd.getLineGrossRate();
+        if (grossRate == null || grossRate.equals(BigDecimal.ZERO)) {
+            BigDecimal tmpGrossRate = determineTransferRate(item);
+            grossRate = tmpGrossRate.multiply(unitsPerPack);
+            fd.setLineGrossRate(grossRate);
+        }
+
+        // Compute base values
+        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        fd.setLineGrossTotal(lineGrossTotal);
+        fd.setGrossTotal(lineGrossTotal);
+
+        // Since no discounts/expenses/taxes, Net = Gross
+        fd.setLineNetRate(grossRate);
+        fd.setLineNetTotal(lineGrossTotal);
+        fd.setNetTotal(lineGrossTotal);
+
+        // Quantity in units
+        BigDecimal qtyByUnits = qty.multiply(unitsPerPack);
+        fd.setQuantityByUnits(qtyByUnits);
+        fd.setTotalQuantityByUnits(qtyByUnits);
+
+        // Retail sale rate in unit is defined by the user via PBI
         fd.setRetailSaleRate(BigDecimal.valueOf(ph.getRetailRateInUnit()));
 
+        // Optional zero fields to avoid nulls
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineCost(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalCost(BigDecimal.ZERO);
+        fd.setFreeQuantity(BigDecimal.ZERO);
+        fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+
+        // Call final adjustment logic
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
 
-        ph.setQty(fd.getQuantityByUnits().doubleValue());
-        ph.setQtyPacks(fd.getQuantity().doubleValue());
-        bi.setTmpQty(fd.getQuantity().doubleValue());
+        // Update PBI and BI fields
+        ph.setQty(qtyByUnits.doubleValue());
+        ph.setQtyPacks(qty.doubleValue());
     }
 
     // ChatGPT contributed - Populate default rates when an item is selected
@@ -711,26 +753,97 @@ public class TransferRequestController implements Serializable {
         }
 
         PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
-        if (ph == null) {
-            ph = new PharmaceuticalBillItem();
-            ph.setBillItem(bi);
-            bi.setPharmaceuticalBillItem(ph);
-        }
-
-        ph.setPurchaseRate(pharmacyBean.getLastPurchaseRate(bi.getItem(), sessionController.getDepartment()));
-        ph.setRetailRateInUnit(pharmacyBean.getLastRetailRate(bi.getItem(), sessionController.getDepartment()));
-
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
-        if (fd == null) {
-            fd = new BillItemFinanceDetails(bi);
-            bi.setBillItemFinanceDetails(fd);
-        }
 
-        fd.setLineCostRate(BigDecimal.valueOf(ph.getPurchaseRate()));
-        fd.setLineGrossRate(determineTransferRate(bi.getItem()));
+        if (bi.getItem() instanceof Ampp) {
+            Ampp ampp = (Ampp) bi.getItem();
+            Amp amp = ampp.getAmp();
+
+            fd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
+
+            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(amp, sessionController.getDepartment());
+            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(amp, sessionController.getDepartment());
+            Double costRatePerUnit = pharmacyBean.getLastCostRate(amp, sessionController.getDepartment());
+            BigDecimal transferRate = determineTransferRate(amp);
+
+            ph.setPurchaseRate(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
+            ph.setPurchaseRatePack(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
+
+            ph.setRetailRate(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
+            ph.setRetailRatePack(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
+
+            ph.setRetailPackValue(0);
+
+            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit).multiply(fd.getUnitsPerPack()));
+            fd.setLineGrossRate(transferRate.multiply(fd.getUnitsPerPack()));
+
+        } else if (bi.getItem() instanceof Vmpp) {
+            Vmpp vmpp = (Vmpp) bi.getItem();
+            Vmp vmp = vmpp.getVmp();
+
+            fd.setUnitsPerPack(BigDecimal.valueOf(bi.getItem().getDblValue()));
+
+            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(vmp, sessionController.getDepartment());
+            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(vmp, sessionController.getDepartment());
+            Double costRatePerUnit = pharmacyBean.getLastCostRate(vmp, sessionController.getDepartment());
+            BigDecimal transferRate = determineTransferRate(vmp);
+
+            ph.setPurchaseRate(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
+            ph.setPurchaseRatePack(purchaseRatePerUnit * fd.getUnitsPerPack().doubleValue());
+
+            ph.setRetailRate(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
+            ph.setRetailRatePack(retailRatePerUnit * fd.getUnitsPerPack().doubleValue());
+
+            ph.setRetailPackValue(0);
+
+            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit).multiply(fd.getUnitsPerPack()));
+            fd.setLineGrossRate(transferRate.multiply(fd.getUnitsPerPack()));
+
+        } else if (bi.getItem() instanceof Amp) {
+            Amp amp = (Amp) bi.getItem();
+
+            fd.setUnitsPerPack(BigDecimal.ONE);
+
+            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(amp, sessionController.getDepartment());
+            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(amp, sessionController.getDepartment());
+            Double costRatePerUnit = pharmacyBean.getLastCostRate(amp, sessionController.getDepartment());
+            BigDecimal transferRate = determineTransferRate(amp);
+
+            ph.setPurchaseRate(purchaseRatePerUnit);
+            ph.setPurchaseRatePack(purchaseRatePerUnit);
+
+            ph.setRetailRate(retailRatePerUnit);
+            ph.setRetailRatePack(retailRatePerUnit);
+
+            ph.setRetailPackValue(0);
+
+            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit));
+            fd.setLineGrossRate(transferRate);
+
+        } else if (bi.getItem() instanceof Vmp) {
+            Vmp vmp = (Vmp) bi.getItem();
+
+            fd.setUnitsPerPack(BigDecimal.ONE);
+
+            Double retailRatePerUnit = pharmacyBean.getLastRetailRate(vmp, sessionController.getDepartment());
+            Double purchaseRatePerUnit = pharmacyBean.getLastPurchaseRate(vmp, sessionController.getDepartment());
+            Double costRatePerUnit = pharmacyBean.getLastCostRate(vmp, sessionController.getDepartment());
+            BigDecimal transferRate = determineTransferRate(vmp);
+
+            ph.setPurchaseRate(purchaseRatePerUnit);
+            ph.setPurchaseRatePack(purchaseRatePerUnit);
+
+            ph.setRetailRate(retailRatePerUnit);
+            ph.setRetailRatePack(retailRatePerUnit);
+
+            ph.setRetailPackValue(0);
+
+            fd.setLineCostRate(BigDecimal.valueOf(costRatePerUnit));
+            fd.setLineGrossRate(transferRate);
+        }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
     }
 
     // ChatGPT contributed - Recalculate item totals when gross rate changes
@@ -741,13 +854,12 @@ public class TransferRequestController implements Serializable {
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
     }
 
     // ************************************
     // Newly added helper methods
     // ************************************
-
     public void onCurrentQtyChange() {
         if (currentBillItem == null) {
             return;
@@ -759,7 +871,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
     }
 
     public void onCurrentLineGrossRateChange() {
@@ -773,7 +885,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
     }
 
     private BigDecimal determineTransferRate(Item item) {
@@ -812,6 +924,5 @@ public class TransferRequestController implements Serializable {
         setToDepartment(d);
         return processTransferRequest();
     }
-
 
 }
