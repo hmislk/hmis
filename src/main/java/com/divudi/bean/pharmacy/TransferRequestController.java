@@ -759,6 +759,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     public void onCurrentLineGrossRateChange() {
@@ -772,6 +773,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     private BigDecimal determineTransferRate(Item item) {
