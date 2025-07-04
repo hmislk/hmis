@@ -65,6 +65,7 @@ import com.divudi.bean.pharmacy.PharmacySaleBhtController;
 import com.divudi.bean.pharmacy.PurchaseReturnController;
 import com.divudi.bean.pharmacy.TransferIssueController;
 import com.divudi.bean.pharmacy.TransferReceiveController;
+import com.divudi.bean.pharmacy.TransferRequestController;
 import com.divudi.core.data.BillTypeAtomic;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -244,6 +245,8 @@ public class BillSearch implements Serializable {
     GoodsReturnController goodsReturnController;
     @Inject
     private ReportTimerController reportTimerController;
+    @Inject
+    TransferRequestController transferRequestController;
     /**
      * Class Variables
      */
@@ -3939,7 +3942,7 @@ public class BillSearch implements Serializable {
             case PHARMACY_GRN_PAYMENT_CANCELLED:
             case PHARMACY_ADJUSTMENT:
             case PHARMACY_ADJUSTMENT_CANCELLED:
-            case PHARMACY_TRANSFER_REQUEST:
+//            case PHARMACY_TRANSFER_REQUEST:
             case PHARMACY_TRANSFER_REQUEST_PRE:
             case PHARMACY_TRANSFER_REQUEST_CANCELLED:
 //            case PHARMACY_ISSUE:
@@ -3984,6 +3987,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyGrnReturnBillView();
             case PHARMACY_GRN_CANCELLED:
                 return navigateToPharmacyGrnCancellationBillView();
+            case PHARMACY_TRANSFER_REQUEST:
+                return navigateToPharmacyTransferRequestBillView();
 
         }
 
@@ -4063,6 +4068,18 @@ public class BillSearch implements Serializable {
         pharmacyPurchaseController.setPrintPreview(true);
         pharmacyPurchaseController.setBill(bb);
         return "/pharmacy/pharmacy_purchase";
+    }
+    public String navigateToPharmacyTransferRequestBillView() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        BilledBill bb = (BilledBill) bill;
+        viewingBill = billBean.fetchBill(bb.getId());
+        loadBillDetails(bb);
+        transferRequestController.setPrintPreview(true);
+        transferRequestController.setBill(bb);
+        return "/pharmacy/pharmacy_transfer_request";
     }
 
     public String navigateToDirectPurchaseCancellationBillView() {
