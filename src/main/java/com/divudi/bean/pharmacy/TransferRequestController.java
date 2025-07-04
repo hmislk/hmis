@@ -38,6 +38,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Vmp;
+import com.divudi.service.BillService;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.math.BigDecimal;
@@ -86,6 +87,8 @@ public class TransferRequestController implements Serializable {
     private PharmacyCostingService pharmacyCostingService;
     @EJB
     private DepartmentFacade departmentFacade;
+    @EJB
+    BillService billService;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -244,17 +247,33 @@ public class TransferRequestController implements Serializable {
     }
 
     public void approveTransferRequestBill() {
-        transferRequestBillPre.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        transferRequestBillPre.setApproveAt(new Date());
-        transferRequestBillPre.setCheckedBy(sessionController.getLoggedUser());
-        transferRequestBillPre.setCheckeAt(new Date());
-        transferRequestBillPre.setApproveUser(sessionController.getLoggedUser());
-        billFacade.edit(transferRequestBillPre);
-        JsfUtil.addSuccessMessage("Approval done. Send the request to " + transferRequestBillPre.getToDepartment());
-
-        bill = transferRequestBillPre;
+        if(billItems==null || billItems.isEmpty()){
+            JsfUtil.addErrorMessage("No Bill Items");
+            return;
+        }
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        bill.setBillType(BillType.PharmacyTransferRequest);
+        bill.setApproveAt(new Date());
+        bill.setCheckedBy(sessionController.getLoggedUser());
+        bill.setCheckeAt(new Date());
+        bill.setApproveUser(sessionController.getLoggedUser());
+        if(bill.getId()==null){
+            billFacade.create(bill);
+        }else{
+            billFacade.edit(bill);
+        }
+        for(BillItem newBillItem: billItems){
+            newBillItem.setBill(bill);
+            if(newBillItem.getId()==null){
+                billItemFacade.create(newBillItem);
+            }else{
+                billItemFacade.edit(newBillItem);
+            }
+        }
+        billFacade.edit(bill);
+        billService.reloadBill(bill);
+        JsfUtil.addSuccessMessage("Approval done. Send the request to " + bill.getToDepartment());
         printPreview = true;
-
     }
 
     public void request() {
@@ -448,12 +467,22 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return "";
         }
-        billItems = new ArrayList<>();
-        billItems.addAll(getTransferRequestBillPre().getBillItems());
-        for (BillItem bi : billItems) {
-            bi.setTmpQty(bi.getQty());
+        if(getTransferRequestBillPre().getBillItems()==null || getTransferRequestBillPre().getBillItems().isEmpty()){
+            JsfUtil.addErrorMessage("No Items in the request");
+            return "";
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), billItems);
+        bill = new BilledBill();
+        bill.copy(transferRequestBillPre);
+        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        bill.setBillType(BillType.PharmacyTransferRequest);
+        billItems = new ArrayList<>();
+        for (BillItem requestItemInPreBill : getTransferRequestBillPre().getBillItems()) {
+            BillItem newBillItemInApprovedRequest = new BillItem();
+            newBillItemInApprovedRequest.copy(requestItemInPreBill);
+            newBillItemInApprovedRequest.setBill(bill);
+            billItems.add(newBillItemInApprovedRequest);
+        }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(bill, billItems);
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
@@ -469,6 +498,14 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setCheckedBy(sessionController.getLoggedUser());
         getBillFacade().edit(getTransferRequestBillPre());
         JsfUtil.addSuccessMessage("Transfer Request Succesfully Finalized");
+        
+        boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transer Request With Approval", false);
+        if(!approvalIsNeeded){
+            bill = createTransferApprovalBillFromPreBill(getTransferRequestBillPre());
+        }else{
+            bill = getTransferRequestBillPre();
+        }
+        
         printPreview = true;
     }
 
@@ -923,6 +960,29 @@ public class TransferRequestController implements Serializable {
         }
         setToDepartment(d);
         return processTransferRequest();
+    }
+
+    private Bill createTransferApprovalBillFromPreBill(Bill inputTransferRequestBillPre) {
+        if (inputTransferRequestBillPre == null) {
+            JsfUtil.addErrorMessage("Please select a bill");
+            return null;
+        }
+        if(inputTransferRequestBillPre.getBillItems()==null || inputTransferRequestBillPre.getBillItems().isEmpty()){
+            JsfUtil.addErrorMessage("No Items in the request");
+            return null;
+        }
+        Bill newApprovaedBill = new BilledBill();
+        newApprovaedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        newApprovaedBill.setBillType(BillType.PharmacyTransferRequest);
+        List<BillItem> newBillItemsForApprovalBill = new ArrayList<>();
+        for (BillItem requestItemInPreBill : inputTransferRequestBillPre.getBillItems()) {
+            BillItem newBillItemInApprovedRequest = new BillItem();
+            newBillItemInApprovedRequest.copy(requestItemInPreBill);
+            newBillItemInApprovedRequest.setBill(newApprovaedBill);
+            newBillItemsForApprovalBill.add(newBillItemInApprovedRequest);
+        }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(newApprovaedBill, newBillItemsForApprovalBill);
+        return newApprovaedBill;
     }
 
 }
