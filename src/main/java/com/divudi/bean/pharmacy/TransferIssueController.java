@@ -132,14 +132,16 @@ public class TransferIssueController implements Serializable {
             return false; // Null or empty bills are not considered fully issued
         }
 
-        for (BillItem originalItem : billItems) {
-
-            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
-                return false;
-            } else if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
-                return false;
-            }
-        }
+//        TODO: Create a Logic. Old one is NOT working
+        
+//        for (BillItem originalItem : billItems) {
+//
+//            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
+//                return false;
+//            } else if (originalItem.getPharmaceuticalBillItem().getItemBatch() == null) {
+//                return false;
+//            }
+//        }
 
         return true; // All items are fully issued
     }
