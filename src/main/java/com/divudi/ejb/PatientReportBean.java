@@ -153,7 +153,15 @@ public class PatientReportBean {
         for (ReportItem ii : temIx.getReportItems()) {
             System.out.println("ii = " + ii);
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image || ii.getIxItemType() == InvestigationItemType.ReportImage || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && ii.isRetired() == false) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value
+                    || ii.getIxItemType() == InvestigationItemType.Image
+                    || ii.getIxItemType() == InvestigationItemType.ExternalImage
+                    || ii.getIxItemType() == InvestigationItemType.ReportImage
+                    || ii.getIxItemType() == InvestigationItemType.Calculation
+                    || ii.getIxItemType() == InvestigationItemType.Flag
+                    || ii.getIxItemType() == InvestigationItemType.Html
+                    || ii.getIxItemType() == InvestigationItemType.Template)
+                    && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
                     System.out.println("val = " + val);
 
@@ -254,7 +262,15 @@ public class PatientReportBean {
             System.out.println("ii.getName = " + ii.getName());
             System.out.println("ii.getIxItemType() = " + ii.getIxItemType());
             PatientReportItemValue val = null;
-            if ((ii.getIxItemType() == InvestigationItemType.Value || ii.getIxItemType() == InvestigationItemType.Image  || ii.getIxItemType() == InvestigationItemType.ReportImage || ii.getIxItemType() == InvestigationItemType.Calculation || ii.getIxItemType() == InvestigationItemType.Flag || ii.getIxItemType() == InvestigationItemType.Html || ii.getIxItemType() == InvestigationItemType.Template) && !ii.isRetired()) {
+            if ((ii.getIxItemType() == InvestigationItemType.Value
+                    || ii.getIxItemType() == InvestigationItemType.Image
+                    || ii.getIxItemType() == InvestigationItemType.ExternalImage
+                    || ii.getIxItemType() == InvestigationItemType.ReportImage
+                    || ii.getIxItemType() == InvestigationItemType.Calculation
+                    || ii.getIxItemType() == InvestigationItemType.Flag
+                    || ii.getIxItemType() == InvestigationItemType.Html
+                    || ii.getIxItemType() == InvestigationItemType.Template)
+                    && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
                     System.out.println("val = " + val);
 
