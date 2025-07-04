@@ -890,74 +890,76 @@ public class PharmacyController implements Serializable {
     }
 
     public void generateGrnReportTable() {
-        resetFields();
+        reportTimerController.trackReportExecution(() -> {
+            resetFields();
 
-        List<BillType> bt = new ArrayList<>();
-        List<BillTypeAtomic> bta = new ArrayList<>();
-        if ("returnReport".equals(reportType)) {
-            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-        } else if ("cancellationReport".equals(reportType)) {
-            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
-            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
-        } else if ("summeryReport".equals(reportType) || "detailReport".equals(reportType)) {
-            bta.add(BillTypeAtomic.PHARMACY_GRN);
-            bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
-            bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+            List<BillType> bt = new ArrayList<>();
+            List<BillTypeAtomic> bta = new ArrayList<>();
+            if ("returnReport".equals(reportType)) {
+                bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+            } else if ("cancellationReport".equals(reportType)) {
+                bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
+                bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+            } else if ("summeryReport".equals(reportType) || "detailReport".equals(reportType)) {
+                bta.add(BillTypeAtomic.PHARMACY_GRN);
+                bta.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
+                bta.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);
 
-            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
-            bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
+                bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+                bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
+                bta.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED);
 
-        }
+            }
 
-        bills = new ArrayList<>();
+            bills = new ArrayList<>();
 
-        String jpql = "SELECT b FROM Bill b "
-                + " WHERE b.retired = false"
-                + " and b.cancelled = false"
-                + " and b.billTypeAtomic In :btas"
-                + " and b.createdAt between :fromDate and :toDate";
+            String jpql = "SELECT b FROM Bill b "
+                    + " WHERE b.retired = false"
+                    + " and b.cancelled = false"
+                    + " and b.billTypeAtomic In :btas"
+                    + " and b.createdAt between :fromDate and :toDate";
 
-        Map<String, Object> params = new HashMap<>();
+            Map<String, Object> params = new HashMap<>();
 
-        params.put("btas", bta);
-        params.put("fromDate", getFromDate());
-        params.put("toDate", getToDate());
+            params.put("btas", bta);
+            params.put("fromDate", getFromDate());
+            params.put("toDate", getToDate());
 
-        if (institution != null) {
-            jpql += " and b.institution = :fIns";
-            params.put("fIns", institution);
-        }
+            if (institution != null) {
+                jpql += " and b.institution = :fIns";
+                params.put("fIns", institution);
+            }
 
-        if (site != null) {
-            jpql += " and b.department.site = :site";
-            params.put("site", site);
-        }
+            if (site != null) {
+                jpql += " and b.department.site = :site";
+                params.put("site", site);
+            }
 
-        if (dept != null) {
-            jpql += " and b.department = :dept";
-            params.put("dept", dept);
-        }
+            if (dept != null) {
+                jpql += " and b.department = :dept";
+                params.put("dept", dept);
+            }
 
-        if (paymentMethod != null) {
-            jpql += " and b.paymentMethod = :pm";
-            params.put("pm", paymentMethod);
-        }
+            if (paymentMethod != null) {
+                jpql += " and b.paymentMethod = :pm";
+                params.put("pm", paymentMethod);
+            }
 
-        if (fromInstitution != null) {
-            jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
-            params.put("supplier", fromInstitution);
-        }
+            if (fromInstitution != null) {
+                jpql += " AND (b.fromInstitution = :supplier OR b.toInstitution = :supplier)";
+                params.put("supplier", fromInstitution);
+            }
 
-        jpql += " order by b.id desc";
+            jpql += " order by b.id desc";
 
-        try {
-            bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        } catch (Exception e) {
-            JsfUtil.addErrorMessage(e, " Something Went Worng!");
-        }
-        calculateTotals(bills);
+            try {
+                bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+            } catch (Exception e) {
+                JsfUtil.addErrorMessage(e, " Something Went Worng!");
+            }
+            calculateTotals(bills);
+        }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 
     public static String formatDate(Date date) {
@@ -977,7 +979,6 @@ public class PharmacyController implements Serializable {
     }
 
     public void exportGrnDetailReportToPdf() {
-        reportTimerController.trackReportExecution(() -> {
         FacesContext context = FacesContext.getCurrentInstance();
         HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
 
@@ -1095,7 +1096,6 @@ public class PharmacyController implements Serializable {
         } catch (Exception e) {
             Logger.getLogger(PharmacyController.class.getName()).log(Level.SEVERE, e.getMessage());
         }
-        }, InventoryReports.GRN_REPORT, sessionController.getLoggedUser());
     }
 
     public void exportGrnDetailReportToExcel() {
