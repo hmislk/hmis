@@ -128,12 +128,14 @@ public class TransferIssueController implements Serializable {
 //        return false;
 //    }
     public boolean isFullyIssued(Bill bill) {
+        System.out.println("isFullyIssued");
+        System.out.println("bill = " + bill);
+        System.out.println(" bill.getBillItems() = " +  bill.getBillItems());
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
         }
 
 //        TODO: Create a Logic. Old one is NOT working
-        
 //        for (BillItem originalItem : billItems) {
 //
 //            if (originalItem.getPharmaceuticalBillItem().getQty() > 0) {
@@ -142,8 +144,7 @@ public class TransferIssueController implements Serializable {
 //                return false;
 //            }
 //        }
-
-        return true; // All items are fully issued
+        return false; // All items are fully issued
     }
 
     public String navigateToPharmacyDirectIssueForRequests() {
