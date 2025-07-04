@@ -26,6 +26,14 @@
                                                  >
                                     <p:ajax process="@this" update="btn"></p:ajax>
                                 </p:autoComplete>
+                                <h:panelGroup rendered="#{not empty transferRequestController.recentToDepartments}">
+                                    <ui:repeat value="#{transferRequestController.recentToDepartments}" var="d">
+                                        <p:commandButton value="#{d.name}" icon="pi pi-building"
+                                                         class="m-1 p-button-sm p-button-outlined"
+                                                         action="#{transferRequestController.selectFromRecentDepartment(d)}"
+                                                         ajax="false"/>
+                                    </ui:repeat>
+                                </h:panelGroup>
                                 <h:panelGroup id="btn">
                                     <p:commandButton
                                         id="btnSelect"

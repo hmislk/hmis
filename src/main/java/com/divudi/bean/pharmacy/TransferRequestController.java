@@ -30,6 +30,7 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
+import com.divudi.core.facade.DepartmentFacade;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
@@ -80,6 +81,8 @@ public class TransferRequestController implements Serializable {
     private StockFacade stockFacade;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
+    @EJB
+    private DepartmentFacade departmentFacade;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -105,6 +108,7 @@ public class TransferRequestController implements Serializable {
     private List<BillItem> billItems;
     private boolean printPreview;
     private Department toDepartment;
+    private List<Department> recentToDepartments;
     // </editor-fold>
 
     public void recreate() {
@@ -791,5 +795,29 @@ public class TransferRequestController implements Serializable {
             return BigDecimal.valueOf(pharmacyBean.getLastRetailRate(item, sessionController.getDepartment()));
         }
     }
+
+    public List<Department> getRecentToDepartments() {
+        if (recentToDepartments == null) {
+            String jpql = "select distinct b.toDepartment from Bill b "
+                    + " where b.retired=false "
+                    + " and b.billTypeAtomic=:bt "
+                    + " and b.fromDepartment=:fd "
+                    + " order by b.id desc";
+            Map<String, Object> m = new HashMap<>();
+            m.put("bt", BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+            m.put("fd", sessionController.getDepartment());
+            recentToDepartments = departmentFacade.findByJpql(jpql, m, 10);
+        }
+        return recentToDepartments;
+    }
+
+    public String selectFromRecentDepartment(Department d) {
+        if (d == null) {
+            return "";
+        }
+        setToDepartment(d);
+        return processTransferRequest();
+    }
+
 
 }
