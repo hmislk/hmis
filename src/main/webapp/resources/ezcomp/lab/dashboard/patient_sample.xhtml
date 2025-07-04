@@ -229,11 +229,14 @@
                                 action="#{billSearch.navigateToViewOpdBill()}">
                                 <f:setPropertyActionListener value="#{ps.bill}" target="#{billSearch.bill}"/>
                             </p:commandLink>
-
+                            <br/>
                             <h:outputLabel value="#{ps.bill.createdAt}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                             </h:outputLabel>
                             <br/>
+                            <h:panelGroup rendered="#{ps.bill.patientEncounter ne null}">
+                                <h:outputLabel style="color: #0d6efd;" value="#{ps.bill.patientEncounter.bhtNo}"/>
+                            </h:panelGroup>
 
                         </p:column>
 
