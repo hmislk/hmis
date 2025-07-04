@@ -2171,6 +2171,122 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
+    public void exportTransferReceivePdf() {
+        List<String> headers = Arrays.asList(
+                "Date", "Item Name", "Doc No", "Refrance Document No (Issue Doc No)",
+                "Issue Department", "Code", "QTY", "Rate", "Total", "Net Total"
+        );
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Transfer_Receive_Report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Title
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph titlePara = new Paragraph("Transfer Receive Report", titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(20);
+            document.add(titlePara);
+
+            // Table setup
+            PdfPTable table = new PdfPTable(headers.size());
+            table.setWidthPercentage(100);
+
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // Formatting setup
+            Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            DecimalFormat qtyFormat = new DecimalFormat("#,##0");
+            DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
+
+            double netTotalSum = 0.0;
+
+            for (BillItem f : billItems) {
+                // Date
+                String dateStr = (f.getBill() != null && f.getBill().getCreatedAt() != null)
+                        ? sdf.format(f.getBill().getCreatedAt()) : "";
+                table.addCell(new Phrase(dateStr, cellFont));
+
+                // Item Name
+                table.addCell(new Phrase(f.getItem() != null ? f.getItem().getName() : "", cellFont));
+
+                // Doc No
+                table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", cellFont));
+
+                // Reference Document No
+                table.addCell(new Phrase(
+                        f.getBill() != null && f.getBill().getReferenceBill() != null
+                        ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
+
+                // Issue Department
+                table.addCell(new Phrase(
+                        f.getBill() != null && f.getBill().getFromDepartment() != null
+                        ? f.getBill().getFromDepartment().getName() : "", cellFont));
+
+                // Code
+                table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "", cellFont));
+
+                // Qty
+                Double qty = f.getQty();
+                table.addCell(new Phrase(qty != null ? qtyFormat.format(qty) : "", cellFont));
+
+                // Rate
+                Double rate = (f.getPharmaceuticalBillItem() != null)
+                        ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
+                table.addCell(new Phrase(moneyFormat.format(rate), cellFont));
+
+                // Total
+                double total = (qty != null) ? rate * qty : 0.0;
+                table.addCell(new Phrase(moneyFormat.format(total), cellFont));
+
+                // Net Total
+                double netTotal = f.getBill() != null ? f.getBill().getNetTotal() : null;
+                netTotalSum += netTotal;
+                table.addCell(new Phrase(moneyFormat.format(netTotal), cellFont));
+            }
+
+            // Footer row (Net Total sum)
+            PdfPCell footerCell;
+            for (int i = 0; i < headers.size(); i++) {
+                if (i == 0) {
+                    footerCell = new PdfPCell(new Phrase("Net Amount", headerFont));
+                    footerCell.setColspan(headers.size() - 1);
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    table.addCell(footerCell);
+                    i += headers.size() - 2;
+                } else if (i == headers.size() - 1) {
+                    footerCell = new PdfPCell(new Phrase(moneyFormat.format(netTotalSum), headerFont));
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                    table.addCell(footerCell);
+                }
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public void processCollectingCentreTestWiseCountReport() {
         String jpql = "select new  com.divudi.core.data.TestWiseCountReport("
                 + "bi.item.name, "
@@ -3332,7 +3448,7 @@ public class PharmacyReportController implements Serializable {
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
             billTypeAtomics.add(BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
-            
+
             StringBuilder jpql = new StringBuilder("SELECT b.paymentMethod, SUM(b.netTotal) FROM Bill b ")
                     .append("WHERE b.retired = false ")
                     .append("AND b.billTypeAtomic IN :bType ")

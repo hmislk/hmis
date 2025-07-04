@@ -192,11 +192,8 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="Transfer Receive Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportTransferReceivePdf()}">
                             </p:commandButton>
 
                         </div>
@@ -217,7 +214,7 @@
                             <p:column headerText="Date">
                                 <h:outputText value="#{f.bill.createdAt}" />
                                 <f:facet name="footer">
-                                    <h:outputText value="Total" />
+                                    <h:outputText value="Net Amount" />
                                 </f:facet>
                             </p:column>
                             <p:column headerText="Item Name">
@@ -233,7 +230,7 @@
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Ref Doc No (Request Doc No)">
+                            <p:column headerText="Refrance Doument No(Issue Doc No)">
                                 <p:commandLink 
                                     value="#{f.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
@@ -243,25 +240,35 @@
                                     <f:setPropertyActionListener value="#{f.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Request Department">
+                            <p:column headerText="Issue Department">
                                 <h:outputText value="#{f.bill.fromDepartment.name}" />
                             </p:column>
                             <p:column headerText="Code">
                                 <h:outputText value="#{f.item.code}" />
                             </p:column>
                             <p:column headerText="QTY">
-                                <h:outputText value="#{f.qty}" />
+                                <h:outputText value="#{f.qty}" >
+                                    <f:convertNumber pattern="#,##0"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Rate">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Total">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Net Total">
-                                <h:outputText value="#{f.bill.netTotal}" />
+                                <h:outputText value="#{f.bill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText value="#{pharmacyReportController.netTotal}" />
+                                    <h:outputText value="#{pharmacyReportController.netTotal}" >
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
                                 </f:facet>
                             </p:column>                          
 
