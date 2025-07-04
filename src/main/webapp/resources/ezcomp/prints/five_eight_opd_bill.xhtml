@@ -33,6 +33,22 @@
             <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}" >
                 <h:outputStylesheet library="css" name="five_eight_bill_without_header.css" />
             </h:panelGroup>
+            
+            <style>
+                .receipt-table {
+                    border-collapse: collapse;
+                }
+                .receipt-table thead {
+                    border-bottom: 1px solid black;
+                }
+
+                .receipt-table th {
+                    padding: 4px; /* top/bottom: 4px, */
+                }
+                .receipt-table th:last-child {
+                    text-align: right;
+                }
+            </style>
 
             <div class="receipt-container" style="margin-left: 5mm;">
                 <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable OPD 5x8 Bill Header')}">
@@ -94,7 +110,7 @@
                         <td style="padding: 2px;">Bill Time</td>
                         <td style="padding: 2px;">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}" >
-                                <f:convertDateTime pattern="HH:mm a" />
+                                <f:convertDateTime pattern="hh:mm a" />
                             </h:outputLabel>
                         </td>
                     </tr>
@@ -137,6 +153,15 @@
                             </td>
                         </tr>
                     </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{cc.attrs.bill.paymentMethod eq 'Credit'}" >
+                        <tr>
+                            <td style="padding: 2px;">Credit </td>
+                            <td style="padding: 2px;" colspan="4">
+                                <h:outputLabel value="#{cc.attrs.bill.referredByInstitution.name}"/>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
 
                 </table>
 
@@ -144,7 +169,7 @@
                 <div class="separator"></div>
 
                 <!-- Item Table -->
-                <table class="receipt-table">
+                <table class="receipt-table mt-2">
                     <thead>
                         <tr>
                             <th>No</th>
@@ -152,6 +177,12 @@
                             <th style="text-align: right">Amount</th>
                         </tr>
                     </thead>
+
+                    <!-- Line between header and body -->
+                    <tr style="border-top: 1px solid black;">
+                        <td colspan="3"></td>
+                    </tr>
+
                     <tbody>
                         <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="item" varStatus="s">
                             <tr>
@@ -167,7 +198,6 @@
                         </ui:repeat>
                     </tbody>
                 </table>
-
                 <!-- Separator Line -->
                 <div class="separator"></div>
                 <div class="d-flex">
@@ -244,7 +274,7 @@
                                 <tr>
                                     <td >Balance</td>
                                     <td style="text-align: right;">
-                                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.cashPaid - cc.attrs.bill.backwardReferenceBill.total}">
+                                        <h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.cashPaid - cc.attrs.bill.backwardReferenceBill.netTotal}">
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </td>

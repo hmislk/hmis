@@ -2171,10 +2171,10 @@ public class PharmacyReportController implements Serializable {
         }
     }
 
-    public void exportPharmacyTransferIssuePdf() {
+    public void exportTransferReceivePdf() {
         List<String> headers = Arrays.asList(
-                "Date", "Item Name", "Doc No", "Ref Doc No (Request Doc No)", "Request Department",
-                "Code", "QTY", "Rate", "Total", "Net Total"
+                "Date", "Item Name", "Doc No", "Refrance Document No (Issue Doc No)",
+                "Issue Department", "Code", "QTY", "Rate", "Total", "Net Total"
         );
 
         FacesContext context = FacesContext.getCurrentInstance();
@@ -2182,7 +2182,7 @@ public class PharmacyReportController implements Serializable {
 
         response.reset();
         response.setContentType("application/pdf");
-        response.setHeader("Content-Disposition", "attachment; filename=Pharmacy_Issue_Report.pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=Transfer_Receive_Report.pdf");
 
         try (OutputStream out = response.getOutputStream()) {
             Document document = new Document(PageSize.A4.rotate());
@@ -2191,7 +2191,7 @@ public class PharmacyReportController implements Serializable {
 
             // Title
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph titlePara = new Paragraph("Pharmacy Issue Report", titleFont);
+            Paragraph titlePara = new Paragraph("Transfer Receive Report", titleFont);
             titlePara.setAlignment(Element.ALIGN_CENTER);
             titlePara.setSpacingAfter(20);
             document.add(titlePara);
@@ -2208,7 +2208,7 @@ public class PharmacyReportController implements Serializable {
                 table.addCell(cell);
             }
 
-            // Data formatting
+            // Formatting setup
             Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
             DecimalFormat qtyFormat = new DecimalFormat("#,##0");
@@ -2228,15 +2228,15 @@ public class PharmacyReportController implements Serializable {
                 // Doc No
                 table.addCell(new Phrase(f.getBill() != null ? f.getBill().getDeptId() : "", cellFont));
 
-                // Ref Doc No
+                // Reference Document No
                 table.addCell(new Phrase(
                         f.getBill() != null && f.getBill().getReferenceBill() != null
                         ? f.getBill().getReferenceBill().getDeptId() : "", cellFont));
 
-                // Request Department
+                // Issue Department
                 table.addCell(new Phrase(
-                        f.getBill() != null && f.getBill().getToDepartment() != null
-                        ? f.getBill().getToDepartment().getName() : "", cellFont));
+                        f.getBill() != null && f.getBill().getFromDepartment() != null
+                        ? f.getBill().getFromDepartment().getName() : "", cellFont));
 
                 // Code
                 table.addCell(new Phrase(f.getItem() != null ? f.getItem().getCode() : "", cellFont));
@@ -2250,12 +2250,12 @@ public class PharmacyReportController implements Serializable {
                         ? f.getPharmaceuticalBillItem().getRetailRate() : 0.0;
                 table.addCell(new Phrase(moneyFormat.format(rate), cellFont));
 
-                // Total = rate * qty
+                // Total
                 double total = (qty != null) ? rate * qty : 0.0;
                 table.addCell(new Phrase(moneyFormat.format(total), cellFont));
 
                 // Net Total
-                Double netTotal = f.getBill() != null ? f.getBill().getNetTotal() : null;
+                double netTotal = f.getBill() != null ? f.getBill().getNetTotal() : null;
                 netTotalSum += netTotal;
                 table.addCell(new Phrase(moneyFormat.format(netTotal), cellFont));
             }
@@ -2265,18 +2265,14 @@ public class PharmacyReportController implements Serializable {
             for (int i = 0; i < headers.size(); i++) {
                 if (i == 0) {
                     footerCell = new PdfPCell(new Phrase("Net Amount", headerFont));
-                    footerCell.setColspan(headers.size() - 2);
+                    footerCell.setColspan(headers.size() - 1);
                     footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
                     footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                     table.addCell(footerCell);
-                    i += headers.size() - 3; // skip the spanned columns
+                    i += headers.size() - 2;
                 } else if (i == headers.size() - 1) {
                     footerCell = new PdfPCell(new Phrase(moneyFormat.format(netTotalSum), headerFont));
                     footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
-                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                    table.addCell(footerCell);
-                } else {
-                    footerCell = new PdfPCell(new Phrase(""));
                     footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
                     table.addCell(footerCell);
                 }
