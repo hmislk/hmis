@@ -26,6 +26,14 @@
                                                  >
                                     <p:ajax process="@this" update="btn"></p:ajax>
                                 </p:autoComplete>
+                                <h:panelGroup rendered="#{not empty transferRequestController.recentToDepartments}">
+                                    <ui:repeat value="#{transferRequestController.recentToDepartments}" var="d">
+                                        <p:commandButton value="#{d.name}" icon="pi pi-building"
+                                                         class="m-1 p-button-sm p-button-outlined"
+                                                         action="#{transferRequestController.selectFromRecentDepartment(d)}"
+                                                         ajax="false"/>
+                                    </ui:repeat>
+                                </h:panelGroup>
                                 <h:panelGroup id="btn">
                                     <p:commandButton
                                         id="btnSelect"
@@ -78,7 +86,7 @@
                         </div>
                     </f:facet>
                     <div class="row">
-                        <div class="col-9">
+                        <div class="col-09">
                             <p:panel >
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-cube" />
@@ -118,7 +126,7 @@
                                             </p:column>
                                             <p:ajax event="itemSelect"
                                                     listener="#{transferRequestController.populateRatesOnItemSelect}"
-                                                    update="txtLineCostRate txtLineGrossRate focusQty"/>
+                                                    update="txtLineCostRate txtLineGrossRate txtLineNetValue requestTotals focusQty"/>
                                         </p:autoComplete>
                                     </div>
                                     <div class="col-1">
@@ -126,7 +134,8 @@
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
-                                            <p:ajax event="change" update="txtLineNetValue" />
+                                            <p:ajax event="change" update="focusItem" />
+                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentQtyChange}" update="txtLineNetValue requestTotals" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -134,7 +143,7 @@
                                         <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                      value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
-                                            <p:ajax event="change" update="txtLineNetValue" />
+                                            <p:ajax event="blur" listener="#{transferRequestController.onCurrentLineGrossRateChange}" update="txtLineNetValue requestTotals"/>
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -226,7 +235,7 @@
                                 </p:dataTable>
                             </p:panel>
                         </div>
-                        <div class="col-3">
+                        <div class="col-09">
                             <p:panel id="requestTotals" class="my-2">
                                 <f:facet name="header" >
                                     <h:outputLabel styleClass="fas fa-list" />
