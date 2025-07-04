@@ -3058,6 +3058,18 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
+
+        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+        String personName = p.getPerson().getName();
+        if (personName != null) {
+            if (capitalizeAll) {
+                personName = personName.toUpperCase();
+            } else if (capitalizeEach) {
+                personName = CommonFunctions.capitalizeFirstLetter(personName);
+            }
+            p.getPerson().setName(personName);
+        }
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
