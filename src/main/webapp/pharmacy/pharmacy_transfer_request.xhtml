@@ -126,7 +126,7 @@
                                         <p:inputText id="txtQty" autocomplete="off" class="w-100"
                                                      value="#{transferRequestController.currentBillItem.qty}"
                                                      onfocus="this.select();">
-                                            <p:ajax event="change" update="focusItem" />
+                                            <p:ajax event="change" update="txtLineNetValue" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">
@@ -134,6 +134,7 @@
                                         <p:inputText id="txtLineGrossRate" class="w-100 text-end"
                                                      value="#{transferRequestController.currentBillItem.billItemFinanceDetails.lineGrossRate}">
                                             <f:convertNumber pattern="#,##0.00" />
+                                            <p:ajax event="change" update="txtLineNetValue" />
                                         </p:inputText>
                                     </div>
                                     <div class="col-1">

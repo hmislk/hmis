@@ -203,7 +203,6 @@ public class TransferRequestController implements Serializable {
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         Item item = bi.getItem();
 
-        bi.setTmpQty(bi.getQty());
         bi.setSearialNo(getBillItems().size());
         ph.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(item, getSessionController().getDepartment()));
         ph.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(item, getSessionController().getDepartment()));
@@ -216,13 +215,8 @@ public class TransferRequestController implements Serializable {
     }
 
     public void onEdit(BillItem tmp) {
-//        getPharmacyController().setPharmacyItem(tmp.getItem());
         updateFinancials(tmp.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
-    }
-
-    public void onEdit() {
-        getPharmacyController().setPharmacyItem(getCurrentBillItem().getItem());
     }
 
     public void displayItemDetails(BillItem bi) {
