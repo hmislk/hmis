@@ -169,22 +169,22 @@
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Export to Excel"
-                                action="#{pharmacyController.navigateToPrinteGeneratedGrnDetailedRportTable()}"
+                                action="#{pharmacyController.exportGrnDetailReportToExcel()}"
                                 rendered="#{pharmacyController.reportType eq 'detailReport'}"/>
                         <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Export to Excel"
-                                action="#{pharmacyController.navigateToPrinteGeneratedGrnReturnReportTable()}"
+                                action="#{pharmacyController.exportGrnReturnReportToExcel()}"
                                 rendered="#{pharmacyController.reportType eq 'returnReport'}"/>
                         <p:commandButton
                                 class="ui-button-success mx-1"
                                 icon="fas fa-file-excel"
                                 ajax="false"
                                 value="Export to Excel"
-                                action="#{pharmacyController.navigateToPrinteGeneratedGrnCancelReportTable()}"
-                                rendered="#{pharmacyController.reportType eq 'cancellationReport'}"/>
+                                rendered="#{pharmacyController.reportType eq 'cancellationReport'}"
+                                action="#{pharmacyController.exportGrnCancellationReportToExcel()}"/>
                         <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false"
                                          value="Download"
                                          rendered="#{pharmacyController.reportType eq 'summeryReport'}">
@@ -192,21 +192,18 @@
                         </p:commandButton>
 
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'detailReport'}">
-                            <p:dataExporter type="pdf" target="tbl1" fileName="grn_detailed_report"/>
-                        </p:commandButton>
+                                         rendered="#{pharmacyController.reportType eq 'detailReport'}"
+                                         action="#{pharmacyController.exportGrnDetailReportToPdf()}"/>
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'returnReport'}">
-                            <p:dataExporter type="pdf" target="tbl2" fileName="grn_return_report"/>
-                        </p:commandButton>
+                                         rendered="#{pharmacyController.reportType eq 'returnReport'}"
+                                         action="#{pharmacyController.exportGrnReturnReportToPdf}"/>
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
                                          rendered="#{pharmacyController.reportType eq 'summeryReport'}">
                             <p:dataExporter type="pdf" target="tbl3" fileName="grn_summery_report"/>
                         </p:commandButton>
                         <p:commandButton class="ui-button-danger mx-1" icon="fas fa-file-pdf" ajax="false" value="PDF"
-                                         rendered="#{pharmacyController.reportType eq 'cancellationReport'}">
-                            <p:dataExporter type="pdf" target="tbl4" fileName="grn_cancel_report"/>
-                        </p:commandButton>
+                                         rendered="#{pharmacyController.reportType eq 'cancellationReport'}"
+                                         action="#{pharmacyController.exportGrnCancellationReportToPdf}"/>
                     </div>
 
                     <h:panelGroup class="m-5" rendered="#{pharmacyController.reportType eq 'detailReport'}">
