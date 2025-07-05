@@ -75,8 +75,8 @@ Administrators can toggle individual tabs and reports in the Pharmacy Analytics 
 
 Example keys include:
 
-- `Show Pharmacy Analytics Summary Reports Tab`
-- `Show Pharmacy Income Report`
+- `Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab`
+- `Pharmacy Analytics - Show Pharmacy Income Report`
 
 ## Request Originators 
 * Dr M H B Ariyaratne
