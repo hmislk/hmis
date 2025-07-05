@@ -189,6 +189,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     @Inject
     DrawerController drawerController;
     @Inject
+    ReportTimerController reportTimerController;
+    @Inject
     PatientInvestigationController patientInvestigationController;
     /**
      * Class Variables
@@ -1830,6 +1832,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String settleOpdBill() {
+        return reportTimerController.trackReportExecution(
+                () -> settleOpdBillInternal(),
+                CommonReports.OPD_BILL,
+                "OpdBillController.settleOpdBill",
+                sessionController.getLoggedUser());
+    }
+
+    private String settleOpdBillInternal() {
         AuditEvent audirEvent = auditEventController.createNewAuditEvent("Settle OPD Bill");
         if (billSettlingStarted) {
             auditEventController.failAuditEvent(audirEvent, "Failed due to already started OPD Bill Settling Process.");

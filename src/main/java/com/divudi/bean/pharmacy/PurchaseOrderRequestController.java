@@ -9,6 +9,8 @@ import com.divudi.bean.common.ItemController;
 import com.divudi.bean.common.EnumController;
 import com.divudi.bean.common.NotificationController;
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.reports.CommonReports;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.PaymentMethod;
@@ -83,6 +85,8 @@ public class PurchaseOrderRequestController implements Serializable {
 
     @Inject
     NotificationController notificationController;
+    @Inject
+    ReportTimerController reportTimerController;
 
     public void removeSelected() {
         if (selectedBillItems == null) {
@@ -225,6 +229,14 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void saveBill() {
+        reportTimerController.trackReportExecution(
+                () -> saveBillInternal(),
+                CommonReports.PHARMACY_PURCHASE_ORDER_REQUEST,
+                "PurchaseOrderRequestController.saveBill",
+                sessionController.getLoggedUser());
+    }
+
+    private void saveBillInternal() {
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_ORDER_PRE);
 

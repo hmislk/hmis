@@ -16,7 +16,9 @@ import com.divudi.bean.common.PriceMatrixController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.data.reports.CommonReports;
 import com.divudi.bean.membership.MembershipSchemeController;
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillClassType;
@@ -140,6 +142,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     TokenController tokenController;
     @Inject
     DrawerController drawerController;
+    @Inject
+    ReportTimerController reportTimerController;
 
     ////////////////////////
     @EJB
@@ -2368,6 +2372,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void settleBillWithPay() {
+        reportTimerController.trackReportExecution(
+                () -> settleBillWithPayInternal(),
+                CommonReports.PHARMACY_BILL_RETAIL_SALE,
+                "PharmacySaleController.settleBillWithPay",
+                sessionController.getLoggedUser());
+    }
+
+    private void settleBillWithPayInternal() {
         editingQty = null;
 
         if (billSettlingStarted) {

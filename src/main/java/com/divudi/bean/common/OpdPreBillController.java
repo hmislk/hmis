@@ -18,6 +18,9 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.reports.CommonReports;
+import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -129,6 +132,8 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ReportTimerController reportTimerController;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
@@ -743,6 +748,14 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
     }
 
     public String settleBill() {
+        return reportTimerController.trackReportExecution(
+                () -> settleBillInternal(),
+                CommonReports.OPD_PRE_BILL,
+                "OpdPreBillController.settleBill",
+                sessionController.getLoggedUser());
+    }
+
+    private String settleBillInternal() {
         if (errorCheck()) {
             return null;
         }

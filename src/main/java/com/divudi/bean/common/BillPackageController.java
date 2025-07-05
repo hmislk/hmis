@@ -18,6 +18,8 @@ import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.reports.CommonReports;
 
 import com.divudi.ejb.ServiceSessionBean;
 import com.divudi.core.entity.Bill;
@@ -146,6 +148,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     ApplicationController applicationController;
     @Inject
     PatientDepositController patientDepositController;
+    @Inject
+    ReportTimerController reportTimerController;
     //</editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     private List<Item> malePackaes;
@@ -1045,6 +1049,14 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public void settleBill() {
+        reportTimerController.trackReportExecution(
+                () -> settleBillInternal(),
+                CommonReports.OPD_BILL_PACKAGE,
+                "BillPackageController.settleBill",
+                sessionController.getLoggedUser());
+    }
+
+    private void settleBillInternal() {
 //        if (validatePaymentMethodDeta()) {
 //            return;
 //        }
