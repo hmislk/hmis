@@ -475,13 +475,13 @@ public class BillService {
     }
 
     public Bill fetchBillById(Long id) {
-        String jpql = "SELECT b "
-                + " FROM Bill b "
-                + " where b.id=:bid "
-                + " order by b.id";
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("bid", id);
-        return billFacade.findFirstByJpql(jpql, parameters);
+        if (id == null) {
+            return null;
+        }
+        String jpql = "SELECT b FROM Bill b LEFT JOIN FETCH b.billItems WHERE b.id = :id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", id);
+        return billFacade.findFirstByJpql(jpql, params);
     }
 
     public Bill fetchLastBill() {
