@@ -12,7 +12,7 @@
                 <h:form>
                     <p:panel>
                         <f:facet name="header">
-                            <h:outputText value="Report Execution Logs" />
+                            <h:outputText value="Execution Logs" />
                         </f:facet>
 
                         <h:panelGrid columns="2" class="my-2">
@@ -37,35 +37,46 @@
                                              ajax="false"
                                              value="Search"
                                              action="#{reportLogController.fillReportLogs}" />
+                            <p:commandButton id="btnDownload"
+                                             class="ui-button-warning"
+                                             icon="fa fa-download"
+                                             ajax="false"
+                                             value="Download"
+                                             action="#{reportLogController.fillReportLogs}" >
+                                <p:dataExporter fileName="Exeution Logs" target="tblLogs" type="xlsx" ></p:dataExporter>
+                            </p:commandButton>
+
                         </h:panelGrid>
 
-                        <p:dataTable id="tblLogs" value="#{reportLogController.items}"
-                                     var="rl" rowIndexVar="i" style="min-width:100%;"
-                                     paginator="true" paginatorPosition="bottom"
-                                     rows="10"
-                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                                     rowsPerPageTemplate="5,10,15">
-                            <p:column headerText="User">
+                        <p:dataTable
+                            id="tblLogs" 
+                            value="#{reportLogController.items}"
+                            var="rl" rowIndexVar="i" style="min-width:100%;"
+                            paginator="true" paginatorPosition="bottom"
+                            rows="10"
+                            paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                            rowsPerPageTemplate="5,10,15">
+                            <p:column headerText="User" width="6em">
                                 <h:outputText value="#{webUserController.findWebUserNameWithTitleById(rl.generatedById)}" />
                             </p:column>
 
                             <p:column headerText="Report">
-                                <h:outputText value="#{rl.reportName}" />
+                                <h:outputText value="#{rl.report != null ? rl.report.displayName : rl.reportName}" />
                             </p:column>
 
-                            <p:column headerText="Start Time">
+                            <p:column headerText="Start Time" width="8em" class="text-end">
                                 <h:outputText value="#{rl.startTime}">
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="End Time">
-                                <h:outputText value="#{rl.endTime}">
+                            <p:column headerText="End Time" width="8em" class="text-end">
+                                <h:outputText value="#{rl.endTime}" >
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Duration (ms)">
+                            <p:column headerText="Duration (ms)" width="8em" class="text-end">
                                 <h:outputText value="#{rl.executionTimeInMillis}" />
                             </p:column>
                         </p:dataTable>
