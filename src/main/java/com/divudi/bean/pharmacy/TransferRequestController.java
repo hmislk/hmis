@@ -281,6 +281,16 @@ public class TransferRequestController implements Serializable {
             }
             bill.getBillItems().add(newBillItem);
         }
+
+        if (transferRequestBillPre != null) {
+            transferRequestBillPre.setForwardReferenceBill(bill);
+            transferRequestBillPre.setApproveUser(sessionController.getLoggedUser());
+            transferRequestBillPre.setApproveAt(new Date());
+            transferRequestBillPre.setReferenceBill(bill);
+            billFacade.edit(transferRequestBillPre);
+            bill.setReferenceBill(transferRequestBillPre);
+        }
+
         billFacade.edit(bill);
         printPreview = true;
     }
