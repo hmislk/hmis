@@ -18,6 +18,8 @@ import com.divudi.core.data.dataStructure.YearMonthDay;
 import com.divudi.ejb.BillEjb;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.CashTransactionBean;
+import com.divudi.bean.common.ReportTimerController;
+import com.divudi.core.data.reports.CommonReports;
 
 import com.divudi.service.StaffService;
 import com.divudi.core.entity.AgentHistory;
@@ -156,6 +158,8 @@ public class CollectingCentreBillController implements Serializable, ControllerW
     private EnumController enumController;
     @Inject
     DepartmentController departmentController;
+    @Inject
+    ReportTimerController reportTimerController;
     @EJB
     StaffService staffBean;
     @Inject
@@ -356,6 +360,14 @@ public class CollectingCentreBillController implements Serializable, ControllerW
 //        searchController.createTablePharmacyCreditToPayBills();
 //    }
     public void saveBillOPDCredit() {
+        reportTimerController.trackReportExecution(
+                () -> saveBillOPDCreditInternal(),
+                CommonReports.COLLECTING_CENTRE_BILL,
+                "CollectingCentreBillController.saveBillOPDCredit",
+                sessionController.getLoggedUser());
+    }
+
+    private void saveBillOPDCreditInternal() {
 
         BilledBill temp = new BilledBill();
 
