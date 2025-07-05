@@ -44,4 +44,28 @@ public class ReportTimerController implements Serializable {
             reportLogAsyncService.logReport(savedLog);
         }
     }
+
+    public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, String reportName, WebUser loggedUser) {
+        final Date startTime = new Date();
+
+        final ReportLog reportLog = new ReportLog(reportType, reportName, loggedUser, startTime, null);
+
+        ReportLog savedLog = null;
+
+        try {
+            Future<ReportLog> futureLog = reportLogAsyncService.logReport(reportLog);
+            savedLog = futureLog.get();
+
+            reportGenerationLogic.run();
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Error occurred while generating the report", e);
+        }
+
+        final Date endTime = new Date();
+
+        if (savedLog != null) {
+            savedLog.setEndTime(endTime);
+            reportLogAsyncService.logReport(savedLog);
+        }
+    }
 }

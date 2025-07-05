@@ -50,7 +50,7 @@
                             </p:column>
 
                             <p:column headerText="Report">
-                                <h:outputText value="#{rl.reportName}" />
+                                <h:outputText value="#{rl.report != null ? rl.report.displayName : rl.reportName}" />
                             </p:column>
 
                             <p:column headerText="Start Time">
