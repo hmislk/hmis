@@ -69,6 +69,15 @@ Text values saved via `setLongTextValueByKey` are cleaned with JSoup's basic
 safelist before being stored. This prevents administrators from accidentally
 introducing unsafe markup.
 
+### Pharmacy Analytics Configuration
+
+Administrators can toggle individual tabs and reports in the Pharmacy Analytics page using application options. Each tab and each command button label has a corresponding boolean configuration key. Setting a value to `false` hides that element from the UI.
+
+Example keys include:
+
+- `Show Pharmacy Analytics Summary Reports Tab`
+- `Show Pharmacy Income Report`
+
 ## Request Originators 
 * Dr M H B Ariyaratne
 * Dr Jagath Samarasekara
