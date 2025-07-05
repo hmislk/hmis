@@ -3,7 +3,7 @@ name: COOP-STG-PROD Build & Deployment Pipeline
 on:
   push:
     branches:
-      - coop-stg-prod
+      - coop-prod-stg
 
 jobs:
   build:
