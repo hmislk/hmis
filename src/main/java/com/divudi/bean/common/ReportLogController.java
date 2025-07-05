@@ -32,7 +32,7 @@ public class ReportLogController implements Serializable {
 
     public void fillReportLogs() {
         String jpql = "select rl from ReportLog rl " +
-                "where rl.createdAt between :fd and :td order by rl.startTime desc";
+                "where rl.startTime between :fd and :td order by rl.startTime desc";
         Map<String, Object> hm = new HashMap<>();
         hm.put("fd", getFromDate());
         hm.put("td", getToDate());
