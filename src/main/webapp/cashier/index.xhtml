@@ -333,6 +333,9 @@
                                             ajax="false" 
                                             action="#{searchController.navigateToMyProfessionalPayments()}" >
                                         </p:commandButton>
+                                        
+                                        <p:commandButton ajax="false" class="my-1 w-100" value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" action="/cashier/lab_daily_summary_by_department?faces-redirect=true" >
+                                            </p:commandButton>
 
                                         <p:commandButton 
                                             class="my-1 w-100"
