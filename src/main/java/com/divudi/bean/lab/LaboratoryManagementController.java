@@ -173,14 +173,14 @@ public class LaboratoryManagementController implements Serializable {
         performingDepartment = null;
         patientInvestigationStatus = null;
     }
-    
+
     public String navigateToOtherPatientReport(Bill bill) {
         activeIndex = 4;
         listingEntity = ListingEntity.PATIENT_REPORTS;
         navigateToPatientReportsFromSelectedBill(bill);
         return "/lab/laboratory_management_dashboard?faces-redirect=true";
     }
-    
+
     public String navigateToOtherPatientInvestigations(Bill bill) {
         activeIndex = 4;
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
@@ -327,8 +327,6 @@ public class LaboratoryManagementController implements Serializable {
 
         items.add(patientInvestigation);
     }
-    
-    
 
     public void navigateToPatientReportsPrintFromSelectedBill(Bill bill) {
         items = new ArrayList<>();
@@ -347,8 +345,6 @@ public class LaboratoryManagementController implements Serializable {
 
         items = patientInvestigationFacade.findByJpql(jpql, params);
     }
-    
-    
 
     public String navigateToBackFormPatientReportEditingView() {
         if (configOptionApplicationController.getBooleanValueByKey("The system uses the Laboratory Dashboard as its default interface", false)) {
@@ -710,18 +706,25 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void pendingSendSampleList() {
-        selectedPatientSamples = new ArrayList();
+        selectedPatientSamples = new ArrayList<>();
 
         String jpql = "SELECT ps FROM PatientSample ps "
                 + "WHERE ps.retired = :ret "
                 + "AND ps.department = :department "
                 + "AND ps.status = :status "
+                + "AND ps.createdAt >= :fromDate "
                 + "ORDER BY ps.id DESC";
 
         Map<String, Object> params = new HashMap<>();
         params.put("department", sessionController.getDepartment());
         params.put("ret", false);
         params.put("status", PatientInvestigationStatus.SAMPLE_COLLECTED);
+
+        int hours = configOptionApplicationController.getIntegerValueByKey(
+                "Limit pending sample listings to last hours", 24);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -hours);
+        params.put("fromDate", cal.getTime());
 
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -738,7 +741,7 @@ public class LaboratoryManagementController implements Serializable {
             patientSamples = new ArrayList<>();
             return;
         }
-        
+
         selectedPatientSamples = new ArrayList<>();
 
         String jpql = "SELECT ps FROM PatientSample ps "
@@ -746,6 +749,7 @@ public class LaboratoryManagementController implements Serializable {
                 + "AND ps.sampleSentToDepartment = :toDepartment "
                 + "AND ps.department = :fromDepartment "
                 + "AND ps.status = :status "
+                + "AND ps.createdAt >= :fromDate "
                 + "ORDER BY ps.id DESC";
 
         Map<String, Object> params = new HashMap<>();
@@ -753,6 +757,12 @@ public class LaboratoryManagementController implements Serializable {
         params.put("fromDepartment", sampleReceiveFromDepartment);
         params.put("ret", false);
         params.put("status", PatientInvestigationStatus.SAMPLE_SENT);
+
+        int hours = configOptionApplicationController.getIntegerValueByKey(
+                "Limit pending sample listings to last hours", 24);
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.HOUR_OF_DAY, -hours);
+        params.put("fromDate", cal.getTime());
 
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1724,7 +1734,6 @@ public class LaboratoryManagementController implements Serializable {
     }
 
 // </editor-fold>
-
     public Department getSampleReceiveFromDepartment() {
         return sampleReceiveFromDepartment;
     }
