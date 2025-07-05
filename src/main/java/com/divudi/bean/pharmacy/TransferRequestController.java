@@ -251,6 +251,9 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        bill.setDepartment(sessionController.getDepartment());
+        bill.setFromDepartment(sessionController.getDepartment());
+
         String requestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
                 bill.getDepartment(),
                 bill.getToDepartment(),
@@ -259,8 +262,6 @@ public class TransferRequestController implements Serializable {
         bill.setBillTime(new Date());
         bill.setDeptId(requestId);
         bill.setInsId(requestId);
-        bill.setDepartment(sessionController.getDepartment());
-        bill.setFromDepartment(sessionController.getDepartment());
         bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         bill.setBillType(BillType.PharmacyTransferRequest);
         bill.setApproveAt(new Date());
@@ -998,16 +999,17 @@ public class TransferRequestController implements Serializable {
         newApprovaedBill.copy(inputTransferRequestBillPre);
         newApprovaedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         newApprovaedBill.setBillType(BillType.PharmacyTransferRequest);
+        newApprovaedBill.setDepartment(sessionController.getDepartment());
+        newApprovaedBill.setFromDepartment(sessionController.getDepartment());
+
         String requestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                bill.getDepartment(),
-                bill.getToDepartment(),
+                newApprovaedBill.getDepartment(),
+                newApprovaedBill.getToDepartment(),
                 BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
         newApprovaedBill.setBillDate(new Date());
         newApprovaedBill.setBillTime(new Date());
         newApprovaedBill.setDeptId(requestId);
         newApprovaedBill.setInsId(requestId);
-        newApprovaedBill.setDepartment(sessionController.getDepartment());
-        newApprovaedBill.setFromDepartment(sessionController.getDepartment());
         List<BillItem> newBillItemsForApprovalBill = new ArrayList<>();
         for (BillItem requestItemInPreBill : inputTransferRequestBillPre.getBillItems()) {
             BillItem newBillItemInApprovedRequest = new BillItem();
