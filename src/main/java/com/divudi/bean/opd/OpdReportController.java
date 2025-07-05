@@ -677,7 +677,10 @@ public class OpdReportController implements Serializable {
             }
         }
 
-        normalIncomeRow = genarateRowBundle(normalIncomeList, normalIncomeRow);
+        List<Bill> filteredBills = normalIncomeList.stream().filter(b -> b.getPaymentMethod() != PaymentMethod.Credit).collect(Collectors.toList());
+        List<Bill> creditBills = normalIncomeList.stream().filter(b -> b.getPaymentMethod() == PaymentMethod.Credit).collect(Collectors.toList());
+
+        normalIncomeRow = genarateRowBundle(filteredBills, normalIncomeRow);
         bundleReport.getReportTemplateRows().add(normalIncomeRow);
 
         List<PaymentScheme> pss = paymentSchemeController.getPaymentSchemesForOPD();
@@ -703,6 +706,34 @@ public class OpdReportController implements Serializable {
             inwardIncomeRow = genarateRowBundleInward(billsByAdmissionType.getOrDefault(at, new ArrayList<>()), inwardIncomeRow);
             bundleReport.getReportTemplateRows().add(inwardIncomeRow);
         }
+
+        //Credit Companies
+        Map<Institution, List<Bill>> billsByCreditCompany = new HashMap<>();
+        Set<Institution> creditCompanies = new HashSet<>();
+
+        for (Bill b : creditBills) {
+            List<Payment> payments = billService.fetchBillPayments(b.getBackwardReferenceBill());
+            if (payments != null) {
+                for (Payment p : payments) {
+                    if (p.getPaymentMethod() == PaymentMethod.Credit) {
+                        Institution creditCompany = p.getCreditCompany();
+                        billsByCreditCompany.computeIfAbsent(creditCompany, k -> new ArrayList<>()).add(b);
+                        creditCompanies.add(creditCompany);
+                    }
+                }
+            }
+        }
+
+        List<Institution> creditCompanyList = new ArrayList<>(creditCompanies);
+
+        for (Institution ins : creditCompanyList) {
+            ReportTemplateRow creditCompanyIncomeRow = new ReportTemplateRow();
+            creditCompanyIncomeRow.setItemName(ins.getName() + " Income");
+            initializeRows(creditCompanyIncomeRow);
+            creditCompanyIncomeRow = genarateRowBundle(billsByCreditCompany.getOrDefault(ins, new ArrayList<>()), creditCompanyIncomeRow);
+            bundleReport.getReportTemplateRows().add(creditCompanyIncomeRow);
+        }
+            
 
         //outpatientIncome (CC)
         fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, getOutPatientBillTypeAtomics(), null, null, null, null, null);
@@ -831,7 +862,7 @@ public class OpdReportController implements Serializable {
             if (!(bi.getItem() instanceof Investigation)) {
                 continue;
             }
-            row.setLong2(row.getLong2() + Math.round( bi.getNetValue()));
+            row.setLong2(row.getLong2() + Math.round(bi.getNetValue()));
             row.setTotal(row.getTotal() + bi.getNetValue());
             row.setDiscount(row.getDiscount() + bi.getDiscount());
             row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -897,7 +928,7 @@ public class OpdReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + Math.round( p.getPaidValue()));
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
