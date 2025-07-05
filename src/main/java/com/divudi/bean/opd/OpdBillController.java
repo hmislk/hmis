@@ -1832,35 +1832,22 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String settleOpdBill() {
-        return reportTimerController.trackReportExecution(
-                () -> settleOpdBillInternal(),
-                CommonReports.OPD_BILL,
-                "OpdBillController.settleOpdBill",
-                sessionController.getLoggedUser());
-    }
-
-    private String settleOpdBillInternal() {
-        AuditEvent audirEvent = auditEventController.createNewAuditEvent("Settle OPD Bill");
         if (billSettlingStarted) {
-            auditEventController.failAuditEvent(audirEvent, "Failed due to already started OPD Bill Settling Process.");
             return null;
         }
         billSettlingStarted = true;
         if (validatePaymentMethodData()) {
-            auditEventController.failAuditEvent(audirEvent, "Execute Settle Bill Action Failed because of Payment Method Validation Error.");
             billSettlingStarted = false;
             return null;
         }
         BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(paymentMethod, paymentScheme, getPaymentMethodData());
         if (!discountSchemeValidation.isFlag()) {
-            auditEventController.failAuditEvent(audirEvent, "Execute Settle Bill Action Failed because of Discount Scheme Validation Error.");
             billSettlingStarted = false;
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
 
         if (!executeSettleBillActions()) {
-            auditEventController.failAuditEvent(audirEvent, "Execute Settle Bill Action Failed because of errors in user inputs.");
             billSettlingStarted = false;
             return "";
         }
@@ -1870,15 +1857,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             sendSmsOnOpdBillSettling(smsTempalteForTheSmsAfterOpdBilling);
         }
 
-        auditEventController.completeAuditEvent(audirEvent);
         billSettlingStarted = false;
-
         if (patientEncounter != null) {
             return "/inward/inward_service_batch_bill_print?faces-redirect=true";
         } else {
             return "/opd/opd_batch_bill_print?faces-redirect=true";
         }
     }
+
 
     private boolean executeSettleBillActions() {
         if (errorCheck()) {
@@ -2845,7 +2831,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         // charge. Issue #12544 requires allowing such entries, so the check for
         // a zero net value is removed. Items with a value of 0 are now
         // permitted and will be processed like any other item.
-
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
         if (clearItemAfterAddingToOpdBill) {
