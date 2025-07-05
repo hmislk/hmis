@@ -1620,6 +1620,21 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Report Execution Logs -->
+                <h:panelGroup rendered="#{ui.icon eq 'Report_Execution_Logs'}" layout="block" class="col-1 p-1" >
+                    <h:form>
+                        <p:tooltip for="report_execution_logs" value="Report Execution Logs" showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="report_execution_logs"
+                            ajax="false"
+                            action="/dataAdmin/report_execution_logs?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/report-execution-logs.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Report Execution Logs" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Channel Booking by Dates -->
                 <h:panelGroup rendered="#{ui.icon eq 'Channel_Booking_by_Dates' and webUserController.hasPrivilege('ChannellingChannelBooking')}" layout="block" class="col-1 p-1" >
                     <h:form>
