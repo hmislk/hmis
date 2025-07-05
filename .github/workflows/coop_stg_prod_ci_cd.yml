@@ -1,9 +1,9 @@
-name: COOP-STG Build & Deployment Pipeline
+name: COOP-STG-PROD Build & Deployment Pipeline
 
 on:
   push:
     branches:
-      - coop-stg
+      - coop-stg-prod
 
 jobs:
   build:
@@ -29,8 +29,8 @@ jobs:
 
       - name: Update JDBC Data Sources in persistence.xml
         run: |
-          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopStg</jta-data-source>|' src/main/resources/META-INF/persistence.xml
-          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopStgAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopProd</jta-data-source>|' src/main/resources/META-INF/persistence.xml
+          sed -i 's|<jta-data-source>${JDBC_AUDIT_DATASOURCE}</jta-data-source>|<jta-data-source>jdbc/coopProdAudit</jta-data-source>|' src/main/resources/META-INF/persistence.xml
 
       - name: Verify JDBC Data Sources in persistence.xml
         run: |
@@ -75,9 +75,9 @@ jobs:
           chmod 600 private_key.pem
 
           # Variables
-          WAR_NAME="coop.war"
+          WAR_NAME="coopprod.war"
           WAR_DIR="/home/appuser/app/latest"
-          APP_NAME="coop"
+          APP_NAME="coopprod"
           SUBDOMAIN="stg"
 
           # Ensure deployment directory exists
