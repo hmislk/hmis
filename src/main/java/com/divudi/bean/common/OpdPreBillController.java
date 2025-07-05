@@ -20,7 +20,6 @@ import com.divudi.core.data.ItemLight;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.data.reports.CommonReports;
-import com.divudi.bean.common.ReportTimerController;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
