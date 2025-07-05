@@ -16,17 +16,18 @@
                     <p:panel header="Investigation Results" >
 
                         <p:panelGrid columns="2" >
-                            <p:outputLabel value="ID From" >
-                            </p:outputLabel>
-                            <p:inputText value="#{patientInvestigationController.fromId}" >
-                            </p:inputText>
-                            <p:outputLabel value="ID To" >
-                            </p:outputLabel>
-                            <p:inputText value="#{patientInvestigationController.toId}" >
-                            </p:inputText>
+                            <p:outputLabel value="Date From" />
+                            <p:calendar value="#{patientInvestigationController.fromDate}" pattern="yyyy-MM-dd" />
+                            <p:outputLabel value="Date To" />
+                            <p:calendar value="#{patientInvestigationController.toDate}" pattern="yyyy-MM-dd" />
+                            <p:outputLabel value="ID From" />
+                            <p:inputText value="#{patientInvestigationController.fromId}" />
+                            <p:outputLabel value="ID To" />
+                            <p:inputText value="#{patientInvestigationController.toId}" />
                             <p:spacer></p:spacer>
-                            <p:commandButton ajax="false" action="#{patientInvestigationController.fillPatientReportItemValues}"
-                                             value="Fill" ></p:commandButton>
+                            <p:commandButton ajax="false"
+                                             action="#{patientInvestigationController.fillPatientReportItemValues(patientInvestigationController.fromId, patientInvestigationController.toId, patientInvestigationController.fromDate, patientInvestigationController.toDate)}"
+                                             value="Fill" />
                             <p:spacer></p:spacer>
                             <p:commandButton value="Export" ajax="false">
                                 <p:dataExporter target="tbl" type="xlsx" fileName="test_results" ></p:dataExporter>
