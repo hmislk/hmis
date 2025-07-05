@@ -279,11 +279,9 @@ public class TransferRequestController implements Serializable {
             } else {
                 billItemFacade.edit(newBillItem);
             }
+            bill.getBillItems().add(newBillItem);
         }
         billFacade.edit(bill);
-        bill=billService.fetchBillById(bill.getId());
-        System.out.println("bill.getBillItems() = " + bill.getBillItems());
-        JsfUtil.addSuccessMessage("Approval done. Send the request to " + bill.getToDepartment());
         printPreview = true;
     }
 
