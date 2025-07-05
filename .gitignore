@@ -10,3 +10,4 @@
 .idea
 .vscode
 nb-configuration.xml
+*.stackdump
