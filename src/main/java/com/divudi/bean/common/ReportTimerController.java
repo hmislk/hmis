@@ -21,6 +21,10 @@ public class ReportTimerController implements Serializable {
     @EJB
     private ReportLogAsyncService reportLogAsyncService;
 
+    public ReportLogAsyncService getReportLogAsyncService() {
+        return reportLogAsyncService;
+    }
+
     public void trackReportExecution(Runnable reportGenerationLogic, IReportType reportType, WebUser loggedUser) {
         trackReportExecution(reportGenerationLogic, reportType, reportType.getReportName(), loggedUser);
     }
