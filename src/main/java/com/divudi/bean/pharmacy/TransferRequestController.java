@@ -414,6 +414,10 @@ public class TransferRequestController implements Serializable {
     }
 
     public boolean errorsPresent() {
+        if (getTransferRequestBillPre() == null) {
+            JsfUtil.addErrorMessage("Please select a bill");
+            return true;
+        }
         if (getBillItems() == null) {
             JsfUtil.addErrorMessage("No Item Selected to Request");
             return true;
@@ -424,14 +428,6 @@ public class TransferRequestController implements Serializable {
         }
         if (getToDepartment() == null) {
             JsfUtil.addErrorMessage("Select Requested Department");
-            return true;
-        }
-        if (getTransferRequestBillPre() == null) {
-            JsfUtil.addErrorMessage("Please select a bill");
-            return true;
-        }
-        if (getTransferRequestBillPre().getBillItems() == null || getTransferRequestBillPre().getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("No Items in the request");
             return true;
         }
         return false;
