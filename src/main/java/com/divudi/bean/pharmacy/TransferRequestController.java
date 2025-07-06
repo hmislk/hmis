@@ -252,11 +252,11 @@ public class TransferRequestController implements Serializable {
             return;
         }
         if (bill == null) {
-            bill = new Bill();
+            bill = new BilledBill();
         }
         bill.setDepartment(sessionController.getDepartment());
         bill.setFromDepartment(sessionController.getDepartment());
-        createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
+        bill = createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
         printPreview = true;
     }
 
