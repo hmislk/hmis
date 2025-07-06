@@ -226,7 +226,7 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double getBilledIssuedByRequestedItem(BillItem b, BillType billType) {
-        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+        String sql = "Select sum(p.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
 
@@ -270,7 +270,7 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double getCancelledIssuedByRequestedItem(BillItem b, BillType billType) {
-        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+        String sql = "Select sum(p.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
                 + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
 

@@ -60,40 +60,40 @@ import org.primefaces.event.RowEditEvent;
 @SessionScoped
 public class TransferIssueController implements Serializable {
 
-    private Bill requestedBill;
-    private Bill issuedBill;
-    private boolean printPreview;
-    private Date fromDate;
-    private Date toDate;
-    ///////
-    @Inject
-    UserStockController userStockController;
-    @Inject
-    private SessionController sessionController;
-    @Inject
-    BillController billController;
-    @Inject
-    NotificationController notificationController;
-    ////
     @EJB
     private BillFacade billFacade;
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
     private BillItemFacade billItemFacade;
-    ////
     @EJB
     private PharmacyBean pharmacyBean;
     @Inject
     private PharmacyCalculation pharmacyCalculation;
     @EJB
     private BillNumberGenerator billNumberBean;
-    @Inject
-    private ConfigOptionApplicationController configOptionApplicationController;
     @EJB
     private BillService billService;
     @EJB
-    PharmacyCostingService pharmacyCostingService;
+    private PharmacyCostingService pharmacyCostingService;
+    @Inject
+    private PharmacyController pharmacyController;
+    @Inject
+    private UserStockController userStockController;
+    @Inject
+    private SessionController sessionController;
+    @Inject
+    private BillController billController;
+    @Inject
+    private NotificationController notificationController;
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+
+    private Bill requestedBill;
+    private Bill issuedBill;
+    private boolean printPreview;
+    private Date fromDate;
+    private Date toDate;
 
     private List<BillItem> billItems;
     private BillItem billItem;
@@ -131,7 +131,7 @@ public class TransferIssueController implements Serializable {
     public boolean isFullyIssued(Bill bill) {
         System.out.println("isFullyIssued");
         System.out.println("bill = " + bill);
-        System.out.println(" bill.getBillItems() = " +  bill.getBillItems());
+        System.out.println(" bill.getBillItems() = " + bill.getBillItems());
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             return false; // Null or empty bills are not considered fully issued
         }
@@ -327,11 +327,11 @@ public class TransferIssueController implements Serializable {
                 newlyCreatedBillItemInIssueBill.setSearialNo(getBillItems().size());
                 newlyCreatedBillItemInIssueBill.setItem(billItemInRequest.getItem());
                 newlyCreatedBillItemInIssueBill.setReferanceBillItem(billItemInRequest);
-                newlyCreatedBillItemInIssueBill.setQty(thisTimeIssuingQtyInUnits / packSize);
+                newlyCreatedBillItemInIssueBill.setQty(thisTimeIssuingQtyInUnits);
 
                 PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
                 phItem.setBillItem(newlyCreatedBillItemInIssueBill);
-                phItem.setQty(thisTimeIssuingQtyInUnits);
+                phItem.setQty(thisTimeIssuingQtyInUnits * packSize);
                 phItem.setPurchaseRate(issuingStock.getItemBatch().getPurcahseRate());
                 phItem.setRetailRateInUnit(issuingStock.getItemBatch().getRetailsaleRate());
                 phItem.setStock(issuingStock);
@@ -647,7 +647,7 @@ public class TransferIssueController implements Serializable {
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
-            BillItem originalOrderItem = billItemsInIssue.getParentBillItem();
+            BillItem originalOrderItem = billItemsInIssue.getReferanceBillItem();
             billItemsInIssue.getPharmaceuticalBillItem().setQty(0 - Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()));
             if (billItemsInIssue.getQty() == 0.0 || billItemsInIssue.getItem() instanceof Vmpp || billItemsInIssue.getItem() instanceof Vmp) {
                 continue;
@@ -692,8 +692,11 @@ public class TransferIssueController implements Serializable {
                         Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()), getIssuedBill().getToStaff());
 
                 billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
+                
+                originalOrderItem = billItemFacade.findWithoutCache(originalOrderItem.getId());
                 originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
-
+                billItemFacade.editAndCommit(originalOrderItem);
+                
                 getBillItemFacade().edit(billItemsInIssue);
                 getBillItemFacade().edit(originalOrderItem);
             } else {
@@ -885,11 +888,7 @@ public class TransferIssueController implements Serializable {
         }
     }
 
-    @Inject
-    private PharmacyController pharmacyController;
-
-    // \u003c!-- ChatGPT contributed: update bill item financial details --\u003e
-    private void updateFinancials(BillItemFinanceDetails fd) {
+    private void updateFinancialsForTransferIssue(BillItemFinanceDetails fd) {
         if (fd == null || fd.getBillItem() == null) {
             return;
         }
@@ -947,21 +946,19 @@ public class TransferIssueController implements Serializable {
         bi.setNetValue(lineGrossTotal.doubleValue());
     }
 
-    public void onQuantityChange(BillItem bi) {
+    public void onQuantityChangeForTransferIssue(BillItem bi) {
         if (bi == null) {
             return;
         }
-
-        updateFinancials(bi.getBillItemFinanceDetails());
+        updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
     }
 
-    public void onLineGrossRateChange(BillItem bi) {
+    public void onLineGrossRateChangeForTransferIssue(BillItem bi) {
         if (bi == null) {
             return;
         }
-
-        updateFinancials(bi.getBillItemFinanceDetails());
+        updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
         pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
     }
 
@@ -1005,9 +1002,6 @@ public class TransferIssueController implements Serializable {
 
     private void saveBill() {
         getIssuedBill().setReferenceBill(getRequestedBill());
-//        getIssuedBill().setToInstitution(getRequestedBill().getInstitution());
-//        getIssuedBill().setToDepartment(getRequestedBill().getDepartment());
-
         if (getIssuedBill().getId() == null) {
             getBillFacade().create(getIssuedBill());
         }
@@ -1029,32 +1023,16 @@ public class TransferIssueController implements Serializable {
         return billFacade;
     }
 
-    public void setBillFacade(BillFacade billFacade) {
-        this.billFacade = billFacade;
-    }
-
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
-    }
-
-    public void setPharmaceuticalBillItemFacade(PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade) {
-        this.pharmaceuticalBillItemFacade = pharmaceuticalBillItemFacade;
     }
 
     public SessionController getSessionController() {
         return sessionController;
     }
 
-    public void setSessionController(SessionController sessionController) {
-        this.sessionController = sessionController;
-    }
-
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
-    }
-
-    public void setBillItemFacade(BillItemFacade billItemFacade) {
-        this.billItemFacade = billItemFacade;
     }
 
     public boolean isPrintPreview() {
@@ -1067,10 +1045,6 @@ public class TransferIssueController implements Serializable {
 
     public BillNumberGenerator getBillNumberBean() {
         return billNumberBean;
-    }
-
-    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
-        this.billNumberBean = billNumberBean;
     }
 
     public Date getFromDate() {
@@ -1097,10 +1071,6 @@ public class TransferIssueController implements Serializable {
 
     public PharmacyController getPharmacyController() {
         return pharmacyController;
-    }
-
-    public void setPharmacyController(PharmacyController pharmacyController) {
-        this.pharmacyController = pharmacyController;
     }
 
     public List<BillItem> getBillItems() {
