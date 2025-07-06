@@ -28,6 +28,8 @@ import com.divudi.core.facade.PatientSampleFacade;
 import com.divudi.core.facade.UploadFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.entity.report.ReportLog;
+import java.util.concurrent.Future;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -122,6 +124,26 @@ public class LaboratoryManagementController implements Serializable {
     private Department sampleSendingDepartment;
     private Department sampleReceiveFromDepartment;
     // </editor-fold>
+
+    private ReportLog startLabLog(String name) {
+        try {
+            Date start = new Date();
+            ReportLog log = new ReportLog(CommonReports.LAB_DASHBOARD, name, sessionController.getLoggedUser(), start, null);
+            Future<ReportLog> future = reportTimerController.getReportLogAsyncService().logReport(log);
+            return future != null ? future.get() : log;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void endLabLog(ReportLog log) {
+        if (log != null) {
+            log.setEndTime(new Date());
+            reportTimerController.getReportLogAsyncService().logReport(log);
+        }
+    }
+
+    // <editor-fold defaultstate="collapsed" desc="Navigation Method">
 
     // <editor-fold defaultstate="collapsed" desc="Navigation Method">
     public String navigateToLaboratoryManagementDashboard() {
@@ -412,7 +434,8 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void searchLabBills() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchLabBills");
+        try {
             listingEntity = ListingEntity.BILLS;
             String jpql;
             bills = new ArrayList();
@@ -491,7 +514,9 @@ public class LaboratoryManagementController implements Serializable {
         params.put("td", getToDate());
 
         bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchLabBills", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void generateBarcodesForSelectedBill(Bill billForBarcode) {
@@ -507,7 +532,8 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("This Bill is Already Cancel");
             return;
         }
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.generateBarcodesForSelectedBill");
+        try {
             BillBarcode bb = new BillBarcode(billForBarcode);
             List<PatientSampleWrapper> psws = new ArrayList<>();
             List<PatientSample> pss = patientInvestigationController.prepareSampleCollectionByBillsForPhlebotomyRoom(billForBarcode, sessionController.getLoggedUser());
@@ -554,11 +580,14 @@ public class LaboratoryManagementController implements Serializable {
             billBarcodes.add(bb);
             selectedBillBarcodes = billBarcodes;
             listingEntity = ListingEntity.VIEW_BARCODE;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.generateBarcodesForSelectedBill", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPatientSamples() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientSamples");
+        try {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -640,11 +669,14 @@ public class LaboratoryManagementController implements Serializable {
             patientSamples = new ArrayList();
         }
         selectAll = false;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void fetchSamples(List<PatientInvestigationStatus> availableStatus) {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.fetchSamples");
+        try {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -689,11 +721,14 @@ public class LaboratoryManagementController implements Serializable {
         if (patientSamples == null) {
             patientSamples = new ArrayList();
         }
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.fetchSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void nonCollectedSampleList() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.nonCollectedSampleList");
+        try {
         selectedPatientSamples = new ArrayList();
 
         String jpql = "SELECT ps FROM PatientSample ps "
@@ -714,11 +749,14 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         selectAll = false;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonCollectedSampleList", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void pendingSendSampleList() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.pendingSendSampleList");
+        try {
         selectedPatientSamples = new ArrayList<>();
 
         String jpql = "SELECT ps FROM PatientSample ps "
@@ -746,11 +784,14 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         selectAll = false;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.pendingSendSampleList", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void nonReceivedSampleList() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.nonReceivedSampleList");
+        try {
         if (sampleReceiveFromDepartment == null) {
             JsfUtil.addErrorMessage("Please Select Sample from Department.");
             patientSamples = new ArrayList<>();
@@ -787,11 +828,14 @@ public class LaboratoryManagementController implements Serializable {
 
         selectAll = false;
         sampleReceiveFromDepartment = null;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.nonReceivedSampleList", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void selectAllSamples() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.selectAllSamples");
+        try {
         if (patientSamples == null) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -801,18 +845,24 @@ public class LaboratoryManagementController implements Serializable {
             selectedPatientSamples.add(ps);
         }
         selectAll = true;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.selectAllSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void unSelectAllSamples() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.unSelectAllSamples");
+        try {
         selectedPatientSamples = new ArrayList();
         selectAll = false;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.unSelectAllSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void collectSamples() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.collectSamples");
+        try {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -875,11 +925,14 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Selected Samples Collected");
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.collectSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void sendSamplesToLab() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.sendSamplesToLab");
+        try {
         if (sampleTransportedToLabByStaff == null) {
             JsfUtil.addErrorMessage("The transport worker is not included.");
             return;
@@ -949,11 +1002,14 @@ public class LaboratoryManagementController implements Serializable {
         }
         sampleTransportedToLabByStaff = null;
         JsfUtil.addSuccessMessage("Selected Samples Sent to Lab");
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.sendSamplesToLab", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void receiveSamplesAtLab() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.receiveSamplesAtLab");
+        try {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -1008,11 +1064,14 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Selected Samples Are Received at Lab");
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.receiveSamplesAtLab", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void rejectSamples() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.rejectSamples");
+        try {
         if (selectedPatientSamples == null || selectedPatientSamples.isEmpty()) {
             JsfUtil.addErrorMessage("No samples selected");
             return;
@@ -1055,11 +1114,14 @@ public class LaboratoryManagementController implements Serializable {
         }
 
         JsfUtil.addSuccessMessage("Selected Samples Are Rejected");
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.rejectSamples", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void navigateToSamplesFromSelectedBill(Bill bill) {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.navigateToSamplesFromSelectedBill");
+        try {
         patientSamples = new ArrayList<>();
         listingEntity = ListingEntity.PATIENT_SAMPLES;
         String jpql;
@@ -1079,12 +1141,15 @@ public class LaboratoryManagementController implements Serializable {
         patientSamples = patientSampleFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         selectAll = false;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.navigateToSamplesFromSelectedBill", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
 
     }
 
     public void searchPatientInvestigations() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientInvestigations");
+        try {
         items = new ArrayList();
 
         if (sampleId != null) {
@@ -1095,11 +1160,14 @@ public class LaboratoryManagementController implements Serializable {
                 searchPatientInvestigationsWithoutSampleId();
             }
         }
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigations", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPatientInvestigationsWithSampleId(Long sampleID) {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientInvestigationsWithSampleId");
+        try {
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -1188,11 +1256,14 @@ public class LaboratoryManagementController implements Serializable {
         params.put("ret", false);
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithSampleId", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPatientInvestigationsWithoutSampleId() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientInvestigationsWithoutSampleId");
+        try {
         listingEntity = ListingEntity.PATIENT_INVESTIGATIONS;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -1274,7 +1345,9 @@ public class LaboratoryManagementController implements Serializable {
         params.put("ret", false);
 
         items = patientInvestigationFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientInvestigationsWithoutSampleId", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public List<Long> getPatientSampleComponentsByInvestigation(PatientInvestigation patientInvestigation) {
@@ -1321,7 +1394,8 @@ public class LaboratoryManagementController implements Serializable {
     }
 
     public void removePatientReport(Long patientReportID) {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.removePatientReport");
+        try {
         PatientReport currentPatientReport = patientReportFacade.find(patientReportID);
 
         if (currentPatientReport == null) {
@@ -1353,11 +1427,14 @@ public class LaboratoryManagementController implements Serializable {
         comment = null;
         JsfUtil.addSuccessMessage("Successfully Removed");
         searchPatientReports();
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.removePatientReport", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientReports");
+        try {
         if (filteringStatus == null) {
             searchPatientInvestigations();
         } else if (filteringStatus.equalsIgnoreCase("Processing")) {
@@ -1366,12 +1443,15 @@ public class LaboratoryManagementController implements Serializable {
             searchPendingAndApprovedPatientReports();
         }
         listingEntity = ListingEntity.PATIENT_REPORTS;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReports", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
 
     }
 
     public void searchProcessingPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchProcessingPatientReports");
+        try {
         searchPatientInvestigations();
 
         List<PatientInvestigation> processingList = new ArrayList<>();
@@ -1383,11 +1463,14 @@ public class LaboratoryManagementController implements Serializable {
         }
         setItems(processingList);
         listingEntity = ListingEntity.PATIENT_REPORTS;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchProcessingPatientReports", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPatientReportPrint() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPatientReportPrint");
+        try {
         if (filteringStatus == null) {
             searchPatientInvestigations();
         } else if (filteringStatus.equalsIgnoreCase("Processing")) {
@@ -1396,11 +1479,14 @@ public class LaboratoryManagementController implements Serializable {
             searchPendingAndApprovedPatientReports();
         }
         listingEntity = ListingEntity.REPORT_PRINT;
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPatientReportPrint", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public void searchPendingAndApprovedPatientReports() {
-        reportTimerController.trackReportExecution(() -> {
+        ReportLog rl = startLabLog("LaboratoryManagementController.searchPendingAndApprovedPatientReports");
+        try {
         listingEntity = ListingEntity.PATIENT_REPORTS;
         List<PatientReport> patientReports = new ArrayList<>();
         String jpql;
@@ -1493,7 +1579,9 @@ public class LaboratoryManagementController implements Serializable {
             }
         }
 
-        }, CommonReports.LAB_DASHBOARD, "LaboratoryManagementController.searchPendingAndApprovedPatientReports", sessionController.getLoggedUser());
+        } finally {
+            endLabLog(rl);
+        }
     }
 
     public Department getDefaultSampleSendingDepartment() {
