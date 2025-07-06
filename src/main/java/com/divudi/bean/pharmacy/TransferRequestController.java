@@ -428,11 +428,11 @@ public class TransferRequestController implements Serializable {
         }
         if (getTransferRequestBillPre() == null) {
             JsfUtil.addErrorMessage("Please select a bill");
-            return null;
+            return true;
         }
         if (getTransferRequestBillPre().getBillItems() == null || getTransferRequestBillPre().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("No Items in the request");
-            return null;
+            return true;
         }
         return false;
     }
