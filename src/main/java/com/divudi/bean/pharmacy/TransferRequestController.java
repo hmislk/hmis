@@ -251,56 +251,84 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("No Bill Items");
             return;
         }
+        if (bill == null) {
+            bill = new Bill();
+        }
         bill.setDepartment(sessionController.getDepartment());
         bill.setFromDepartment(sessionController.getDepartment());
+        createNewApprovedTransferRequestBill(transferRequestBillPre, billItems, bill);
+        printPreview = true;
+    }
+
+    public Bill createNewApprovedTransferRequestBill(Bill preBillToCreateApprovedBill, List<BillItem> transferRequestPreBillItems, Bill newApprovedBill) {
+        if (transferRequestPreBillItems == null || transferRequestPreBillItems.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bill Items");
+            return null;
+        }
+
+        newApprovedBill.copy(preBillToCreateApprovedBill);
+
+        newApprovedBill.setDepartment(sessionController.getDepartment());
+        newApprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        newApprovedBill.setBillType(BillType.PharmacyTransferRequest);
+
+        newApprovedBill.setFromDepartment(preBillToCreateApprovedBill.getFromDepartment());
+        newApprovedBill.setFromInstitution(preBillToCreateApprovedBill.getFromInstitution());
+
+        newApprovedBill.setToDepartment(preBillToCreateApprovedBill.getToDepartment());
+        newApprovedBill.setToInstitution(preBillToCreateApprovedBill.getToInstitution());
+
+        newApprovedBill.setCreatedAt(new Date());
+        newApprovedBill.setCreater(sessionController.getLoggedUser());
 
         String requestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                bill.getDepartment(),
-                bill.getToDepartment(),
+                newApprovedBill.getDepartment(),
+                newApprovedBill.getToDepartment(),
                 BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        bill.setBillDate(new Date());
-        bill.setBillTime(new Date());
-        bill.setDeptId(requestId);
-        bill.setInsId(requestId);
-        bill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        bill.setBillType(BillType.PharmacyTransferRequest);
-        bill.setApproveAt(new Date());
-        bill.setCheckedBy(sessionController.getLoggedUser());
-        bill.setCheckeAt(new Date());
-        bill.setApproveUser(sessionController.getLoggedUser());
-        if (bill.getId() == null) {
-            billFacade.create(bill);
+        newApprovedBill.setBillDate(new Date());
+        newApprovedBill.setBillTime(new Date());
+        newApprovedBill.setDeptId(requestId);
+        newApprovedBill.setInsId(requestId);
+        newApprovedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+        newApprovedBill.setBillType(BillType.PharmacyTransferRequest);
+        newApprovedBill.setApproveAt(new Date());
+        newApprovedBill.setCheckedBy(sessionController.getLoggedUser());
+        newApprovedBill.setCheckeAt(new Date());
+        newApprovedBill.setApproveUser(sessionController.getLoggedUser());
+
+        if (newApprovedBill.getId() == null) {
+            newApprovedBill.setCreater(sessionController.getLoggedUser());
+            newApprovedBill.setCreatedAt(new Date());
+            billFacade.create(newApprovedBill);
+
         } else {
-            billFacade.edit(bill);
+            billFacade.edit(newApprovedBill);
         }
-        for (BillItem newBillItem : billItems) {
-            newBillItem.setBill(bill);
+        for (BillItem newBillItem : transferRequestPreBillItems) {
+            newBillItem.setBill(newApprovedBill);
             if (newBillItem.getId() == null) {
                 billItemFacade.create(newBillItem);
             } else {
                 billItemFacade.edit(newBillItem);
             }
-            bill.getBillItems().add(newBillItem);
+            newApprovedBill.getBillItems().add(newBillItem);
         }
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(newApprovedBill, newApprovedBill.getBillItems());
+        billFacade.edit(newApprovedBill);
 
-        if (transferRequestBillPre != null) {
-            transferRequestBillPre.setForwardReferenceBill(bill);
-            transferRequestBillPre.setApproveUser(sessionController.getLoggedUser());
-            transferRequestBillPre.setApproveAt(new Date());
-            transferRequestBillPre.setReferenceBill(bill);
-            billFacade.edit(transferRequestBillPre);
-            bill.setReferenceBill(transferRequestBillPre);
+        if (preBillToCreateApprovedBill != null) {
+            preBillToCreateApprovedBill.setForwardReferenceBill(newApprovedBill);
+            preBillToCreateApprovedBill.setApproveUser(sessionController.getLoggedUser());
+            preBillToCreateApprovedBill.setApproveAt(new Date());
+            preBillToCreateApprovedBill.setReferenceBill(newApprovedBill);
+            billFacade.edit(preBillToCreateApprovedBill);
+            newApprovedBill.setReferenceBill(preBillToCreateApprovedBill);
         }
-
-        billFacade.edit(bill);
-        printPreview = true;
+        billFacade.edit(newApprovedBill);
+        return newApprovedBill;
     }
 
     public void request() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getBillItems() == null) {
             JsfUtil.addErrorMessage("No Item Selected to Request");
             return;
@@ -396,10 +424,22 @@ public class TransferRequestController implements Serializable {
             JsfUtil.addErrorMessage("Select Requested Department");
             return true;
         }
+        if (getTransferRequestBillPre == null) {
+            JsfUtil.addErrorMessage("Please select a bill");
+            return null;
+        }
+        if (getTransferRequestBillPre.getBillItems() == null || getTransferRequestBillPre.getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items in the request");
+            return null;
+        }
         return false;
     }
 
     public void saveTransferRequestPreBillAndBillItems() {
+        String requestPreBillId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
+                getSessionController().getDepartment(),
+                getToDepartment(),
+                BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST_PRE);
         getTransferRequestBillPre().setBillType(BillType.PharmacyTransferRequest);
         getTransferRequestBillPre().setToDepartment(getToDepartment());
@@ -422,8 +462,8 @@ public class TransferRequestController implements Serializable {
         if (getTransferRequestBillPre().getId() == null) {
             getBillFacade().create(getTransferRequestBillPre());
         }
-        getTransferRequestBillPre().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
-        getTransferRequestBillPre().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferRequest, BillClassType.BilledBill, BillNumberSuffix.PHTRQ));
+        getTransferRequestBillPre().setDeptId(requestPreBillId);
+        getTransferRequestBillPre().setInsId(requestPreBillId);
         getTransferRequestBillPre().setCreater(getSessionController().getLoggedUser());
         getTransferRequestBillPre().setCreatedAt(Calendar.getInstance().getTime());
         getBillFacade().edit(getTransferRequestBillPre());
@@ -987,37 +1027,8 @@ public class TransferRequestController implements Serializable {
     }
 
     private Bill createTransferApprovalBillFromPreBill(Bill inputTransferRequestBillPre) {
-        if (inputTransferRequestBillPre == null) {
-            JsfUtil.addErrorMessage("Please select a bill");
-            return null;
-        }
-        if (inputTransferRequestBillPre.getBillItems() == null || inputTransferRequestBillPre.getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("No Items in the request");
-            return null;
-        }
         Bill newApprovaedBill = new BilledBill();
-        newApprovaedBill.copy(inputTransferRequestBillPre);
-        newApprovaedBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        newApprovaedBill.setBillType(BillType.PharmacyTransferRequest);
-        newApprovaedBill.setDepartment(sessionController.getDepartment());
-        newApprovaedBill.setFromDepartment(sessionController.getDepartment());
-
-        String requestId = billNumberBean.departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(
-                newApprovaedBill.getDepartment(),
-                newApprovaedBill.getToDepartment(),
-                BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
-        newApprovaedBill.setBillDate(new Date());
-        newApprovaedBill.setBillTime(new Date());
-        newApprovaedBill.setDeptId(requestId);
-        newApprovaedBill.setInsId(requestId);
-        List<BillItem> newBillItemsForApprovalBill = new ArrayList<>();
-        for (BillItem requestItemInPreBill : inputTransferRequestBillPre.getBillItems()) {
-            BillItem newBillItemInApprovedRequest = new BillItem();
-            newBillItemInApprovedRequest.copy(requestItemInPreBill);
-            newBillItemInApprovedRequest.setBill(newApprovaedBill);
-            newBillItemsForApprovalBill.add(newBillItemInApprovedRequest);
-        }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(newApprovaedBill, newBillItemsForApprovalBill);
+        newApprovaedBill = createNewApprovedTransferRequestBill(inputTransferRequestBillPre, inputTransferRequestBillPre.getBillItems(), newApprovaedBill);
         return newApprovaedBill;
     }
 
