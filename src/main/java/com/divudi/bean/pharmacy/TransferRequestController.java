@@ -563,7 +563,11 @@ public class TransferRequestController implements Serializable {
 
         boolean approvalIsNeeded = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transer Request With Approval", false);
         if (!approvalIsNeeded) {
-            bill = createTransferApprovalBillFromPreBill(getTransferRequestBillPre());
+            bill = createNewApprovedTransferRequestBill(
+                    getTransferRequestBillPre(),
+                    getTransferRequestBillPre().getBillItems(),
+                    new BilledBill()
+            );
         } else {
             bill = getTransferRequestBillPre();
         }
@@ -1026,12 +1030,6 @@ public class TransferRequestController implements Serializable {
         }
         setToDepartment(d);
         return processTransferRequest();
-    }
-
-    private Bill createTransferApprovalBillFromPreBill(Bill inputTransferRequestBillPre) {
-        Bill newApprovaedBill = new BilledBill();
-        newApprovaedBill = createNewApprovedTransferRequestBill(inputTransferRequestBillPre, inputTransferRequestBillPre.getBillItems(), newApprovaedBill);
-        return newApprovaedBill;
     }
 
 }
