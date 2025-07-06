@@ -257,8 +257,15 @@
 
                                             <p:commandButton
                                                 ajax="false" 
-                                                action="#{dataAdministrationController.navigateToDownloadLogFiles()}" 
-                                                value="To Download Log Files"  
+                                            action="#{dataAdministrationController.navigateToDownloadLogFiles()}"
+                                            value="To Download Log Files"
+                                            class="w-100 m-1"
+                                            />
+
+                                            <p:commandButton
+                                                ajax="false"
+                                                action="#{dataAdministrationController.navigateToReportExecutionLogs()}"
+                                                value="Process Execution Logs"
                                                 class="w-100 m-1"
                                                 />
 

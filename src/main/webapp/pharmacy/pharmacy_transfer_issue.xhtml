@@ -60,13 +60,13 @@
                                     class="text-success"
                                     headerText="Issued Qty" width="4em">
                                     <h:outputLabel 
-                                        value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
+                                        value="#{bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
                                 <p:column 
                                     headerText="Remaining Qty" 
                                     class="text-danger"
                                     width="80px;">
-                                    <h:outputLabel value="#{bItm.issuedPhamaceuticalItemQty}"/>                        
+                                    <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
                                 <p:column headerText="Stock" width="4em">

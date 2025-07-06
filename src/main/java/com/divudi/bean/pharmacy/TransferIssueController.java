@@ -646,6 +646,7 @@ public class TransferIssueController implements Serializable {
 
         saveBill();
         for (BillItem billItemsInIssue : getBillItems()) {
+            BillItem originalOrderItem = billItemsInIssue.getParentBillItem();
             billItemsInIssue.getPharmaceuticalBillItem().setQty(0 - Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()));
             if (billItemsInIssue.getQty() == 0.0 || billItemsInIssue.getItem() instanceof Vmpp || billItemsInIssue.getItem() instanceof Vmp) {
                 continue;
@@ -690,9 +691,11 @@ public class TransferIssueController implements Serializable {
                         Math.abs(billItemsInIssue.getPharmaceuticalBillItem().getQty()), getIssuedBill().getToStaff());
 
                 billItemsInIssue.getPharmaceuticalBillItem().setStaffStock(staffStock);
+                originalOrderItem.setIssuedPhamaceuticalItemQty(originalOrderItem.getIssuedPhamaceuticalItemQty() + billItemsInIssue.getQty());
 
+                getBillItemFacade().edit(billItemsInIssue);
+                getBillItemFacade().edit(originalOrderItem);
             } else {
-                billItemsInIssue.setTmpQty(0);
                 getBillItemFacade().edit(billItemsInIssue);
             }
 
