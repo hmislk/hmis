@@ -101,6 +101,7 @@
 
                                 <p:column headerText="Qty" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
+                                         <f:convertNumber pattern="#,##0.#" />
                                         <p:ajax event="keyup" process="@this" update="netValue billDetails" listener="#{transferIssueController.onQuantityChangeForTransferIssue(bItm)}"/>
                                     </p:inputText>
                                 </p:column>
@@ -115,6 +116,7 @@
                                 <p:column headerText="Value" width="8em" class="text-end">                   
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
+                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column> 
 
