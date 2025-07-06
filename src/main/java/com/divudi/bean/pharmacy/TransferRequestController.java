@@ -274,7 +274,6 @@ public class TransferRequestController implements Serializable {
 
         newApprovedBill.setFromDepartment(preBillToCreateApprovedBill.getFromDepartment());
         newApprovedBill.setFromInstitution(preBillToCreateApprovedBill.getFromInstitution());
-
         newApprovedBill.setToDepartment(preBillToCreateApprovedBill.getToDepartment());
         newApprovedBill.setToInstitution(preBillToCreateApprovedBill.getToInstitution());
 
@@ -285,6 +284,7 @@ public class TransferRequestController implements Serializable {
                 newApprovedBill.getDepartment(),
                 newApprovedBill.getToDepartment(),
                 BillTypeAtomic.PHARMACY_TRANSFER_REQUEST);
+
         newApprovedBill.setBillDate(new Date());
         newApprovedBill.setBillTime(new Date());
         newApprovedBill.setDeptId(requestId);
@@ -300,10 +300,10 @@ public class TransferRequestController implements Serializable {
             newApprovedBill.setCreater(sessionController.getLoggedUser());
             newApprovedBill.setCreatedAt(new Date());
             billFacade.create(newApprovedBill);
-
         } else {
             billFacade.edit(newApprovedBill);
         }
+
         for (BillItem newBillItem : transferRequestPreBillItems) {
             newBillItem.setBill(newApprovedBill);
             if (newBillItem.getId() == null) {
@@ -313,6 +313,7 @@ public class TransferRequestController implements Serializable {
             }
             newApprovedBill.getBillItems().add(newBillItem);
         }
+
         pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(newApprovedBill, newApprovedBill.getBillItems());
         billFacade.edit(newApprovedBill);
 
@@ -324,6 +325,7 @@ public class TransferRequestController implements Serializable {
             billFacade.edit(preBillToCreateApprovedBill);
             newApprovedBill.setReferenceBill(preBillToCreateApprovedBill);
         }
+
         billFacade.edit(newApprovedBill);
         return newApprovedBill;
     }
