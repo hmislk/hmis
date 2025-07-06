@@ -632,7 +632,7 @@ public class TransferIssueController implements Serializable {
                 }
             }
 
-            if (bi.getReferanceBillItem().getQty() < (bi.getPharmaceuticalBillItem().getQty() + bi.getIssuedPhamaceuticalItemQty())) {
+            if (bi.getReferanceBillItem().getQty() < (bi.getQty() + bi.getIssuedPhamaceuticalItemQty())) {
                 JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
                 return;
             }
