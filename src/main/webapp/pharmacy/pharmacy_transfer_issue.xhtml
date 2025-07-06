@@ -99,15 +99,18 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Qty" width="70px;">                   
+                                <p:column headerText="Qty" width="70px;">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100">
+                                        <p:ajax event="blur" process="@this" update="itemList" listener="#{transferIssueController.onQuantityChange(bItm)}"/>
                                     </p:inputText>
-                                </p:column> 
+                                </p:column>
 
-                                <p:column headerText="Rate" width="70px;">                   
+                                <p:column headerText="Rate" width="70px;">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                        <p:ajax event="blur" process="@this" update="itemList" listener="#{transferIssueController.onLineGrossRateChange(bItm)}"/>
                                     </p:inputText>
-                                </p:column> 
+                                </p:column>
 
                                 <p:column headerText="Value" width="70px;">                   
                                     <p:inputText autocomplete="off" id="netValue" value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100">
