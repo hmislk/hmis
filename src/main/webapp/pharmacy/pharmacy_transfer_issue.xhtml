@@ -69,7 +69,7 @@
                                     <h:outputLabel value="#{bItm.referanceBillItem.qty - bItm.referanceBillItem.issuedPhamaceuticalItemQty}"/>                        
                                 </p:column>
 
-                                <p:column headerText="Stock" width="4em">
+                                <p:column headerText="Stock in Units" width="4em">
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.stock}">
                                         <f:convertNumber pattern="#,###.#" ></f:convertNumber>
                                     </h:outputLabel>
@@ -97,11 +97,6 @@
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">                        
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
-                                </p:column>
-                                
-                                <p:column >
-                                    BI : #{bItm.id} <br/>
-                                    BI Ref ID: #{bItm.referanceBillItem.id}
                                 </p:column>
 
                                 <p:column headerText="Qty" width="70px;">
