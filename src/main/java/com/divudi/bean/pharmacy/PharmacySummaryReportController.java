@@ -7,8 +7,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
-import com.divudi.core.data.reports.CashierReports;
-import com.divudi.core.data.reports.CollectionCenterReport;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -596,25 +595,19 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeReportByBillType() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
-            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(incomeBills);
-            bundle.fixDiscountsAndMarginsInRows();
-            for (IncomeRow r : bundle.getRows()) {
-                if (r.getBill() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                    r.setPayments(billService.fetchBillPayments(r.getBill()));
-                }
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
+        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getPaymentMethod() == null) {
+                continue;
             }
-            bundle.generatePaymentDetailsGroupedByBillType();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            }
+        }
+        bundle.generatePaymentDetailsGroupedByBillTypeByIncomeRows();
     }
 
     public void processMovementOutWithStockReportByBillType() {
@@ -719,68 +712,52 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
-            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(incomeBills);
-            bundle.fixDiscountsAndMarginsInRows();
-            for (IncomeRow r : bundle.getRows()) {
-                if (r.getBill() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                    r.setPayments(billService.fetchBillPayments(r.getBill()));
-                }
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
+        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getPaymentMethod() == null) {
+                continue;
             }
-            bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            }
+        }
+
+        bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
     }
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
-        reportTimerController.trackReportExecution(() -> {
-
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
-            List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(incomeBills);
-            bundle.fixDiscountsAndMarginsInRows();
-            for (IncomeRow r : bundle.getRows()) {
-                Bill b = r.getBill();
-                if (b == null || b.getPaymentMethod() == null) {
-                    continue;
-                }
-                if (b.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                    r.setPayments(billService.fetchBillPayments(b));
-                }
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
+        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getPaymentMethod() == null) {
+                continue;
             }
-
-            bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            }
+        }
+        bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType();
     }
 
     public void processPharmacyIncomeReportByBill() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-            List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(bills);
-            bundle.fixDiscountsAndMarginsInRows();
-            for (IncomeRow r : bundle.getRows()) {
-                if (r.getBill() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod() == null) {
-                    continue;
-                }
-                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                    r.setPayments(billService.fetchBillPayments(r.getBill()));
-                }
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
+        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getPaymentMethod() == null) {
+                continue;
             }
-            bundle.generatePaymentDetailsForBills();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            }
+        }
+        bundle.generatePaymentDetailsForBillsByIncomeRows();
     }
 
     public void processMovementOutWithStocksReportByBill() {

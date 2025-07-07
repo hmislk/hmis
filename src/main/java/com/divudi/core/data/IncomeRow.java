@@ -1,5 +1,6 @@
 package com.divudi.core.data;
 
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -39,6 +40,10 @@ public class IncomeRow implements Serializable {
     private BillType billType;
     private BillClassType billClassType;
     BillTypeAtomic billTypeAtomic;
+
+    private String patientName;
+    private Date createdAt;
+    private String deptId;
 
     private boolean selected;
 
@@ -115,6 +120,9 @@ public class IncomeRow implements Serializable {
     private Staff staff;
     private Institution referringInstitution;
     private Staff referringStaff;
+    private PatientEncounter patientEncounter;
+
+    private PaymentMethod paymentMethod;
 
     private PatientInvestigation patientInvestigation;
     private Route route;
@@ -144,11 +152,13 @@ public class IncomeRow implements Serializable {
 
     private double grossTotal;
     private double discount;
+    private double margin;
     private double serviceCharge;
     private double tax;
     private double actualTotal;
     private double netTotal;
     private double paidTotal;
+    private double total;
 
     private double hospitalTotal;
     private double staffTotal;
@@ -207,6 +217,25 @@ public class IncomeRow implements Serializable {
     public IncomeRow(BillFee billFee) {
         this();
         this.billFee = billFee;
+    }
+
+    public IncomeRow(PharmacyIncomeBillDTO dto) {
+        this();
+        if (dto != null) {
+            this.deptId = dto.getDeptId();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.createdAt = dto.getCreatedAt();
+            this.netTotal = dto.getNetTotal();
+            this.paymentMethod = dto.getPaymentMethod();
+            this.total = dto.getTotal();
+            if (dto.getPatientEncounter() != null) {
+                this.patientEncounter = dto.getPatientEncounter();
+            }
+            this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
+            this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+            this.paymentScheme = dto.getPaymentScheme();
+        }
     }
 
     // Getter for UUID (optional, depending on use case)
@@ -1083,6 +1112,22 @@ public class IncomeRow implements Serializable {
         this.discount = discount;
     }
 
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+
+    public String getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(String deptId) {
+        this.deptId = deptId;
+    }
+
     public double getNetTotal() {
         return netTotal;
     }
@@ -1285,7 +1330,44 @@ public class IncomeRow implements Serializable {
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
     }
-    
-    
 
+    public String getPatientName() {
+        return patientName;
+    }
+
+    public void setPatientName(String patientName) {
+        this.patientName = patientName;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
 }
