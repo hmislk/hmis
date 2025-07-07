@@ -1,15 +1,14 @@
 package com.divudi.core.data.reports;
 
-public enum InventoryReports implements IReportType {
-    CLOSING_STOCK_REPORT("Closing Stock Report"),
-    STOCK_TRANSFER_REPORT("Stock Transfer Report"),
-    GOOD_IN_TRANSIT_REPORT("Good In Transit"),
-    CONSUMPTION_REPORT("Consumption Report"),
-    GRN_REPORT("GRN Report");
+/**
+ * Generic report type used for miscellaneous report logging.
+ */
+public enum CommonReports implements IReportType {
+    LAB_DASHBOARD("Lab Dashboard");
 
     private final String displayName;
 
-    InventoryReports(String displayName) {
+    CommonReports(String displayName) {
         this.displayName = displayName;
     }
 

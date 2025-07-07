@@ -55,6 +55,15 @@ public class ReportLog implements Serializable {
         this.executionTimeInMillis = endTime != null && startTime != null ? endTime.getTime() - startTime.getTime() : null;
     }
 
+    public ReportLog(IReportType reportType, String reportName, WebUser generatedBy, Date startTime, Date endTime) {
+        this.generatedById = generatedBy.getId();
+        this.startTime = startTime;
+        this.endTime = endTime;
+        this.reportType = reportType.getReportType();
+        this.reportName = reportName;
+        this.executionTimeInMillis = endTime != null && startTime != null ? endTime.getTime() - startTime.getTime() : null;
+    }
+
     public ReportLog() {
     }
 
