@@ -101,7 +101,7 @@
 
                                 <p:column headerText="Qty" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
-                                         <f:convertNumber pattern="#,##0.#" />
+                                        <f:convertNumber pattern="#,##0.#" />
                                         <p:ajax event="keyup" process="@this"
                                                 update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
                                                 listener="#{transferIssueController.onQuantityChangeForTransferIssue(bItm)}"/>
@@ -120,7 +120,7 @@
                                 <p:column headerText="Value" width="8em" class="text-end">                   
                                     <p:inputText autocomplete="off" id="netValue" 
                                                  value="#{bItm.billItemFinanceDetails.netTotal}" class="w-100 text-end">
-                                         <f:convertNumber pattern="#,##0.00" />
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </p:inputText>
                                 </p:column> 
 
@@ -204,15 +204,19 @@
                 </p:commandButton>
 
                 <h:panelGroup   id="gpBillPreview" >
-                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
-                            <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
-                        </h:panelGroup>
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
-                            <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
-                        </h:panelGroup>
+                    <h:panelGroup 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper without details',false)}"
+                        class="noBorder">
+                        <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                     </h:panelGroup>
-                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}"> 
+                    <h:panelGroup 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with details',false)}"
+                        class="noBorder">
+                        <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
+                    </h:panelGroup>
+                    <h:panelGroup
+                        id="gpBillPreviewPosHeader" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is POS Paper with header',false)}"> 
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
                     <h:panelGroup 
@@ -221,7 +225,6 @@
                         <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
                     </h:panelGroup>
                 </h:panelGroup>
-
             </p:panel>
 
         </h:form>

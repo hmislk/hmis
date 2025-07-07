@@ -325,6 +325,13 @@ public class PharmaceuticalBillItem implements Serializable {
         freeQty = 0 - ph.freeQty;
         freeQtyPacks = 0 - ph.freeQtyPacks;
     }
+    
+    public void invertValue() {
+        qty = 0 - qty;
+        qtyPacks = 0 - qtyPacks;
+        freeQty = 0 - freeQty;
+        freeQtyPacks = 0 - freeQtyPacks;
+    }
 
     public Stock getStock() {
         return stock;

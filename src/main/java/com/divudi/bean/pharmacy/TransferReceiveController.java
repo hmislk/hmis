@@ -27,6 +27,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -68,6 +69,10 @@ public class TransferReceiveController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private StockFacade stockFacade;
+    @EJB
+    BillService billService;
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
@@ -84,7 +89,12 @@ public class TransferReceiveController implements Serializable {
     }
 
     public String navigateToRecieveRequest() {
-        return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Nothing to received");
+            return null;
+        }
+        generateBillComponent();
+        return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
     public String navigateToEditRecieveIssue() {
@@ -119,10 +129,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void setIssuedBill(Bill issuedBill) {
-        makeNull();
         this.issuedBill = issuedBill;
-        receivedBill = null;
-        generateBillComponent();
     }
 
 //   public String navigateBackToRecieveList(){
@@ -132,7 +139,7 @@ public class TransferReceiveController implements Serializable {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
     }
 
-    public void generateBillComponent() {
+    public void generateBillComponentOld() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getIssuedBill())) {
 
@@ -157,8 +164,31 @@ public class TransferReceiveController implements Serializable {
 
     }
 
-    @EJB
-    private StockFacade stockFacade;
+    public void generateBillComponent() {
+        receivedBill = new BilledBill();
+        getReceivedBill();
+        getReceivedBill().setReferenceBill(issuedBill);
+
+        getReceivedBill().setFromInstitution(issuedBill.getFromInstitution());
+        getReceivedBill().setFromDepartment(issuedBill.getFromDepartment());
+
+        getReceivedBill().setToInstitution(issuedBill.getToInstitution());
+        getReceivedBill().setToDepartment(issuedBill.getToDepartment());
+
+        getReceivedBill().setStaff(issuedBill.getStaff());
+
+        List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
+        for (BillItem issuedBillItem : issuedBillItems) {
+            BillItem newlyCreatedReceivedBillItem = new BillItem();
+            newlyCreatedReceivedBillItem.copy(issuedBillItem);
+            newlyCreatedReceivedBillItem.invertValue();
+            newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
+            newlyCreatedReceivedBillItem.setReferanceBillItem(issuedBillItem);
+            newlyCreatedReceivedBillItem.setSearialNo(getBillItems().size());
+            newlyCreatedReceivedBillItem.setBill(receivedBill);
+            getBillItems().add(newlyCreatedReceivedBillItem);
+        }
+    }
 
     public String navigateToPharmacyReceiveForRequests() {
         if (issuedBill == null || issuedBill.getId() == null) {
@@ -182,66 +212,37 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settle() {
+        if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().size() == 0) {
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
+        }
 
         saveBill();
-
-        for (BillItem i : getBillItems()) {
-
-//            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
-
             if (errorCheck(i)) {
                 continue;
             }
-
-            i.setBill(getReceivedBill());
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-            i.setPharmaceuticalBillItem(i.getPharmaceuticalBillItem());
-
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-
             if (i.getId() == null) {
+                i.setCreatedAt(Calendar.getInstance().getTime());
+                i.setCreater(getSessionController().getLoggedUser());
                 getBillItemFacade().create(i);
-            }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-            i.setPharmaceuticalBillItem(tmpPh);
-            getBillItemFacade().edit(i);
-
-            tmpPh.setItemBatch(tmpPh.getStaffStock().getItemBatch());
-
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
-
-            //    Deduct Staff Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
-
-            if (returnFlag) {
-                //     Add Stock To Department
-                Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
-
-                tmpPh.setStock(addedStock);
             } else {
-                i.setTmpQty(0);
                 getBillItemFacade().edit(i);
             }
+            double qty = Math.abs(i.getPharmaceuticalBillItem().getQty());
 
-//            //Temprory Solution
-//            Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
-//            tmpPh.setStock(addedStock);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
+            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getIssuedBill().getToStaff());
 
-            getReceivedBill().getBillItems().add(i);
-        }
-
-        if (getReceivedBill().getBillItems().size() == 0 || getReceivedBill().getBillItems() == null) {
-            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
-            return;
+            if (returnFlag) {
+                Stock addedStock = getPharmacyBean().addToStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getSessionController().getDepartment());
+                i.getPharmaceuticalBillItem().setStock(addedStock);
+            } else {
+                i.getPharmaceuticalBillItem().setQty(0);
+                getBillItemFacade().edit(i);
+            }
         }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -255,19 +256,11 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
-
         getBillFacade().edit(getReceivedBill());
 
-        //Update Issue Bills Reference Bill
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
-
-//        getIssuedBill().setReferenceBill(getReceivedBill());
-//        getBillFacade().edit(getIssuedBill());
         printPreview = true;
-
     }
 
     public void saveRequest() {
@@ -321,13 +314,17 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
             getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
             getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+            getReceivedBill().setToInstitution(getSessionController().getInstitution());
+            getReceivedBill().setToDepartment(getSessionController().getDepartment());
 
             if (getReceivedBill().getId() == null) {
                 getBillFacade().create(getReceivedBill());
             }
 
-            getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-            getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+            String receiveId = getBillNumberBean().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(getReceivedBill().getFromDepartment(), getReceivedBill().getToDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+
+            getReceivedBill().setDeptId(receiveId);
+            getReceivedBill().setInsId(receiveId);
 
             getReceivedBill().setInstitution(getSessionController().getInstitution());
             getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -491,11 +488,9 @@ public class TransferReceiveController implements Serializable {
     }
 
     public boolean errorCheck(BillItem billItem) {
-
         if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
             return true;
         }
-
         return false;
     }
 
@@ -504,13 +499,12 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
-        getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
-        getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
-        getReceivedBill().setToInstitution(sessionController.getInstitution());
-        getReceivedBill().setToDepartment(sessionController.getDepartment());
-
         if (getReceivedBill().getId() == null) {
+            getReceivedBill().setCreatedAt(new Date());
+            getReceivedBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReceivedBill());
+        } else {
+            getBillFacade().edit(getReceivedBill());
         }
     }
 
