@@ -102,14 +102,18 @@
                                 <p:column headerText="Qty" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="qty" value="#{bItm.billItemFinanceDetails.quantity}" class="w-100 text-end">
                                          <f:convertNumber pattern="#,##0.#" />
-                                        <p:ajax event="keyup" process="@this" update="netValue billDetails" listener="#{transferIssueController.onQuantityChangeForTransferIssue(bItm)}"/>
+                                        <p:ajax event="keyup" process="@this"
+                                                update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
+                                                listener="#{transferIssueController.onQuantityChangeForTransferIssue(bItm)}"/>
                                     </p:inputText>
                                 </p:column>
 
                                 <p:column headerText="Rate" width="8em" class="text-end">
                                     <p:inputText autocomplete="off" id="rate" value="#{bItm.billItemFinanceDetails.lineGrossRate}" class="w-100 text-end">
                                         <f:convertNumber pattern="#,##0.00" />
-                                        <p:ajax event="keyup" process="@this" update="netValue billDetails" listener="#{transferIssueController.onLineGrossRateChangeForTransferIssue(bItm)}"/>
+                                        <p:ajax event="keyup" process="@this"
+                                                update="netValue :#{p:resolveFirstComponentWithId('billDetails', view).clientId}"
+                                                listener="#{transferIssueController.onLineGrossRateChangeForTransferIssue(bItm)}"/>
                                     </p:inputText>
                                 </p:column>
 
