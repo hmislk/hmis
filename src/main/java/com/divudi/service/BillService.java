@@ -24,6 +24,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -1075,6 +1076,80 @@ public class BillService {
         return (List<PharmacyIncomeCostBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public List<Payment> fetchBillPaymentsByDeptId(String deptId) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill.deptId=:deptId "
+                + "order by p.id";
+        params.put("deptId", deptId);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<PharmacyIncomeBillDTO> fetchBillIncomeDTOs(Date fromDate,
+                                                           Date toDate,
+                                                           Institution institution,
+                                                           Institution site,
+                                                           Department department,
+                                                           WebUser webUser,
+                                                           List<BillTypeAtomic> billTypeAtomics,
+                                                           AdmissionType admissionType,
+                                                           PaymentScheme paymentScheme) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO( "
+                + " b.deptId, pers.name, b.billTypeAtomic, b.createdAt, b.netTotal, b.paymentMethod, "
+                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme ) "
+                + " from Bill b "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        return (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<BillItem> fetchBillItems(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1896,7 +1971,7 @@ public class BillService {
         String jpql = "SELECT pbi "
                 + "FROM PatientInvestigation pbi "
                 + "WHERE pbi.billItem.bill IN ("
-                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb" 
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
                 + ") "
                 + "ORDER BY pbi.id";
         Map<String, Object> params = new HashMap<>();
