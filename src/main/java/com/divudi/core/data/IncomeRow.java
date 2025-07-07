@@ -48,9 +48,6 @@ public class IncomeRow implements Serializable {
     private String patientName;
     private String bhtNo;
     private Date createdAt;
-
-    private String patientName;
-    private Date createdAt;
     private String deptId;
 
     private boolean selected;
@@ -1382,14 +1379,6 @@ public class IncomeRow implements Serializable {
         this.billNo = billNo;
     }
 
-    public String getPatientName() {
-        return patientName;
-    }
-
-    public void setPatientName(String patientName) {
-        this.patientName = patientName;
-    }
-
     public String getBhtNo() {
         return bhtNo;
     }
@@ -1397,15 +1386,6 @@ public class IncomeRow implements Serializable {
     public void setBhtNo(String bhtNo) {
         this.bhtNo = bhtNo;
     }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(Date createdAt) {
-        this.createdAt = createdAt;
-    }
-
 
 
     public Date getCreatedAt() {
