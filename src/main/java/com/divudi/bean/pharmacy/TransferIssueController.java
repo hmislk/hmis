@@ -278,8 +278,9 @@ public class TransferIssueController implements Serializable {
             double requestedQty = getPharmacyCalculation().getBilledIssuedByRequestedItem(billItemInRequest, BillType.PharmacyTransferIssue);
             double cancelledIssued = getPharmacyCalculation().getCancelledIssuedByRequestedItem(billItemInRequest, BillType.PharmacyTransferIssue);
 
-            double quantityToIssue = billItemInRequest.getQty()
-                    - (Math.abs(requestedQty) - Math.abs(cancelledIssued));
+            double alreadyIssuedQty = Math.abs(requestedQty) - Math.abs(cancelledIssued);
+            billItemInRequest.setIssuedPhamaceuticalItemQty(alreadyIssuedQty);
+            double quantityToIssue = billItemInRequest.getQty() - alreadyIssuedQty;
 
             System.out.println("=================================================");
             System.out.println("Processing Item: " + billItemInRequest.getItem().getName());
@@ -640,7 +641,8 @@ public class TransferIssueController implements Serializable {
                 }
             }
 
-            if (bi.getReferanceBillItem().getQty() < (bi.getQty() + bi.getIssuedPhamaceuticalItemQty())) {
+            double alreadyIssued = bi.getReferanceBillItem().getIssuedPhamaceuticalItemQty();
+            if (bi.getReferanceBillItem().getQty() < (bi.getQty() + alreadyIssued)) {
                 JsfUtil.addErrorMessage("Issued quantity is higher than requested quantity in " + bi.getItem().getName());
                 return;
             }
