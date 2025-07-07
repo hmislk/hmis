@@ -314,6 +314,10 @@ public class TransferIssueController implements Serializable {
             Double totalIssuedQtyInUnits = 0.0;
 
             for (Stock issuingStock : availableStocks) {
+                if (totalIssuedQtyInUnits >= quantityToIssueInUnits) {
+                    break;
+                }
+
                 Double thisTimeIssuingQtyInUnits = issuingStock.getStock();
 
                 String batchNo = issuingStock.getItemBatch().getBatchNo();
@@ -323,6 +327,10 @@ public class TransferIssueController implements Serializable {
 
                 if (totalIssuedQtyInUnits + thisTimeIssuingQtyInUnits > quantityToIssueInUnits) {
                     thisTimeIssuingQtyInUnits = quantityToIssueInUnits - totalIssuedQtyInUnits;
+                }
+
+                if (thisTimeIssuingQtyInUnits <= 0) {
+                    break;
                 }
 
                 if (!userStockController.isStockAvailable(issuingStock, thisTimeIssuingQtyInUnits, getSessionController().getLoggedUser())) {
