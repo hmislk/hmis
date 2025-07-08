@@ -73,7 +73,7 @@
                                             <p:ajax 
                                                 event="keyup" 
                                                     process="@this"
-                                                    update="value txtReceivingNetTotal"
+                                                    update="value :#{p:resolveFirstComponentWithId('txtReceivingNetTotal',view).clientId}"
                                                     listener="#{transferReceiveController.onQuantityChangeForTransferReceive(ph)}"/>
                                         </p:inputText>
                                     </p:column>
