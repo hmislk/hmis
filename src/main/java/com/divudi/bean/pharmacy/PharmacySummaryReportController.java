@@ -815,14 +815,31 @@ public class PharmacySummaryReportController implements Serializable {
                     processPharmacyIncomeAndCostReportByBillType();
                     break;
                 case BY_BILL:
-//                    processPharmacyIncomeAndCostReportByBill();
-                    processPharmacyIncomeAndCostReportByBillDto();
+                    processPharmacyIncomeAndCostReportByBill();
+//                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
                     break;
             }
         }, SummaryReports.PHARMACY_INCOME_AND_COST_REPORT, sessionController.getLoggedUser());
+    }
+
+    public ReportViewType[] getReportViewTypesForPharmacyIncomeAndCostReport() {
+        return new ReportViewType[] {
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM,
+                ReportViewType.BY_BILL_TYPE
+        };
+    }
+
+    public ReportViewType[] getReportViewTypesForPharmacyIncomeReport() {
+        return new ReportViewType[] {
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        };
     }
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
