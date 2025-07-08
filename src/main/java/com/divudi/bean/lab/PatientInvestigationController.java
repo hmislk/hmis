@@ -194,6 +194,9 @@ public class PatientInvestigationController implements Serializable {
     private Priority priority;
     private Sample speciman;
     private Long sampleId;
+    // Range filters for large queries
+    private Long fromId;
+    private Long toId;
     private String patientName;
     private Sample specimen;
     private String type;
@@ -474,23 +477,41 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void fillPatientReportItemValues() {
-        String j = "select v from PatientReportItemValue v "
+        fillPatientReportItemValues(fromId, toId, fromDate, toDate);
+    }
+
+    public void fillPatientReportItemValues(Long fromId, Long toId, Date fromDate, Date toDate) {
+        StringBuilder j = new StringBuilder("select v from PatientReportItemValue v "
                 + "where v.patientReport.approved=:app "
                 + " and (v.investigationItem.ixItemType=:vtv or v.investigationItem.ixItemType=:vtc)"
-                + " and  v.patientReport.patientInvestigation.investigation.reportType=:rt";
-        Map m = new HashMap();
+                + " and v.patientReport.patientInvestigation.investigation.reportType=:rt");
+
+        Map<String, Object> m = new HashMap<>();
         m.put("app", true);
         m.put("vtv", InvestigationItemType.Value);
         m.put("vtc", InvestigationItemType.Calculation);
         m.put("rt", InvestigationReportType.General);
-        if (false) {
-            PatientReportItemValue v = new PatientReportItemValue();
-            if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType()
-                    == InvestigationReportType.General) {
 
-            }
+        if (fromId != null) {
+            j.append(" and v.id >= :fromId");
+            m.put("fromId", fromId);
         }
-        patientReportItemValues = getPatientReportItemValueFacade().findByJpql(j, m, 10000000);
+        if (toId != null) {
+            j.append(" and v.id <= :toId");
+            m.put("toId", toId);
+        }
+        if (fromDate != null) {
+            j.append(" and v.patientReport.approveAt >= :fd");
+            m.put("fd", fromDate);
+        }
+        if (toDate != null) {
+            j.append(" and v.patientReport.approveAt <= :td");
+            m.put("td", toDate);
+        }
+
+        j.append(" order by v.id");
+
+        patientReportItemValues = getPatientReportItemValueFacade().findByJpql(j.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void sentRequestToAnalyzer() {
@@ -4953,6 +4974,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSampleId(Long sampleId) {
         this.sampleId = sampleId;
+    }
+
+    public Long getFromId() {
+        return fromId;
+    }
+
+    public void setFromId(Long fromId) {
+        this.fromId = fromId;
+    }
+
+    public Long getToId() {
+        return toId;
+    }
+
+    public void setToId(Long toId) {
+        this.toId = toId;
     }
 
     public String getPatientName() {
