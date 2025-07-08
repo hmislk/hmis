@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -17,22 +18,29 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -73,6 +81,12 @@ public class TransferReceiveController implements Serializable {
     private StockFacade stockFacade;
     @EJB
     BillService billService;
+
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
@@ -506,6 +520,86 @@ public class TransferReceiveController implements Serializable {
         } else {
             getBillFacade().edit(getReceivedBill());
         }
+    }
+
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
+    }
+
+    private void updateFinancialsForTransferReceive(BillItemFinanceDetails fd) {
+        if (fd == null || fd.getBillItem() == null) {
+            return;
+        }
+
+        BillItem bi = fd.getBillItem();
+        PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
+        Item item = bi.getItem();
+
+        BigDecimal qty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        if (item instanceof Ampp || item instanceof Vmpp) {
+            unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
+        }
+
+        fd.setUnitsPerPack(unitsPerPack);
+        fd.setTotalQuantity(qty);
+        fd.setQuantity(qty);
+
+        BigDecimal grossRate = Optional.ofNullable(fd.getLineGrossRate()).orElse(determineTransferRate(ph.getItemBatch()).multiply(unitsPerPack));
+        fd.setLineGrossRate(grossRate);
+
+        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        fd.setLineGrossTotal(lineGrossTotal);
+        fd.setGrossTotal(lineGrossTotal);
+
+        fd.setLineNetRate(grossRate);
+        fd.setLineNetTotal(lineGrossTotal);
+        fd.setNetTotal(lineGrossTotal);
+
+        BigDecimal qtyByUnits = qty.multiply(unitsPerPack);
+        fd.setQuantityByUnits(qtyByUnits);
+        fd.setTotalQuantityByUnits(qtyByUnits);
+
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineCost(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalCost(BigDecimal.ZERO);
+        fd.setFreeQuantity(BigDecimal.ZERO);
+        fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+
+        if (ph != null) {
+            ph.setQty(qtyByUnits.doubleValue());
+            ph.setQtyPacks(qty.doubleValue());
+        }
+
+        bi.setQty(qty.doubleValue());
+        bi.setRate(grossRate.doubleValue());
+        bi.setNetValue(lineGrossTotal.doubleValue());
+    }
+
+    public void onQuantityChangeForTransferReceive(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+        updateFinancialsForTransferReceive(bi.getBillItemFinanceDetails());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getReceivedBill(), getReceivedBill().getBillItems());
     }
 
     public Bill getReceivedBill() {
