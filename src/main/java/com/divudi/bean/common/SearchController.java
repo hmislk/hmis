@@ -5755,7 +5755,6 @@ public class SearchController implements Serializable {
         } else {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
-        System.out.println("bills = " + bills);
 
         if (bills != null && !bills.isEmpty()) {
             for (Bill b : bills) {
