@@ -531,7 +531,7 @@ public class BillService {
                 + "from BillFee bf "
                 + " where bf.retired=:ret "
                 + " and bf.billItem=:bi";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("bi", billItem);
         params.put("ret", false);
         return billFeeFacade.findByJpql(jpql, params);
@@ -549,7 +549,7 @@ public class BillService {
     public List<BillFee> fetchBillFees(Bill bill) {
         List<BillFee> fetchingBillFees;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select bf "
                 + " from BillFee bf "
                 + "where bf.bill=:bill "
@@ -561,7 +561,7 @@ public class BillService {
 
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
@@ -640,7 +640,7 @@ public class BillService {
 
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT pbi "
                 + " FROM PharmaceuticalBillItem pbi "
                 + " WHERE pbi.billItem.bill=:bl "
@@ -651,7 +651,7 @@ public class BillService {
 
     public Long fetchBillItemCount(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT count(bi) "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
@@ -729,7 +729,7 @@ public class BillService {
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select p "
                 + " from Payment p "
                 + "where p.bill=:bill "
@@ -742,7 +742,7 @@ public class BillService {
     public List<Payment> fetchBillPayments(Bill bill, Bill batchBill) {
         List<Payment> fetchingBillComponents;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select p "
                 + " from Payment p "
                 + "where p.bill=:bill "
@@ -761,7 +761,7 @@ public class BillService {
             return null;
         }
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT p "
                 + " FROM Payment p "
                 + " WHERE p.bill=:bl "
@@ -851,7 +851,7 @@ public class BillService {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
@@ -964,7 +964,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select b "
                 + " from Bill b "
@@ -1035,7 +1035,7 @@ public class BillService {
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
@@ -1160,7 +1160,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1219,7 +1219,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select pbi "
                 + " from PharmaceuticalBillItem pbi "
@@ -1366,7 +1366,7 @@ public class BillService {
             String visitType
     ) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select b "
                 + " from Bill b "
@@ -1443,7 +1443,7 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             PatientEncounter patientEncounter) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1486,7 +1486,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1499,7 +1499,7 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             PatientEncounter patientEncounter) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1546,7 +1546,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1571,7 +1571,7 @@ public class BillService {
                 btas.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
         }
         //
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -1647,7 +1647,7 @@ public class BillService {
                 btas.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         }
         //
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select bi "
                 + " from BillItem bi"
                 + " join bi.bill b "
@@ -1954,7 +1954,7 @@ public class BillService {
 
     public List<PatientInvestigation> fetchPatientInvestigations(Bill bill) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT pbi "
                 + " FROM PatientInvestigation pbi "
                 + " WHERE pbi.billItem.bill=:bl "
@@ -1986,7 +1986,7 @@ public class BillService {
             return billItems;
         }
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         String jpql = "select bi "
                 + " from BillItem bi"
                 + " where bi.retired=:ret "

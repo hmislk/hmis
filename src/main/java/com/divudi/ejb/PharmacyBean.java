@@ -170,7 +170,6 @@ public class PharmacyBean {
                 continue;
             }
 
-
             boolean exceeds = isReturnQuantityExceedingAvailableStock(pbi, bi.getBill().getDepartment());
 
             if (exceeds) {
@@ -199,12 +198,10 @@ public class PharmacyBean {
                 continue;
             }
 
-
             BigDecimal billedQty = billedFd.getQuantity();
             BigDecimal billedFreeQty = billedFd.getFreeQuantity();
             BigDecimal totalReturnedQty = billedFd.getReturnQuantity();
             BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantity();
-
 
             if (checkTotalQuantity) {
                 BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
@@ -661,7 +658,7 @@ public class PharmacyBean {
             return null;
         }
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "Select s from Stock s where s.itemBatch=:bch and s.department=:dep";
         params.put("bch", pharmaceuticalBillItem.getItemBatch());
         params.put("dep", department);
@@ -775,7 +772,7 @@ public class PharmacyBean {
         }
         String jpql;
         jpql = "Select s from Stock s where s.itemBatch.id = :batchId and s.department.id = :deptId ";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("batchId", batch.getId());
         params.put("deptId", department.getId());
         Stock s = getStockFacade().findFirstByJpql(jpql, params, true);
@@ -845,7 +842,7 @@ public class PharmacyBean {
 
     public List<StockQty> getStockByQty(Item item, double qty, Department department) {
         String jpql = "";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         params.put("d", department);
         params.put("q", 1.0);
@@ -886,6 +883,29 @@ public class PharmacyBean {
         return list;
     }
 
+    public List<Stock> getStockByQty(Item item, Department department) {
+        List<Amp> amps = resolveAmps(item);
+        if (amps == null || amps.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String jpql = "select s "
+                + " from Stock s "
+                + " where s.itemBatch.item in :amps "
+                + " and s.department=:d"
+                + " and s.stock >=:q"
+                + " and s.itemBatch.dateOfExpire > :doe"
+                + " order by s.itemBatch.dateOfExpire";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("amps", amps);
+        params.put("d", department);
+        params.put("q", 1.0);
+        params.put("doe", new Date());
+
+        return getStockFacade().findByJpqlWithoutCache(jpql, params);
+    }
+
     public List<StockQty> getStockByQty(Vmp item, double qty, Department department) {
         List<StockQty> stocks = new ArrayList<>();
         if (item == null) {
@@ -897,21 +917,67 @@ public class PharmacyBean {
         }
         for (Amp a : amps) {
             List<StockQty> sq = getStockByQty(a, qty, department);
-
+            if (sq != null) {
+                stocks.addAll(sq);
+            }
         }
         return stocks;
     }
 
     public List<Amp> findAmpsForVmp(Vmp vmp) {
-        String jpql;
-        Map m = new HashMap();
+        Map<String, Object> m = new HashMap<>();
         m.put("vmp", vmp);
         m.put("ret", false);
-        jpql = "select amp "
+        String jpql = "select amp "
                 + " from Amp amp "
                 + " where amp.retired=:ret "
                 + " and amp.vmp=:vmp";
         return ampFacade.findByJpql(jpql, m);
+    }
+
+    /**
+     * Resolve the underlying AMP records for any pharmacy Item subclass.
+     *
+     * @param item item to resolve
+     * @return list of AMP objects, or an empty list if none found
+     */
+    public List<Amp> resolveAmps(Item item) {
+        if (item == null) {
+            return new ArrayList<>();
+        }
+
+        if (item instanceof Amp) {
+            List<Amp> list = new ArrayList<>();
+            list.add((Amp) item);
+            return list;
+        }
+
+        if (item instanceof Ampp) {
+            Amp amp = ((Ampp) item).getAmp();
+            if (amp == null) {
+                return new ArrayList<>();
+            }
+            List<Amp> list = new ArrayList<>();
+            list.add(amp);
+            return list;
+        }
+
+        if (item instanceof Vmp) {
+            List<Amp> amps = findAmpsForVmp((Vmp) item);
+            return amps == null ? new ArrayList<>() : amps;
+        }
+
+        if (item instanceof Vmpp) {
+            Vmpp vmpp = (Vmpp) item;
+            Vmp vmp = vmpp.getVmp();
+            if (vmp == null) {
+                return new ArrayList<>();
+            }
+            List<Amp> amps = findAmpsForVmp(vmp);
+            return amps == null ? new ArrayList<>() : amps;
+        }
+
+        return new ArrayList<>();
     }
 
     public List<StockQty> getStockByQty(Amp item, double qty, Department department) {
@@ -1218,7 +1284,7 @@ public class PharmacyBean {
             item = ((Ampp) item).getAmp();
         }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.batchNo=:batchNo";
         params.put("i", item);
         params.put("batchNo", batchNo);
@@ -1239,7 +1305,7 @@ public class PharmacyBean {
             item = ((Ampp) item).getAmp();
         }
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select ib from ItemBatch ib where ib.item=:i and ib.dateOfExpire=:doe and ib.purcahseRate=:pr and ib.retailsaleRate=:rr";
         params.put("i", item);
         params.put("pr", purchasePrice);
@@ -1267,7 +1333,7 @@ public class PharmacyBean {
 
     public Vmpp getVmpp(Ampp ampp, MeasurementUnit packUnit) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("vmp", ampp.getAmp().getVmp());
         params.put("s", packUnit);
         params.put("d", ampp.getDblValue());
@@ -1725,6 +1791,15 @@ public class PharmacyBean {
             return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
         }
     }
+    
+    public double getLastCostRate(Item item, Department dept) {
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            return getLastCostRateByBillItemFinanceDetails(item, dept);
+        } else {
+            return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
+        }
+    }
 
     public double getLastPurchaseRateByPharmaceuticalBillItem(Item item, Department dept) {
         if (item instanceof Ampp) {
@@ -1778,8 +1853,8 @@ public class PharmacyBean {
 
         return f.getRetailSaleRate().doubleValue();
     }
-    
-       public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
+
+    public double getLastPurchaseRateByBillItemFinanceDetails(Item item, Department dept) {
         if (item == null) {
             return 0.0;
         }
@@ -1807,6 +1882,36 @@ public class PharmacyBean {
         }
 
         return f.getLineGrossRate().doubleValue();
+    }
+    
+    public double getLastCostRateByBillItemFinanceDetails(Item item, Department dept) {
+        if (item == null) {
+            return 0.0;
+        }
+
+        Map<String, Object> parameters = new HashMap<>();
+        String sql = "SELECT bi FROM BillItem bi "
+                + "WHERE bi.retired = false "
+                + "AND bi.bill.cancelled = false "
+                + "AND bi.item = :i "
+                + "AND (bi.bill.billType = :t OR bi.bill.billType = :t1) "
+                + "ORDER BY bi.id DESC";
+
+        parameters.put("i", item);
+        parameters.put("t", BillType.PharmacyGrnBill);
+        parameters.put("t1", BillType.PharmacyPurchaseBill);
+
+        BillItem bi = getBillItemFacade().findFirstByJpql(sql, parameters);
+        if (bi == null) {
+            return 0.0;
+        }
+
+        BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
+        if (f == null || f.getTotalCostRate()== null) {
+            return 0.0;
+        }
+
+        return f.getTotalCostRate().doubleValue();
     }
 
     public double getLastPurchaseRate(Item item, Institution ins) {
@@ -1917,7 +2022,7 @@ public class PharmacyBean {
         }
 
     }
-    
+
     public double getLastRetailRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
