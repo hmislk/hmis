@@ -59,14 +59,18 @@
                                         </h:outputText>
                                     </p:column> 
 
-                                    <p:column headerText="Qty" style="width:25px!important;">                      
-                                        <p:inputText autocomplete="off" id="qty" value="#{ph.tmpQty}" >
-                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferReceiveController.onFocus(ph)}"/>
+                                    <p:column headerText="Issued Qty" style="width:25px!important;">                      
+                                        <h:outputText  value="#{ph.referanceBillItem.qty}" >
+                                        </h:outputText>
+                                    </p:column>  
+
+                                    <p:column headerText="Receiving Qty" style="width:25px!important;">                      
+                                        <p:inputText autocomplete="off" id="qty" value="#{ph.qty}" >
                                         </p:inputText>
                                     </p:column>  
 
                                     <p:column headerText="Value"  style="width:25px!important;">  
-                                        <h:outputText id="rate" value="#{ph.netValue}" >                                   
+                                        <h:outputText id="value" value="#{ph.netValue}" >                                   
                                         </h:outputText>
                                     </p:column> 
 

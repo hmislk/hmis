@@ -180,13 +180,13 @@ public class TransferReceiveController implements Serializable {
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
             BillItem newlyCreatedReceivedBillItem = new BillItem();
-            newlyCreatedReceivedBillItem.copy(issuedBillItem);
+            newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
             newlyCreatedReceivedBillItem.invertValue();
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
             newlyCreatedReceivedBillItem.setReferanceBillItem(issuedBillItem);
             newlyCreatedReceivedBillItem.setSearialNo(getBillItems().size());
             newlyCreatedReceivedBillItem.setBill(receivedBill);
-            getBillItems().add(newlyCreatedReceivedBillItem);
+            getReceivedBill().getBillItems().add(newlyCreatedReceivedBillItem);
         }
     }
 
@@ -212,7 +212,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void settle() {
-        if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().size() == 0) {
+        if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
             JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
             return;
         }
