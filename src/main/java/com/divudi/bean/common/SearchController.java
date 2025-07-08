@@ -5642,7 +5642,7 @@ public class SearchController implements Serializable {
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_RETURN);
 //        billTypesToAttachedToEachBillInTheList.add(BillTypeAtomic.PHARMACY_GRN_REFUND);
 
-        createPoTable(InstitutionType.Dealer, billTypesToList, billTypesToAttachedToEachBillInTheList);
+        createPoTable(billTypesToList, billTypesToAttachedToEachBillInTheList);
     }
 
     public void createPoTableStore() {
@@ -5702,7 +5702,8 @@ public class SearchController implements Serializable {
 
     }
 
-    public void createPoTable(InstitutionType institutionType, List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
+    public void createPoTable(List<BillTypeAtomic> billTypeAtomicToList, List<BillTypeAtomic> referenceBillTypes) {
+        System.out.println("createPoTable = " );
         bills = null;
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -5710,7 +5711,6 @@ public class SearchController implements Serializable {
         jpql = "Select b From Bill b "
                 + " where b.retired = false"
                 + " and b.billTypeAtomic in :btas"
-                + " and b.toInstitution.institutionType = :insTp "
                 + " and b.referenceBill.institution = :ins "
                 + " and b.createdAt between :fromDate and :toDate ";
 
@@ -5746,15 +5746,16 @@ public class SearchController implements Serializable {
 
         params.put("toDate", getToDate());
         params.put("fromDate", getFromDate());
-        params.put("insTp", institutionType);
         params.put("ins", getSessionController().getInstitution());
         params.put("btas", billTypeAtomicToList);
-
+        System.out.println("jpql = " + jpql);
+        System.out.println("params = " + params);
         if (getReportKeyWord() != null && getReportKeyWord().isAdditionalDetails()) {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
         } else {
             bills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP, 50);
         }
+        System.out.println("bills = " + bills);
 
         if (bills != null && !bills.isEmpty()) {
             for (Bill b : bills) {
