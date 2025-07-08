@@ -36,7 +36,7 @@
                                 <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
-                                <p:column headerText="Item Name">
+                                <p:column headerText="Item Name" style="min-width: 10em;">
                                     <h:outputText id="item" value="#{bItm.item.name}" />
                                     <p:commandButton
                                         icon="pi pi-search"
