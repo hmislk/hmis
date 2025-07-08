@@ -1,6 +1,7 @@
 package com.divudi.core.data;
 
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -165,6 +166,9 @@ public class IncomeRow implements Serializable {
     private double ccTotal;
 
     private double qty;
+    private double retailRate;
+    private double purchaseRate;
+    private double netRate;
 
     private long duration;
 
@@ -238,6 +242,34 @@ public class IncomeRow implements Serializable {
             this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
             this.paymentScheme = dto.getPaymentScheme();
             this.billFinanceDetails = dto.getBillFinanceDetails();
+            this.rowType = "Bill";
+        }
+    }
+
+    public IncomeRow(PharmacyIncomeBillItemDTO dto) {
+        this();
+        if (dto != null) {
+            this.deptId = dto.getDeptId();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.createdAt = dto.getCreatedAt();
+            this.netTotal = dto.getNetTotal();
+            this.paymentMethod = dto.getPaymentMethod();
+            this.total = dto.getTotal();
+            if (dto.getPatientEncounter() != null) {
+                this.patientEncounter = dto.getPatientEncounter();
+            }
+            this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
+            this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+            this.paymentScheme = dto.getPaymentScheme();
+            this.billFinanceDetails = dto.getBillFinanceDetails();
+
+            this.qty = dto.getQty() != null ? dto.getQty() : 0.0;
+            this.retailRate = dto.getRetailRate() != null ? dto.getRetailRate() : 0.0;
+            this.purchaseRate = dto.getPurchaseRate() != null ? dto.getPurchaseRate() : 0.0;
+            this.netRate = dto.getNetRate() != null ? dto.getNetRate() : 0.0;
+            this.itemName = dto.getItemName();
+            this.rowType = "BillItemWithBill";
         }
     }
 
@@ -1380,5 +1412,29 @@ public class IncomeRow implements Serializable {
 
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
+    }
+
+    public double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public double getRetailRate() {
+        return retailRate;
+    }
+
+    public void setRetailRate(double retailRate) {
+        this.retailRate = retailRate;
+    }
+
+    public double getNetRate() {
+        return netRate;
+    }
+
+    public void setNetRate(double netRate) {
+        this.netRate = netRate;
     }
 }

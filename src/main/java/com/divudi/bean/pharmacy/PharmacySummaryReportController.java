@@ -8,6 +8,7 @@ import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -805,12 +806,11 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillItem() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+        List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
     }
 
     public void processMovementOutWithStockReportByItem() {
@@ -829,13 +829,11 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillType() {
-        reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
+            List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillType();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void calPharmacyIncomeAndCostReportByBill() {
