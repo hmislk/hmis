@@ -192,8 +192,23 @@ public class TransferReceiveController implements Serializable {
         for (BillItem issuedBillItem : issuedBillItems) {
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
+
+            // Invert to turn negative values from the issued bill into positives
             newlyCreatedReceivedBillItem.invertValue();
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
+
+            // Ensure finance details reflect positive quantities and rates
+            BillItemFinanceDetails fd = newlyCreatedReceivedBillItem.getBillItemFinanceDetails();
+            if (fd != null) {
+                if (fd.getQuantity() != null) {
+                    fd.setQuantity(fd.getQuantity().abs());
+                }
+                if (fd.getLineGrossRate() != null) {
+                    fd.setLineGrossRate(fd.getLineGrossRate().abs());
+                }
+                updateFinancialsForTransferReceive(fd);
+            }
+
             newlyCreatedReceivedBillItem.setReferanceBillItem(issuedBillItem);
             newlyCreatedReceivedBillItem.setBill(receivedBill);
             getReceivedBill().getBillItems().add(newlyCreatedReceivedBillItem);
