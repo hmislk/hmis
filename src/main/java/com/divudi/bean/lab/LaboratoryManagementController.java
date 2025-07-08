@@ -691,11 +691,15 @@ public class LaboratoryManagementController implements Serializable {
 
         String jpql = "SELECT ps FROM PatientSample ps "
                 + "WHERE ps.retired = :ret "
+                + "AND ps.bill.createdAt BETWEEN :fd AND :td "
                 + "AND ps.department = :department "
                 + "AND ps.status = :status "
                 + "ORDER BY ps.id DESC";
 
+        
         Map<String, Object> params = new HashMap<>();
+        params.put("fd", getFromDate());
+        params.put("td", getToDate());
         params.put("department", sessionController.getDepartment());
         params.put("ret", false);
         params.put("status", PatientInvestigationStatus.SAMPLE_GENERATED);
