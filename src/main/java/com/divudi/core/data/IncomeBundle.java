@@ -1,6 +1,7 @@
 package com.divudi.core.data;
 
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -336,34 +337,39 @@ public class IncomeBundle implements Serializable {
         return bundle;
     }
 
+    public static IncomeBundle fromPharmacyIncomeBillItemDTO(List<PharmacyIncomeBillItemDTO> dtos) {
+        IncomeBundle bundle = new IncomeBundle();
+        if (dtos != null) {
+            for (PharmacyIncomeBillItemDTO dto : dtos) {
+                bundle.rows.add(new IncomeRow(dto));
+            }
+        }
+        return bundle;
+    }
+
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
-            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
-            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+            if (r == null) {
                 continue;
             }
 
-            BillTypeAtomic bta = Optional
-                    .ofNullable(b.getBillItem())
-                    .map(BillItem::getBill)
-                    .map(Bill::getBillTypeAtomic)
-                    .orElse(null);
+            BillTypeAtomic bta = r.getBillTypeAtomic();
             if (bta == null || bta.getBillCategory() == null) {
                 continue; // unable to categorise safely
             }
             BillCategory bc = bta.getBillCategory();
 
-            Double q = b.getQty();
-            Double rRate = b.getRetailRate();
+            Double q = r.getQty();
+            Double rRate = r.getRetailRate();
             if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
-                rRate = b.getBillItem().getNetRate();
+                rRate = r.getNetRate();
             }
 
-            Double pRate = b.getPurchaseRate();
+            Double pRate = r.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
@@ -476,19 +482,18 @@ public class IncomeBundle implements Serializable {
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
-            Bill b = r.getBill();
-            if (b != null && b.getBillFinanceDetails() != null) {
-                BigDecimal retailBd = b.getBillFinanceDetails().getTotalRetailSaleValue();
-                BigDecimal purchaseBd = b.getBillFinanceDetails().getTotalPurchaseValue();
+            if (r != null) {
+                Double retailBd = r.getTotalRetailSaleValue();
+                Double purchaseBd = r.getTotalPurchaseValue();
 
                 if (retailBd != null) {
-                    saleValue += retailBd.doubleValue();
+                    saleValue += retailBd;
                 }
                 if (purchaseBd != null) {
-                    purchaseValue += purchaseBd.doubleValue();
+                    purchaseValue += purchaseBd;
                 }
                 if (retailBd != null && purchaseBd != null) {
-                    grossProfitValue += retailBd.doubleValue() - purchaseBd.doubleValue();
+                    grossProfitValue += retailBd - purchaseBd;
                 }
             } else {
                 saleValue += r.getRetailValue();
@@ -506,27 +511,21 @@ public class IncomeBundle implements Serializable {
         Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
 
         for (IncomeRow r : getRows()) {
-            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
-            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
+            if (r == null) {
                 continue;
             }
 
-            BillTypeAtomic bta = Optional.ofNullable(b.getBillItem())
-                    .map(BillItem::getBill)
-                    .map(Bill::getBillTypeAtomic)
-                    .orElse(null);
+            BillTypeAtomic bta = r.getBillTypeAtomic();
 
             if (bta == null || bta.getBillCategory() == null) {
                 continue;
             }
 
             BillCategory bc = bta.getBillCategory();
-            Double q = b.getQty();
-//            Double rRate = bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
-//                    ? b.getBillItem().getNetRate()
-//                    : b.getRetailRate();
-            Double rRate = b.getRetailRate();
-            Double pRate = b.getPurchaseRate();
+            Double q = r.getQty();
+
+            Double rRate = r.getRetailRate();
+            Double pRate = r.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
@@ -898,80 +897,80 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-// Contribution by ChatGPT - adapted based on provided instructions
-public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
-    Map<String, IncomeRow> grouped = new LinkedHashMap<>();
+    // Contribution by ChatGPT - adapted based on provided instructions
+    public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
+        Map<String, IncomeRow> grouped = new LinkedHashMap<>();
 
-    for (IncomeRow r : getRows()) {
-        if (r == null) {
-            continue;
+        for (IncomeRow r : getRows()) {
+            if (r == null) {
+                continue;
+            }
+
+            populateRowFromBill(r);
+
+            String groupKey;
+            if (r.getPatientEncounter() != null) {
+                // Inpatient Sale
+                r.setAdmissionType(r.getPatientEncounter().getAdmissionType());
+                if (r.getPatientEncounter().getAdmissionType() == null) {
+                    r.setRowType("Inpatient Sale - No Admission Type");
+                    groupKey = "Inpatient Sale - No Admission Type";
+                } else {
+                    r.setRowType("Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName());
+                    groupKey = "Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName();
+                }
+            } else {
+                // Outpatient Sale
+                r.setPaymentScheme(r.getPaymentScheme());
+                if (r.getPaymentScheme() == null) {
+                    r.setRowType("Outpatient Sale - No Discount Scheme");
+                    groupKey = "Outpatient Sale - No Discount Scheme";
+                } else {
+                    r.setRowType("Outpatient Sale - " + r.getPaymentScheme().getName());
+                    groupKey = "Outpatient Sale - " + r.getPaymentScheme().getName();
+                }
+            }
+
+            IncomeRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
+                IncomeRow ir = new IncomeRow();
+                ir.setRowType(k);
+                return ir;
+            });
+
+            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
+            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
+            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
+            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
+            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
+
+            groupRow.setCashValue(groupRow.getCashValue() + r.getCashValue());
+            groupRow.setCardValue(groupRow.getCardValue() + r.getCardValue());
+            groupRow.setChequeValue(groupRow.getChequeValue() + r.getChequeValue());
+            groupRow.setCreditValue(groupRow.getCreditValue() + r.getCreditValue());
+            groupRow.setOpdCreditValue(groupRow.getOpdCreditValue() + r.getOpdCreditValue());
+            groupRow.setInpatientCreditValue(groupRow.getInpatientCreditValue() + r.getInpatientCreditValue());
+            groupRow.setNoneValue(groupRow.getNoneValue() + r.getNoneValue());
+
+            groupRow.setAgentValue(groupRow.getAgentValue() + r.getAgentValue());
+            groupRow.setIouValue(groupRow.getIouValue() + r.getIouValue());
+            groupRow.setOnlineSettlementValue(groupRow.getOnlineSettlementValue() + r.getOnlineSettlementValue());
+            groupRow.setPatientDepositValue(groupRow.getPatientDepositValue() + r.getPatientDepositValue());
+            groupRow.setPatientPointsValue(groupRow.getPatientPointsValue() + r.getPatientPointsValue());
+            groupRow.setSlipValue(groupRow.getSlipValue() + r.getSlipValue());
+            groupRow.setStaffValue(groupRow.getStaffValue() + r.getStaffValue());
+            groupRow.setStaffWelfareValue(groupRow.getStaffWelfareValue() + r.getStaffWelfareValue());
+            groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
+            groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
+            groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
         }
 
-        populateRowFromBill(r);
-
-        String groupKey;
-        if (r.getPatientEncounter() != null) {
-            // Inpatient Sale
-            r.setAdmissionType(r.getPatientEncounter().getAdmissionType());
-            if (r.getPatientEncounter().getAdmissionType() == null) {
-                r.setRowType("Inpatient Sale - No Admission Type");
-                groupKey = "Inpatient Sale - No Admission Type";
-            } else {
-                r.setRowType("Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName());
-                groupKey = "Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName();
-            }
-        } else {
-            // Outpatient Sale
-            r.setPaymentScheme(r.getPaymentScheme());
-            if (r.getPaymentScheme() == null) {
-                r.setRowType("Outpatient Sale - No Discount Scheme");
-                groupKey = "Outpatient Sale - No Discount Scheme";
-            } else {
-                r.setRowType("Outpatient Sale - " + r.getPaymentScheme().getName());
-                groupKey = "Outpatient Sale - " + r.getPaymentScheme().getName();
-            }
-        }
-
-        IncomeRow groupRow = grouped.computeIfAbsent(groupKey, k -> {
-            IncomeRow ir = new IncomeRow();
-            ir.setRowType(k);
-            return ir;
-        });
-
-        groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-        groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-        groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
-        groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
-        groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
-
-        groupRow.setCashValue(groupRow.getCashValue() + r.getCashValue());
-        groupRow.setCardValue(groupRow.getCardValue() + r.getCardValue());
-        groupRow.setChequeValue(groupRow.getChequeValue() + r.getChequeValue());
-        groupRow.setCreditValue(groupRow.getCreditValue() + r.getCreditValue());
-        groupRow.setOpdCreditValue(groupRow.getOpdCreditValue() + r.getOpdCreditValue());
-        groupRow.setInpatientCreditValue(groupRow.getInpatientCreditValue() + r.getInpatientCreditValue());
-        groupRow.setNoneValue(groupRow.getNoneValue() + r.getNoneValue());
-
-        groupRow.setAgentValue(groupRow.getAgentValue() + r.getAgentValue());
-        groupRow.setIouValue(groupRow.getIouValue() + r.getIouValue());
-        groupRow.setOnlineSettlementValue(groupRow.getOnlineSettlementValue() + r.getOnlineSettlementValue());
-        groupRow.setPatientDepositValue(groupRow.getPatientDepositValue() + r.getPatientDepositValue());
-        groupRow.setPatientPointsValue(groupRow.getPatientPointsValue() + r.getPatientPointsValue());
-        groupRow.setSlipValue(groupRow.getSlipValue() + r.getSlipValue());
-        groupRow.setStaffValue(groupRow.getStaffValue() + r.getStaffValue());
-        groupRow.setStaffWelfareValue(groupRow.getStaffWelfareValue() + r.getStaffWelfareValue());
-        groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
-        groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
-        groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
+        // Replace with grouped rows
+        getRows().clear();
+        grouped.values().stream()
+                .sorted(Comparator.comparing(IncomeRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
+                .forEachOrdered(getRows()::add);
+        populateSummaryRow();
     }
-
-    // Replace with grouped rows
-    getRows().clear();
-    grouped.values().stream()
-            .sorted(Comparator.comparing(IncomeRow::getRowType, Comparator.nullsLast(String::compareToIgnoreCase)))
-            .forEachOrdered(getRows()::add);
-    populateSummaryRow();
-}
 
     // Contribution by ChatGPT - combines grouping by BillTypeAtomic + (Admission Type / Discount Scheme)
     public void generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType() {
@@ -1637,7 +1636,7 @@ public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
     }
 
     private void calculateBillPaymentValuesFromPaymentsByIncomeRow(IncomeRow r) {
-        if (r == null ||  r.getPaymentMethod() == null
+        if (r == null || r.getPaymentMethod() == null
                 || r.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
             return;
         }
