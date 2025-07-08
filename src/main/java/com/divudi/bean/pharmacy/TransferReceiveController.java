@@ -191,10 +191,12 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
+            System.out.println("issuedBillItem = " + issuedBillItem);
             double remainingQty = calculateRemainingQty(issuedBillItem);
             if (remainingQty <= 0) {
                 continue;
             }
+            System.out.println("remainingQty = " + remainingQty);
 
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
@@ -270,6 +272,7 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
+            System.out.println("i.getPharmaceuticalBillItem().getQty() = " + i.getPharmaceuticalBillItem().getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -595,16 +598,18 @@ public class TransferReceiveController implements Serializable {
     }
 
     private double calculateRemainingQty(BillItem issuedItem) {
-        double issuedQty = 0.0;
+        double issuedQtyInUnits = 0.0;
+        double remainingQtyInUnits = 0.0;
         if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
-            issuedQty = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
+            issuedQtyInUnits = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
         }
 
-        double receivedBilled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
-        double receivedCancelled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
+        double receivedBilledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
+        double receivedCancelledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
 
-        double receivedNet = receivedBilled - receivedCancelled;
-        return issuedQty - receivedNet;
+        double receivedNet = receivedBilledQtyInUnits - receivedCancelledQtyInUnits;
+        remainingQtyInUnits = issuedQtyInUnits - receivedNet;
+        return remainingQtyInUnits;
     }
 
     public void onQuantityChangeForTransferReceive(BillItem bi) {
