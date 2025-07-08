@@ -86,9 +86,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="GRN Number"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.grnNo}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
+                            <h:outputLabel value="#{i.grnNo}" />
                         </p:column>
                         <p:column headerText="PO Value" style="text-align: right;"
                                   rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy GRN Bill Item Report - Hide PO Value Column',false)}">
@@ -114,9 +112,7 @@
                             <f:facet name="header">
                                 <p:outputLabel value="Supplier Name"/>
                             </f:facet>
-                            <h:outputLabel value="#{i.supplierName}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputLabel>
+                            <h:outputLabel value="#{i.supplierName}" />
                         </p:column>
                         <p:column headerText="Item Name">
                             <f:facet name="header">
