@@ -93,6 +93,7 @@ public class TransferReceiveController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
+    private BillItem selectedBillItem;
 
     public static class ConfigOptionInfo {
         private final String key;
@@ -117,7 +118,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public String navigateBackToRecieveList() {
-        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
     public String navigateToRecieveRequest() {
@@ -147,6 +148,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
+        selectedBillItem=null;
     }
 
     public TransferReceiveController() {
@@ -164,7 +166,7 @@ public class TransferReceiveController implements Serializable {
     }
 
 //   public String navigateBackToRecieveList(){
-//        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+//        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
@@ -781,6 +783,7 @@ public class TransferReceiveController implements Serializable {
         return tot;
     }
 
+
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
         list.add(new ConfigOptionInfo("Pharmacy Transfer is by Purchase Rate", "false"));
@@ -797,6 +800,22 @@ public class TransferReceiveController implements Serializable {
         list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer CSS", ""));
         list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
         return list;
+    }
+    
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }
