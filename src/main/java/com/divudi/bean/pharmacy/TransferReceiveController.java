@@ -20,6 +20,7 @@ import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.ItemBatch;
@@ -190,6 +191,11 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
+            double remainingQty = calculateRemainingQty(issuedBillItem);
+            if (remainingQty <= 0) {
+                continue;
+            }
+
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
 
@@ -197,12 +203,21 @@ public class TransferReceiveController implements Serializable {
             newlyCreatedReceivedBillItem.invertValue();
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
 
+            // Adjust quantity to remaining amount
+            double unitsPerPack = 1.0;
+            Item item = newlyCreatedReceivedBillItem.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+
+            double packs = remainingQty / unitsPerPack;
+            newlyCreatedReceivedBillItem.setQty(packs);
+            newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().setQty(remainingQty);
+
             // Ensure finance details reflect positive quantities and rates
             BillItemFinanceDetails fd = newlyCreatedReceivedBillItem.getBillItemFinanceDetails();
             if (fd != null) {
-                if (fd.getQuantity() != null) {
-                    fd.setQuantity(fd.getQuantity().abs());
-                }
+                fd.setQuantity(BigDecimal.valueOf(packs));
                 if (fd.getLineGrossRate() != null) {
                     fd.setLineGrossRate(fd.getLineGrossRate().abs());
                 }
@@ -233,8 +248,14 @@ public class TransferReceiveController implements Serializable {
     }
 
     public boolean isAlreadyReceived(Bill bill) {
-        if (bill.getForwardReferenceBills() == null || bill.getForwardReferenceBills().isEmpty()) {
+        if (bill == null) {
             return false;
+        }
+        List<BillItem> issueItems = billService.fetchBillItems(bill);
+        for (BillItem bi : issueItems) {
+            if (calculateRemainingQty(bi) > 0) {
+                return false;
+            }
         }
         return true;
     }
@@ -569,6 +590,19 @@ public class TransferReceiveController implements Serializable {
         bi.setQty(qty.doubleValue());
         bi.setRate(grossRate.doubleValue());
         bi.setNetValue(lineGrossTotal.doubleValue());
+    }
+
+    private double calculateRemainingQty(BillItem issuedItem) {
+        double issuedQty = 0.0;
+        if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
+            issuedQty = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
+        }
+
+        double receivedBilled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
+        double receivedCancelled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
+
+        double receivedNet = receivedBilled - receivedCancelled;
+        return issuedQty - receivedNet;
     }
 
     public void onQuantityChangeForTransferReceive(BillItem bi) {
