@@ -131,7 +131,8 @@ public enum Icon {
     Financial_Transaction_Manager("Financial Transaction Manager"),
     Channel_Booking_by_Dates("Channel Booking by Dates"),
     Channel_Scheduling("Channel Scheduling"),
-    Goods_Receipt_Costing("Goods Receipt Costing");
+    Goods_Receipt_Costing("Goods Receipt Costing"),
+    Report_Execution_Logs("Report Execution Logs");
 
     private final String label;
 

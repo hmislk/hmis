@@ -191,10 +191,10 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                                 <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}" />
-                                <f:selectItems value="#{enumController.pharmacyIncomeReportViewTypes}"
+                                <f:selectItems value="#{pharmacySummaryReportController.reportViewTypesForPharmacyIncomeReport}"
                                                var="rvt"
                                                itemLabel="#{rvt.label}"
-                                               itemValue="#{rvt}" />
+                                               itemValue="#{rvt}"/>
                             </p:selectOneMenu>
 
 
@@ -239,16 +239,16 @@
                             </p:commandButton>
 
                             <p:dataTable
-                                id="tbl"
-                                style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                value="#{pharmacySummaryReportController.bundle.rows}" var="row"
-                                paginator="true" 
-                                rows="#{pharmacySummaryReportController.rowsPerPageForScreen}" 
-                                rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
-                                paginatorPosition="bottom">
+                                    id="tbl"
+                                    style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
+                                    styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                    value="#{pharmacySummaryReportController.bundle.rows}" var="row"
+                                    paginator="true"
+                                    rows="#{pharmacySummaryReportController.rowsPerPageForScreen}"
+                                    rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
+                                    paginatorPosition="bottom">
                                 <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
                                     <f:facet name="footer" >
                                         <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
 
@@ -256,20 +256,20 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.patientName}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
-                                <p:column 
-                                    rendered="#{webUserController.hasPrivilege('Developers')}"
-                                    headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
+                                <p:column
+                                        rendered="#{webUserController.hasPrivilege('Developers')}"
+                                        headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Date"   width="10em" >
-                                    <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column>
                                 <p:column headerText="Net Total"  width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.netTotal}">
+                                    <h:outputText value="#{row.netTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer" >
@@ -397,13 +397,12 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
-                                    <p:commandLink 
-                                        value="View" 
-                                        style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
-                                        class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                        ajax="false">
-                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+                                    <p:commandLink
+                                            value="View"
+                                            style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
+                                            class="mx-1"
+                                            action="#{billSearch.navigateToViewBillByAtomicBillTypeByDeptId(row.deptId)}"
+                                            ajax="false">
                                     </p:commandLink>
                                 </p:column>
                             </p:dataTable>

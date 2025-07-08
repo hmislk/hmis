@@ -1,6 +1,8 @@
 package com.divudi.core.data;
 
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -47,6 +49,7 @@ public class IncomeRow implements Serializable {
     private String patientName;
     private String bhtNo;
     private Date createdAt;
+    private String deptId;
 
     private boolean selected;
 
@@ -123,6 +126,9 @@ public class IncomeRow implements Serializable {
     private Staff staff;
     private Institution referringInstitution;
     private Staff referringStaff;
+    private PatientEncounter patientEncounter;
+
+    private PaymentMethod paymentMethod;
 
     private PatientInvestigation patientInvestigation;
     private Route route;
@@ -152,19 +158,29 @@ public class IncomeRow implements Serializable {
 
     private double grossTotal;
     private double discount;
+    private double margin;
     private double serviceCharge;
     private double tax;
     private double actualTotal;
     private double netTotal;
     private double paidTotal;
+    private double total;
 
     private double hospitalTotal;
     private double staffTotal;
     private double ccTotal;
 
     private double qty;
+    private double retailRate;
+    private double purchaseRate;
+    private double netRate;
+
+    private double totalRetailSaleValue;
+    private double totalPurchaseValue;
 
     private long duration;
+
+    private BillFinanceDetails billFinanceDetails;
 
     private UUID id;
 
@@ -233,6 +249,56 @@ public class IncomeRow implements Serializable {
                 this.purchaseValue = dto.getPurchaseValue().doubleValue();
             }
             this.grossProfit = this.retailValue - this.purchaseValue;
+        }
+    }
+
+    public IncomeRow(PharmacyIncomeBillDTO dto) {
+        this();
+        if (dto != null) {
+            this.deptId = dto.getDeptId();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.createdAt = dto.getCreatedAt();
+            this.netTotal = dto.getNetTotal();
+            this.paymentMethod = dto.getPaymentMethod();
+            this.total = dto.getTotal();
+            if (dto.getPatientEncounter() != null) {
+                this.patientEncounter = dto.getPatientEncounter();
+            }
+            this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
+            this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+            this.paymentScheme = dto.getPaymentScheme();
+            this.billFinanceDetails = dto.getBillFinanceDetails();
+            this.totalRetailSaleValue = dto.getTotalRetailSaleValue() != null ? dto.getTotalRetailSaleValue() : 0.0;
+            this.totalPurchaseValue = dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0;
+            this.rowType = "Bill";
+        }
+    }
+
+    public IncomeRow(PharmacyIncomeBillItemDTO dto) {
+        this();
+        if (dto != null) {
+            this.deptId = dto.getDeptId();
+            this.billTypeAtomic = dto.getBillTypeAtomic();
+            this.patientName = dto.getPatientName();
+            this.createdAt = dto.getCreatedAt();
+            this.netTotal = dto.getNetTotal();
+            this.paymentMethod = dto.getPaymentMethod();
+            this.total = dto.getTotal();
+            if (dto.getPatientEncounter() != null) {
+                this.patientEncounter = dto.getPatientEncounter();
+            }
+            this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
+            this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
+            this.paymentScheme = dto.getPaymentScheme();
+            this.billFinanceDetails = dto.getBillFinanceDetails();
+
+            this.qty = dto.getQty() != null ? dto.getQty() : 0.0;
+            this.retailRate = dto.getRetailRate() != null ? dto.getRetailRate() : 0.0;
+            this.purchaseRate = dto.getPurchaseRate() != null ? dto.getPurchaseRate() : 0.0;
+            this.netRate = dto.getNetRate() != null ? dto.getNetRate() : 0.0;
+            this.itemName = dto.getItemName();
+            this.rowType = "BillItemWithBill";
         }
     }
 
@@ -1110,6 +1176,22 @@ public class IncomeRow implements Serializable {
         this.discount = discount;
     }
 
+    public double getMargin() {
+        return margin;
+    }
+
+    public void setMargin(double margin) {
+        this.margin = margin;
+    }
+
+    public String getDeptId() {
+        return deptId;
+    }
+
+    public void setDeptId(String deptId) {
+        this.deptId = deptId;
+    }
+
     public double getNetTotal() {
         return netTotal;
     }
@@ -1321,20 +1403,20 @@ public class IncomeRow implements Serializable {
         this.billId = billId;
     }
 
-    public String getBillNo() {
-        return billNo;
-    }
-
-    public void setBillNo(String billNo) {
-        this.billNo = billNo;
-    }
-
     public String getPatientName() {
         return patientName;
     }
 
     public void setPatientName(String patientName) {
         this.patientName = patientName;
+    }
+
+    public String getBillNo() {
+        return billNo;
+    }
+
+    public void setBillNo(String billNo) {
+        this.billNo = billNo;
     }
 
     public String getBhtNo() {
@@ -1345,6 +1427,7 @@ public class IncomeRow implements Serializable {
         this.bhtNo = bhtNo;
     }
 
+
     public Date getCreatedAt() {
         return createdAt;
     }
@@ -1352,7 +1435,76 @@ public class IncomeRow implements Serializable {
     public void setCreatedAt(Date createdAt) {
         this.createdAt = createdAt;
     }
-    
-    
 
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PatientEncounter getPatientEncounter() {
+        return patientEncounter;
+    }
+
+    public void setPatientEncounter(PatientEncounter patientEncounter) {
+        this.patientEncounter = patientEncounter;
+    }
+
+    public double getTotal() {
+        return total;
+    }
+
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    public BillFinanceDetails getBillFinanceDetails() {
+        return billFinanceDetails;
+    }
+
+    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
+        this.billFinanceDetails = billFinanceDetails;
+    }
+
+    public double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public double getRetailRate() {
+        return retailRate;
+    }
+
+    public void setRetailRate(double retailRate) {
+        this.retailRate = retailRate;
+    }
+
+    public double getNetRate() {
+        return netRate;
+    }
+
+    public void setNetRate(double netRate) {
+        this.netRate = netRate;
+    }
+
+    public double getTotalRetailSaleValue() {
+        return totalRetailSaleValue;
+    }
+
+    public void setTotalRetailSaleValue(double totalRetailSaleValue) {
+        this.totalRetailSaleValue = totalRetailSaleValue;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
+    }
 }

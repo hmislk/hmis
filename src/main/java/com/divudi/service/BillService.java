@@ -24,6 +24,8 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dataStructure.SearchKeyword;
+import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
 import com.divudi.core.entity.BillFinanceDetails;
@@ -530,7 +532,7 @@ public class BillService {
                 + "from BillFee bf "
                 + " where bf.retired=:ret "
                 + " and bf.billItem=:bi";
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("bi", billItem);
         params.put("ret", false);
         return billFeeFacade.findByJpql(jpql, params);
@@ -548,7 +550,7 @@ public class BillService {
     public List<BillFee> fetchBillFees(Bill bill) {
         List<BillFee> fetchingBillFees;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select bf "
                 + " from BillFee bf "
                 + "where bf.bill=:bill "
@@ -560,7 +562,7 @@ public class BillService {
 
     public List<BillItem> fetchBillItems(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT bi "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
@@ -639,7 +641,7 @@ public class BillService {
 
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT pbi "
                 + " FROM PharmaceuticalBillItem pbi "
                 + " WHERE pbi.billItem.bill=:bl "
@@ -650,7 +652,7 @@ public class BillService {
 
     public Long fetchBillItemCount(Bill b) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT count(bi) "
                 + " FROM BillItem bi "
                 + " WHERE bi.bill=:bl "
@@ -728,7 +730,7 @@ public class BillService {
     public List<Payment> fetchBillPayments(Bill bill) {
         List<Payment> fetchingBillComponents;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select p "
                 + " from Payment p "
                 + "where p.bill=:bill "
@@ -741,7 +743,7 @@ public class BillService {
     public List<Payment> fetchBillPayments(Bill bill, Bill batchBill) {
         List<Payment> fetchingBillComponents;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "Select p "
                 + " from Payment p "
                 + "where p.bill=:bill "
@@ -760,7 +762,7 @@ public class BillService {
             return null;
         }
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT p "
                 + " FROM Payment p "
                 + " WHERE p.bill=:bl "
@@ -850,7 +852,7 @@ public class BillService {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select new com.divudi.core.data.ReportTemplateRow(b) "
                 + " from Bill b "
@@ -963,7 +965,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select b "
                 + " from Bill b "
@@ -1034,7 +1036,7 @@ public class BillService {
                 + " and b.billTypeAtomic in :billTypesAtomics "
                 + " and b.createdAt between :fromDate and :toDate ";
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         params.put("ret", false);
         params.put("billTypesAtomics", billTypeAtomics);
         params.put("fromDate", fromDate);
@@ -1075,6 +1077,88 @@ public class BillService {
         return (List<PharmacyIncomeCostBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public List<Payment> fetchBillPaymentsByDeptId(String deptId) {
+        List<Payment> fetchingBillComponents;
+        String jpql;
+        Map params = new HashMap();
+        jpql = "Select p "
+                + " from Payment p "
+                + "where p.bill.deptId=:deptId "
+                + "order by p.id";
+        params.put("deptId", deptId);
+        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
+        return fetchingBillComponents;
+    }
+
+    public List<PharmacyIncomeBillDTO> fetchBillIncomeDTOs(Date fromDate,
+                                                           Date toDate,
+                                                           Institution institution,
+                                                           Institution site,
+                                                           Department department,
+                                                           WebUser webUser,
+                                                           List<BillTypeAtomic> billTypeAtomics,
+                                                           AdmissionType admissionType,
+                                                           PaymentScheme paymentScheme,
+                                                           boolean includeBillFinanceDetails) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO( "
+                + " b.deptId, pers.name, b.billTypeAtomic, b.createdAt, b.netTotal, b.paymentMethod, "
+                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme, b.billFinanceDetails.totalRetailSaleValue, b.billFinanceDetails.totalPurchaseValue ";
+
+        if (includeBillFinanceDetails) {
+            jpql += ", b.billFinanceDetails )";
+        } else {
+            jpql += ") ";
+        }
+
+        jpql += " from Bill b "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        return (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<BillItem> fetchBillItems(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1085,7 +1169,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1144,7 +1228,7 @@ public class BillService {
             AdmissionType admissionType,
             PaymentScheme paymentScheme) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select pbi "
                 + " from PharmaceuticalBillItem pbi "
@@ -1192,6 +1276,68 @@ public class BillService {
         jpql += " order by b.createdAt desc  ";
         List<PharmaceuticalBillItem> fetchedPharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedPharmaceuticalBillItems;
+    }
+
+    public List<PharmacyIncomeBillItemDTO> fetchPharmaceuticalBillItemDTOs(Date fromDate,
+                                                                           Date toDate,
+                                                                           Institution institution,
+                                                                           Institution site,
+                                                                           Department department,
+                                                                           WebUser webUser,
+                                                                           List<BillTypeAtomic> billTypeAtomics,
+                                                                           AdmissionType admissionType,
+                                                                           PaymentScheme paymentScheme) {
+        String jpql;
+        Map params = new HashMap();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillItemDTO( "
+                + " b.deptId, b.patient.person.name, b.billTypeAtomic, b.createdAt, b.netTotal, b.paymentMethod, "
+                + " b.total, b.patientEncounter, "
+                + " pbi.qty, pbi.retailRate, pbi.purchaseRate, bi.netRate, bi.item.name ) "
+                + " from PharmaceuticalBillItem pbi "
+                + " join pbi.billItem bi "
+                + " join bi.bill b "
+                + " where (b.retired=false or b.retired is null) "
+                + " and (bi.retired=false or bi.retired is null) "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        return (List<PharmacyIncomeBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,
@@ -1291,7 +1437,7 @@ public class BillService {
             String visitType
     ) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select b "
                 + " from Bill b "
@@ -1368,7 +1514,7 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             PatientEncounter patientEncounter) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1411,7 +1557,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1424,7 +1570,7 @@ public class BillService {
             List<BillTypeAtomic> billTypeAtomics,
             PatientEncounter patientEncounter) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select bi "
                 + " from BillItem bi "
@@ -1471,7 +1617,7 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt, bi.id ";
-        List<BillItem> fetchedBillItems = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
     }
 
@@ -1496,7 +1642,7 @@ public class BillService {
                 btas.addAll(BillTypeAtomic.findByCategory(BillCategory.REFUND));
         }
         //
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -1572,7 +1718,7 @@ public class BillService {
                 btas.addAll(BillTypeAtomic.findByCategory(BillCategory.PAYMENTS));
         }
         //
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         jpql = "select bi "
                 + " from BillItem bi"
                 + " join bi.bill b "
@@ -1879,7 +2025,7 @@ public class BillService {
 
     public List<PatientInvestigation> fetchPatientInvestigations(Bill bill) {
         String jpql;
-        HashMap params = new HashMap();
+        HashMap<String, Object> params = new HashMap<>();
         jpql = "SELECT pbi "
                 + " FROM PatientInvestigation pbi "
                 + " WHERE pbi.billItem.bill=:bl "
@@ -1896,7 +2042,7 @@ public class BillService {
         String jpql = "SELECT pbi "
                 + "FROM PatientInvestigation pbi "
                 + "WHERE pbi.billItem.bill IN ("
-                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb" 
+                + "  SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
                 + ") "
                 + "ORDER BY pbi.id";
         Map<String, Object> params = new HashMap<>();
@@ -1911,7 +2057,7 @@ public class BillService {
             return billItems;
         }
 
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
         String jpql = "select bi "
                 + " from BillItem bi"
                 + " where bi.retired=:ret "

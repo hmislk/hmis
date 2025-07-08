@@ -15,7 +15,9 @@
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin }" >
                     <h:form id="form">
                         <p:panel header="Send Bulk SMS to Patients" class="m-1 w-100">
-                            <h:panelGrid columns="8" class="w-100 p-2" >
+                            <div class="row">
+                                <div class="col-6">
+                                    <h:panelGrid columns="8" class="w-100 p-2" >
                                 <h:outputLabel value="Age From" class="w-100"/>
                                 <p:inputText value="#{smsController.ageFrom}" class="w-100"/>
                                 <p:spacer width="5em"></p:spacer>
@@ -40,19 +42,34 @@
                                 <p:spacer></p:spacer>
                                 <h:outputLabel value=""/>
                                 <p:commandButton value="Search" action="#{smsController.searchPatientsForBulkSms}" update="tbl" icon="fa fa-search" class="ui-button-warning"/>
-                            </h:panelGrid>
+                                    </h:panelGrid>
 
+                                </div>
+                                <div class="col-6">
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <h:outputLabel value="SMS Template"/>
+                                        <p:inputTextarea value="#{smsController.smsTemplate}" class="w-100"/>
+                                        <h:outputText value="Use placeholders {name}, {phone1}, {phone2}, {address}, {area}, {he/she}, {sir/madam}, {title}" styleClass="text-muted small mt-1"/>
+                                        <p:commandButton
+                                            value="Send SMS"
+                                            action="#{smsController.sendBulkSmsToPatients}"
+                                            icon="fa fa-paper-plane"
+                                            ajax="false"
+                                            class="ui-button-success mt-2"/>
+                                    </h:panelGrid>
+                                </div>
+                            </div>
                             <p:dataTable
-                                id="tbl" 
+                                id="tbl"
                                 value="#{smsController.patientsForSms}"
-                                var="pt" 
-                                rowKey="#{pt.id}" 
-                                selection="#{smsController.selectedPatients}" 
+                                var="pt"
+                                rowKey="#{pt.id}"
+                                selection="#{smsController.selectedPatients}"
                                 selectionMode="multiple"
                                 paginator="true"
-                                rows="10" 
-                                paginatorAlwaysVisible="false" 
-                                class="w-100 mt-3" 
+                                rows="10"
+                                paginatorAlwaysVisible="false"
+                                class="w-100 mt-3"
                                 rowsPerPageTemplate="5,10,20">
                                 <p:column selectionBox="true" style="width:3%"/>
                                 <p:column headerText="Name" filterMatchMode="contains" filterBy="#{pt.person.name}" sortBy="#{pt.person.name}" >
@@ -68,18 +85,6 @@
                                     <h:outputText value="#{pt.person.area.name}"/>
                                 </p:column>
                             </p:dataTable>
-
-                            <h:panelGrid columns="2" class="w-100 mt-3" >
-                                <h:outputLabel value="SMS Template"/>
-                                <p:inputTextarea value="#{smsController.smsTemplate}" class="w-100"/>
-                                <p:spacer/>
-                                <p:commandButton
-                                    value="Send SMS"
-                                    action="#{smsController.sendBulkSmsToPatients}" 
-                                    icon="fa fa-paper-plane"
-                                    ajax="false"
-                                    class="ui-button-success"/>
-                            </h:panelGrid>
                         </p:panel>
                     </h:form>
                 </h:panelGroup>

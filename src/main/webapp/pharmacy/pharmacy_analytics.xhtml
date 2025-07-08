@@ -25,11 +25,11 @@
                                                 style="text-align: left"
                                                 action="#{pharmacySummaryReportController.navigateToPharmacyIncomeReport()}"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income & Cost')}" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Pharmacy Income and Cost')}" 
                                                 class="w-100" 
                                                 ajax="false" 
                                                 style="text-align: left" 
-                                                value="Pharmacy Income &amp; Cost"
+                                                value="Pharmacy Income and Cost"
                                                 action="#{pharmacySummaryReportController.navigateToPharmacyIncomeAndCostReport()}"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Daily Stock Values')}" 
                                                 class="w-100" 
@@ -169,7 +169,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Bin Card')}" class="w-100" value="Bin Card" action="#{pharmacyController.navigateToBinCard}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items (AMP) List')}" class="w-100 ui-button-warning" value="Items (AMP) List" action="#{ampController.navigateToCreateItemList}" ajax="false"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Medicine (VTM,ATM,VMP,AMP,VMPP & AMPP) List')}" class="w-100 ui-button-warning" value="Medicine (VTM,ATM,VMP,AMP,VMPP &amp; AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List')}" class="w-100 ui-button-warning" value="Medicine (VTM,ATM,VMP,AMP,VMPP and AMPP) List" action="#{ampController.navigateToCreateMedicineList}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Single Items Summary')}" class="w-100 ui-button-warning" value="Single Items Summary" action="#{pharmacyController.navigateToItemTransactionDetails}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show All Items Summary')}" class="w-100 ui-button-warning" value="All Items Summary" action="#{pharmacyController.navigateToAllItemsTransactionSummary}" ajax="false"/>
 
@@ -178,7 +178,7 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items With Distributor')}" class="w-100 ui-button-warning" value="Items With Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithDistributor}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Items With Multiple Distributor(Items Only)')}" class="w-100 ui-button-warning" value="Items With Multiple Distributor(Items Only)" action="#{pharmacySaleReportController.navigateToMakeNullAndItemsWithMultipleDistributorsItemsOnly}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Item With Multiple Distributor')}" class="w-100 ui-button-warning" value="Item With Multiple Distributor" action="#{pharmacySaleReportController.navigateToMakeNullAndItemWithMultipleDistributors}" ajax="false"/>
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show ROL & ROQ Management')}" class="w-100 ui-button-warning" value="ROL &amp; ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show ROL and ROQ Management')}" class="w-100 ui-button-warning" value="ROL and ROQ Management" action="#{pharmacyController.navigateToReorderManagement()}" ajax="false"/>
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Reorder Analysis')}" class="w-100 ui-button-warning" value="Reorder Analysis" action="#{pharmacyController.navigateToReorderAnalysis}" ajax="false"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Movement Report Stock By Date')}" class="w-100 ui-button-warning" ajax="false" value="Movement Report Stock By Date" action="#{pharmacySaleReportController.navigatePharmacyReportCategoryViceMovement}"/>
@@ -313,8 +313,8 @@
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary (Credit / Cash )')}" class="w-100 ui-button-warning" ajax="false"
                                                              value="Purchase Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase & GRN Summary (Credit / Cash )')}" class="w-100 ui-button-warning" ajax="false"
-                                                             value="Purchase &amp; GRN Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase and GRN Summary (Credit / Cash )')}" class="w-100 ui-button-warning" ajax="false"
+                                                             value="Purchase and GRN Summary (Credit / Cash )" action="#{pharmacySaleReportController.navigatePharmacyReportGrnAndPurchaseDetail()}" actionListener="#{pharmacySaleReportController.makeNull}"/>
 
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Purchase Summary By Supplier (Credit / Cash)')}" class="w-100 ui-button-warning" ajax="false"
