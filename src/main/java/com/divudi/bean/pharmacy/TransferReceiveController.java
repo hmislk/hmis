@@ -93,6 +93,7 @@ public class TransferReceiveController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
+    private BillItem selectedBillItem;
 
     public void onFocus(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
@@ -761,6 +762,22 @@ public class TransferReceiveController implements Serializable {
             tot += Math.abs(b.getNetValue());
         }
         return tot;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }
