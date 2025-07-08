@@ -65,9 +65,12 @@
                                     </p:column>  
 
                                     <p:column headerText="Receiving Qty" style="width:25px!important;">
-                                        <p:inputText autocomplete="off" id="qty" value="#{ph.billItemFinanceDetails.quantity}" >
+                                        <p:inputText autocomplete="off" id="qty" value="#{ph.billItemFinanceDetails.quantity}"
+                                                     onfocus="this.select()">
                                             <f:convertNumber pattern="#,##0.#" />
-                                            <p:ajax event="keyup" process="@this"
+                                            <p:ajax 
+                                                event="keyup" 
+                                                    process="@this"
                                                     update="value txtReceivingNetTotal"
                                                     listener="#{transferReceiveController.onQuantityChangeForTransferReceive(ph)}"/>
                                         </p:inputText>

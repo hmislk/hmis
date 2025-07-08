@@ -90,7 +90,6 @@ public class TransferReceiveController implements Serializable {
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
-    private List<BillItem> billItems;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
 
@@ -129,7 +128,6 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
-        billItems = null;
     }
 
     public TransferReceiveController() {
@@ -162,8 +160,6 @@ public class TransferReceiveController implements Serializable {
             bItem.copy(i.getBillItem());
             bItem.setTmpQty(Math.abs(i.getQty()));
 
-            bItem.setSearialNo(getBillItems().size());
-
             //       bItem.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(i.getBillItem().getItem()));
             PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
             phItem.setBillItem(bItem);
@@ -172,7 +168,8 @@ public class TransferReceiveController implements Serializable {
 
             bItem.setPharmaceuticalBillItem(phItem);
 
-            getBillItems().add(bItem);
+            getIssuedBill().getBillItems().add(bItem);
+            bItem.setSearialNo(getIssuedBill().getBillItems().size());
 
         }
 
@@ -198,9 +195,9 @@ public class TransferReceiveController implements Serializable {
             newlyCreatedReceivedBillItem.invertValue();
             newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
             newlyCreatedReceivedBillItem.setReferanceBillItem(issuedBillItem);
-            newlyCreatedReceivedBillItem.setSearialNo(getBillItems().size());
             newlyCreatedReceivedBillItem.setBill(receivedBill);
             getReceivedBill().getBillItems().add(newlyCreatedReceivedBillItem);
+            newlyCreatedReceivedBillItem.setSearialNo(getReceivedBill().getBillItems().size());
         }
     }
 
@@ -301,8 +298,7 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
 
         getBillFacade().edit(getReceivedBill());
 
@@ -348,10 +344,8 @@ public class TransferReceiveController implements Serializable {
 
             getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-            getReceivedBill().setNetTotal(calTotal());
-            getReceivedBill().setTotal(calTotal());
+            pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
 
-            getReceivedBill().setBillItems(billItems);
             getReceivedBill().setEditor(sessionController.getLoggedUser());
             getReceivedBill().setEditedAt(new Date());
             getReceivedBill().setCheckeAt(new Date());
@@ -367,7 +361,6 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addSuccessMessage("Request Finalized Successfully");
         } else {
             // Update the existing received bill with current details
-            getReceivedBill().setBillItems(billItems);
             getReceivedBill().setEditor(sessionController.getLoggedUser());
             getReceivedBill().setEditedAt(new Date());
             getReceivedBill().setCheckeAt(new Date());
@@ -395,8 +388,8 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         List<BillItem> itemsToAdd = new ArrayList<>();
 
-        for (BillItem i : getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
 
@@ -447,8 +440,7 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
 
         getIssuedBill().setReferenceBill(getReceivedBill());
         getReceivedBill().setReferenceBill(getIssuedBill());
@@ -459,40 +451,8 @@ public class TransferReceiveController implements Serializable {
         printPreview = true;
     }
 
-    private double calTotal() {
-        double value = 0;
-        int serialNo = 0;
-
-        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
-            for (BillItem b : getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-        } else {
-            for (BillItem b : getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-        }
-
-        return value;
-
-    }
-
-//    public void onEdit(BillItem tmp) {
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getReceivedBill().getFromStaff());
-//        double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
-//        if (availableStock < tmp.getQty()) {
-//            tmp.setQty(oldValue);
-//            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
-//        }
-//
-//        //   getPharmacyController().setPharmacyItem(tmp.getItem());
-//    }
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getStaffStock(), getIssuedBill().getToStaff());
-        //   double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
         if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
@@ -713,17 +673,6 @@ public class TransferReceiveController implements Serializable {
 
     public void setPharmacyController(PharmacyController pharmacyController) {
         this.pharmacyController = pharmacyController;
-    }
-
-    public List<BillItem> getBillItems() {
-        if (billItems == null) {
-            billItems = new ArrayList<>();
-        }
-        return billItems;
-    }
-
-    public void setBillItems(List<BillItem> billItems) {
-        this.billItems = billItems;
     }
 
     public List<Bill> getBills() {
