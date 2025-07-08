@@ -43,13 +43,15 @@
                                             itemValue="#{option}"/>
                                     </p:selectOneMenu>
 
-                                    <p:commandButton 
+                                    <p:commandButton
                                         ajax="false"
-                                        value="Cancel Bill" 
+                                        value="Cancel Bill"
                                         icon="fa fa-cancel"
                                         style="float: right"
-                                        class="ui-button-danger" 
-                                        action="#{billSearch.cancelCollectingCentreBill()}">
+                                        class="ui-button-danger"
+                                        action="#{billSearch.cancelCollectingCentreBill()}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;">
                                     </p:commandButton>
                                     <p:commandButton  
                                         class="ui-button-secondary d-flex justify-content-end mx-2"

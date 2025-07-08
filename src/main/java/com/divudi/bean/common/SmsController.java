@@ -396,6 +396,11 @@ public class SmsController implements Serializable {
         JsfUtil.addSuccessMessage("SMS sending initiated");
     }
 
+    public String navigateToBillContactNumbers() {
+        //to do. completly rewrite this method and page in a seperate issue
+        return "/admin/users/sent_bulk_sms_to_bills.xhtml?faces-redirect=true";
+    }
+
     public String navigateToSendBulkSmsToPatients() {
         selectedPatients = null;
         patientsForSms = null;

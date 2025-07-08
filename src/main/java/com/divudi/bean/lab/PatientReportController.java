@@ -154,6 +154,8 @@ public class PatientReportController implements Serializable {
     PatientReportUploadController patientReportUploadController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    LabTestHistoryController labTestHistoryController;
 
     //Class Variables
     String selectText = "";
@@ -961,6 +963,10 @@ public class PatientReportController implements Serializable {
                 System.err.println("e = " + e.getMessage());
             }
         }
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addCalculateHistory(currentPtIx, currentPatientReport);
+        }
+
     }
 
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
@@ -1180,17 +1186,10 @@ public class PatientReportController implements Serializable {
     }
 
     public void savePatientReportItemValues() {
-//        if (currentPatientReport != null) {
-//            for (PatientReportItemValue v : getCurrentPatientReport().getPatientReportItemValues()) {
-//                ////System.out.println("saving ptrtiv + " + v);
-//                ////System.out.println("saving ptrtiv Stre " + v.getStrValue());
-//                ////System.out.println("saving ptrtiv Double " + v.getDoubleValue());
-//                ////System.out.println("saving ptrtiv Lob " + v.getLobValue());
-//                getPirivFacade().edit(v);
-//            }
-//        }
-        if (currentPatientReport != null) {
-            getFacade().edit(currentPatientReport);
+        if (currentPatientReport != null && currentPatientReport.getPatientReportItemValues() != null) {
+            for (PatientReportItemValue v : currentPatientReport.getPatientReportItemValues()) {
+                pirivFacade.edit(v);
+            }
         }
     }
 
@@ -1223,7 +1222,11 @@ public class PatientReportController implements Serializable {
         getFacade().edit(currentPatientReport);
         getPiFacade().edit(currentPtIx);
 
-        //JsfUtil.addSuccessMessage("Saved");
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addDataEnterHistory(currentPtIx, currentPatientReport);
+        }
+
+        JsfUtil.addSuccessMessage("Saved");
     }
 
     public void removePatientReport() {
@@ -2147,6 +2150,10 @@ public class PatientReportController implements Serializable {
             }
         }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addApprovalHistory(currentPtIx, currentPatientReport);
+        }
+
         JsfUtil.addSuccessMessage("Approved");
 
     }
@@ -2232,6 +2239,10 @@ public class PatientReportController implements Serializable {
             e.setSentSuccessfully(sent);
             getSmsFacade().edit(e);
 
+            if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+                labTestHistoryController.addReportSentSMSHistory(currentPtIx, currentPatientReport, e);
+            }
+
         }
 
         JsfUtil.addSuccessMessage("SMS Sent");
@@ -2282,7 +2293,7 @@ public class PatientReportController implements Serializable {
         }
 
         System.out.println("all checks ok");
-        
+
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
         email.setCreater(sessionController.getLoggedUser());
@@ -2300,7 +2311,11 @@ public class PatientReportController implements Serializable {
         getEmailFacade().create(email);
 
         System.out.println("email = " + email);
-        
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addReportSentEmailHistory(currentPtIx, currentPatientReport, email);
+        }
+
         try {
             boolean success = emailManagerEjb.sendEmail(
                     Collections.singletonList(email.getReceipientEmail()),
@@ -2379,6 +2394,10 @@ public class PatientReportController implements Serializable {
             }
 
         } catch (Exception e) {
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addApprovalCancelHistory(currentPtIx, currentPatientReport);
         }
 
     }
@@ -2934,7 +2953,10 @@ public class PatientReportController implements Serializable {
             return null;
         }
 
-        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addCreateReportHistory(currentPtIx, currentPatientReport);
+        }
+
         currentPatientReport = newlyCreatedReport;
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
@@ -3081,7 +3103,7 @@ public class PatientReportController implements Serializable {
     }
 
     public String getReceipientEmail() {
-        if(receipientEmail==null){
+        if (receipientEmail == null) {
             updateRecipientEmail();
         }
         return receipientEmail;

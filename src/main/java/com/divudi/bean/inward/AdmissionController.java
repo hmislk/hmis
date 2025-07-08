@@ -938,13 +938,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             loggedDepartment = sessionController.getLoggedUser().getDepartment();
         }
         clearSearchValues();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
         searchAdmissions();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public void listCurrentInpatients() {
@@ -1124,10 +1124,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
         String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
         String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
-        if (updatedPersonName == null) {
+        if (updatedPersonName != null) {
             getPatient().getPerson().setName(updatedPersonName);
         }
-        if (updatedAddress == null) {
+        if (updatedAddress != null) {
             getPatient().getPerson().setAddress(updatedAddress);
         }
         Person person = getPatient().getPerson();

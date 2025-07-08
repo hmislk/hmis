@@ -18,6 +18,7 @@ public class PaymentMethodData {
     private ComponentDetail paymentMethodMultiple;
     private ComponentDetail credit;
     private ComponentDetail staffCredit;
+    private ComponentDetail onlineSettlement;
 
     private PaymentMethod paymentMethod;
 
@@ -141,6 +142,18 @@ public class PaymentMethodData {
 
     public void setStaffCredit(ComponentDetail staffCredit) {
         this.staffCredit = staffCredit;
+    }
+
+    public ComponentDetail getOnlineSettlement() {
+        if (onlineSettlement == null) {
+            onlineSettlement = new ComponentDetail();
+            onlineSettlement.setPaymentMethod(PaymentMethod.OnlineSettlement);
+        }
+        return onlineSettlement;
+    }
+
+    public void setOnlineSettlement(ComponentDetail onlineSettlement) {
+        this.onlineSettlement = onlineSettlement;
     }
 
     public ComponentDetail getIou() {

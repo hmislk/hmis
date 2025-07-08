@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+        <title>Scheduled Process Configuration</title>
+    </h:head>
+    <h:body>
+
+        <ui:composition template="/dataAdmin/admin_data_administration.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="scheduleConfigForm">
+                    <p:panel>
+                        <f:facet name="header">
+                            <h:outputLabel value="Manage Scheduled Process Configurations" />
+                        </f:facet>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <div class="mt-3">
+                                            <p:commandButton id="addBtn" value="Add New" icon="fa fa-plus" class="ui-button-success m-1"
+                                                             action="#{scheduledProcessConfigurationController.prepareAdd}" process="addBtn" update="@form"
+                                                             disabled="#{scheduledProcessConfigurationController.editable}" />
+                                            <p:commandButton id="editBtn" value="Edit" icon="fa fa-edit" class="ui-button-warning m-1"
+                                                             action="#{scheduledProcessConfigurationController.edit}" process="editBtn" update="@form"
+                                                             disabled="#{scheduledProcessConfigurationController.editable or scheduledProcessConfigurationController.current == null}" />
+                                            <p:commandButton id="deleteBtn" value="Delete" icon="fa fa-trash" class="ui-button-danger m-1"
+                                                             action="#{scheduledProcessConfigurationController.delete}" process="deleteBtn" update="@form"
+                                                             onclick="return confirm('Are you sure?');"
+                                                             disabled="#{scheduledProcessConfigurationController.editable or scheduledProcessConfigurationController.current == null}" />
+                                        </div>
+                                    </f:facet>
+
+                                    <p:selectOneListbox id="configSelect" filter="true" filterMatchMode="contains"
+                                                       value="#{scheduledProcessConfigurationController.current}" class="w-100">
+                                        <f:selectItems value="#{scheduledProcessConfigurationController.items}" var="cfg"
+                                                       itemValue="#{cfg}" itemLabel="#{cfg.scheduledProcess.label} - #{cfg.scheduledFrequency.label}" />
+                                        <p:ajax update="detailPanel" />
+                                    </p:selectOneListbox>
+                                </p:panel>
+                            </div>
+
+                            <div class="col-md-8">
+                                <p:panel id="detailPanel">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Configuration Details" />
+                                    </f:facet>
+
+                                    <p:panelGrid columns="2" class="mt-3" rendered="#{scheduledProcessConfigurationController.current ne null}">
+                                        <h:outputLabel value="Process" />
+                                        <p:selectOneMenu value="#{scheduledProcessConfigurationController.current.scheduledProcess}" class="w-100">
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.scheduledProcesses}" var="sp" itemValue="#{sp}" itemLabel="#{sp.label}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Frequency" />
+                                        <p:selectOneMenu value="#{scheduledProcessConfigurationController.current.scheduledFrequency}" class="w-100">
+                                            <f:selectItem itemLabel="Select" />
+                                            <f:selectItems value="#{enumController.scheduledFrequencies}" var="sf" itemValue="#{sf}" itemLabel="#{sf.label}" />
+                                        </p:selectOneMenu>
+
+                                        <h:outputLabel value="Institution" />
+                                        <p:autoComplete value="#{scheduledProcessConfigurationController.current.institution}"
+                                                        completeMethod="#{institutionController.completeCompany}"
+                                                        var="ins" itemValue="#{ins}" itemLabel="#{ins.name}"
+                                                        forceSelection="true" class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Department" />
+                                        <p:autoComplete value="#{scheduledProcessConfigurationController.current.department}"
+                                                        completeMethod="#{departmentController.completeDept}"
+                                                        var="dep" itemValue="#{dep}" itemLabel="#{dep.name}"
+                                                        forceSelection="true" class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Site" />
+                                        <p:autoComplete value="#{scheduledProcessConfigurationController.current.site}"
+                                                        completeMethod="#{institutionController.completeSite}"
+                                                        var="site" itemValue="#{site}" itemLabel="#{site.name}"
+                                                        forceSelection="true" class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Next Supposed At" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.nextSupposedAt}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Supposed At" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastSupposedAt}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Process Completed" />
+                                        <p:selectBooleanButton value="#{scheduledProcessConfigurationController.current.lastProcessCompleted}"
+                                                              onLabel="Yes" offLabel="No" class="w-100" />
+
+                                        <h:outputLabel value="Last Run Started" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastRunStarted}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+
+                                        <h:outputLabel value="Last Run Ended" />
+                                        <p:calendar value="#{scheduledProcessConfigurationController.current.lastRunEnded}"
+                                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                                    class="w-100" inputStyleClass="w-100" />
+                                    </p:panelGrid>
+
+                                    <f:facet name="footer">
+                                        <p:commandButton id="runLastBtn" value="Run Last" icon="pi pi-play" class="ui-button-info m-1"
+                                                         action="#{scheduledProcessConfigurationController.runLastScheduled}" process="runLastBtn"
+                                                         update="@form" disabled="#{scheduledProcessConfigurationController.current == null}" />
+                                        <p:commandButton id="runNextBtn" value="Run Next" icon="pi pi-step-forward" class="ui-button-info m-1"
+                                                         action="#{scheduledProcessConfigurationController.runNextScheduled}" process="runNextBtn"
+                                                         update="@form" disabled="#{scheduledProcessConfigurationController.current == null}" />
+                                        <p:commandButton id="saveBtn" value="Save" icon="fa fa-save" class="ui-button-success m-1"
+                                                         action="#{scheduledProcessConfigurationController.save}" process="saveBtn detailPanel"
+                                                         update="@form" rendered="#{scheduledProcessConfigurationController.editable}" />
+                                        <p:commandButton id="cancelBtn" value="Cancel" icon="fa fa-times" class="ui-button-warning m-1"
+                                                         action="#{scheduledProcessConfigurationController.cancel}" process="cancelBtn detailPanel"
+                                                         update="@form" rendered="#{scheduledProcessConfigurationController.editable}" />
+                                    </f:facet>
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                </h:form>
+                <p:messages id="messages" showDetail="true" />
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

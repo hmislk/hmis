@@ -146,7 +146,7 @@ public class PatientSampleController implements Serializable {
             return null;
         }
         current = ps;
-        return "/lab/patient_sample?faces-redirect=true;";
+        return "/lab/patient_sample?faces-redirect=true";
 
     }
 
@@ -156,7 +156,7 @@ public class PatientSampleController implements Serializable {
             return null;
         }
         current = ps;
-        return "/lab/patient_sample_edit?faces-redirect=true;";
+        return "/lab/patient_sample_edit?faces-redirect=true";
     }
 
     public PatientSample getAnyPatientSample() {

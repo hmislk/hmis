@@ -45,6 +45,7 @@
                                                 action="#{patientReportController.savePatientReport()}" 
                                                 ajax="false">
                                             </p:commandButton>
+
                                             <p:commandButton 
                                                 ajax="false" 
                                                 class="mx-1"
@@ -55,6 +56,7 @@
                                                 value="Calculate" 
                                                 action="#{patientReportController.calculate}">
                                             </p:commandButton>
+
                                             <p:commandButton 
                                                 id="btnApprove"  
                                                 class=" ui-button-success"
@@ -66,19 +68,29 @@
                                                 ajax="false"   >
                                             </p:commandButton>
 
+                                            <!-- Button to Send SMS -->
+                                            <p:commandButton  
+                                                icon="fa-solid fa-message"
+                                                class="mx-1 ui-button-secondary"
+                                                id="btnSms"  
+                                                disabled="#{!(webUserController.hasPrivilege('LabDataentry')) and !(webUserController.hasPrivilege('LabAutherizing')) and !(webUserController.hasPrivilege('LabDeAutherizing')) or ! patientReportController.currentPatientReport.approved}"   
+                                                value="Send SMS"             
+                                                action="#{patientReportController.sendSmsForPatientReport()}" 
+                                                ajax="false">
+                                            </p:commandButton>
 
                                             <!-- Button to show the email dialog -->
                                             <p:commandButton 
                                                 id="btnShowEmailDialogForApprovedReport"  
                                                 icon="fa-solid fa-envelope" 
                                                 class="mx-1 ui-button-secondary"
-                                                value="Email"
+                                                value="Send Email"
                                                 process="@this"
                                                 update="dlgEmailForApprovedReport"
                                                 oncomplete="PF('wvDlgEmailForApprovedReport').show()"
                                                 disabled="#{!(webUserController.hasPrivilege('LabDataentry') eq true and patientReportController.currentPatientReport.approved eq true)}"
-                                                />
-
+                                                >
+                                            </p:commandButton>
 
                                             <p:commandButton   
                                                 id="btnCancelApproval"  
@@ -138,7 +150,8 @@
                             </div>
                         </f:facet>
 
-                        <p:growl id="messages" showDetail="false"/> 
+                        <p:growl id="messages" showDetail="false" /> 
+
                         <div class="row">
 
                             <div class="col-5">
@@ -379,9 +392,9 @@
 
                                                 <ui:repeat 
                                                     id="tblMicValsGroupes" 
-                                                           value="#{patientReportController.currentPatientReport.patientReportGroups}"  
-                                                           var="group"   
-                                                           >
+                                                    value="#{patientReportController.currentPatientReport.patientReportGroups}"  
+                                                    var="group"   
+                                                    >
                                                     <tr>
                                                         <td  colspan="3">
                                                             <h:outputText 
@@ -433,13 +446,13 @@
 
                                                         </h:panelGroup>
                                                     </ui:repeat>
-                                                    
+
                                                     <tr>
                                                         <td colspan="4">
                                                             <p:divider />
                                                         </td>
                                                     </tr>
-                                                    
+
                                                 </ui:repeat>
                                             </table>
                                         </h:panelGroup>
@@ -684,7 +697,26 @@
                                 </p:panel>
 
                             </div>
+
                             <div class="col-7 ">
+                                <h:panelGroup class="mb-3 gap-2 d-flex justify-content-end">
+                                    <p:commandButton 
+                                        value="Back to Other patient Investigations" 
+                                        icon="fa-solid fa-circle-left"
+                                        class="ui-button-warning"
+                                        action="#{laboratoryManagementController.navigateToOtherPatientInvestigations(patientReportController.currentPatientReport.patientInvestigation.billItem.bill)}"
+                                        ajax="false">
+                                    </p:commandButton>
+
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        class="mx-1"
+                                        icon="fa-solid fa-circle-left"
+                                        value="Back to Other patient Reports" 
+                                        action="#{laboratoryManagementController.navigateToOtherPatientReport(patientReportController.currentPatientReport.patientInvestigation.billItem.bill)}">
+                                    </p:commandButton>
+                                </h:panelGroup>
+                                
                                 <div class="mb-1 row w-100" >
                                     <p:panel class="mx-2" header="Patient details" >
                                         <ezcommon:patient patient="#{patientReportController.currentPatientReport.patientInvestigation.patient}" ></ezcommon:patient>

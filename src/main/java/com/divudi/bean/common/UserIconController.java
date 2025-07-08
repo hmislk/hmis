@@ -69,6 +69,19 @@ public class UserIconController implements Serializable {
             return;
         }
 
+        // Check for an existing icon for the same user and department
+        Map<String, Object> params = new HashMap<>();
+        params.put("u", user);
+        params.put("i", icon);
+        params.put("d", department);
+        params.put("ret", false);
+        String jpql = "select ui from UserIcon ui where ui.webUser=:u and ui.icon=:i and ui.department=:d and ui.retired=:ret";
+        UserIcon duplicate = getFacade().findFirstByJpql(jpql, params);
+        if (duplicate != null) {
+            JsfUtil.addErrorMessage("Icon already added for this department");
+            return;
+        }
+
         double newOrder = getUserIcons().size() + 1;
         UserIcon existingUI = findUserIconByOrder(newOrder);
 
@@ -234,6 +247,8 @@ public class UserIconController implements Serializable {
             current.setRetired(true);
             save(current);
             JsfUtil.addSuccessMessage("Removed Successfully");
+            fillDepartmentIcon();
+            reOrderUserIcons();
         } else {
             JsfUtil.addSuccessMessage("Nothing to Remove");
         }
@@ -273,7 +288,7 @@ public class UserIconController implements Serializable {
 
     public void setUser(WebUser user) {
         this.user = user;
-        userIcons = fillUserIcons(user, department);
+        fillDepartmentIcon();
     }
 
     public List<UserIcon> getUserIcons() {
@@ -301,6 +316,7 @@ public class UserIconController implements Serializable {
 
     public void setDepartment(Department department) {
         this.department = department;
+        fillDepartmentIcon();
     }
 
     public List<Department> getDepartments() {

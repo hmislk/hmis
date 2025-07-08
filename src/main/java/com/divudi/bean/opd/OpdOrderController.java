@@ -571,7 +571,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToViewOpdBatchBill() {
@@ -698,7 +698,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             getBillBean().checkBillItemFeesInitiated(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     /**
@@ -2442,6 +2442,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
                 System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             }
             System.out.println("remainAmount = " + remainAmount);
@@ -2500,6 +2501,9 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                     break;
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());

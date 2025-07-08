@@ -117,17 +117,6 @@
                                     <h:panelGroup id="groupPrint" >
                                         <ui:repeat value="#{sessionController.departmentPreference.OPDBillCopiesList}" var="copy">
 
-
-                                            <h:panelGroup
-                                                id="gpBillPreviewFiveFiveCustom3" 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
-                                                <ui:repeat value="#{opdBillController.bills}" var="bc3" >
-                                                    <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
-                                                </ui:repeat>
-                                            </h:panelGroup>
-
-
-
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFivePaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
                                                     <prints:five_five_paper_with_headings bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.payments}"/>                        
@@ -173,17 +162,24 @@
                                                 <prints:five_five_paper_with_headings_badge_bill_with_bill_items billController="#{opdBillController}" payments="#{opdBillController.payments}" duplicate="#{opdBillController.duplicatePrint}"/>                        
                                             </h:panelGroup>
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveFiveCustom3'}" >
-                                                <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
-                                                </ui:repeat>
+                                                <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}"> 
+                                                    <ui:repeat value="#{opdBillController.bills}" var="bc3" >
+                                                        <ph:sale_bill_five_five_custom_3 bill="#{bc3}" duplicate="false"/>
+                                                    </ui:repeat>
+                                                </h:panelGroup>
+                                                <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('OPD Sale Bill is FiveFiveCustom3',false)}">
+                                                    <ui:repeat value="#{opdBillController.bills}" var="ffb" >
+                                                        <prints:five_five_custom_3 bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                    </ui:repeat>
+                                                </h:panelGroup>
                                             </h:panelGroup>
-                                            
+
                                             <h:panelGroup rendered="#{sessionController.departmentPreference.opdBillPaperType eq 'FiveEightInchPaper'}" >
                                                 <ui:repeat value="#{opdBillController.bills}" var="ffb" >
-                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" payments="#{opdBillController.bills.size()}"/>                        
+                                                    <prints:five_eight_opd_bill bill="#{ffb}" duplicate="#{opdBillController.duplicatePrint}" billCount="#{opdBillController.bills.size()}"/>                        
                                                 </ui:repeat>
                                             </h:panelGroup>
-                                            
+
                                         </ui:repeat>
                                     </h:panelGroup>
 
@@ -347,6 +343,30 @@
                                     </p:column>
                                 </p:dataTable>
 
+                                <p:dataTable
+                                    value="#{billSearch.fetchPatientInvestigations(opdBillController.batchBill)}"
+                                    var="pi"
+                                    class="mt-2">
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Investigations" style="font-size: 18px; font-weight: 800;" />
+                                    </f:facet>
+                                    <p:column headerText="Investigation">
+                                        <h:outputText value="#{pi.investigation.name}" />
+                                    </p:column>
+                                    <p:column headerText="Status">
+                                        <h:outputText value="#{pi.status.label}" />
+                                    </p:column>
+                                    <p:column headerText="Actions">
+                                        <p:commandLink id="btnNewReport" ajax="false"
+                                                       disabled="#{!pi.investigation.bypassSampleWorkflow}"
+                                                       action="/lab/patient_report?faces-redirect=true"
+                                                       actionListener="#{patientReportController.createNewReport(pi)}" >
+                                            <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}" />
+                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" />
+                                        </p:commandLink>
+                                    </p:column>
+                                </p:dataTable>
+
                                 <p:dataTable 
                                     value="#{billSearch.fetchBillPayments(opdBillController.batchBill)}"
                                     class="mt-2"
@@ -356,6 +376,9 @@
                                     </f:facet>
                                     <p:column headerText="Payment Method" >
                                         <h:outputText value="#{p.paymentMethod.label}" ></h:outputText>
+                                    </p:column>
+                                    <p:column headerText="comments" >
+                                        <h:outputText value="#{p.comments}" ></h:outputText>
                                     </p:column>
                                     <p:column headerText="Value" class="text-end">
                                         <h:outputText value="#{p.paidValue}" >

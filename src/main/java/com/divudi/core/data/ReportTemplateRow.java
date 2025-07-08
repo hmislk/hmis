@@ -23,6 +23,11 @@ public class ReportTemplateRow implements Serializable {
     private String uuid;
     private Long counter;
 
+    private Long billedCount;
+    private Long cancelledCount;
+    private Long returnCount;
+    private Long netCount;
+
     private Category category;
     private Bill bill;
     private BillItem billItem;
@@ -128,6 +133,7 @@ public class ReportTemplateRow implements Serializable {
     private Double discount;
     private Double total;
     private Double tax;
+    private Double serviceCharge;
 
     private Double hospitalTotal;
     private Double staffTotal;
@@ -165,8 +171,8 @@ public class ReportTemplateRow implements Serializable {
         this.itemTotal = itemTotal;
         this.institution = institution;
     }
-    
-    public ReportTemplateRow(Department  toDpartment, BillTypeAtomic  billTypeAtomic, Long count) {
+
+    public ReportTemplateRow(Department toDpartment, BillTypeAtomic billTypeAtomic, Long count) {
         this.billTypeAtomic = billTypeAtomic;
         this.toDepartment = toDpartment;
         this.itemCount = count;
@@ -192,6 +198,19 @@ public class ReportTemplateRow implements Serializable {
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
     }
+    
+    public ReportTemplateRow(String itemName, double cashValue, double cardValue, long long1, double creditValue, long long2, long long3, Double total, Double discount, Double serviceCharge ) {
+        this.itemName = itemName;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.long1 = long1;
+        this.creditValue = creditValue;
+        this.long3 = long3;
+        this.total = total;
+        this.discount = discount;
+        this.serviceCharge = serviceCharge;
+    }
+    
 
     // Getter for UUID (optional, depending on use case)
     public UUID getId() {
@@ -1382,4 +1401,46 @@ public class ReportTemplateRow implements Serializable {
     public void setAgentReferenceBook(AgentReferenceBook agentReferenceBook) {
         this.agentReferenceBook = agentReferenceBook;
     }
+
+    public Long getBilledCount() {
+        return billedCount;
+    }
+
+    public void setBilledCount(Long billedCount) {
+        this.billedCount = billedCount;
+    }
+
+    public Long getCancelledCount() {
+        return cancelledCount;
+    }
+
+    public void setCancelledCount(Long cancelledCount) {
+        this.cancelledCount = cancelledCount;
+    }
+
+    public Long getReturnCount() {
+        return returnCount;
+    }
+
+    public void setReturnCount(Long returnCount) {
+        this.returnCount = returnCount;
+    }
+
+    public Long getNetCount() {
+        return netCount;
+    }
+
+    public void setNetCount(Long netCount) {
+        this.netCount = netCount;
+    }
+
+    public Double getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(Double serviceCharge) {
+        this.serviceCharge = serviceCharge;
+    }
+    
+    
 }

@@ -212,6 +212,11 @@
                     <h:outputLabel value="#{patientInvestigation.billItem.bill.createdAt}">
                         <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"></f:convertDateTime>
                     </h:outputLabel>
+                    <br/>
+                    <h:panelGroup rendered="#{patientInvestigation.billItem.bill.patientEncounter ne null}">
+                        <h:outputLabel style="color: #0d6efd;" value="#{patientInvestigation.billItem.bill.patientEncounter.bhtNo}"/>
+                    </h:panelGroup>
+                    
                 </p:column>
 
                 <!-- Patient Details Column with Icons -->
@@ -225,8 +230,10 @@
                     <i class="fas fa-venus-mars text-danger" style="width: 27px;"></i> <!-- Sex Icon -->
                     <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.sex.label}" />
                     <br/>
-                    <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
-                    <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
+                    <h:panelGroup rendered="#{!patientInvestigation.billItem.bill.patient.person.mobile.blank}">
+                        <i class="fas fa-mobile-alt text-warning" style="width: 27px;"></i> <!-- Mobile Icon -->
+                        <h:outputLabel value="#{patientInvestigation.billItem.bill.patient.person.mobile}" />
+                    </h:panelGroup>
                 </p:column>
 
                 <!-- Investigation Name Column -->
@@ -270,8 +277,7 @@
 
                 <!-- Status Column -->
                 <p:column headerText="Status" style="width: 12em; vertical-align: top;">
-                    <i class="fas fa-info-circle text-info"></i> <!-- Status Icon -->
-                    <h:outputLabel value="#{patientInvestigation.status}"/>
+                    <h:outputLabel value="#{patientInvestigation.status.label}"/>
                     <br/>
                     <br/>
                     <p:badge 
