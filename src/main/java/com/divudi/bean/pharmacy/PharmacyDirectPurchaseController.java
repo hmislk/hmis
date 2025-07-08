@@ -111,8 +111,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addItem() {
+        System.out.println("addItem");
 
         Item item = getCurrentBillItem().getItem();
+        System.out.println("item = " + item);
         BillItemFinanceDetails f = getCurrentBillItem().getBillItemFinanceDetails();
         PharmaceuticalBillItem pbi = getCurrentBillItem().getPharmaceuticalBillItem();
 
@@ -121,15 +123,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
+        System.out.println("1");
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
         }
+        System.out.println("2");
 
         if (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
             JsfUtil.addErrorMessage("Please enter quantity");
             return;
         }
+        System.out.println("3");
 
         if (f.getLineGrossRate() == null || f.getLineGrossRate().compareTo(BigDecimal.ZERO) <= 0) {
             JsfUtil.addErrorMessage("Please enter the purchase rate");
@@ -152,17 +157,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-
+        System.out.println("4");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
-
+        System.out.println("5");
         BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
         BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
 
         if (item instanceof Ampp) {
+            System.out.println("ampp");
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
                     .orElse(BigDecimal.ONE);
             BigDecimal qtyUnits = f.getQuantity().multiply(unitsPerPack);
@@ -182,6 +188,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
 
         } else {
+            System.out.println("not ampp");
             // AMP: no packs; assign both units and packs as same
             pbi.setQty(f.getQuantityByUnits().doubleValue());
             pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
@@ -200,9 +207,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
         }
-
+        System.out.println("8");
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
+        System.out.println("9 = " + 9);
 
         currentBillItem = null;
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
@@ -429,7 +437,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
     }
 
-
 // ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
     // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
     public double calculateProfitMargin(BillItem bi) {
@@ -494,7 +501,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     }
 
-
     public PharmacyCalculation getPharmacyBillBean() {
         return pharmacyBillBean;
     }
@@ -505,7 +511,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
     public PharmacyDirectPurchaseController() {
     }
-
 
     public void setBatch() {
         if (getCurrentBillItem() != null) {
@@ -764,7 +769,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 //        createBillFeePaymentAndPayment(bf, p);
     }
 
-
     public void saveBill() {
 
         String deptId = billNumberBean.departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
@@ -786,7 +790,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
 
     }
-
 
     public double getNetTotal() {
 
@@ -827,7 +830,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         return bill;
     }
-
 
     public void setBill(BilledBill bill) {
         this.bill = bill;
@@ -924,7 +926,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
         this.billItems = billItems;
     }
 
-
     public double getSaleRate() {
         return saleRate;
     }
@@ -940,7 +941,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
     public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
         this.billFeeFacade = billFeeFacade;
     }
-
 
     public BillListWithTotals getBillListWithTotals() {
         return billListWithTotals;
