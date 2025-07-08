@@ -1058,7 +1058,7 @@ public class PharmacyController implements Serializable {
 
                 PdfPTable nested = new PdfPTable(6);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item", "Qty", "Free Qty", "Rate", "MRP", "Batch"};
+                String[] nestedHeaders = {"Item", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch"};
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1187,7 +1187,7 @@ public class PharmacyController implements Serializable {
                 row.createCell(col++).setCellValue(b.getComments() != null ? b.getComments() : "");
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Item Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
                 for (int i = 0; i < nestedHeaders.length; i++) {
                     Cell cell = nestedHeader.createCell(i + 14);
                     cell.setCellValue(nestedHeaders[i]);
@@ -1283,7 +1283,7 @@ public class PharmacyController implements Serializable {
 
                 PdfPTable nested = new PdfPTable(7);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Item Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1383,7 +1383,7 @@ public class PharmacyController implements Serializable {
                 row.createCell(col++).setCellValue(adjustedSale);
 
                 Row subHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Item Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
                 for (int i = 0; i < nestedHeaders.length; i++) {
                     Cell cell = subHeader.createCell(i + 10);
                     cell.setCellValue(nestedHeaders[i]);
@@ -1485,7 +1485,7 @@ public class PharmacyController implements Serializable {
 
                 PdfPTable nested = new PdfPTable(7);
                 nested.setWidthPercentage(100);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Item Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
                 for (String h : nestedHeaders) {
                     PdfPCell nh = new PdfPCell(new Phrase(h, boldFont));
                     nh.setHorizontalAlignment(Element.ALIGN_CENTER);
@@ -1589,7 +1589,7 @@ public class PharmacyController implements Serializable {
                 row.createCell(9).setCellValue(adjustedSale);
 
                 Row nestedHeader = sheet.createRow(rowIndex++);
-                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Item Rate", "MRP", "Batch", "UOM"};
+                String[] nestedHeaders = {"Item Name", "Qty", "Free Qty", "Purchase Rate", "MRP", "Batch", "UOM"};
                 for (int i = 0; i < nestedHeaders.length; i++) {
                     Cell cell = nestedHeader.createCell(i + 10);
                     cell.setCellValue(nestedHeaders[i]);
