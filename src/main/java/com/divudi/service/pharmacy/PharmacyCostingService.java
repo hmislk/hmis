@@ -59,8 +59,8 @@ public class PharmacyCostingService {
             qtyInUnits = qty.multiply(unitsPerPack);
             freeQtyInUnits = freeQty.multiply(unitsPerPack);
             totalQtyInUnits = totalQty.multiply(unitsPerPack);
-            prPerUnit = lineGrossRate.divide(unitsPerPack).doubleValue();
-            rrPerUnit = retailRate.divide(unitsPerPack).doubleValue();
+            prPerUnit = lineGrossRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP).doubleValue();
+            rrPerUnit = retailRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP).doubleValue();
         } else {
             unitsPerPack = BigDecimal.ONE;
             qtyInUnits = qty;
@@ -115,7 +115,6 @@ public class PharmacyCostingService {
 
         pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
         pbi.setPurchaseValue(lineGrossTotal.doubleValue());
-
     }
 
     /**
@@ -434,26 +433,7 @@ public class PharmacyCostingService {
         bfd.setLineNetTotal(lineNetTotal);
     }
 
-    public void calculateBillTotalsFromItemsForTransfers(Bill bill, List<BillItem> billItems) {
-        System.out.println("==== Starting calculateBillTotalsFromItemsForTransferOuts ====");
-
-        if (bill == null) {
-            System.out.println("ERROR: Bill is null. Aborting.");
-            return;
-        }
-
-        /*
-        Bill Item quantity and Bill Item Finance Details lineGross Total is given by the user. Others are calculations
-        */
-        
-        System.out.println("Bill ID: " + bill.getId());
-        System.out.println("BillItems: " + (billItems == null ? "null" : billItems.size()));
-
-        if (billItems == null || billItems.isEmpty()) {
-            System.out.println("No bill items. Exiting calculation.");
-            return;
-        }
-
+    public void calculateBillTotalsFromItemsForTransferOuts(Bill bill, List<BillItem> billItems) {
         int serialNo = 0;
 
         BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount());

@@ -41,8 +41,7 @@
                                              class="ui-button-warning"
                                              icon="fa fa-download"
                                              ajax="false"
-                                             value="Download"
-                                             action="#{reportLogController.fillReportLogs}" >
+                                             value="Download">
                                 <p:dataExporter fileName="Exeution Logs" target="tblLogs" type="xlsx" ></p:dataExporter>
                             </p:commandButton>
 
@@ -56,9 +55,6 @@
                             rows="10"
                             paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15">
-                            <p:column headerText="User" width="6em">
-                                <h:outputText value="#{webUserController.findWebUserNameWithTitleById(rl.generatedById)}" />
-                            </p:column>
 
                             <p:column headerText="Report">
                                 <h:outputText value="#{rl.report != null ? rl.report.displayName : rl.reportName}" />
