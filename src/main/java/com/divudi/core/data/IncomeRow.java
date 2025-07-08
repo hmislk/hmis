@@ -168,6 +168,8 @@ public class IncomeRow implements Serializable {
 
     private long duration;
 
+    private BillFinanceDetails billFinanceDetails;
+
     private UUID id;
 
     // Constructor to generate a new UUID when an object is created
@@ -235,6 +237,7 @@ public class IncomeRow implements Serializable {
             this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
             this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
             this.paymentScheme = dto.getPaymentScheme();
+            this.billFinanceDetails = dto.getBillFinanceDetails();
         }
     }
 
@@ -1369,5 +1372,13 @@ public class IncomeRow implements Serializable {
 
     public void setTotal(double total) {
         this.total = total;
+    }
+
+    public BillFinanceDetails getBillFinanceDetails() {
+        return billFinanceDetails;
+    }
+
+    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
+        this.billFinanceDetails = billFinanceDetails;
     }
 }

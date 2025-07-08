@@ -244,7 +244,7 @@
                                 rowsPerPageTemplate="#{pharmacySummaryReportController.rowsPerPageForScreen}, 5,10,15,50,100,500,1000,2000,5000,10000"
                                 paginatorPosition="bottom">
                                 <p:column headerText="Bill No" width="16em" style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.deptId}"  style="padding: 0px!important; margin: 0px!important;" />
                                     <f:facet name="footer" >
                                         <h:outputText value="Total Amounts" style="padding: 0px!important; margin: 0px!important; font-weight: bold" >
                                         </h:outputText>
@@ -252,21 +252,21 @@
                                 </p:column>
                                 <p:column 
                                     headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.billTypeAtomic}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Patient"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.patientName}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="BHT No"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.patientEncounter.bhtNo}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.patientEncounter.bhtNo}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Date"   width="10em" >
-                                    <h:outputText value="#{row.bill.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputText value="#{row.createdAt}"  style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
                                     </h:outputText>
                                 </p:column> 
                                 <p:column headerText="Retail Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalRetailSaleValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -277,7 +277,7 @@
                                 </p:column>
 
                                 <p:column headerText="Cost Value" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalPurchaseValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -288,7 +288,7 @@
                                 </p:column>
 
                                 <p:column headerText="Gross Profit" width="10em" class="text-end" style="padding: 0px!important; margin: 0px!important;">
-                                    <h:outputText value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue - row.bill.billFinanceDetails.totalPurchaseValue)}">
+                                    <h:outputText value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalRetailSaleValue - row.billFinanceDetails.totalPurchaseValue)}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                     <f:facet name="footer">
@@ -304,9 +304,9 @@
                                         value="View" 
                                         style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;" 
                                         class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
+                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByDeptId(row.deptId)}"
                                         ajax="false">
-                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
+<!--                                        <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />-->
                                     </p:commandLink>
                                 </p:column>
 
