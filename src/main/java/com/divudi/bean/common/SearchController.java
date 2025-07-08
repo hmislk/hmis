@@ -5233,6 +5233,29 @@ public class SearchController implements Serializable {
 
     }
 
+    public void fillOnlySavedPharmacyTransferRequest() {
+        bills = null;
+        HashMap tmp = new HashMap();
+        String sql;
+        sql = "Select b From Bill b where "
+                + " b.checkedBy is null "
+                + " and b.institution = :ins "
+                + " and b.fromDepartment = :fromDep "
+                + " and b.createdAt between :fromDate and :toDate "
+                + " and b.retired=false "
+                + " and b.billType= :bTp";
+
+        sql += " order by b.createdAt desc  ";
+        tmp.put("toDate", getToDate());
+        tmp.put("fromDate", getFromDate());
+        tmp.put("ins", sessionController.getInstitution());
+        tmp.put("fromDep", sessionController.getDepartment());
+        tmp.put("bTp", BillType.PharmacyTransferRequest);
+
+        bills = getBillFacade().findByJpql(sql, tmp, TemporalType.TIMESTAMP, maxResult);
+
+    }
+
     public void createNotApprovedStore() {
         Date startTime = new Date();
 
@@ -14367,6 +14390,11 @@ public class SearchController implements Serializable {
     public String navigateToPurchaseOrderFinalize() {
         makeNull();
         return "/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true";
+    }
+
+    public String navigateToTransferRequestFinalize() {
+        makeNull();
+        return "/pharmacy/pharmacy_transfer_request_list_to_finalize?faces-redirect=true";
     }
 
     // ToDo: TO Be Linked to command buttons where the file name is used without calling a backend method

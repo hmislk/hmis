@@ -43,13 +43,13 @@
                             paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                             rowsPerPageTemplate="5,10,15"
                             >                       
-                            <p:column headerText="Issue No" width="100px">                        
+                            <p:column headerText="Issue No" width="6em">                        
                                 <h:outputLabel value="#{p.deptId}"/>                          
                             </p:column>
                             <p:column headerText="From Department" width="150px">                       
                                 <h:outputLabel value="#{p.department.name}"/>                          
                             </p:column>  
-                            <p:column headerText="Issued By" width="100px">
+                            <p:column headerText="Issued By" width="6em">
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}"/>     
                                 <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
@@ -58,13 +58,15 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 
-                            <p:column headerText="Staff" width="100px">                       
+                            <p:column headerText="Staff" width="6em">                       
                                 <h:outputLabel value="#{p.toStaff.person.nameWithTitle}"/>                            
                             </p:column> 
-                            <p:column headerText="Issued At" width="100px">                      
-                                <h:outputLabel value="#{p.createdAt}"/>                       
-                                <br/>
+                            <p:column headerText="Issued At" width="6em">                      
+                                <h:outputLabel value="#{p.createdAt}">
+                                    <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputLabel>                       
                                 <h:panelGroup rendered="#{p.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{p.cancelled}" 
                                                    value="#{p.cancelledBill.createdAt}" >
@@ -73,7 +75,7 @@
                                 </h:panelGroup>
                             </p:column>
 
-                            <p:column headerText="Action" width="100px">
+                            <p:column headerText="Action" width="6em">
                                 <p:commandButton 
                                     ajax="false" 
                                     icon="far fa-eye"
@@ -87,8 +89,7 @@
                                     ajax="false"
                                     value="Receive"
                                     class="ui-button-warning mx-2"
-                                    action="#{transferReceiveController.navigateToRecieveRequest()}"
-                                    disabled="#{p.cancelled eq true or !empty p.forwardReferenceBills}">
+                                    action="#{transferReceiveController.navigateToRecieveRequest()}">
                                     <f:setPropertyActionListener target="#{transferReceiveController.issuedBill}" value="#{p}"/>
                                 </p:commandButton>
 
@@ -128,40 +129,16 @@
                                         </h:outputLabel>                                  
                                     </p:column>
                                     <p:column>
-                                        <h:panelGroup styleClass="btn-group">
-                                            <p:commandButton
-                                                id="edit"
-                                                ajax="false"
-                                                title="Edit Recieve Request"
-                                                icon="fas fa-edit"
-                                                class="ui-button-warning m-1"
-                                                action="#{transferReceiveController.navigateToEditRecieveIssue()}"
-                                                disabled="#{b.checkedBy ne null or b.cancelled eq true}">
-                                                <f:setPropertyActionListener target="#{transferReceiveController.receivedBill}" value="#{b}"/>
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                id="approve"
-                                                ajax="false"
-                                                title="Approve Recieve Issue"
-                                                icon="fas fa-check-circle"
-                                                class="ui-button-success m-1"
-                                                action="#{transferReceiveController.navigateToAproveRecieveIssue()}"
-                                                disabled="#{b.checkedBy eq null or b.referenceBill ne null or b.cancelled eq true or !webUserController.hasPrivilege('TransferReciveApproval')}">
-                                                <f:setPropertyActionListener target="#{transferReceiveController.receivedBill}" value="#{b}"/>
-                                            </p:commandButton>
-
-                                            <p:commandButton
-                                                class="m-1"
-                                                icon="fa fa-eye"
-                                                title="View Recieve Issue"
-                                                ajax="false"
-                                                action="#{transferReceiveController.navigateToReprintRecieveIssue()}"
-                                                disabled="#{b.referenceBill eq null}"
-                                                >
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
-                                            </p:commandButton>
-                                        </h:panelGroup>
+                                        <p:commandButton
+                                            class="m-1"
+                                            icon="fa fa-eye"
+                                            title="View Recieve Issue"
+                                            ajax="false"
+                                            action="#{transferReceiveController.navigateToReprintRecieveIssue()}"
+                                            disabled="#{b.referenceBill eq null}"
+                                            >
+                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}"/>
+                                        </p:commandButton>
                                     </p:column>
 
                                 </p:dataTable>
