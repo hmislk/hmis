@@ -244,6 +244,8 @@ public class TransferReceiveController implements Serializable {
             return "";
         }
 
+        generateBillComponent();
+        printPreview = false;
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
