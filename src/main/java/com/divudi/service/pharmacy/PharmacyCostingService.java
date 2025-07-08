@@ -57,15 +57,15 @@ public class PharmacyCostingService {
             qtyInUnits = qty.multiply(unitsPerPack);
             freeQtyInUnits = freeQty.multiply(unitsPerPack);
             totalQtyInUnits = totalQty.multiply(unitsPerPack);
-            prPerUnit=lineGrossRate.divide(unitsPerPack).doubleValue();
-            rrPerUnit=retailRate.divide(unitsPerPack).doubleValue();
+            prPerUnit = lineGrossRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP).doubleValue();
+            rrPerUnit = retailRate.divide(unitsPerPack, 4, RoundingMode.HALF_UP).doubleValue();
         } else {
             unitsPerPack = BigDecimal.ONE;
             qtyInUnits = qty;
             freeQtyInUnits = freeQty;
             totalQtyInUnits = totalQty;
-            prPerUnit=lineGrossRate.doubleValue();
-            rrPerUnit=retailRate.doubleValue();
+            prPerUnit = lineGrossRate.doubleValue();
+            rrPerUnit = retailRate.doubleValue();
         }
 
         billItemFinanceDetails.setUnitsPerPack(unitsPerPack);
@@ -104,17 +104,15 @@ public class PharmacyCostingService {
         pbi.setRetailRate(retailRate.doubleValue());
         pbi.setRetailRateInUnit(rrPerUnit);
         pbi.setRetailRatePack(retailRate.doubleValue());
-        
+
         pbi.setRetailPackValue(retailValue.doubleValue());
         pbi.setRetailValue(retailValue.doubleValue());
-        
+
         pbi.setPurchaseRate(prPerUnit);
         pbi.setPurchaseRatePack(lineGrossRate.doubleValue());
-        
+
         pbi.setPurchaseRatePackValue(lineGrossTotal.doubleValue());
         pbi.setPurchaseValue(lineGrossTotal.doubleValue());
-        
-        
     }
 
     /**
@@ -132,7 +130,6 @@ public class PharmacyCostingService {
         if (bill.getBillFinanceDetails() == null) {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
-
 
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
@@ -433,7 +430,7 @@ public class PharmacyCostingService {
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
     }
-    
+
     public void calculateBillTotalsFromItemsForTransferOuts(Bill bill, List<BillItem> billItems) {
         int serialNo = 0;
 
