@@ -275,7 +275,7 @@
                             <p:column headerText="Retail Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalRetailSaleValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.totalRetailSaleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -290,7 +290,7 @@
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.totalPurchaseValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -304,7 +304,7 @@
                             <p:column headerText="Gross Profit" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.billFinanceDetails.totalRetailSaleValue - row.billFinanceDetails.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.totalRetailSaleValue - row.totalPurchaseValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">

@@ -475,13 +475,9 @@ public class IncomeBundle implements Serializable {
                 continue;
             }
 
-            if (r.getBillFinanceDetails() == null) {
-                continue;
-            }
-
-            saleValue += r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
-            purchaseValue += r.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
-            grossProfitValue += (r.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue() - r.getBillFinanceDetails().getTotalPurchaseValue().doubleValue());
+            saleValue += r.getTotalRetailSaleValue();
+            purchaseValue += r.getTotalPurchaseValue();
+            grossProfitValue += (r.getTotalRetailSaleValue() - r.getTotalPurchaseValue());
         }
     }
 

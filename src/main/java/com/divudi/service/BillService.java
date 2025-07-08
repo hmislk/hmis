@@ -1012,7 +1012,7 @@ public class BillService {
 
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO( "
                 + " b.deptId, pers.name, b.billTypeAtomic, b.createdAt, b.netTotal, b.paymentMethod, "
-                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme ";
+                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme, b.billFinanceDetails.totalRetailSaleValue, b.billFinanceDetails.totalPurchaseValue ";
 
         if (includeBillFinanceDetails) {
             jpql += ", b.billFinanceDetails )";

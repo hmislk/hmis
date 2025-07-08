@@ -7,6 +7,7 @@ import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.Date;
 
 public class PharmacyIncomeBillDTO implements Serializable {
@@ -23,13 +24,15 @@ public class PharmacyIncomeBillDTO implements Serializable {
     private Double margin;
     private PaymentScheme paymentScheme;
     private BillFinanceDetails billFinanceDetails;
+    private Double totalRetailSaleValue;
+    private Double totalPurchaseValue;
 
     public PharmacyIncomeBillDTO() {
     }
 
     public PharmacyIncomeBillDTO(String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
                                  PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double discount, Double margin,
-                                 PaymentScheme paymentScheme, BillFinanceDetails billFinanceDetails) {
+                                 PaymentScheme paymentScheme, BigDecimal totalRetailSaleValue, BigDecimal totalPurchaseValue, BillFinanceDetails billFinanceDetails) {
         this.deptId = deptId;
         this.patientName = patientName;
         this.billTypeAtomic = billTypeAtomic;
@@ -41,12 +44,14 @@ public class PharmacyIncomeBillDTO implements Serializable {
         this.discount = discount;
         this.margin = margin;
         this.paymentScheme = paymentScheme;
+        this.totalRetailSaleValue = totalRetailSaleValue != null ? totalRetailSaleValue.doubleValue() : 0.0;
+        this.totalPurchaseValue = totalPurchaseValue != null ? totalPurchaseValue.doubleValue() : 0.0;
         this.billFinanceDetails = billFinanceDetails;
     }
 
     public PharmacyIncomeBillDTO(String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
                                  PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double discount, Double margin,
-                                 PaymentScheme paymentScheme) {
+                                 PaymentScheme paymentScheme, BigDecimal totalRetailSaleValue, BigDecimal totalPurchaseValue) {
         this.deptId = deptId;
         this.patientName = patientName;
         this.billTypeAtomic = billTypeAtomic;
@@ -58,6 +63,8 @@ public class PharmacyIncomeBillDTO implements Serializable {
         this.discount = discount;
         this.margin = margin;
         this.paymentScheme = paymentScheme;
+        this.totalRetailSaleValue = totalRetailSaleValue != null ? totalRetailSaleValue.doubleValue() : 0.0;
+        this.totalPurchaseValue = totalPurchaseValue != null ? totalPurchaseValue.doubleValue() : 0.0;
     }
 
     public String getDeptId() {
@@ -154,5 +161,21 @@ public class PharmacyIncomeBillDTO implements Serializable {
 
     public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
         this.billFinanceDetails = billFinanceDetails;
+    }
+
+    public Double getTotalRetailSaleValue() {
+        return totalRetailSaleValue;
+    }
+
+    public void setTotalRetailSaleValue(Double totalRetailSaleValue) {
+        this.totalRetailSaleValue = totalRetailSaleValue;
+    }
+
+    public Double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(Double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
     }
 }

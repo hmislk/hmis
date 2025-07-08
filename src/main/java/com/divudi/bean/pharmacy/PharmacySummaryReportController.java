@@ -822,7 +822,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, true);
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
         bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
 
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();

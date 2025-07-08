@@ -170,6 +170,9 @@ public class IncomeRow implements Serializable {
     private double purchaseRate;
     private double netRate;
 
+    private double totalRetailSaleValue;
+    private double totalPurchaseValue;
+
     private long duration;
 
     private BillFinanceDetails billFinanceDetails;
@@ -242,6 +245,8 @@ public class IncomeRow implements Serializable {
             this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
             this.paymentScheme = dto.getPaymentScheme();
             this.billFinanceDetails = dto.getBillFinanceDetails();
+            this.totalRetailSaleValue = dto.getTotalRetailSaleValue() != null ? dto.getTotalRetailSaleValue() : 0.0;
+            this.totalPurchaseValue = dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0;
             this.rowType = "Bill";
         }
     }
@@ -1436,5 +1441,21 @@ public class IncomeRow implements Serializable {
 
     public void setNetRate(double netRate) {
         this.netRate = netRate;
+    }
+
+    public double getTotalRetailSaleValue() {
+        return totalRetailSaleValue;
+    }
+
+    public void setTotalRetailSaleValue(double totalRetailSaleValue) {
+        this.totalRetailSaleValue = totalRetailSaleValue;
+    }
+
+    public double getTotalPurchaseValue() {
+        return totalPurchaseValue;
+    }
+
+    public void setTotalPurchaseValue(double totalPurchaseValue) {
+        this.totalPurchaseValue = totalPurchaseValue;
     }
 }
