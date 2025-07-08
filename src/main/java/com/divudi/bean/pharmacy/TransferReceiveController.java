@@ -94,6 +94,24 @@ public class TransferReceiveController implements Serializable {
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
 
+    public static class ConfigOptionInfo {
+        private final String key;
+        private final String defaultValue;
+
+        public ConfigOptionInfo(String key, String defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+    }
+
     public void onFocus(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
@@ -761,6 +779,24 @@ public class TransferReceiveController implements Serializable {
             tot += Math.abs(b.getNetValue());
         }
         return tot;
+    }
+
+    public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
+        List<ConfigOptionInfo> list = new ArrayList<>();
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Purchase Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Cost Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Retail Rate", "true"));
+        list.add(new ConfigOptionInfo("Report Font Size of Item List in Pharmacy Disbursement Reports", "10pt"));
+        list.add(new ConfigOptionInfo("Report Columns - Serial Number is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Code is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Rate is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer CSS", ""));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
+        return list;
     }
 
 }
