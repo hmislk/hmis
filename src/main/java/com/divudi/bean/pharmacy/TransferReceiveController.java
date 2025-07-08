@@ -100,7 +100,7 @@ public class TransferReceiveController implements Serializable {
     }
 
     public String navigateBackToRecieveList() {
-        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
     public String navigateToRecieveRequest() {
@@ -147,7 +147,7 @@ public class TransferReceiveController implements Serializable {
     }
 
 //   public String navigateBackToRecieveList(){
-//        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+//        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
