@@ -93,13 +93,14 @@ public class TransferReceiveController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
+    private BillItem selectedBillItem;
 
     public void onFocus(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
     public String navigateBackToRecieveList() {
-        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
     public String navigateToRecieveRequest() {
@@ -129,6 +130,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
+        selectedBillItem=null;
     }
 
     public TransferReceiveController() {
@@ -146,7 +148,7 @@ public class TransferReceiveController implements Serializable {
     }
 
 //   public String navigateBackToRecieveList(){
-//        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+//        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
@@ -761,6 +763,22 @@ public class TransferReceiveController implements Serializable {
             tot += Math.abs(b.getNetValue());
         }
         return tot;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }
