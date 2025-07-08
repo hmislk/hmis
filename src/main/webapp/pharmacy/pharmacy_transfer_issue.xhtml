@@ -51,7 +51,7 @@
                                         id="btnViewBatchDetails"
                                         title="View Batch Details"
                                         actionListener="#{transferIssueController.prepareBatchDetails(bItm)}"
-                                        update="batchDetailsForm"
+                                        update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
                                         oncomplete="PF('batchDetailsDialog').show();"
                                         process="@this"
                                         class="ui-button-info ui-button-icon-only mx-1"/>
@@ -193,33 +193,48 @@
 
                 <ph:history/>
 
-                <p:dialog widgetVar="batchDetailsDialog" modal="true" header="Batch Details" width="40%">
-                    <h:form id="batchDetailsForm">
-                        <p:panelGrid columns="2" class="table table-striped" >
-                            <h:outputLabel value="Batch No" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+                <p:dialog 
+                    widgetVar="batchDetailsDialog" 
+                    modal="true" 
+                    position="top"
+                    fitViewport="true"
+                    appendTo="@(body)"
+                    header="Batch Details" 
+                    width="40%">
+                    <p:panelGrid 
+                        id="batchDetailsForm" 
+                        layout="tabular"
+                        columns="2" class="table table-striped" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Batch Details" styleClass="fw-bold"/>
+                        </f:facet>
+                        <h:outputLabel value="Item" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.item.name}"/>
 
-                            <h:outputLabel value="Expiry Date" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                            </h:outputText>
+                        <h:outputLabel value="Batch No" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.batchNo}"/>
 
-                            <h:outputLabel value="Purchase Price" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
+                        <h:outputLabel value="Expiry Date" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputText>
 
-                            <h:outputLabel value="Retail Rate" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
+                        <h:outputLabel value="Purchase Price" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
 
-                            <h:outputLabel value="Cost" styleClass="fw-bold"/>
-                            <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                        </p:panelGrid>
-                    </h:form>
+                        <h:outputLabel value="Retail Rate" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+
+                        <h:outputLabel value="Cost" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:panelGrid>
+
                 </p:dialog>
 
             </p:panel>
