@@ -224,7 +224,7 @@ public class ItemController implements Serializable {
             }
         }
     }
-    
+
     public void uploadToAddCcFeesByItemCode() {
         if (collectionCentre == null) {
             JsfUtil.addErrorMessage("Please select a Collection Centre");
@@ -2235,6 +2235,54 @@ public class ItemController implements Serializable {
 
     }
 
+    public List<Item> completeAmpAmppVmpVmppItems(String query) {
+        List<Item> results;
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String q = query.trim().toUpperCase();
+
+        int barcodeMinLength = 8; // fallback default
+        int maxResults = 30; // fallback default
+
+        try {
+            barcodeMinLength = configOptionApplicationController.getIntegerValueByKey("BarcodeMinLength", 8);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey("PharmaceuticalAutocompleteMaxResults", 30);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        boolean includeBarcode = q.length() >= barcodeMinLength;
+
+        jpql = "SELECT i FROM Item i "
+                + "WHERE i.retired = false "
+                + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
+                + "AND (UPPER(i.name) LIKE :q "
+                + "OR UPPER(i.code) LIKE :q "
+                + (includeBarcode ? "OR UPPER(i.barcode) LIKE :q " : "")
+                + ") "
+                + "ORDER BY i.name";
+
+        parameters.put("amp", Amp.class);
+        parameters.put("ampp", Ampp.class);
+        parameters.put("vmp", Vmp.class);
+        parameters.put("vmpp", Vmpp.class);
+        parameters.put("q", "%" + q + "%");
+
+        results = getFacade().findByJpql(jpql, parameters, TemporalType.TIMESTAMP, maxResults);
+
+        return results;
+    }
+
     public List<Item> completeAmpAndVmpItem(String query) {
         List<Item> suggestions;
         String sql;
@@ -3455,8 +3503,8 @@ public class ItemController implements Serializable {
         }
         return deptItems;
     }
-    
-    public void reloadItemsFromDatabase(){
+
+    public void reloadItemsFromDatabase() {
         itemApplicationController.fillAllItemsBypassingCache();
         // Clear this controller’s cached copies to avoid stale data
         recreateModel();
@@ -3612,8 +3660,6 @@ public class ItemController implements Serializable {
     public Department getFilterDepartment() {
         return filterDepartment;
     }
-    
-    
 
     public void setFilterDepartment(Department filterDepartment) {
         this.filterDepartment = filterDepartment;

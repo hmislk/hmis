@@ -191,10 +191,10 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                                 <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}" />
-                                <f:selectItems value="#{enumController.pharmacyIncomeReportViewTypes}"
+                                <f:selectItems value="#{pharmacySummaryReportController.reportViewTypesForPharmacyIncomeReport}"
                                                var="rvt"
                                                itemLabel="#{rvt.label}"
-                                               itemValue="#{rvt}" />
+                                               itemValue="#{rvt}"/>
                             </p:selectOneMenu>
 
 
