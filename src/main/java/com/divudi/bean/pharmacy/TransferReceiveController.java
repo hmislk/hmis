@@ -230,7 +230,7 @@ public class TransferReceiveController implements Serializable {
             newlyCreatedReceivedBillItem.setSearialNo(getReceivedBill().getBillItems().size());
         }
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getReceivedBill(), getReceivedBill().getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getReceivedBill(), getReceivedBill().getBillItems());
     }
 
     public String navigateToPharmacyReceiveForRequests() {
@@ -336,7 +336,7 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
         getBillFacade().edit(getReceivedBill());
 
@@ -382,7 +382,7 @@ public class TransferReceiveController implements Serializable {
 
             getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-            pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
+            pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
             getReceivedBill().setEditor(sessionController.getLoggedUser());
             getReceivedBill().setEditedAt(new Date());
@@ -478,7 +478,7 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(receivedBill, receivedBill.getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
         getIssuedBill().setReferenceBill(getReceivedBill());
         getReceivedBill().setReferenceBill(getIssuedBill());
@@ -610,7 +610,7 @@ public class TransferReceiveController implements Serializable {
             return;
         }
         updateFinancialsForTransferReceive(bi.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getReceivedBill(), getReceivedBill().getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getReceivedBill(), getReceivedBill().getBillItems());
     }
 
     public Bill getReceivedBill() {

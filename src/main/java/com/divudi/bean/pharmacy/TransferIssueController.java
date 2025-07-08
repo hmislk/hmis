@@ -213,7 +213,7 @@ public class TransferIssueController implements Serializable {
         for (BillItem b : getBillItems()) {
             b.setSearialNo(serialNo++);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     public void makeNull() {
@@ -890,7 +890,7 @@ public class TransferIssueController implements Serializable {
         qty = null;
         tmpStock = null;
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     private BigDecimal determineTransferRate(ItemBatch itemBatch) {
@@ -970,7 +970,7 @@ public class TransferIssueController implements Serializable {
             return;
         }
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     public void onLineGrossRateChangeForTransferIssue(BillItem bi) {
@@ -978,7 +978,7 @@ public class TransferIssueController implements Serializable {
             return;
         }
         updateFinancialsForTransferIssue(bi.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getIssuedBill(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     public void onEditDepartmentTransfer(BillItem billItem) {

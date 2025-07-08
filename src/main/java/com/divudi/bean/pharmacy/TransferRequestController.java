@@ -219,14 +219,14 @@ public class TransferRequestController implements Serializable {
 
         updateFinancials(fd);
         getBillItems().add(bi);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
 
         currentBillItem = null;
     }
 
     public void onEdit(BillItem tmp) {
         updateFinancials(tmp.getBillItemFinanceDetails());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     public void displayItemDetails(BillItem bi) {
@@ -314,7 +314,7 @@ public class TransferRequestController implements Serializable {
             newApprovedBill.getBillItems().add(newBillItem);
         }
 
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(newApprovedBill, newApprovedBill.getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(newApprovedBill, newApprovedBill.getBillItems());
         billFacade.edit(newApprovedBill);
 
         if (preBillToCreateApprovedBill != null) {
@@ -511,7 +511,7 @@ public class TransferRequestController implements Serializable {
             return "";
         }
         billItems = fetchBillItems(getTransferRequestBillPre());
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), billItems);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), billItems);
         LOGGER.log(Level.FINE, "Editing transfer request with {0} items", billItems.size());
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request?faces-redirect=true";
@@ -540,7 +540,7 @@ public class TransferRequestController implements Serializable {
             newBillItemInApprovedRequest.setBill(bill);
             billItems.add(newBillItemInApprovedRequest);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(bill, billItems);
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(bill, billItems);
         setToDepartment(getTransferRequestBillPre().getToDepartment());
         return "/pharmacy/pharmacy_transfer_request_approval?faces-redirect=true";
     }
@@ -593,7 +593,7 @@ public class TransferRequestController implements Serializable {
         for (BillItem bi : getBillItems()) {
             bi.setSearialNo(serialNo++);
         }
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
 
     }
 
@@ -946,7 +946,7 @@ public class TransferRequestController implements Serializable {
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     // ChatGPT contributed - Recalculate item totals when gross rate changes
@@ -957,7 +957,7 @@ public class TransferRequestController implements Serializable {
 
         BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     // ************************************
@@ -974,7 +974,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     public void onCurrentLineGrossRateChange() {
@@ -988,7 +988,7 @@ public class TransferRequestController implements Serializable {
         }
         updateFinancials(fd);
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
-        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getTransferRequestBillPre(), getBillItems());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getTransferRequestBillPre(), getBillItems());
     }
 
     private BigDecimal determineTransferRate(Item item) {
