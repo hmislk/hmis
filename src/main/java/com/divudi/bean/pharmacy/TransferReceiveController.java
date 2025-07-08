@@ -130,6 +130,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
+        selectedBillItem=null;
     }
 
     public TransferReceiveController() {
