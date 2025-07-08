@@ -54,20 +54,22 @@
                                         </h:outputText>
                                     </p:column>  
 
-                                    <p:column headerText="Rate"  style="width:25px!important;">  
-                                        <h:outputText id="rate" value="#{ph.rate}" >                                   
+                                    <p:column headerText="Rate"  style="width:25px!important;">
+                                        <h:outputText id="rate" value="#{ph.rate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                    </p:column> 
+                                    </p:column>
 
-                                    <p:column headerText="Issued Qty" style="width:25px!important;">                      
-                                        <h:outputText  value="#{ph.referanceBillItem.qty}" >
+                                    <p:column headerText="Issued Qty" style="width:25px!important;">
+                                        <h:outputText value="#{ph.referanceBillItem.absoluteQty}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                    </p:column>  
+                                    </p:column>
 
                                     <p:column headerText="Receiving Qty" style="width:25px!important;">
                                         <p:inputText autocomplete="off" id="qty" value="#{ph.billItemFinanceDetails.quantity}"
                                                      onfocus="this.select()">
-                                            <f:convertNumber pattern="#,##0.#" />
+                                            <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax 
                                                 event="keyup" 
                                                     process="@this"
@@ -76,10 +78,11 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Value"  style="width:25px!important;">  
-                                        <h:outputText id="value" value="#{ph.netValue}" >                                   
+                                    <p:column headerText="Value"  style="width:25px!important;">
+                                        <h:outputText id="value" value="#{ph.absoluteNetValue}">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
-                                    </p:column> 
+                                    </p:column>
 
 
                                 </p:dataTable>  
@@ -98,10 +101,14 @@
                                     <h:outputLabel value="#{transferReceiveController.receivedBill.staff.person.nameWithTitle}" ></h:outputLabel>
 
                                     <h:outputLabel value="Issued Value" ></h:outputLabel>
-                                    <h:outputLabel value="#{transferReceiveController.receivedBill.referenceBill.netTotal}" ></h:outputLabel>
+                                    <h:outputLabel value="#{transferReceiveController.receivedBill.referenceBill.absoluteNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
 
                                     <h:outputLabel value="Receiving Value" ></h:outputLabel>
-                                    <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveController.receivedBill.netTotal}" ></h:outputLabel>
+                                    <h:outputLabel id="txtReceivingNetTotal" value="#{transferReceiveController.displayReceivedNetTotal}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputLabel>
 
                                     <h:outputLabel value="Staff" ></h:outputLabel>
                                     <p:outputLabel value="#{transferReceiveController.issuedBill.toStaff.person.nameWithTitle}" />
