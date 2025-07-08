@@ -44,6 +44,22 @@ public class PharmacyIncomeBillDTO implements Serializable {
         this.billFinanceDetails = billFinanceDetails;
     }
 
+    public PharmacyIncomeBillDTO(String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
+                                 PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double discount, Double margin,
+                                 PaymentScheme paymentScheme) {
+        this.deptId = deptId;
+        this.patientName = patientName;
+        this.billTypeAtomic = billTypeAtomic;
+        this.createdAt = createdAt;
+        this.netTotal = netTotal;
+        this.paymentMethod = paymentMethod;
+        this.total = total;
+        this.patientEncounter = patientEncounter;
+        this.discount = discount;
+        this.margin = margin;
+        this.paymentScheme = paymentScheme;
+    }
+
     public String getDeptId() {
         return deptId;
     }

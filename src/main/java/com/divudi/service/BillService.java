@@ -1005,14 +1005,22 @@ public class BillService {
                                                            WebUser webUser,
                                                            List<BillTypeAtomic> billTypeAtomics,
                                                            AdmissionType admissionType,
-                                                           PaymentScheme paymentScheme) {
+                                                           PaymentScheme paymentScheme,
+                                                           boolean includeBillFinanceDetails) {
         String jpql;
         Map params = new HashMap();
 
         jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO( "
                 + " b.deptId, pers.name, b.billTypeAtomic, b.createdAt, b.netTotal, b.paymentMethod, "
-                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme, b.billFinanceDetails ) "
-                + " from Bill b "
+                + " b.total, b.patientEncounter, b.discount, b.margin, b.paymentScheme ";
+
+        if (includeBillFinanceDetails) {
+            jpql += ", b.billFinanceDetails )";
+        } else {
+            jpql += ") ";
+        }
+
+        jpql += " from Bill b "
                 + " left join b.patient pat "
                 + " left join pat.person pers "
                 + " where b.retired=:ret "
