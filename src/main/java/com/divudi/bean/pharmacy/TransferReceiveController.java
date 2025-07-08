@@ -214,6 +214,8 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().getBillItems().add(newlyCreatedReceivedBillItem);
             newlyCreatedReceivedBillItem.setSearialNo(getReceivedBill().getBillItems().size());
         }
+
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransfers(getReceivedBill(), getReceivedBill().getBillItems());
     }
 
     public String navigateToPharmacyReceiveForRequests() {
@@ -707,6 +709,17 @@ public class TransferReceiveController implements Serializable {
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public double getDisplayReceivedNetTotal() {
+        if (receivedBill == null || receivedBill.getBillItems() == null) {
+            return 0.0;
+        }
+        double tot = 0.0;
+        for (BillItem b : receivedBill.getBillItems()) {
+            tot += Math.abs(b.getNetValue());
+        }
+        return tot;
     }
 
 }
