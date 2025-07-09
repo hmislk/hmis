@@ -72,17 +72,9 @@
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                                 </h:outputText>
 
-                                                <h:outputLabel value="Bill Items Count:" />
-                                                <h:outputText value="#{billSearch.viewingBillItems.size()}" />
 
-                                                <h:outputLabel value="Patient Investigations Count:" />
-                                                <h:outputText value="#{billSearch.viewingPatientInvestigations.size()}" />
 
-                                                <h:outputLabel value="Pharmaceutical Bill Items Count:" />
-                                                <h:outputText value="#{billSearch.viewingPharmaceuticalBillItems.size()}" />
 
-                                                <h:outputLabel value="Payments Count:" />
-                                                <h:outputText value="#{billSearch.viewingBillPayments.size()}" />
 
                                                 <h:outputLabel value="Cancelled?" />
                                                 <h:outputText value="#{billSearch.viewingBill.cancelled ? 'Yes' : 'No'}" />
@@ -100,7 +92,9 @@
                                                 <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
                                                 <h:outputLabel value="Bill Details" class="mx-4"></h:outputLabel>
                                             </f:facet>
+                                            <div class="my-2">
                                             <view:bill_edit bill="#{billSearch.viewingBill}" editable="true"/>
+                                            </div>
                                         </p:panel>
                                     </p:tab>
                                     <p:tab title="Bill Items" >
