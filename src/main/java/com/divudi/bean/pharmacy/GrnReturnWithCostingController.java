@@ -158,31 +158,24 @@ public class GrnReturnWithCostingController implements Serializable {
         if (returningBillItem == null) {
             return;
         }
+
         BillItem originalBillItem = returningBillItem.getReferanceBillItem();
         if (originalBillItem == null) {
             return;
         }
+
         BillItemFinanceDetails bifdOriginal = originalBillItem.getBillItemFinanceDetails();
-        if (bifdOriginal == null) {
-            return;
-        }
         PharmaceuticalBillItem pbiOriginal = originalBillItem.getPharmaceuticalBillItem();
-        if (pbiOriginal == null) {
-            return;
-        }
         BillItemFinanceDetails bifdReturning = returningBillItem.getBillItemFinanceDetails();
-        if (bifdReturning == null) {
-            return;
-        }
         PharmaceuticalBillItem pbiReturning = returningBillItem.getPharmaceuticalBillItem();
-        if (pbiReturning == null) {
+
+        if (bifdOriginal == null || bifdReturning == null || pbiOriginal == null || pbiReturning == null) {
             return;
         }
 
         BigDecimal alreadyReturnQuentity = BigDecimal.ZERO;
         BigDecimal alreadyReturnedFreeQuentity = BigDecimal.ZERO;
         BigDecimal allreadyReturnedTotalQuentity = BigDecimal.ZERO;
-
         BigDecimal returningRate = BigDecimal.ZERO;
 
         String sql = "Select sum(b.billItemFinanceDetails.quantity), sum(b.billItemFinanceDetails.freeQuantity) "
@@ -199,35 +192,45 @@ public class GrnReturnWithCostingController implements Serializable {
         Object[] returnedValues = getBillItemFacade().findSingleAggregate(sql, params);
 
         if (returnedValues != null) {
-            alreadyReturnQuentity = returnedValues[0] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[0].toString());
-            alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[1].toString());
+            alreadyReturnQuentity = safeToBigDecimal(returnedValues[0]);
+            alreadyReturnedFreeQuentity = safeToBigDecimal(returnedValues[1]);
             allreadyReturnedTotalQuentity = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
         }
 
         bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
         bifdOriginal.setReturnFreeQuantity(alreadyReturnedFreeQuentity);
 
+        BigDecimal originalQty = safeToBigDecimal(bifdOriginal.getQuantity());
+        BigDecimal originalFreeQty = safeToBigDecimal(bifdOriginal.getFreeQuantity());
+
         if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-            // Returning free quantity is not tracked separately.
-            // The total return covers both original quantity and free quantity.
-            // Here, free quantity being returned is considered zero.
-            // Need to subtract already returned total (qty + free) from original total (qty + free)
-            BigDecimal originalTotal = bifdOriginal.getQuantity().add(bifdOriginal.getFreeQuantity());
+            BigDecimal originalTotal = originalQty.add(originalFreeQty);
             BigDecimal returnedTotal = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
             BigDecimal remaining = originalTotal.subtract(returnedTotal);
             bifdReturning.setQuantity(remaining);
             bifdReturning.setFreeQuantity(BigDecimal.ZERO);
         } else {
-            // Returning quantity and free quantity are managed separately.
-            // Subtract already returned quantity and free quantity from respective originals.
-            bifdReturning.setQuantity(bifdOriginal.getQuantity().subtract(alreadyReturnQuentity));
-            bifdReturning.setFreeQuantity(bifdOriginal.getFreeQuantity().subtract(alreadyReturnedFreeQuentity));
+            bifdReturning.setQuantity(originalQty.subtract(alreadyReturnQuentity));
+            bifdReturning.setFreeQuantity(originalFreeQty.subtract(alreadyReturnedFreeQuentity));
         }
 
         returningRate = getReturnRate(originalBillItem);
-        bifdReturning.setLineGrossRate(returningRate);
+        if (returningRate != null) {
+            bifdReturning.setLineGrossRate(returningRate);
+        }
 
         billItemFacade.edit(originalBillItem);
+    }
+
+    private BigDecimal safeToBigDecimal(Object val) {
+        if (val == null) {
+            return BigDecimal.ZERO;
+        }
+        try {
+            return new BigDecimal(val.toString());
+        } catch (NumberFormatException e) {
+            return BigDecimal.ZERO;
+        }
     }
 
     private double getRemainingFreeQty(BillItem bilItem) {
@@ -401,7 +404,6 @@ public class GrnReturnWithCostingController implements Serializable {
                 pbi.setQty(-qty);
                 pbi.setFreeQty(-freeQty);
             }
-
 
             i.setNetValue(pbi.getQty() * rate);
             i.setCreatedAt(Calendar.getInstance().getTime());
