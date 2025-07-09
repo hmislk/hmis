@@ -10,10 +10,7 @@
 <h:body>
     <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
         <ui:define name="subcontent">
-
             <p:panel header="Pharmacy Income &amp; Cost Report">
-
-
                 <h:form>
                     <h:panelGrid columns="8" styleClass="w-100 form-grid"
                                  columnClasses="label-icon-column, input-column">
@@ -29,7 +26,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                         />
 
-                        <p:spacer width="50"></p:spacer>
+                        <p:spacer width="50"/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
@@ -44,9 +41,9 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                         />
 
-                        <p:spacer width="50"></p:spacer>
-                        <p:spacer width="50"></p:spacer>
-                        <p:spacer width="50"></p:spacer>
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
+                        <p:spacer width="50"/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
@@ -63,7 +60,7 @@
                             <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer></p:spacer>
+                        <p:spacer/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
@@ -80,7 +77,7 @@
                             <p:ajax process="siteMenu" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer></p:spacer>
+                        <p:spacer/>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
@@ -147,7 +144,6 @@
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
                             </p:selectOneMenu>
-
                         </h:panelGroup>
 
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -162,9 +158,11 @@
                                 rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                             <f:selectItem itemLabel="All Admission Type"/>
                             <f:selectItems value="#{inwardReportController.admissionty}" var="myItem"
-                                           itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
+                                           itemValue="#{myItem}" itemLabel="#{myItem.name}"/>
                         </p:selectOneMenu>
-                        <p:spacer></p:spacer>
+
+                        <p:spacer/>
+
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf80d;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
                             <h:outputLabel value="Discount Scheme" for="cmdDiscount" class="mx-3"/>
@@ -178,7 +176,7 @@
                             <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                         </p:selectOneMenu>
 
-                        <p:spacer></p:spacer>
+                        <p:spacer/>
 
                         <!-- Report View Type Filter -->
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -191,13 +189,11 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                             <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}"/>
-                            <f:selectItems value="#{enumController.reportViewTypes}"
+                            <f:selectItems value="#{enumController.pharmacyIncomeCostReportViewTypes}"
                                            var="rvt"
                                            itemLabel="#{rvt.label}"
                                            itemValue="#{rvt}"/>
                         </p:selectOneMenu>
-
-
                     </h:panelGrid>
 
                     <p:commandButton
@@ -467,7 +463,6 @@
                                 </f:facet>
                             </p:column>
 
-
                             <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
                                 <p:commandLink
                                         value="View"
@@ -479,13 +474,10 @@
                                                                  target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
-
-
                         </p:dataTable>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL_TYPE'}">
-
                         <p:commandButton
                                 value="Download"
                                 ajax="false"
@@ -557,15 +549,10 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-
                         </p:dataTable>
                     </h:panelGroup>
-
-
                 </h:form>
-
             </p:panel>
-
         </ui:define>
     </ui:composition>
 </h:body>

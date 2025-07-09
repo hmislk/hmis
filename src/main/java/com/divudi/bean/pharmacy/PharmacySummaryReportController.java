@@ -851,23 +851,6 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_AND_COST_REPORT, sessionController.getLoggedUser());
     }
 
-    public ReportViewType[] getReportViewTypesForPharmacyIncomeAndCostReport() {
-        return new ReportViewType[]{
-                ReportViewType.BY_BILL,
-                ReportViewType.BY_BILL_ITEM,
-                ReportViewType.BY_BILL_TYPE
-        };
-    }
-
-    public ReportViewType[] getReportViewTypesForPharmacyIncomeReport() {
-        return new ReportViewType[]{
-                ReportViewType.BY_BILL,
-                ReportViewType.BY_BILL_TYPE,
-                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
-                BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
-        };
-    }
-
     public void processPharmacyIncomeAndCostReportByBillItem() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
@@ -903,15 +886,6 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
-//        reportTimerController.trackReportExecution(() -> {
-//            List<PharmacyIncomeCostBillDTO> dtos
-//                    = billService.fetchBillIncomeCostDtos(fromDate, toDate, institution, site,
-//                    department, webUser, getPharmacyIncomeBillTypes(),
-//                    admissionType, paymentScheme);
-//            bundle = new IncomeBundle(dtos);
-//            bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
-//        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
-
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
@@ -1342,81 +1316,6 @@ public class PharmacySummaryReportController implements Serializable {
             getBillFacade().edit(b);
         }
     }
-
-//    public void calPharmacyIncomeAndCostReportByBill() {
-//        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-//        List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-//        for (Bill b : pbis) {
-//            if (b == null) {
-//                continue;
-//            }
-//
-//            BillTypeAtomic bta = Optional
-//                    .ofNullable(b)
-//                    .map(Bill::getBillTypeAtomic)
-//                    .orElse(null);
-//            if (bta == null || bta.getBillCategory() == null) {
-//                continue; // unable to categorise safely
-//            }
-//            BillCategory bc = bta.getBillCategory();
-//
-//            Double saleValue = 0.0;
-//            Double purchaseValue = 0.0;
-//
-//            for (BillItem bi : b.getBillItems()) {
-//
-//                if (bi == null || bi.getPharmaceuticalBillItem() == null) {
-//                    continue;
-//                }
-//
-//                Double q = bi.getPharmaceuticalBillItem().getQty();
-//                Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
-//                if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
-//                    rRate = bi.getNetRate();
-//                }
-//
-//                Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
-//
-//                if (q == null || rRate == null || pRate == null) {
-//                    continue;
-//                }
-//
-//                double qty = Math.abs(q);
-//                double retail = Math.abs(rRate);
-//                double purchase = Math.abs(pRate);
-//
-//                double retailTotal = 0;
-//                double purchaseTotal = 0;
-//
-//                switch (bc) {
-//                    case BILL:
-//                    case PAYMENTS:
-//                    case PREBILL:
-//                        retailTotal = retail * qty;
-//                        purchaseTotal = purchase * qty;
-//                        break;
-//
-//                    case CANCELLATION:
-//                    case REFUND:
-//                        retailTotal = -retail * qty;
-//                        purchaseTotal = -purchase * qty;
-//                        break;
-//
-//                    default:
-//                        break;
-//                }
-//                saleValue += retailTotal;
-//                purchaseValue += purchaseTotal;
-//            }
-//            if (b.getBillFinanceDetails() == null) {
-//                b.setBillFinanceDetails(new BillFinanceDetails());
-//            }
-//
-//            b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
-//            b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
-//            getBillFacade().edit(b);
-//        }
-//    }
 
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
