@@ -132,10 +132,29 @@
 
 
                                     <p:outputLabel value="Purchase Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.purchaseValue}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
                                     <p:outputLabel value="Retail Value"/>
-                                    <p:outputLabel value="Whoelsale Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.retailValue}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
+                                    <p:outputLabel value="Wholesale Value"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.wholesaleRate * stockHistoryController.current.pbItem.qty}"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value=""/>
+
                                     <p:outputLabel value="Gross Value"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.grossValue}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineGrossTotal}"/>
+
                                     <p:outputLabel value="Net Value"/>
+                                    <p:outputLabel value=""/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.netValue}"/>
+                                    <p:outputLabel value="#{stockHistoryController.current.pbItem.billItem.billItemFinanceDetails.lineNetTotal}"/>
 
                                 </p:panelGrid>
                             </p:tab>
