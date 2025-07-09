@@ -19,7 +19,10 @@
                                 <p:outputLabel value="Bill Administration" class="mt-2"></p:outputLabel>
                                 <p:commandButton value="Save" action="#{billSearch.saveViewingBillData()}" ajax="false" ></p:commandButton>
                                 <p:commandButton value="Bill Search" action="#{billSearch.navigateToBillListFromAdminBill()}" ajax="false" ></p:commandButton>
-                            </div> 
+                                <p:commandButton value="Export JSON" ajax="false" icon="pi pi-download">
+                                    <p:fileDownload value="#{billSearch.exportAsJson()}"/>
+                                </p:commandButton>
+                            </div>
                         </f:facet>
                         <div class="row">
 

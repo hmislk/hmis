@@ -89,6 +89,8 @@ import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 
 import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -111,6 +113,10 @@ import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Buddhika
@@ -6095,6 +6101,22 @@ public class BillSearch implements Serializable {
 
     public String navigateToDownloadBillsAndBillItems1() {
         return "/analytics/download_bills_and_items?faces-redirect=true";
+    }
+
+    public StreamedContent exportAsJson() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return null;
+        }
+
+        String json = billService.convertBillToJson(viewingBill);
+        InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+
+        return DefaultStreamedContent.builder()
+                .name("bill_" + viewingBill.getDeptId() + ".json")
+                .contentType("application/json")
+                .stream(() -> stream)
+                .build();
     }
 
     public String findOriginalBillFromCancelledBill(Bill cancelBill) {
