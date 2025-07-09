@@ -574,7 +574,7 @@ public class GrnCostingController implements Serializable {
     private void processBillItems() {
         for (BillItem i : getBillItems()) {
             applyFinanceDetailsToPharmaceutical(i);
-            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
@@ -582,13 +582,22 @@ public class GrnCostingController implements Serializable {
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
+            if (pbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(pbi);
             }
-            i.setPharmaceuticalBillItem(ph);
+            i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
+            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+
+            System.out.println("Retail Rate: " + pbi.getRetailRate());
+            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
+            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+
+            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
+            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }

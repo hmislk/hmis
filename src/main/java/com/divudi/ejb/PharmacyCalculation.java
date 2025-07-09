@@ -750,9 +750,12 @@ public class PharmacyCalculation implements Serializable {
 
     /**
      * Creates or fetches an existing ItemBatch based on costing and expiry
-     * logic. Ensures uniqueness based on AMP, purchaseRate, retailRate,
-     * costRate, and expiry. Additional fields like wholesaleRate, make, etc.,
+     * logic.Ensures uniqueness based on AMP, purchaseRate, retailRate,
+     * costRate, and expiry.Additional fields like wholesaleRate, make, etc.,
      * are set but not used for uniqueness.
+     *
+     * @param inputBillItem
+     * @return
      */
     public ItemBatch saveItemBatchWithCosting(BillItem inputBillItem) {
         if (inputBillItem == null || inputBillItem.getItem() == null || inputBillItem.getPharmaceuticalBillItem() == null) {
@@ -785,7 +788,7 @@ public class PharmacyCalculation implements Serializable {
                 return null;
             }
 
-            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineCostRate();
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineGrossRate();
 
             BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
             if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
