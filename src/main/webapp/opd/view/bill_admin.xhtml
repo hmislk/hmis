@@ -36,7 +36,11 @@
                                 <p:tabView orientation="left">
                                     <p:tab title="Summary" >
                                         <p:panel header="Bill Summary">
-                                            <h:panelGrid columns="2" styleClass="w-100" columnClasses="w-25,w-75">
+                                            <p:panelGrid 
+                                                columns="2" 
+                                                styleClass="w-100" 
+                                                columnClasses="w-25,w-75"
+                                                layout="tabular">
 
                                                 <h:outputLabel value="Bill Number:" />
                                                 <h:outputText value="#{billSearch.viewingBill.deptId}" />
@@ -86,7 +90,7 @@
                                                 <h:outputLabel value="Refunded?" />
                                                 <h:outputText value="#{billSearch.viewingBill.refunded ? 'Yes' : 'No'}" />
 
-                                            </h:panelGrid>
+                                            </p:panelGrid>
                                         </p:panel>
 
                                     </p:tab>
