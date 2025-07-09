@@ -1035,6 +1035,21 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Goods Receipt With Approval -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_With_Approval' and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval') and webUserController.hasPrivilege('GoodsRecipt')}">
+                    <h:form>
+                        <p:tooltip for="Goods_Receipt_With_Approval" value="Goods Receipt With Approval"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Goods_Receipt_With_Approval"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/goods-receipt-with-approval.svg" style="cursor: pointer;" width="80" height="80" />
+                            <h:outputText style="display: none;" value="Goods Receipt With Approval" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Goods Receipt Costing -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_Costing' and configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
                     <h:form>
