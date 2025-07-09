@@ -120,7 +120,7 @@ public class ChannelService {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private static final Logger LOGGER = Logger.getLogger(ChannelService.class.getName());
 
     @PermitAll //TODO: Fix this to appropriate roles .
@@ -766,31 +766,31 @@ public class ChannelService {
         return billItemFacade.findByJpql(jpql, params);
 
     }
-    
+
     //this is for physical agentBookings not for online bookings
-    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo){
+    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo) {
 
         Map params = new HashMap();
         params.put("type", BillType.ChannelAgent);
         params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         params.put("retire", false);
         params.put("refNo", refNo);
-        
+
         StringBuilder sql = new StringBuilder("Select count(bill) from Bill bill where "
                 + " bill.billType = :type and bill.billTypeAtomic = :bta and bill.agentRefNo = :refNo and"
                 + " bill.retired = :retire");
-        
-        if(creditCompany != null){
+
+        if (creditCompany != null) {
             sql.append(" and bill.creditCompany = :company");
             params.put("company", creditCompany);
         }
-        
+
         Long count = getBillFacade().countByJpql(sql.toString(), params);
-        
-        if(count != null && count > 0){
+
+        if (count != null && count > 0) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -1178,6 +1178,32 @@ public class ChannelService {
 
         return billFacade.findByJpql(jpql, params);
 
+    }
+
+    public List<BillSession> fetchScanningSessionBillSessions(Date fromDate, Date toDate, Institution institution) {
+        
+        StringBuilder sql = new StringBuilder("Select bs from BillSession bs where "
+                + " bs.bill.billType <> :type "
+                + " and bs.sessionInstance.originatingSession.category.name = :category "
+                + " and bs.bill.retired = :state "
+                + " and bs.createdAt between :fromDate and :toDate");
+
+        Map params = new HashMap();
+        params.put("type", BillType.ChannelOnCall);
+        params.put("category", "Scanning");
+        params.put("state", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            sql.append(" and bs.institution = :ins");
+            params.put("ins", institution);
+        }
+
+        sql.append(" order by bs.createdAt desc");
+
+        List<BillSession> list = billSessionFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
+        return list;
     }
 
     public List<SessionInstance> findSessionInstanceFromId(String id) {
