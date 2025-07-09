@@ -80,7 +80,10 @@
                             </p:commandButton>
                         </h:panelGrid>
 
-                        <p:dataTable id="tableForReport"  value="#{channelReportController.billSessions}" var="r" >
+                        <p:dataTable id="tableForReport"  
+                                     value="#{channelReportController.billSessions}" var="r" 
+                                     rowIndexVar="n"
+                                     >
                             <f:facet name="header">
 
                                 <h:outputLabel value="#{channelReportController.institution.name}"/>
@@ -93,9 +96,15 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
+                            
+                            <p:column headerText="Serial No" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{n+1}">
 
-                            <p:column headerText="ID" style="width: 50px!important; text-align: center;">
-                                <h:outputText value="#{r.id}">
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Bill ID" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.id}">
 
                                 </h:outputText>
                             </p:column>
@@ -111,6 +120,8 @@
                                 <h:outputText value="#{r.bill.deptId}">
                                     
                                 </h:outputText>
+                                <p:tag rendered="#{r.bill.cancelled}" value="Cancelled - #{r.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
+                                <p:tag rendered="#{r.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
                             </p:column>
                             
                             <p:column headerText="Bill Type" style="width: 50px!important; text-align: center;">
