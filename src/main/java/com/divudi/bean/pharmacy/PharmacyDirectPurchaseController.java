@@ -20,20 +20,15 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillNumber;
 import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.RefundBill;
-import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -41,7 +36,6 @@ import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
-import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
@@ -51,21 +45,17 @@ import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -654,6 +644,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+
+            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
+            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+
+            System.out.println("Retail Rate: " + pbi.getRetailRate());
+            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
+            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+
+            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
+            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
+
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());

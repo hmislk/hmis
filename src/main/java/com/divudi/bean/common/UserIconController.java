@@ -95,6 +95,8 @@ public class UserIconController implements Serializable {
             JsfUtil.addSuccessMessage("Save Success ");
             fillDepartmentIcon();
             reOrderUserIcons();
+            // Clear selected icon after successful addition
+            icon = null;
         } else {
             JsfUtil.addErrorMessage("Icon already exists at this position");
         }
