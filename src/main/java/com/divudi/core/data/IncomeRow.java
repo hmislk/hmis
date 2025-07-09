@@ -254,25 +254,34 @@ public class IncomeRow implements Serializable {
 
     public IncomeRow(PharmacyIncomeBillDTO dto) {
         this();
-        if (dto != null) {
-            this.deptId = dto.getDeptId();
-            this.billTypeAtomic = dto.getBillTypeAtomic();
-            this.patientName = dto.getPatientName();
-            this.createdAt = dto.getCreatedAt();
-            this.netTotal = dto.getNetTotal();
-            this.paymentMethod = dto.getPaymentMethod();
-            this.total = dto.getTotal();
-            if (dto.getPatientEncounter() != null) {
-                this.patientEncounter = dto.getPatientEncounter();
-            }
-            this.margin = dto.getMargin() != null ? dto.getMargin() : 0.0;
-            this.discount = dto.getDiscount() != null ? dto.getDiscount() : 0.0;
-            this.paymentScheme = dto.getPaymentScheme();
-            this.billFinanceDetails = dto.getBillFinanceDetails();
-            this.totalRetailSaleValue = dto.getTotalRetailSaleValue() != null ? dto.getTotalRetailSaleValue() : 0.0;
-            this.totalPurchaseValue = dto.getTotalPurchaseValue() != null ? dto.getTotalPurchaseValue() : 0.0;
-            this.rowType = "Bill";
+
+        Bill bill = new Bill();
+        bill.setId(dto.getBillId());
+        bill.setDeptId(dto.getDeptId());
+        if (dto.getPatientName() != null) {
+            Patient patient = new Patient();
+            Person person = new Person();
+            person.setName(dto.getPatientName());
+            patient.setPerson(person);
+            bill.setPatient(patient);
         }
+        bill.setBillTypeAtomic(dto.getBillTypeAtomic());
+        bill.setCreatedAt(dto.getCreatedAt());
+        bill.setNetTotal(dto.getNetTotal());
+        bill.setPaymentMethod(dto.getPaymentMethod());
+        bill.setTotal(dto.getTotal());
+        bill.setPatientEncounter(dto.getPatientEncounter());
+        bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+        bill.setMargin(dto.getMargin() != null ? dto.getMargin() : 0.0);
+        bill.setServiceCharge(dto.getServiceCharge() != null ? dto.getServiceCharge() : 0.0);
+        bill.setPaymentScheme(dto.getPaymentScheme());
+
+        BillFinanceDetails billFinanceDetails = new BillFinanceDetails();
+        billFinanceDetails.setTotalRetailSaleValue(dto.getTotalRetailSaleValue());
+        billFinanceDetails.setTotalPurchaseValue(dto.getTotalPurchaseValue());
+        bill.setBillFinanceDetails(billFinanceDetails);
+
+        this.bill = bill;
     }
 
     public IncomeRow(PharmacyIncomeBillItemDTO dto) {

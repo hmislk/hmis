@@ -240,40 +240,6 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    public void fixDiscountsAndMarginsInRowsByIncomeRows() {
-        for (IncomeRow ir : getRows()) {
-            if (ir == null) {
-                continue;
-            }
-
-            switch (ir.getBillTypeAtomic().getBillCategory()) {
-                case BILL:
-                    ir.setDiscount(-Math.abs(ir.getDiscount()));
-                    ir.setMargin(Math.abs(ir.getMargin()));
-                    break;
-                case REFUND:
-                    ir.setDiscount(Math.abs(ir.getDiscount()));
-                    ir.setMargin(-Math.abs(ir.getMargin()));
-                    break;
-            }
-
-//            BillItem billItem = ir.getBillItem();
-//            if (billItem != null && billItem.getBill() != null && billItem.getBill().getBillTypeAtomic() != null
-//                    && billItem.getBill().getBillTypeAtomic().getBillCategory() != null) {
-//                switch (billItem.getBill().getBillTypeAtomic().getBillCategory()) {
-//                    case BILL:
-//                        billItem.setDiscount(-Math.abs(billItem.getDiscount()));
-//                        billItem.setMarginValue(Math.abs(billItem.getMarginValue()));
-//                        break;
-//                    case REFUND:
-//                        billItem.setDiscount(Math.abs(billItem.getDiscount()));
-//                        billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
-//                        break;
-//                }
-//            }
-        }
-    }
-
     public IncomeBundle(Collection<?> entries) {
         this(); // Initialize id and rows list
         if (entries != null && !entries.isEmpty()) {
@@ -312,6 +278,15 @@ public class IncomeBundle implements Serializable {
                     if (obj instanceof IncomeRow) {
                         IncomeRow incomeRow = (IncomeRow) obj;
                         rows.add(incomeRow);
+                    }
+                }
+            } else if (firstElement instanceof PharmacyIncomeBillDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof PharmacyIncomeBillDTO) {
+                        PharmacyIncomeBillDTO dto = (PharmacyIncomeBillDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
                     }
                 }
             }
@@ -625,13 +600,6 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-    public void generatePaymentDetailsForBillsByIncomeRows() {
-        for (IncomeRow r : getRows()) {
-            populateRowFromBill(r);
-        }
-        populateSummaryRow();
-    }
-
     public void generatePaymentDetailsGroupedByBillType() {
         Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
 
@@ -765,169 +733,38 @@ public class IncomeBundle implements Serializable {
         populateSummaryRow();
     }
 
-    public void generatePaymentDetailsGroupedByBillTypeByIncomeRows() {
-        Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
-
-        for (IncomeRow r : getRows()) {
-            if (r == null || r.getBillTypeAtomic() == null) {
-                continue;
-            }
-
-            // Standard processing from generatePaymentDetailsForBills()
-            r.setGrossTotal(r.getTotal());
-            r.setNetTotal(r.getNetTotal());
-            r.setDiscount(r.getDiscount());
-            r.setServiceCharge(r.getMargin());
-            r.setActualTotal(r.getTotal() - r.getServiceCharge());
-
-            if (r.getPaymentMethod() == null) {
-                r.setCreditValue(r.getNetTotal());
-                if (r.getPatientEncounter() != null) {
-                    r.setOpdCreditValue(0);
-                    r.setInpatientCreditValue(r.getNetTotal());
-                } else {
-                    r.setOpdCreditValue(0);
-                    r.setInpatientCreditValue(0);
-                    r.setNoneValue(r.getNetTotal());
-                }
-            } else {
-                switch (r.getPaymentMethod()) {
-                    case Agent:
-                        r.setAgentValue(r.getNetTotal());
-                        break;
-                    case Card:
-                        r.setCardValue(r.getNetTotal());
-                        break;
-                    case Cash:
-                        r.setCashValue(r.getNetTotal());
-                        break;
-                    case Cheque:
-                        r.setChequeValue(r.getNetTotal());
-                        break;
-                    case IOU:
-                        r.setIouValue(r.getNetTotal());
-                        break;
-                    case None:
-                        break;
-                    case OnCall:
-                        r.setOnCallValue(r.getNetTotal());
-                        break;
-                    case Credit:
-                        r.setCreditValue(r.getNetTotal());
-                        if (r.getPatientEncounter() != null) {
-                            r.setOpdCreditValue(0);
-                            r.setInpatientCreditValue(r.getNetTotal());
-                        } else {
-                            r.setOpdCreditValue(r.getNetTotal());
-                            r.setInpatientCreditValue(0);
-                        }
-                        break;
-                    case MultiplePaymentMethods:
-                        calculateBillPaymentValuesFromPayments(r);
-                        break;
-                    case OnlineSettlement:
-                        r.setOnlineSettlementValue(r.getNetTotal());
-                        break;
-                    case PatientDeposit:
-                        r.setPatientDepositValue(r.getNetTotal());
-                        break;
-                    case PatientPoints:
-                        r.setPatientPointsValue(r.getNetTotal());
-                        break;
-                    case Slip:
-                        r.setSlipValue(r.getNetTotal());
-                        break;
-                    case Staff:
-                        r.setStaffValue(r.getNetTotal());
-                        break;
-                    case Staff_Welfare:
-                        r.setStaffWelfareValue(r.getNetTotal());
-                        break;
-                    case Voucher:
-                        r.setVoucherValue(r.getNetTotal());
-                        break;
-                    case ewallet:
-                        r.setEwalletValue(r.getNetTotal());
-                        break;
-                    case YouOweMe:
-                        break;
-                }
-            }
-
-            // Now group by BillTypeAtomic
-            BillTypeAtomic bta = r.getBillTypeAtomic();
-            IncomeRow groupRow = grouped.computeIfAbsent(bta, k -> {
-                IncomeRow ir = new IncomeRow();
-                ir.setBillTypeAtomic(k);
-                return ir;
-            });
-
-            groupRow.setNetTotal(groupRow.getNetTotal() + r.getNetTotal());
-            groupRow.setGrossTotal(groupRow.getGrossTotal() + r.getGrossTotal());
-            groupRow.setDiscount(groupRow.getDiscount() + r.getDiscount());
-            groupRow.setServiceCharge(groupRow.getServiceCharge() + r.getServiceCharge());
-            groupRow.setActualTotal(groupRow.getActualTotal() + r.getActualTotal());
-
-            groupRow.setCashValue(groupRow.getCashValue() + r.getCashValue());
-            groupRow.setCardValue(groupRow.getCardValue() + r.getCardValue());
-            groupRow.setChequeValue(groupRow.getChequeValue() + r.getChequeValue());
-            groupRow.setCreditValue(groupRow.getCreditValue() + r.getCreditValue());
-            groupRow.setOpdCreditValue(groupRow.getOpdCreditValue() + r.getOpdCreditValue());
-            groupRow.setInpatientCreditValue(groupRow.getInpatientCreditValue() + r.getInpatientCreditValue());
-            groupRow.setNoneValue(groupRow.getNoneValue() + r.getNoneValue());
-
-            groupRow.setAgentValue(groupRow.getAgentValue() + r.getAgentValue());
-            groupRow.setIouValue(groupRow.getIouValue() + r.getIouValue());
-            groupRow.setOnlineSettlementValue(groupRow.getOnlineSettlementValue() + r.getOnlineSettlementValue());
-            groupRow.setPatientDepositValue(groupRow.getPatientDepositValue() + r.getPatientDepositValue());
-            groupRow.setPatientPointsValue(groupRow.getPatientPointsValue() + r.getPatientPointsValue());
-            groupRow.setSlipValue(groupRow.getSlipValue() + r.getSlipValue());
-            groupRow.setStaffValue(groupRow.getStaffValue() + r.getStaffValue());
-            groupRow.setStaffWelfareValue(groupRow.getStaffWelfareValue() + r.getStaffWelfareValue());
-            groupRow.setVoucherValue(groupRow.getVoucherValue() + r.getVoucherValue());
-            groupRow.setEwalletValue(groupRow.getEwalletValue() + r.getEwalletValue());
-            groupRow.setOnCallValue(groupRow.getOnCallValue() + r.getOnCallValue());
-        }
-
-        // Replace with grouped rows
-        getRows().clear();
-        grouped.values().stream()
-                .sorted(Comparator.comparing(IncomeRow::getBillTypeAtomic, Comparator.nullsLast(Comparator.naturalOrder())))
-                .forEachOrdered(getRows()::add);
-        populateSummaryRow();
-    }
-
     // Contribution by ChatGPT - adapted based on provided instructions
     public void generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType() {
         Map<String, IncomeRow> grouped = new LinkedHashMap<>();
 
         for (IncomeRow r : getRows()) {
-            if (r == null) {
+            Bill b = r.getBill();
+            if (b == null) {
                 continue;
             }
 
-            populateRowFromBill(r);
+            populateRowFromBill(r, b);
 
             String groupKey;
-            if (r.getPatientEncounter() != null) {
+            if (b.getPatientEncounter() != null) {
                 // Inpatient Sale
-                r.setAdmissionType(r.getPatientEncounter().getAdmissionType());
-                if (r.getPatientEncounter().getAdmissionType() == null) {
+                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
+                if (b.getPatientEncounter().getAdmissionType() == null) {
                     r.setRowType("Inpatient Sale - No Admission Type");
                     groupKey = "Inpatient Sale - No Admission Type";
                 } else {
-                    r.setRowType("Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName());
-                    groupKey = "Inpatient Sale - " + r.getPatientEncounter().getAdmissionType().getName();
+                    r.setRowType("Inpatient Sale - " + b.getPatientEncounter().getAdmissionType().getName());
+                    groupKey = "Inpatient Sale - " + b.getPatientEncounter().getAdmissionType().getName();
                 }
             } else {
                 // Outpatient Sale
-                r.setPaymentScheme(r.getPaymentScheme());
-                if (r.getPaymentScheme() == null) {
+                r.setPaymentScheme(b.getPaymentScheme());
+                if (b.getPaymentScheme() == null) {
                     r.setRowType("Outpatient Sale - No Discount Scheme");
                     groupKey = "Outpatient Sale - No Discount Scheme";
                 } else {
-                    r.setRowType("Outpatient Sale - " + r.getPaymentScheme().getName());
-                    groupKey = "Outpatient Sale - " + r.getPaymentScheme().getName();
+                    r.setRowType("Outpatient Sale - " + b.getPaymentScheme().getName());
+                    groupKey = "Outpatient Sale - " + b.getPaymentScheme().getName();
                 }
             }
 
@@ -977,27 +814,28 @@ public class IncomeBundle implements Serializable {
         Map<String, IncomeRow> grouped = new LinkedHashMap<>();
 
         for (IncomeRow r : getRows()) {
-            if (r == null || r.getBillTypeAtomic() == null) {
+            Bill b = r.getBill();
+            if (b == null || b.getBillTypeAtomic() == null) {
                 continue;
             }
 
-            populateRowFromBill(r);
+            populateRowFromBill(r, b);
 
-            BillTypeAtomic bta = r.getBillTypeAtomic();
+            BillTypeAtomic bta = b.getBillTypeAtomic();
             String detail;
-            if (r.getPatientEncounter() != null) {
-                r.setAdmissionType(r.getPatientEncounter().getAdmissionType());
-                if (r.getPatientEncounter().getAdmissionType() == null) {
+            if (b.getPatientEncounter() != null) {
+                r.setAdmissionType(b.getPatientEncounter().getAdmissionType());
+                if (b.getPatientEncounter().getAdmissionType() == null) {
                     detail = "No Admission Type";
                 } else {
-                    detail = r.getPatientEncounter().getAdmissionType().getName();
+                    detail = b.getPatientEncounter().getAdmissionType().getName();
                 }
             } else {
-                r.setPaymentScheme(r.getPaymentScheme());
-                if (r.getPaymentScheme() == null) {
+                r.setPaymentScheme(b.getPaymentScheme());
+                if (b.getPaymentScheme() == null) {
                     detail = "No Discount Scheme";
                 } else {
-                    detail = r.getPaymentScheme().getName();
+                    detail = b.getPaymentScheme().getName();
                 }
             }
 
@@ -1360,95 +1198,6 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    private void populateRowFromBill(IncomeRow r) {
-        if (r == null) {
-            return;
-        }
-
-        r.setGrossTotal(r.getTotal());
-        r.setNetTotal(r.getNetTotal());
-        r.setDiscount(r.getDiscount());
-        r.setServiceCharge(r.getMargin());
-        r.setActualTotal(r.getTotal() - r.getServiceCharge());
-
-        PaymentMethod pm = r.getPaymentMethod();
-
-        if (pm == null) {
-            r.setCreditValue(r.getNetTotal());
-            if (r.getPatientEncounter() != null) {
-                r.setOpdCreditValue(0);
-                r.setInpatientCreditValue(r.getNetTotal());
-            } else {
-                r.setOpdCreditValue(0);
-                r.setInpatientCreditValue(0);
-                r.setNoneValue(r.getNetTotal());
-            }
-            return;
-        }
-
-        switch (pm) {
-            case Agent:
-                r.setAgentValue(r.getNetTotal());
-                break;
-            case Card:
-                r.setCardValue(r.getNetTotal());
-                break;
-            case Cash:
-                r.setCashValue(r.getNetTotal());
-                break;
-            case Cheque:
-                r.setChequeValue(r.getNetTotal());
-                break;
-            case IOU:
-                r.setIouValue(r.getNetTotal());
-                break;
-            case OnCall:
-                r.setOnCallValue(r.getNetTotal());
-                break;
-            case Credit:
-                r.setCreditValue(r.getNetTotal());
-                if (r.getPatientEncounter() != null) {
-                    r.setOpdCreditValue(0);
-                    r.setInpatientCreditValue(r.getNetTotal());
-                } else {
-                    r.setOpdCreditValue(r.getNetTotal());
-                    r.setInpatientCreditValue(0);
-                }
-                break;
-            case MultiplePaymentMethods:
-                calculateBillPaymentValuesFromPaymentsByIncomeRow(r);
-                break;
-            case OnlineSettlement:
-                r.setOnlineSettlementValue(r.getNetTotal());
-                break;
-            case PatientDeposit:
-                r.setPatientDepositValue(r.getNetTotal());
-                break;
-            case PatientPoints:
-                r.setPatientPointsValue(r.getNetTotal());
-                break;
-            case Slip:
-                r.setSlipValue(r.getNetTotal());
-                break;
-            case Staff:
-                r.setStaffValue(r.getNetTotal());
-                break;
-            case Staff_Welfare:
-                r.setStaffWelfareValue(r.getNetTotal());
-                break;
-            case Voucher:
-                r.setVoucherValue(r.getNetTotal());
-                break;
-            case ewallet:
-                r.setEwalletValue(r.getNetTotal());
-                break;
-            case YouOweMe:
-                break;
-            case None:
-                break;
-        }
-    }
-
     /**
      * Helper method to allocate multiple-payment totals into the daily summary
      * row.
@@ -1588,84 +1337,6 @@ public class IncomeBundle implements Serializable {
                     case Credit:
                         r.setCreditValue(r.getCreditValue() + p.getPaidValue());
                         if (r.getBill().getPatientEncounter() != null) {
-                            r.setInpatientCreditValue(r.getInpatientCreditValue() + p.getPaidValue());
-                        } else {
-                            r.setOpdCreditValue(r.getOpdCreditValue() + p.getPaidValue());
-                        }
-                        break;
-                    case IOU:
-                        r.setIouValue(r.getIouValue() + p.getPaidValue());
-                        break;
-                    case OnCall:
-                        r.setOnCallValue(r.getOnCallValue() + p.getPaidValue());
-                        break;
-                    case OnlineSettlement:
-                        r.setOnlineSettlementValue(r.getOnlineSettlementValue() + p.getPaidValue());
-                        break;
-                    case PatientDeposit:
-                        r.setPatientDepositValue(r.getPatientDepositValue() + p.getPaidValue());
-                        break;
-                    case PatientPoints:
-                        r.setPatientPointsValue(r.getPatientPointsValue() + p.getPaidValue());
-                        break;
-                    case Slip:
-                        r.setSlipValue(r.getSlipValue() + p.getPaidValue());
-                        break;
-                    case Staff:
-                        r.setStaffValue(r.getStaffValue() + p.getPaidValue());
-                        break;
-                    case Staff_Welfare:
-                        r.setStaffWelfareValue(r.getStaffWelfareValue() + p.getPaidValue());
-                        break;
-                    case Voucher:
-                        r.setVoucherValue(r.getVoucherValue() + p.getPaidValue());
-                        break;
-                    case ewallet:
-                        r.setEwalletValue(r.getEwalletValue() + p.getPaidValue());
-                        break;
-                    case YouOweMe:
-                        break;
-                    case None:
-                    case MultiplePaymentMethods:
-                        break;
-                    default:
-                        r.setNoneValue(r.getNoneValue() + p.getPaidValue());
-                }
-            }
-        }
-    }
-
-    private void calculateBillPaymentValuesFromPaymentsByIncomeRow(IncomeRow r) {
-        if (r == null || r.getPaymentMethod() == null
-                || r.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
-            return;
-        }
-
-        List<Payment> payments = r.getPayments();
-        if (payments == null || payments.isEmpty()) {
-            return;
-        }
-
-        for (Payment p : payments) {
-            if (p.getPaymentMethod() == null) {
-                r.setNoneValue(r.getNoneValue() + p.getPaidValue());
-            } else {
-                switch (p.getPaymentMethod()) {
-                    case Agent:
-                        r.setAgentValue(r.getAgentValue() + p.getPaidValue());
-                        break;
-                    case Card:
-                        r.setCardValue(r.getCardValue() + p.getPaidValue());
-                        break;
-                    case Cash:
-                        r.setCashValue(r.getCashValue() + p.getPaidValue());
-                        break;
-                    case Cheque:
-                        r.setChequeValue(r.getChequeValue() + p.getPaidValue());
-                        break;
-                    case Credit:
-                        r.setCreditValue(r.getCreditValue() + p.getPaidValue());
-                        if (r.getPatientEncounter() != null) {
                             r.setInpatientCreditValue(r.getInpatientCreditValue() + p.getPaidValue());
                         } else {
                             r.setOpdCreditValue(r.getOpdCreditValue() + p.getPaidValue());

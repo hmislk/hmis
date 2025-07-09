@@ -1,17 +1,21 @@
 package com.divudi.service;
 
 import com.divudi.core.data.BillCategory;
+
 import static com.divudi.core.data.BillCategory.BILL;
 import static com.divudi.core.data.BillCategory.CANCELLATION;
 import static com.divudi.core.data.BillCategory.PAYMENTS;
 import static com.divudi.core.data.BillCategory.PREBILL;
 import static com.divudi.core.data.BillCategory.REFUND;
+
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillType;
+
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
+
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
@@ -55,16 +59,21 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
+
 import com.google.gson.GsonBuilder;
+
 import java.util.*;
+
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -72,9 +81,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * @author Dr M H B Ariyaratne
- *
  */
 @Stateless
 public class BillService {
@@ -662,7 +669,7 @@ public class BillService {
     }
 
     public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
-            Institution institution, Department department, BillType[] billTypes, Class bc) {
+                                             Institution institution, Department department, BillType[] billTypes, Class bc) {
         String sql;
         Map m = new HashMap();
         sql = "select count(bi) "
@@ -696,7 +703,7 @@ public class BillService {
     }
 
     public Long calulateRevenueBillItemCount(Date fd, Date td, PaymentMethod pm,
-            Institution institution, Department department, BillType[] billTypes) {
+                                             Institution institution, Department department, BillType[] billTypes) {
         return calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, BilledBill.class)
                 - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, CancelledBill.class)
                 - calulateRevenueBillItemCount(fd, td, pm, institution, department, billTypes, RefundBill.class);
@@ -840,15 +847,15 @@ public class BillService {
     }
 
     public ReportTemplateRowBundle createBundleByKeywordForBills(List<BillTypeAtomic> billTypesAtomics,
-            Institution ins, Department dep,
-            Institution fromIns,
-            Department fromDep,
-            Institution toIns,
-            Department toDep,
-            WebUser user,
-            Date paramFromDate,
-            Date paramToDate,
-            SearchKeyword filter) {
+                                                                 Institution ins, Department dep,
+                                                                 Institution fromIns,
+                                                                 Department fromDep,
+                                                                 Institution toIns,
+                                                                 Department toDep,
+                                                                 WebUser user,
+                                                                 Date paramFromDate,
+                                                                 Date paramToDate,
+                                                                 SearchKeyword filter) {
         ReportTemplateRowBundle outputBundle = new ReportTemplateRowBundle();
         List<ReportTemplateRow> outputRows;
         String jpql;
@@ -935,35 +942,35 @@ public class BillService {
     }
 
     public List<Bill> fetchBills(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics) {
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 List<BillTypeAtomic> billTypeAtomics) {
         return fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
     }
 
     public List<Bill> fetchBills(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            BillTypeAtomic billTypeAtomic) {
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 BillTypeAtomic billTypeAtomic) {
         return fetchBills(fromDate, toDate, institution, site, department, webUser,
                 billTypeAtomic != null ? Collections.singletonList(billTypeAtomic) : null);
     }
 
     public List<Bill> fetchBills(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 List<BillTypeAtomic> billTypeAtomics,
+                                 AdmissionType admissionType,
+                                 PaymentScheme paymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1014,14 +1021,14 @@ public class BillService {
     }
 
     public List<PharmacyIncomeCostBillDTO> fetchBillIncomeCostDtos(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+                                                                   Date toDate,
+                                                                   Institution institution,
+                                                                   Institution site,
+                                                                   Department department,
+                                                                   WebUser webUser,
+                                                                   List<BillTypeAtomic> billTypeAtomics,
+                                                                   AdmissionType admissionType,
+                                                                   PaymentScheme paymentScheme) {
 
         String jpql = "select new com.divudi.core.data.dto.PharmacyIncomeCostBillDTO("
                 + " b.id, b.deptId, b.billTypeAtomic, "
@@ -1077,17 +1084,68 @@ public class BillService {
         return (List<PharmacyIncomeCostBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
-    public List<Payment> fetchBillPaymentsByDeptId(String deptId) {
-        List<Payment> fetchingBillComponents;
+    public List<PharmacyIncomeBillDTO> fetchBillsAsPharmacyIncomeBillDTOs(Date fromDate,
+                                                                          Date toDate,
+                                                                          Institution institution,
+                                                                          Institution site,
+                                                                          Department department,
+                                                                          WebUser webUser,
+                                                                          List<BillTypeAtomic> billTypeAtomics,
+                                                                          AdmissionType admissionType,
+                                                                          PaymentScheme paymentScheme) {
         String jpql;
         Map params = new HashMap();
-        jpql = "Select p "
-                + " from Payment p "
-                + "where p.bill.deptId=:deptId "
-                + "order by p.id";
-        params.put("deptId", deptId);
-        fetchingBillComponents = paymentFacade.findByJpql(jpql, params);
-        return fetchingBillComponents;
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillDTO("
+                + " b.id, b.deptId, coalesce(pers.name,'N/A'), b.billTypeAtomic, b.createdAt, coalesce(b.netTotal, 0.0), b.paymentMethod, coalesce(b.total, 0.0), "
+                + " b.patientEncounter, coalesce(b.discount, 0.0), coalesce(b.margin, 0.0), coalesce(b.serviceCharge, 0.0), b.paymentScheme, "
+                + " coalesce(bfd.totalRetailSaleValue, 0.0), coalesce(bfd.totalPurchaseValue, 0.0) ) "
+                + " from Bill b "
+                + " left join b.billFinanceDetails bfd "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " left join b.patientEncounter pe "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        return (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<PharmacyIncomeBillDTO> fetchBillIncomeDTOs(Date fromDate,
@@ -1160,14 +1218,14 @@ public class BillService {
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+                                         Date toDate,
+                                         Institution institution,
+                                         Institution site,
+                                         Department department,
+                                         WebUser webUser,
+                                         List<BillTypeAtomic> billTypeAtomics,
+                                         AdmissionType admissionType,
+                                         PaymentScheme paymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1219,14 +1277,14 @@ public class BillService {
     }
 
     public List<PharmaceuticalBillItem> fetchPharmaceuticalBillItems(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+                                                                     Date toDate,
+                                                                     Institution institution,
+                                                                     Institution site,
+                                                                     Department department,
+                                                                     WebUser webUser,
+                                                                     List<BillTypeAtomic> billTypeAtomics,
+                                                                     AdmissionType admissionType,
+                                                                     PaymentScheme paymentScheme) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1341,17 +1399,17 @@ public class BillService {
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            Institution toInstitution,
-            Department toDepartment,
-            Institution toSite,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme) {
+                                                  Date toDate,
+                                                  Institution institution,
+                                                  Institution site,
+                                                  Department department,
+                                                  Institution toInstitution,
+                                                  Department toDepartment,
+                                                  Institution toSite,
+                                                  WebUser webUser,
+                                                  List<BillTypeAtomic> billTypeAtomics,
+                                                  AdmissionType admissionType,
+                                                  PaymentScheme paymentScheme) {
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -1424,17 +1482,17 @@ public class BillService {
     }
 
     public List<Bill> fetchBills(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            AdmissionType admissionType,
-            PaymentScheme paymentScheme,
-            Institution toInstitution,
-            Department toDepartment,
-            String visitType
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 List<BillTypeAtomic> billTypeAtomics,
+                                 AdmissionType admissionType,
+                                 PaymentScheme paymentScheme,
+                                 Institution toInstitution,
+                                 Department toDepartment,
+                                 String visitType
     ) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
@@ -1496,23 +1554,23 @@ public class BillService {
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics) {
+                                         Date toDate,
+                                         Institution institution,
+                                         Institution site,
+                                         Department department,
+                                         WebUser webUser,
+                                         List<BillTypeAtomic> billTypeAtomics) {
         return fetchBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null);
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            PatientEncounter patientEncounter) {
+                                         Date toDate,
+                                         Institution institution,
+                                         Institution site,
+                                         Department department,
+                                         WebUser webUser,
+                                         List<BillTypeAtomic> billTypeAtomics,
+                                         PatientEncounter patientEncounter) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -1562,13 +1620,13 @@ public class BillService {
     }
 
     public List<BillItem> fetchBillItemsWithoutCancellationsAndReturns(Date fromDate,
-            Date toDate,
-            Institution institution,
-            Institution site,
-            Department department,
-            WebUser webUser,
-            List<BillTypeAtomic> billTypeAtomics,
-            PatientEncounter patientEncounter) {
+                                                                       Date toDate,
+                                                                       Institution institution,
+                                                                       Institution site,
+                                                                       Department department,
+                                                                       WebUser webUser,
+                                                                       List<BillTypeAtomic> billTypeAtomics,
+                                                                       PatientEncounter patientEncounter) {
         String jpql;
         Map<String, Object> params = new HashMap<>();
 
@@ -2012,7 +2070,7 @@ public class BillService {
         return mismatch;
     }
 
-// ChatGPT contributed method to check if bill has no bill items
+    // ChatGPT contributed method to check if bill has no bill items
     public boolean billHasNoBillItems(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
             System.out.println("bill = " + bill + " has NO Bill Items.");
