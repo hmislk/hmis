@@ -105,12 +105,12 @@
                                     </p:tab>
                                     <p:tab title="Bill Items" >
 
-                                        <p:accordionPanel >
+                                        <p:accordionPanel styleClass="p-grid">
                                             <p:tab title="Bill Items" >
                                                 <view:bill_item_list_edit editable="true" billItems="#{billSearch.viewingBillItems}"/>
                                             </p:tab>
                                             <p:tab title="Pharmaceutical Bill Items" >
-                                                <view:pharmaceutical_bill_item_list_edit 
+                                                <view:pharmaceutical_bill_item_list_edit
                                                     editable="true" 
                                                     pharmaceuticalBillItems="#{billSearch.viewingPharmaceuticalBillItems}"/>
                                             </p:tab>
@@ -121,6 +121,14 @@
                                                     ></view:patient_investigation_list_edit>
                                             </p:tab>
                                         </p:accordionPanel>
+
+                                        <div class="p-grid">
+                                            <ui:repeat value="#{billSearch.viewingBillItems}" var="bi">
+                                                <div class="p-col-12 mb-2">
+                                                    <ph:bill_item_finance_details pbi="#{bi}"/>
+                                                </div>
+                                            </ui:repeat>
+                                        </div>
                                     </p:tab>
                                     <p:tab title="Bill Fees" >
                                         <view:bill_fee_list_edit editable="true" billFees="#{billSearch.viewingBillFees}" ></view:bill_fee_list_edit>
@@ -175,12 +183,6 @@
                                         </p:panel>
                                     </p:tab>
 
-                                    <p:tab title="Item Finance Details" >
-                                        <ui:repeat value="#{billSearch.viewingBillItems}" var="bi" >
-                                            <ph:bill_item_finance_details pbi="#{bi}"/>
-                                            <p:separator />
-                                        </ui:repeat>
-                                    </p:tab>
 
                                     <p:tab title="Cancellations" >
                                         <h:panelGroup rendered="#{not billSearch.viewingBill.cancelled}" >
