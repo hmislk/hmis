@@ -12,6 +12,8 @@
         <ui:define name="subcontent">
 
             <p:panel header="Pharmacy Income &amp; Cost Report">
+
+
                 <h:form>
                     <h:panelGrid columns="8" styleClass="w-100 form-grid"
                                  columnClasses="label-icon-column, input-column">
@@ -27,7 +29,7 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                         />
 
-                        <p:spacer width="50"/>
+                        <p:spacer width="50"></p:spacer>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2"/> <!-- FontAwesome calendar icon -->
@@ -42,9 +44,9 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
                         />
 
-                        <p:spacer width="50"/>
-                        <p:spacer width="50"/>
-                        <p:spacer width="50"/>
+                        <p:spacer width="50"></p:spacer>
+                        <p:spacer width="50"></p:spacer>
+                        <p:spacer width="50"></p:spacer>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
@@ -61,7 +63,7 @@
                             <p:ajax process="cmbIns" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer/>
+                        <p:spacer></p:spacer>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/>
@@ -78,7 +80,7 @@
                             <p:ajax process="siteMenu" update="cmbDept"/>
                         </p:selectOneMenu>
 
-                        <p:spacer/>
+                        <p:spacer></p:spacer>
 
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
@@ -160,9 +162,9 @@
                                 rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
                             <f:selectItem itemLabel="All Admission Type"/>
                             <f:selectItems value="#{inwardReportController.admissionty}" var="myItem"
-                                           itemValue="#{myItem}" itemLabel="#{myItem.name}"/>
+                                           itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
                         </p:selectOneMenu>
-                        <p:spacer/>
+                        <p:spacer></p:spacer>
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf80d;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
                             <h:outputLabel value="Discount Scheme" for="cmdDiscount" class="mx-3"/>
@@ -176,7 +178,7 @@
                             <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
                         </p:selectOneMenu>
 
-                        <p:spacer/>
+                        <p:spacer></p:spacer>
 
                         <!-- Report View Type Filter -->
                         <h:panelGroup layout="block" styleClass="form-group">
@@ -189,11 +191,13 @@
                                 class="w-100 mt-1 form-control"
                                 value="#{pharmacySummaryReportController.reportViewType}">
                             <f:selectItem itemLabel="-- Select Report View --" itemValue="#{null}"/>
-                            <f:selectItems value="#{pharmacySummaryReportController.reportViewTypesForPharmacyIncomeAndCostReport}"
+                            <f:selectItems value="#{enumController.reportViewTypes}"
                                            var="rvt"
                                            itemLabel="#{rvt.label}"
                                            itemValue="#{rvt}"/>
                         </p:selectOneMenu>
+
+
                     </h:panelGrid>
 
                     <p:commandButton
@@ -201,11 +205,12 @@
                             ajax="false"
                             action="#{pharmacySummaryReportController.processPharmacyIncomeAndCostReport()}"
                             styleClass="ui-button-success m-1"
-                            icon="pi pi-cog"/>
-                         
-                        <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}" >
-                            <p:commandButton 
-                                value="Download" 
+                            icon="pi pi-cog">
+                    </p:commandButton>
+
+                    <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL'}">
+                        <p:commandButton
+                                value="Download"
                                 ajax="false"
                                 styleClass="ui-button-info m-1"
                                 icon="pi pi-download">
@@ -221,10 +226,18 @@
                                 rendered="false"
                                 styleClass="ui-button-warning m-1"
                                 icon="pi pi-print">
-                                <p:printer target="tblb" />
-                            </p:commandButton>
+                            <p:printer target="tblb"/>
+                        </p:commandButton>
 
-                            <p:dataTable
+                        <p:commandButton
+                                value="Calculate Bill Totals"
+                                ajax="false"
+                                styleClass="ui-button-warning m-1"
+                                icon="pi pi-cog"
+                                action="#{pharmacySummaryReportController.calPharmacyIncomeAndCostReportByBill}">
+                        </p:commandButton>
+
+                        <p:dataTable
                                 id="tblb"
                                 style="padding: 0px!important; margin: 0px!important; font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
@@ -235,7 +248,7 @@
                                 paginatorPosition="bottom">
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.deptId}"
+                                <h:outputText value="#{row.bill.deptId}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                                 <f:facet name="footer">
                                     <h:outputText value="Total Amounts"
@@ -245,19 +258,19 @@
                             </p:column>
                             <p:column
                                     headerText="Bill Type" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.billTypeAtomic}"
+                                <h:outputText value="#{row.bill.billTypeAtomic}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="Patient" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.patientName}"
+                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="BHT No" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.patientEncounter.bhtNo}"
+                                <h:outputText value="#{row.bill.patientEncounter.bhtNo}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="Date" width="10em">
-                                <h:outputText value="#{row.createdAt}"
+                                <h:outputText value="#{row.bill.createdAt}"
                                               style="padding: 0px!important; margin: 0px!important;">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
@@ -266,7 +279,7 @@
                             <p:column headerText="Retail Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.totalRetailSaleValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -281,7 +294,7 @@
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalPurchaseValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -292,10 +305,11 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                             <p:column headerText="Gross Profit" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs(row.totalRetailSaleValue - row.totalPurchaseValue)}">
+                                        value="#{commonFunctionsProxy.abs(row.bill.billFinanceDetails.totalRetailSaleValue - row.bill.billFinanceDetails.totalPurchaseValue)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -306,15 +320,20 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
+
                             <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
                                 <p:commandLink
                                         value="View"
                                         style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
                                         class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByDeptId(row.deptId)}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         ajax="false">
+                                    <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
+
+
                         </p:dataTable>
                     </h:panelGroup>
 
@@ -350,7 +369,7 @@
                                 paginatorPosition="bottom">
                             <p:column headerText="Bill No" width="16em"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.deptId}"
+                                <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.deptId}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                                 <f:facet name="footer">
                                     <h:outputText value="Total Amounts"
@@ -360,32 +379,33 @@
                             </p:column>
                             <p:column
                                     headerText="Bill Type" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.billTypeAtomic}"
+                                <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.billTypeAtomic}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="Patient" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.patientName}"
-                                              style="padding: 0px!important; margin: 0px!important;"/>
+                                <h:outputText
+                                        value="#{row.pharmaceuticalBillItem.billItem.bill.patient.person.nameWithTitle}"
+                                        style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="BHT No" style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.patientEncounter.bhtNo}"
+                                <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.patientEncounter.bhtNo}"
                                               style="padding: 0px!important; margin: 0px!important;"/>
                             </p:column>
                             <p:column headerText="Date" width="10em">
-                                <h:outputText value="#{row.createdAt}"
+                                <h:outputText value="#{row.pharmaceuticalBillItem.billItem.bill.createdAt}"
                                               style="padding: 0px!important; margin: 0px!important;">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Item" width="10em">
-                                <h:outputText value="#{row.itemName}"
+                                <h:outputText value="#{row.pharmaceuticalBillItem.billItem.item.name}"
                                               style="padding: 0px!important; margin: 0px!important;">
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Qty" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.qty}">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.qty}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -398,13 +418,14 @@
                             </p:column>
                             <p:column headerText="Retail Rate" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.retailRate}">
+                                <h:outputText value="#{row.pharmaceuticalBillItem.retailRate}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Retail Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{commonFunctionsProxy.abs(row.retailRate * row.qty)}">
+                                <h:outputText
+                                        value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.retailRate * row.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -418,7 +439,8 @@
 
                             <p:column headerText="Cost Value" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
-                                <h:outputText value="#{commonFunctionsProxy.abs(row.purchaseRate * row.qty)}">
+                                <h:outputText
+                                        value="#{commonFunctionsProxy.abs(row.pharmaceuticalBillItem.purchaseRate * row.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -433,7 +455,7 @@
                             <p:column headerText="Gross Profit" width="10em" class="text-end"
                                       style="padding: 0px!important; margin: 0px!important;">
                                 <h:outputText
-                                        value="#{commonFunctionsProxy.abs((row.retailRate - row.purchaseRate) * row.qty)}">
+                                        value="#{commonFunctionsProxy.abs((row.pharmaceuticalBillItem.retailRate - row.pharmaceuticalBillItem.purchaseRate) * row.pharmaceuticalBillItem.qty)}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
@@ -444,19 +466,26 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
+
                             <p:column headerText="Actions" exportable="false" styleClass="alignTop" width="5em">
                                 <p:commandLink
                                         value="View"
                                         style="font-size: #{pharmacySummaryReportController.fontSizeForScreen}!important;"
                                         class="mx-1"
-                                        action="#{billSearch.navigateToViewBillByAtomicBillTypeByDeptId(row.deptId)}"
+                                        action="#{billSearch.navigateToViewBillByAtomicBillType()}"
                                         ajax="false">
+                                    <f:setPropertyActionListener value="#{row.pharmaceuticalBillItem.billItem.bill}"
+                                                                 target="#{billSearch.bill}"/>
                                 </p:commandLink>
                             </p:column>
+
+
                         </p:dataTable>
                     </h:panelGroup>
 
                     <h:panelGroup rendered="#{pharmacySummaryReportController.reportViewType eq 'BY_BILL_TYPE'}">
+
                         <p:commandButton
                                 value="Download"
                                 ajax="false"
@@ -528,10 +557,15 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
+
                         </p:dataTable>
                     </h:panelGroup>
+
+
                 </h:form>
+
             </p:panel>
+
         </ui:define>
     </ui:composition>
 </h:body>

@@ -289,6 +289,15 @@ public class IncomeBundle implements Serializable {
                         rows.add(ir);
                     }
                 }
+            } else if (firstElement instanceof PharmacyIncomeBillItemDTO) {
+                // Process list as IncomeRows
+                for (Object obj : entries) {
+                    if (obj instanceof PharmacyIncomeBillItemDTO) {
+                        PharmacyIncomeBillItemDTO dto = (PharmacyIncomeBillItemDTO) obj;
+                        IncomeRow ir = new IncomeRow(dto);
+                        rows.add(ir);
+                    }
+                }
             }
         }
     }
@@ -302,49 +311,34 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    public static IncomeBundle fromPharmacyIncomeBillDTO(List<PharmacyIncomeBillDTO> dtos) {
-        IncomeBundle bundle = new IncomeBundle();
-        if (dtos != null) {
-            for (PharmacyIncomeBillDTO dto : dtos) {
-                bundle.rows.add(new IncomeRow(dto));
-            }
-        }
-        return bundle;
-    }
-
-    public static IncomeBundle fromPharmacyIncomeBillItemDTO(List<PharmacyIncomeBillItemDTO> dtos) {
-        IncomeBundle bundle = new IncomeBundle();
-        if (dtos != null) {
-            for (PharmacyIncomeBillItemDTO dto : dtos) {
-                bundle.rows.add(new IncomeRow(dto));
-            }
-        }
-        return bundle;
-    }
-
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
-            if (r == null) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
                 continue;
             }
 
-            BillTypeAtomic bta = r.getBillTypeAtomic();
+            BillTypeAtomic bta = Optional
+                    .ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
             if (bta == null || bta.getBillCategory() == null) {
                 continue; // unable to categorise safely
             }
             BillCategory bc = bta.getBillCategory();
 
-            Double q = r.getQty();
-            Double rRate = r.getRetailRate();
+            Double q = b.getQty();
+            Double rRate = b.getRetailRate();
             if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
-                rRate = r.getNetRate();
+                rRate = b.getBillItem().getNetRate();
             }
 
-            Double pRate = r.getPurchaseRate();
+            Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
@@ -457,18 +451,19 @@ public class IncomeBundle implements Serializable {
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
-            if (r != null) {
-                Double retailBd = r.getTotalRetailSaleValue();
-                Double purchaseBd = r.getTotalPurchaseValue();
+            Bill b = r.getBill();
+            if (b != null && b.getBillFinanceDetails() != null) {
+                BigDecimal retailBd = b.getBillFinanceDetails().getTotalRetailSaleValue();
+                BigDecimal purchaseBd = b.getBillFinanceDetails().getTotalPurchaseValue();
 
                 if (retailBd != null) {
-                    saleValue += retailBd;
+                    saleValue += retailBd.doubleValue();
                 }
                 if (purchaseBd != null) {
-                    purchaseValue += purchaseBd;
+                    purchaseValue += purchaseBd.doubleValue();
                 }
                 if (retailBd != null && purchaseBd != null) {
-                    grossProfitValue += retailBd - purchaseBd;
+                    grossProfitValue += retailBd.doubleValue() - purchaseBd.doubleValue();
                 }
             } else {
                 saleValue += r.getRetailValue();
@@ -486,21 +481,27 @@ public class IncomeBundle implements Serializable {
         Map<BillTypeAtomic, IncomeRow> grouped = new LinkedHashMap<>();
 
         for (IncomeRow r : getRows()) {
-            if (r == null) {
+            PharmaceuticalBillItem b = r.getPharmaceuticalBillItem();
+            if (b == null || b.getBillItem() == null || b.getBillItem().getBill() == null) {
                 continue;
             }
 
-            BillTypeAtomic bta = r.getBillTypeAtomic();
+            BillTypeAtomic bta = Optional.ofNullable(b.getBillItem())
+                    .map(BillItem::getBill)
+                    .map(Bill::getBillTypeAtomic)
+                    .orElse(null);
 
             if (bta == null || bta.getBillCategory() == null) {
                 continue;
             }
 
             BillCategory bc = bta.getBillCategory();
-            Double q = r.getQty();
-
-            Double rRate = r.getRetailRate();
-            Double pRate = r.getPurchaseRate();
+            Double q = b.getQty();
+//            Double rRate = bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS
+//                    ? b.getBillItem().getNetRate()
+//                    : b.getRetailRate();
+            Double rRate = b.getRetailRate();
+            Double pRate = b.getPurchaseRate();
 
             if (q == null || rRate == null || pRate == null) {
                 continue;
