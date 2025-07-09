@@ -2,7 +2,6 @@ package com.divudi.core.data.dto;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 
@@ -24,7 +23,6 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
     private Double discount;
     private Double margin;
     private PaymentScheme paymentScheme;
-    private BillFinanceDetails billFinanceDetails;
 
     private Double qty;
     private Double retailRate;
@@ -142,14 +140,6 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
 
     public void setPaymentScheme(PaymentScheme paymentScheme) {
         this.paymentScheme = paymentScheme;
-    }
-
-    public BillFinanceDetails getBillFinanceDetails() {
-        return billFinanceDetails;
-    }
-
-    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
-        this.billFinanceDetails = billFinanceDetails;
     }
 
     public Double getQty() {
