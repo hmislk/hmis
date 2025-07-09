@@ -181,8 +181,7 @@ public class PharmacyBean {
         return false;
     }
 
-// ChatGPT Contribution
-    // ChatGPT Contribution
+
     public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
         boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
 
