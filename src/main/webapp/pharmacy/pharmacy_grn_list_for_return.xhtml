@@ -5,19 +5,15 @@
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
-
     <ui:define name="content">
         <h:form>
             <p:panel> 
                 <f:facet name="header">
                     <h:outputLabel value="Goods Received Note List"/>
-
-
-
                 </f:facet>
                 <div class="row">
-                    <div class="col-2">
-                        <h:panelGrid columns="1" >
+                    <div class="col-1">
+                        <h:panelGrid columns="1" class="w-100" >
                             <h:outputLabel value="From Date"/>
                             <p:calendar class="w-100" inputStyleClass="w-100" id="fromDate" value="#{searchController.fromDate}" navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" >      
                             </p:calendar>
@@ -71,7 +67,7 @@
 
                         </h:panelGrid>
                     </div>
-                    <div class="col-10">
+                    <div class="col-11">
                         <p:dataTable 
                             value="#{searchController.bills}" 
                             class="w-100"
@@ -86,21 +82,21 @@
                             <p:column headerText="No" width="2em" >                   
                                 <h:outputLabel value="#{n+1}" ></h:outputLabel>
                             </p:column>
-                            <p:column headerText="GRN No"  >                   
-                                <h:outputLabel  value="#{p.deptId}"/>
-                            </p:column> 
-                            <p:column headerText="PO No">                   
-                                <h:outputLabel  value="#{p.referenceBill.deptId}"/>
-                            </p:column> 
                             <p:column headerText="Distributor" width="20em">
                                 <h:outputLabel  value="#{p.fromInstitution.name}"/>
                             </p:column>
-                            <p:column headerText="Billed at"  >
+                            <p:column headerText="PO No">                   
+                                <h:outputLabel  value="#{p.referenceBill.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="GRN No"  >                   
+                                <h:outputLabel  value="#{p.deptId}"/>
+                            </p:column> 
+                            <p:column headerText="GRN at"  >
                                 <h:outputLabel value="#{p.createdAt}" >
                                     <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
-                                <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled at " />
                                     <h:outputLabel style="color: red;" rendered="#{p.cancelled}"
                                                    value="#{p.cancelledBill.createdAt}" >
@@ -108,6 +104,7 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{p.refunded}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Refunded at " />
                                     <h:outputLabel style="color: red;" rendered="#{p.refunded}" 
                                                    value="#{p.refundedBill.createdAt}" >
@@ -115,29 +112,32 @@
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column> 
-                            <p:column headerText="Billed by" >
+                            <p:column headerText="GRN by" >
                                 <h:outputLabel value="#{p.creater.webUserPerson.name}" >                                      
                                 </h:outputLabel>
-                                <br/>
                                 <h:panelGroup rendered="#{p.cancelled}" >
+                                    <br/>
                                     <h:outputLabel style="color: red;" value="Cancelled by " />
                                     <h:outputLabel style="color: red;" rendered="#{p.cancelled}" value="#{p.cancelledBill.creater.webUserPerson.name}" >                                       
                                     </h:outputLabel>
                                 </h:panelGroup>
                                 <h:panelGroup rendered="#{p.refunded}" >
+                                    <br/>                                
                                     <h:outputLabel style="color: red;" value="Refunded by " />
                                     <h:outputLabel style="color: red;" rendered="#{p.refunded}"
                                                    value="#{p.refundedBill.creater.webUserPerson.name}" >                         
                                     </h:outputLabel>
                                 </h:panelGroup>
                             </p:column>    
-
                             <p:column headerText="PO Value" >
                                 <h:outputLabel value="#{p.referenceBill.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
                             </p:column>
-                            <p:column headerText="Grn Value" >
+                            <p:column 
+                                headerText="GRN Value" 
+                                width="6em"
+                                class="text-end">
                                 <h:outputLabel value="#{p.netTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputLabel>
