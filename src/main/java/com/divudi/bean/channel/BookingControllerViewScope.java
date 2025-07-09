@@ -3459,10 +3459,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         calculateSelectedBillSessionTotal();
         itemToAddToBooking = null;
     }
-    
-    public boolean checkItemIsSessionInstance(BillItem bi){
-        if(bi.getItem() != null){
-            if(bi.getItem() instanceof ServiceSession){
+
+    public boolean checkItemIsSessionInstance(BillItem bi) {
+        if (bi.getItem() != null) {
+            if (bi.getItem() instanceof ServiceSession) {
                 return true;
             }
         }
@@ -4060,8 +4060,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                 JsfUtil.addErrorMessage("Please add Agent Reference No. ");
                 return;
             }
-            
-            if(channelService.checkDuplicateAgentRefNo(institution, agentRefNo)){
+
+            if (channelService.checkDuplicateAgentRefNo(institution, agentRefNo)) {
                 JsfUtil.addErrorMessage("Please add different Agent Reference No. ");
                 return;
             }
@@ -4103,7 +4103,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         printPreview = true;
 
         JsfUtil.addSuccessMessage("Channel Booking Added.");
-    } 
+    }
 
     public long totalReservedNumberCount(SessionInstance s) {
         List<Integer> reservedNumbers = CommonFunctions.convertStringToIntegerList(s.getReserveNumbers());
@@ -4147,15 +4147,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         e.setBill(printingBill);
         e.setCreatedAt(new Date());
         e.setCreater(sessionController.getLoggedUser());
-        
+
         String phoneNo = "";
-        if(printingBill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
-                && printingBill.getReferenceBill() != null && printingBill.getReferenceBill().getOnlineBooking() != null){
+        if (printingBill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT
+                && printingBill.getReferenceBill() != null && printingBill.getReferenceBill().getOnlineBooking() != null) {
             phoneNo = printingBill.getReferenceBill().getOnlineBooking().getPhoneNo();
-        }else{
+        } else {
             phoneNo = printingBill.getPatient().getPerson().getPhone();
         }
-        
+
         e.setReceipientNumber(phoneNo);
         e.setSendingMessage(createChanellBookingSms(printingBill));
         e.setDepartment(getSessionController().getLoggedUser().getDepartment());
@@ -6706,7 +6706,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
         for (BillItem bi : selectedBillSession.getBill().getBillItems()) {
-           
+
             double calculatingGrossBillItemTotal = 0.0;
             double calculatingNetBillItemTotal = 0.0;
             double billItemHospitalFee = 0.0;
@@ -6741,7 +6741,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         feeTotalForSelectedBill = calculatingNetBillTotal;
         billSessionFacade.edit(selectedBillSession);
         selectedBillSession = billSessionFacade.find(selectedBillSession.getId());
-    
+
         calculateBillTotalsFromBillFees(selectedBillSession.getBill());
         calculateCashBalance();
     }
@@ -6816,7 +6816,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         billToCaclculate.setTotal(calculatingGrossBillTotal);
         getBillFacade().edit(billToCaclculate);
         feeTotalForSelectedBill = calculatingNetBillTotal;
-  
+
     }
 
     public void prepareBillSessionForReportLink() {

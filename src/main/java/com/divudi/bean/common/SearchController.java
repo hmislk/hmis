@@ -18415,6 +18415,11 @@ public class SearchController implements Serializable {
         bundle.createRowValuesFromBill();
         bundle.calculateTotalsWithCredit();
     }
+//    
+//    public void fetchScanningSessionBillSessions(){
+//        StringBuilder sql = "Select bs from BillSession bs where "
+//                + " "
+//    }
 
     public void listAgentChannelBookings() {
         String jpql = "SELECT b "
