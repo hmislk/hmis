@@ -862,19 +862,19 @@
                     </h:form>
                 </h:panelGroup>
 
-                <!-- Direct Issue to Theatre Cases -->
+                <!-- BHT Issue Requests -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'BHT_issue_requests' and webUserController.hasPrivilege('PharmacySale')}">
                     <h:form>
-                        <p:tooltip for="BHT_issue_requests" value="Direct Issue to Theatre Cases"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:tooltip for="BHT_issue_requests" value="BHT Issue Requests"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
                             id="BHT_issue_requests"
-                            ajax="false"  
-                            action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                            ajax="false"
+                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
+                            <h:outputText style="display: none;" value="BHT Issue Requests" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -1020,6 +1020,22 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Finalize Purchase Orders -->
+                <h:panelGroup layout="block" class="col-1 p-1"
+                              rendered="#{ui.icon eq 'Purchase_Orders_Finalize' and (webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder'))}">
+                    <h:form>
+                        <p:tooltip for="Purchase_Orders_Finalize" value="Finalize Purchase Orders"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Purchase_Orders_Finalize"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/purchase-order-finalize.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Finalize Purchase Orders" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Goods Receipt -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
                     <h:form>
@@ -1031,6 +1047,21 @@
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Goods Receipt With Approval -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_With_Approval' and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval') and webUserController.hasPrivilege('GoodsRecipt')}">
+                    <h:form>
+                        <p:tooltip for="Goods_Receipt_With_Approval" value="Goods Receipt With Approval"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Goods_Receipt_With_Approval"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/goods-receipt-with-approval.svg" style="cursor: pointer;" width="80" height="80" />
+                            <h:outputText style="display: none;" value="Goods Receipt With Approval" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
