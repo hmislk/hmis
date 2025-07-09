@@ -8,6 +8,7 @@ import com.divudi.bean.cashTransaction.DrawerEntryController;
 import com.divudi.bean.channel.ChannelSearchController;
 import com.divudi.bean.channel.analytics.ReportTemplateController;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
+import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.reports.SummaryReports;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillType;
@@ -615,7 +616,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
         bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
         bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
         for (IncomeRow r : bundle.getRows()) {
@@ -732,7 +733,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
         bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
         bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
         for (IncomeRow r : bundle.getRows()) {
@@ -749,7 +750,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
         bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
         bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
         for (IncomeRow r : bundle.getRows()) {
@@ -765,7 +766,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
         bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
         bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
         for (IncomeRow r : bundle.getRows()) {
@@ -814,8 +815,8 @@ public class PharmacySummaryReportController implements Serializable {
                     processPharmacyIncomeAndCostReportByBillType();
                     break;
                 case BY_BILL:
-//                    processPharmacyIncomeAndCostReportByBill();
-                    processPharmacyIncomeAndCostReportByBillDto();
+                    processPharmacyIncomeAndCostReportByBill();
+//                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
@@ -824,13 +825,29 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_AND_COST_REPORT, sessionController.getLoggedUser());
     }
 
+    public ReportViewType[] getReportViewTypesForPharmacyIncomeAndCostReport() {
+        return new ReportViewType[] {
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM,
+                ReportViewType.BY_BILL_TYPE
+        };
+    }
+
+    public ReportViewType[] getReportViewTypesForPharmacyIncomeReport() {
+        return new ReportViewType[] {
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_TYPE,
+                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
+                BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+        };
+    }
+
     public void processPharmacyIncomeAndCostReportByBillItem() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+
+        List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
     }
 
     public void processMovementOutWithStockReportByItem() {
@@ -843,22 +860,19 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
-        reportTimerController.trackReportExecution(() -> {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-            List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
+        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
+
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
     }
 
     public void processPharmacyIncomeAndCostReportByBillType() {
-        reportTimerController.trackReportExecution(() -> {
             List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = new IncomeBundle(pbis);
+            List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
             bundle.generateRetailAndCostDetailsForPharmaceuticalBillType();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {

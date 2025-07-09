@@ -574,7 +574,7 @@ public class GrnCostingController implements Serializable {
     private void processBillItems() {
         for (BillItem i : getBillItems()) {
             applyFinanceDetailsToPharmaceutical(i);
-            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
@@ -582,13 +582,22 @@ public class GrnCostingController implements Serializable {
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
+            if (pbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(pbi);
             }
-            i.setPharmaceuticalBillItem(ph);
+            i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
+            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+
+            System.out.println("Retail Rate: " + pbi.getRetailRate());
+            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
+            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+
+            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
+            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
@@ -1294,43 +1303,54 @@ public class GrnCostingController implements Serializable {
         if (bi.getItem() instanceof com.divudi.core.entity.pharmacy.Ampp) {
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
                     .orElse(BigDecimal.ONE);
-            BigDecimal qtyUnits = Optional.ofNullable(f.getQuantity())
-                    .orElse(BigDecimal.ZERO)
-                    .multiply(unitsPerPack);
-            BigDecimal freeQtyUnits = Optional.ofNullable(f.getFreeQuantity())
-                    .orElse(BigDecimal.ZERO)
-                    .multiply(unitsPerPack);
+            BigDecimal qtyPacks = Optional.ofNullable(f.getQuantity())
+                    .orElse(BigDecimal.ZERO);
+            BigDecimal qtyUnits = qtyPacks.multiply(unitsPerPack);
+            BigDecimal freeQtyPacks = Optional.ofNullable(f.getFreeQuantity())
+                    .orElse(BigDecimal.ZERO);
+            BigDecimal freeQtyUnits = freeQtyPacks.multiply(unitsPerPack);
 
             pbi.setQty(qtyUnits.doubleValue());
             pbi.setQtyInUnit(pbi.getQty());
-            pbi.setQtyPacks(Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setQtyPacks(qtyPacks.doubleValue());
 
             pbi.setFreeQty(freeQtyUnits.doubleValue());
             pbi.setFreeQtyInUnit(pbi.getFreeQty());
-            pbi.setFreeQtyPacks(Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setFreeQtyPacks(freeQtyPacks.doubleValue());
 
-            pbi.setPurchaseRate(java.util.Optional.ofNullable(f.getNetRate()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setPurchaseRate(Optional.ofNullable(f.getNetRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setPurchaseRatePack(pbi.getPurchaseRate());
 
-            pbi.setRetailRate(java.util.Optional.ofNullable(f.getRetailSaleRate()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setRetailRate(Optional.ofNullable(f.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setRetailRatePack(pbi.getRetailRate());
-            pbi.setRetailRateInUnit(java.util.Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+
+            // Update BillItem quantity and rate in packs
+            bi.setQty(qtyPacks.doubleValue());
+            bi.setRate(pbi.getPurchaseRatePack());
         } else {
-            pbi.setQty(java.util.Optional.ofNullable(f.getQuantityByUnits()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            BigDecimal qty = Optional.ofNullable(f.getQuantityByUnits()).orElse(BigDecimal.ZERO);
+            BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantityByUnits()).orElse(BigDecimal.ZERO);
+
+            pbi.setQty(qty.doubleValue());
             pbi.setQtyInUnit(pbi.getQty());
             pbi.setQtyPacks(pbi.getQty());
 
-            pbi.setFreeQty(java.util.Optional.ofNullable(f.getFreeQuantityByUnits()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setFreeQty(freeQty.doubleValue());
             pbi.setFreeQtyInUnit(pbi.getFreeQty());
             pbi.setFreeQtyPacks(pbi.getFreeQty());
 
-            pbi.setPurchaseRate(java.util.Optional.ofNullable(f.getNetRate()).orElse(java.math.BigDecimal.ZERO).doubleValue());
+            pbi.setPurchaseRate(Optional.ofNullable(f.getNetRate()).orElse(BigDecimal.ZERO).doubleValue());
             pbi.setPurchaseRatePack(pbi.getPurchaseRate());
 
-            double r = java.util.Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(java.math.BigDecimal.ZERO).doubleValue();
+            double r = Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue();
             pbi.setRetailRate(r);
             pbi.setRetailRatePack(r);
             pbi.setRetailRateInUnit(r);
+
+            // Update BillItem quantity and rate in units
+            bi.setQty(qty.doubleValue());
+            bi.setRate(pbi.getPurchaseRate());
         }
     }
 

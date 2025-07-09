@@ -1006,11 +1006,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void settleBillWithPay2() {
-        System.out.println("settleBillWithPay2");
-        if (!billSettlingStarted.compareAndSet(false, true)) {
-            return;
-        }
-        try {
+
             Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
             if (pharmacyBillingAfterShiftStart) {
@@ -1073,12 +1069,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             saveSaleBill();
 //        saveSaleBillItems();
 
-            //create Billfees,payments,billfeepayments
             List<Payment> payments = createPaymentsForBill(getSaleBill());
             drawerController.updateDrawerForIns(payments);
             saveSaleBillItems();
 
-//        getPreBill().getCashBillsPre().add(getSaleBill());
             getBillFacade().editAndCommit(getPreBill());
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
@@ -1088,13 +1082,8 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             paymentService.updateBalances(payments);
 
             markComplete(getPreBill());
-//        markToken();
-//        makeNull();
-            //    removeSettledToken();
             billPreview = true;
-        } finally {
-            billSettlingStarted.set(false);
-        }
+
     }
 
     public Token findTokenFromBill(Bill bill) {

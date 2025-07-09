@@ -97,6 +97,7 @@ public class TransferIssueController implements Serializable {
 
     private List<BillItem> billItems;
     private BillItem billItem;
+    private BillItem selectedBillItem;
     private Double qty;
     private Stock tmpStock;
     UserStockContainer userStockContainer;
@@ -226,6 +227,7 @@ public class TransferIssueController implements Serializable {
         billItems = null;
         userStockContainer = null;
         tmpStock = null;
+        selectedBillItem = null;
     }
 
     public TransferIssueController() {
@@ -1007,6 +1009,10 @@ public class TransferIssueController implements Serializable {
         getPharmacyController().fillItemDetails(tmp.getItem());
     }
 
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
     public void removeAll() {
         if (billItems == null) {
             return;
@@ -1138,6 +1144,14 @@ public class TransferIssueController implements Serializable {
 
     public void setTmpStock(Stock tmpStock) {
         this.tmpStock = tmpStock;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }
