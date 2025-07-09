@@ -96,7 +96,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                 </h:outputLabel>
                             </f:facet>
-                            
+
                             <p:column headerText="Serial No" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{n+1}">
 
@@ -115,52 +115,95 @@
                                         pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            
+
                             <p:column headerText="Bill No" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{r.bill.deptId}">
-                                    
+
                                 </h:outputText>
                                 <p:tag rendered="#{r.bill.cancelled}" value="Cancelled - #{r.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
                                 <p:tag rendered="#{r.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
                             </p:column>
-                            
+
                             <p:column headerText="Bill Type" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{r.bill.billType}">
-                                    
-                                </h:outputText>
-                            </p:column>
-                            
-                             <p:column headerText="Patient" style="width: 50px!important; text-align: center;">
-                                 <h:outputText value="#{r.bill.patient.person.name}">
-                                    
-                                </h:outputText>
-                            </p:column>
-                            
-                             <p:column headerText="Cashier" style="width: 50px!important; text-align: center;">
-                                 <h:outputText value="#{r.bill.creater.name}">
-                                    
-                                </h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Hospital Fee" style="width: 50px!important; text-align: center;">
-                                <h:outputText value="#{r.bill.hospitalFee}">
-                                    
-                                </h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Doctor fee" style="width: 50px!important; text-align: center;">
-                                <h:outputText value="#{r.bill.staffFee}">
-                                    
-                                </h:outputText>
-                            </p:column>
-                            
-                            <p:column headerText="Gross Total" style="width: 50px!important; text-align: center;">
-                                <h:outputText value="#{r.bill.total}">
-                                    
+
                                 </h:outputText>
                             </p:column>
 
+                            <p:column headerText="Patient" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.patient.person.name}">
+
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Cashier" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.creater.name}">
+
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="Hospital Fee" style="width: 50px!important; text-align: center;">
+                                <h:outputText styleClass="hosFee" value="#{r.bill.hospitalFee}">
+
+                                </h:outputText>
+                                
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="hosFeeTotal" value="">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Doctor fee" style="width: 50px!important; text-align: center;">
+                                <h:outputText styleClass ="staffFee" value="#{r.bill.staffFee}">
+
+                                </h:outputText>
+
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="staffFeeTotal" value="">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
+                            <p:column headerText="Gross Total" style="width: 50px!important; text-align: center;">
+                                <h:outputText styleClass="grossFee" value="#{r.bill.total}">
+
+                                </h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="grossTotal" value="">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
+
                         </p:dataTable>
+
+                        <script>
+                            function calculateTotals(selector, targeter) {
+                                const values = Array.from(document.querySelectorAll(selector));
+                                const totalValue = values
+                                        .map(value => {
+                                            const cleanValue = value.innerText.replace(/,/g, "");
+                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                        })
+                                        .reduce((total, value) => total + value, 0);
+
+                                const targetElement = document.querySelector(targeter);
+                                if (targetElement) {
+                                    targetElement.innerText = totalValue.toFixed(2);
+                                }
+
+                            }
+
+                            function updateTotals() {
+                                calculateTotals('.grossFee', '.grossTotal');
+                                calculateTotals('.staffFee', '.staffFeeTotal');
+                                calculateTotals('.hosFee', '.hosFeeTotal');
+                            }
+
+                            setTimeout(updateTotals, 500);
+                        </script>
 
                     </p:panel>
                 </h:form>
