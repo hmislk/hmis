@@ -106,7 +106,13 @@ public class UserIconController implements Serializable {
     public void fillDepartmentIcon() {
         if (user == null) {
             JsfUtil.addErrorMessage("User?");
+            return;
         }
+        if (department == null) {
+            JsfUtil.addErrorMessage("Department?");
+            return;
+        }
+        
         Map m = new HashMap();
         String jpql = "SELECT i "
                 + " FROM UserIcon i "
