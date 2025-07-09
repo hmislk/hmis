@@ -44,6 +44,7 @@ import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.WebUser;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
@@ -1740,16 +1741,105 @@ public class BillService {
 
     public String convertBillToJson(Bill bill) {
         if (bill == null) {
-            return "{}";
+            Map<String, Object> res = new LinkedHashMap<>();
+            res.put("message", "No bill selected");
+            return new GsonBuilder().setPrettyPrinting().create().toJson(res);
         }
         if (bill.getBillTypeAtomic() == null) {
-            return "{}";
+            Map<String, Object> res = new LinkedHashMap<>();
+            res.put("message", "Bill type not specified");
+            return new GsonBuilder().setPrettyPrinting().create().toJson(res);
         }
-        switch (bill.getBillTypeAtomic()) {
-            case PHARMACY_GRN:
-                return convertPharmacyGrnBillToJson(bill);
+
+        return convertGenericBillToJson(bill);
+    }
+
+    private String convertGenericBillToJson(Bill bill) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        Map<String, Object> root = new LinkedHashMap<>();
+
+        Map<String, Object> summary = new LinkedHashMap<>();
+        summary.put("billTypeAtomic", bill.getBillTypeAtomic().toString());
+        summary.put("billType", bill.getBillType());
+        summary.put("deptId", bill.getDeptId());
+        summary.put("invoiceNo", bill.getInvoiceNumber());
+        summary.put("createdAt", bill.getCreatedAt() != null ? dateFormat.format(bill.getCreatedAt()) : null);
+        root.put("summary", summary);
+
+        Map<String, Object> details = new LinkedHashMap<>();
+        details.put("department_id", bill.getDepartment() != null ? bill.getDepartment().getId() : null);
+        details.put("from_institution_id", bill.getFromInstitution() != null ? bill.getFromInstitution().getId() : null);
+        details.put("to_institution_id", bill.getToInstitution() != null ? bill.getToInstitution().getId() : null);
+        details.put("paymentMethod", bill.getPaymentMethod());
+        details.put("saleValue", bill.getSaleValue());
+        details.put("total", bill.getTotal());
+        details.put("tax", bill.getTax());
+        details.put("discount", bill.getDiscount());
+        details.put("netTotal", bill.getNetTotal());
+        root.put("billDetails", details);
+
+        List<Map<String, Object>> billItemsList = new ArrayList<>();
+        if (bill.getBillItems() != null) {
+            for (BillItem bi : bill.getBillItems()) {
+                Map<String, Object> item = new LinkedHashMap<>();
+                item.put("item_id", bi.getItem() != null ? bi.getItem().getId() : null);
+                item.put("qty", bi.getQty());
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    item.put("expiry", bi.getPharmaceuticalBillItem().getDoe() != null ? dateFormat.format(bi.getPharmaceuticalBillItem().getDoe()) : null);
+                    item.put("batchNo", bi.getPharmaceuticalBillItem().getStringValue());
+                    item.put("receivedQty", bi.getPharmaceuticalBillItem().getQty());
+                    item.put("receivedFreeQty", bi.getPharmaceuticalBillItem().getFreeQty());
+                }
+
+                Map<String, Object> fin = new LinkedHashMap<>();
+                if (bi.getBillItemFinanceDetails() != null) {
+                    BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+                    fin.put("netTotal", fd.getNetTotal());
+                    fin.put("grossTotal", fd.getGrossTotal());
+                    fin.put("discount", fd.getTotalDiscount());
+                    fin.put("tax", fd.getTotalTax());
+                } else {
+                    fin.put("netTotal", bi.getNetValue());
+                    fin.put("grossTotal", bi.getGrossValue());
+                    fin.put("discount", bi.getDiscount());
+                    fin.put("tax", bi.getVat());
+                }
+                item.put("finance", fin);
+                billItemsList.add(item);
+            }
         }
-        return "{}";
+        root.put("billItems", billItemsList);
+
+        List<Map<String, Object>> paymentsList = new ArrayList<>();
+        if (bill.getPayments() != null) {
+            for (Payment p : bill.getPayments()) {
+                Map<String, Object> pm = new LinkedHashMap<>();
+                pm.put("paymentMethod", p.getPaymentMethod());
+                pm.put("paidValue", p.getPaidValue());
+                pm.put("createdAt", p.getCreatedAt() != null ? dateFormat.format(p.getCreatedAt()) : null);
+                pm.put("bank_id", p.getBank() != null ? p.getBank().getId() : null);
+                pm.put("chequeRefNo", p.getChequeRefNo());
+                pm.put("creditCardRefNo", p.getCreditCardRefNo());
+                paymentsList.add(pm);
+            }
+        }
+        root.put("payments", paymentsList);
+
+        List<Map<String, Object>> cancellationsList = new ArrayList<>();
+        if (bill.getCancelledBill() != null) {
+            Map<String, Object> c = new LinkedHashMap<>();
+            Bill cb = bill.getCancelledBill();
+            c.put("billTypeAtomic", cb.getBillTypeAtomic() != null ? cb.getBillTypeAtomic().toString() : null);
+            c.put("deptId", cb.getDeptId());
+            c.put("createdAt", cb.getCreatedAt() != null ? dateFormat.format(cb.getCreatedAt()) : null);
+            c.put("invoiceNo", cb.getInvoiceNumber());
+            cancellationsList.add(c);
+        }
+        root.put("cancellations", cancellationsList);
+
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        return gson.toJson(root);
     }
 
     public String convertPharmacyGrnBillToJson(Bill bill) {
