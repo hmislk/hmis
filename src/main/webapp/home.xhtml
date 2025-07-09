@@ -1020,6 +1020,22 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Finalize Purchase Orders -->
+                <h:panelGroup layout="block" class="col-1 p-1"
+                              rendered="#{ui.icon eq 'Purchase_Orders_Finalize' and (webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder'))}">
+                    <h:form>
+                        <p:tooltip for="Purchase_Orders_Finalize" value="Finalize Purchase Orders"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Purchase_Orders_Finalize"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/purchase-order-finalize.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Finalize Purchase Orders" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Goods Receipt -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
                     <h:form>
