@@ -54,7 +54,6 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
-import com.divudi.bean.pharmacy.
 import com.divudi.bean.pharmacy.GrnReturnWithCostingController;
 import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
@@ -108,6 +107,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
