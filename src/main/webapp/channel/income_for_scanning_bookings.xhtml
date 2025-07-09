@@ -100,9 +100,52 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Date" style="width: 50px!important; text-align: center;">
+                            <p:column headerText="Created At" style="width: 50px!important; text-align: center;">
                                 <h:outputText value="#{r.createdAt}">
-                                    <f:convertDateTime pattern="dd MMM"/>
+                                    <f:convertDateTime
+                                        pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Bill No" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.deptId}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Bill Type" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.billType}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="Patient" style="width: 50px!important; text-align: center;">
+                                 <h:outputText value="#{r.bill.patient.person.name}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                             <p:column headerText="Cashier" style="width: 50px!important; text-align: center;">
+                                 <h:outputText value="#{r.bill.creater.name}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Hospital Fee" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.hospitalFee}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Doctor fee" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.staffFee}">
+                                    
+                                </h:outputText>
+                            </p:column>
+                            
+                            <p:column headerText="Gross Total" style="width: 50px!important; text-align: center;">
+                                <h:outputText value="#{r.bill.total}">
+                                    
                                 </h:outputText>
                             </p:column>
 
