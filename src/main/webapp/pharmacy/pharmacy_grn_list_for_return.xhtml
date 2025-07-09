@@ -152,14 +152,14 @@
                                     <f:setPropertyActionListener target="#{goodsReturnController.bill}" value="#{p}"/>
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Return" 
-                                    action="pharmacy_return_good?faces-redirect=true" 
-                                    disabled="#{p.cancelled}" 
-                                    icon="pi pi-undo" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Return"
+                                    action="#{billSearch.navigateToPharmacyGrnReturnBillView()}"
+                                    disabled="#{p.cancelled}"
+                                    icon="pi pi-undo"
                                     styleClass="ui-button-warning mx-1">
-                                    <f:setPropertyActionListener target="#{goodsReturnController.bill}" value="#{p}"/>
+                                    <f:setPropertyActionListener target="#{billSearch.bill}" value="#{p}"/>
                                 </p:commandButton>
 
                             </p:column>

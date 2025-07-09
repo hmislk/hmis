@@ -54,7 +54,8 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
-import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
+import com.divudi.bean.pharmacy.
+import com.divudi.bean.pharmacy.GrnReturnWithCostingController;
 import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
@@ -239,6 +240,9 @@ public class BillSearch implements Serializable {
     PurchaseReturnController purchaseReturnController;
     @Inject
     DirectPurchaseReturnController directPurchaseReturnController;
+
+    @Inject
+    GrnReturnWithCostingController grnReturnWithCostingController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     @Inject
@@ -4257,9 +4261,18 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        goodsReturnController.setReturnBill(bill);
-        goodsReturnController.setPrintPreview(true);
-        return "/pharmacy/pharmacy_return_good";
+        grnReturnWithCostingController.resetValuesForReturn();
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            grnReturnWithCostingController.setBill(bill);
+            grnReturnWithCostingController.prepareReturnBill();
+            grnReturnWithCostingController.setPrintPreview(false);
+            return "/pharmacy/grn_return_with_costing?faces-redirect=true";
+        } else {
+            goodsReturnController.setReturnBill(bill);
+            goodsReturnController.setPrintPreview(true);
+            return "/pharmacy/pharmacy_return_good";
+        }
     }
 
     public String navigateToPharmacyIssue() {
