@@ -13,8 +13,10 @@
             <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with Scanning Bookings" >
-                        <h:panelGrid columns="3" class="my-2" >
-                            <h:outputLabel value="From " />
+                        <h:panelGrid columns="14" class="my-2" >
+                            <h:outputText class="mx-2" value="&#xf073;"
+                                                  styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="From " />
                             <h:outputLabel value=":" />
                             <p:datePicker 
                                 class="mx-4 w-100"
@@ -24,7 +26,10 @@
                                 timeInput="true"
                                 value="#{channelReportTemplateController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
-                                <h:outputLabel value="To" />
+                                <p:spacer width="50"/>
+                                <h:outputText class="mx-2" value="&#xf073;"
+                                                  styleClass="fa mr-2"/>
+                                <h:outputLabel class="mx-2" value="To" />
                                 <h:outputLabel value=":" />
                                 <p:datePicker
                                     class="mx-4 w-100"
@@ -34,7 +39,10 @@
                                     timeInput="true"
                                     value="#{channelReportTemplateController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
-                                <h:outputLabel  value="Institution"  ></h:outputLabel>
+                                <p:spacer width="50"/>
+                                <h:outputText class="mx-2" value="&#xf0e8;"
+                                                  styleClass="fa mr-2"/>
+                                <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                                 <h:outputLabel value=":" />
                                 <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportTemplateController.institution}"
                                                  completeMethod="#{institutionController.completeIns}" 
@@ -42,14 +50,40 @@
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportTemplateController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportTemplateController.fillIncomeWithAgentBookings()}" ajax="false" ></p:commandButton>
+                            
+                            <p:commandButton
+                                    id="btnPdf"
+                                    class="m-1 ui-button-info"
+                                    ajax="false"
+                                    rendered="true"
+                                    icon="fas fa-file-pdf"
+                                    value="Export as PDF">
+                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                    id="btnPrint"
+                                    class="m-1 ui-button-danger mx-2"
+                                    icon="fas fa-print"
+                                    ajax="false"
+                                    value="Print Table"
+                                    action="channel_income_bill_print?faces-redirect=true">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                    id="btnExcel"
+                                    class="m-1 ui-button-success"
+                                    icon="fas fa-file-excel"
+                                    ajax="false" value="Export to Excel">
+                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Scanning_Income_Report"/>
+                            </p:commandButton>
                         </h:panelGrid>
 
 
                         <p:panel header="Income With Scanning Booking" >
 
-
-                            <p:dataTable  value="#{channelReportTemplateController.rowBundle.rows}" var="r" >
+                            <p:dataTable id="tableForReport"  value="#{channelReportTemplateController.rowBundle.rows}" var="r" >
                                 <f:facet name="header">
 
                                     <h:outputLabel value="#{channelReportTemplateController.institution.name}"/>
