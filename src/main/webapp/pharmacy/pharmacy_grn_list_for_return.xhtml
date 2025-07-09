@@ -205,41 +205,43 @@
 
                             <p:column 
                                 headerText="Previous Returns" 
-                                width="28em">
-                                    <p:dataTable 
-                                        rendered="#{not empty p.listOfBill}"
-                                        var="b" 
-                                        value="#{p.listOfBill}" >
-                                        <p:column>
-                                            <h:commandLink action="pharmacy_reprint_grn_return">
-                                                <h:outputText value="#{b.deptId}" />
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
-                                            </h:commandLink>
-                                        </p:column>
-                                        <p:column>
-                                            <h:commandLink action="pharmacy_reprint_grn_return">
-                                                <h:outputText value="#{b.createdAt}">
-                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputText>
-                                                <f:setPropertyActionListener value="#{b}" target="#{pharmacyBillSearch.bill}" />
-                                            </h:commandLink>
-                                            <h:panelGroup rendered="#{b.cancelled}">
-                                                 <br/>
-                                                <h:outputText styleClass="text-danger" value="Cancelled at " />
-                                                <h:outputText styleClass="text-danger" value="#{b.cancelledBill.createdAt}">
-                                                    <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                </h:outputText>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column>
-                                            <h:commandLink action="pharmacy_reprint_grn_return">
-                                                <h:outputText value="#{b.netTotal}">
-                                                    <f:convertNumber pattern="#,##0.00" />
-                                                </h:outputText>
-                                                <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
-                                            </h:commandLink>
-                                        </p:column>
-                                    </p:dataTable>
+                                width="32em">
+                                <h:dataTable 
+                                    value="#{p.listOfBill}" 
+                                    var="b" 
+                                    rendered="#{not empty p.listOfBill}" 
+                                    styleClass="table table-sm table-borderless w-100 m-0 p-0">
+                                    <h:column>
+                                        <h:outputText value="#{b.deptId}" />
+                                    </h:column>
+                                    <h:column class="text-center">
+                                        <h:outputText value="#{b.createdAt}">
+                                            <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                        </h:outputText>
+                                        <h:panelGroup rendered="#{b.cancelled}">
+                                            <br/>
+                                            <h:outputText styleClass="text-danger" value="Cancelled at " />
+                                            <h:outputText styleClass="text-danger" value="#{b.cancelledBill.createdAt}">
+                                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                            </h:outputText>
+                                        </h:panelGroup>
+                                    </h:column>
+                                    <h:column class="text-end">
+                                        <h:outputText value="#{b.netTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputText>
+                                    </h:column>
+
+                                    <h:column class="text-center" >
+                                        <h:commandButton 
+                                            value="View" 
+                                            action="pharmacy_reprint_grn_return"
+                                            styleClass="btn btn-sm btn-outline-primary px-2 py-0">
+                                            <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{b}" />
+                                        </h:commandButton>
+                                    </h:column>
+                                </h:dataTable>
+
                             </p:column>
                         </p:dataTable>
 
