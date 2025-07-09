@@ -15,8 +15,8 @@
                     <na:not_authorize />
                 </h:panelGroup>
 
-                <h:form >
-                    <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
+                <!-- Use outer form from user_list.xhtml -->
+                <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
                         <f:facet name="header">
                             <i class="fa fa-icons" />
                             <h:outputLabel class="mx-2" value="Manage User Icons"/>
@@ -72,8 +72,8 @@
                                 ajax="false"
                                 class="w-100 mx-2"
                                 icon="fa fa-plus" 
-                                action="#{userIconController.addUserIcon}" 
-                                update="userIcon" 
+                                action="#{userIconController.addUserIcon}"
+                                update="iconAutoComplete tbl"
                                 />
                         </h:panelGrid>
 
@@ -140,7 +140,6 @@
                             </p:column>
                         </p:dataTable>
                     </p:panel>
-                </h:form>
             </ui:define>
         </ui:composition>
     </h:body>

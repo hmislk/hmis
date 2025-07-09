@@ -705,6 +705,10 @@ public class DataAdministrationController implements Serializable {
         return "/dataAdmin/name_to_code?faces-redirect=true";
     }
 
+    public String navigateToReportExecutionLogs() {
+        return "/dataAdmin/report_execution_logs?faces-redirect=true";
+    }
+
     public String navigateToListOpdBillsAndBillItemsFields() {
         return "/dataAdmin/opd_bills_and_bill_items?faces-redirect=true";
     }
