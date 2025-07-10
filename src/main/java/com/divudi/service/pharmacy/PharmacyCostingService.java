@@ -22,6 +22,50 @@ import javax.ejb.Stateless;
 @Stateless
 public class PharmacyCostingService {
 
+    // ChatGPT contributed
+    /**
+     * Recalculate Pharmaceutical Bill Item quantities and values to be negative
+     * regardless of current sign. Used at the end of bills where stocks are
+     * going out.
+     *
+     * @param pbi PharmaceuticalBillItem to update
+     */
+    public void makeAllQuentityValuesNegative(PharmaceuticalBillItem pbi) {
+        if (pbi == null) {
+            return;
+        }
+        pbi.setQty(-Math.abs(pbi.getQty()));
+        pbi.setQtyPacks(-Math.abs(pbi.getQtyPacks()));
+        pbi.setFreeQty(-Math.abs(pbi.getFreeQty()));
+        pbi.setFreeQtyPacks(-Math.abs(pbi.getFreeQtyPacks()));
+        pbi.setPurchaseValue(-Math.abs(pbi.getPurchaseValue()));
+        pbi.setPurchaseRatePackValue(-Math.abs(pbi.getPurchaseRatePackValue()));
+        pbi.setRetailValue(-Math.abs(pbi.getRetailValue()));
+        pbi.setRetailPackValue(-Math.abs(pbi.getRetailPackValue()));
+    }
+
+    // ChatGPT contributed
+    /**
+     * Recalculate Pharmaceutical Bill Item quantities and values to be positive
+     * regardless of current sign. Used at the end of bills where stocks are
+     * coming in.
+     *
+     * @param pbi PharmaceuticalBillItem to update
+     */
+    public void makeAllQuentityValuesPositive(PharmaceuticalBillItem pbi) {
+        if (pbi == null) {
+            return;
+        }
+        pbi.setQty(Math.abs(pbi.getQty()));
+        pbi.setQtyPacks(Math.abs(pbi.getQtyPacks()));
+        pbi.setFreeQty(Math.abs(pbi.getFreeQty()));
+        pbi.setFreeQtyPacks(Math.abs(pbi.getFreeQtyPacks()));
+        pbi.setPurchaseValue(Math.abs(pbi.getPurchaseValue()));
+        pbi.setPurchaseRatePackValue(Math.abs(pbi.getPurchaseRatePackValue()));
+        pbi.setRetailValue(Math.abs(pbi.getRetailValue()));
+        pbi.setRetailPackValue(Math.abs(pbi.getRetailPackValue()));
+    }
+
     /**
      * Recalculate line-level financial values before adding a BillItem to a
      * bill.
@@ -331,7 +375,7 @@ public class PharmacyCostingService {
 
         bifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
         bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyInUnits));
-        bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits+freeQtyInUnits));
+        bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits + freeQtyInUnits));
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {

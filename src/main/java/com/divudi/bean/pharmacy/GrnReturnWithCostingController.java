@@ -445,9 +445,11 @@ public class GrnReturnWithCostingController implements Serializable {
     // ChatGPT Contribution
     private void saveBillItems() {
         for (BillItem i : getBillItems()) {
+
             BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
-            BillItem ref = i.getReferanceBillItem();
-            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
+
+            BillItem referanceBillItem = i.getReferanceBillItem();
+            BillItemFinanceDetails refFd = referanceBillItem != null ? referanceBillItem.getBillItemFinanceDetails() : null;
 
             if (fd == null || refFd == null) {
                 continue; // Skip if finance details are missing
@@ -455,57 +457,31 @@ public class GrnReturnWithCostingController implements Serializable {
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
 
-            double qty = fd.getQuantity().doubleValue();
-            double freeQty = fd.getFreeQuantity().doubleValue();
-            double unitsPerPack = fd.getUnitsPerPack().doubleValue();
-            double rate = fd.getLineGrossRate().doubleValue();
+            pharmacyCostingService.makeAllQuentityValuesNegative(pbi);
 
-            if (i.getItem() instanceof Ampp) {
-                pbi.setQty(-qty * unitsPerPack);
-                pbi.setFreeQty(-freeQty * unitsPerPack);
-            } else {
-                pbi.setQty(-qty);
-                pbi.setFreeQty(-freeQty);
-            }
-
-            i.setNetValue(pbi.getQty() * rate);
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-
-            i.setPharmaceuticalBillItem(null);
-
-            if (i.getId() == null) {
-                getBillItemFacade().create(i);
-            }
-
-            pbi.setBillItem(i);
-
-            if (pbi.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(pbi);
-            }
-
-            i.setPharmaceuticalBillItem(pbi);
-            getBillItemFacade().edit(i);
-
-            boolean returnFlag = getPharmacyBean().deductFromStock(
+            boolean stockUpdatedSuccessfully = getPharmacyBean().deductFromStock(
                     pbi.getStock(),
                     Math.abs(fd.getTotalQuantityByUnits().doubleValue()),
                     pbi,
                     getSessionController().getDepartment()
             );
 
-            if (!returnFlag) {
-                getPharmaceuticalBillItemFacade().edit(pbi);
-                getBillItemFacade().edit(i);
+            if (stockUpdatedSuccessfully) {
+                if (i.getId() == null) {
+                    i.setCreatedAt(new Date());
+                    i.setCreater(sessionController.getLoggedUser());
+                    billItemFacade.create(i);
+                } else {
+                    billItemFacade.edit(i);
+                }
+                saveBillFee(i);
+                billItemFacade.editAndCommit(referanceBillItem);
+                getReturnBill().getBillItems().add(i);
+            } else {
+                // here this bill item needs to be marked as retired if already saved, if not need to remove from the list. also need to call the fillData() after removing
+                i.setRetired(true);
                 // TODO: Log error
             }
-
-            saveBillFee(i);
-            getBillItemFacade().editAndCommit(ref);
-
-            BillItemFinanceDetails savedFd = ref.getBillItemFinanceDetails();
-
-            getReturnBill().getBillItems().add(i);
         }
     }
 
@@ -515,12 +491,15 @@ public class GrnReturnWithCostingController implements Serializable {
 
         double purchaseFree = 0.0;
         double purchaseNonFree = 0.0;
+
         double retailFree = 0.0;
         double retailNonFree = 0.0;
+
         double wholesaleFree = 0.0;
         double wholesaleNonFree = 0.0;
 
-        double freeValueTotal = 0.0;
+        double costFree = 0.0;
+        double costNonFree = 0.0;
 
         for (BillItem bi : getBillItems()) {
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
@@ -529,12 +508,13 @@ public class GrnReturnWithCostingController implements Serializable {
             double purchaseRate = pbi.getItemBatch().getPurcahseRate();
             double retailRate = pbi.getItemBatch().getRetailsaleRate();
             double wholesaleRate = pbi.getItemBatch().getWholesaleRate();
+            double costRate = pbi.getItemBatch().getCostRate();
 
             pharmacyCostingService.calculateUnitsPerPack(fd);
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(pbi, fd);
 
             fd.setLineNetRate(fd.getLineGrossRate());
-            fd.setLineCostRate(BigDecimal.valueOf(pbi.getItemBatch().getCostRate()));
+            fd.setLineCostRate(BigDecimal.valueOf(costRate));
 
             fd.setLineGrossTotal(fd.getLineGrossRate().multiply(fd.getTotalQuantity()));
             fd.setLineNetTotal(fd.getLineGrossTotal());
@@ -556,7 +536,9 @@ public class GrnReturnWithCostingController implements Serializable {
             wholesaleFree += freeQty * wholesaleRate;
             wholesaleNonFree += paidQty * wholesaleRate;
 
-            freeValueTotal += fd.getFreeQuantityByUnits().doubleValue() * fd.getLineGrossRate().doubleValue();
+            costFree += freeQty * costRate;
+            costNonFree += paidQty * costRate;
+
         }
 
         returnBill.setNetTotal(billReturnTotal);
@@ -564,7 +546,9 @@ public class GrnReturnWithCostingController implements Serializable {
 
         returnBill.getBillFinanceDetails().setLineCostValue(BigDecimal.valueOf(billTotalAtCostRate));
         returnBill.getBillFinanceDetails().setBillCostValue(BigDecimal.ZERO);
-        returnBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(billTotalAtCostRate));
+        returnBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
+        returnBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
+        returnBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
 
         returnBill.getBillFinanceDetails().setLineGrossTotal(BigDecimal.valueOf(billReturnTotal));
         returnBill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
@@ -585,10 +569,10 @@ public class GrnReturnWithCostingController implements Serializable {
         returnBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
         returnBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
         returnBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
-        
-        
 
-        returnBill.getBillFinanceDetails().setTotalOfFreeItemValues(BigDecimal.valueOf(freeValueTotal));
+        returnBill.setSaleValue(retailFree + retailNonFree); // for backword compatibility
+        returnBill.setFreeValue(retailFree); // for backword compatibility
+
     }
 
     private void applyPendingReturnTotals() {
@@ -674,6 +658,7 @@ public class GrnReturnWithCostingController implements Serializable {
         fillData();
 
         applyPendingReturnTotals();
+
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
             revertPendingReturnTotals();
             JsfUtil.addErrorMessage("Insufficient stock available to return these items.");
@@ -684,9 +669,10 @@ public class GrnReturnWithCostingController implements Serializable {
             JsfUtil.addErrorMessage("Returning more than purchased.");
             return;
         }
-        pharmacyCalculation.calculateRetailSaleValueAndFreeValueAtPurchaseRate(getBill());
+
         saveReturnBill();
         saveBillItems();
+
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 
         getBillFacade().edit(getReturnBill());
@@ -1041,20 +1027,8 @@ public class GrnReturnWithCostingController implements Serializable {
         if (bf.getId() == null) {
             getBillFeeFacade().create(bf);
         }
-//        createBillFeePaymentAndPayment(bf, p); // Retired Concept. No Loger Used
     }
 
-//    public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-//        BillFeePayment bfp = new BillFeePayment();
-//        bfp.setBillFee(bf);
-//        bfp.setAmount(bf.getSettleValue());
-//        bfp.setInstitution(getSessionController().getInstitution());
-//        bfp.setDepartment(getSessionController().getDepartment());
-//        bfp.setCreater(getSessionController().getLoggedUser());
-//        bfp.setCreatedAt(new Date());
-//        bfp.setPayment(p);
-//        getBillFeePaymentFacade().create(bfp);
-//    }
     public PharmaceuticalBillItemFacade getPharmaceuticalBillItemFacade() {
         return pharmaceuticalBillItemFacade;
     }
