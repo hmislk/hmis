@@ -262,6 +262,41 @@ public class PharmacyCostingService {
 
     }
 
+// ChatGPT contribution: Added null checks and reverse mapping method
+    public void addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
+        if (pbi == null || bifd == null) {
+            return;
+        }
+
+        BillItem pbiBillItem = pbi.getBillItem();
+        BillItem bifdBillItem = bifd.getBillItem();
+        if (pbiBillItem == null || bifdBillItem == null || pbiBillItem.equals(bifdBillItem)) {
+            return;
+        }
+
+        BigDecimal qty = Optional.ofNullable(bifd.getQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal freeQty = Optional.ofNullable(bifd.getFreeQuantity()).orElse(BigDecimal.ZERO);
+        BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+
+        pbi.setQty(qty.multiply(upp).doubleValue());
+        pbi.setFreeQty(freeQty.multiply(upp).doubleValue());
+        pbi.setQtyPacks(qty.doubleValue());
+        pbi.setFreeQtyPacks(freeQty.doubleValue());
+    }
+
+    public void addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
+        if (pbi == null || bifd == null) {
+            return;
+        }
+        BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+        Double qtyPacks = Optional.ofNullable(pbi.getQtyPacks()).orElse(0.0);
+        Double freeQtyPacks = Optional.ofNullable(pbi.getFreeQtyPacks()).orElse(0.0);
+        bifd.setQuantity(BigDecimal.valueOf(qtyPacks));
+        bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyPacks));
+        bifd.setQuantityByUnits(BigDecimal.valueOf(qtyPacks).multiply(upp));
+        bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyPacks).multiply(upp));
+    }
+
     public double calculateProfitMarginForPurchases(BillItem bi) {
         return calculateProfitMarginForPurchasesBigDecimal(bi).doubleValue();
     }

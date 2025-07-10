@@ -30,6 +30,13 @@
                                 <p:column headerText="Item Name"  >
                                     <h:outputLabel value="#{ph.item.name}"/>
                                 </p:column>
+                                <p:column 
+                                    headerText="Date of Expirey" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
 
                                 <p:column
                                     width="5em" 
@@ -52,20 +59,20 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
                                 </p:column>
-                                <p:column 
-                                    width="5em" 
-                                    headerText="Purchased Rate" >
-                                    <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                    </h:outputLabel>
-                                </p:column>
-                                <p:column 
-                                    width="5em" 
-                                    headerText="Cost Rate (Per Unit)" >
-                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
-                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                    </h:outputText>
-                                </p:column>
+                                <!--                                <p:column 
+                                                                    width="5em" 
+                                                                    headerText="Purchased Rate" >
+                                                                    <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
+                                                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                                                    </h:outputLabel>
+                                                                </p:column>
+                                                                <p:column 
+                                                                    width="5em" 
+                                                                    headerText="Cost Rate (Per Unit)" >
+                                                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
+                                                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </p:column>-->
 
                                 <p:column
                                     width="5em" 
@@ -87,13 +94,7 @@
                                         <h:outputText value="&nbsp;per Pack" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
                                     </h:panelGroup>
                                 </p:column>
-                                <p:column 
-                                    headerText="Date of Expirey" 
-                                    width="5em" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                    </h:outputText>
-                                </p:column>
+
                                 <p:column 
                                     width="5em" 
                                     headerText="Returning Total Qty"

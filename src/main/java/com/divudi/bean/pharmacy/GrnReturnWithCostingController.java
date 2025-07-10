@@ -132,26 +132,41 @@ public class GrnReturnWithCostingController implements Serializable {
     @Inject
     private PharmacyCalculation pharmacyRecieveBean;
 
-    private double getRemainingQty(BillItem bilItem) {
-        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-            double originalQty = bilItem.getQty();
-            double originalFreeQty = 0.0;
-            if (bilItem.getPharmaceuticalBillItem() != null) {
-                originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
-            }
-            double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(bilItem, BillType.PharmacyGrnReturn, new BilledBill());
-            return originalQty + originalFreeQty - Math.abs(returnedTotal);
-        } else {
-            String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
-                    + "   p.creater is not null and"
-                    + " p.referanceBillItem=:bt and p.bill.billType=:btp";
-
-            HashMap hm = new HashMap();
-            hm.put("bt", bilItem);
-            hm.put("btp", BillType.PharmacyGrnReturn);
-
-            return bilItem.getQty() + getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    private double getRemainingTotalQtyToReturnByUnits(BillItem bilItem) {
+        double originalQty = 0.0;
+        double originalFreeQty = 0.0;
+        double returnedTotal = 0.0;
+        if (bilItem.getPharmaceuticalBillItem() != null) {
+            originalQty = bilItem.getPharmaceuticalBillItem().getQty();
+            originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
         }
+        returnedTotal = Math.abs(getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN));
+        returnedTotal -= Math.abs(getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION));
+        return Math.abs(originalQty) + Math.abs(originalFreeQty) - Math.abs(returnedTotal);
+    }
+
+    private double getRemainingQtyToReturnByUnits(BillItem bilItem) {
+        double originalQty = 0.0;
+        double returnedTotal = 0.0;
+        if (bilItem.getPharmaceuticalBillItem() != null) {
+            originalQty = bilItem.getPharmaceuticalBillItem().getQty();
+        }
+        returnedTotal = Math.abs(getPharmacyRecieveBean().getQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN));
+        returnedTotal -= Math.abs(getPharmacyRecieveBean().getQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION));
+        return Math.abs(originalQty) - Math.abs(returnedTotal);
+    }
+
+    private double getRemainingFreeQtyToReturnByUnits(BillItem bilItem) {
+        double originalQty = 0.0;
+        double originalFreeQty = 0.0;
+        double returnedTotal = 0.0;
+        if (bilItem.getPharmaceuticalBillItem() != null) {
+            originalQty = bilItem.getPharmaceuticalBillItem().getQty();
+            originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
+        }
+        returnedTotal = Math.abs(getPharmacyRecieveBean().getFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN));
+        returnedTotal -= Math.abs(getPharmacyRecieveBean().getFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION));
+        return Math.abs(originalQty) + Math.abs(originalFreeQty) - Math.abs(returnedTotal);
     }
 
     private void addDataToReturningBillItem(BillItem returningBillItem) {
@@ -250,32 +265,46 @@ public class GrnReturnWithCostingController implements Serializable {
         return originalFreeQty + getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
-    public void onEdit(BillItem tmp) {
+    public void onEdit(BillItem editingBillItem) {
         System.out.println("onEdit");
         //    PharmaceuticalBillItem tmp = (PharmaceuticalBillItem) event.getObject();
 
-        double remain = getRemainingQty(tmp.getReferanceBillItem());
-        System.out.println("remain = " + remain);
-        System.out.println("tmp.getQty() = " + tmp.getQty());
-        if (tmp.getQty() > remain) {
-            tmp.setQty(remain);
-            JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
-        }
+        double remainngTotalQty = getRemainingTotalQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
+        double remainngQty = getRemainingQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
+        double remainngFreeQty = getRemainingFreeQtyToReturnByUnits(editingBillItem.getReferanceBillItem());
+        
+        pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(editingBillItem.getPharmaceuticalBillItem(), editingBillItem.getBillItemFinanceDetails());
+        
+        System.out.println("remainngTotalQty = " + remainngTotalQty);
+        System.out.println("remainngQty = " + remainngQty);
+        System.out.println("remainngFreeQty = " + remainngFreeQty);
+        System.out.println("tmp.getQty() = " + editingBillItem.getQty());
 
-        if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-            double remainFree = getRemainingFreeQty(tmp.getReferanceBillItem());
-            System.out.println("remainFree = " + remainFree);
-            System.out.println("tmp.getPharmaceuticalBillItem().getFreeQty() = " + tmp.getPharmaceuticalBillItem().getFreeQty());
-            if (tmp.getPharmaceuticalBillItem().getFreeQty() > remainFree) {
-                tmp.getPharmaceuticalBillItem().setFreeQty(remainFree);
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            if (editingBillItem.getQty() > remainngTotalQty) {
+                editingBillItem.setQty(remainngTotalQty);
+                JsfUtil.addErrorMessage("You cant return over than ballanced Qty ");
+            }
+        } else if (!configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            if (editingBillItem.getPharmaceuticalBillItem().getFreeQty() > remainngFreeQty && editingBillItem.getPharmaceuticalBillItem().getQty() > remainngQty) {
+                editingBillItem.getPharmaceuticalBillItem().setFreeQty(remainngFreeQty);
+                editingBillItem.getPharmaceuticalBillItem().setQty(remainngQty);
+                JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
+            }else if (editingBillItem.getPharmaceuticalBillItem().getQty() > remainngQty) {
+                editingBillItem.getPharmaceuticalBillItem().setQty(remainngQty);
+                JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
+            }else if (editingBillItem.getPharmaceuticalBillItem().getFreeQty() > remainngFreeQty) {
+                editingBillItem.getPharmaceuticalBillItem().setFreeQty(remainngFreeQty);
                 JsfUtil.addErrorMessage("You cant return over than ballanced Free Qty ");
             }
         }
 
-        calculateBillItemDetails(tmp);
+        pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(editingBillItem.getPharmaceuticalBillItem(), editingBillItem.getBillItemFinanceDetails());
+        
+        calculateBillItemDetails(editingBillItem);
         callculateBillDetails();
         calTotal();
-        getPharmacyController().setPharmacyItem(tmp.getPharmaceuticalBillItem().getBillItem().getItem());
+        getPharmacyController().setPharmacyItem(editingBillItem.getPharmaceuticalBillItem().getBillItem().getItem());
     }
 
     public void resetValuesForReturn() {
@@ -619,7 +648,7 @@ public class GrnReturnWithCostingController implements Serializable {
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
 
             if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-                double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+                double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
                 newPharmaceuticalBillItemInReturnBill.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
