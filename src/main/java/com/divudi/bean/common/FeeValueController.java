@@ -85,9 +85,19 @@ public class FeeValueController implements Serializable {
         return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
     }
 
+    public Double getFeeForLocals(Item item, Department department) {
+        FeeValue feeValue = getFeeValue(item, department);
+        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+    }
+
     public Double getFeeForForeigners(Item item, Institution institution) {
         FeeValue feeValue = getFeeValue(item, institution);
         return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+    }
+
+    public Double getFeeForForeigners(Item item, Department department) {
+        FeeValue feeValue = getFeeValue(item, department);
+        return feeValue != null ? feeValue.getTotalValueForForeigners() : 0.0;
     }
 
     public FeeValue getFeeValue(Item item, Department department) {

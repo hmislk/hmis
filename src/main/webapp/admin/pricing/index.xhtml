@@ -32,11 +32,19 @@
                                                 action="#{categoryController.navigateToManageFeeListTypes()}">
                                             </p:commandButton>
 
-                                            <p:commandButton 
+                                            <p:commandButton
                                                 class="w-100"
-                                                ajax="false" 
+                                                ajax="false"
+                                                value="Item Fees for Departments"
+                                                icon="fa fa-sitemap"
+                                                action="#{itemFeeManager.navigateToForDepartmentItemFees()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton
+                                                class="w-100"
+                                                ajax="false"
                                                 value="Item Fees for Sites"
-                                                icon="fa fa-building" 
+                                                icon="fa fa-building"
                                                 action="#{itemFeeManager.navigateToForSiteItemFees()}">
                                             </p:commandButton>
 
