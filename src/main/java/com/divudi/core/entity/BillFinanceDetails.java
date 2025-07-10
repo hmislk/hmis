@@ -65,9 +65,15 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal lineCostValue = BigDecimal.ZERO;
 
-    // Total cost (bill-level + all line-level)
+    // Total cost value for all BillItems (excluding discounts/taxes)
     @Column(precision = 18, scale = 4)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalCostValueFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalCostValueNonFree = BigDecimal.ZERO;
 
     // ------------------ TAXES ------------------
     // Tax applied to the whole Bill (e.g., VAT)
@@ -203,6 +209,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setBillCostValue(this.billCostValue);
         clone.setLineCostValue(this.lineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
+        clone.setTotalCostValueFree(this.totalCostValueFree);
+        clone.setTotalCostValueNonFree(this.totalCostValueNonFree);
 
         // ------------------ TAXES ------------------
         clone.setBillTaxValue(this.billTaxValue);
@@ -372,6 +380,22 @@ public class BillFinanceDetails implements Serializable {
 
     public void setTotalCostValue(BigDecimal totalCostValue) {
         this.totalCostValue = totalCostValue;
+    }
+
+    public BigDecimal getTotalCostValueFree() {
+        return totalCostValueFree;
+    }
+
+    public void setTotalCostValueFree(BigDecimal totalCostValueFree) {
+        this.totalCostValueFree = totalCostValueFree;
+    }
+
+    public BigDecimal getTotalCostValueNonFree() {
+        return totalCostValueNonFree;
+    }
+
+    public void setTotalCostValueNonFree(BigDecimal totalCostValueNonFree) {
+        this.totalCostValueNonFree = totalCostValueNonFree;
     }
 
     public BigDecimal getTotalPurchaseValue() {
