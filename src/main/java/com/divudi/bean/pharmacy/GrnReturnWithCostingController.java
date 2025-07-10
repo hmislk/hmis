@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -356,7 +357,6 @@ public class GrnReturnWithCostingController implements Serializable {
         if (fd == null) {
             return BigDecimal.ZERO;
         }
-
         BigDecimal rate = fd.getGrossRate();
         if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
                 && fd.getLineCostRate() != null) {
@@ -368,26 +368,49 @@ public class GrnReturnWithCostingController implements Serializable {
                 && fd.getLineGrossRate() != null) {
             if (originalBillItem.getItem() instanceof Ampp) {
                 rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
-            }
-            if (originalBillItem.getItem() instanceof Vmpp) {
+            } else if (originalBillItem.getItem() instanceof Vmpp) {
                 rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
-            }
-            if (originalBillItem.getItem() instanceof Amp) {
+            } else if (originalBillItem.getItem() instanceof Amp) {
+                rate = fd.getLineGrossRate();
+            } else if (originalBillItem.getItem() instanceof Vmp) {
                 rate = fd.getLineGrossRate();
             }
-            if (originalBillItem.getItem() instanceof Vmp) {
-                rate = fd.getLineGrossRate();
-            }
-
         }
+        return rate;
+    }
 
-        if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
-            if (upp.compareTo(BigDecimal.ZERO) > 0) {
-                rate = rate.multiply(upp);
-            }
+    public BigDecimal getReturnRate(BillItem originalBillItem) {
+        BillItemFinanceDetails fd = originalBillItem.getBillItemFinanceDetails();
+        if (fd == null) {
+            return BigDecimal.ZERO;
         }
-
+        BigDecimal rate = fd.getGrossRate();
+        if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
+                && fd.getLineCostRate() != null) {
+            if (originalBillItem.getItem() instanceof Ampp) {
+                rate = fd.getLineCostRate().multiply(fd.getUnitsPerPack());
+            } else if (originalBillItem.getItem() instanceof Vmpp) {
+                rate = fd.getLineCostRate().multiply(fd.getUnitsPerPack());
+            } else if (originalBillItem.getItem() instanceof Amp) {
+                rate = fd.getLineCostRate();
+            } else if (originalBillItem.getItem() instanceof Vmp) {
+                rate = fd.getLineCostRate();
+            }
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Total Cost Rate", false)
+                && fd.getTotalCostRate() != null) {
+            if (originalBillItem.getItem() instanceof Ampp) {
+                rate = fd.getTotalCostRate().multiply(fd.getUnitsPerPack());
+            } else if (originalBillItem.getItem() instanceof Vmpp) {
+                rate = fd.getTotalCostRate().multiply(fd.getUnitsPerPack());
+            } else if (originalBillItem.getItem() instanceof Amp) {
+                rate = fd.getTotalCostRate();
+            } else if (originalBillItem.getItem() instanceof Vmp) {
+                rate = fd.getTotalCostRate();
+            }
+        } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", false)
+                && fd.getLineGrossRate() != null) {
+            rate = fd.getLineGrossRate();
+        }
         return rate;
     }
 
@@ -443,11 +466,14 @@ public class GrnReturnWithCostingController implements Serializable {
 //
 //    }
     // ChatGPT Contribution
+// ChatGPT contributed
     private void saveBillItems() {
-        for (BillItem i : getBillItems()) {
+        List<BillItem> failedItems = new ArrayList<>();
+
+        for (Iterator<BillItem> iterator = getBillItems().iterator(); iterator.hasNext();) {
+            BillItem i = iterator.next();
 
             BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
-
             BillItem referanceBillItem = i.getReferanceBillItem();
             BillItemFinanceDetails refFd = referanceBillItem != null ? referanceBillItem.getBillItemFinanceDetails() : null;
 
@@ -456,8 +482,14 @@ public class GrnReturnWithCostingController implements Serializable {
             }
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
-
             pharmacyCostingService.makeAllQuentityValuesNegative(pbi);
+            if (i.getId() == null) {
+                i.setCreatedAt(new Date());
+                i.setCreater(sessionController.getLoggedUser());
+                billItemFacade.create(i);
+            } else {
+                billItemFacade.edit(i);
+            }
 
             boolean stockUpdatedSuccessfully = getPharmacyBean().deductFromStock(
                     pbi.getStock(),
@@ -467,22 +499,36 @@ public class GrnReturnWithCostingController implements Serializable {
             );
 
             if (stockUpdatedSuccessfully) {
-                if (i.getId() == null) {
-                    i.setCreatedAt(new Date());
-                    i.setCreater(sessionController.getLoggedUser());
-                    billItemFacade.create(i);
-                } else {
-                    billItemFacade.edit(i);
-                }
+                billItemFacade.edit(i);
                 saveBillFee(i);
                 billItemFacade.editAndCommit(referanceBillItem);
                 getReturnBill().getBillItems().add(i);
             } else {
-                // here this bill item needs to be marked as retired if already saved, if not need to remove from the list. also need to call the fillData() after removing
-                i.setRetired(true);
-                // TODO: Log error
+                if (i.getId() != null) {
+                    i.setRetired(true);
+                    i.setRetiredAt(new Date());
+                    i.setRetirer(sessionController.getLoggedUser());
+                    billItemFacade.edit(i);
+                } else {
+                    iterator.remove(); // Remove from list if not persisted
+                }
+                failedItems.add(i); // Collect for logging or notification
             }
         }
+
+        if (!failedItems.isEmpty()) {
+            fillData(); // Recalculate after removing or retiring items
+            billFacade.edit(returnBill);
+
+            StringBuilder errorMessage = new StringBuilder("Stock Update Error in the following items:<br/>");
+            for (BillItem failed : failedItems) {
+                if (failed != null && failed.getItem() != null) {
+                    errorMessage.append("- ").append(failed.getItem().getName()).append("<br/>");
+                }
+            }
+            JsfUtil.addErrorMessage(errorMessage.toString());
+        }
+
     }
 
     private void fillData() {
@@ -575,18 +621,40 @@ public class GrnReturnWithCostingController implements Serializable {
 
     }
 
-    private void applyPendingReturnTotals() {
-        for (BillItem i : getBillItems()) {
+    private void applyRemainingValuesInOriginalBill(List<BillItem> inputBillItems) {
+        if (inputBillItems == null) {
+            return;
+        }
+        if (inputBillItems.isEmpty()) {
+            return;
+        }
+        for (BillItem i : inputBillItems) {
             BillItemFinanceDetails fd = i.getBillItemFinanceDetails();
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             BillItem ref = i.getReferanceBillItem();
-            BillItemFinanceDetails refFd = ref != null ? ref.getBillItemFinanceDetails() : null;
 
-            if (fd == null || refFd == null) {
+            if (ref == null) {
+                continue;
+            }
+
+            BillItemFinanceDetails refFd = ref.getBillItemFinanceDetails();
+            PharmaceuticalBillItem refPbi = ref.getPharmaceuticalBillItem();
+
+            if (fd == null || refFd == null || pbi == null || refPbi == null) {
                 continue;
             }
 
             refFd.setReturnQuantity(refFd.getReturnQuantity().add(fd.getQuantity()));
             refFd.setReturnFreeQuantity(refFd.getReturnFreeQuantity().add(fd.getFreeQuantity()));
+
+            refPbi.setRemainingQty(refPbi.getRemainingQty() - pbi.getQty());
+            refPbi.setRemainingQtyPack(refPbi.getRemainingQtyPack() - pbi.getQtyPacks());
+
+            refPbi.setRemainingFreeQty(refPbi.getRemainingFreeQty() - pbi.getFreeQty());
+            refPbi.setRemainingFreeQtyPack(refPbi.getRemainingFreeQtyPack() - pbi.getFreeQtyPacks());
+
+            billItemFacade.edit(i);
+
         }
     }
 
@@ -657,8 +725,6 @@ public class GrnReturnWithCostingController implements Serializable {
 
         fillData();
 
-        applyPendingReturnTotals();
-
         if (getPharmacyBean().isInsufficientStockForReturn(getBillItems())) {
             revertPendingReturnTotals();
             JsfUtil.addErrorMessage("Insufficient stock available to return these items.");
@@ -672,6 +738,7 @@ public class GrnReturnWithCostingController implements Serializable {
 
         saveReturnBill();
         saveBillItems();
+        applyRemainingValuesInOriginalBill(returnBill.getBillItems());
 
         Payment p = createPayment(getReturnBill(), getReturnBill().getPaymentMethod());
 
@@ -740,6 +807,7 @@ public class GrnReturnWithCostingController implements Serializable {
 
             PharmaceuticalBillItem newPharmaceuticalBillItemInReturnBill = new PharmaceuticalBillItem();
             newPharmaceuticalBillItemInReturnBill.setBillItem(newBillItemInReturnBill);
+            newPharmaceuticalBillItemInReturnBill.setItemBatch(pbiOfBilledBill.getItemBatch());
             newPharmaceuticalBillItemInReturnBill.setStock(pbiOfBilledBill.getStock());
             newBillItemInReturnBill.setPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill);
 
