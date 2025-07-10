@@ -3,6 +3,7 @@ package com.divudi.core.entity;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
+import javax.enterprise.context.Dependent;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -95,6 +96,7 @@ public class BillFinanceDetails implements Serializable {
 
     // Estimated value of items given free of charge
     @Column(precision = 18, scale = 4)
+    @Deprecated // User 
     private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
 
     @Column(precision = 18, scale = 4)
@@ -339,10 +341,12 @@ public class BillFinanceDetails implements Serializable {
         this.totalExpense = totalExpense;
     }
 
+    @Deprecated
     public BigDecimal getTotalOfFreeItemValues() {
         return totalOfFreeItemValues;
     }
 
+    @Deprecated
     public void setTotalOfFreeItemValues(BigDecimal totalOfFreeItemValues) {
         this.totalOfFreeItemValues = totalOfFreeItemValues;
     }

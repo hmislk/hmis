@@ -512,19 +512,23 @@ public class GrnReturnWithCostingController implements Serializable {
     private void fillData() {
         double billReturnTotal = 0.0;
         double billTotalAtCostRate = 0.0;
-        double billReturnTotalAtPurchaseRate = 0.0;
-        double billReturnTotalAtRetailRate = 0.0;
-        double billReturnTotalAtWholesaleRate = 0.0;
-        double billTotalFreeValue = 0.0;
+
+        double purchaseFree = 0.0;
+        double purchaseNonFree = 0.0;
+        double retailFree = 0.0;
+        double retailNonFree = 0.0;
+        double wholesaleFree = 0.0;
+        double wholesaleNonFree = 0.0;
+
+        double freeValueTotal = 0.0;
 
         for (BillItem bi : getBillItems()) {
-
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 
-            double purchaseRateOfAUnit = pbi.getItemBatch().getPurcahseRate();
-            double retailRateOfAUnit = pbi.getItemBatch().getRetailsaleRate();
-            double wholesaleRateOfAUnit = pbi.getItemBatch().getWholesaleRate();
+            double purchaseRate = pbi.getItemBatch().getPurcahseRate();
+            double retailRate = pbi.getItemBatch().getRetailsaleRate();
+            double wholesaleRate = pbi.getItemBatch().getWholesaleRate();
 
             pharmacyCostingService.calculateUnitsPerPack(fd);
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(pbi, fd);
@@ -538,17 +542,21 @@ public class GrnReturnWithCostingController implements Serializable {
             fd.setTotalCost(fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()));
 
             billReturnTotal += fd.getLineGrossTotal().doubleValue();
-
             billTotalAtCostRate += fd.getTotalCost().doubleValue();
 
-            billReturnTotalAtPurchaseRate += fd.getTotalQuantityByUnits().doubleValue() * purchaseRateOfAUnit;
-            billReturnTotalAtRetailRate += fd.getTotalQuantityByUnits().doubleValue() * retailRateOfAUnit;
-            billReturnTotalAtWholesaleRate += fd.getTotalQuantityByUnits().doubleValue() * wholesaleRateOfAUnit;
-            
-//            fd.getTotalQuantityByUnits();
-//            fd.getFreeQuantityByUnits();
-//            fd.getQuantityByUnits();
+            double freeQty = fd.getFreeQuantityByUnits().doubleValue();
+            double paidQty = fd.getQuantityByUnits().doubleValue();
 
+            purchaseFree += freeQty * purchaseRate;
+            purchaseNonFree += paidQty * purchaseRate;
+
+            retailFree += freeQty * retailRate;
+            retailNonFree += paidQty * retailRate;
+
+            wholesaleFree += freeQty * wholesaleRate;
+            wholesaleNonFree += paidQty * wholesaleRate;
+
+            freeValueTotal += fd.getFreeQuantityByUnits().doubleValue() * fd.getLineGrossRate().doubleValue();
         }
 
         returnBill.setNetTotal(billReturnTotal);
@@ -566,13 +574,21 @@ public class GrnReturnWithCostingController implements Serializable {
         returnBill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
         returnBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(billReturnTotal));
 
-        returnBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(billReturnTotalAtPurchaseRate));
-        returnBill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(billReturnTotalAtRetailRate));
-        returnBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(billReturnTotalAtWholesaleRate));
-        returnBill.getBillFinanceDetails().setTotalOfFreeItemValues(BigDecimal.valueOf(0.0)); // update if computed
+        returnBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
+        returnBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
+        returnBill.getBillFinanceDetails().setTotalPurchaseValueNonFree(BigDecimal.valueOf(purchaseNonFree));
 
-        returnBill.getBillFinanceDetails().setTotalOfFreeItemValues(BigDecimal.ONE);
+        returnBill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(retailFree + retailNonFree));
+        returnBill.getBillFinanceDetails().setTotalRetailSaleValueFree(BigDecimal.valueOf(retailFree));
+        returnBill.getBillFinanceDetails().setTotalRetailSaleValueNonFree(BigDecimal.valueOf(retailNonFree));
 
+        returnBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
+        returnBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
+        returnBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
+        
+        
+
+        returnBill.getBillFinanceDetails().setTotalOfFreeItemValues(BigDecimal.valueOf(freeValueTotal));
     }
 
     private void applyPendingReturnTotals() {
