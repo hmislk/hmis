@@ -220,6 +220,10 @@ public class IncomeBundle implements Serializable {
                         bill.setDiscount(Math.abs(bill.getDiscount()));
                         bill.setMargin(-Math.abs(bill.getMargin()));
                         break;
+                    case CANCELLATION:
+                        bill.setDiscount(Math.abs(bill.getDiscount()));
+                        bill.setMargin(-Math.abs(bill.getMargin()));
+                        break;
                 }
             }
 
@@ -232,6 +236,10 @@ public class IncomeBundle implements Serializable {
                         billItem.setMarginValue(Math.abs(billItem.getMarginValue()));
                         break;
                     case REFUND:
+                        billItem.setDiscount(Math.abs(billItem.getDiscount()));
+                        billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
+                        break;
+                    case CANCELLATION:
                         billItem.setDiscount(Math.abs(billItem.getDiscount()));
                         billItem.setMarginValue(-Math.abs(billItem.getMarginValue()));
                         break;
