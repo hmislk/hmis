@@ -262,7 +262,6 @@ public class PharmacyCostingService {
 
     }
 
-// ChatGPT contribution: Added null checks and reverse mapping method
     public void addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
         if (pbi == null || bifd == null) {
             return;
@@ -282,6 +281,40 @@ public class PharmacyCostingService {
         pbi.setFreeQty(freeQty.multiply(upp).doubleValue());
         pbi.setQtyPacks(qty.doubleValue());
         pbi.setFreeQtyPacks(freeQty.doubleValue());
+
+        bifd.setQuantityByUnits(bifd.getQuantity().multiply(bifd.getUnitsPerPack()));
+        bifd.setFreeQuantityByUnits(bifd.getFreeQuantity().multiply(bifd.getUnitsPerPack()));
+        bifd.setTotalQuantityByUnits(bifd.getTotalQuantity().multiply(bifd.getUnitsPerPack()));
+
+    }
+
+    public void calculateUnitsPerPack(BillItemFinanceDetails bifd) {
+        if (bifd == null) {
+            return;
+        }
+        if (bifd.getBillItem() == null) {
+            return;
+        }
+        if (bifd.getBillItem().getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        if (bifd.getBillItem().getItem() == null) {
+            return;
+        }
+        BillItem bi = bifd.getBillItem();
+        if (bi.getItem() instanceof Ampp) {
+            Ampp ampp = (Ampp) bi.getItem();
+            bifd.setUnitsPerPack(BigDecimal.valueOf(ampp.getDblValue()));
+        } else if (bi.getItem() instanceof Vmpp) {
+            Vmpp vmpp = (Vmpp) bi.getItem();
+            bifd.setUnitsPerPack(BigDecimal.valueOf(vmpp.getDblValue()));
+        } else if (bi.getItem() instanceof Amp) {
+            bifd.setUnitsPerPack(BigDecimal.ONE);
+        } else if (bi.getItem() instanceof Vmp) {
+            bifd.setUnitsPerPack(BigDecimal.ONE);
+        } else {
+            bifd.setUnitsPerPack(BigDecimal.ONE);
+        }
     }
 
     public void addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
@@ -289,12 +322,16 @@ public class PharmacyCostingService {
             return;
         }
         BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
-        Double qtyPacks = Optional.ofNullable(pbi.getQtyPacks()).orElse(0.0);
-        Double freeQtyPacks = Optional.ofNullable(pbi.getFreeQtyPacks()).orElse(0.0);
-        bifd.setQuantity(BigDecimal.valueOf(qtyPacks));
-        bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyPacks));
-        bifd.setQuantityByUnits(BigDecimal.valueOf(qtyPacks).multiply(upp));
-        bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyPacks).multiply(upp));
+        Double qtyInUnits = Optional.ofNullable(pbi.getQty()).orElse(0.0);
+        Double freeQtyInUnits = Optional.ofNullable(pbi.getFreeQty()).orElse(0.0);
+
+        bifd.setQuantity(BigDecimal.valueOf(qtyInUnits).divide(upp));
+        bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyInUnits).divide(upp));
+        bifd.setTotalQuantity(BigDecimal.valueOf(freeQtyInUnits + freeQtyInUnits).divide(upp));
+
+        bifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
+        bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyInUnits));
+        bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits+freeQtyInUnits));
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {

@@ -33,8 +33,21 @@
                                 <p:column 
                                     headerText="Date of Expirey" 
                                     width="5em" >
-                                    <h:outputText value="#{ph.pharmaceuticalBillItem.doe}" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Batch No" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.itemBatch.batchNo}" >
+                                    </h:outputText>
+                                </p:column>
+                                <p:column 
+                                    headerText="Current Stock" 
+                                    width="5em" >
+                                    <h:outputText value="#{ph.pharmaceuticalBillItem.stock.stock}" >
+                                        <f:convertNumber pattern="#.#" ></f:convertNumber>
                                     </h:outputText>
                                 </p:column>
 
@@ -59,21 +72,6 @@
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Direct Purchase Return by Quantity and Free Quantity')}">
                                     <h:outputLabel  value="#{ph.referanceBillItem.billItemFinanceDetails.returnFreeQuantity}" />
                                 </p:column>
-                                <!--                                <p:column 
-                                                                    width="5em" 
-                                                                    headerText="Purchased Rate" >
-                                                                    <h:outputLabel value="#{ph.referanceBillItem.billItemFinanceDetails.lineGrossRate}" >
-                                                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                                                    </h:outputLabel>
-                                                                </p:column>
-                                                                <p:column 
-                                                                    width="5em" 
-                                                                    headerText="Cost Rate (Per Unit)" >
-                                                                    <h:outputText value="#{ph.referanceBillItem.billItemFinanceDetails.totalCostRate}" >
-                                                                        <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
-                                                                    </h:outputText>
-                                                                </p:column>-->
-
                                 <p:column
                                     width="5em" 
                                     headerText="Return rate (#{grnReturnWithCostingController.returnRateLabel})" >
@@ -108,8 +106,8 @@
                                         <f:convertNumber pattern="#,##0.00##" ></f:convertNumber>
                                         <p:ajax 
                                             event="keyup" 
-                                            process="@this"
-                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('panelReturnBillDetails',view).clientId}" 
+                                            process="txtReturningTotalQty"
+                                            update="txtLineReturnValue :#{p:resolveFirstComponentWithId('returnTotal',view).clientId}" 
                                             listener="#{grnReturnWithCostingController.onReturningTotalQtyChange(ph)}" />
                                     </p:inputText>
                                     <h:outputText value="&nbsp;Packs" rendered="#{ph.item.class eq 'class com.divudi.core.entity.pharmacy.Ampp'}" />
@@ -166,7 +164,7 @@
                                     <h:outputText value="Return Details" ></h:outputText>
                                     <p:commandButton  
                                         value="Return"
-                                        action="#{grnReturnWithCostingController.settle}"
+                                        action="#{grnReturnWithCostingController.settleGrnReturn}"
                                         ajax="false"  
                                         style="float: right;"
                                         class="ui-button-warning"
@@ -183,9 +181,9 @@
                                     <h:outputLabel value="#{grnReturnWithCostingController.bill.fromInstitution.name}" />
                                     <p:outputLabel  value="Receivable Amount : " />
                                     <p:outputLabel 
-                                        id="total" 
+                                        id="returnTotal" 
                                         class="h1"
-                                        value="#{0-grnReturnWithCostingController.returnBill.netTotal}" >
+                                        value="#{grnReturnWithCostingController.returnBill.billFinanceDetails.netTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </p:outputLabel>
 
