@@ -994,10 +994,11 @@
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Direct_Purchase'}">
                     <h:form>
                         <p:tooltip for="Direct_Purchase" value="Direct Purchase"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:commandLink
                             id="Direct_Purchase"
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purchase"
+                            ajax="false"
+                            action="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true) ? pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill() : '/pharmacy/pharmacy_purchase?faces-redirect=true'}"
+                            actionListener="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true) ? pharmacyPurchaseController.makeNull() : null}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/direct-purchase.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Direct Purchase" />
