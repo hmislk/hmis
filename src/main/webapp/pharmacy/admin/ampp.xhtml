@@ -12,10 +12,9 @@
                 <p:growl id="msg"/>
                 <p:focus id="selectFocus" context="lstSelect" />
                 <p:focus id="detailFocus" context="gpDetail" />
-
                 <p:panel header="Manage AMPPs" >
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-5">
                             <p:commandButton
                                 id="btnAdd"
                                 value="Add"
@@ -62,11 +61,11 @@
                                     class="w-100 m-1"
                                     inputStyleClass="w-100"
                                     placeholder="Type here to search">
-                                    <f:ajax event="itemSelect" execute="@this" render="gpDetail"/>
+                                    <f:ajax event="itemSelect" execute="@this" render="gpDetail btnEdit"/>
                                 </p:autoComplete>
                             </div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-7">
                             <p:panel>
                                 <p:panelGrid 
                                     id="gpDetail" 
@@ -134,46 +133,39 @@
                                             disabled="#{!amppController.editable}" ></h:inputTextarea>
                                     </p:panelGrid>
 
-                                    <p:commandButton
-                                        id="btnSave"
-                                        value="Save"
-                                        icon="fas fa-save"
-                                        action="#{amppController.saveSelected()}"
-                                        class=" m-1 ui-button-warning w-25"
-                                        process="btnSave gpDetail"
-                                        update="lstSelect gpDetail msg"
-                                        onclick="if(!confirm('Are you sure you want to save changes?')) return false;"
-                                        disabled="#{!amppController.editable}">
-                                    </p:commandButton>
-                                    <p:commandButton
-                                        id="btnCancel"
-                                        value="Cancel"
-                                        icon="fas fa-times"
-                                        action="#{amppController.cancel()}"
-                                        class=" m-1 ui-button-secondary w-25"
-                                        process="btnCancel"
-                                        update="lstSelect gpDetail"
-                                        disabled="#{!amppController.editable}">
-                                    </p:commandButton>
-                                    <p:defaultCommand
-                                        target="btnSave"/>
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton
+                                                id="btnSave"
+                                                value="Save"
+                                                icon="fas fa-save"
+                                                action="#{amppController.saveSelected()}"
+                                                class=" m-1 ui-button-warning w-25"
+                                                process="btnSave gpDetail"
+                                                update="lstSelect gpDetail msg"
+                                                onclick="if (!confirm('Are you sure you want to save changes?'))
+                                                            return false;"
+                                                disabled="#{!amppController.editable}">
+                                            </p:commandButton>
+                                            <p:commandButton
+                                                id="btnCancel"
+                                                value="Cancel"
+                                                icon="fas fa-times"
+                                                action="#{amppController.cancel()}"
+                                                class=" m-1 ui-button-secondary w-25"
+                                                process="btnCancel"
+                                                update="lstSelect gpDetail"
+                                                disabled="#{!amppController.editable}">
+                                            </p:commandButton>
+                                        </div>
+                                    </h:panelGroup>
 
                                 </p:panelGrid>
                             </p:panel>
                         </div>
-
-
-
                     </div>
-
-
-
-
                 </p:panel>
             </h:form>
-
         </h:panelGroup>
-
     </ui:define>
-
 </ui:composition>
