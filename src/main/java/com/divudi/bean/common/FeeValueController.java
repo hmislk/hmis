@@ -87,7 +87,7 @@ public class FeeValueController implements Serializable {
 
     public Double getFeeForForeigners(Item item, Institution institution) {
         FeeValue feeValue = getFeeValue(item, institution);
-        return feeValue != null ? feeValue.getTotalValueForLocals() : 0.0;
+        return feeValue != null ? feeValue.getTotalValueForForeigners() : 0.0;
     }
 
     public Double getFeeForForeigners(Item item, Department department) {
