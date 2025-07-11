@@ -326,9 +326,11 @@ public class PharmacyCostingService {
         pbi.setQtyPacks(qty.doubleValue());
         pbi.setFreeQtyPacks(freeQty.doubleValue());
 
-        bifd.setQuantityByUnits(bifd.getQuantity().multiply(bifd.getUnitsPerPack()));
-        bifd.setFreeQuantityByUnits(bifd.getFreeQuantity().multiply(bifd.getUnitsPerPack()));
-        bifd.setTotalQuantityByUnits(bifd.getTotalQuantity().multiply(bifd.getUnitsPerPack()));
+        BigDecimal totalQty = Optional.ofNullable(bifd.getTotalQuantity()).orElse(BigDecimal.ZERO);
+
+        bifd.setQuantityByUnits(qty.multiply(upp));
+        bifd.setFreeQuantityByUnits(freeQty.multiply(upp));
+        bifd.setTotalQuantityByUnits(totalQty.multiply(upp));
 
     }
 
