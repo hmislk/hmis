@@ -40,16 +40,11 @@ public class FeeValueController implements Serializable {
     @EJB
     private FeeValueFacade ejbFacade;
 
-
     private List<FeeValue> items;
 
-
-    public void fillItems(){
+    public void fillItems() {
         items = getFacade().findAll();
     }
-
-
-
 
     public void save(FeeValue feeValue) {
         if (feeValue == null) {
@@ -96,8 +91,14 @@ public class FeeValueController implements Serializable {
     }
 
     public Double getFeeForForeigners(Item item, Department department) {
+        if (item == null || department == null) {
+            return 0.0;
+        }
         FeeValue feeValue = getFeeValue(item, department);
-        return feeValue != null ? feeValue.getTotalValueForForeigners() : 0.0;
+        if (feeValue == null || feeValue.getTotalValueForForeigners() == null) {
+            return 0.0;
+        }
+        return feeValue.getTotalValueForForeigners();
     }
 
     public FeeValue getFeeValue(Item item, Department department) {
@@ -137,7 +138,6 @@ public class FeeValueController implements Serializable {
 
     public FeeValue getCollectingCentreFeeValue(Long itemId, Institution collectingCentre) {
 
-
         String jpql = "SELECT f "
                 + " FROM FeeValue f "
                 + " WHERE f.item.id=:iid "
@@ -146,13 +146,11 @@ public class FeeValueController implements Serializable {
         params.put("iid", itemId);
         params.put("collectingCentre", collectingCentre.getId());
 
-
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
             return fv;
         }
-
 
         jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -165,13 +163,10 @@ public class FeeValueController implements Serializable {
         params.put("ret", false);
         params.put("category", collectingCentre.getFeeListType().getId());
 
-
         fv = getFacade().findFirstByJpql(jpql, params);
-
 
         return fv;
     }
-
 
     public FeeValue getSiteFeeValue(Long itemId, Institution site) {
 
@@ -186,13 +181,11 @@ public class FeeValueController implements Serializable {
         params.put("ret", false);
         params.put("site", site);
 
-
         FeeValue fv = getFacade().findFirstByJpql(jpql, params);
 
         if (fv != null) {
             return fv;
         }
-
 
         jpql = "SELECT f "
                 + " FROM FeeValue f "
@@ -205,9 +198,7 @@ public class FeeValueController implements Serializable {
         params.put("iid", itemId);
         params.put("ret", false);
 
-
         fv = getFacade().findFirstByJpql(jpql, params);
-
 
         return fv;
     }

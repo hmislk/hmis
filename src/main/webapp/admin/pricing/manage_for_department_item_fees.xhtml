@@ -25,19 +25,13 @@
                                 value="#{itemFeeManager.forDepartment}"
                                 forceSelection="true"
                                 id="acDept"
-                                completeMethod="#{itemFeeManager.compelteDepartments}"
+                                completeMethod="#{departmentController.completeDept}"
                                 var="vt"
                                 itemLabel="#{vt.name}"
                                 itemValue="#{vt}"
                                 maxResults="10"
                                 class="w-100 mb-1"
                                 inputStyleClass="form-control">
-                                <p:ajax
-                                    event="itemSelect"
-                                    process="@this"
-                                    update="gpFees localFee foreignerFee"
-                                    listener="#{itemFeeManager.updateItemAndDepartmentFees()}">
-                                </p:ajax>
                             </p:autoComplete>
 
                             <p:outputLabel value="Select Item" />
@@ -63,46 +57,33 @@
                                 <p:column  headerText="Name" style="padding: 6px; margin: 0px;">
                                     <h:outputText value="#{ix.name}"></h:outputText>
                                 </p:column>
-                                <p:ajax 
-                                    event="itemSelect" 
-                                    process="@this" 
-                                    update="gpFees localFee foreignerFee"
-                                    listener="#{itemFeeManager.updateItemAndDepartmentFees()}">
-                                </p:ajax>
                             </p:autoComplete>
 
-                            <h:panelGroup  id="localFee">
-                                <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forDepartment ne null}" >
-                                    <p:outputLabel value="Local Fee" />
-                                    <p:outputLabel 
-                                        value="#{feeValueController.getFeeForLocals(itemFeeManager.item,itemFeeManager.forDepartment)}"
-                                        class="w-100">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-                                </h:panelGroup>
-                            </h:panelGroup>
 
-                            <h:panelGroup id="foreignerFee"  >
-                                <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forDepartment ne null}" >
-                                    <p:outputLabel value="Foreigner Fee" />
-                                    <p:outputLabel 
-                                        value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forDepartment)}"
-                                        class="w-100">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </p:outputLabel>
-                                </h:panelGroup>
-                            </h:panelGroup>
                         </p:panelGrid>
 
                         <div class="row">
-                            <div class="col-md-2">
+                            <div class="col-md-12">
+                                <p:commandButton 
+                                    id="btnFillExistingFee"
+                                    value="Fill Existing Fees" 
+                                    ajax="false"
+                                    action="#{itemFeeManager.updateItemAndDepartmentFees()}"
+                                    process="btnFillExistingFee acIx acDept" 
+                                    update="gpFees"
+                                    class="m-2 ui-button-info" 
+                                    icon="fa fa-edit">
+                                </p:commandButton>
+
                                 <p:commandButton 
                                     id="btnAddNewFee"
                                     value="Add New Fee" 
                                     process="btnAddNewFee acIx" 
                                     onclick="PF('dlg').show();" 
-                                    class="w-100 my-2 ui-button-success" icon="fa fa-plus">   
+                                    class="m-2 ui-button-warning" 
+                                    icon="fa fa-plus-circle">
                                 </p:commandButton>
+
                             </div>
                         </div>
 
@@ -217,13 +198,35 @@
                         </p:dialog>
 
                         <p:panel header="Current Fees" id="gpFees" class="m-1">
+                            <div class="row">
+                                <div class="col-12" >
+                                    <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forDepartment ne null}" >
+                                        <p:outputLabel value="Local Fee" />
+                                        <p:outputLabel 
+                                            value="#{feeValueController.getFeeForLocals(itemFeeManager.item,itemFeeManager.forDepartment)}"
+                                            class="w-100">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </h:panelGroup>
+                                    <h:panelGroup rendered="#{itemFeeManager.item ne null and itemFeeManager.forDepartment ne null}" >
+                                        <p:outputLabel value="Foreigner Fee" />
+                                        <p:outputLabel 
+                                            value="#{feeValueController.getFeeForForeigners(itemFeeManager.item, itemFeeManager.forDepartment)}"
+                                            class="w-100">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </p:outputLabel>
+                                    </h:panelGroup>
+
+                                </div>
+                            </div>
+
                             <p:dataTable id="tblFees" value="#{itemFeeManager.itemFees}" var="f" rowIndexVar="n" rowKey="#{f.id}" >
                                 <p:column headerText="Fee ID" width="5em;" >
                                     <p:outputLabel id="txtFee" value="#{f}" />
                                 </p:column>
                                 <p:column headerText="Name" >
                                     <p:inputText id="txtFeeName" value="#{f.name}" class="w-100" >
-                                        <p:ajax process="txtFeeName" event="blur" listener="#{itemFeeManager.updateFee(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
+                                        <p:ajax process="txtFeeName" event="keyup" listener="#{itemFeeManager.updateFee(f)}"  ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Type" >
@@ -274,13 +277,13 @@
                                 <p:column headerText="Value" >
                                     <p:inputText id="txtFeeVal" value="#{f.fee}" class="w-100" >
                                         <f:convertNumber pattern="#,##0.00" />
-                                        <p:ajax process="txtFeeVal" event="blur" listener="#{itemFeeManager.updateFeeForDepartments(f)}" update=":#{p:resolveFirstComponentWithId('localFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}" ></p:ajax>
+                                        <p:ajax process="txtFeeVal" event="keyup" listener="#{itemFeeManager.updateFeeForDepartments(f)}" update=":#{p:resolveFirstComponentWithId('gpFees',view).clientId}" ></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Value for Foreigners" >
                                     <p:inputText id="txtFfeeVal" value="#{f.ffee}"  class="w-100" >
                                         <f:convertNumber pattern="#,##0.00" />
-                                        <p:ajax process="txtFfeeVal" event="blur" listener="#{itemFeeManager.updateFeeForDepartments(f)}"  update=":#{p:resolveFirstComponentWithId('foreignerFee',view).clientId} :#{p:resolveFirstComponentWithId('foreignerFee',view).clientId}"></p:ajax>
+                                        <p:ajax process="txtFfeeVal" event="keyup" listener="#{itemFeeManager.updateFeeForDepartments(f)}"  update=":#{p:resolveFirstComponentWithId('gpFees',view).clientId}"></p:ajax>
                                     </p:inputText>
                                 </p:column>
                                 <p:column headerText="Actions" width="6em;" >
@@ -297,7 +300,7 @@
                             </p:dataTable>
                         </p:panel>
                     </p:panel>
-                    
+
                 </h:form>
             </ui:define>
         </ui:composition>
