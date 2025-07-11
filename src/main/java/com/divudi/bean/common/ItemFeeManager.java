@@ -461,7 +461,7 @@ public class ItemFeeManager implements Serializable {
         removingFee.setRetirer(sessionController.getLoggedUser());
         itemFeeFacade.edit(removingFee);
         itemFees = null;
-        updateTotal();
+        updateItemAndDepartmentFees();
         feeValueController.updateFeeValue(item, forDepartment, totalItemFee, totalItemFeeForForeigners);
         JsfUtil.addSuccessMessage("Removed. Reload Items");
     }
