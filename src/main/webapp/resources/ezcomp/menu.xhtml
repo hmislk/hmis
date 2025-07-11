@@ -931,8 +931,7 @@
                             value="Goods Receipt"
                             icon="fas fa-dolly-flatbed"
                             actionListener="#{searchController.makeListNull()}"
-                            rendered="#{webUserController.hasPrivilege('GoodsRecipt') 
-                                        and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval')}"  ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('GoodsRecipt')}"  ></p:menuitem>
                         <p:menuitem  
                             ajax="false" 
                             action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"  

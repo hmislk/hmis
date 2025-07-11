@@ -8,10 +8,10 @@
     <ui:define name="content">
         <h:outputStylesheet>
             .svg-link {
-                color: #{configOptionApplicationController.getColorValueByKey('Home Icon Colour', '#1E88E5')};
+            color: #{configOptionApplicationController.getColorValueByKey('Home Icon Colour', '#1E88E5')};
             }
             .svg-link:hover {
-                color: #{configOptionApplicationController.getColorValueByKey('Home Icon Hover Colour', '#1565C0')};
+            color: #{configOptionApplicationController.getColorValueByKey('Home Icon Hover Colour', '#1565C0')};
             }
         </h:outputStylesheet>
 
@@ -117,7 +117,7 @@
                             ajax="false"
                             action="#{opdPreBillController.navigateToBillingForCashierFromMenu()}" 
                             actionListener="#{opdPreBillController.prepareNewBill}" 
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Billing For Cashier" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
@@ -133,7 +133,7 @@
                             id="Collecting_Centre_Billing"
                             ajax="false"
                             action="#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/hospital.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Collecting Centre Billing"/>
@@ -148,7 +148,7 @@
                             id="Medical_Package_Billing"
                             ajax="false"
                             action="opd_bill_package?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/opd-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
@@ -177,7 +177,7 @@
                             id="Accept_Payments_For_OPD_Bills"
                             ajax="false"
                             action="/opd/opd_search_pre_bill?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/bill-bprove.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Package Billing" rendered="#{webUserController.hasPrivilege('OpdPreBilling')}"/>
@@ -267,7 +267,7 @@
                             id="Search_Opd_Bill"
                             ajax="false"
                             action="opd/opd_bill_search?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Bill Search" />
@@ -284,7 +284,7 @@
                             ajax="false"
                             action="/opd_search_billitem_own?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="OPD Bill Item Search" />
@@ -316,7 +316,7 @@
                             ajax="false"
                             action="/collecting_centre/collecting_centre_search_bill_own?faces-redirect=true"
                             actionListener="#{searchController.makeListNull}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Collecting Centre Bill Search" />
@@ -332,7 +332,7 @@
                             ajax="false"
                             action="/opd_search_bill_to_pay?faces-redirect=true" 
                             actionListener="#{billController.clear()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Bills To Pay Search" />
@@ -349,7 +349,7 @@
                             ajax="false"
                             action="/opd_search_bill_full_paid?faces-redirect=true" 
                             actionListener="#{billController.clear()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Credit paid Bill Search" />
@@ -366,7 +366,7 @@
                             ajax="false"
                             action="/opd_search_bill_full_paid_bills?faces-redirect=true" 
                             actionListener="#{billController.clear()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Credit paid Bills with OPD Bill Search" />
@@ -383,7 +383,7 @@
                             id="Doctor_Mark_in"
                             ajax="false"
                             action="#{workingTimeController.navigateToMarkIn()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/in.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Mark In" />
@@ -414,7 +414,7 @@
                             id="Doctor_Working_Times"
                             ajax="false"
                             action="#{workingTimeController.navigateToListWorkTimes()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/times.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Working Times" />
@@ -495,7 +495,7 @@
                             id="pharmacy_sale"
                             ajax="false"
                             action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true" 
-                             
+
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/cart-shopping-solid.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -513,7 +513,7 @@
                             styleClass="svg-link"
                             ajax="false" 
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}" 
-                             
+
                             actionListener="#{pharmacySaleController.resetAll()}" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/cashier.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Retail Sale for cashier"  />
@@ -529,7 +529,7 @@
                             id="pharmacy_sale_without_stock"
                             ajax="false" 
                             action="#{pharmacySaleController.navigateToPharmacySaleWithoutStocks}"
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Sale without Stocks" />
@@ -546,7 +546,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_sale_bill?faces-redirect=true"
                             actionListener="#{searchController.makeListNull}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill" />
@@ -562,7 +562,7 @@
                             id="pharmacy_search_sale_pre_bill"
                             ajax="false" action="/pharmacy/pharmacy_search_sale_pre_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Pre Bill" />
@@ -578,7 +578,7 @@
                             id="pharmacy_search_sale_bill_item"
                             ajax="false" action="/pharmacy/pharmacy_search_sale_bill_item?faces-redirect=true"  
                             actionListener="#{searchController.makeListNull}" 
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Sale Bill Items" />
@@ -595,7 +595,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items Only" />
@@ -612,7 +612,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Return - Items and Payments" />
@@ -629,7 +629,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Return Bill (Item)" />
@@ -647,7 +647,7 @@
                             action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add To Stock" />
@@ -665,7 +665,7 @@
                             id="wholesale_sale"
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_bill_retail_sale?faces-redirect=true"  
-                             
+
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/truck-solid.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -682,7 +682,7 @@
                             id="wholesale_sale_for_cashier"
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true"  
-                             
+
                             actionListener="#{pharmacySaleController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/sack-dollar-solid.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -700,7 +700,7 @@
                             ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill?faces-redirect=true"  
 
                             actionListener="#{searchController.makeListNull}"
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill" />
@@ -716,7 +716,7 @@
                             id="wholesale_Search_sale_bill_to_pay"
                             ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_pre_bill?faces-redirect=true"  
                             actionListener="#{searchController.makeListNull}"
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill to Pay" />
@@ -732,7 +732,7 @@
                             id="wholesale_search_sale_bill_item"
                             ajax="false" action="/pharmacy_wholesale/pharmacy_search_sale_bill_item?faces-redirect=true"  
                             actionListener="#{searchController.makeListNull}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Wholesale Bill Items" />
@@ -749,7 +749,7 @@
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_only?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;"  value="Wholesale Return - Items Only" />
@@ -766,7 +766,7 @@
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_search_pre_bill_for_return_item_and_cash?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Wholesale Return - Items and Payments" />
@@ -784,7 +784,7 @@
                             action="/pharmacy/pharmacy_search_return_bill_pre?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"  
 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/refund1.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Return Wholesale Bill (Item)"  />
@@ -800,7 +800,7 @@
                             id="wholesale_add_to_stock"
                             ajax="false" action="/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Add To Stock" />
@@ -817,7 +817,7 @@
                             ajax="false" 
                             action="/pharmacy_wholesale/pharmacy_purchase?faces-redirect=true"  
 
-                             
+
                             actionListener="#{pharmacyPurchaseController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/analytics.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -836,7 +836,7 @@
                             id="direct_issue_to_BHTs"
                             ajax="false" 
                             action="/inward/pharmacy_bill_issue_bht?faces-redirect=true" 
-                             
+
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -854,7 +854,7 @@
                             ajax="false" 
                             action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
@@ -862,19 +862,19 @@
                     </h:form>
                 </h:panelGroup>
 
-                <!-- Direct Issue to Theatre Cases -->
+                <!-- BHT Issue Requests -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'BHT_issue_requests' and webUserController.hasPrivilege('PharmacySale')}">
                     <h:form>
-                        <p:tooltip for="BHT_issue_requests" value="Direct Issue to Theatre Cases"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
+                        <p:tooltip for="BHT_issue_requests" value="BHT Issue Requests"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
                             id="BHT_issue_requests"
-                            ajax="false"  
-                            action="/theater/inward_bill_surgery_issue?faces-redirect=true" 
+                            ajax="false"
+                            action="/ward/ward_pharmacy_bht_issue_request_list_for_issue?faces-redirect=true"
                             actionListener="#{pharmacySaleBhtController.resetAll()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
-                            <h:outputText style="display: none;" value="Direct Issue to Theatre Cases" />
+                            <h:outputText style="display: none;" value="BHT Issue Requests" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -887,7 +887,7 @@
                             id="search_inpatint_direct_issue_by_bill"
                             ajax="false" action="/inward/pharmacy_search_sale_bill_bht" 
                             actionListener="#{searchController.makeListNull}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Bill" />
@@ -903,7 +903,7 @@
                             id="search_inpatint_direct_issue_by_item" 
                             ajax="false" action="/inward/pharmacy_search_sale_bill_item_bht?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issues by Item" />
@@ -919,7 +919,7 @@
                             id="search_inpatint_direct_issue_returns_by_bill"
                             ajax="false" action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Inpatient Direct Issue Returns by Bill" />
@@ -936,7 +936,7 @@
                             ajax="false" 
                             action="/inward/pharmacy_search_return_bill_bht?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;"  value="Search Inpatient Direct Issue Returns by Item"  />
@@ -993,15 +993,41 @@
                 <!-- Direct Purchase -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Direct_Purchase'}">
                     <h:form>
-                        <p:tooltip for="Direct_Purchase" value="Direct Purchase"  showDelay="0" hideDelay="0"></p:tooltip>
-                        <p:commandLink 
-                            id="Direct_Purchase"
-                            ajax="false" 
-                            action="/pharmacy/pharmacy_purchase"
-                            styleClass="svg-link" >
-                            <p:graphicImage class="img-thumbnail"  library="images" name="home/direct-purchase.svg" style="cursor: pointer;" width="80" height="80" />
-                            <h:outputText style="display: none;" value="Direct Purchase" />
+                        <p:tooltip for="Direct_Purchase_With_Costing" 
+                                   value="Direct Purchase" 
+                                   showDelay="0" 
+                                   hideDelay="0" 
+                                   rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"/>
+
+                        <p:tooltip for="Direct_Purchase_Without_Costing" 
+                                   value="Direct Purchase" 
+                                   showDelay="0" 
+                                   hideDelay="0" 
+                                   rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"/>
+
+                        <!-- If Manage Costing is true -->
+                        <p:commandLink
+                            id="Direct_Purchase_With_Costing"
+                            ajax="false"
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                            action="#{pharmacyDirectPurchaseController.navigateToStartNewDirectPurchaseBill()}"
+                            styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/direct-purchase.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Purchase"/>
                         </p:commandLink>
+
+                        <!-- If Manage Costing is false -->
+                        <p:commandLink
+                            id="Direct_Purchase_Without_Costing"
+                            ajax="false"
+                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                            action="#{pharmacyPurchaseController.navigateToPharmacyPurchase()}"
+                            actionListener="#{pharmacyPurchaseController.makeNull()}"
+                            styleClass="svg-link">
+                            <p:graphicImage class="img-thumbnail" library="images" name="home/direct-purchase.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Direct Purchase"/>
+                        </p:commandLink>
+
                     </h:form>
                 </h:panelGroup>
 
@@ -1020,8 +1046,24 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Finalize Purchase Orders -->
+                <h:panelGroup layout="block" class="col-1 p-1"
+                              rendered="#{ui.icon eq 'Purchase_Orders_Finalize' and (webUserController.hasPrivilege('PurchaseOrdersApprovel') or webUserController.hasPrivilege('CreatePurchaseOrder'))}">
+                    <h:form>
+                        <p:tooltip for="Purchase_Orders_Finalize" value="Finalize Purchase Orders"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Purchase_Orders_Finalize"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purhcase_order_list_to_finalize?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  library="images" name="home/purchase-order-finalize.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Finalize Purchase Orders" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Goods Receipt -->
-                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt' and !configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}">
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt'}">
                     <h:form>
                         <p:tooltip for="Goods_Receipt" value="Goods Receipt"  showDelay="0" hideDelay="0"></p:tooltip>
                         <p:commandLink
@@ -1031,6 +1073,21 @@
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/grn.svg" style="cursor: pointer;" width="80" height="80" />
                             <h:outputText style="display: none;" value="Goods Receipt" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Goods Receipt With Approval -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'Goods_Receipt_With_Approval' and configOptionApplicationController.getBooleanValueByKey('Pharmacy Good Recipt With Approval') and webUserController.hasPrivilege('GoodsRecipt')}">
+                    <h:form>
+                        <p:tooltip for="Goods_Receipt_With_Approval" value="Goods Receipt With Approval"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="Goods_Receipt_With_Approval"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_purchase_order_list_for_recieve_with_approval?faces-redirect=true"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail"  cache="true" library="images" name="home/goods-receipt-with-approval.svg" style="cursor: pointer;" width="80" height="80" />
+                            <h:outputText style="display: none;" value="Goods Receipt With Approval" />
                         </p:commandLink>
                     </h:form>
                 </h:panelGroup>
@@ -1120,7 +1177,7 @@
                             id="pharmacy_search_issue_bill"
                             ajax="false" action="/pharmacy/pharmacy_search_issue_bill?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill" />
@@ -1137,7 +1194,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search_issue_bill_item?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}"   
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Bill Items" />
@@ -1154,7 +1211,7 @@
                             ajax="false"
                             action="/pharmacy/pharmacy_search_issue_bill_return?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Search Issue Return Bill" />
@@ -1186,7 +1243,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_transfer_request?faces-redirect=true"
                             actionListener="#{searchController.makeListNull()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Request" />
@@ -1203,7 +1260,7 @@
                             ajax="false" 
                             action="#{transferIssueController.navigateToListPharmacyIssueRequests}" 
                             actionListener="#{searchController.makeListNull()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Issue for Requests" />
@@ -1220,7 +1277,7 @@
                             ajax="false" 
                             action="#{transferIssueController.navigateToDirectPharmacyIssue}" 
                             actionListener="#{transferIssueController.makeNull()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Direct Issue" />
@@ -1237,7 +1294,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"
                             actionListener="#{searchController.makeListNull()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Receive" />
@@ -1254,7 +1311,7 @@
                             ajax="false" 
                             action="#{reportsTransfer.navigateToPharmacyTransferReports()}"
                             actionListener="#{searchController.makeListNull()}" 
-                             
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Reports" />
@@ -1270,7 +1327,7 @@
                             id="adjustments_Depaetment_stock"
                             ajax="false" 
                             action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"
-                             
+
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1286,7 +1343,7 @@
                         <p:commandLink 
                             id="adjustments_staff_stock"
                             action="/pharmacy/pharmacy_adjustment_staff?faces-redirect=true"
-                             
+
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1303,7 +1360,7 @@
                             id="adjustments_purchase_rate"
                             ajax="false" 
                             action="/pharmacy/pharmacy_adjustment_purchase_rate?faces-redirect=true"
-                             
+
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1336,7 +1393,7 @@
                             id="adjustments_wholesale_rate"
                             ajax="false" 
                             action="/pharmacy/pharmacy_adjustment_whole_sale_rate?faces-redirect=true" 
-                             
+
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1353,7 +1410,7 @@
                             id="adjustments_expiry_date"
                             ajax="false" 
                             action="/pharmacy/pharmacy_adjustment_expiry_date?faces-redirect=true"
-                             
+
                             actionListener="#{pharmacyAdjustmentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail"  library="images" name="home/adjustment.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1385,7 +1442,7 @@
                             id="adjustments_transfer_all_stock"
                             ajax="false"
                             action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Transfer All Stock" />
@@ -1401,7 +1458,7 @@
                             id="supplier_due_search"
                             ajax="false" 
                             action="/dealerPayment/dealor_due?faces-redirect=true" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/search.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Supplier Due Search" />
@@ -1418,7 +1475,7 @@
                             ajax="false" 
                             action="/dealerPayment/dealor_due_age?faces-redirect=true" 
                             actionListener="#{supplierPaymentController.makeNull()}"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Dealer Due By Age" />
@@ -1434,7 +1491,7 @@
                             id="payment_by_supplier"
                             ajax="false" 
                             action="/dealerPayment/bill_dealor_all?faces-redirect=true"
-                             
+
                             actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1451,7 +1508,7 @@
                             id="payment_by_bill"
                             ajax="false" 
                             action="/dealerPayment/bill_dealor?faces-redirect=true" 
-                             
+
                             actionListener="#{supplierPaymentController.makeNull()}"
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
@@ -1469,7 +1526,7 @@
                             ajax="false" 
                             action="/dealerPayment/search_dealor_payment_pre?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull2()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="GRN Payment Approve" />
@@ -1486,7 +1543,7 @@
                             ajax="false" 
                             action="/dealerPayment/search_dealor_payment?faces-redirect=true" 
                             actionListener="#{searchController.makeListNull2()}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="GRN Payment Done Search" />
@@ -1520,7 +1577,7 @@
                             ajax="false" 
                             action="/pharmacy/pharmacy_search?faces-redirect=true"
                             actionListener="#{billSearch.recreateModel}" 
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-default.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Item Search" />
@@ -1536,7 +1593,7 @@
                             id="pharmacy_generate_report"
                             ajax="false"
                             action="/pharmacy/pharmacy_reports_index?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/reports.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Generate Reports" />
@@ -1597,7 +1654,7 @@
                             id="pharmacy_summary_views"
                             ajax="false" 
                             action="/pharmacy/pharmacy_summery_index?faces-redirect=true"
-                            
+
                             styleClass="svg-link" >
                             <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/summary-report.svg" style="cursor: pointer;" width="80" height="80"/>
                             <h:outputText style="display: none;" value="Summary Views" />
