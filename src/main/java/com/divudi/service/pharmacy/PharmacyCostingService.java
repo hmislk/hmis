@@ -374,7 +374,7 @@ public class PharmacyCostingService {
 
         bifd.setQuantity(BigDecimal.valueOf(qtyInUnits).divide(upp));
         bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyInUnits).divide(upp));
-        bifd.setTotalQuantity(BigDecimal.valueOf(freeQtyInUnits + freeQtyInUnits).divide(upp));
+        bifd.setTotalQuantity(BigDecimal.valueOf(qtyInUnits + freeQtyInUnits).divide(upp));
 
         bifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
         bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyInUnits));

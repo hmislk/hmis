@@ -551,11 +551,11 @@ public class GrnReturnWithCostingController implements Serializable {
             double costRate = pbi.getItemBatch().getCostRate();
 
             pharmacyCostingService.calculateUnitsPerPack(fd);
+            fd.setTotalQuantity(fd.getQuantity().add(fd.getFreeQuantity()));
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(pbi, fd);
 
             System.out.println("fd.getQuantity() = " + fd.getQuantity());
             System.out.println("fd.getFreeQuantity() = " + fd.getFreeQuantity());
-            fd.setTotalQuantity(fd.getQuantity().add(fd.getFreeQuantity()));
             System.out.println("fd.getTotalQuantity() = " + fd.getTotalQuantity());
             
             fd.setLineNetRate(fd.getLineGrossRate());
