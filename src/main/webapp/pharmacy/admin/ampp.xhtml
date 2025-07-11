@@ -21,7 +21,7 @@
                                 icon="fa fa-plus"
                                 action="#{amppController.prepareAdd()}"
                                 class=" m-1 ui-button-success w-25"
-                                update="lstSelect gpDetail"
+                                update="lstSelect gpDetail btnEdit btnDelete"
                                 process="btnAdd"
                                 disabled="#{amppController.editable}">
                             </p:commandButton>
@@ -31,7 +31,7 @@
                                 icon="fas fa-edit"
                                 action="#{amppController.edit()}"
                                 class=" m-1 ui-button-info w-25"
-                                update="gpDetail"
+                                update="lstSelect gpDetail btnAdd btnDelete"
                                 process="btnEdit"
                                 disabled="#{amppController.editable or amppController.current.id eq null}">
                             </p:commandButton>
@@ -142,7 +142,7 @@
                                                 action="#{amppController.saveSelected()}"
                                                 class=" m-1 ui-button-warning w-25"
                                                 process="btnSave gpDetail"
-                                                update="lstSelect gpDetail msg"
+                                                update="lstSelect gpDetail msg btnEdit btnDelete btnAdd"
                                                 onclick="if (!confirm('Are you sure you want to save changes?'))
                                                             return false;"
                                                 disabled="#{!amppController.editable}">
@@ -154,7 +154,7 @@
                                                 action="#{amppController.cancel()}"
                                                 class=" m-1 ui-button-secondary w-25"
                                                 process="btnCancel"
-                                                update="lstSelect gpDetail"
+                                                update="lstSelect gpDetail btnEdit btnDelete btnAdd"
                                                 disabled="#{!amppController.editable}">
                                             </p:commandButton>
                                         </div>
