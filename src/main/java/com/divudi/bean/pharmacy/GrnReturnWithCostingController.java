@@ -162,16 +162,14 @@ public class GrnReturnWithCostingController implements Serializable {
     }
 
     private double getRemainingFreeQtyToReturnByUnits(BillItem bilItem) {
-        double originalQty = 0.0;
         double originalFreeQty = 0.0;
         double returnedTotal = 0.0;
         if (bilItem.getPharmaceuticalBillItem() != null) {
-            originalQty = bilItem.getPharmaceuticalBillItem().getQty();
             originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
         }
         returnedTotal = Math.abs(getPharmacyRecieveBean().getFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN));
         returnedTotal -= Math.abs(getPharmacyRecieveBean().getFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_GRN_RETURN_CANCELLATION));
-        return Math.abs(originalQty) + Math.abs(originalFreeQty) - Math.abs(returnedTotal);
+        return Math.abs(originalFreeQty) - Math.abs(returnedTotal);
     }
 
     private void addDataToReturningBillItem(BillItem returningBillItem) {
