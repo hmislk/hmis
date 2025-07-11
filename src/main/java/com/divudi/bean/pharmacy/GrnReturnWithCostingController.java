@@ -474,7 +474,7 @@ public class GrnReturnWithCostingController implements Serializable {
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             System.out.println("pbi.getQty() = " + pbi.getQty());
-            pharmacyCostingService.makeAllQuentityValuesNegative(pbi);
+            pharmacyCostingService.makeAllQuantityValuesNegative(pbi);
             if (i.getId() == null) {
                 i.setCreatedAt(new Date());
                 i.setCreater(sessionController.getLoggedUser());

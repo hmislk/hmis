@@ -30,7 +30,7 @@ public class PharmacyCostingService {
      *
      * @param pbi PharmaceuticalBillItem to update
      */
-    public void makeAllQuentityValuesNegative(PharmaceuticalBillItem pbi) {
+    public void makeAllQuantityValuesNegative(PharmaceuticalBillItem pbi) {
         if (pbi == null) {
             return;
         }
@@ -52,7 +52,7 @@ public class PharmacyCostingService {
      *
      * @param pbi PharmaceuticalBillItem to update
      */
-    public void makeAllQuentityValuesPositive(PharmaceuticalBillItem pbi) {
+    public void makeAllQuantityValuesPositive(PharmaceuticalBillItem pbi) {
         if (pbi == null) {
             return;
         }
