@@ -326,9 +326,11 @@ public class PharmacyCostingService {
         pbi.setQtyPacks(qty.doubleValue());
         pbi.setFreeQtyPacks(freeQty.doubleValue());
 
-        bifd.setQuantityByUnits(bifd.getQuantity().multiply(bifd.getUnitsPerPack()));
-        bifd.setFreeQuantityByUnits(bifd.getFreeQuantity().multiply(bifd.getUnitsPerPack()));
-        bifd.setTotalQuantityByUnits(bifd.getTotalQuantity().multiply(bifd.getUnitsPerPack()));
+        BigDecimal totalQty = Optional.ofNullable(bifd.getTotalQuantity()).orElse(BigDecimal.ZERO);
+
+        bifd.setQuantityByUnits(qty.multiply(upp));
+        bifd.setFreeQuantityByUnits(freeQty.multiply(upp));
+        bifd.setTotalQuantityByUnits(totalQty.multiply(upp));
 
     }
 
@@ -367,10 +369,7 @@ public class PharmacyCostingService {
         }
         BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
         Double qtyInUnits = Optional.ofNullable(pbi.getQty()).orElse(0.0);
-        System.out.println("qtyInUnits = " + qtyInUnits);
         Double freeQtyInUnits = Optional.ofNullable(pbi.getFreeQty()).orElse(0.0);
-        System.out.println("freeQtyInUnits = " + freeQtyInUnits);
-        System.out.println("upp = " + upp);
 
         bifd.setQuantity(BigDecimal.valueOf(qtyInUnits).divide(upp));
         bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyInUnits).divide(upp));
@@ -380,7 +379,6 @@ public class PharmacyCostingService {
         bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyInUnits));
         bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits + freeQtyInUnits));
         
-        System.out.println("bifd.getQuantity() = " + bifd.getQuantity());
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {
