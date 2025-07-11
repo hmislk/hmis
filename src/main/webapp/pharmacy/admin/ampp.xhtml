@@ -44,7 +44,8 @@
                                     itemLabel="#{i.name}" 
                                     itemValue="#{i}" 
                                     size="60" 
-                                    scrollHeight="300" 
+                                    class="w-100 m-1"
+                                    inputStyleClass="w-100"
                                     placeholder="Type here to search">
                                     <f:ajax event="itemSelect" execute="@this" render="gpDetail"/>
                                 </p:autoComplete>
@@ -52,8 +53,15 @@
                         </div>
                         <div class="col-md-6">
                             <p:panel>
-                                <h:panelGrid id="gpDetail" columns="1" class="w-100">
-                                    <h:panelGrid id="gpDetailText" columns="2" class="w-100">
+                                <p:panelGrid 
+                                    id="gpDetail" 
+                                    columns="1" 
+                                    class="w-100">
+                                    <p:panelGrid 
+                                        id="gpDetailText" 
+                                        columns="2" 
+                                        columnClasses="w-25 , w-75"
+                                        class="w-100">
                                         <h:outputText
                                             id="lblName" 
                                             value="Pack Name" ></h:outputText>
@@ -67,6 +75,8 @@
                                         <p:autoComplete 
                                             completeMethod="#{ampController.completeAmp}" 
                                             var="pta"
+                                            class="w-100"
+                                            inputStyleClass="w-100"
                                             itemLabel="#{pta.name}" 
                                             itemValue="#{pta}"
                                             forceSelection="true" 
@@ -102,7 +112,7 @@
                                             value="#{ampController.current.comments}" 
                                             required="false" 
                                             class="form-control" ></h:inputTextarea>
-                                    </h:panelGrid>
+                                    </p:panelGrid>
 
                                     <p:commandButton 
                                         id="btnSave" 
@@ -115,7 +125,7 @@
                                     <p:defaultCommand 
                                         target="btnSave"/>
 
-                                </h:panelGrid>
+                                </p:panelGrid>
                             </p:panel>
                         </div>
 
