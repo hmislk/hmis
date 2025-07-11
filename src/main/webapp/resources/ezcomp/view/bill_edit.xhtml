@@ -45,25 +45,32 @@
             <h:outputLabel value="#{cc.attrs.bill.creditCompany.name}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Session ID" />
-            <p:inputText value="#{cc.attrs.bill.sessionId}" />
+            <p:inputText value="#{cc.attrs.bill.sessionId}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.sessionId}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Invoice Number" />
-            <p:inputText value="#{cc.attrs.bill.invoiceNumber}" />
+            <p:inputText value="#{cc.attrs.bill.invoiceNumber}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.invoiceNumber}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Invoice Date" />
-            <p:calendar value="#{cc.attrs.bill.invoiceDate}" />
+            <p:calendar value="#{cc.attrs.bill.invoiceDate}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.invoiceDate}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Bill Date" />
-            <p:calendar value="#{cc.attrs.bill.billDate}" />
+            <p:calendar value="#{cc.attrs.bill.billDate}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.billDate}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Bill Time" />
-            <p:calendar value="#{cc.attrs.bill.billTime}" />
+            <p:calendar value="#{cc.attrs.bill.billTime}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.billTime}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Agent Reference Number" />
-            <p:inputText value="#{cc.attrs.bill.agentRefNo}" />
+            <p:inputText value="#{cc.attrs.bill.agentRefNo}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.agentRefNo}" rendered="#{!cc.attrs.editable}" />
 
             <p:outputLabel value="Local Number" />
-            <p:inputText value="#{cc.attrs.bill.localNumber}" />
+            <p:inputText value="#{cc.attrs.bill.localNumber}" rendered="#{cc.attrs.editable}" />
+            <p:outputLabel value="#{cc.attrs.bill.localNumber}" rendered="#{!cc.attrs.editable}" />
 
             <!-- Amounts -->
             <p:outputLabel value="Amounts" styleClass="font-weight-bold bg-light p-2" colspan="2" />
