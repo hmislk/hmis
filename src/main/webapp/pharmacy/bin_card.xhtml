@@ -174,21 +174,20 @@
 
                         <!-- Grouped rendering for Ampp items -->
                         <h:panelGroup rendered="#{sh.pbItem.transThisIsStockOut and sh.pbItem.billItem.item.class.simpleName eq 'Ampp'}">
-
                             <h:outputText 
                                 value="(" 
                                 styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}" />
-
+#
                             <h:outputText 
                                 value="#{sh.pbItem.qtyPacks + sh.pbItem.freeQtyPacks}" 
                                 styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">
                                 <f:convertNumber pattern="#.#"/>
                             </h:outputText>
-
+##
                             <h:outputText 
                                 value="  X  " 
                                 styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}" />
-
+###
                             <h:outputText 
                                 value="#{sh.pbItem.billItem.item.dblValue}" 
                                 styleClass="#{sh.pbItem.qty lt 0 ? 'text-danger' : ''}">

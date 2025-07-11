@@ -132,7 +132,8 @@ public enum Icon {
     Channel_Booking_by_Dates("Channel Booking by Dates"),
     Channel_Scheduling("Channel Scheduling"),
     Goods_Receipt_Costing("Goods Receipt Costing"),
-    Report_Execution_Logs("Report Execution Logs");
+    Report_Execution_Logs("Report Execution Logs"),
+    Purchase_Orders_Finalize("Finalize Purchase Orders");
 
     private final String label;
 
