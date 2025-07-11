@@ -1,6 +1,7 @@
 package com.divudi.bean.pharmacy;
 
 // <editor-fold defaultstate="collapsed" desc="Import Statements">
+
 import com.divudi.bean.common.*;
 import com.divudi.bean.cashTransaction.CashBookEntryController;
 import com.divudi.bean.cashTransaction.DrawerController;
@@ -30,11 +31,13 @@ import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.core.data.BillCategory;
+
 import static com.divudi.core.data.BillCategory.BILL;
 import static com.divudi.core.data.BillCategory.CANCELLATION;
 import static com.divudi.core.data.BillCategory.PAYMENTS;
 import static com.divudi.core.data.BillCategory.PREBILL;
 import static com.divudi.core.data.BillCategory.REFUND;
+
 import com.divudi.core.data.BillClassType;
 
 import com.divudi.core.data.BillTypeAtomic;
@@ -45,10 +48,12 @@ import com.divudi.core.data.PharmacyRow;
 import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ReportViewType;
+
 import static com.divudi.core.data.ReportViewType.BY_BILL;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
 import static com.divudi.core.data.ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE;
+
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
 import com.divudi.core.entity.Bill;
@@ -57,7 +62,9 @@ import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.data.HistoricalRecordType;
+
 import static com.divudi.core.data.ReportViewType.BY_BILL_ITEM;
+
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.StockBill;
@@ -72,6 +79,7 @@ import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.service.StockHistoryService;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -88,6 +96,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
@@ -104,7 +113,7 @@ public class PharmacySummaryReportController implements Serializable {
     @Inject
     private ReportTimerController reportTimerController;
 
-// <editor-fold defaultstate="collapsed" desc="EJBs">
+    // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -130,7 +139,7 @@ public class PharmacySummaryReportController implements Serializable {
     @EJB
     PharmacyService pharmacyService;
 
-// </editor-fold>
+    // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
     private BillBeanController billBean;
@@ -178,7 +187,7 @@ public class PharmacySummaryReportController implements Serializable {
     private EnumController enumController;
     @Inject
     BillController billController;
-// </editor-fold>
+    // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -616,18 +625,23 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByBillType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
-        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
-        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
         for (IncomeRow r : bundle.getRows()) {
-            if (r.getPaymentMethod() == null) {
+            if (r.getBill() == null) {
                 continue;
             }
-            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
-        bundle.generatePaymentDetailsGroupedByBillTypeByIncomeRows();
+        bundle.generatePaymentDetailsGroupedByBillType();
     }
 
     public void processMovementOutWithStockReportByBillType() {
@@ -733,51 +747,63 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void processPharmacyIncomeReportByDiscountTypeAndAdmissionType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
-        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
-        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
         for (IncomeRow r : bundle.getRows()) {
-            if (r.getPaymentMethod() == null) {
+            if (r.getBill() == null) {
                 continue;
             }
-            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
-
         bundle.generatePaymentDetailsGroupedDiscountSchemeAndAdmissionType();
     }
 
     public void processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
-        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
-        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
         for (IncomeRow r : bundle.getRows()) {
-            if (r.getPaymentMethod() == null) {
+            Bill b = r.getBill();
+            if (b == null || b.getPaymentMethod() == null) {
                 continue;
             }
-            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            if (b.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(b));
             }
         }
+
         bundle.generatePaymentDetailsGroupedByBillTypeAndDiscountSchemeAndAdmissionType();
     }
 
     public void processPharmacyIncomeReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
-        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
-        bundle.fixDiscountsAndMarginsInRowsByIncomeRows();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new IncomeBundle(dtos);
+        bundle.fixDiscountsAndMarginsInRows();
         for (IncomeRow r : bundle.getRows()) {
-            if (r.getPaymentMethod() == null) {
+            if (r.getBill() == null) {
                 continue;
             }
-            if (r.getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPaymentsByDeptId(r.getDeptId()));
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
             }
         }
-        bundle.generatePaymentDetailsForBillsByIncomeRows();
+        bundle.generatePaymentDetailsForBills();
     }
 
     public void processMovementOutWithStocksReportByBill() {
@@ -815,8 +841,8 @@ public class PharmacySummaryReportController implements Serializable {
                     processPharmacyIncomeAndCostReportByBillType();
                     break;
                 case BY_BILL:
-                    processPharmacyIncomeAndCostReportByBill();
-//                    processPharmacyIncomeAndCostReportByBillDto();
+//                    processPharmacyIncomeAndCostReportByBill();
+                    processPharmacyIncomeAndCostReportByBillDto();
                     break;
                 default:
                     JsfUtil.addErrorMessage("Unsupported report view type.");
@@ -825,28 +851,11 @@ public class PharmacySummaryReportController implements Serializable {
         }, SummaryReports.PHARMACY_INCOME_AND_COST_REPORT, sessionController.getLoggedUser());
     }
 
-    public ReportViewType[] getReportViewTypesForPharmacyIncomeAndCostReport() {
-        return new ReportViewType[] {
-                ReportViewType.BY_BILL,
-                ReportViewType.BY_BILL_ITEM,
-                ReportViewType.BY_BILL_TYPE
-        };
-    }
-
-    public ReportViewType[] getReportViewTypesForPharmacyIncomeReport() {
-        return new ReportViewType[] {
-                ReportViewType.BY_BILL,
-                ReportViewType.BY_BILL_TYPE,
-                ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
-                BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
-        };
-    }
-
     public void processPharmacyIncomeAndCostReportByBillItem() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
-        List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
+        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBillItems();
     }
 
@@ -860,46 +869,45 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBill() {
-        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillIncomeDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme, false);
-        bundle = IncomeBundle.fromPharmacyIncomeBillDTO(dtos);
-
-        bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+            List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+            bundle = new IncomeBundle(pbis);
+            bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
     }
 
     public void processPharmacyIncomeAndCostReportByBillType() {
-            List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-
-            List<PharmacyIncomeBillItemDTO> pbis = billService.fetchPharmaceuticalBillItemDTOs(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-            bundle = IncomeBundle.fromPharmacyIncomeBillItemDTO(pbis);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBillType();
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        bundle = new IncomeBundle(dtos);
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBillType();
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
-        reportTimerController.trackReportExecution(() -> {
-            List<PharmacyIncomeCostBillDTO> dtos
-                    = billService.fetchBillIncomeCostDtos(fromDate, toDate, institution, site,
-                            department, webUser, getPharmacyIncomeBillTypes(),
-                            admissionType, paymentScheme);
-            bundle = new IncomeBundle(dtos);
-            bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
-        }, SummaryReports.PHARMACY_INCOME_REPORT, sessionController.getLoggedUser());
+        List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new IncomeBundle(dtos);
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
     }
 
     /**
      * Calculates and assigns financial details for the given {@code BillItem}'s
      * {@code BillItemFinanceDetails} during a **pharmacy sale**.
-     *
+     * <p>
      * This method must only modify the {@code BillItemFinanceDetails} of the
      * provided {@code BillItem}. No other data related to the {@code BillItem},
      * its parent {@code Bill}, or the associated {@code PharmaceuticalBillItem}
      * should be altered.
-     *
+     * <p>
      * The calculation logic differs from purchase-related calculations (e.g.,
      * direct purchases) as this method is designed exclusively for sales
      * scenarios. All rates and totals computed here are based on **sale
      * values**, not cost or purchase values.
-     *
+     * <p>
      * Key steps: - Compute line-level values (rates, amounts) using available
      * data from {@code BillItem} and {@code PharmaceuticalBillItem}. - Derive a
      * proportion using the {@code BillItem}'s net value as a ratio of the total
@@ -911,23 +919,23 @@ public class PharmacySummaryReportController implements Serializable {
      * corresponding fields in {@code BillItemFinanceDetails}. - Avoid any
      * potential {@code NullPointerException} by ensuring all values are
      * non-null and safely handled.
-     *
+     * <p>
      * Reference Logic: - lineGrossTotal = bi.getGrossValue() - billGrossTotal =
      * 0 (reserved for future use) - grossTotal = lineGrossTotal +
      * billGrossTotal
-     *
+     * <p>
      * - lineNetTotal = bi.getNetValue() - billNetTotal = (bill.tax +
      * bill.expenses - bill.discount) * proportion - netTotal = lineNetTotal +
      * billNetTotal
-     *
+     * <p>
      * - Per-unit bill rates (discount/tax/expense) are calculated by dividing
      * the proportional value by quantity in units.
-     *
+     * <p>
      * NOTE: - All input data used here (from {@code Bill}, {@code BillItem},
      * and {@code PharmaceuticalBillItem}) must not be changed within this
      * method. - All primitives (double) are assumed non-null and directly
      * accessible.
-     *
+     * <p>
      * Available Input Data (read-only during this method): - Bill:
      * getDiscount(), getTax(), getExpenseTotal(), getNetTotal() - BillItem:
      * getItem(), getRate(), getGrossValue(), getNetRate(), getNetValue(),
@@ -1107,7 +1115,8 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setTotalTaxRate(BigDecimal.valueOf(bi.getVat()).add(rateOfTaxPortionFromBill));
     }
 
-    @Deprecated // WIll be deleted soon. Use addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale
+    @Deprecated
+    // WIll be deleted soon. Use addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySale
     public void addMissingDataToBillItemFinanceDetailsWhenPharmaceuticalBillItemsAreAvailableForPharmacySaleOld(BillItem bi) {
         if (bi == null || bi.getPharmaceuticalBillItem() == null) {
             return;
@@ -1258,7 +1267,7 @@ public class PharmacySummaryReportController implements Serializable {
                 double qty = Math.abs(pbi.getQty());
                 double retailRate = Math.abs(pbi.getRetailRate());
                 double purchaseRate = Math.abs(pbi.getItemBatch().getPurcahseRate());
-                double cRate =  Math.abs(pbi.getItemBatch().getCostRate());
+                double cRate = Math.abs(pbi.getItemBatch().getCostRate());
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
@@ -1310,80 +1319,65 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void calPharmacyIncomeAndCostReportByBill() {
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        List<Bill> pbis = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
-        for (Bill b : pbis) {
-            if (b == null) {
-                continue;
-            }
+        List<PharmacyIncomeBillItemDTO> dtos = billService.fetchPharmacyIncomeBillItemDTOs(
+                fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
-            BillTypeAtomic bta = Optional
-                    .ofNullable(b)
-                    .map(Bill::getBillTypeAtomic)
-                    .orElse(null);
-            if (bta == null || bta.getBillCategory() == null) {
-                continue; // unable to categorise safely
-            }
-            BillCategory bc = bta.getBillCategory();
+        Map<Long, Double> saleTotals = new HashMap<>();
+        Map<Long, Double> purchaseTotals = new HashMap<>();
 
-            Double saleValue = 0.0;
-            Double purchaseValue = 0.0;
+        for (PharmacyIncomeBillItemDTO b : dtos) {
+            if (b == null || b.getBillId() == null || b.getBillTypeAtomic() == null) continue;
+            BillCategory bc = b.getBillTypeAtomic().getBillCategory();
+            if (bc == null || b.getQty() == null || b.getRetailRate() == null || b.getPurchaseRate() == null) continue;
 
-            for (BillItem bi : b.getBillItems()) {
+            double qty = Math.abs(b.getQty());
+            double retail = Math.abs(b.getBillTypeAtomic() == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS ? b.getNetRate() : b.getRetailRate());
+            double purchase = Math.abs(b.getPurchaseRate());
 
-                if (bi == null || bi.getPharmaceuticalBillItem() == null) {
+            double saleValue = 0.0;
+            double purchaseValue = 0.0;
+
+            switch (bc) {
+                case BILL:
+                case PAYMENTS:
+                case PREBILL:
+                    saleValue = retail * qty;
+                    purchaseValue = purchase * qty;
+                    break;
+                case CANCELLATION:
+                case REFUND:
+                    saleValue = -retail * qty;
+                    purchaseValue = -purchase * qty;
+                    break;
+                default:
                     continue;
-                }
-
-                Double q = bi.getPharmaceuticalBillItem().getQty();
-                Double rRate = bi.getPharmaceuticalBillItem().getRetailRate();
-                if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
-                    rRate = bi.getNetRate();
-                }
-
-                Double pRate = bi.getPharmaceuticalBillItem().getPurchaseRate();
-
-                if (q == null || rRate == null || pRate == null) {
-                    continue;
-                }
-
-                double qty = Math.abs(q);
-                double retail = Math.abs(rRate);
-                double purchase = Math.abs(pRate);
-
-                double retailTotal = 0;
-                double purchaseTotal = 0;
-
-                switch (bc) {
-                    case BILL:
-                    case PAYMENTS:
-                    case PREBILL:
-                        retailTotal = retail * qty;
-                        purchaseTotal = purchase * qty;
-                        break;
-
-                    case CANCELLATION:
-                    case REFUND:
-                        retailTotal = -retail * qty;
-                        purchaseTotal = -purchase * qty;
-                        break;
-
-                    default:
-                        break;
-                }
-                saleValue += retailTotal;
-                purchaseValue += purchaseTotal;
-            }
-            if (b.getBillFinanceDetails() == null) {
-                b.setBillFinanceDetails(new BillFinanceDetails());
             }
 
-            b.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(saleValue));
-            b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
-            getBillFacade().edit(b);
+            saleTotals.merge(b.getBillId(), saleValue, Double::sum);
+            purchaseTotals.merge(b.getBillId(), purchaseValue, Double::sum);
         }
+
+        for (IncomeRow bundle : this.bundle.getRows()) {
+            Bill bill = bundle.getBill();
+            if (bill == null || bill.getId() == null) continue;
+
+            double sale = saleTotals.getOrDefault(bill.getId(), 0.0);
+            double purchase = purchaseTotals.getOrDefault(bill.getId(), 0.0);
+
+            BillFinanceDetails bfd = bill.getBillFinanceDetails();
+            if (bfd == null) {
+                bfd = new BillFinanceDetails();
+                bill.setBillFinanceDetails(bfd);
+            }
+
+            bfd.setTotalRetailSaleValue(BigDecimal.valueOf(sale));
+            bfd.setTotalPurchaseValue(BigDecimal.valueOf(purchase));
+        }
+
+        bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
     }
 
-// </editor-fold>
+    // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Constructors">
     public PharmacySummaryReportController() {
     }
@@ -1679,7 +1673,7 @@ public class PharmacySummaryReportController implements Serializable {
 
     /**
      * @param configOptionApplicationController the
-     * configOptionApplicationController to set
+     *                                          configOptionApplicationController to set
      */
     public void setConfigOptionApplicationController(ConfigOptionApplicationController configOptionApplicationController) {
         this.configOptionApplicationController = configOptionApplicationController;
@@ -2279,7 +2273,7 @@ public class PharmacySummaryReportController implements Serializable {
         this.maxResult = maxResult;
     }
 
-// </editor-fold>
+    // </editor-fold>
     public BillService getBillService() {
         return billService;
     }

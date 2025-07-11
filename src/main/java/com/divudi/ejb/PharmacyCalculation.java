@@ -6,6 +6,7 @@ package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -171,17 +172,50 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
-    public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
+    public double getQtyPlusFreeQtyInUnits(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.creater is not null and"
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
-
         HashMap hm = new HashMap();
         hm.put("bt", b);
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
-        //System.err.println("GETTING TOTAL QTY " + value);
+    public double getQtyPlusFreeQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+    
+    public double getFreeQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+    
+    public double getQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
