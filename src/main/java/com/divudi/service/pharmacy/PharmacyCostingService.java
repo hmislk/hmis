@@ -313,7 +313,7 @@ public class PharmacyCostingService {
 
         BillItem pbiBillItem = pbi.getBillItem();
         BillItem bifdBillItem = bifd.getBillItem();
-        if (pbiBillItem == null || bifdBillItem == null || pbiBillItem.equals(bifdBillItem)) {
+        if (pbiBillItem == null || bifdBillItem == null) {
             return;
         }
 
@@ -367,7 +367,10 @@ public class PharmacyCostingService {
         }
         BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
         Double qtyInUnits = Optional.ofNullable(pbi.getQty()).orElse(0.0);
+        System.out.println("qtyInUnits = " + qtyInUnits);
         Double freeQtyInUnits = Optional.ofNullable(pbi.getFreeQty()).orElse(0.0);
+        System.out.println("freeQtyInUnits = " + freeQtyInUnits);
+        System.out.println("upp = " + upp);
 
         bifd.setQuantity(BigDecimal.valueOf(qtyInUnits).divide(upp));
         bifd.setFreeQuantity(BigDecimal.valueOf(freeQtyInUnits).divide(upp));
@@ -376,6 +379,8 @@ public class PharmacyCostingService {
         bifd.setQuantityByUnits(BigDecimal.valueOf(qtyInUnits));
         bifd.setFreeQuantityByUnits(BigDecimal.valueOf(freeQtyInUnits));
         bifd.setTotalQuantityByUnits(BigDecimal.valueOf(qtyInUnits + freeQtyInUnits));
+        
+        System.out.println("bifd.getQuantity() = " + bifd.getQuantity());
     }
 
     public double calculateProfitMarginForPurchases(BillItem bi) {

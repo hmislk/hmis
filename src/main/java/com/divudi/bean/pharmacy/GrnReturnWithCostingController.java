@@ -816,11 +816,14 @@ public class GrnReturnWithCostingController implements Serializable {
 
             if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
                 double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+                System.out.println("returnedTotal = " + returnedTotal);
                 newPharmaceuticalBillItemInReturnBill.setQty(Math.abs(originalQtyInUnits) + Math.abs(originalFreeQtyInUnits) - Math.abs(returnedTotal));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
                 double returnedQty = getPharmacyRecieveBean().getTotalQty(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+                System.out.println("returnedQty = " + returnedQty);
                 double returnedFreeQty = getPharmacyRecieveBean().getTotalFreeQty(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+                System.out.println("returnedFreeQty = " + returnedFreeQty);
                 newPharmaceuticalBillItemInReturnBill.setQty(Math.abs(originalQtyInUnits) - Math.abs(returnedQty));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(Math.abs(originalFreeQtyInUnits) - Math.abs(returnedFreeQty));
             }
