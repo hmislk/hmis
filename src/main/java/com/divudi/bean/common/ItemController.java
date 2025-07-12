@@ -196,7 +196,6 @@ public class ItemController implements Serializable {
 
     private String output;
 
-    private List<ItemFee> importedFees;
     private List<String> importFailures;
 
     public void uploadAddReplaceItemsFromId() {
@@ -301,28 +300,6 @@ public class ItemController implements Serializable {
             itemFeeService.updateFeeValue(itf.getItem(), itf.getForDepartment(), itf.getFee(), itf.getFfee());
         }
         JsfUtil.addSuccessMessage("Imported fees saved");
-    }
-
-    public void saveImportedDepartmentFees() {
-        if (importedFees == null || importedFees.isEmpty()) {
-            JsfUtil.addErrorMessage("Nothing to save");
-            return;
-        }
-        if (selectedDepartment == null) {
-            JsfUtil.addErrorMessage("Please select a department");
-            return;
-        }
-
-        for (ItemFee f : importedFees) {
-            if (f == null) {
-                continue;
-            }
-            itemFeeFacade.create(f);
-            itemFeeService.updateFeeValue(f.getItem(), selectedDepartment, f.getFee(), f.getFfee());
-        }
-
-        importedFees.clear();
-        JsfUtil.addSuccessMessage("Successfully saved imported fees");
     }
 
     public UploadedFile getFile() {
@@ -4102,14 +4079,6 @@ public class ItemController implements Serializable {
 
     public void setCollectionCentre(Institution collectionCentre) {
         this.collectionCentre = collectionCentre;
-    }
-
-    public List<ItemFee> getImportedFees() {
-        return importedFees;
-    }
-
-    public void setImportedFees(List<ItemFee> importedFees) {
-        this.importedFees = importedFees;
     }
 
     public Department getSelectedDepartment() {
