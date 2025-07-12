@@ -1,0 +1,117 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:head>
+    </h:head>
+    <h:body>
+        <ui:composition template="/admin/pricing/index.xhtml">
+            <ui:define name="subcontent">
+                <p:growl id="msg"/>
+                <p:panel>
+                    <f:facet name="header">
+                        <h:outputText styleClass="fa fa-fw fa-money-bill-wave"></h:outputText>
+                        <h:outputText value="Upload to Add Department Fees by Item Code" styleClass="m-2"></h:outputText>
+                    </f:facet>
+                    <h:form id="upload" enctype="multipart/form-data">
+                        <p:panelGrid columns="2" >
+                            <p:outputLabel value="Department" for="acDept"></p:outputLabel>
+                            <p:autoComplete
+                                value="#{itemController.department}"
+                                forceSelection="true" id="acDept"
+                                completeMethod="#{departmentController.completeDept}"
+                                var="dept"
+                                itemLabel="#{dept.name}"
+                                itemValue="#{dept}"
+                                maxResults="10"
+                                class="w-100 mb-1"
+                                inputStyleClass="form-control">
+                                <p:column headerText="Department" style="padding: 6px;">#{dept.name}</p:column>
+                                <p:column headerText="Institution" style="padding: 6px;">#{dept.institution.name}</p:column>
+                            </p:autoComplete>
+
+                        </p:panelGrid>
+
+                        <p>Column A - Item Code</p>
+                        <p>Column B - Fee</p>
+                        <p>Column C - Foreigner Fee</p>
+                        <p>Column D - Fee Type</p>
+                        <p>Column E - Institution</p>
+                        <p>Column F - Department</p>
+                        <p>Column G - Speciality</p>
+                        <p>Column H - Staff</p>
+
+
+                        <p:fileUpload value="#{itemController.file}"
+                                      mode="simple"
+                                      label="Choose File"/>
+                        <p:commandButton
+                            icon="fa fa-upload"
+                            value="Upload and Add Fee Values"
+                            action="#{itemController.uploadToAddDepartmentFeesByItemCode()}"
+                            ajax="false"/>
+
+
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
+                            ajax="false"/>
+
+
+                        <p:dataTable value="#{itemController.importedFees}"
+                                     var="f"
+                                     rendered="#{not empty itemController.importedFees}"
+                                     class="table table-striped">
+                            <p:column headerText="Item Code">
+                                <h:outputText value="#{f.item.code}" />
+                            </p:column>
+                            <p:column headerText="Fee">
+                                <h:outputText value="#{f.fee}" />
+                            </p:column>
+                            <p:column headerText="Foreigner Fee">
+                                <h:outputText value="#{f.ffee}" />
+                            </p:column>
+                            <p:column headerText="Fee Type">
+                                <h:outputText value="#{f.feeType}" />
+                            </p:column>
+                            <p:column headerText="Institution">
+                                <h:outputText value="#{f.institution.name}" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputText value="#{f.department.name}" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{f.speciality.name}" />
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <h:outputText value="#{f.staff.person.name}" />
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <p:dataTable value="#{itemController.importFailures}"
+                                     var="m"
+                                     rendered="#{not empty itemController.importFailures}"
+                                     class="table table-striped">
+                            <p:column headerText="Import Failures">
+                                <h:outputText value="#{m}" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
+                            update="@form"/>
+
+                    </h:form>
+
+                </p:panel>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

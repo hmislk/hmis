@@ -23,6 +23,8 @@ import com.divudi.core.entity.inward.TheatreService;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.ItemForItem;
 import com.divudi.core.entity.lab.Machine;
+import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
@@ -32,6 +34,8 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemFeeFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.InvestigationController;
+import com.divudi.bean.common.SpecialityController;
+import com.divudi.bean.hr.StaffController;
 import com.divudi.core.data.SessionNumberType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.entity.UserPreference;
@@ -73,7 +77,9 @@ import org.apache.poi.ss.SpreadsheetVersion;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
 import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.CellValue;
 import org.apache.poi.ss.usermodel.Font;
+import org.apache.poi.ss.usermodel.FormulaEvaluator;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -136,6 +142,10 @@ public class ItemController implements Serializable {
     ConfigOptionApplicationController configOptionApplicationController;
     @Inject
     InvestigationController investigationController;
+    @Inject
+    SpecialityController specialityController;
+    @Inject
+    StaffController staffController;
 
     /**
      * Properties
@@ -168,6 +178,8 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
     private List<ItemFeeRow> itemFeeRows;
+    private List<ItemFee> importedFees;
+    private Department selectedDepartment;
     private List<DepartmentItemCount> departmentItemCounts;
     private DepartmentItemCount departmentItemCount;
     private List<InstitutionItemCount> institutionItemCounts;
@@ -183,6 +195,8 @@ public class ItemController implements Serializable {
     private List<Item> packaes;
 
     private String output;
+
+    private List<String> importFailures;
 
     public void uploadAddReplaceItemsFromId() {
         items = new ArrayList<>();
@@ -238,6 +252,54 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void uploadToAddDepartmentFeesByItemCode() {
+        importedFees = new ArrayList<>();
+        importFailures = new ArrayList<>();
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a Department");
+            return;
+        }
+
+        importedFees = new ArrayList<>();
+        importFailures = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                importedFees = addForDepartmentItemFeesFromItemCodeFromExcel(inputStream, department);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        if (output != null) {
+            String[] lines = output.split("<br/>");
+            for (String l : lines) {
+                if (l == null || l.trim().isEmpty()) {
+                    continue;
+                }
+                if (!l.contains("Fee ready")) {
+                    importFailures.add(l);
+                }
+            }
+        }
+    }
+
+    public void saveImportedDepartmentFees() {
+        if (importedFees == null || importedFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        for (ItemFee itf : importedFees) {
+            if (itf.getId() == null) {
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
+            } else {
+                itemFeeFacade.edit(itf);
+            }
+            itemFeeService.updateFeeValue(itf.getItem(), itf.getForDepartment(), itf.getFee(), itf.getFfee());
+        }
+        JsfUtil.addSuccessMessage("Imported fees saved");
     }
 
     public UploadedFile getFile() {
@@ -409,6 +471,249 @@ public class ItemController implements Serializable {
 
         workbook.close();
         return itemFeesSaved;
+    }
+
+    private List<ItemFee> addForDepartmentItemFeesFromItemCodeFromExcel(InputStream inputStream, Department fromDepartment) throws IOException {
+        output = "";
+
+        if (fromDepartment == null) {
+            output = "❌ From Department is not selected. Please select before proceeding.<br/>";
+            return Collections.emptyList();
+        }
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ItemFee> itemFeesSaved = new ArrayList<>();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+
+            String itemCode = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.STRING) {
+                    itemCode = codeCell.getStringCellValue();
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) codeCell.getNumericCellValue());
+                }
+            }
+
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                output += rowNumber + " - Missing Item Code.<br/>";
+                continue;
+            }
+
+            Item item = findItemByCode(itemCode);
+            if (item == null) {
+                output += rowNumber + " - No matching item found for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            Double feeValue = 0.0;
+            Cell feeCell = row.getCell(1);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.STRING) {
+                    feeValue = CommonFunctions.stringToDouble(feeCell.getStringCellValue());
+                } else if (feeCell.getCellType() == CellType.NUMERIC) {
+                    feeValue = feeCell.getNumericCellValue();
+                }
+            }
+
+            if (feeValue < 1) {
+                output += rowNumber + " - Invalid Fee Value for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Hospital Fee");
+            itf.setItem(item);
+            itf.setInstitution(sessionController.getInstitution());
+            itf.setDepartment(sessionController.getDepartment());
+            itf.setFeeType(FeeType.OwnInstitution);
+            itf.setFee(feeValue);
+            itf.setFfee(feeValue);
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+            itf.setForDepartment(fromDepartment);
+
+            itemFeesSaved.add(itf);
+            output += rowNumber + " - Fee ready to save for Code " + itemCode + "<br/>";
+        }
+
+        workbook.close();
+        return itemFeesSaved;
+    }
+
+    private void parseDepartmentFeesFromExcel(InputStream inputStream, Department fromDepartment) throws IOException {
+        importedFees = new ArrayList<>();
+        importFailures = new ArrayList<>();
+
+        if (fromDepartment == null) {
+            importFailures.add("❌ From Department is not selected. Please select before proceeding.");
+            return;
+        }
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+
+            String itemCode = getCellValueAsString(row.getCell(0)).trim();
+            if (itemCode.isEmpty()) {
+                importFailures.add(rowNumber + " - Missing Item Code.");
+                continue;
+            }
+
+            Item item = findItemByCode(itemCode);
+            if (item == null) {
+                importFailures.add(rowNumber + " - No matching item for Code " + itemCode);
+                continue;
+            }
+
+            String jpql = "select f from ItemFee f where f.retired=false and f.item=:it and f.forDepartment=:dep";
+            Map<String, Object> params = new HashMap<>();
+            params.put("it", item);
+            params.put("dep", fromDepartment);
+            List<ItemFee> existing = itemFeeFacade.findByJpql(jpql, params);
+            if (existing != null && !existing.isEmpty()) {
+                importFailures.add(rowNumber + " - Duplicate fee for Code " + itemCode);
+                continue;
+            }
+
+            Double feeValue = getCellValueAsDouble(row.getCell(1));
+            if (feeValue == null || feeValue <= 0) {
+                importFailures.add(rowNumber + " - Invalid Fee for Code " + itemCode);
+                continue;
+            }
+
+            Double foreignerFee = getCellValueAsDouble(row.getCell(2));
+            if (foreignerFee == null || foreignerFee <= 0) {
+                foreignerFee = feeValue;
+            }
+
+            String feeTypeString = getCellValueAsString(row.getCell(3));
+            FeeType feeType;
+            try {
+                feeType = feeTypeString == null || feeTypeString.trim().isEmpty() ? FeeType.OwnInstitution : FeeType.valueOf(feeTypeString.trim());
+            } catch (IllegalArgumentException e) {
+                importFailures.add(rowNumber + " - Unknown FeeType " + feeTypeString);
+                continue;
+            }
+
+            String insName = getCellValueAsString(row.getCell(4));
+            Institution ins = null;
+            if (insName != null && !insName.trim().isEmpty()) {
+                ins = institutionController.findExistingInstitutionByName(insName);
+            }
+            if (ins == null && feeType == FeeType.OwnInstitution) {
+                ins = sessionController.getInstitution();
+            }
+
+            String deptName = getCellValueAsString(row.getCell(5));
+            Department dept = null;
+            if (deptName != null && !deptName.trim().isEmpty()) {
+                dept = departmentController.findExistingDepartmentByName(deptName, ins);
+            }
+            if (dept == null && feeType == FeeType.OwnInstitution) {
+                dept = sessionController.getDepartment();
+            }
+
+            String specialityName = getCellValueAsString(row.getCell(6));
+            Speciality speciality = null;
+            if (specialityName != null && !specialityName.trim().isEmpty()) {
+                speciality = specialityController.findSpeciality(specialityName, false);
+                if (speciality == null) {
+                    importFailures.add(rowNumber + " - Speciality not found: " + specialityName);
+                    continue;
+                }
+            }
+
+            String staffName = getCellValueAsString(row.getCell(7));
+            Staff staff = null;
+            if (staffName != null && !staffName.trim().isEmpty()) {
+                staff = staffController.findStaffByName(staffName);
+                if (staff == null) {
+                    importFailures.add(rowNumber + " - Staff not found: " + staffName);
+                    continue;
+                }
+            }
+
+            ItemFee fee = new ItemFee();
+            fee.setName("Hospital Fee");
+            fee.setItem(item);
+            fee.setInstitution(ins);
+            fee.setDepartment(dept);
+            fee.setForDepartment(fromDepartment);
+            fee.setFeeType(feeType);
+            fee.setFee(feeValue);
+            fee.setFfee(foreignerFee);
+            fee.setSpeciality(speciality);
+            fee.setStaff(staff);
+            fee.setCreatedAt(new Date());
+            fee.setCreater(sessionController.getLoggedUser());
+
+            importedFees.add(fee);
+            importFailures.add(rowNumber + " - Fee parsed for Code " + itemCode);
+        }
+
+        workbook.close();
+    }
+
+    private String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return "";
+        }
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                return String.valueOf(cell.getNumericCellValue());
+            case FORMULA:
+                Workbook wb = cell.getSheet().getWorkbook();
+                FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+                CellValue cellValue = evaluator.evaluate(cell);
+                return cellValue.getCellType() == CellType.NUMERIC ? String.valueOf(cellValue.getNumberValue()) : "";
+            default:
+                return "";
+        }
+    }
+
+    private Double getCellValueAsDouble(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        switch (cell.getCellType()) {
+            case NUMERIC:
+                return cell.getNumericCellValue();
+            case STRING:
+                return CommonFunctions.stringToDouble(cell.getStringCellValue());
+            case FORMULA:
+                Workbook wb = cell.getSheet().getWorkbook();
+                FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+                CellValue cellValue = evaluator.evaluate(cell);
+                return cellValue.getCellType() == CellType.NUMERIC ? cellValue.getNumberValue() : null;
+            default:
+                return null;
+        }
     }
 
     private List<Item> replaceItemsFromExcel(InputStream inputStream) throws IOException {
@@ -3737,6 +4042,22 @@ public class ItemController implements Serializable {
         this.output = output;
     }
 
+    public List<ItemFee> getImportedFees() {
+        return importedFees;
+    }
+
+    public void setImportedFees(List<ItemFee> importedFees) {
+        this.importedFees = importedFees;
+    }
+
+    public List<String> getImportFailures() {
+        return importFailures;
+    }
+
+    public void setImportFailures(List<String> importFailures) {
+        this.importFailures = importFailures;
+    }
+
     public Item findItemByNameAndInstitution(String itemName, String institutionName) {
         String jpql;
         Map m = new HashMap();
@@ -3758,6 +4079,14 @@ public class ItemController implements Serializable {
 
     public void setCollectionCentre(Institution collectionCentre) {
         this.collectionCentre = collectionCentre;
+    }
+
+    public Department getSelectedDepartment() {
+        return selectedDepartment;
+    }
+
+    public void setSelectedDepartment(Department selectedDepartment) {
+        this.selectedDepartment = selectedDepartment;
     }
 
     @FacesConverter("itemLightConverter")
