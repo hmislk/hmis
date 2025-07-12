@@ -345,10 +345,6 @@ public class ItemFeeManager implements Serializable {
         }
     }
 
-    public void fillForDepartmentItemFees() {
-        itemFees = fillFees(null, forDepartment);
-    }
-
     public void updateFeesForDepartmentItemFees() {
         for (ItemFee tif : itemFees) {
             updateDepartmentFeeValues(tif.getItem(), forDepartment);
@@ -627,7 +623,7 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void updateDepartmentFeeValues(Item ti, Department dept) {
-        List<ItemFee> tfs = fillFees(ti, dept);
+        List<ItemFee> tfs = fetchForDepartmentFees(ti, dept);
         double tlf = tfs.stream()
                 .filter(Objects::nonNull)
                 .mapToDouble(ItemFee::getFee)
@@ -685,7 +681,7 @@ public class ItemFeeManager implements Serializable {
         if (forDepartment == null) {
             return;
         }
-        itemFees = fillFees(item, forDepartment);
+        itemFees = fetchForDepartmentFees(item, forDepartment);
         calculateFeesForDepartmentsByProvidingFees();
     }
 
@@ -813,8 +809,33 @@ public class ItemFeeManager implements Serializable {
         return fillFees(i, ins, null);
     }
 
-    public List<ItemFee> fillFees(Item i, Department dept) {
-        String jpql = "select f from ItemFee f where 1=1";
+    public void fillForDepartmentFeesForSelectedItem() {
+        itemFees = new ArrayList<>();
+        if (item == null) {
+            return;
+        }
+        if (forDepartment == null) {
+            return;
+        }
+        itemFees = fetchForDepartmentFees(item, forDepartment);
+    }
+
+    public void fillForDepartmentFees() {
+        if (forDepartment == null) {
+            itemFees = null;
+            totalItemFee = 0.0;
+            totalItemFeeForForeigners = 0.0;
+            return;
+        }
+        itemFees = fetchForDepartmentFees(item, forDepartment);
+    }
+
+    public List<ItemFee> fetchForDepartmentFees(Item i, Department dept) {
+        if (dept == null) {
+            return null;
+        }
+        String jpql = "select f "
+                + " from ItemFee f where 1=1";
         Map<String, Object> m = new HashMap<>();
         jpql += " and f.retired=:ret";
         m.put("ret", false);
@@ -822,12 +843,8 @@ public class ItemFeeManager implements Serializable {
             jpql += " and f.item=:i";
             m.put("i", i);
         }
-        if (dept != null) {
-            jpql += " and f.department=:d";
-            m.put("d", dept);
-        } else {
-            jpql += " and f.department is null";
-        }
+        jpql += " and f.forDepartment=:d";
+        m.put("d", dept);
         jpql += " and f.forInstitution is null";
         jpql += " and f.forCategory is null";
         return itemFeeFacade.findByJpql(jpql, m);
@@ -1119,7 +1136,7 @@ public class ItemFeeManager implements Serializable {
         JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
     }
 
-    public void addNewDepartmentFee() {
+    public void addNewForDepartmentFee() {
         if (forDepartment == null) {
             JsfUtil.addErrorMessage("Select a Department ?");
             return;
@@ -1153,7 +1170,7 @@ public class ItemFeeManager implements Serializable {
         }
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
-        getItemFee().setDepartment(forDepartment);
+        getItemFee().setForDepartment(forDepartment);
         itemFeeFacade.create(itemFee);
         getItemFee().setItem(item);
         itemFeeFacade.edit(itemFee);
@@ -1262,16 +1279,6 @@ public class ItemFeeManager implements Serializable {
         itemFeeFacade.edit(f);
         calculateFeesForSitesByProvidingFees();
         feeValueController.updateFeeValue(item, forSite, totalItemFee, totalItemFeeForForeigners);
-    }
-
-    public void fillForDepartmentFees() {
-        if (forDepartment == null) {
-            itemFees = null;
-            totalItemFee = 0.0;
-            totalItemFeeForForeigners = 0.0;
-            return;
-        }
-        itemFees = fillFees(item, forDepartment);
     }
 
     public void updateFeeForDepartments(ItemFee f) {
