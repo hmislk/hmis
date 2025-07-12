@@ -240,6 +240,21 @@ public class ItemController implements Serializable {
         }
     }
 
+    public void uploadToAddDepartmentFeesByItemCode() {
+        if (department == null) {
+            JsfUtil.addErrorMessage("Please select a Department");
+            return;
+        }
+        allItemFees = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                allItemFees = addForDepartmentItemFeesFromItemCodeFromExcel(inputStream, department);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public UploadedFile getFile() {
         return file;
     }
@@ -402,6 +417,90 @@ public class ItemController implements Serializable {
 
             itemFeeFacade.create(itf);
             itemFeeService.updateFeeValue(item, site, feeValue, feeValue);
+
+            itemFeesSaved.add(itf);
+            output += rowNumber + " - Fee added successfully for Code " + itemCode + "<br/>";
+        }
+
+        workbook.close();
+        return itemFeesSaved;
+    }
+
+    private List<ItemFee> addForDepartmentItemFeesFromItemCodeFromExcel(InputStream inputStream, Department fromDepartment) throws IOException {
+        output = "";
+
+        if (fromDepartment == null) {
+            output = "❌ From Department is not selected. Please select before proceeding.<br/>";
+            return Collections.emptyList();
+        }
+
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<ItemFee> itemFeesSaved = new ArrayList<>();
+
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+
+        int rowNumber = 0;
+
+        while (rowIterator.hasNext()) {
+            rowNumber++;
+            Row row = rowIterator.next();
+
+            String itemCode = null;
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.STRING) {
+                    itemCode = codeCell.getStringCellValue();
+                } else if (codeCell.getCellType() == CellType.NUMERIC) {
+                    itemCode = String.valueOf((long) codeCell.getNumericCellValue());
+                }
+            }
+
+            if (itemCode == null || itemCode.trim().isEmpty()) {
+                output += rowNumber + " - Missing Item Code.<br/>";
+                continue;
+            }
+
+            Item item = findItemByCode(itemCode);
+            if (item == null) {
+                output += rowNumber + " - No matching item found for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            Double feeValue = 0.0;
+            Cell feeCell = row.getCell(1);
+            if (feeCell != null) {
+                if (feeCell.getCellType() == CellType.STRING) {
+                    feeValue = CommonFunctions.stringToDouble(feeCell.getStringCellValue());
+                } else if (feeCell.getCellType() == CellType.NUMERIC) {
+                    feeValue = feeCell.getNumericCellValue();
+                }
+            }
+
+            if (feeValue < 1) {
+                output += rowNumber + " - Invalid Fee Value for Code " + itemCode + "<br/>";
+                continue;
+            }
+
+            ItemFee itf = new ItemFee();
+            itf.setName("Hospital Fee");
+            itf.setItem(item);
+            itf.setInstitution(sessionController.getInstitution());
+            itf.setDepartment(sessionController.getDepartment());
+            itf.setFeeType(FeeType.OwnInstitution);
+            itf.setFee(feeValue);
+            itf.setFfee(feeValue);
+            itf.setCreatedAt(new Date());
+            itf.setCreater(sessionController.getLoggedUser());
+            itf.setForDepartment(fromDepartment);
+
+            itemFeeFacade.create(itf);
+            itemFeeService.updateFeeValue(item, fromDepartment, feeValue, feeValue);
 
             itemFeesSaved.add(itf);
             output += rowNumber + " - Fee added successfully for Code " + itemCode + "<br/>";

@@ -129,6 +129,11 @@ public class ItemFeeManager implements Serializable {
         return "/admin/pricing/upload_to_add_site_fees_by_item_code?faces-redirect=true";
     }
 
+    public String navigateToUploadToAddDepartmentFeesByItemCode() {
+        itemFees = new ArrayList<>();
+        return "/admin/pricing/upload_to_add_department_fees_by_item_code?faces-redirect=true";
+    }
+
     public String navigateToUploadToAddCcFeesByItemCode() {
         itemFees = new ArrayList<>();
         return "/admin/pricing/upload_to_add_cc_fees_by_item_code?faces-redirect=true";
