@@ -262,8 +262,6 @@ public class ItemController implements Serializable {
             return;
         }
 
-        importedFees = new ArrayList<>();
-        importFailures = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 importedFees = addForDepartmentItemFeesFromItemCodeFromExcel(inputStream, department);
