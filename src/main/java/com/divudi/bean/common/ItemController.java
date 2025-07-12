@@ -168,6 +168,8 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
     private List<ItemFeeRow> itemFeeRows;
+    private List<ItemFee> importedFees;
+    private Department selectedDepartment;
     private List<DepartmentItemCount> departmentItemCounts;
     private DepartmentItemCount departmentItemCount;
     private List<InstitutionItemCount> institutionItemCounts;
@@ -253,6 +255,28 @@ public class ItemController implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    public void saveImportedDepartmentFees() {
+        if (importedFees == null || importedFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (selectedDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        for (ItemFee f : importedFees) {
+            if (f == null) {
+                continue;
+            }
+            itemFeeFacade.create(f);
+            itemFeeService.updateFeeValue(f.getItem(), selectedDepartment, f.getFee(), f.getFfee());
+        }
+
+        importedFees.clear();
+        JsfUtil.addSuccessMessage("Successfully saved imported fees");
     }
 
     public UploadedFile getFile() {
@@ -3857,6 +3881,22 @@ public class ItemController implements Serializable {
 
     public void setCollectionCentre(Institution collectionCentre) {
         this.collectionCentre = collectionCentre;
+    }
+
+    public List<ItemFee> getImportedFees() {
+        return importedFees;
+    }
+
+    public void setImportedFees(List<ItemFee> importedFees) {
+        this.importedFees = importedFees;
+    }
+
+    public Department getSelectedDepartment() {
+        return selectedDepartment;
+    }
+
+    public void setSelectedDepartment(Department selectedDepartment) {
+        this.selectedDepartment = selectedDepartment;
     }
 
     @FacesConverter("itemLightConverter")

@@ -42,10 +42,16 @@
                         <p:fileUpload value="#{itemController.file}"
                                       mode="simple"
                                       label="Choose File"/>
-                        <p:commandButton 
+                        <p:commandButton
                             icon="fa fa-upload"
                             value="Upload and Add Fee Values"
                             action="#{itemController.uploadToAddDepartmentFeesByItemCode()}"
+                            ajax="false"/>
+
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
                             ajax="false"/>
 
 
