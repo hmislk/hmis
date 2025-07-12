@@ -524,21 +524,54 @@ public class GrnReturnWithCostingController implements Serializable {
 
     }
 
+    private static class ReturnFinanceTotals {
+        double billTotalAtCostRate;
+        double purchaseFree;
+        double purchaseNonFree;
+        double retailFree;
+        double retailNonFree;
+        double wholesaleFree;
+        double wholesaleNonFree;
+        double costFree;
+        double costNonFree;
+        double lineGrossTotal;
+        double lineNetTotal;
+    }
+
+    private void accumulateTotals(ReturnFinanceTotals totals, BillItemFinanceDetails fd) {
+        if (fd == null) {
+            return;
+        }
+
+        double purchaseRate = Optional.ofNullable(fd.getLineNetRate()).orElse(BigDecimal.ZERO).doubleValue();
+        double retailRate = Optional.ofNullable(fd.getRetailSaleRate()).orElse(BigDecimal.ZERO).doubleValue();
+        double wholesaleRate = Optional.ofNullable(fd.getWholesaleRate()).orElse(BigDecimal.ZERO).doubleValue();
+        double costRate = Optional.ofNullable(fd.getLineCostRate()).orElse(BigDecimal.ZERO).doubleValue();
+
+        BigDecimal qtyByUnits = Optional.ofNullable(fd.getQuantityByUnits()).orElse(BigDecimal.ZERO);
+        BigDecimal freeQtyByUnits = Optional.ofNullable(fd.getFreeQuantityByUnits()).orElse(BigDecimal.ZERO);
+        BigDecimal totalQtyByUnits = Optional.ofNullable(fd.getTotalQuantityByUnits()).orElse(BigDecimal.ZERO);
+
+        totals.lineGrossTotal += Optional.ofNullable(fd.getLineGrossTotal()).orElse(BigDecimal.ZERO).doubleValue();
+        totals.lineNetTotal += Optional.ofNullable(fd.getLineNetTotal()).orElse(BigDecimal.ZERO).doubleValue();
+
+        totals.billTotalAtCostRate += costRate * totalQtyByUnits.doubleValue();
+
+        totals.purchaseFree += freeQtyByUnits.doubleValue() * purchaseRate;
+        totals.purchaseNonFree += qtyByUnits.doubleValue() * purchaseRate;
+
+        totals.retailFree += freeQtyByUnits.doubleValue() * retailRate;
+        totals.retailNonFree += qtyByUnits.doubleValue() * retailRate;
+
+        totals.wholesaleFree += freeQtyByUnits.doubleValue() * wholesaleRate;
+        totals.wholesaleNonFree += qtyByUnits.doubleValue() * wholesaleRate;
+
+        totals.costFree += freeQtyByUnits.doubleValue() * costRate;
+        totals.costNonFree += qtyByUnits.doubleValue() * costRate;
+    }
+
     private void fillData() {
-        double billReturnTotal = 0.0;
-        double billTotalAtCostRate = 0.0;
-
-        double purchaseFree = 0.0;
-        double purchaseNonFree = 0.0;
-
-        double retailFree = 0.0;
-        double retailNonFree = 0.0;
-
-        double wholesaleFree = 0.0;
-        double wholesaleNonFree = 0.0;
-
-        double costFree = 0.0;
-        double costNonFree = 0.0;
+        ReturnFinanceTotals totals = new ReturnFinanceTotals();
 
         int serialNo = 0;
 
@@ -584,23 +617,7 @@ public class GrnReturnWithCostingController implements Serializable {
                 pbi.setRetailValue(-Math.abs(retailValue));
             }
 
-            billReturnTotal += fd.getLineGrossTotal().doubleValue();
-            billTotalAtCostRate += fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()).doubleValue();
-
-            double freeQty = fd.getFreeQuantityByUnits().doubleValue();
-            double paidQty = fd.getQuantityByUnits().doubleValue();
-
-            purchaseFree += freeQty * purchaseRate;
-            purchaseNonFree += paidQty * purchaseRate;
-
-            retailFree += freeQty * retailRate;
-            retailNonFree += paidQty * retailRate;
-
-            wholesaleFree += freeQty * wholesaleRate;
-            wholesaleNonFree += paidQty * wholesaleRate;
-
-            costFree += freeQty * costRate;
-            costNonFree += paidQty * costRate;
+            accumulateTotals(totals, fd);
 
             double qtyInUnits = fd.getQuantityByUnits().doubleValue();
             double qtyPacks = fd.getQuantity().doubleValue();
@@ -656,37 +673,39 @@ public class GrnReturnWithCostingController implements Serializable {
 
         }
 
-        returnBill.setNetTotal(billReturnTotal);
-        returnBill.setTotal(billReturnTotal);
+        returnBill.setNetTotal(totals.lineNetTotal);
+        returnBill.setTotal(totals.lineNetTotal);
 
-        returnBill.getBillFinanceDetails().setLineCostValue(BigDecimal.valueOf(billTotalAtCostRate));
+        BillFinanceDetails bfd = returnBill.getBillFinanceDetails();
+
+        bfd.setLineCostValue(BigDecimal.valueOf(totals.billTotalAtCostRate));
         returnBill.getBillFinanceDetails().setBillCostValue(BigDecimal.ZERO);
-        returnBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
-        returnBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
-        returnBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
+        bfd.setTotalCostValue(BigDecimal.valueOf(totals.costFree + totals.costNonFree));
+        bfd.setTotalCostValueFree(BigDecimal.valueOf(totals.costFree));
+        bfd.setTotalCostValueNonFree(BigDecimal.valueOf(totals.costNonFree));
 
-        returnBill.getBillFinanceDetails().setLineGrossTotal(BigDecimal.valueOf(billReturnTotal));
+        bfd.setLineGrossTotal(BigDecimal.valueOf(totals.lineGrossTotal));
         returnBill.getBillFinanceDetails().setBillGrossTotal(BigDecimal.ZERO);
-        returnBill.getBillFinanceDetails().setGrossTotal(BigDecimal.valueOf(billReturnTotal));
+        bfd.setGrossTotal(BigDecimal.valueOf(totals.lineGrossTotal));
 
-        returnBill.getBillFinanceDetails().setLineNetTotal(BigDecimal.valueOf(billReturnTotal));
+        bfd.setLineNetTotal(BigDecimal.valueOf(totals.lineNetTotal));
         returnBill.getBillFinanceDetails().setBillNetTotal(BigDecimal.ZERO);
-        returnBill.getBillFinanceDetails().setNetTotal(BigDecimal.valueOf(billReturnTotal));
+        bfd.setNetTotal(BigDecimal.valueOf(totals.lineNetTotal));
 
-        returnBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
-        returnBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
-        returnBill.getBillFinanceDetails().setTotalPurchaseValueNonFree(BigDecimal.valueOf(purchaseNonFree));
+        bfd.setTotalPurchaseValue(BigDecimal.valueOf(totals.purchaseFree + totals.purchaseNonFree));
+        bfd.setTotalPurchaseValueFree(BigDecimal.valueOf(totals.purchaseFree));
+        bfd.setTotalPurchaseValueNonFree(BigDecimal.valueOf(totals.purchaseNonFree));
 
-        returnBill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(retailFree + retailNonFree));
-        returnBill.getBillFinanceDetails().setTotalRetailSaleValueFree(BigDecimal.valueOf(retailFree));
-        returnBill.getBillFinanceDetails().setTotalRetailSaleValueNonFree(BigDecimal.valueOf(retailNonFree));
+        bfd.setTotalRetailSaleValue(BigDecimal.valueOf(totals.retailFree + totals.retailNonFree));
+        bfd.setTotalRetailSaleValueFree(BigDecimal.valueOf(totals.retailFree));
+        bfd.setTotalRetailSaleValueNonFree(BigDecimal.valueOf(totals.retailNonFree));
 
-        returnBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
-        returnBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
-        returnBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
+        bfd.setTotalWholesaleValue(BigDecimal.valueOf(totals.wholesaleFree + totals.wholesaleNonFree));
+        bfd.setTotalWholesaleValueFree(BigDecimal.valueOf(totals.wholesaleFree));
+        bfd.setTotalWholesaleValueNonFree(BigDecimal.valueOf(totals.wholesaleNonFree));
 
-        returnBill.setSaleValue(retailFree + retailNonFree); // for backword compatibility
-        returnBill.setFreeValue(retailFree); // for backword compatibility
+        returnBill.setSaleValue(totals.retailFree + totals.retailNonFree); // for backward compatibility
+        returnBill.setFreeValue(totals.retailFree); // for backward compatibility
 
     }
 
