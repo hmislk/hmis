@@ -539,9 +539,15 @@ public class GrnReturnWithCostingController implements Serializable {
         double costFree = 0.0;
         double costNonFree = 0.0;
 
+        int serialNo = 0;
+
         for (BillItem bi : getBillItems()) {
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+            if (fd == null || pbi == null) {
+                continue;
+            }
 
             double purchaseRate = pbi.getItemBatch().getPurcahseRate();
             double retailRate = pbi.getItemBatch().getRetailsaleRate();
@@ -552,10 +558,6 @@ public class GrnReturnWithCostingController implements Serializable {
             fd.setTotalQuantity(fd.getQuantity().add(fd.getFreeQuantity()));
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(pbi, fd);
 
-            System.out.println("fd.getQuantity() = " + fd.getQuantity());
-            System.out.println("fd.getFreeQuantity() = " + fd.getFreeQuantity());
-            System.out.println("fd.getTotalQuantity() = " + fd.getTotalQuantity());
-            
             fd.setLineNetRate(fd.getLineGrossRate());
             fd.setLineCostRate(BigDecimal.valueOf(costRate));
 
@@ -579,8 +581,28 @@ public class GrnReturnWithCostingController implements Serializable {
             wholesaleFree += freeQty * wholesaleRate;
             wholesaleNonFree += paidQty * wholesaleRate;
 
+
             costFree += freeQty * costRate;
             costNonFree += paidQty * costRate;
+
+            double qtyInUnits = fd.getQuantityByUnits().doubleValue();
+            double lineRate = fd.getLineGrossRate().doubleValue();
+
+            fd.setQuantity(fd.getQuantity().negate());
+            fd.setFreeQuantity(fd.getFreeQuantity().negate());
+            fd.setTotalQuantity(fd.getTotalQuantity().negate());
+            fd.setQuantityByUnits(fd.getQuantityByUnits().negate());
+            fd.setFreeQuantityByUnits(fd.getFreeQuantityByUnits().negate());
+            fd.setTotalQuantityByUnits(fd.getTotalQuantityByUnits().negate());
+
+            bi.setQty(-qtyInUnits);
+            bi.setRate(lineRate);
+            bi.setNetValue(Math.abs(qtyInUnits * lineRate));
+            bi.setSearialNo(serialNo++);
+
+            if (pbi.getSerialNo() == null && pbi.getItemBatch() != null) {
+                pbi.setSerialNo(pbi.getItemBatch().getSerialNo());
+            }
 
         }
 
