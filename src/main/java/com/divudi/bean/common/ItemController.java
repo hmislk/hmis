@@ -178,6 +178,8 @@ public class ItemController implements Serializable {
     private List<Item> investigationSampleComponents;
     private List<ItemFee> ItemFeesList;
     private List<ItemFeeRow> itemFeeRows;
+    private List<ItemFee> importedFees;
+    private Department selectedDepartment;
     private List<DepartmentItemCount> departmentItemCounts;
     private DepartmentItemCount departmentItemCount;
     private List<InstitutionItemCount> institutionItemCounts;
@@ -260,13 +262,67 @@ public class ItemController implements Serializable {
             JsfUtil.addErrorMessage("Please select a Department");
             return;
         }
+
+        importedFees = new ArrayList<>();
+        importFailures = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                parseDepartmentFeesFromExcel(inputStream, department);
+                importedFees = addForDepartmentItemFeesFromItemCodeFromExcel(inputStream, department);
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
+        if (output != null) {
+            String[] lines = output.split("<br/>");
+            for (String l : lines) {
+                if (l == null || l.trim().isEmpty()) {
+                    continue;
+                }
+                if (!l.contains("Fee ready")) {
+                    importFailures.add(l);
+                }
+            }
+        }
+    }
+
+    public void saveImportedDepartmentFees() {
+        if (importedFees == null || importedFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        for (ItemFee itf : importedFees) {
+            if (itf.getId() == null) {
+                itf.setCreatedAt(new Date());
+                itf.setCreater(sessionController.getLoggedUser());
+                itemFeeFacade.create(itf);
+            } else {
+                itemFeeFacade.edit(itf);
+            }
+            itemFeeService.updateFeeValue(itf.getItem(), itf.getForDepartment(), itf.getFee(), itf.getFfee());
+        }
+        JsfUtil.addSuccessMessage("Imported fees saved");
+    }
+
+    public void saveImportedDepartmentFees() {
+        if (importedFees == null || importedFees.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to save");
+            return;
+        }
+        if (selectedDepartment == null) {
+            JsfUtil.addErrorMessage("Please select a department");
+            return;
+        }
+
+        for (ItemFee f : importedFees) {
+            if (f == null) {
+                continue;
+            }
+            itemFeeFacade.create(f);
+            itemFeeService.updateFeeValue(f.getItem(), selectedDepartment, f.getFee(), f.getFfee());
+        }
+
+        importedFees.clear();
+        JsfUtil.addSuccessMessage("Successfully saved imported fees");
     }
 
     public UploadedFile getFile() {
@@ -513,11 +569,8 @@ public class ItemController implements Serializable {
             itf.setCreater(sessionController.getLoggedUser());
             itf.setForDepartment(fromDepartment);
 
-            itemFeeFacade.create(itf);
-            itemFeeService.updateFeeValue(item, fromDepartment, feeValue, feeValue);
-
             itemFeesSaved.add(itf);
-            output += rowNumber + " - Fee added successfully for Code " + itemCode + "<br/>";
+            output += rowNumber + " - Fee ready to save for Code " + itemCode + "<br/>";
         }
 
         workbook.close();
@@ -4049,6 +4102,22 @@ public class ItemController implements Serializable {
 
     public void setCollectionCentre(Institution collectionCentre) {
         this.collectionCentre = collectionCentre;
+    }
+
+    public List<ItemFee> getImportedFees() {
+        return importedFees;
+    }
+
+    public void setImportedFees(List<ItemFee> importedFees) {
+        this.importedFees = importedFees;
+    }
+
+    public Department getSelectedDepartment() {
+        return selectedDepartment;
+    }
+
+    public void setSelectedDepartment(Department selectedDepartment) {
+        this.selectedDepartment = selectedDepartment;
     }
 
     @FacesConverter("itemLightConverter")

@@ -58,7 +58,7 @@ public class ItemFeeService {
             feeValue.setCreatedAt(new Date());
         }
         feeValue.setTotalValueForLocals(feeValueForLocals);
-        feeValue.setTotalValueForLocals(feeValueForForeigners);
+        feeValue.setTotalValueForForeigners(feeValueForForeigners);
         save(feeValue);
     }
 

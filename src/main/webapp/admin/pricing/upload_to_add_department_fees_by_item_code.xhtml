@@ -37,21 +37,76 @@
 
                         <p>Column A - Item Code</p>
                         <p>Column B - Fee</p>
+                        <p>Column C - Foreigner Fee</p>
+                        <p>Column D - Fee Type</p>
+                        <p>Column E - Institution</p>
+                        <p>Column F - Department</p>
+                        <p>Column G - Speciality</p>
+                        <p>Column H - Staff</p>
 
 
                         <p:fileUpload value="#{itemController.file}"
                                       mode="simple"
                                       label="Choose File"/>
-                        <p:commandButton 
+                        <p:commandButton
                             icon="fa fa-upload"
                             value="Upload and Add Fee Values"
                             action="#{itemController.uploadToAddDepartmentFeesByItemCode()}"
                             ajax="false"/>
 
 
-                        <p:inputTextarea  value="#{itemController.output}" class="w-100" rows="30" >
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
+                            ajax="false"/>
 
-                        </p:inputTextarea>
+
+                        <p:dataTable value="#{itemController.importedFees}"
+                                     var="f"
+                                     rendered="#{not empty itemController.importedFees}"
+                                     class="table table-striped">
+                            <p:column headerText="Item Code">
+                                <h:outputText value="#{f.item.code}" />
+                            </p:column>
+                            <p:column headerText="Fee">
+                                <h:outputText value="#{f.fee}" />
+                            </p:column>
+                            <p:column headerText="Foreigner Fee">
+                                <h:outputText value="#{f.ffee}" />
+                            </p:column>
+                            <p:column headerText="Fee Type">
+                                <h:outputText value="#{f.feeType}" />
+                            </p:column>
+                            <p:column headerText="Institution">
+                                <h:outputText value="#{f.institution.name}" />
+                            </p:column>
+                            <p:column headerText="Department">
+                                <h:outputText value="#{f.department.name}" />
+                            </p:column>
+                            <p:column headerText="Speciality">
+                                <h:outputText value="#{f.speciality.name}" />
+                            </p:column>
+                            <p:column headerText="Staff">
+                                <h:outputText value="#{f.staff.person.name}" />
+                            </p:column>
+                        </p:dataTable>
+
+
+                        <p:dataTable value="#{itemController.importFailures}"
+                                     var="m"
+                                     rendered="#{not empty itemController.importFailures}"
+                                     class="table table-striped">
+                            <p:column headerText="Import Failures">
+                                <h:outputText value="#{m}" />
+                            </p:column>
+                        </p:dataTable>
+
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
+                            update="@form"/>
 
                     </h:form>
 
