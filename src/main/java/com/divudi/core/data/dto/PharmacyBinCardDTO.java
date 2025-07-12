@@ -10,12 +10,13 @@ import java.util.Date;
  * entity graphs.
  */
 public class PharmacyBinCardDTO implements Serializable {
+
     private Long id;
     private Date createdAt;
     private BillType billType;
     private BillTypeAtomic billTypeAtomic;
     private String itemName;
-    private String itemClass;
+    private Class<?> itemClass;
     private Double qty;
     private Double freeQty;
     private Double qtyPacks;
@@ -24,23 +25,21 @@ public class PharmacyBinCardDTO implements Serializable {
     private Double itemStock;
 
     public PharmacyBinCardDTO(Long id,
-                              Date createdAt,
-                              BillType billType,
-                              BillTypeAtomic billTypeAtomic,
-                              String itemName,
-                              Class<?> itemClass,
-                              Double qty,
-                              Double freeQty,
-                              Double qtyPacks,
-                              Double freeQtyPacks,
-                              Double itemDblValue,
-                              Double itemStock) {
+            Date createdAt,
+            BillType billType,
+            BillTypeAtomic billTypeAtomic,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double qtyPacks,
+            Double freeQtyPacks,
+            Double itemDblValue,
+            Double itemStock) {
         this.id = id;
         this.createdAt = createdAt;
         this.billType = billType;
         this.billTypeAtomic = billTypeAtomic;
         this.itemName = itemName;
-        this.itemClass = itemClass == null ? null : itemClass.getSimpleName();
         this.qty = qty;
         this.freeQty = freeQty;
         this.qtyPacks = qtyPacks;
@@ -92,11 +91,11 @@ public class PharmacyBinCardDTO implements Serializable {
         this.itemName = itemName;
     }
 
-    public String getItemClass() {
+    public Class<?> getItemClass() {
         return itemClass;
     }
 
-    public void setItemClass(String itemClass) {
+    public void setItemClass(Class<?> itemClass) {
         this.itemClass = itemClass;
     }
 
