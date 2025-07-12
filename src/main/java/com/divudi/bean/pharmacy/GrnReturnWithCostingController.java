@@ -549,6 +549,9 @@ public class GrnReturnWithCostingController implements Serializable {
                 continue;
             }
 
+            BillItem ref = bi.getReferanceBillItem();
+            PharmaceuticalBillItem refPbi = ref != null ? ref.getPharmaceuticalBillItem() : null;
+
             double purchaseRate = pbi.getItemBatch().getPurcahseRate();
             double retailRate = pbi.getItemBatch().getRetailsaleRate();
             double wholesaleRate = pbi.getItemBatch().getWholesaleRate();
@@ -563,11 +566,25 @@ public class GrnReturnWithCostingController implements Serializable {
 
             fd.setLineGrossTotal(fd.getLineGrossRate().multiply(fd.getTotalQuantity()));
             fd.setLineNetTotal(fd.getLineGrossTotal());
-            fd.setLineCost(fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()));
-            fd.setTotalCost(fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()));
+
+            // Populate gross/net rates and totals
+            fd.setGrossRate(fd.getLineGrossRate());
+            fd.setNetRate(fd.getLineNetRate());
+            fd.setGrossTotal(fd.getLineGrossTotal());
+            fd.setNetTotal(fd.getLineNetTotal());
+
+            // Retail values from reference GRN item batch
+            if (refPbi != null && refPbi.getItemBatch() != null) {
+                double refRetail = refPbi.getItemBatch().getRetailsaleRate();
+                fd.setRetailSaleRate(BigDecimal.valueOf(refRetail));
+                BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+                fd.setRetailSaleRatePerUnit(BigDecimal.valueOf(refRetail).divide(upp, 4, RoundingMode.HALF_UP));
+                double retailValue = refRetail * fd.getTotalQuantityByUnits().doubleValue();
+                pbi.setRetailValue(-Math.abs(retailValue));
+            }
 
             billReturnTotal += fd.getLineGrossTotal().doubleValue();
-            billTotalAtCostRate += fd.getTotalCost().doubleValue();
+            billTotalAtCostRate += fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()).doubleValue();
 
             double freeQty = fd.getFreeQuantityByUnits().doubleValue();
             double paidQty = fd.getQuantityByUnits().doubleValue();
@@ -581,7 +598,6 @@ public class GrnReturnWithCostingController implements Serializable {
             wholesaleFree += freeQty * wholesaleRate;
             wholesaleNonFree += paidQty * wholesaleRate;
 
-
             costFree += freeQty * costRate;
             costNonFree += paidQty * costRate;
 
@@ -593,19 +609,40 @@ public class GrnReturnWithCostingController implements Serializable {
             pbi.setPurchaseRatePack(purchaseRate);
             pbi.setRetailRate(retailRate);
             pbi.setRetailRatePack(retailRate);
+            pbi.setWholesaleRate(wholesaleRate);
+            pbi.setWholesaleRatePack(wholesaleRate);
 
             pbi.setQty(-qtyInUnits);
             pbi.setQtyPacks(-qtyPacks);
             pbi.setPurchaseValue(pbi.getQty() * pbi.getPurchaseRate());
-            pbi.setRetailValue(pbi.getQty() * pbi.getRetailRate());
             pbi.setRetailPackValue(pbi.getQtyPacks() * pbi.getRetailRatePack());
 
+            // Ensure quantity fields are negative
             fd.setQuantity(fd.getQuantity().negate());
             fd.setFreeQuantity(fd.getFreeQuantity().negate());
             fd.setTotalQuantity(fd.getTotalQuantity().negate());
             fd.setQuantityByUnits(fd.getQuantityByUnits().negate());
             fd.setFreeQuantityByUnits(fd.getFreeQuantityByUnits().negate());
             fd.setTotalQuantityByUnits(fd.getTotalQuantityByUnits().negate());
+
+            fd.setLineCost(fd.getLineCostRate().multiply(fd.getTotalQuantityByUnits()));
+            fd.setTotalCost(fd.getLineCost());
+
+            // Optional reflection based fields
+            try {
+                java.lang.reflect.Method m1 = BillItemFinanceDetails.class.getMethod("setValueAtPurchaseRate", BigDecimal.class);
+                BigDecimal qtyAbs = fd.getTotalQuantityByUnits().abs();
+                BigDecimal val = BigDecimal.valueOf(purchaseRate).multiply(qtyAbs);
+                m1.invoke(fd, val.negate());
+            } catch (Exception ex) {
+            }
+            try {
+                java.lang.reflect.Method m2 = BillItemFinanceDetails.class.getMethod("setValueAtRetailRate", BigDecimal.class);
+                BigDecimal qtyAbs = fd.getTotalQuantityByUnits().abs();
+                BigDecimal val = BigDecimal.valueOf(retailRate).multiply(qtyAbs);
+                m2.invoke(fd, val.negate());
+            } catch (Exception ex) {
+            }
 
             bi.setQty(pbi.getQty());
             bi.setRate(lineRate);
