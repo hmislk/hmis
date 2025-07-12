@@ -486,7 +486,7 @@ public class GrnCostingController implements Serializable {
         finalizeSettle();
         createAndPersistPayment();
     }
-    
+
     private void fillData(Bill inputBill) {
         double billTotalAtCostRate = 0.0;
 
@@ -502,46 +502,89 @@ public class GrnCostingController implements Serializable {
         double costFree = 0.0;
         double costNonFree = 0.0;
 
+        System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
+
         for (BillItem bi : getBillItems()) {
+            System.out.println("Processing BillItem ID: " + (bi != null ? bi.getId() : "null"));
+
             BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+            if (fd == null) {
+                System.out.println("  -> Skipped: FinanceDetails is null");
+                continue;
+            }
 
             double purchaseRate = fd.getLineNetRate().doubleValue();
             double retailRate = fd.getRetailSaleRate().doubleValue();
             double wholesaleRate = fd.getWholesaleRate().doubleValue();
             double costRate = fd.getTotalCostRate().doubleValue();
 
-            System.out.println("fd.getQuantity() = " + fd.getQuantity());
-            System.out.println("fd.getFreeQuantity() = " + fd.getFreeQuantity());
-            System.out.println("fd.getTotalQuantity() = " + fd.getTotalQuantity());
-            
+            System.out.println("  fd.getQuantity() = " + fd.getQuantity());
+            System.out.println("  fd.getFreeQuantity() = " + fd.getFreeQuantity());
+            System.out.println("  fd.getTotalQuantity() = " + fd.getTotalQuantity());
+            System.out.println("  purchaseRate = " + purchaseRate);
+            System.out.println("  retailRate = " + retailRate);
+            System.out.println("  wholesaleRate = " + wholesaleRate);
+            System.out.println("  costRate = " + costRate);
+
             billTotalAtCostRate += fd.getTotalCost().doubleValue();
+            System.out.println("  Added to billTotalAtCostRate: " + fd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
 
             double freeQty = fd.getFreeQuantityByUnits().doubleValue();
             double paidQty = fd.getQuantityByUnits().doubleValue();
 
-            purchaseFree += freeQty * purchaseRate;
-            purchaseNonFree += paidQty * purchaseRate;
+            System.out.println("  freeQty = " + freeQty);
+            System.out.println("  paidQty = " + paidQty);
 
-            retailFree += freeQty * retailRate;
-            retailNonFree += paidQty * retailRate;
+            double tmp;
 
-            wholesaleFree += freeQty * wholesaleRate;
-            wholesaleNonFree += paidQty * wholesaleRate;
+            tmp = freeQty * purchaseRate;
+            purchaseFree += tmp;
+            System.out.println("  purchaseFree += " + tmp + " -> " + purchaseFree);
 
-            costFree += freeQty * costRate;
-            costNonFree += paidQty * costRate;
+            tmp = paidQty * purchaseRate;
+            purchaseNonFree += tmp;
+            System.out.println("  purchaseNonFree += " + tmp + " -> " + purchaseNonFree);
 
+            tmp = freeQty * retailRate;
+            retailFree += tmp;
+            System.out.println("  retailFree += " + tmp + " -> " + retailFree);
+
+            tmp = paidQty * retailRate;
+            retailNonFree += tmp;
+            System.out.println("  retailNonFree += " + tmp + " -> " + retailNonFree);
+
+            tmp = freeQty * wholesaleRate;
+            wholesaleFree += tmp;
+            System.out.println("  wholesaleFree += " + tmp + " -> " + wholesaleFree);
+
+            tmp = paidQty * wholesaleRate;
+            wholesaleNonFree += tmp;
+            System.out.println("  wholesaleNonFree += " + tmp + " -> " + wholesaleNonFree);
+
+            tmp = freeQty * costRate;
+            costFree += tmp;
+            System.out.println("  costFree += " + tmp + " -> " + costFree);
+
+            tmp = paidQty * costRate;
+            costNonFree += tmp;
+            System.out.println("  costNonFree += " + tmp + " -> " + costNonFree);
         }
 
+        System.out.println("========= Final Aggregated Totals =========");
+        System.out.println("costFree = " + costFree);
+        System.out.println("costNonFree = " + costNonFree);
+        System.out.println("purchaseFree = " + purchaseFree);
+        System.out.println("purchaseNonFree = " + purchaseNonFree);
+        System.out.println("retailFree = " + retailFree);
+        System.out.println("retailNonFree = " + retailNonFree);
+        System.out.println("wholesaleFree = " + wholesaleFree);
+        System.out.println("wholesaleNonFree = " + wholesaleNonFree);
 
-//
-//        inputBill.getBillFinanceDetails().setLineCostValue(BigDecimal.valueOf(billTotalAtCostRate));
-//        inputBill.getBillFinanceDetails().setBillCostValue(BigDecimal.ZERO);
         inputBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
         inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
         inputBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
-
 
         inputBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
         inputBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
@@ -555,9 +598,13 @@ public class GrnCostingController implements Serializable {
         inputBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
         inputBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
 
-        inputBill.setSaleValue(retailFree + retailNonFree); // for backword compatibility
-        inputBill.setFreeValue(retailFree); // for backword compatibility
+        inputBill.setSaleValue(retailFree + retailNonFree);
+        inputBill.setFreeValue(retailFree);
 
+        System.out.println("inputBill.setSaleValue = " + inputBill.getSaleValue());
+        System.out.println("inputBill.setFreeValue = " + inputBill.getFreeValue());
+
+        System.out.println("========= End fillData =========");
     }
 
     private boolean validateInputs() {
