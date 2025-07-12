@@ -54,6 +54,14 @@
                             action="#{itemController.uploadToAddDepartmentFeesByItemCode()}"
                             ajax="false"/>
 
+
+                        <p:commandButton
+                            icon="fa fa-save"
+                            value="Save Imported Fees"
+                            action="#{itemController.saveImportedDepartmentFees()}"
+                            ajax="false"/>
+
+
                         <p:dataTable value="#{itemController.importedFees}"
                                      var="f"
                                      rendered="#{not empty itemController.importedFees}"
@@ -83,6 +91,7 @@
                                 <h:outputText value="#{f.staff.person.name}" />
                             </p:column>
                         </p:dataTable>
+
 
                         <p:dataTable value="#{itemController.importFailures}"
                                      var="m"
