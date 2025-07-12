@@ -586,7 +586,19 @@ public class GrnReturnWithCostingController implements Serializable {
             costNonFree += paidQty * costRate;
 
             double qtyInUnits = fd.getQuantityByUnits().doubleValue();
+            double qtyPacks = fd.getQuantity().doubleValue();
             double lineRate = fd.getLineGrossRate().doubleValue();
+
+            pbi.setPurchaseRate(purchaseRate);
+            pbi.setPurchaseRatePack(purchaseRate);
+            pbi.setRetailRate(retailRate);
+            pbi.setRetailRatePack(retailRate);
+
+            pbi.setQty(-qtyInUnits);
+            pbi.setQtyPacks(-qtyPacks);
+            pbi.setPurchaseValue(pbi.getQty() * pbi.getPurchaseRate());
+            pbi.setRetailValue(pbi.getQty() * pbi.getRetailRate());
+            pbi.setRetailPackValue(pbi.getQtyPacks() * pbi.getRetailRatePack());
 
             fd.setQuantity(fd.getQuantity().negate());
             fd.setFreeQuantity(fd.getFreeQuantity().negate());
@@ -595,7 +607,7 @@ public class GrnReturnWithCostingController implements Serializable {
             fd.setFreeQuantityByUnits(fd.getFreeQuantityByUnits().negate());
             fd.setTotalQuantityByUnits(fd.getTotalQuantityByUnits().negate());
 
-            bi.setQty(-qtyInUnits);
+            bi.setQty(pbi.getQty());
             bi.setRate(lineRate);
             bi.setNetValue(Math.abs(qtyInUnits * lineRate));
             bi.setSearialNo(serialNo++);
