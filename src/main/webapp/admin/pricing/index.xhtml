@@ -24,14 +24,6 @@
                                                 action="#{itemFeeManager.navigateToItemFees()}">
                                             </p:commandButton>
 
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Fee Lists"
-                                                icon="fa fa-list" 
-                                                action="#{categoryController.navigateToManageFeeListTypes()}">
-                                            </p:commandButton>
-
                                             <p:commandButton
                                                 class="w-100"
                                                 ajax="false"
@@ -72,6 +64,62 @@
                                                 action="#{itemFeeManager.navigateToItemFeesMultiple()}">
                                             </p:commandButton>
 
+
+
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Lists">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Base Item Fees"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToDownloadBaseItemFees()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Sites"
+                                                icon="fa fa-sitemap" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForSites()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Fee Lists"
+                                                icon="fa fa-list" 
+                                                action="#{categoryController.navigateToManageFeeListTypes()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Collecting Centres"
+                                                icon="fa fa-map-pin" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForCollectingCentres()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Item Fees for Lists"
+                                                icon="fa fa-th-list" 
+                                                action="#{itemFeeManager.navigateToDownloadItemFeesForLists()}">
+                                            </p:commandButton>
+
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Upload Changed Item Fees"
+                                                icon="fa fa-upload"
+                                                action="#{itemFeeManager.navigateToUploadChangedItemFees()}">
+                                            </p:commandButton>
+
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
@@ -93,6 +141,33 @@
                                                 action="#{itemFeeManager.navigateToCollectingCentreItemFeeList}">
                                             </p:commandButton>
 
+
+                                        </div>
+                                    </p:tab>
+
+                                    <p:tab title="Upload Fees">
+                                        <div class="d-grid gap-2">
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Upload to replace Site Fees by Item Code"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToUploadToReplaceSiteFeesByItemCode()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Upload to add Site Fees by Item Code"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToUploadToAddSiteFeesByItemCode()}">
+                                            </p:commandButton>
+                                            <p:commandButton 
+                                                class="w-100"
+                                                ajax="false" 
+                                                value="Upload to add Collection Centre Fees by Item Code"
+                                                icon="fa fa-list" 
+                                                action="#{itemFeeManager.navigateToUploadToAddCcFeesByItemCode()}">
+                                            </p:commandButton>
                                             <p:commandButton 
                                                 class="w-100"
                                                 ajax="false"
@@ -113,6 +188,7 @@
                                                 value="Upload Institution Item Fees"
                                                 action="#{itemFeeManager.navigateToUploadCollectingCentreFeeList()}">
                                             </p:commandButton>
+
 
                                             <p:commandButton 
                                                 class="w-100"
@@ -155,77 +231,6 @@
                                                 ajax="false"
                                                 value="Item Fees Values"
                                                 action="#{itemFeeManager.navigateItemFeeValueList}">
-                                            </p:commandButton>
-
-                                        </div>
-                                    </p:tab>
-
-                                    <p:tab title="Download Fees">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Base Item Fees"
-                                                icon="fa fa-list" 
-                                                action="#{itemFeeManager.navigateToDownloadBaseItemFees()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Item Fees for Sites"
-                                                icon="fa fa-sitemap" 
-                                                action="#{itemFeeManager.navigateToDownloadItemFeesForSites()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Item Fees for Collecting Centres"
-                                                icon="fa fa-map-pin" 
-                                                action="#{itemFeeManager.navigateToDownloadItemFeesForCollectingCentres()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Item Fees for Lists"
-                                                icon="fa fa-th-list" 
-                                                action="#{itemFeeManager.navigateToDownloadItemFeesForLists()}">
-                                            </p:commandButton>
-
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false"
-                                                value="Upload Changed Item Fees"
-                                                icon="fa fa-upload"
-                                                action="#{itemFeeManager.navigateToUploadChangedItemFees()}">
-                                            </p:commandButton>
-                                        </div>
-                                    </p:tab>
-
-                                    <p:tab title="Upload Fees">
-                                        <div class="d-grid gap-2">
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Upload to replace Site Fees by Item Code"
-                                                icon="fa fa-list" 
-                                                action="#{itemFeeManager.navigateToUploadToReplaceSiteFeesByItemCode()}">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Upload to add Site Fees by Item Code"
-                                                icon="fa fa-list" 
-                                                action="#{itemFeeManager.navigateToUploadToAddSiteFeesByItemCode()}">
-                                            </p:commandButton>
-                                            <p:commandButton 
-                                                class="w-100"
-                                                ajax="false" 
-                                                value="Upload to add Collection Centre Fees by Item Code"
-                                                icon="fa fa-list" 
-                                                action="#{itemFeeManager.navigateToUploadToAddCcFeesByItemCode()}">
                                             </p:commandButton>
                                         </div>
                                     </p:tab>
