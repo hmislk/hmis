@@ -18,6 +18,8 @@ import com.divudi.core.entity.membership.AllowedPaymentMethod;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.facade.AllowedPaymentMethodFacade;
 import com.divudi.core.facade.PaymentSchemeFacade;
+import com.divudi.core.facade.PriceMatrixFacade;
+import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -50,6 +52,8 @@ public class PaymentSchemeController implements Serializable {
     private PaymentSchemeFacade ejbFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @EJB
+    PriceMatrixFacade priceMatrixFacade;
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
     MembershipScheme membershipScheme;
@@ -311,6 +315,74 @@ public class PaymentSchemeController implements Serializable {
         getItems();
         paymentScheme = null;
         getCurrent();
+    }
+
+    public void duplicateSelected() {
+        if (paymentScheme == null) {
+            JsfUtil.addErrorMessage("Nothing to Duplicate");
+            return;
+        }
+
+        PaymentScheme dup = new PaymentScheme();
+        dup.setName("a copy of " + paymentScheme.getName());
+        dup.setPrintingName(paymentScheme.getPrintingName());
+        dup.setOrderNo(paymentScheme.getOrderNo());
+        dup.setValidForPharmacy(paymentScheme.isValidForPharmacy());
+        dup.setValidForBilledBills(paymentScheme.isValidForBilledBills());
+        dup.setValidForInpatientBills(paymentScheme.isValidForInpatientBills());
+        dup.setValidForChanneling(paymentScheme.isValidForChanneling());
+        dup.setStaffMemberRequired(paymentScheme.isStaffMemberRequired());
+        dup.setMembershipRequired(paymentScheme.isMembershipRequired());
+        dup.setStaffRequired(paymentScheme.isStaffRequired());
+        dup.setStaffOrFamilyRequired(paymentScheme.isStaffOrFamilyRequired());
+        dup.setMemberRequired(paymentScheme.isMemberRequired());
+        dup.setMemberOrFamilyRequired(paymentScheme.isMemberOrFamilyRequired());
+        dup.setSeniorCitizenRequired(paymentScheme.isSeniorCitizenRequired());
+        dup.setPregnantMotherRequired(paymentScheme.isPregnantMotherRequired());
+        dup.setCliantType(paymentScheme.getCliantType());
+        dup.setInstitution(paymentScheme.getInstitution());
+        dup.setPerson(paymentScheme.getPerson());
+        dup.setDepartment(paymentScheme.getDepartment());
+        dup.setCreatedAt(new Date());
+        dup.setCreater(getSessionController().getLoggedUser());
+
+        getFacade().create(dup);
+
+        HashMap hm = new HashMap();
+        hm.put("ps", paymentScheme);
+        String jpql = "select pm from PriceMatrix pm where pm.retired=false and pm.paymentScheme=:ps";
+        List<PriceMatrix> matrices = priceMatrixFacade.findByJpql(jpql, hm);
+
+        for (PriceMatrix pm : matrices) {
+            try {
+                PriceMatrix npm = pm.getClass().getConstructor().newInstance();
+                npm.setBillType(pm.getBillType());
+                npm.setCategory(pm.getCategory());
+                npm.setInstitution(pm.getInstitution());
+                npm.setDepartment(pm.getDepartment());
+                npm.setItem(pm.getItem());
+                npm.setFromPrice(pm.getFromPrice());
+                npm.setToPrice(pm.getToPrice());
+                npm.setMargin(pm.getMargin());
+                npm.setRoomLocation(pm.getRoomLocation());
+                npm.setMembershipScheme(pm.getMembershipScheme());
+                npm.setPaymentScheme(dup);
+                npm.setPaymentMethod(pm.getPaymentMethod());
+                npm.setInwardChargeType(pm.getInwardChargeType());
+                npm.setDiscountPercent(pm.getDiscountPercent());
+                npm.setAdmissionType(pm.getAdmissionType());
+                npm.setRoomCategory(pm.getRoomCategory());
+                npm.setToInstitution(pm.getToInstitution());
+                npm.setCreatedAt(new Date());
+                npm.setCreater(getSessionController().getLoggedUser());
+                priceMatrixFacade.create(npm);
+            } catch (Exception e) {
+            }
+        }
+
+        createPaymentSchemes();
+        paymentScheme = dup;
+        JsfUtil.addSuccessMessage("Duplicated Successfully");
     }
 
     private PaymentSchemeFacade getFacade() {

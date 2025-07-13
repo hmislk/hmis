@@ -262,8 +262,6 @@ public class ItemController implements Serializable {
             return;
         }
 
-        importedFees = new ArrayList<>();
-        importFailures = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 importedFees = addForDepartmentItemFeesFromItemCodeFromExcel(inputStream, department);
@@ -554,129 +552,6 @@ public class ItemController implements Serializable {
         return itemFeesSaved;
     }
 
-    private void parseDepartmentFeesFromExcel(InputStream inputStream, Department fromDepartment) throws IOException {
-        importedFees = new ArrayList<>();
-        importFailures = new ArrayList<>();
-
-        if (fromDepartment == null) {
-            importFailures.add("❌ From Department is not selected. Please select before proceeding.");
-            return;
-        }
-
-        Workbook workbook = new XSSFWorkbook(inputStream);
-        Sheet sheet = workbook.getSheetAt(0);
-        Iterator<Row> rowIterator = sheet.rowIterator();
-
-        if (rowIterator.hasNext()) {
-            rowIterator.next();
-        }
-
-        int rowNumber = 0;
-
-        while (rowIterator.hasNext()) {
-            rowNumber++;
-            Row row = rowIterator.next();
-
-            String itemCode = getCellValueAsString(row.getCell(0)).trim();
-            if (itemCode.isEmpty()) {
-                importFailures.add(rowNumber + " - Missing Item Code.");
-                continue;
-            }
-
-            Item item = findItemByCode(itemCode);
-            if (item == null) {
-                importFailures.add(rowNumber + " - No matching item for Code " + itemCode);
-                continue;
-            }
-
-            String jpql = "select f from ItemFee f where f.retired=false and f.item=:it and f.forDepartment=:dep";
-            Map<String, Object> params = new HashMap<>();
-            params.put("it", item);
-            params.put("dep", fromDepartment);
-            List<ItemFee> existing = itemFeeFacade.findByJpql(jpql, params);
-            if (existing != null && !existing.isEmpty()) {
-                importFailures.add(rowNumber + " - Duplicate fee for Code " + itemCode);
-                continue;
-            }
-
-            Double feeValue = getCellValueAsDouble(row.getCell(1));
-            if (feeValue == null || feeValue <= 0) {
-                importFailures.add(rowNumber + " - Invalid Fee for Code " + itemCode);
-                continue;
-            }
-
-            Double foreignerFee = getCellValueAsDouble(row.getCell(2));
-            if (foreignerFee == null || foreignerFee <= 0) {
-                foreignerFee = feeValue;
-            }
-
-            String feeTypeString = getCellValueAsString(row.getCell(3));
-            FeeType feeType;
-            try {
-                feeType = feeTypeString == null || feeTypeString.trim().isEmpty() ? FeeType.OwnInstitution : FeeType.valueOf(feeTypeString.trim());
-            } catch (IllegalArgumentException e) {
-                importFailures.add(rowNumber + " - Unknown FeeType " + feeTypeString);
-                continue;
-            }
-
-            String insName = getCellValueAsString(row.getCell(4));
-            Institution ins = null;
-            if (insName != null && !insName.trim().isEmpty()) {
-                ins = institutionController.findExistingInstitutionByName(insName);
-            }
-            if (ins == null && feeType == FeeType.OwnInstitution) {
-                ins = sessionController.getInstitution();
-            }
-
-            String deptName = getCellValueAsString(row.getCell(5));
-            Department dept = null;
-            if (deptName != null && !deptName.trim().isEmpty()) {
-                dept = departmentController.findExistingDepartmentByName(deptName, ins);
-            }
-            if (dept == null && feeType == FeeType.OwnInstitution) {
-                dept = sessionController.getDepartment();
-            }
-
-            String specialityName = getCellValueAsString(row.getCell(6));
-            Speciality speciality = null;
-            if (specialityName != null && !specialityName.trim().isEmpty()) {
-                speciality = specialityController.findSpeciality(specialityName, false);
-                if (speciality == null) {
-                    importFailures.add(rowNumber + " - Speciality not found: " + specialityName);
-                    continue;
-                }
-            }
-
-            String staffName = getCellValueAsString(row.getCell(7));
-            Staff staff = null;
-            if (staffName != null && !staffName.trim().isEmpty()) {
-                staff = staffController.findStaffByName(staffName);
-                if (staff == null) {
-                    importFailures.add(rowNumber + " - Staff not found: " + staffName);
-                    continue;
-                }
-            }
-
-            ItemFee fee = new ItemFee();
-            fee.setName("Hospital Fee");
-            fee.setItem(item);
-            fee.setInstitution(ins);
-            fee.setDepartment(dept);
-            fee.setForDepartment(fromDepartment);
-            fee.setFeeType(feeType);
-            fee.setFee(feeValue);
-            fee.setFfee(foreignerFee);
-            fee.setSpeciality(speciality);
-            fee.setStaff(staff);
-            fee.setCreatedAt(new Date());
-            fee.setCreater(sessionController.getLoggedUser());
-
-            importedFees.add(fee);
-            importFailures.add(rowNumber + " - Fee parsed for Code " + itemCode);
-        }
-
-        workbook.close();
-    }
 
     private String getCellValueAsString(Cell cell) {
         if (cell == null) {

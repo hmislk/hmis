@@ -1133,7 +1133,7 @@ public class ItemFeeManager implements Serializable {
         itemFees = null;
 
         updateItemAndSiteFees();
-        JsfUtil.addSuccessMessage("New Fee Added for Collecting Centre");
+        JsfUtil.addSuccessMessage("New Fee Added for Site");
     }
 
     public void addNewForDepartmentFee() {

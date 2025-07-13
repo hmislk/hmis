@@ -320,6 +320,9 @@ public class PharmacyCostingService {
         BigDecimal qty = Optional.ofNullable(bifd.getQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal freeQty = Optional.ofNullable(bifd.getFreeQuantity()).orElse(BigDecimal.ZERO);
         BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+        if (upp.compareTo(BigDecimal.ZERO) == 0) {
+            upp = BigDecimal.ONE;
+        }
 
         pbi.setQty(qty.multiply(upp).doubleValue());
         pbi.setFreeQty(freeQty.multiply(upp).doubleValue());
@@ -368,6 +371,9 @@ public class PharmacyCostingService {
             return;
         }
         BigDecimal upp = Optional.ofNullable(bifd.getUnitsPerPack()).orElse(BigDecimal.ONE);
+        if (upp.compareTo(BigDecimal.ZERO) == 0) {
+            upp = BigDecimal.ONE;
+        }
         Double qtyInUnits = Optional.ofNullable(pbi.getQty()).orElse(0.0);
         Double freeQtyInUnits = Optional.ofNullable(pbi.getFreeQty()).orElse(0.0);
 
