@@ -128,86 +128,24 @@
                     <p:column headerText="Item">
                         <h:outputText value="#{sh.itemName}" />
                     </p:column>
-
                     <p:column headerText="Qty In" styleClass="text-end">
-
-                        <!-- Grouped rendering for Ampp items -->
-                        <h:panelGroup rendered="#{sh.transThisIsStockIn and sh.ampp}">
-
-                            <h:outputText
-                                value="("
-                                styleClass="#{sh.qty gt 0 ? 'text-primary' : ''}" />
-
-                            <h:outputText
-                                value="#{sh.qtyPacks + sh.freeQtyPacks}"
-                                styleClass="#{sh.qty gt 0 ? 'text-primary' : ''}">
-                                <f:convertNumber pattern="#.#"/>
-                            </h:outputText>
-
-                            <h:outputText
-                                value="  X  "
-                                styleClass="#{sh.qty gt 0 ? 'text-primary' : ''}" />
-
-                            <h:outputText
-                                value="#{sh.itemDblValue}"
-                                styleClass="#{sh.qty gt 0 ? 'text-primary' : ''}">
-                                <f:convertNumber pattern="#.#"/>
-                            </h:outputText>
-
-                            <h:outputText
-                                value=")    "
-                                styleClass="#{sh.qty gt 0 ? 'text-primary' : ''}" />
-                        </h:panelGroup>
-
-                        <!-- Total quantity display -->
                         <h:outputText
                             value="#{sh.transAbsoluteQtyPlusFreeQty}"
                             rendered="#{sh.transThisIsStockIn}"
                             styleClass="#{sh.qty gt 0 ? 'text-success' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
-
                     </p:column>
 
-
                     <p:column headerText="Qty Out" styleClass="text-end">
-
-                        <!-- Grouped rendering for Ampp items -->
-                        <h:panelGroup rendered="#{sh.transThisIsStockOut and sh.ampp}">
-                            <h:outputText
-                                value="("
-                                styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}" />
-#
-                            <h:outputText
-                                value="#{sh.qtyPacks + sh.freeQtyPacks}"
-                                styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
-                                <f:convertNumber pattern="#.#"/>
-                            </h:outputText>
-##
-                            <h:outputText
-                                value="  X  "
-                                styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}" />
-###
-                            <h:outputText
-                                value="#{sh.itemDblValue}"
-                                styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
-                                <f:convertNumber pattern="#.#"/>
-                            </h:outputText>
-
-                            <h:outputText
-                                value=")    "
-                                styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}" />
-                        </h:panelGroup>
-
-                        <!-- Total quantity display -->
                         <h:outputText
                             value="#{sh.transAbsoluteQtyPlusFreeQty}"
                             rendered="#{sh.transThisIsStockOut}"
                             styleClass="#{sh.qty lt 0 ? 'text-danger' : ''}">
                             <f:convertNumber pattern="#.#"/>
                         </h:outputText>
-
                     </p:column>
+
 
 
                     <p:column headerText="Closing Stock" class="text-end">

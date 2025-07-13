@@ -170,12 +170,12 @@ public class StockHistoryController implements Serializable {
                 .append("s.pbItem.billItem.bill.billType, ")
                 .append("s.pbItem.billItem.bill.billTypeAtomic, ")
                 .append("s.pbItem.billItem.item.name, ")
-                .append("TYPE(s.pbItem.billItem.item), ")
                 .append("s.pbItem.qty, s.pbItem.freeQty, ")
                 .append("s.pbItem.qtyPacks, s.pbItem.freeQtyPacks, ")
                 .append("s.pbItem.billItem.item.dblValue, s.itemStock")
                 .append(") from StockHistory s ")
                 .append("where s.createdAt between :fd and :td ");
+
         Map<String, Object> m = new HashMap<>();
         m.put("fd", fd);
         m.put("td", td);

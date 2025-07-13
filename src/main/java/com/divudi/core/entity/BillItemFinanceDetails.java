@@ -121,8 +121,12 @@ public class BillItemFinanceDetails implements Serializable {
     private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
     @Column(precision = 18, scale = 4)
     private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
-    
-    
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal valueAtRetailRate = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal valueAtPurchaseRate = BigDecimal.ZERO;
 
     // Absolute tax values
     @Column(precision = 18, scale = 4)
@@ -215,7 +219,6 @@ public class BillItemFinanceDetails implements Serializable {
 //    private BigDecimal returnQuantityTotal = BigDecimal.ZERO;
 //    @Column(precision = 18, scale = 4)
 //    private BigDecimal returnFreeQuantityTotal = BigDecimal.ZERO;
-
     // Taxes
     // Payment method values
 //    @Column(precision = 18, scale = 4)
@@ -252,11 +255,9 @@ public class BillItemFinanceDetails implements Serializable {
 //    private BigDecimal totalPaidAsOnCall = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsYouOweMe = BigDecimal.ZERO;
 //    private BigDecimal totalPaidAsNone = BigDecimal.ZERO;
-
-    
     @Column(precision = 18, scale = 4)
     private BigDecimal profitMargin = BigDecimal.ZERO;
-    
+
     @Override
     public BillItemFinanceDetails clone() {
         BillItemFinanceDetails cloned = new BillItemFinanceDetails();
@@ -332,7 +333,6 @@ public class BillItemFinanceDetails implements Serializable {
 //        cloned.costPercentageFromBill = this.costPercentageFromBill;
 //        cloned.costPercentageForTheLine = this.costPercentageForTheLine;
 //        cloned.totalCostPercentage = this.totalCostPercentage;
-
         // ------------------ QUANTITIES ------------------
         cloned.freeQuantity = this.freeQuantity;
         cloned.quantity = this.quantity;
@@ -350,7 +350,6 @@ public class BillItemFinanceDetails implements Serializable {
 //        cloned.valueAtWholesaleRate = this.valueAtWholesaleRate;
 //        cloned.valueAtPurchaseRate = this.valueAtPurchaseRate;
 //        cloned.valueAtCostRate = this.valueAtCostRate;
-
         // ------------------ RETURN QUANTITIES ------------------
         cloned.returnQuantity = this.returnQuantity;
         cloned.returnFreeQuantity = this.returnFreeQuantity;
@@ -361,7 +360,7 @@ public class BillItemFinanceDetails implements Serializable {
         // ------------------ RETURN TOTALS ------------------
         cloned.returnGrossTotal = this.returnGrossTotal;
         cloned.returnNetTotal = this.returnNetTotal;
-        
+
         //Profit
         cloned.profitMargin = this.profitMargin;
 
@@ -384,7 +383,6 @@ public class BillItemFinanceDetails implements Serializable {
 //        cloned.totalPaidAsOnCall = this.totalPaidAsOnCall;
 //        cloned.totalPaidAsYouOweMe = this.totalPaidAsYouOweMe;
 //        cloned.totalPaidAsNone = this.totalPaidAsNone;
-
         return cloned;
     }
 
@@ -525,7 +523,6 @@ public class BillItemFinanceDetails implements Serializable {
 //    public void setReturnFreeQuantityTotal(BigDecimal returnFreeQuantityTotal) {
 //        this.returnFreeQuantityTotal = returnFreeQuantityTotal;
 //    }
-
     public BigDecimal getBillTaxRate() {
         return billTaxRate;
     }
@@ -894,6 +891,22 @@ public class BillItemFinanceDetails implements Serializable {
         this.profitMargin = profitMargin;
     }
 
+    public BigDecimal getValueAtRetailRate() {
+        return valueAtRetailRate;
+    }
+
+    public void setValueAtRetailRate(BigDecimal valueAtRetailRate) {
+        this.valueAtRetailRate = valueAtRetailRate;
+    }
+
+    public BigDecimal getValueAtPurchaseRate() {
+        return valueAtPurchaseRate;
+    }
+
+    public void setValueAtPurchaseRate(BigDecimal valueAtPurchaseRate) {
+        this.valueAtPurchaseRate = valueAtPurchaseRate;
+    }
+    
     
 
 }
