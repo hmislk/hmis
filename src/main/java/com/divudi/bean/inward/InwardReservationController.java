@@ -32,6 +32,8 @@ import org.primefaces.model.DefaultScheduleEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleEvent;
 import org.primefaces.model.ScheduleModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -41,6 +43,8 @@ import org.primefaces.model.ScheduleModel;
 @Named
 @SessionScoped
 public class InwardReservationController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardReservationController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -124,14 +128,14 @@ public class InwardReservationController implements Serializable {
         }
 
         selectedReservations = ReservationFacade.findByJpql(jpql, m);
-        System.out.println("selectedReservations = " + selectedReservations);
+        LOG.log(Level.INFO, "selectedReservations = " + selectedReservations);
         generateReservationsEvents(selectedReservations);
     }
 
     public void generateReservationsEvents(List<Reservation> lsi) {
         reservationModel = new DefaultScheduleModel();
         for (Reservation si : lsi) {
-            System.out.println("Name = " + si.getRoom().getName());
+            LOG.log(Level.INFO, "Name = " + si.getRoom().getName());
 
             // Dates
             Date startDate = si.getReservedFrom();

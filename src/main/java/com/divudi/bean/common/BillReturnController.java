@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -40,6 +42,8 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class BillReturnController implements Serializable, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(BillReturnController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -116,12 +120,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
 
-        //System.out.println("Original Bill= " + originalBillToReturn);
+        //LOG.log(Level.INFO, "Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
+        //LOG.log(Level.INFO, "Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
         returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
-        System.out.println("Method = " + paymentMethod);
+        LOG.log(Level.INFO, "Method = " + paymentMethod);
         return "/collecting_centre/bill_return?faces-redirect=true";
     }
 
@@ -407,7 +411,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //            patientDepositController.updateBalance(newlyReturnedBill, pd);
 //        } else if (paymentMethod == PaymentMethod.Staff_Welfare) {
 //            staffBean.updateStaffWelfare(newlyReturnedBill.getToStaff(), -Math.abs(newlyReturnedBill.getNetTotal()));
-//            System.out.println("updated = ");
+//            LOG.log(Level.INFO, "updated = ");
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
@@ -542,12 +546,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         }
 
 // Print the original values
-        System.out.println("Original returningTotal: " + returningTotal);
-        System.out.println("Original returningNetTotal: " + returningNetTotal);
-        System.out.println("Original returningHospitalTotal: " + returningHospitalTotal);
-        System.out.println("Original returningCCTotal: " + returningCCTotal);
-        System.out.println("Original returningStaffTotal: " + returningStaffTotal);
-        System.out.println("Original returningDiscount: " + returningDiscount);
+        LOG.log(Level.INFO, "Original returningTotal: " + returningTotal);
+        LOG.log(Level.INFO, "Original returningNetTotal: " + returningNetTotal);
+        LOG.log(Level.INFO, "Original returningHospitalTotal: " + returningHospitalTotal);
+        LOG.log(Level.INFO, "Original returningCCTotal: " + returningCCTotal);
+        LOG.log(Level.INFO, "Original returningStaffTotal: " + returningStaffTotal);
+        LOG.log(Level.INFO, "Original returningDiscount: " + returningDiscount);
 
 // Convert all values to negative absolute amounts
         returningTotal = -Math.abs(returningTotal);
@@ -558,12 +562,12 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         returningDiscount = -Math.abs(returningDiscount);
 
 // Print the adjusted values
-        System.out.println("Adjusted returningTotal: " + returningTotal);
-        System.out.println("Adjusted returningNetTotal: " + returningNetTotal);
-        System.out.println("Adjusted returningHospitalTotal: " + returningHospitalTotal);
-        System.out.println("Adjusted returningCCTotal: " + returningCCTotal);
-        System.out.println("Adjusted returningStaffTotal: " + returningStaffTotal);
-        System.out.println("Adjusted returningDiscount: " + returningDiscount);
+        LOG.log(Level.INFO, "Adjusted returningTotal: " + returningTotal);
+        LOG.log(Level.INFO, "Adjusted returningNetTotal: " + returningNetTotal);
+        LOG.log(Level.INFO, "Adjusted returningHospitalTotal: " + returningHospitalTotal);
+        LOG.log(Level.INFO, "Adjusted returningCCTotal: " + returningCCTotal);
+        LOG.log(Level.INFO, "Adjusted returningStaffTotal: " + returningStaffTotal);
+        LOG.log(Level.INFO, "Adjusted returningDiscount: " + returningDiscount);
 
 // Assign the adjusted values to newlyReturnedBill
         newlyReturnedBill.setGrantTotal(returningTotal);
@@ -575,9 +579,9 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         newlyReturnedBill.setDiscount(returningDiscount);
 
 // Print the values before setting
-        System.out.println("Setting TotalHospitalFee: " + returningHospitalTotal);
-        System.out.println("Setting TotalCenterFee: " + returningCCTotal);
-        System.out.println("Setting TotalStaffFee: " + returningStaffTotal);
+        LOG.log(Level.INFO, "Setting TotalHospitalFee: " + returningHospitalTotal);
+        LOG.log(Level.INFO, "Setting TotalCenterFee: " + returningCCTotal);
+        LOG.log(Level.INFO, "Setting TotalStaffFee: " + returningStaffTotal);
 
 // Assign the values
         newlyReturnedBill.setTotalHospitalFee(returningHospitalTotal);

@@ -45,6 +45,8 @@ import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -53,6 +55,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class LaborataryReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(LaborataryReportController.class.getName());
+
 
     public LaborataryReportController() {
     }
@@ -359,7 +363,7 @@ public class LaborataryReportController implements Serializable {
     }
 
     public void processLaboratorySummary() {
-        System.out.println("processLaboratorySummary");
+        LOG.log(Level.INFO, "processLaboratorySummary");
 
         bundle = new IncomeBundle(bills);
 

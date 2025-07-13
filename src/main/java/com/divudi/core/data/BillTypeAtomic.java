@@ -15,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public enum BillTypeAtomic {
     @Deprecated //Use REQUEST_MEDICINE_INWARD
@@ -356,9 +358,9 @@ public enum BillTypeAtomic {
     }
 
     public static BillTypeAtomic getBillTypeAtomic(BillType billType, BillClassType billClassType) {
-        System.out.println("getBillTypeAtomic");
-        System.out.println("billClassType = " + billClassType);
-        System.out.println("billType = " + billType);
+        LOG.log(Level.INFO, "getBillTypeAtomic");
+        LOG.log(Level.INFO, "billClassType = " + billClassType);
+        LOG.log(Level.INFO, "billType = " + billType);
         switch (billClassType) {
             case Bill:
                 switch (billType) {

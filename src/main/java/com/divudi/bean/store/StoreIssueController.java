@@ -54,6 +54,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -66,6 +68,8 @@ import org.primefaces.event.SelectEvent;
 @Named
 @SessionScoped
 public class StoreIssueController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(StoreIssueController.class.getName());
+
 
     String errorMessage = null;
 
@@ -233,11 +237,11 @@ public class StoreIssueController implements Serializable {
 
     public void editQty(BillItem bi) {
         if (bi == null) {
-            //////System.out.println("No Bill Item to Edit Qty");
+            //////LOG.log(Level.INFO, "No Bill Item to Edit Qty");
             return;
         }
         if (editingQty == null) {
-            //////System.out.println("Editing qty is null");
+            //////LOG.log(Level.INFO, "Editing qty is null");
             return;
         }
 
@@ -359,7 +363,7 @@ public class StoreIssueController implements Serializable {
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
         itemsWithoutStocks = completeIssueItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        //////LOG.log(Level.INFO, "selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
     }
 
@@ -519,7 +523,7 @@ public class StoreIssueController implements Serializable {
     public boolean checkIssue(){
         if(getPreBill().getInvoiceNumber()==null || getPreBill().getInvoiceNumber().trim().equals("")){
             JsfUtil.addErrorMessage("Please Input Issue Number");
-            ////System.out.println("invoice number = " + getPreBill().getInvoiceNumber());
+            ////LOG.log(Level.INFO, "invoice number = " + getPreBill().getInvoiceNumber());
             return true;
         }
 
@@ -535,12 +539,12 @@ public class StoreIssueController implements Serializable {
         }
 
         if (checkAllBillItem()) {
-            //   ////System.out.println("Check all bill Ietems");
+            //   ////LOG.log(Level.INFO, "Check all bill Ietems");
             return;
         }
 
         if (errorCheckForSaleBill()) {
-            //   ////System.out.println("Error for sale bill");
+            //   ////LOG.log(Level.INFO, "Error for sale bill");
             return;
         }
 
@@ -585,8 +589,8 @@ public class StoreIssueController implements Serializable {
         if (billItem.getPharmaceuticalBillItem() == null) {
             return;
         }
-        ////System.out.println("toDepartment = " + toDepartment.getName());
-        ////System.out.println("sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
+        ////LOG.log(Level.INFO, "toDepartment = " + toDepartment.getName());
+        ////LOG.log(Level.INFO, "sessionController.getLoggedUser().getDepartment() = " + sessionController.getLoggedUser().getDepartment().getName());
         if (toDepartment.equals(sessionController.getLoggedUser().getDepartment())) {
             JsfUtil.addErrorMessage("Please Select Deferent Department");
             errorMessage = "Please select Deferent Department to send items";
@@ -732,16 +736,16 @@ public class StoreIssueController implements Serializable {
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
         billItem.setItem(getStock().getItemBatch().getItem());
-        System.out.println("billItem.getItem() = " + billItem.getItem());
+        LOG.log(Level.INFO, "billItem.getItem() = " + billItem.getItem());
         billItem.setQty(qty);
-        System.out.println("billItem.getQty() = " + billItem.getQty());
+        LOG.log(Level.INFO, "billItem.getQty() = " + billItem.getQty());
 
         //pharmaceutical Bill Item
         billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         billItem.getPharmaceuticalBillItem().setQtyInUnit((double) (0 - qty));
-        System.out.println("billItem.getPharmaceuticalBillItem().getQtyInUnit = " + billItem.getPharmaceuticalBillItem().getQtyInUnit());
+        LOG.log(Level.INFO, "billItem.getPharmaceuticalBillItem().getQtyInUnit = " + billItem.getPharmaceuticalBillItem().getQtyInUnit());
 
         //Rates
         //Values
@@ -749,16 +753,16 @@ public class StoreIssueController implements Serializable {
         billItem.setDiscount(0);
         billItem.setMarginValue(billItem.getMarginRate() * qty);
         billItem.setNetValue(billItem.getNetRate() * qty);
-        System.out.println("billItem.getRate() = " + billItem.getRate());
-        System.out.println("billItem.getMarginRate() = " + billItem.getMarginRate());
+        LOG.log(Level.INFO, "billItem.getRate() = " + billItem.getRate());
+        LOG.log(Level.INFO, "billItem.getMarginRate() = " + billItem.getMarginRate());
 
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////System.out.println("calculateBillItemForEditing");
-        //////System.out.println("bi = " + bi);
+        //////LOG.log(Level.INFO, "calculateBillItemForEditing");
+        //////LOG.log(Level.INFO, "bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("calculateItemForEditingFailedBecause of null");
+            //////LOG.log(Level.INFO, "calculateItemForEditingFailedBecause of null");
             return;
         }
 
@@ -778,7 +782,7 @@ public class StoreIssueController implements Serializable {
     }
 
     public void calculateAllRates() {
-        //////System.out.println("calculating all rates");
+        //////LOG.log(Level.INFO, "calculating all rates");
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
             calculateBillItemForEditing(tbi);
@@ -822,22 +826,22 @@ public class StoreIssueController implements Serializable {
     }
 
     public double calculateBillItemAdditionToPurchaseRate(BillItem bi, IssueRateMargins issueRateMargins) {
-        //////System.out.println("bill item discount rate");
-        //////System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        //////LOG.log(Level.INFO, "bill item discount rate");
+        //////LOG.log(Level.INFO, "getPaymentScheme() = " + getPaymentScheme());
         if (bi == null) {
-            //////System.out.println("bi is null");
+            //////LOG.log(Level.INFO, "bi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem() == null) {
-            //////System.out.println("pi is null");
+            //////LOG.log(Level.INFO, "pi is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("stock is null");
+            //////LOG.log(Level.INFO, "stock is null");
             return 0.0;
         }
         if (bi.getPharmaceuticalBillItem().getStock().getItemBatch() == null) {
-            //////System.out.println("batch is null");
+            //////LOG.log(Level.INFO, "batch is null");
             return 0.0;
         }
         bi.setItem(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getItem());

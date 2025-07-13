@@ -6,6 +6,8 @@ import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -14,6 +16,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @RequestScoped
 public class LabReportViewController {
+    private static final Logger LOG = Logger.getLogger(LabReportViewController.class.getName());
+
 
     @Inject
     PatientReportUploadController patientReportUploadController;
@@ -25,12 +29,12 @@ public class LabReportViewController {
     }
 
     public boolean isPdf() {
-        System.out.println("isPdf");
+        LOG.log(Level.INFO, "isPdf");
         if (patientReportUploadController.getReportUpload() == null || patientReportUploadController.getReportUpload().getFileType() == null) {
             return false;
         }
-        System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
-        System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
+        LOG.log(Level.INFO, "patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
+        LOG.log(Level.INFO, "patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
         return "application/pdf".equalsIgnoreCase(patientReportUploadController.getReportUpload().getFileType());
     }
 
@@ -44,11 +48,11 @@ public class LabReportViewController {
 
     // StreamedContent getter for PDF
     public StreamedContent getPdfReportStream() {
-        System.out.println("getPdfReportStream");
+        LOG.log(Level.INFO, "getPdfReportStream");
         if (isPdf()) {
             ByteArrayInputStream input = new ByteArrayInputStream(patientReportUploadController.getReportUpload().getBaImage());
-            System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
-            System.out.println("patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
+            LOG.log(Level.INFO, "patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getId());
+            LOG.log(Level.INFO, "patientReportUploadController.getReportUpload() = " + patientReportUploadController.getReportUpload().getIdStr());
             return DefaultStreamedContent.builder()
                     .name(patientReportUploadController.getReportUpload().getFileName())
                     .contentType(patientReportUploadController.getReportUpload().getFileType())

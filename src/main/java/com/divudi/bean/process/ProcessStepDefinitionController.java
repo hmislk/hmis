@@ -17,6 +17,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * Controller for managing Process Step Definitions. Handles creation, editing,
@@ -27,6 +29,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class ProcessStepDefinitionController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ProcessStepDefinitionController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -54,14 +58,14 @@ public class ProcessStepDefinitionController implements Serializable {
 
     // Getter and Setter for 'current'
     public ProcessStepDefinition getCurrent() {
-        System.out.println("getCurrent");
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "getCurrent");
+        LOG.log(Level.INFO, "current = " + current);
         return current;
     }
 
     public void setCurrent(ProcessStepDefinition current) {
-        System.out.println("setCurrent");
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "setCurrent");
+        LOG.log(Level.INFO, "current = " + current);
         this.current = current;
     }
 
@@ -120,13 +124,13 @@ public class ProcessStepDefinitionController implements Serializable {
      * @return navigation outcome string
      */
     public String addNewProcessStepDefinition() {
-        System.out.println("addNewProcessStepDefinition");
+        LOG.log(Level.INFO, "addNewProcessStepDefinition");
         current = new ProcessStepDefinition();
         current.setVersion("1.0");
         current.setSequenceOrder((double)(getItems().size()+1));
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "current = " + current);
         current.setProcessDefinition(processDefinitionController.getCurrent());
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "current = " + current);
         editable = true;
         return null; // Stay on the same page
     }

@@ -32,6 +32,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -43,6 +45,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class DrawerController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(DrawerController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -87,8 +91,8 @@ public class DrawerController implements Serializable {
     }
 
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
-        System.out.println("paidValue = " + paidValue);
-        System.out.println("payment = " + payment);
+        LOG.log(Level.INFO, "paidValue = " + paidValue);
+        LOG.log(Level.INFO, "payment = " + payment);
         if (payment == null || webUser == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -187,9 +191,9 @@ public class DrawerController implements Serializable {
     }
 
     public void updateDrawer(Bill bill, double paidValue, PaymentMethod paymentMethod, WebUser webUser) {
-        System.out.println("paidValue = " + paidValue);
-        System.out.println("bill = " + bill);
-        System.out.println("webUser = " + webUser);
+        LOG.log(Level.INFO, "paidValue = " + paidValue);
+        LOG.log(Level.INFO, "bill = " + bill);
+        LOG.log(Level.INFO, "webUser = " + webUser);
         if (bill == null || webUser == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -314,7 +318,7 @@ public class DrawerController implements Serializable {
         for (Payment payment : payments) {
             drawerService.updateDrawerForIns(payment);
         }
-        System.out.println("Draver & Draver Entry Updated...");
+        LOG.log(Level.INFO, "Draver & Draver Entry Updated...");
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {

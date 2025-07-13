@@ -83,6 +83,8 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class PharmacyBillSearch implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacyBillSearch.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -311,8 +313,8 @@ public class PharmacyBillSearch implements Serializable {
         pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
         pharmacyRequestForBhtController.setDepartment(bill.getFromDepartment());
         pharmacyRequestForBhtController.setPreBill((PreBill) bill);
-        System.out.println("setPatientEncounter" + bill.getPatientEncounter());
-        System.out.println("setDepartment" + bill.getFromDepartment());
+        LOG.log(Level.INFO, "setPatientEncounter" + bill.getPatientEncounter());
+        LOG.log(Level.INFO, "setDepartment" + bill.getFromDepartment());
         billFacade.edit(bill);
         return "/ward/ward_pharmacy_bht_issue_request_edit?faces-redirect=true";
     }
@@ -510,7 +512,7 @@ public class PharmacyBillSearch implements Serializable {
                 c.getStockBill().invertStockBillValues(getBill());
             } else {
                 // Handle the case where there is no StockBill (either log or throw an exception)
-                System.out.println("No StockBill available in getBill()");
+                LOG.log(Level.INFO, "No StockBill available in getBill()");
             }
         }
 
@@ -576,7 +578,7 @@ public class PharmacyBillSearch implements Serializable {
                 newBillItem.setCreater(user);
 
                 if (newBillItem.getId() == null) {
-                    System.out.println("Creating BillItem: " + newBillItem);
+                    LOG.log(Level.INFO, "Creating BillItem: " + newBillItem);
                     getBillItemFacade().create(newBillItem);
                 }
 
@@ -587,7 +589,7 @@ public class PharmacyBillSearch implements Serializable {
                     ph.setBillItem(newBillItem);
 
                     if (ph.getId() == null) {
-                        System.out.println("Creating PharmaceuticalBillItem: " + ph);
+                        LOG.log(Level.INFO, "Creating PharmaceuticalBillItem: " + ph);
                         getPharmaceuticalBillItemFacade().create(ph);
                     }
 
@@ -777,7 +779,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private boolean errorCheckForEdit() {
-        ////System.out.println("error = " + getBill());
+        ////LOG.log(Level.INFO, "error = " + getBill());
 
         if (getBill().isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -798,7 +800,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     private boolean errorCheckForEdit(Bill bill) {
-        ////System.out.println("error = " + bill);
+        ////LOG.log(Level.INFO, "error = " + bill);
 
         if (bill.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
@@ -819,7 +821,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public void editBillItem(BillItem billItem) {
-        ////System.out.println("billItem = " + billItem);
+        ////LOG.log(Level.INFO, "billItem = " + billItem);
 
         if (errorCheckForEdit(billItem.getBill())) {
             return;
@@ -1045,10 +1047,10 @@ public class PharmacyBillSearch implements Serializable {
         List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////System.out.println("user is null");
+            //////LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-            //////System.out.println("user ok");
+            //////LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -1243,8 +1245,8 @@ public class PharmacyBillSearch implements Serializable {
                 return true;
             }
             if (!getBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
-                ////System.out.println("getBill().getDepartment()"+getBill().getDepartment());
-                ////System.out.println("getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
+                ////LOG.log(Level.INFO, "getBill().getDepartment()"+getBill().getDepartment());
+                ////LOG.log(Level.INFO, "getSessionController().getLoggedUser().getDepartment() = " + getSessionController().getLoggedUser().getDepartment());
                 JsfUtil.addErrorMessage("You Can't Cancel This Transfer Using " + getSessionController().getLoggedUser().getDepartment().getName()
                         + " Department. Please Log " + getBill().getDepartment().getName() + " Deaprtment.");
                 return true;
@@ -2216,15 +2218,15 @@ public class PharmacyBillSearch implements Serializable {
 //            if (calculateNumberOfBillsPerOrder(getBill().getReferenceBill())) {
 //                return;
 //            } before
-//            System.out.println("getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
-//            System.out.println("bill.getDepartment() = " + getBill().getDepartment().getName());
-//            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
+//            LOG.log(Level.INFO, "getBill().getReferenceBill().getDepartment() = " + getBill().getReferenceBill().getDepartment().getName());
+//            LOG.log(Level.INFO, "bill.getDepartment() = " + getBill().getDepartment().getName());
+//            LOG.log(Level.INFO, "getSessionController().getDepartment() = " + getSessionController().getDepartment().getName());
             if (checkDepartment(getBill())) {
                 return;
             }
-//            System.out.println("reAddToStock = " );
+//            LOG.log(Level.INFO, "reAddToStock = " );
             getPharmacyBean().reAddToStock(getBill(), getSessionController().getLoggedUser(), getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
-//            System.out.println("After reAddToStock = " );
+//            LOG.log(Level.INFO, "After reAddToStock = " );
             getBill().setCancelled(true);
             getBill().setCancelledBill(null);
             getBillFacade().edit(getBill());
@@ -2537,10 +2539,10 @@ public class PharmacyBillSearch implements Serializable {
 
             JsfUtil.addSuccessMessage("Cancelled");
             if (getBill().getPaymentMethod() == PaymentMethod.Credit) {
-                //   ////System.out.println("getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
-                //   ////System.out.println("getBill().getToStaff() = " + getBill().getToStaff());
+                //   ////LOG.log(Level.INFO, "getBill().getPaymentMethod() = " + getBill().getPaymentMethod());
+                //   ////LOG.log(Level.INFO, "getBill().getToStaff() = " + getBill().getToStaff());
                 if (getBill().getToStaff() != null) {
-                    //   ////System.out.println("getBill().getNetTotal() = " + getBill().getNetTotal());
+                    //   ////LOG.log(Level.INFO, "getBill().getNetTotal() = " + getBill().getNetTotal());
                     getStaffBean().updateStaffCredit(getBill().getToStaff(), 0 - getBill().getNetTotal());
                     JsfUtil.addSuccessMessage("Staff Credit Updated");
                     cb.setFromStaff(getBill().getToStaff());
@@ -3121,13 +3123,13 @@ public class PharmacyBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////System.out.println("getting user bills");
+        //////LOG.log(Level.INFO, "getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////System.out.println("user is null");
+            //////LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////System.out.println("user ok");
+            //////LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -3195,8 +3197,8 @@ public class PharmacyBillSearch implements Serializable {
                 sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getRefundedBill().getId();
             }
             billItems = getBillItemFacede().findByJpql(sql);
-            // //////System.out.println("sql for bill item search is " + sql);
-            // //////System.out.println("results for bill item search is " + billItems);
+            // //////LOG.log(Level.INFO, "sql for bill item search is " + sql);
+            // //////LOG.log(Level.INFO, "results for bill item search is " + billItems);
             if (billItems == null) {
                 billItems = new ArrayList<>();
             }
@@ -3374,7 +3376,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         double tot = 0.0f;
         for (BillFee f : getBillFees()) {
-            //////System.out.println("Tot" + f.getFeeValue());
+            //////LOG.log(Level.INFO, "Tot" + f.getFeeValue());
             tot += f.getFeeValue();
         }
         getBillForRefund().setTotal(tot);
@@ -3584,6 +3586,8 @@ public class PharmacyBillSearch implements Serializable {
 
     public String importGrnBill(Bill importGrnBill) {
         return grnController.navigateToResiveFromImportGrn(importGrnBill);
+import java.util.logging.Level;
+import java.util.logging.Logger;
     }
 
     public void setSearchRetaiBills(List<Bill> searchRetaiBills) {

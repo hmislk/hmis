@@ -41,6 +41,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -49,6 +51,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class StoreAdjustmentController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(StoreAdjustmentController.class.getName());
+
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -336,7 +340,7 @@ public class StoreAdjustmentController implements Serializable {
 
         getDeptAdjustmentPreBill().getBillItems().add(getBillItem());
         getBillFacade().edit(getDeptAdjustmentPreBill());
-        System.out.println("Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
+        LOG.log(Level.INFO, "Pharmaceutical BillItem = " + getBillItem().getPharmaceuticalBillItem());
         return getBillItem().getPharmaceuticalBillItem();
     }
 

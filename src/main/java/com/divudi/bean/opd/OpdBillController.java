@@ -74,6 +74,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -83,6 +85,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class OpdBillController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(OpdBillController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -2399,7 +2403,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
+                        LOG.log(Level.INFO, "remainAmount = " + remainAmount);
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -3002,10 +3006,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
-//                System.out.println("bf = " + bf);
+//                LOG.log(Level.INFO, "bf = " + bf);
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
-//                System.out.println("needToAdd = " + needToAdd);
+//                LOG.log(Level.INFO, "needToAdd = " + needToAdd);
                 if (needToAdd) {
 
                     Department department = null;
@@ -3029,10 +3033,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         }
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-//                    System.out.println("bf.getFeeValue(): " + bf.getFeeValue());
-//                    System.out.println("bf.getFeeDiscount(): " + bf.getFeeDiscount());
-//                    System.out.println("bf.getFeeVat(): " + bf.getFeeVat());
-//                    System.out.println("bf.getFeeVatPlusValue(): " + bf.getFeeVatPlusValue());
+//                    LOG.log(Level.INFO, "bf.getFeeValue(): " + bf.getFeeValue());
+//                    LOG.log(Level.INFO, "bf.getFeeDiscount(): " + bf.getFeeDiscount());
+//                    LOG.log(Level.INFO, "bf.getFeeVat(): " + bf.getFeeVat());
+//                    LOG.log(Level.INFO, "bf.getFeeVatPlusValue(): " + bf.getFeeVatPlusValue());
 
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
@@ -3040,11 +3044,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
 
-//                    System.out.println("entryGross: " + entryGross);
-//                    System.out.println("entryNet: " + entryNet);
-//                    System.out.println("entryDis: " + entryDis);
-//                    System.out.println("entryVat: " + entryVat);
-//                    System.out.println("entryVatPlusNet: " + entryVatPlusNet);
+//                    LOG.log(Level.INFO, "entryGross: " + entryGross);
+//                    LOG.log(Level.INFO, "entryNet: " + entryNet);
+//                    LOG.log(Level.INFO, "entryDis: " + entryDis);
+//                    LOG.log(Level.INFO, "entryVat: " + entryVat);
+//                    LOG.log(Level.INFO, "entryVatPlusNet: " + entryVatPlusNet);
                 }
             }
 
@@ -3075,7 +3079,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
-        //System.out.println("billFeeIsThereAsSelectedInBillFeeBundle");
+        //LOG.log(Level.INFO, "billFeeIsThereAsSelectedInBillFeeBundle");
         if (bf == null) {
             return false;
         }

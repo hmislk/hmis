@@ -75,6 +75,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ws.rs.core.Context;
@@ -104,6 +105,8 @@ import org.json.JSONObject;
 @Path("channel")
 @RequestScoped
 public class ChannelApi {
+    private static final Logger LOG = Logger.getLogger(ChannelApi.class.getName());
+
 
     @Context
     private UriInfo context;
@@ -594,7 +597,7 @@ public class ChannelApi {
         }
         String hospitalId = (String) requestBody.get("hosID");
         String doctorId = (String) requestBody.get("docNo");
-        System.out.println(hospitalId + " " + doctorId);
+        LOG.log(Level.INFO, hospitalId + " " + doctorId);
 
         Long hospitalIdLong = null;
         if (hospitalId != null && !hospitalId.isEmpty()) {
@@ -1897,7 +1900,7 @@ public class ChannelApi {
     @Path("/test")
     @Produces(MediaType.TEXT_PLAIN)
     public Response testAPI() {
-        System.out.println("API test method called");
+        LOG.log(Level.INFO, "API test method called");
 
         // Create a simple JSON object to return as response
         JSONObject responseObject = new JSONObject();
@@ -2223,7 +2226,7 @@ public class ChannelApi {
 //                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
 //                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
 //                    object.put("session_is_leaved", s[10]);
-//                    //// // System.out.println("s.length = " + s.length);
+//                    //// // LOG.log(Level.INFO, "s.length = " + s.length);
 //                    array.put(object);
 ////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
 //                }
@@ -2256,7 +2259,7 @@ public class ChannelApi {
 //                    object.put("session_current_app_no", channelBean.getBillSessionsCount((long) s[0], (Date) s[1]));
 //                    object.put("session_fee", getCommonController().getDouble((double) fetchLocalFee((long) s[0], PaymentMethod.Agent, false)));
 //                    object.put("session_is_leaved", s[10]);
-//                    //// // System.out.println("s.length = " + s.length);
+//                    //// // LOG.log(Level.INFO, "s.length = " + s.length);
 //                    array.put(object);
 ////            s[10]=fetchLocalFee((long)s[0], PaymentMethod.Agent, true);
 //                }
@@ -2300,7 +2303,7 @@ public class ChannelApi {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, "0");
 //            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
-//            //// // System.out.println("s = " + s);
+//            //// // LOG.log(Level.INFO, "s = " + s);
             if (!"".equals(s)) {
                 jSONObjectOut.put("make_booking", s);
                 jSONObjectOut.put("error", "1");
@@ -2324,12 +2327,12 @@ public class ChannelApi {
                 jSONObjectOut.put("error_description", "No Data.");
                 return jSONObjectOut.toString();
             }
-//            //// // System.out.println("ss = " + ss);
+//            //// // LOG.log(Level.INFO, "ss = " + ss);
             Bill b;
             b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
 
 //            Bill b = addToReserveAgentBookingThroughApi(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
-//            //// // System.out.println("b = " + b);
+//            //// // LOG.log(Level.INFO, "b = " + b);
             bill = billDetails(b.getId());
             jSONObjectOut.put("make_booking", bill);
             jSONObjectOut.put("error", "0");
@@ -2366,7 +2369,7 @@ public class ChannelApi {
 
             String s = fetchErrors(name, phone, doc_code, ss_id, a_id, agent_reference_no, st_foriegn);
 //            String s = fetchErrors(name, phone, doc_code, ss_id, a_id, ar_no);
-//            //// // System.out.println("s = " + s);
+//            //// // LOG.log(Level.INFO, "s = " + s);
             if (!"".equals(s)) {
                 jSONObjectOut.put("make_booking", s);
                 jSONObjectOut.put("error", "1");
@@ -2390,7 +2393,7 @@ public class ChannelApi {
                 jSONObjectOut.put("error_description", "No Data.");
                 return jSONObjectOut.toString();
             }
-//            //// // System.out.println("ss = " + ss);
+//            //// // LOG.log(Level.INFO, "ss = " + ss);
             Bill b;
             if ("0".equals(st_foriegn)) {
                 b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, false);
@@ -2398,7 +2401,7 @@ public class ChannelApi {
                 b = saveBilledBill(ss, name, phone, doc_code, a_id, agent_reference_no, true);
             }
 //            Bill b = addToReserveAgentBookingThroughApi(ss, decoder.decode(name, "+"), phone, doc_code, a_id, ar_no);
-//            //// // System.out.println("b = " + b);
+//            //// // LOG.log(Level.INFO, "b = " + b);
 
             bill = billDetails(b.getId());
             jSONObjectOut.put("make_booking", bill);
@@ -2695,9 +2698,9 @@ public class ChannelApi {
         m.put("typ", PersonInstitutionType.Channelling);
         consultants = getStaffFacade().findAggregates(sql, m);
 
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("consultants.size() = " + consultants.size());
+//        //// // LOG.log(Level.INFO, "m = " + m);
+//        //// // LOG.log(Level.INFO, "sql = " + sql);
+//        //// // LOG.log(Level.INFO, "consultants.size() = " + consultants.size());
         return consultants;
     }
 
@@ -2813,30 +2816,30 @@ public class ChannelApi {
 
         sessions = getServiceSessionFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("sessions.size() = " + sessions.size());
+//        //// // LOG.log(Level.INFO, "m = " + m);
+//        //// // LOG.log(Level.INFO, "sql = " + sql);
+//        //// // LOG.log(Level.INFO, "sessions.size() = " + sessions.size());
         List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
-//            //// // System.out.println("session.getId() = " + session.getId());
-//            //// // System.out.println("session.getId() = " + session.getStartingTime());
+//            //// // LOG.log(Level.INFO, "session.getId() = " + session.getId());
+//            //// // LOG.log(Level.INFO, "session.getId() = " + session.getStartingTime());
             Calendar date = Calendar.getInstance();
             date.setTime(session.getSessionDate());
-//            //// // System.out.println("date.getTime() = " + date.getTime());
+//            //// // LOG.log(Level.INFO, "date.getTime() = " + date.getTime());
             Calendar time = Calendar.getInstance();
             time.setTime(session.getStartingTime());
-//            //// // System.out.println("time.getTime() = " + time.getTime());
+//            //// // LOG.log(Level.INFO, "time.getTime() = " + time.getTime());
             time.set(Calendar.YEAR, date.get(Calendar.YEAR));
             time.set(Calendar.MONTH, date.get(Calendar.MONTH));
             time.set(Calendar.DATE, date.get(Calendar.DATE));
-//            //// // System.out.println("time.getTime() = " + time.getTime());
+//            //// // LOG.log(Level.INFO, "time.getTime() = " + time.getTime());
             if (time.getTime().before(new Date())) {
                 reList.add(session);
             }
         }
-//        //// // System.out.println("reList.size() = " + reList.size());
+//        //// // LOG.log(Level.INFO, "reList.size() = " + reList.size());
         sessions.removeAll(reList);
-//        //// // System.out.println("sessions.size() = " + sessions.size());
+//        //// // LOG.log(Level.INFO, "sessions.size() = " + sessions.size());
 
 //        List<Object[]> objects = new ArrayList<>();
 //        for (ServiceSession s : sessions) {
@@ -2856,7 +2859,7 @@ public class ChannelApi {
 //                objects.add(ob);
 //            }
 //        }
-//        //// // System.out.println("objects.size() = " + objects.size());
+//        //// // LOG.log(Level.INFO, "objects.size() = " + objects.size());
         return sessions;
     }
 
@@ -2891,33 +2894,33 @@ public class ChannelApi {
 
         List<ServiceSession> reList = new ArrayList<>();
         for (ServiceSession session : sessions) {
-//            //// // System.out.println("session.getId() = " + session.getId());
-//            //// // System.out.println("session.getId() = " + session.getStartingTime());
+//            //// // LOG.log(Level.INFO, "session.getId() = " + session.getId());
+//            //// // LOG.log(Level.INFO, "session.getId() = " + session.getStartingTime());
             Calendar date = Calendar.getInstance();
             date.setTime(session.getSessionDate());
-//            //// // System.out.println("date.getTime() = " + date.getTime());
+//            //// // LOG.log(Level.INFO, "date.getTime() = " + date.getTime());
             Calendar time = Calendar.getInstance();
             time.setTime(session.getStartingTime());
-//            //// // System.out.println("time.getTime() = " + time.getTime());
+//            //// // LOG.log(Level.INFO, "time.getTime() = " + time.getTime());
             time.set(Calendar.YEAR, date.get(Calendar.YEAR));
             time.set(Calendar.MONTH, date.get(Calendar.MONTH));
             time.set(Calendar.DATE, date.get(Calendar.DATE));
-//            //// // System.out.println("time.getTime() = " + time.getTime());
+//            //// // LOG.log(Level.INFO, "time.getTime() = " + time.getTime());
             if (time.getTime().before(new Date())) {
                 reList.add(session);
             }
         }
-//        //// // System.out.println("reList.size() = " + reList.size());
+//        //// // LOG.log(Level.INFO, "reList.size() = " + reList.size());
         sessions.removeAll(reList);
-//        //// // System.out.println("sessions.size() = " + sessions.size());
+//        //// // LOG.log(Level.INFO, "sessions.size() = " + sessions.size());
 
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("sessions.size() = " + sessions.size());
+//        //// // LOG.log(Level.INFO, "m = " + m);
+//        //// // LOG.log(Level.INFO, "sql = " + sql);
+//        //// // LOG.log(Level.INFO, "sessions.size() = " + sessions.size());
         Date beforeDate = null;
         for (ServiceSession s : sessions) {
-//            //// // System.out.println("s = " + s.getSessionAt());
-//            //// // System.out.println("beforeDate = " + beforeDate);
+//            //// // LOG.log(Level.INFO, "s = " + s.getSessionAt());
+//            //// // LOG.log(Level.INFO, "beforeDate = " + beforeDate);
             if (beforeDate == null) {
 //                System.err.println("add Null");
                 Date d = (Date) s.getSessionDate();
@@ -2925,8 +2928,8 @@ public class ChannelApi {
                 array.put(df.format(d));
                 beforeDate = s.getSessionDate();
             } else {
-//                //// // System.out.println("beforeDate.getTime() = " + beforeDate.getTime());
-//                //// // System.out.println("s.getSessionDate().getTime() = " + s.getSessionDate().getTime());
+//                //// // LOG.log(Level.INFO, "beforeDate.getTime() = " + beforeDate.getTime());
+//                //// // LOG.log(Level.INFO, "s.getSessionDate().getTime() = " + s.getSessionDate().getTime());
                 if (beforeDate.getTime() != s.getSessionDate().getTime()) {
 //                    System.err.println("add");
                     Date d = (Date) s.getSessionDate();
@@ -2957,9 +2960,9 @@ public class ChannelApi {
         m.put("id", billId);
         billObjects = billSessionFacade.findByJpql(sql, m);
 
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("billObjects.length = " + billObjects.size());
+//        //// // LOG.log(Level.INFO, "m = " + m);
+//        //// // LOG.log(Level.INFO, "sql = " + sql);
+//        //// // LOG.log(Level.INFO, "billObjects.length = " + billObjects.size());
         Map map = new HashMap();
         if (!billObjects.isEmpty()) {
 
@@ -2982,7 +2985,7 @@ public class ChannelApi {
             }
         }
 
-//        //// // System.out.println("map.length = " + map.size());
+//        //// // LOG.log(Level.INFO, "map.length = " + map.size());
         array.put(map);
 
         return array;
@@ -3009,9 +3012,9 @@ public class ChannelApi {
         m.put("td", CommonFunctions.getEndOfDay(toDate));
         billObjects = billSessionFacade.findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-//        //// // System.out.println("m = " + m);
-//        //// // System.out.println("sql = " + sql);
-//        //// // System.out.println("billObjects.length = " + billObjects.size());
+//        //// // LOG.log(Level.INFO, "m = " + m);
+//        //// // LOG.log(Level.INFO, "sql = " + sql);
+//        //// // LOG.log(Level.INFO, "billObjects.length = " + billObjects.size());
         for (BillSession o : billObjects) {
             try {
                 JSONObject map = new JSONObject();
@@ -3070,11 +3073,11 @@ public class ChannelApi {
             }
         }
         m.put("ses", serviceSessionFacade.find(id).getOriginatingSession().getId());
-//        //// // System.out.println("paymentMethod = " + paymentMethod);
-//        //// // System.out.println("feeTypes = " + feeTypes);
-//        //// // System.out.println("m = " + m);
+//        //// // LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
+//        //// // LOG.log(Level.INFO, "feeTypes = " + feeTypes);
+//        //// // LOG.log(Level.INFO, "m = " + m);
         Double obj = ItemFeeFacade.findDoubleByJpql(jpql, m);
-//        //// // System.out.println("obj = " + obj);
+//        //// // LOG.log(Level.INFO, "obj = " + obj);
         if (obj == null) {
             return 0;
         }
@@ -3102,7 +3105,7 @@ public class ChannelApi {
         m.put("ses", serviceSessionFacade.find(id).getOriginatingSession().getId());
 
         Double obj = ItemFeeFacade.findDoubleByJpql(jpql, m);
-//        //// // System.out.println("obj = " + obj);
+//        //// // LOG.log(Level.INFO, "obj = " + obj);
         if (obj == null) {
             return 0;
         }
@@ -3268,7 +3271,7 @@ public class ChannelApi {
         getBillFacade().create(bill);
 
         if (bill.getBillType() == BillType.ChannelCash || bill.getBillType() == BillType.ChannelAgent) {
-//            //// // System.out.println("paidBill 1= " + bill.getPaidBill());
+//            //// // LOG.log(Level.INFO, "paidBill 1= " + bill.getPaidBill());
             bill.setPaidBill(bill);
             getBillFacade().edit(bill);
         }
@@ -3331,7 +3334,7 @@ public class ChannelApi {
         double tmpTotalVat = 0;
         double tmpTotalVatPlusNet = 0;
         double tmpDiscount = 0;
-//        //// // System.out.println("ss.getOriginatingSession().getItemFees() = " + ss.getOriginatingSession().getItemFees().size());
+//        //// // LOG.log(Level.INFO, "ss.getOriginatingSession().getItemFees() = " + ss.getOriginatingSession().getItemFees().size());
         for (ItemFee f : ss.getOriginatingSession().getItemFees()) {
             if (bill.getPaymentMethod() != PaymentMethod.Agent) {
                 if (f.getFeeType() == FeeType.OtherInstitution) {
@@ -3355,9 +3358,9 @@ public class ChannelApi {
                 bf.setInstitution(bill.getInstitution());
             } else if (f.getFeeType() == FeeType.Staff) {
                 bf.setSpeciality(f.getSpeciality());
-//                //// // System.out.println("bf.getSpeciality() = " + bf.getSpeciality());
+//                //// // LOG.log(Level.INFO, "bf.getSpeciality() = " + bf.getSpeciality());
                 bf.setStaff(f.getStaff());
-//                //// // System.out.println("bf.getStaff() = " + bf.getStaff());
+//                //// // LOG.log(Level.INFO, "bf.getStaff() = " + bf.getStaff());
             }
 
             bf.setFee(f);
@@ -3409,10 +3412,10 @@ public class ChannelApi {
         bill.setTotal(tmpTotal);
         bill.setVat(tmpTotalVat);
         bill.setVatPlusNetTotal(tmpTotalVatPlusNet);
-//        //// // System.out.println("tmpDiscount = " + tmpDiscount);
-//        //// // System.out.println("tmpTotal = " + tmpTotal);
-//        //// // System.out.println("bill.getNetTotal() = " + bill.getNetTotal());
-//        //// // System.out.println("bill.getTotal() = " + bill.getTotal());
+//        //// // LOG.log(Level.INFO, "tmpDiscount = " + tmpDiscount);
+//        //// // LOG.log(Level.INFO, "tmpTotal = " + tmpTotal);
+//        //// // LOG.log(Level.INFO, "bill.getNetTotal() = " + bill.getNetTotal());
+//        //// // LOG.log(Level.INFO, "bill.getTotal() = " + bill.getTotal());
         getBillFacade().edit(bill);
 
         billItem.setDiscount(tmpDiscount);
@@ -3420,7 +3423,7 @@ public class ChannelApi {
         billItem.setNetValue(tmpTotalNet);
         billItem.setVat(tmpTotalVat);
         billItem.setVatPlusNetValue(tmpTotalVatPlusNet);
-//        //// // System.out.println("billItem.getNetValue() = " + billItem.getNetValue());
+//        //// // LOG.log(Level.INFO, "billItem.getNetValue() = " + billItem.getNetValue());
         getBillItemFacade().edit(billItem);
 
         return billFeeList;
@@ -3464,9 +3467,9 @@ public class ChannelApi {
             }
         }
         m.put("ses", item);
-//        //// // System.out.println("paymentMethod = " + paymentMethod);
-//        //// // System.out.println("feeTypes = " + feeTypes);
-//        //// // System.out.println("m = " + m);
+//        //// // LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
+//        //// // LOG.log(Level.INFO, "feeTypes = " + feeTypes);
+//        //// // LOG.log(Level.INFO, "m = " + m);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -3505,9 +3508,9 @@ public class ChannelApi {
             }
         }
         m.put("ses", item);
-//        //// // System.out.println("paymentMethod = " + paymentMethod);
-//        //// // System.out.println("feeTypes = " + feeTypes);
-//        //// // System.out.println("m = " + m);
+//        //// // LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
+//        //// // LOG.log(Level.INFO, "feeTypes = " + feeTypes);
+//        //// // LOG.log(Level.INFO, "m = " + m);
         Double obj = getItemFeeFacade().findDoubleByJpql(jpql, m);
 
         if (obj == null) {
@@ -3566,8 +3569,8 @@ public class ChannelApi {
             insId = getBillNumberBean().institutionBillNumberGenerator(ss.getInstitution(), bts, billClassType, suffix);
         }
 
-//        //// // System.out.println("billClassType = " + billClassType);
-//        //// // System.out.println("insId = " + insId);
+//        //// // LOG.log(Level.INFO, "billClassType = " + billClassType);
+//        //// // LOG.log(Level.INFO, "insId = " + insId);
         return insId;
     }
 
@@ -3607,16 +3610,16 @@ public class ChannelApi {
             deptId = getBillNumberBean().departmentBillNumberGenerator(ss.getInstitution(), ss.getDepartment(), bts, billClassType, suffix);
         }
 
-//        //// // System.out.println("billClassType = " + billClassType);
-//        //// // System.out.println("deptId = " + deptId);
+//        //// // LOG.log(Level.INFO, "billClassType = " + billClassType);
+//        //// // LOG.log(Level.INFO, "deptId = " + deptId);
         return deptId;
     }
 
     public void updateBallance(Institution ins, double transactionValue, HistoryType historyType, Bill bill, BillItem billItem, BillSession billSession, String refNo) {
-//        //// // System.out.println("updating agency balance");
-//        //// // System.out.println("ins.getName() = " + ins.getName());
-//        //// // System.out.println("ins.getBallance() before " + ins.getBallance());
-//        //// // System.out.println("transactionValue = " + transactionValue);
+//        //// // LOG.log(Level.INFO, "updating agency balance");
+//        //// // LOG.log(Level.INFO, "ins.getName() = " + ins.getName());
+//        //// // LOG.log(Level.INFO, "ins.getBallance() before " + ins.getBallance());
+//        //// // LOG.log(Level.INFO, "transactionValue = " + transactionValue);
         AgentHistory agentHistory = new AgentHistory();
         agentHistory.setCreatedAt(new Date());
 //        agentHistory.setCreater(null);

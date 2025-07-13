@@ -49,6 +49,8 @@ import org.json.JSONObject;
  */
 @Stateless
 public class SmsManagerEjb {
+    private static final Logger LOG = Logger.getLogger(SmsManagerEjb.class.getName());
+
 
     @EJB
     SmsFacade smsFacade;
@@ -377,7 +379,7 @@ public class SmsManagerEjb {
 
             // Read response
             int responseCode = connection.getResponseCode();
-            System.out.println("Response Code: " + responseCode);
+            LOG.log(Level.INFO, "Response Code: " + responseCode);
 
             try (BufferedReader br = new BufferedReader(new InputStreamReader(connection.getInputStream(), "UTF-8"))) {
                 StringBuilder response = new StringBuilder();

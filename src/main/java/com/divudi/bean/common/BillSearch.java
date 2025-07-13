@@ -117,6 +117,8 @@ import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Buddhika
@@ -124,6 +126,8 @@ import java.nio.charset.StandardCharsets;
 @Named
 @SessionScoped
 public class BillSearch implements Serializable {
+    private static final Logger LOG = Logger.getLogger(BillSearch.class.getName());
+
 
     /**
      * EJBs
@@ -1348,11 +1352,11 @@ public class BillSearch implements Serializable {
         tmp.setEditedAt(new Date());
         tmp.setEditor(sessionController.getLoggedUser());
         getBillItemFacade().edit(tmp);
-        ////// // System.out.println("1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
+        ////// // LOG.log(Level.INFO, "1.tmp = " + tmp.getPaidForBillFee().getPaidValue());
         if (tmp.getPaidForBillFee() != null) {
             getBillFeeFacade().edit(tmp.getPaidForBillFee());
         }
-        ////// // System.out.println("2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
+        ////// // LOG.log(Level.INFO, "2.tmp = " + tmp.getPaidForBillFee().getPaidValue());
 //        if (tmp.getPaidValue() != 0.0) {
 //            JsfUtil.addErrorMessage("Already Staff FeePaid");
 //            return;
@@ -1554,11 +1558,11 @@ public class BillSearch implements Serializable {
         List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
+            //////// // LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
 
-            //////// // System.out.println("user ok");
+            //////// // LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -2805,13 +2809,13 @@ public class BillSearch implements Serializable {
     }
 
     public List<Bill> getOpdBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getOpdBillsToCancel();
         return billsToApproveCancellation;
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -3189,13 +3193,13 @@ public class BillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////// // System.out.println("getting user bills");
+        //////// // LOG.log(Level.INFO, "getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
+            //////// // LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
+            //////// // LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();
@@ -3250,7 +3254,7 @@ public class BillSearch implements Serializable {
             JsfUtil.addErrorMessage("Nothing to cancel");
             return "";
         }
-        //System.out.println("bill = " + bill.getIdStr());
+        //LOG.log(Level.INFO, "bill = " + bill.getIdStr());
 
         if (configOptionApplicationController.getBooleanValueByKey("Set the Original Bill PaymentMethod to Cancelation Bill")) {
             boolean moreThanOneIndividualBillsForTheBatchBillOfThisIndividualBill = billService.hasMultipleIndividualBillsForBatchBillOfThisIndividualBill(bill);
@@ -3262,7 +3266,7 @@ public class BillSearch implements Serializable {
         } else {
             paymentMethod = PaymentMethod.Cash;
         }
-        //System.out.println("Cencel = " + paymentMethod);
+        //LOG.log(Level.INFO, "Cencel = " + paymentMethod);
         createBillItemsAndBillFees();
         boolean flag = billController.checkBillValues(bill);
         bill.setTransError(flag);
@@ -4023,7 +4027,7 @@ public class BillSearch implements Serializable {
             return null;
         }
         BillTypeAtomic billTypeAtomic = bill.getBillTypeAtomic();
-        System.out.println("billTypeAtomic = " + billTypeAtomic);
+        LOG.log(Level.INFO, "billTypeAtomic = " + billTypeAtomic);
         loadBillDetails(bill);
         switch (billTypeAtomic) {
             case OPD_BILL_REFUND:
@@ -4330,8 +4334,8 @@ public class BillSearch implements Serializable {
     }
 
     public String navigateToDirectPurchaseReturnBillView() {
-        System.out.println("navigateToDirectPurchaseReturnBillView");
-        System.out.println("bill = " + bill);
+        LOG.log(Level.INFO, "navigateToDirectPurchaseReturnBillView");
+        LOG.log(Level.INFO, "bill = " + bill);
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
             return null;
@@ -4676,7 +4680,7 @@ public class BillSearch implements Serializable {
             paymentMethod = PaymentMethod.Cash;
         }
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(bill);
-        //System.out.println("Refund"+ paymentMethod);
+        //LOG.log(Level.INFO, "Refund"+ paymentMethod);
         createBillItemsAndBillFeesForOpdRefund();
         //THIS IS NOT ALLOWED. If a user needs to reund all values, they will have to enter one by one.
 //        if (configOptionApplicationController.getBooleanValueByKey("To Refunded the Full Value of the Bill")) {
@@ -4997,7 +5001,7 @@ public class BillSearch implements Serializable {
         }
         double tot = 0.0;
         for (BillFee f : getBillFees()) {
-            //////// // System.out.println("Tot" + f.getFeeValue());
+            //////// // LOG.log(Level.INFO, "Tot" + f.getFeeValue());
             tot += f.getFeeValue();
         }
         getBillForRefund().setTotal(tot);

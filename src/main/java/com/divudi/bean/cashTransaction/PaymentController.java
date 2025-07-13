@@ -35,6 +35,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -44,6 +46,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class PaymentController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PaymentController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -303,16 +307,16 @@ public class PaymentController implements Serializable {
                 if (p.getBill().getCreatedAt() != null) {
                     p.setPaymentDate(p.getBill().getCreatedAt());
                     getFacade().edit(p);
-                    System.out.println("payment date added from Bill Created at");
+                    LOG.log(Level.INFO, "payment date added from Bill Created at");
                 } else {
                     p.setPaymentDate(new Date());
                     getFacade().edit(p);
-                    System.out.println("New Date added as there is no Bill Created date for " + p.getBill());
+                    LOG.log(Level.INFO, "New Date added as there is no Bill Created date for " + p.getBill());
                 }
             } else {
                 p.setPaymentDate(new Date());
                 getFacade().edit(p);
-                System.out.println("New Date added as there is no Bill for Payment " + p);
+                LOG.log(Level.INFO, "New Date added as there is no Bill for Payment " + p);
             }
         }
     }

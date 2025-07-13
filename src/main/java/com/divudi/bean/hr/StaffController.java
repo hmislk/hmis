@@ -62,6 +62,8 @@ import org.apache.commons.io.IOUtils;
 import org.primefaces.model.DefaultStreamedContent;
 import org.primefaces.model.StreamedContent;
 import org.primefaces.model.file.UploadedFile;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -71,6 +73,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class StaffController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(StaffController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -171,17 +175,17 @@ public class StaffController implements Serializable {
     private String signatureUrl;
 
     public void saveSignatureUrl() {
-        System.out.println("saveSignatureUrl");
+        LOG.log(Level.INFO, "saveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
+            LOG.log(Level.INFO, "current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
         if (getSignatureUrl() == null || getSignatureUrl().trim() == "") {
-            System.out.println("URL Null");
+            LOG.log(Level.INFO, "URL Null");
             JsfUtil.addErrorMessage("Add Signature Url");
         }
-        System.out.println("getStaffController().getCurrent = " + getCurrent());
-        System.out.println("Signature Url = " + getSignatureUrl());
+        LOG.log(Level.INFO, "getStaffController().getCurrent = " + getCurrent());
+        LOG.log(Level.INFO, "Signature Url = " + getSignatureUrl());
 
         current.setSignatureUrl(getSignatureUrl());
         ejbFacade.edit(getCurrent());
@@ -190,12 +194,12 @@ public class StaffController implements Serializable {
     }
 
     public void removeSignatureUrl() {
-        System.out.println("RemoveSignatureUrl");
+        LOG.log(Level.INFO, "RemoveSignatureUrl");
         if (current.getId() == null || current.getId() == 0) {
-            System.out.println("current Null");
+            LOG.log(Level.INFO, "current Null");
             JsfUtil.addErrorMessage("Please Select Staff Member");
         }
-        System.out.println("getStaffController().getCurrent = " + getCurrent());
+        LOG.log(Level.INFO, "getStaffController().getCurrent = " + getCurrent());
 
         current.setSignatureUrl(null);
         ejbFacade.edit(getCurrent());
@@ -273,8 +277,8 @@ public class StaffController implements Serializable {
 
     public FormItemValue formItemValue(ReportItem ri, Person p) {
         if (ri == null || p == null) {
-            ////System.out.println("ri = " + ri);
-            ////System.out.println("p = " + p);
+            ////LOG.log(Level.INFO, "ri = " + ri);
+            ////LOG.log(Level.INFO, "p = " + p);
             return null;
         }
         String jpql;
@@ -303,9 +307,9 @@ public class StaffController implements Serializable {
     }
 
     public void listFormItems() {
-        ////System.out.println("getting form items");
+        ////LOG.log(Level.INFO, "getting form items");
         String temSql;
-        ////System.out.println("formCategory = " + formCategory);
+        ////LOG.log(Level.INFO, "formCategory = " + formCategory);
         if (formCategory != null) {
             temSql = "SELECT i FROM CommonReportItem i where i.retired=false and i.category=:cat order by i.name";
             Map m = new HashMap();
@@ -405,7 +409,7 @@ public class StaffController implements Serializable {
                 + " and LENGTH(p.person.name) > 0 "
                 + " order by p.codeInterger ";
 
-        //////System.out.println(sql);
+        //////LOG.log(Level.INFO, sql);
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
@@ -662,8 +666,8 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        ////System.out.println(sql);
-        ////System.out.println("hm = " + hm);
+        ////LOG.log(Level.INFO, sql);
+        ////LOG.log(Level.INFO, "hm = " + hm);
         staffWithCode = getEjbFacade().findByJpql(sql, hm, TemporalType.DATE);
 
     }
@@ -713,7 +717,7 @@ public class StaffController implements Serializable {
         }
 
         sql += " order by ss.codeInterger ";
-        //////System.out.println(sql);
+        //////LOG.log(Level.INFO, sql);
         staffWithCode = getEjbFacade().findByJpql(sql, hm);
 
     }
@@ -732,7 +736,7 @@ public class StaffController implements Serializable {
                     + " or (p.code) like '%" + query.toUpperCase() + "%' )"
                     + " order by p.person.name";
 
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             suggestions = getEjbFacade().findByJpql(sql, 20);
         }
         return suggestions;
@@ -753,7 +757,7 @@ public class StaffController implements Serializable {
                     + " and (s.person.name) like '%" + query.toUpperCase() + "%' "
                     + " order by s.person.name";
 
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             suggestions = getEjbFacade().findByJpql(sql, hm, 20);
         }
         return suggestions;
@@ -773,7 +777,7 @@ public class StaffController implements Serializable {
                     + " or (p.code)='" + query.toUpperCase() + "' )"
                     + " order by p.person.name";
 
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             suggestions = getEjbFacade().findByJpql(sql, 20);
         }
         return suggestions;
@@ -797,7 +801,7 @@ public class StaffController implements Serializable {
 
             m.put("cd", new Date());
 
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             suggestions = getEjbFacade().findByJpql(sql, m, TemporalType.TIMESTAMP, 20);
         }
         return suggestions;
@@ -829,7 +833,7 @@ public class StaffController implements Serializable {
 
     public List<Department> getInstitutionDepatrments() {
         List<Department> d;
-        //////System.out.println("gettin ins dep ");
+        //////LOG.log(Level.INFO, "gettin ins dep ");
         if (getCurrent().getInstitution() == null) {
             return new ArrayList<>();
         } else {
@@ -856,7 +860,7 @@ public class StaffController implements Serializable {
                     + " (p.staffCode) like :q or "
                     + " (p.epfNo) like :q ) "
                     + " order by p.person.name";
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             HashMap hm = new HashMap();
             hm.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, hm, 20);
@@ -892,7 +896,7 @@ public class StaffController implements Serializable {
                 + " and ((p.person.name) like :q "
                 + " or  (p.code) like :q )"
                 + " order by p.person.name";
-        //////System.out.println(sql);
+        //////LOG.log(Level.INFO, sql);
         HashMap hm = new HashMap();
         hm.put("rs", roster);
         hm.put("q", "%" + query.toUpperCase() + "%");
@@ -909,7 +913,7 @@ public class StaffController implements Serializable {
                 + " p.speciality=:sp and "
                 + " p.retired=false "
                 + "order by p.person.name";
-//            //////System.out.println(sql);
+//            //////LOG.log(Level.INFO, sql);
         hm.put("sp", speciality);
         ss = getFacade().findByJpql(sql, hm);
 
@@ -926,7 +930,7 @@ public class StaffController implements Serializable {
                     + "((p.person.name) like '%" + query.toUpperCase() + "%' or "
                     + " (p.code) like '%" + query.toUpperCase() + "%' ) and type(p) != Doctor"
                     + " order by p.person.name";
-            //////System.out.println(sql);
+            //////LOG.log(Level.INFO, sql);
             suggestions = getFacade().findByJpql(sql, 20);
         }
         return suggestions;
@@ -945,8 +949,8 @@ public class StaffController implements Serializable {
             JsfUtil.addErrorMessage("Please select staff member");
             return "";
         }
-        //////System.out.println("file name is not null");
-        //////System.out.println(file.getFileName());
+        //////LOG.log(Level.INFO, "file name is not null");
+        //////LOG.log(Level.INFO, file.getFileName());
         try {
             in = getFile().getInputStream();
             getCurrent().setFileName(file.getFileName());
@@ -955,7 +959,7 @@ public class StaffController implements Serializable {
             getFacade().edit(getCurrent());
             return "";
         } catch (Exception e) {
-            //////System.out.println("Error " + e.getMessage());
+            //////LOG.log(Level.INFO, "Error " + e.getMessage());
             return "";
         }
 
@@ -991,26 +995,26 @@ public class StaffController implements Serializable {
     public StreamedContent getSignature() {
 //        FacesContext context = FacesContext.getCurrentInstance();
 //        if (context.getRenderResponse()) {
-//            //////System.out.println("render response");
+//            //////LOG.log(Level.INFO, "render response");
 //            return new DefaultStreamedContent();
 //        } else {
-        //////System.out.println("image resuest");
+        //////LOG.log(Level.INFO, "image resuest");
 
         if (current == null) {
-            //////System.out.println("staff null");
+            //////LOG.log(Level.INFO, "staff null");
             return new DefaultStreamedContent();
         }
-        //////System.out.println("staf is " + current);
+        //////LOG.log(Level.INFO, "staf is " + current);
         if (current.getId() != null && current.getBaImage() != null) {
-            //////System.out.println(current.getFileType());
-            //////System.out.println(current.getFileName());
+            //////LOG.log(Level.INFO, current.getFileType());
+            //////LOG.log(Level.INFO, current.getFileName());
 //            return new DefaultStreamedContent(new ByteArrayInputStream(current.getBaImage()), current.getFileType(), current.getFileName());
 
             InputStream targetStream = new ByteArrayInputStream(current.getBaImage());
 
             return DefaultStreamedContent.builder().contentType(current.getFileType()).name(current.getFileName()).stream(() -> targetStream).build();
         } else {
-            //////System.out.println("nulls");
+            //////LOG.log(Level.INFO, "nulls");
             return new DefaultStreamedContent();
         }
 //        }
@@ -1028,12 +1032,12 @@ public class StaffController implements Serializable {
 
         Staff temStaff = getFacade().findFirstByJpql("select s from Staff s where s.baImage != null and s.id = " + stfId);
 
-        //////System.out.println("Printing");
+        //////LOG.log(Level.INFO, "Printing");
         if (temStaff == null) {
             return new DefaultStreamedContent();
         } else if (temStaff.getId() != null && temStaff.getBaImage() != null) {
-            //////System.out.println(temStaff.getFileType());
-            //////System.out.println(temStaff.getFileName());
+            //////LOG.log(Level.INFO, temStaff.getFileType());
+            //////LOG.log(Level.INFO, temStaff.getFileName());
 
             InputStream targetStream = new ByteArrayInputStream(temStaff.getBaImage());
             StreamedContent str = DefaultStreamedContent.builder().contentType(temStaff.getFileType()).name(temStaff.getFileName()).stream(() -> targetStream).build();
@@ -1261,10 +1265,10 @@ public class StaffController implements Serializable {
         current.getPerson().getFullName();
         current.getPerson().getNameWithInitials();
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
-        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
+        LOG.log(Level.INFO, " current.getName() = " + current.getName());
+        LOG.log(Level.INFO, " current.getPerson().getName() = " + current.getPerson().getName());
+        LOG.log(Level.INFO, "current.getPerson().getFullName() = " + current.getPerson().getFullName());
+        LOG.log(Level.INFO, "current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
 
         if (current.getPerson().getId() == null) {
             current.getPerson().setCreatedAt(new Date());
@@ -1291,8 +1295,8 @@ public class StaffController implements Serializable {
             JsfUtil.addSuccessMessage("New Staff Created");
         }
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
+        LOG.log(Level.INFO, " current.getName() = " + current.getName());
+        LOG.log(Level.INFO, " current.getPerson().getName() = " + current.getPerson().getName());
 
         updateStaffEmployment();
 
@@ -1316,10 +1320,10 @@ public class StaffController implements Serializable {
         current.getPerson().getFullName();
         current.getPerson().getNameWithInitials();
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
-        System.out.println("current.getPerson().getFullName() = " + current.getPerson().getFullName());
-        System.out.println("current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
+        LOG.log(Level.INFO, " current.getName() = " + current.getName());
+        LOG.log(Level.INFO, " current.getPerson().getName() = " + current.getPerson().getName());
+        LOG.log(Level.INFO, "current.getPerson().getFullName() = " + current.getPerson().getFullName());
+        LOG.log(Level.INFO, "current.getPerson().getNameWithInitials() = " + current.getPerson().getNameWithInitials());
 
         if (current.getPerson().getId() == null) {
             current.getPerson().setCreatedAt(new Date());
@@ -1346,8 +1350,8 @@ public class StaffController implements Serializable {
             JsfUtil.addSuccessMessage("New Staff Created");
         }
 
-        System.out.println(" current.getName() = " + current.getName());
-        System.out.println(" current.getPerson().getName() = " + current.getPerson().getName());
+        LOG.log(Level.INFO, " current.getName() = " + current.getName());
+        LOG.log(Level.INFO, " current.getPerson().getName() = " + current.getPerson().getName());
 
         recreateModel();
         getItems();
@@ -1355,11 +1359,11 @@ public class StaffController implements Serializable {
 
     public void updateFormItem(FormItemValue fi) {
         if (fi == null) {
-            ////System.out.println("fi = " + fi);
+            ////LOG.log(Level.INFO, "fi = " + fi);
             return;
         }
         fivFacade.edit(fi);
-        ////System.out.println("fi updates " + fi);
+        ////LOG.log(Level.INFO, "fi updates " + fi);
     }
 
     public void updateCodeToIntege() {

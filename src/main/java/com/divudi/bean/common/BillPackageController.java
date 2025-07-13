@@ -73,6 +73,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Dr. M. H. B. Ariyaratne, MBBS, MSc, MD(Health Informatics) Acting
@@ -81,6 +83,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class BillPackageController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(BillPackageController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -445,15 +449,15 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Deprecated // Use PaymentService
     private boolean checkPaymentDetails() {
-        System.out.println("checkPaymentDetails");
-        System.out.println("getPaymentMethod() = " + getPaymentMethod());
+        LOG.log(Level.INFO, "checkPaymentDetails");
+        LOG.log(Level.INFO, "getPaymentMethod() = " + getPaymentMethod());
         if (getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please select a payment method.");
             return true;
         }
 
         if (getPaymentMethod() == PaymentMethod.Credit) {
-            System.out.println("credit");
+            LOG.log(Level.INFO, "credit");
             if (getPaymentMethodData().getCredit().getComment() == null
                     && configOptionApplicationController.getBooleanValueByKey("Package Billing - Credit Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
@@ -464,7 +468,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                 JsfUtil.addErrorMessage("Please enter a Credit comment.");
                 return true;
             }
-            System.out.println("getPaymentMethodData().getCredit().getInstitution() = " + getPaymentMethodData().getCredit().getInstitution());
+            LOG.log(Level.INFO, "getPaymentMethodData().getCredit().getInstitution() = " + getPaymentMethodData().getCredit().getInstitution());
             if (getPaymentMethodData().getCredit().getInstitution() == null) {
                 JsfUtil.addErrorMessage("Please enter a Credit Company !");
                 return true;
@@ -1301,8 +1305,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        System.out.println("recieveRemainAmountAutomatically");
-        System.out.println("paymentMethod = " + paymentMethod);
+        LOG.log(Level.INFO, "recieveRemainAmountAutomatically");
+        LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
             ComponentDetail pm = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().get(arrSize - 1);
@@ -1323,13 +1327,13 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                     pm.getPaymentMethodData().getEwallet().setTotalValue(remainAmount);
                     break;
                 case PatientDeposit:
-                    System.out.println("patient deposit");
+                    LOG.log(Level.INFO, "patient deposit");
                     pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                     PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
-                    System.out.println("pd = " + pd);
+                    LOG.log(Level.INFO, "pd = " + pd);
                     pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
 
-                    System.out.println("pm.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + pm.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                    LOG.log(Level.INFO, "pm.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + pm.getPaymentMethodData().getPatient_deposit().getTotalValue());
 
                     if (pm.getPaymentMethodData().getPatient_deposit().getTotalValue() < 0.01) {
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
@@ -1356,7 +1360,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
 
         }
-        System.out.println("this = " + this);
+        LOG.log(Level.INFO, "this = " + this);
         listnerForPaymentMethodChange();
 
     }
@@ -1654,7 +1658,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
         if (paymentMethod == PaymentMethod.Cash) {
             cashBalance = getTenderedAmount() - getNetTotal();
         }
-        System.out.println("Cash Balance = " + getCashBalance());
+        LOG.log(Level.INFO, "Cash Balance = " + getCashBalance());
     }
 
     public void feeChanged() {
@@ -1791,7 +1795,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
     }
 
     public String navigateToManageOpdPackageBatchBill(Bill bb) {
-        System.out.println("navigateToManageOpdPackageBatchBill = ");
+        LOG.log(Level.INFO, "navigateToManageOpdPackageBatchBill = ");
         if (bb == null) {
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
@@ -1800,7 +1804,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             JsfUtil.addErrorMessage("Nothing selected");
             return null;
         }
-        System.out.println("bb.getBillTypeAtomic() = " + bb.getBillTypeAtomic());
+        LOG.log(Level.INFO, "bb.getBillTypeAtomic() = " + bb.getBillTypeAtomic());
         if (bb.getBillTypeAtomic() == null) {
             JsfUtil.addErrorMessage("No bill type");
             return null;
@@ -2032,8 +2036,8 @@ public class BillPackageController implements Serializable, ControllerWithPatien
 
     @Override
     public void listnerForPaymentMethodChange() {
-        System.out.println("listnerForPaymentMethodChange for BillPackageController ");
-        System.out.println("paymentMethod = " + paymentMethod);
+        LOG.log(Level.INFO, "listnerForPaymentMethodChange for BillPackageController ");
+        LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
@@ -2044,7 +2048,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             if (getPaymentMethodData().getPatient_deposit().getTotalValue() < 0.01) {
@@ -2053,12 +2057,12 @@ public class BillPackageController implements Serializable, ControllerWithPatien
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);

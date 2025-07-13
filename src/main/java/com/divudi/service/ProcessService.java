@@ -20,6 +20,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,6 +30,8 @@ import javax.persistence.TemporalType;
  */
 @Stateless
 public class ProcessService {
+    private static final Logger LOG = Logger.getLogger(ProcessService.class.getName());
+
 
     @EJB
     ProcessStepDefinitionFacade processStepDefinitionFacade;
@@ -301,7 +305,7 @@ public class ProcessService {
 
         jpql += " ORDER BY pi.createdAt DESC"; // Ordering by createdAt date in descending order
 
-        System.out.println("jpql = " + jpql);
+        LOG.log(Level.INFO, "jpql = " + jpql);
 
         List<ProcessInstance> processInstances = processInstanceFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return processInstances;

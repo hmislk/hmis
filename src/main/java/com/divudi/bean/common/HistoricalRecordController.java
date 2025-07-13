@@ -30,6 +30,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.persistence.TemporalType;
 import com.divudi.service.StockService;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,6 +40,8 @@ import com.divudi.service.StockService;
 @Named
 @SessionScoped
 public class HistoricalRecordController implements Serializable, ControllerWithReportFilters {
+    private static final Logger LOG = Logger.getLogger(HistoricalRecordController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -124,21 +128,21 @@ public class HistoricalRecordController implements Serializable, ControllerWithR
     }
 
     public String processCreateHistoricalRecord() {
-        System.out.println("processCreateHistoricalRecord");
-        System.out.println("historicalRecordType = " + historicalRecordType);
+        LOG.log(Level.INFO, "processCreateHistoricalRecord");
+        LOG.log(Level.INFO, "historicalRecordType = " + historicalRecordType);
         if (historicalRecordType == null) {
             JsfUtil.addErrorMessage("Please select a variable");
             return null;
         }
 
         selected = handleGeneration(historicalRecordType);
-        System.out.println("selected = " + selected);
+        LOG.log(Level.INFO, "selected = " + selected);
         return navigateToHistoricalRecordList();
     }
 
     private HistoricalRecord handleGeneration(HistoricalRecordType type) {
-        System.out.println("handleGeneration");
-        System.out.println("type = " + type);
+        LOG.log(Level.INFO, "handleGeneration");
+        LOG.log(Level.INFO, "type = " + type);
         if (type == null) {
             return null;
         }
@@ -173,11 +177,11 @@ public class HistoricalRecordController implements Serializable, ControllerWithR
     }
 
     private HistoricalRecord generatePharmacyStockValuePurchaseRate() {
-        System.out.println("generatePharmacyStockValuePurchaseRate");
+        LOG.log(Level.INFO, "generatePharmacyStockValuePurchaseRate");
         HistoricalRecord rec = buildRecord(HistoricalRecordType.PHARMACY_STOCK_VALUE_PURCHASE_RATE);
-        System.out.println("rec = " + rec);
+        LOG.log(Level.INFO, "rec = " + rec);
         StockValueRow result = stockService.calculateStockValues(institution, site, department);
-        System.out.println("result = " + result);
+        LOG.log(Level.INFO, "result = " + result);
         if (result != null) {
             rec.setRecordValue(result.getPurchaseValue());
         }

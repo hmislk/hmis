@@ -39,6 +39,8 @@ import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
 import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -47,6 +49,8 @@ import javax.inject.Inject;
  */
 @Singleton
 public class BillNumberGenerator {
+    private static final Logger LOG = Logger.getLogger(BillNumberGenerator.class.getName());
+
 
     @EJB
     private DepartmentFacade depFacade;
@@ -823,7 +827,7 @@ public class BillNumberGenerator {
         BillNumber billNumber = fetchLastBillNumber(dep, billType, billClassType);
         StringBuilder result = new StringBuilder();
         Long b = billNumber.getLastBillNumber();
-//        //// // System.out.println("b = " + b);
+//        //// // LOG.log(Level.INFO, "b = " + b);
         result.append(dep.getDepartmentCode());
 
         if (billNumberSuffix != BillNumberSuffix.NONE) {
@@ -1204,7 +1208,7 @@ public class BillNumberGenerator {
         hm.put("class2", PreBill.class);
 
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        //System.out.println("dd = " + dd);
+        //LOG.log(Level.INFO, "dd = " + dd);
         return (dd != null) ? String.valueOf(dd) : "0";
     }
 
@@ -1493,7 +1497,7 @@ public class BillNumberGenerator {
         hm.put("bcl", billClassType);
         hm.put("ins", institution);
         BillNumber billNumber = billNumberFacade.findFirstByJpql(sql, hm);
-//        //// // System.out.println("billNumber = " + billNumber);
+//        //// // LOG.log(Level.INFO, "billNumber = " + billNumber);
 
         if (billNumber == null && billType == BillType.StoreOrderApprove) {
             sql = "SELECT b FROM "
@@ -1832,7 +1836,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
+        LOG.log(Level.INFO, "billSuffix = " + billSuffix);
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
@@ -1863,7 +1867,7 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
+        LOG.log(Level.INFO, "dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -1948,7 +1952,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
+        LOG.log(Level.INFO, "billSuffix = " + billSuffix);
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
@@ -1983,7 +1987,7 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
+        LOG.log(Level.INFO, "dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -2037,7 +2041,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
+        LOG.log(Level.INFO, "billSuffix = " + billSuffix);
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
@@ -2046,7 +2050,7 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
+        LOG.log(Level.INFO, "dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -2103,7 +2107,7 @@ public class BillNumberGenerator {
         }
         BillNumber billNumber;
         String billSuffix = configOptionApplicationController.getLongTextValueByKey("Bill Number Suffix for " + billType, "");
-        System.out.println("billSuffix = " + billSuffix);
+        LOG.log(Level.INFO, "billSuffix = " + billSuffix);
         if (billSuffix == null || billSuffix.trim().isEmpty()) {
             billSuffix = "";
         }
@@ -2112,7 +2116,7 @@ public class BillNumberGenerator {
 
         // Get the last bill number
         Long dd = billNumber.getLastBillNumber();
-        System.out.println("dd = " + dd);
+        LOG.log(Level.INFO, "dd = " + dd);
         // Increment the bill number
         dd = dd + 1;
 
@@ -2318,7 +2322,7 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where "
 //                + " b.retired=false AND b.department=:dp AND b.billType= :btp";
-//        //////// // System.out.println("sql");
+//        //////// // LOG.log(Level.INFO, "sql");
 //        String result;
 //        HashMap h = new HashMap();
 //        h.put("btp", type);
@@ -2340,7 +2344,7 @@ public class BillNumberGenerator {
 //        }
 //        String sql = "SELECT count(b) FROM CancelledBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        //////// // System.out.println("sql");
+//        //////// // LOG.log(Level.INFO, "sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -2378,7 +2382,7 @@ public class BillNumberGenerator {
 //
 //        String sql = "SELECT count(b) FROM RefundBill b where b.retired=false "
 //                + " AND b.department=:dep AND b.toDepartment=:tDep";
-//        //////// // System.out.println("sql");
+//        //////// // LOG.log(Level.INFO, "sql");
 //        String result;
 //        HashMap hm = new HashMap();
 //        hm.put("dep", dep);
@@ -2419,9 +2423,9 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        ////// // System.out.println("dd = " + dd);
+        ////// // LOG.log(Level.INFO, "dd = " + dd);
         result = "MS" + dd.toString();
-        ////// // System.out.println("result = " + result);
+        ////// // LOG.log(Level.INFO, "result = " + result);
         return result;
 
     }
@@ -2433,9 +2437,9 @@ public class BillNumberGenerator {
         String result;
         Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.TIMESTAMP);
         dd = dd + 1;
-        ////// // System.out.println("dd = " + dd);
+        ////// // LOG.log(Level.INFO, "dd = " + dd);
         result = "ASS" + dd.toString();
-        ////// // System.out.println("result = " + result);
+        ////// // LOG.log(Level.INFO, "result = " + result);
         return result;
 
     }
@@ -2454,7 +2458,7 @@ public class BillNumberGenerator {
 //    }
     public String serialNumberGenerater(Institution ins, Department toDept, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
+            ////// // LOG.log(Level.INFO, "Ins null");
             return "";
         }
 
@@ -2479,24 +2483,24 @@ public class BillNumberGenerator {
 //            result = ins.getInstitutionCode() + "/" + 1;
 //        }
 //        return result;
-        ////// // System.out.println("In Bill Num Gen");
+        ////// // LOG.log(Level.INFO, "In Bill Num Gen");
         String result;
         if (b != null && b != 0) {
             b = b + 1;
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + b;
-                ////// // System.out.println("result = " + result);
+                ////// // LOG.log(Level.INFO, "result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + b;
-                ////// // System.out.println("result = " + result);
+                ////// // LOG.log(Level.INFO, "result = " + result);
             }
         } else {
             if (toDept != null) {
                 result = ins.getInstitutionCode() + toDept.getDepartmentCode() + "/" + 1;
-                ////// // System.out.println("result = " + result);
+                ////// // LOG.log(Level.INFO, "result = " + result);
             } else {
                 result = ins.getInstitutionCode() + "/" + 1;
-                ////// // System.out.println("result = " + result);
+                ////// // LOG.log(Level.INFO, "result = " + result);
             }
         }
 
@@ -2537,7 +2541,7 @@ public class BillNumberGenerator {
 
     public Long inventoryItemSerialNumberGenerater(Institution ins, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
+            ////// // LOG.log(Level.INFO, "Ins null");
             return 0L;
         }
         String sql = "SELECT count(b) FROM BillItem b where "
@@ -2551,13 +2555,13 @@ public class BillNumberGenerator {
         hm.put("btp1", BillType.StoreGrnBill);
         hm.put("btp2", BillType.StorePurchase);
         Long b = getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-        ////// // System.out.println("In Bill Num Gen" + b);
+        ////// // LOG.log(Level.INFO, "In Bill Num Gen" + b);
         return b;
     }
 
     public Long inventoryItemSerialNumberGeneraterForYear(Institution ins, Item item) {
         if (ins == null) {
-            ////// // System.out.println("Ins null");
+            ////// // LOG.log(Level.INFO, "Ins null");
             return 0L;
         }
         Calendar c = Calendar.getInstance();
@@ -2581,7 +2585,7 @@ public class BillNumberGenerator {
         hm.put("fd", fd);
         hm.put("td", td);
 
-        ////// // System.out.println("In Bill Num Gen" + b);
+        ////// // LOG.log(Level.INFO, "In Bill Num Gen" + b);
         return getItemFacade().findAggregateLong(sql, hm, TemporalType.DATE);
     }
 

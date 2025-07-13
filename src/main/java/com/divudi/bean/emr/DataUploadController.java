@@ -145,6 +145,8 @@ import java.util.UUID;
 @Named
 @ViewScoped
 public class DataUploadController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(DataUploadController.class.getName());
+
 
     @Inject
     MembershipSchemeController membershipSchemeController;
@@ -419,7 +421,7 @@ public class DataUploadController implements Serializable {
 
         try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
             rowCount++;
-            System.out.println("rowCount at Start of a row= " + rowCount);
+            LOG.log(Level.INFO, "rowCount at Start of a row= " + rowCount);
             Sheet sheet = workbook.getSheetAt(0);
             Iterator<Row> rowIterator = sheet.iterator();
 
@@ -430,7 +432,7 @@ public class DataUploadController implements Serializable {
             int rowIndex = 0;
             while (rowIterator.hasNext()) {
                 Row row = rowIterator.next();
-//                System.out.println("row = " + row);
+//                LOG.log(Level.INFO, "row = " + row);
                 if (rowIndex++ < startRow) {
                     continue; // Skip header or initial rows as per the startRow value
                 }
@@ -558,8 +560,8 @@ public class DataUploadController implements Serializable {
                 batch = getCellValueAsString(row.getCell(batchCol));
                 doe = parseDate(getCellValueAsString(row.getCell(doeCol)));
 
-                System.out.println("amp = " + amp);
-                System.out.println("stockQty = " + stockQty);
+                LOG.log(Level.INFO, "amp = " + amp);
+                LOG.log(Level.INFO, "stockQty = " + stockQty);
                 getPharmacyPurchaseController().getCurrentBillItem().setItem(amp);
                 getPharmacyPurchaseController().getCurrentBillItem().setTmpQty(stockQty);
                 getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(pp);
@@ -571,7 +573,7 @@ public class DataUploadController implements Serializable {
                     getPharmacyPurchaseController().getCurrentBillItem().getPharmaceuticalBillItem().setStringValue(batch);
                 }
                 getPharmacyPurchaseController().addItem();
-                System.out.println("rowCount at End of a row= " + rowCount);
+                LOG.log(Level.INFO, "rowCount at End of a row= " + rowCount);
             }
             if (warningMessages.length() > 0) {
                 getPharmacyPurchaseController().setWarningMessage(warningMessages.toString());
@@ -634,7 +636,7 @@ public class DataUploadController implements Serializable {
         routes = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                System.out.println("inputStream = " + inputStream);
+                LOG.log(Level.INFO, "inputStream = " + inputStream);
                 routes = readRoutesFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -963,7 +965,7 @@ public class DataUploadController implements Serializable {
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
                 surgeries = readSurgeriesFromExcel(inputStream);
-                System.out.println("surgeries = " + surgeries.size());
+                LOG.log(Level.INFO, "surgeries = " + surgeries.size());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -1103,7 +1105,7 @@ public class DataUploadController implements Serializable {
             }
         }
 
-        System.out.println("items = " + items.size());
+        LOG.log(Level.INFO, "items = " + items.size());
         pollActive = false;
     }
 
@@ -1118,7 +1120,7 @@ public class DataUploadController implements Serializable {
             }
         }
 
-        System.out.println("items = " + items.size());
+        LOG.log(Level.INFO, "items = " + items.size());
         pollActive = false;
     }
 
@@ -1359,8 +1361,8 @@ public class DataUploadController implements Serializable {
                 itemsSkipped.add(item);
                 continue;
             }
-            System.out.println("---------------------------------------------");
-            System.out.println("item = " + item.getName());
+            LOG.log(Level.INFO, "---------------------------------------------");
+            LOG.log(Level.INFO, "item = " + item.getName());
 
             Cell hospitalFeeTypeCell = row.getCell(11);
             if (hospitalFeeTypeCell != null) {
@@ -1440,12 +1442,12 @@ public class DataUploadController implements Serializable {
             item.setTotalForForeigner(hospitalFee + hospitalFeeForForeginer);
             item.setDblValue(hospitalFee);
 
-            System.out.println("Total Fee = " + item.getTotal());
-            System.out.println("Total Foreigner Fee = " + item.getTotalForForeigner());
+            LOG.log(Level.INFO, "Total Fee = " + item.getTotal());
+            LOG.log(Level.INFO, "Total Foreigner Fee = " + item.getTotalForForeigner());
             itemsToSave.add(item);
         }
 
-        System.out.println("---------------------------------------------");
+        LOG.log(Level.INFO, "---------------------------------------------");
 
 //        itemFacade.batchCreate(masterItemsToSave, 5000);
         itemFacade.batchCreate(itemsToSave, 5000);
@@ -1693,8 +1695,8 @@ public class DataUploadController implements Serializable {
                 itemsSkipped.add(item);
                 continue;
             }
-            System.out.println("---------------------------------------------");
-            System.out.println("item = " + item.getName());
+            LOG.log(Level.INFO, "---------------------------------------------");
+            LOG.log(Level.INFO, "item = " + item.getName());
 
             Cell hospitalFeeTypeCell = row.getCell(11);
             if (hospitalFeeTypeCell != null) {
@@ -1867,12 +1869,12 @@ public class DataUploadController implements Serializable {
             item.setTotalForForeigner(hospitalFee + collectingCentreFee + chemicalFee + additionalFee);
             item.setDblValue(hospitalFee + collectingCentreFee + chemicalFee + additionalFee);
 
-            System.out.println("Total Fee = " + item.getTotal());
-            System.out.println("Total Foreigner Fee = " + item.getTotalForForeigner());
+            LOG.log(Level.INFO, "Total Fee = " + item.getTotal());
+            LOG.log(Level.INFO, "Total Foreigner Fee = " + item.getTotalForForeigner());
             itemsToSave.add(item);
         }
 
-        System.out.println("---------------------------------------------");
+        LOG.log(Level.INFO, "---------------------------------------------");
 
         itemFacade.batchCreate(masterItemsToSave, 5000);
         itemFacade.batchCreate(itemsToSave, 5000);
@@ -2398,7 +2400,7 @@ public class DataUploadController implements Serializable {
     }
 
     private List<Doctor> readDoctorsFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readDoctorsFromExcel");
+        LOG.log(Level.INFO, "readDoctorsFromExcel");
         List<Doctor> docs = new ArrayList<>();
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -2480,18 +2482,18 @@ public class DataUploadController implements Serializable {
                 specialityString = specialityCell.getStringCellValue();
             }
 
-            System.out.println("name = " + name);
+            LOG.log(Level.INFO, "name = " + name);
             if (name == null || name.trim().equals("")) {
                 continue;
             }
-            System.out.println("specialityString = " + specialityString);
+            LOG.log(Level.INFO, "specialityString = " + specialityString);
             if (specialityString == null || specialityString.trim().equals("")) {
                 continue;
             }
 
             speciality = doctorSpecialityController.findDoctorSpeciality(specialityString, true);
 
-            System.out.println("sexString = " + sexString);
+            LOG.log(Level.INFO, "sexString = " + sexString);
             if (sexString != null && sexString.toLowerCase().contains("f")) {
                 sex = Sex.Female;
             } else {
@@ -2499,10 +2501,10 @@ public class DataUploadController implements Serializable {
             }
 
             title = Title.getTitleEnum(titleString);
-            System.out.println("title = " + title);
+            LOG.log(Level.INFO, "title = " + title);
 
             doctor = doctorController.getDoctorsByName(name);
-            System.out.println("doctor = " + doctor);
+            LOG.log(Level.INFO, "doctor = " + doctor);
             if (doctor == null) {
                 doctor = new Doctor();
             }
@@ -2843,7 +2845,7 @@ public class DataUploadController implements Serializable {
     }
 
     public void saveDoctors() {
-        System.out.println("saveDoctors");
+        LOG.log(Level.INFO, "saveDoctors");
         for (Doctor doc : doctorsTosave) {
             doctorController.save(doc);
         }
@@ -2881,7 +2883,7 @@ public class DataUploadController implements Serializable {
     }
 
     private void processExcelFile(InputStream inputStream) throws IOException {
-        System.out.println("Processing uploaded Excel file...");
+        LOG.log(Level.INFO, "Processing uploaded Excel file...");
 
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
@@ -2896,38 +2898,38 @@ public class DataUploadController implements Serializable {
             Row row = rowIterator.next();
 
             String itemName = getCellValueAsString(row.getCell(0));
-            System.out.println("itemName = " + itemName);
+            LOG.log(Level.INFO, "itemName = " + itemName);
             String institutionName = getCellValueAsString(row.getCell(1));
             String correctCode = getCellValueAsString(row.getCell(2));
 
             if (itemName.isEmpty() || institutionName.isEmpty() || correctCode.isEmpty()) {
-                System.out.println("Skipping row " + row.getRowNum() + " due to missing data.");
+                LOG.log(Level.INFO, "Skipping row " + row.getRowNum() + " due to missing data.");
                 continue;
             }
 
             // Find the item by exact match of Item Name and Institution Name
             Item item = itemController.findItemByNameAndInstitution(itemName, institutionName);
             if (item != null) {
-                System.out.println("Updating item: " + item.getName() + " in " + institutionName + " with new code: " + correctCode);
-                System.out.println("item.getCode() Before= " + item.getCode());
+                LOG.log(Level.INFO, "Updating item: " + item.getName() + " in " + institutionName + " with new code: " + correctCode);
+                LOG.log(Level.INFO, "item.getCode() Before= " + item.getCode());
                 item.setCode(correctCode);
-                System.out.println("item = " + item);
-                System.out.println("item.getId() = " + item.getId());
+                LOG.log(Level.INFO, "item = " + item);
+                LOG.log(Level.INFO, "item.getId() = " + item.getId());
                 itemFacade.edit(item);
-                System.out.println("item.getCode() After= " + item.getCode());
+                LOG.log(Level.INFO, "item.getCode() After= " + item.getCode());
                 itemsUpdated.add(item);
             } else {
-                System.out.println("Skipping item: " + itemName + " in " + institutionName + " (not found).");
+                LOG.log(Level.INFO, "Skipping item: " + itemName + " in " + institutionName + " (not found).");
 //                itemsSkipped.add(new SkippedItem(itemName, institutionName));
             }
         }
 
         workbook.close();
-        System.out.println("Excel file processing completed.");
+        LOG.log(Level.INFO, "Excel file processing completed.");
     }
 
     private List<Item> readOpdItemsAndFeesFromExcel(InputStream inputStream) throws IOException {
-        System.out.println("readOpdItemsAndFeesFromExcel");
+        LOG.log(Level.INFO, "readOpdItemsAndFeesFromExcel");
         Workbook workbook = new XSSFWorkbook(inputStream);
         Sheet sheet = workbook.getSheetAt(0);
         Iterator<Row> rowIterator = sheet.rowIterator();
@@ -2946,7 +2948,7 @@ public class DataUploadController implements Serializable {
             rowIterator.next();
         }
 
-        System.out.println("Reading rows from Excel...");
+        LOG.log(Level.INFO, "Reading rows from Excel...");
 
         while (rowIterator.hasNext()) {
             Category category = null;
@@ -2967,15 +2969,15 @@ public class DataUploadController implements Serializable {
             String categoryName = null;
             String feeListName = null;
 
-            System.out.println("Reading data from row " + row.getRowNum());
+            LOG.log(Level.INFO, "Reading data from row " + row.getRowNum());
 
             // Column 0: Name (Required)
             Cell nameCell = row.getCell(0);
             if (nameCell.getCellType() == CellType.STRING) {
                 name = nameCell.getStringCellValue();
-                System.out.println("Name: " + name);
+                LOG.log(Level.INFO, "Name: " + name);
                 if (name == null || name.trim().equals("")) {
-                    System.out.println("Skipping row due to missing name.");
+                    LOG.log(Level.INFO, "Skipping row due to missing name.");
                     continue;  // Skip row if name is missing
                 }
             }
@@ -2984,10 +2986,10 @@ public class DataUploadController implements Serializable {
             Cell catCell = row.getCell(4);
             if (catCell != null && catCell.getCellType() == CellType.STRING) {
                 categoryName = catCell.getStringCellValue();
-                System.out.println("Category Name: " + categoryName);
+                LOG.log(Level.INFO, "Category Name: " + categoryName);
                 if (categoryName != null && !categoryName.trim().equals("")) {
                     category = categoryController.findCategoryByName(categoryName);
-                    System.out.println("Category found: " + category);
+                    LOG.log(Level.INFO, "Category found: " + category);
                 }
             }
 
@@ -2995,10 +2997,10 @@ public class DataUploadController implements Serializable {
             Cell fcatCell = row.getCell(5);
             if (fcatCell != null && fcatCell.getCellType() == CellType.STRING) {
                 financialCategoryName = fcatCell.getStringCellValue();
-                System.out.println("Financial Category Name: " + financialCategoryName);
+                LOG.log(Level.INFO, "Financial Category Name: " + financialCategoryName);
                 if (financialCategoryName != null && !financialCategoryName.trim().equals("")) {
                     financialCategory = categoryController.findCategoryByName(financialCategoryName);
-                    System.out.println("Financial Category found: " + financialCategory);
+                    LOG.log(Level.INFO, "Financial Category found: " + financialCategory);
                 }
             }
 
@@ -3006,80 +3008,80 @@ public class DataUploadController implements Serializable {
             Cell insCell = row.getCell(6);
             if (insCell != null && insCell.getCellType() == CellType.STRING) {
                 institutionName = insCell.getStringCellValue();
-                System.out.println("Institution Name: " + institutionName);
+                LOG.log(Level.INFO, "Institution Name: " + institutionName);
             }
             if (institutionName == null || institutionName.trim().equals("")) {
                 institutionName = sessionController.getInstitution().getName();
-                System.out.println("Using logged institution: " + institutionName);
+                LOG.log(Level.INFO, "Using logged institution: " + institutionName);
             }
 
             // Column 7: Department (Optional)
             Cell deptCell = row.getCell(7);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
                 departmentName = deptCell.getStringCellValue();
-                System.out.println("Department Name: " + departmentName);
+                LOG.log(Level.INFO, "Department Name: " + departmentName);
             }
             if (departmentName == null || departmentName.trim().equals("")) {
                 departmentName = sessionController.getDepartment().getName();
-                System.out.println("Using logged department: " + departmentName);
+                LOG.log(Level.INFO, "Using logged department: " + departmentName);
             }
 
             // Column 10: Fee Name (Optional, default "Hospital Fee")
             Cell feeNameCell = row.getCell(10);
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
                 feeName = feeNameCell.getStringCellValue();
-                System.out.println("Fee Name: " + feeName);
+                LOG.log(Level.INFO, "Fee Name: " + feeName);
             }
 
             // Column 11: Hospital Fee (Optional, for logged institution and department)
             Cell hospitalFeeTypeCell = row.getCell(11);
             if (hospitalFeeTypeCell != null) {
                 hospitalFee = extractHospitalFee(hospitalFeeTypeCell);
-                System.out.println("Hospital Fee: " + hospitalFee);
+                LOG.log(Level.INFO, "Hospital Fee: " + hospitalFee);
             }
 
             // Column 12: Site or Collecting Centre (Optional)
             Cell siteCell = row.getCell(12);
             if (siteCell != null && siteCell.getCellType() == CellType.STRING) {
                 siteName = siteCell.getStringCellValue();
-                System.out.println("Site Name: " + siteName);
+                LOG.log(Level.INFO, "Site Name: " + siteName);
             }
 
             // Column 13: Fee List (Optional)
             Cell feeListCell = row.getCell(13);
             if (feeListCell != null && feeListCell.getCellType() == CellType.STRING) {
                 feeListName = feeListCell.getStringCellValue();
-                System.out.println("Fee List Name: " + feeListName);
+                LOG.log(Level.INFO, "Fee List Name: " + feeListName);
                 if (feeListName != null && !feeListName.trim().equals("")) {
                     feeList = categoryController.findCategoryByName(feeListName);
-                    System.out.println("Fee List found: " + feeList);
+                    LOG.log(Level.INFO, "Fee List found: " + feeList);
                 }
             }
 
             // Handle institution and department
             institution = institutionController.findAndSaveInstitutionByName(institutionName);
-            System.out.println("Institution: " + institution);
+            LOG.log(Level.INFO, "Institution: " + institution);
             department = departmentController.findAndSaveDepartmentByName(departmentName, institution);
-            System.out.println("Department: " + department);
+            LOG.log(Level.INFO, "Department: " + department);
 
             // Handle code and item lookup
             code = row.getCell(3) != null ? row.getCell(3).getStringCellValue() : serviceController.generateShortCode(name);
-            System.out.println("Item Code: " + code);
+            LOG.log(Level.INFO, "Item Code: " + code);
             item = itemController.findItemByCode(code);
             if (item == null) {
-                System.out.println("Creating new item for code: " + code);
+                LOG.log(Level.INFO, "Creating new item for code: " + code);
                 item = createItem(row, code, name, institution, department, category, financialCategory);
             } else {
-                System.out.println("Item found for code: " + code);
+                LOG.log(Level.INFO, "Item found for code: " + code);
             }
 
             // Save or update the item
             if (item.getId() == null) {
                 itemFacade.create(item);
-                System.out.println("Item created: " + item);
+                LOG.log(Level.INFO, "Item created: " + item);
             } else {
                 itemFacade.edit(item);
-                System.out.println("Item updated: " + item);
+                LOG.log(Level.INFO, "Item updated: " + item);
             }
 
             // Create and save the ItemFee object
@@ -3098,25 +3100,25 @@ public class DataUploadController implements Serializable {
             if (siteName != null && !siteName.trim().isEmpty()) {
                 Institution siteInstitution = institutionController.findAndSaveInstitutionByName(siteName);
                 itf.setForInstitution(siteInstitution);
-                System.out.println("Set site institution for ItemFee: " + siteInstitution);
+                LOG.log(Level.INFO, "Set site institution for ItemFee: " + siteInstitution);
             }
 
             if (itf.getId() == null) {
                 itemFeeFacade.create(itf);
-                System.out.println("ItemFee created: " + itf);
+                LOG.log(Level.INFO, "ItemFee created: " + itf);
             } else {
                 itemFeeFacade.edit(itf);
-                System.out.println("ItemFee updated: " + itf);
+                LOG.log(Level.INFO, "ItemFee updated: " + itf);
             }
 
             // Save the fee to the list
             itemFeesToSave.add(itf);
             itemsToSave.add(item);
-            System.out.println("Item and ItemFee added to save list.");
+            LOG.log(Level.INFO, "Item and ItemFee added to save list.");
         }
 
         workbook.close(); // Always close the workbook to prevent memory leaks
-        System.out.println("Finished reading and processing Excel data.");
+        LOG.log(Level.INFO, "Finished reading and processing Excel data.");
         return itemsToSave;
     }
 
@@ -3137,10 +3139,10 @@ public class DataUploadController implements Serializable {
     }
 
     private Item createItem(Row row, String code, String name, Institution institution, Department department) {
-        System.out.println("createItem = ");
+        LOG.log(Level.INFO, "createItem = ");
         String itemType = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : "Investigation";
         Item item = null;
-        System.out.println("itemType = " + itemType);
+        LOG.log(Level.INFO, "itemType = " + itemType);
         if (itemType.equals("Service")) {
             item = new Service();
         } else if (itemType.equals("Investigation")) {
@@ -3165,10 +3167,10 @@ public class DataUploadController implements Serializable {
     }
 
     private Item createItem(Row row, String code, String name, Institution institution, Department department, Category category, Category financialCategory) {
-        System.out.println("createItem = ");
+        LOG.log(Level.INFO, "createItem = ");
         String itemType = row.getCell(9) != null ? row.getCell(9).getStringCellValue() : "Investigation";
         Item item = null;
-        System.out.println("itemType = " + itemType);
+        LOG.log(Level.INFO, "itemType = " + itemType);
         if (itemType.equals("Service")) {
             item = new Service();
         } else if (itemType.equals("Investigation")) {
@@ -3233,14 +3235,14 @@ public class DataUploadController implements Serializable {
             if (staffCell != null && staffCell.getCellType() == CellType.STRING) {
                 staffName = staffCell.getStringCellValue();
             }
-//            System.out.println("staffName = " + staffName);
+//            LOG.log(Level.INFO, "staffName = " + staffName);
             if (staffName != null) {
                 staff = staffController.findStaffByName(staffName);
-                System.out.println("staff = " + staff);
+                LOG.log(Level.INFO, "staff = " + staff);
             }
 
             if (staff == null) {
-                System.out.println("SKipping. Staff Null");
+                LOG.log(Level.INFO, "SKipping. Staff Null");
                 continue;
             }
 
@@ -3262,7 +3264,7 @@ public class DataUploadController implements Serializable {
                 institutionsSaved.add(institution);
                 runningIns = institution;
             }
-            System.out.println("institutionName = " + institutionName);
+            LOG.log(Level.INFO, "institutionName = " + institutionName);
 
             Cell deptCell = row.getCell(5);
             if (deptCell != null && deptCell.getCellType() == CellType.STRING) {
@@ -3282,7 +3284,7 @@ public class DataUploadController implements Serializable {
                 runningDept = department;
                 departmentsSaved.add(department);
             }
-            System.out.println("departmentName = " + departmentName);
+            LOG.log(Level.INFO, "departmentName = " + departmentName);
 
             Cell codeCell = row.getCell(0);
             if (codeCell != null && codeCell.getCellType() == CellType.STRING) {
@@ -3309,7 +3311,7 @@ public class DataUploadController implements Serializable {
             if (feeNameCell != null && feeNameCell.getCellType() == CellType.STRING) {
                 feeName = feeNameCell.getStringCellValue();
             }
-            System.out.println("feeName = " + feeName);
+            LOG.log(Level.INFO, "feeName = " + feeName);
 
             Cell doctorFeeTypeCell = row.getCell(4);
             if (doctorFeeTypeCell != null) {
@@ -3355,7 +3357,7 @@ public class DataUploadController implements Serializable {
 
             }
 
-            System.out.println("item = 2 " + item);
+            LOG.log(Level.INFO, "item = 2 " + item);
             if (item != null) {
                 itemsSaved.add(item);
             }
@@ -4653,7 +4655,7 @@ public class DataUploadController implements Serializable {
         suppliers = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                System.out.println("inputStream = " + inputStream);
+                LOG.log(Level.INFO, "inputStream = " + inputStream);
                 suppliers = readSuppliersFromExcel(inputStream);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -4943,7 +4945,7 @@ public class DataUploadController implements Serializable {
             } else {
                 code = UUID.randomUUID().toString();
             }
-            System.out.println("code = " + code);
+            LOG.log(Level.INFO, "code = " + code);
 
             //    Item masterItem = itemController.findMasterItemByName(code);
             Cell agentNameCell = row.getCell(1);
@@ -4951,7 +4953,7 @@ public class DataUploadController implements Serializable {
             if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
                 agencyName = agentNameCell.getStringCellValue();
             }
-            System.out.println("agencyName = " + agencyName);
+            LOG.log(Level.INFO, "agencyName = " + agencyName);
             if (agencyName == null || agencyName.trim().equals("")) {
                 continue;
             }
@@ -4960,7 +4962,7 @@ public class DataUploadController implements Serializable {
             if (standardCreditCell != null && standardCreditCell.getCellType() == CellType.NUMERIC) {
                 creditLimit = standardCreditCell.getNumericCellValue();
             }
-            System.out.println("creditLimit = " + creditLimit);
+            LOG.log(Level.INFO, "creditLimit = " + creditLimit);
             if (creditLimit == null) {
                 creditLimit = 0.0;
             }
@@ -4976,7 +4978,7 @@ public class DataUploadController implements Serializable {
             //Change code to name
 //            agency = agencyController.findAgencyByName(code);
             agency = agencyController.findAgencyByName(agencyName);
-            System.out.println("agency name " + agency);
+            LOG.log(Level.INFO, "agency name " + agency);
 
             if (agency == null) {
                 agency = new Institution();
@@ -5237,12 +5239,12 @@ public class DataUploadController implements Serializable {
                 switch (itemTypeName) {
                     case "Investigation":
                         item = itemController.findAndCreateInvestigationByNameAndCode(itemName, itemCode);
-                        System.out.println("itemTypeCell = " + itemTypeName);
+                        LOG.log(Level.INFO, "itemTypeCell = " + itemTypeName);
                         break;
 
                     case "Service":
                         item = itemController.findAndCreateServiceByNameAndCode(itemName, itemCode);
-                        System.out.println("itemTypeCell = " + itemTypeName);
+                        LOG.log(Level.INFO, "itemTypeCell = " + itemTypeName);
                         break;
 
                     default:
@@ -5280,7 +5282,7 @@ public class DataUploadController implements Serializable {
             fee.setDepartment(department);
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
-            System.out.println("fee = " + fee.getId());
+            LOG.log(Level.INFO, "fee = " + fee.getId());
 
         }
         return itemFees;
@@ -5388,7 +5390,7 @@ public class DataUploadController implements Serializable {
             }
             if (forInstitutionName != null) {
                 forInstitution = institutionController.findAndSaveInstitutionByName(forInstitutionName);
-                System.out.println("forInstitution = " + forInstitution);
+                LOG.log(Level.INFO, "forInstitution = " + forInstitution);
             }
             
             // Column D: Item Type 
@@ -5447,7 +5449,7 @@ public class DataUploadController implements Serializable {
             fee.setDepartment(department);
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
-            System.out.println("Create Fee = " + fee.getId());
+            LOG.log(Level.INFO, "Create Fee = " + fee.getId());
             
             uploadeditemFees.add(fee);
 

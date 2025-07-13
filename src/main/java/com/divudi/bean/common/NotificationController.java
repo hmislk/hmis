@@ -33,6 +33,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -42,6 +44,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class NotificationController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(NotificationController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -130,7 +134,7 @@ public class NotificationController implements Serializable {
     }
 
     private void createInwardRoomDischargeNotifications(PatientRoom pr) {
-        System.out.println("pr = " + pr);
+        LOG.log(Level.INFO, "pr = " + pr);
         Date date = new Date();
         for (TriggerType tt : TriggerType.getTriggersByParent(TriggerTypeParent.INWARD_PATIENT_DISCHARGED)) {
             Notification nn = new Notification();

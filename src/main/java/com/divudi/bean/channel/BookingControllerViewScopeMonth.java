@@ -107,6 +107,8 @@ import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -115,6 +117,8 @@ import org.primefaces.model.ScheduleModel;
 @Named
 @ViewScoped
 public class BookingControllerViewScopeMonth implements Serializable {
+    private static final Logger LOG = Logger.getLogger(BookingControllerViewScopeMonth.class.getName());
+
 
     /**
      * EJBs
@@ -2245,7 +2249,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //            }
         }
 
-        ////System.out.println("getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
+        ////LOG.log(Level.INFO, "getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber() = " + getSessionController().getInstitutionPreference().isChannelWithOutReferenceNumber());
         return false;
     }
 
@@ -2679,9 +2683,9 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //    public void errorCheckChannelNumber() {
 //
 //        for (BillSession bs : billSessions) {
-//            //System.out.println("billSessions" + bs.getName());
+//            //LOG.log(Level.INFO, "billSessions" + bs.getName());
 //            for (BillItem bi : getSelectedBillSession().getBill().getBillItems()) {
-//                //System.out.println("billitem" + bi.getId());
+//                //LOG.log(Level.INFO, "billitem" + bi.getId());
 //                if (bs.getSerialNo() == bi.getBillSession().getSerialNo()) {
 //                    JsfUtil.addErrorMessage("Number you entered already exist");
 //                    setSelectedBillSession(bs);
@@ -3400,7 +3404,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             } else {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            ////System.out.println(sql);
+            ////LOG.log(Level.INFO, sql);
             suggestions = getStaffFacade().findByJpql(sql);
         }
         return suggestions;
@@ -3431,7 +3435,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
             consultants = getStaffFacade().findByJpql(sql);
         }
-//        //System.out.println("consultants = " + consultants);
+//        //LOG.log(Level.INFO, "consultants = " + consultants);
         setStaff(null);
     }
 
@@ -3871,12 +3875,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
 //        hh.put("ssDate", getSelectedServiceSession().getSessionAt());
 //        hh.put("ss", getSelectedServiceSession());
 //        billSessions = getBillSessionFacade().findByJpql(sql, hh, TemporalType.DATE);
-//        System.out.println("hh = " + hh);
-//        System.out.println("getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
+//        LOG.log(Level.INFO, "hh = " + hh);
+//        LOG.log(Level.INFO, "getSelectedServiceSession().isTransLeave() = " + getSelectedServiceSession().isTransLeave());
 //        if (getSelectedServiceSession().isTransLeave()) {
 //            billSessions=null;
 //        }
-//        System.out.println("billSessions" + billSessions);
+//        LOG.log(Level.INFO, "billSessions" + billSessions);
 //
 //    }
     public void findArrivals() {
@@ -5283,7 +5287,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
                 PriceMatrix priceMatrix = priceMatrixController.getChannellingDisCount(paymentMethod, membershipScheme, f.getDepartment());
 //                priceMatrix.getDiscountPercent();
-//                //System.out.println("priceMatrix.getDiscountPercent() = " + priceMatrix.getDiscountPercent());
+//                //LOG.log(Level.INFO, "priceMatrix.getDiscountPercent() = " + priceMatrix.getDiscountPercent());
 
                 if (priceMatrix != null) {
 
@@ -5310,12 +5314,12 @@ public class BookingControllerViewScopeMonth implements Serializable {
     }
 
     private void calculateBillTotalsFromBillFees(Bill billToCaclculate, List<BillFee> billfeesAvailable) {
-        System.out.println("calculateBillTotalsFromBillFees");
+        LOG.log(Level.INFO, "calculateBillTotalsFromBillFees");
         double calculatingGrossBillTotal = 0.0;
         double calculatingNetBillTotal = 0.0;
 
         for (BillFee iteratingBillFee : billfeesAvailable) {
-            System.out.println("iteratingBillFee = " + iteratingBillFee);
+            LOG.log(Level.INFO, "iteratingBillFee = " + iteratingBillFee);
             if (iteratingBillFee.getFee() == null) {
                 continue;
             }
@@ -7170,8 +7174,8 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
         }
 
-        System.out.println("feeTotalForSelectedBill = " + feeTotalForSelectedBill);
-        System.out.println("feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
+        LOG.log(Level.INFO, "feeTotalForSelectedBill = " + feeTotalForSelectedBill);
+        LOG.log(Level.INFO, "feeDiscountForSelectedBill = " + feeDiscountForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
     }
 
@@ -7572,7 +7576,7 @@ public class BookingControllerViewScopeMonth implements Serializable {
 
     public double getCashBalance() {
         if (feeTotalForSelectedBill != null) {
-            System.out.println("feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
+            LOG.log(Level.INFO, "feeNetTotalForSelectedBill = " + feeNetTotalForSelectedBill);
             if (feeNetTotalForSelectedBill == null) {
                 feeNetTotalForSelectedBill = 0.0;
             }

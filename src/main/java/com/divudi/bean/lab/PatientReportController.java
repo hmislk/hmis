@@ -97,6 +97,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class PatientReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PatientReportController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     // EJBs
@@ -202,22 +204,22 @@ public class PatientReportController implements Serializable {
         } else {
             switch (patientReport.getReportType()) {
                 case GENARATE:
-                    System.out.println("GENARATE");
+                    LOG.log(Level.INFO, "GENARATE");
                     setCurrentPatientReport(patientReport);
                     fillReportFormats(patientReport);
                     return "/lab/patient_report?faces-redirect=true";
                 case UPLOAD:
-                    System.out.println("UPLOAD");
+                    LOG.log(Level.INFO, "UPLOAD");
 
                     Upload u = loadUpload(patientReport);
 
-                    System.out.println("Report = " + patientReport);
-                    System.out.println("Patient Investigation = " + patientReport.getPatientInvestigation());
+                    LOG.log(Level.INFO, "Report = " + patientReport);
+                    LOG.log(Level.INFO, "Patient Investigation = " + patientReport.getPatientInvestigation());
 
                     if (u != null) {
                         patientReportUploadController.setReportUpload(u);
-                        System.out.println("Upload Report = " + u.getPatientReport());
-                        System.out.println("Upload Investigation = " + u.getPatientInvestigation());
+                        LOG.log(Level.INFO, "Upload Report = " + u.getPatientReport());
+                        LOG.log(Level.INFO, "Upload Investigation = " + u.getPatientInvestigation());
                     } else {
                         patientReportUploadController.setReportUpload(null);
                     }
@@ -253,7 +255,7 @@ public class PatientReportController implements Serializable {
             return "";
         }
 
-        System.out.println("pr = " + pr.getReportType());
+        LOG.log(Level.INFO, "pr = " + pr.getReportType());
 
         if (pr.getReportType() == null) {
             setCurrentPatientReport(pr);
@@ -280,7 +282,7 @@ public class PatientReportController implements Serializable {
             return "";
         }
 
-        System.out.println("pr = " + pr.getReportType());
+        LOG.log(Level.INFO, "pr = " + pr.getReportType());
 
         if (pr.getReportType() == null) {
             setCurrentPatientReport(pr);
@@ -682,38 +684,38 @@ public class PatientReportController implements Serializable {
     }
 
     public String lastPatientReport(PatientInvestigation pi) {
-        ////System.out.println("last pt rpt");
+        ////LOG.log(Level.INFO, "last pt rpt");
         if (pi == null) {
             currentPatientReport = null;
-            ////System.out.println("pi is null");
+            ////LOG.log(Level.INFO, "pi is null");
             return "";
         }
         Investigation ix;
         ix = (Investigation) pi.getInvestigation().getReportedAs();
-        ////System.out.println("ix = " + ix);
+        ////LOG.log(Level.INFO, "ix = " + ix);
         currentReportInvestigation = ix;
         currentPtIx = pi;
         String sql;
         Map m = new HashMap();
         sql = "select r from PatientReport r where r.patientInvestigation=:pi and r.retired=false order by r.id desc";
-        //////System.out.println("sql = " + sql);
+        //////LOG.log(Level.INFO, "sql = " + sql);
         m.put("pi", pi);
-        //////System.out.println("m = " + m);
+        //////LOG.log(Level.INFO, "m = " + m);
         PatientReport r = getFacade().findFirstByJpql(sql, m);
-        //////System.out.println("r = " + r);
+        //////LOG.log(Level.INFO, "r = " + r);
         if (r == null) {
-            ////System.out.println("r is null");
+            ////LOG.log(Level.INFO, "r is null");
 //            if (ix.getReportType()==InvestigationReportType.Microbiology ) {
             if (ix.getReportType() == InvestigationReportType.Microbiology) {
                 r = createNewMicrobiologyReport(pi, ix);
             } else {
                 r = createNewPatientReport(pi, ix);
             }
-            ////System.out.println("r = " + r);
+            ////LOG.log(Level.INFO, "r = " + r);
             getCommonReportItemController().setCategory(ix.getReportFormat());
         } else {
-            ////System.out.println("r ok");
-            ////System.out.println("r = " + r);
+            ////LOG.log(Level.INFO, "r ok");
+            ////LOG.log(Level.INFO, "r = " + r);
             getCommonReportItemController().setCategory(currentReportInvestigation.getReportFormat());
         }
         currentPatientReport = r;
@@ -756,16 +758,16 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Report Items values is empty");
             return 0;
         }
-        ////System.out.println("currentPatientReport = " + currentPatientReport);
-        ////System.out.println("currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
+        ////LOG.log(Level.INFO, "currentPatientReport = " + currentPatientReport);
+        ////LOG.log(Level.INFO, "currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
 
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv != null) {
-                ////System.out.println("priv = " + priv);
-                ////System.out.println("priv in finding val is " + priv.getInvestigationItem().getName());
-                ////System.out.println("compairing are " + priv.getInvestigationItem().getId() + "  vs " + ii.getId());
+                ////LOG.log(Level.INFO, "priv = " + priv);
+                ////LOG.log(Level.INFO, "priv in finding val is " + priv.getInvestigationItem().getName());
+                ////LOG.log(Level.INFO, "compairing are " + priv.getInvestigationItem().getId() + "  vs " + ii.getId());
                 if (Objects.equals(priv.getInvestigationItem().getId(), ii.getId())) {
-                    ////System.out.println("double val is " + priv.getDoubleValue());
+                    ////LOG.log(Level.INFO, "double val is " + priv.getDoubleValue());
                     if (priv.getDoubleValue() == null) {
                         return 0.0;
                     }
@@ -789,16 +791,16 @@ public class PatientReportController implements Serializable {
             JsfUtil.addErrorMessage("Report Items values is empty");
             return 0;
         }
-        System.out.println("currentPatientReport = " + currentPatientReport);
-        System.out.println("currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
+        LOG.log(Level.INFO, "currentPatientReport = " + currentPatientReport);
+        LOG.log(Level.INFO, "currentPatientReport.getPatientReportItemValues() = " + currentPatientReport.getPatientReportItemValues());
 
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv != null) {
-                System.out.println("priv = " + priv);
-                System.out.println("priv in finding val is " + priv.getInvestigationItem().getName());
-                System.out.println("compairing are " + priv.getInvestigationItem().getId() + "  vs " + nameOfIxItem);
+                LOG.log(Level.INFO, "priv = " + priv);
+                LOG.log(Level.INFO, "priv in finding val is " + priv.getInvestigationItem().getName());
+                LOG.log(Level.INFO, "compairing are " + priv.getInvestigationItem().getId() + "  vs " + nameOfIxItem);
                 if (Objects.equals(priv.getInvestigationItem().getName(), nameOfIxItem)) {
-                    System.out.println("double val is " + priv.getDoubleValue());
+                    LOG.log(Level.INFO, "double val is " + priv.getDoubleValue());
                     if (priv.getDoubleValue() == null) {
                         return 0.0;
                     }
@@ -810,7 +812,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void calculate() {
-        System.out.println("calculate");
+        LOG.log(Level.INFO, "calculate");
         Date startTime = new Date();
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No Report to calculate");
@@ -915,11 +917,11 @@ public class PatientReportController implements Serializable {
                         calString = calString + currentPatientReport.getPatientInvestigation().getPatient().getAgeYears();
                     }
                 }
-                System.out.println("calString = " + calString);
-                System.out.println("baseJs = " + baseJs);
+                LOG.log(Level.INFO, "calString = " + calString);
+                LOG.log(Level.INFO, "baseJs = " + baseJs);
                 if (baseJs != null) {
                     calString = generateModifiedJavascriptFromBaseJavaScript(currentPatientReport, baseJs);
-                    System.out.println("calString = " + calString);
+                    LOG.log(Level.INFO, "calString = " + calString);
                 }
 
                 ScriptEngineManager mgr = new ScriptEngineManager();
@@ -928,23 +930,23 @@ public class PatientReportController implements Serializable {
                 try {
                     resultObj = engine.eval(calString);
                     if (resultObj == null) {
-                        System.out.println("resultObj Null = ");
+                        LOG.log(Level.INFO, "resultObj Null = ");
                         result = 0.0;
                         resultStr = "";
                     } else if (resultObj instanceof String) {
                         resultStr = (String) resultObj;
-                        System.out.println("resultStr = " + resultObj);
+                        LOG.log(Level.INFO, "resultStr = " + resultObj);
                     } else if (resultObj instanceof Double) {
                         result = (double) resultObj;
                         resultStr = result + "";
-                        System.out.println("result = " + result);
+                        LOG.log(Level.INFO, "result = " + result);
                     } else {
-                        System.out.println("Else = ");
+                        LOG.log(Level.INFO, "Else = ");
                         result = 0.0;
                         resultStr = "";
                     }
-                    System.out.println("resultStr = " + resultStr);
-                    System.out.println("result = " + result);
+                    LOG.log(Level.INFO, "resultStr = " + resultStr);
+                    LOG.log(Level.INFO, "result = " + result);
 
                 } catch (Exception ex) {
                     Logger.getLogger(PatientReportController.class
@@ -972,37 +974,37 @@ public class PatientReportController implements Serializable {
     private String generateModifiedJavascriptFromBaseJavaScript(PatientReport pr, String baseJs) {
         String modifiedJs = "";
         if (pr == null) {
-            System.out.println("Debug: PatientReport is null");
+            LOG.log(Level.INFO, "Debug: PatientReport is null");
             return modifiedJs;
         }
         if (baseJs == null || baseJs.isEmpty()) {
-            System.out.println("Debug: Base JavaScript is null or empty");
+            LOG.log(Level.INFO, "Debug: Base JavaScript is null or empty");
             return modifiedJs;
         } else {
             modifiedJs = baseJs;
         }
 
         if (pr.getPatientInvestigation() == null) {
-            System.out.println("Debug: PatientInvestigation is null");
+            LOG.log(Level.INFO, "Debug: PatientInvestigation is null");
             return modifiedJs;
         }
         if (pr.getPatientInvestigation().getBillItem() == null) {
-            System.out.println("Debug: BillItem is null");
+            LOG.log(Level.INFO, "Debug: BillItem is null");
             return modifiedJs;
         }
         if (pr.getPatientInvestigation().getBillItem().getBill() == null) {
-            System.out.println("Debug: Bill is null");
+            LOG.log(Level.INFO, "Debug: Bill is null");
             return modifiedJs;
         }
         if (pr.getPatientInvestigation().getBillItem().getBill().getPatient() == null) {
-            System.out.println("Debug: Patient is null");
+            LOG.log(Level.INFO, "Debug: Patient is null");
             return modifiedJs;
         }
 
         String sex = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getSex() == Sex.Male ? "male" : "female";
         int ageInYears = pr.getPatientInvestigation().getBillItem().getBill().getPatient().getPerson().getAgeYearsComponent();
 
-        System.out.println("Debug: Sex is " + sex + ", Age is " + ageInYears);
+        LOG.log(Level.INFO, "Debug: Sex is " + sex + ", Age is " + ageInYears);
 
         Pattern pattern = Pattern.compile("\\{\\{[^}]+\\}\\}");
         Matcher matcher = pattern.matcher(modifiedJs);
@@ -1011,18 +1013,18 @@ public class PatientReportController implements Serializable {
             String placeholder = matcher.group();
             String placeholderWithoutBraces = placeholder.substring(2, placeholder.length() - 2); // Remove double braces for matching
 
-            System.out.println("Debug: Found placeholder " + placeholder);
+            LOG.log(Level.INFO, "Debug: Found placeholder " + placeholder);
 
             if ("sex".equalsIgnoreCase(placeholderWithoutBraces)) {
                 modifiedJs = modifiedJs.replace(placeholder, sex);
-                System.out.println("Debug: Replaced " + placeholder + " with " + sex);
+                LOG.log(Level.INFO, "Debug: Replaced " + placeholder + " with " + sex);
             } else if ("age".equalsIgnoreCase(placeholderWithoutBraces)) {
                 modifiedJs = modifiedJs.replace(placeholder, String.valueOf(ageInYears));
-                System.out.println("Debug: Replaced " + placeholder + " with " + ageInYears);
+                LOG.log(Level.INFO, "Debug: Replaced " + placeholder + " with " + ageInYears);
             } else {
                 double reportItemValue = findPtReportItemVal(placeholderWithoutBraces);
                 modifiedJs = modifiedJs.replace(placeholder, String.valueOf(reportItemValue));
-                System.out.println("Debug: Replaced " + placeholder + " with " + reportItemValue);
+                LOG.log(Level.INFO, "Debug: Replaced " + placeholder + " with " + reportItemValue);
             }
         }
 
@@ -1030,34 +1032,34 @@ public class PatientReportController implements Serializable {
     }
 
     private PatientReportItemValue findItemValue(PatientReport pr, InvestigationItem ii) {
-//        //////System.out.println("pr is " + pr + " and details");
-//        //////System.out.println("ii is " + ii);
+//        //////LOG.log(Level.INFO, "pr is " + pr + " and details");
+//        //////LOG.log(Level.INFO, "ii is " + ii);
         PatientReportItemValue iv = null;
 
         if (pr != null && ii != null) {
 //
-//            //////System.out.println("pr ix is " + pr.getItem().getName());
-//            //////System.out.println("pr pt is " + pr.getPatientInvestigation().getPatient().getPerson().getName());
+//            //////LOG.log(Level.INFO, "pr ix is " + pr.getItem().getName());
+//            //////LOG.log(Level.INFO, "pr pt is " + pr.getPatientInvestigation().getPatient().getPerson().getName());
 //
-//            //////System.out.println("ii name is  " + ii.getName());
+//            //////LOG.log(Level.INFO, "ii name is  " + ii.getName());
 //
-//            //////System.out.println("pr.getPatientReportItemValues() is " + pr.getPatientReportItemValues());
+//            //////LOG.log(Level.INFO, "pr.getPatientReportItemValues() is " + pr.getPatientReportItemValues());
             for (PatientReportItemValue v : pr.getPatientReportItemValues()) {
-//                //////System.out.println("v is " + v);
-//                //////System.out.println("v str value is " + v.getStrValue());
-//                //////System.out.println("v dbl value is " + v.getDoubleValue());
-//                //////System.out.println("v iis is " + v.getInvestigationItem());
-//                //////System.out.println("v iis name is " + v.getInvestigationItem().getName());
+//                //////LOG.log(Level.INFO, "v is " + v);
+//                //////LOG.log(Level.INFO, "v str value is " + v.getStrValue());
+//                //////LOG.log(Level.INFO, "v dbl value is " + v.getDoubleValue());
+//                //////LOG.log(Level.INFO, "v iis is " + v.getInvestigationItem());
+//                //////LOG.log(Level.INFO, "v iis name is " + v.getInvestigationItem().getName());
 
                 if (v.getInvestigationItem().equals(ii)) {
-//                    //////System.out.println("v equals ii");
+//                    //////LOG.log(Level.INFO, "v equals ii");
                     iv = v;
                 } else {
-//                    //////System.out.println("v is not compatible");
+//                    //////LOG.log(Level.INFO, "v is not compatible");
                 }
             }
         }
-//        //////System.out.println("iv returning is " + iv);
+//        //////LOG.log(Level.INFO, "iv returning is " + iv);
         return iv;
     }
 
@@ -1076,13 +1078,13 @@ public class PatientReportController implements Serializable {
             //System.err.println("From Age is " + f.getFromAge());
             //System.err.println("To Age is " + f.getToAge());
 
-            //////System.out.println("flah low message " + f.getLowMessage());
+            //////LOG.log(Level.INFO, "flah low message " + f.getLowMessage());
             if (f.getFromAge() <= a && f.getToAge() >= a) {
-                //////System.out.println("searching val");
+                //////LOG.log(Level.INFO, "searching val");
                 PatientReportItemValue val = findItemValue(currentPatientReport, f.getInvestigationItemOfValueType());
-                //////System.out.println("val is " + val);
+                //////LOG.log(Level.INFO, "val is " + val);
                 if (val == null) {
-                    //////System.out.println("val is null");
+                    //////LOG.log(Level.INFO, "val is null");
                     continue;
                 }
                 Double d = val.getDoubleValue();
@@ -1099,19 +1101,19 @@ public class PatientReportController implements Serializable {
                     }
                 }
 
-                //////System.out.println("f is " + f);
-                //////System.out.println("d is " + d);
-                //////System.out.println("f is not null");
-                //////System.out.println("fromVal is " + f.getFromVal());
-                //////System.out.println("toVal is " + f.getToVal());
+                //////LOG.log(Level.INFO, "f is " + f);
+                //////LOG.log(Level.INFO, "d is " + d);
+                //////LOG.log(Level.INFO, "f is not null");
+                //////LOG.log(Level.INFO, "fromVal is " + f.getFromVal());
+                //////LOG.log(Level.INFO, "toVal is " + f.getToVal());
                 if (f.getFromVal() > d) {
-                    //////System.out.println("dddddddddddddd 1");
+                    //////LOG.log(Level.INFO, "dddddddddddddd 1");
                     return f.getLowMessage();
                 } else if (f.getToVal() < d) {
-                    //////System.out.println("dddddddddddddd 2");
+                    //////LOG.log(Level.INFO, "dddddddddddddd 2");
                     return f.getHighMessage();
                 } else {
-                    //////System.out.println("dddddddddddddd 3");
+                    //////LOG.log(Level.INFO, "dddddddddddddd 3");
                     return f.getFlagMessage();
                 }
             }
@@ -1157,7 +1159,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentReportInvestigation(Investigation currentReportInvestigation) {
-        //////System.out.println("setting currentReportInvestigation - " + currentReportInvestigation.getName());
+        //////LOG.log(Level.INFO, "setting currentReportInvestigation - " + currentReportInvestigation.getName());
         this.currentReportInvestigation = currentReportInvestigation;
     }
 
@@ -1255,7 +1257,7 @@ public class PatientReportController implements Serializable {
                 currentReportUpload.setRetirer(sessionController.getLoggedUser());
                 uploadFacade.create(currentReportUpload);
             }
-            System.out.println("Upload Report Removed");
+            LOG.log(Level.INFO, "Upload Report Removed");
         }
 
         getFacade().edit(currentPatientReport);
@@ -1266,7 +1268,7 @@ public class PatientReportController implements Serializable {
     public void updateTemplate() {
         Investigation currentInvestigation = (Investigation) currentPatientReport.getItem();
         if (currentInvestigation == null || currentPatientReport == null) {
-            System.out.println("currentInvestigation or currentPatientReport is null.");
+            LOG.log(Level.INFO, "currentInvestigation or currentPatientReport is null.");
             return; // Handle the case where the investigation or report is null
         }
 
@@ -1276,20 +1278,20 @@ public class PatientReportController implements Serializable {
             for (InvestigationItem ixi : currentInvestigation.getReportItems()) {
                 if (ixi != null && ixi.getIxItemType() == InvestigationItemType.Html) {
                     templateItem = ixi;
-                    System.out.println("Selected InvestigationItem with Html content: " + ixi.getHtmltext());
+                    LOG.log(Level.INFO, "Selected InvestigationItem with Html content: " + ixi.getHtmltext());
                     break; // Assume there is only one template; exit loop after finding it
                 }
             }
         }
 
         if (templateItem == null) {
-            System.out.println("No HtmlTemplate found in the current investigation.");
+            LOG.log(Level.INFO, "No HtmlTemplate found in the current investigation.");
             return;
         }
 
         // Extract placeholders from the identified template
         List<String> placeholders = CommonFunctions.extractPlaceholders(templateItem.getHtmltext());
-        System.out.println("Placeholders found: " + placeholders);
+        LOG.log(Level.INFO, "Placeholders found: " + placeholders);
 
         // Store replacements in a map
         Map<String, String> replacementMap = new HashMap<>();
@@ -1297,7 +1299,7 @@ public class PatientReportController implements Serializable {
         // Iterate through patient values and match with placeholders
         for (PatientReportItemValue priv : currentPatientReport.getPatientReportItemValues()) {
             if (priv == null || priv.getInvestigationItem() == null) {
-                System.out.println("Skipping null PatientReportItemValue or InvestigationItem.");
+                LOG.log(Level.INFO, "Skipping null PatientReportItemValue or InvestigationItem.");
                 continue; // Skip null values to avoid null pointer exceptions
             }
 
@@ -1319,9 +1321,9 @@ public class PatientReportController implements Serializable {
                             String suffix = priv.getInvestigationItem().getFormatSuffix() != null ? priv.getInvestigationItem().getFormatSuffix() : "";
                             String prefix = priv.getInvestigationItem().getFormatPrefix() != null ? priv.getInvestigationItem().getFormatPrefix() : "";
                             valueToReplacePlaceholder = prefix + String.format(formatString, dbl) + suffix;
-                            System.out.println("dbl = " + dbl + ", formatted value = " + valueToReplacePlaceholder);
+                            LOG.log(Level.INFO, "dbl = " + dbl + ", formatted value = " + valueToReplacePlaceholder);
                         } else {
-                            System.out.println("Double value is null for: " + itemName);
+                            LOG.log(Level.INFO, "Double value is null for: " + itemName);
                         }
                         break;
                     case Memo:
@@ -1329,15 +1331,15 @@ public class PatientReportController implements Serializable {
                         break;
                     default:
                         valueToReplacePlaceholder = ""; // Handle other types if necessary
-                        System.out.println("No matching value for: " + itemName);
+                        LOG.log(Level.INFO, "No matching value for: " + itemName);
                         break;
                 }
 
                 if (valueToReplacePlaceholder != null && !valueToReplacePlaceholder.isEmpty()) {
                     replacementMap.put(itemName, valueToReplacePlaceholder);
-                    System.out.println("Mapping placeholder: " + itemName + " to value: " + valueToReplacePlaceholder);
+                    LOG.log(Level.INFO, "Mapping placeholder: " + itemName + " to value: " + valueToReplacePlaceholder);
                 } else {
-                    System.out.println("Value for placeholder " + itemName + " is null or empty.");
+                    LOG.log(Level.INFO, "Value for placeholder " + itemName + " is null or empty.");
                 }
             }
         }
@@ -1348,42 +1350,42 @@ public class PatientReportController implements Serializable {
             String replacementValue = replacementMap.get(placeholder);
             if (replacementValue != null && !replacementValue.isEmpty()) {
                 updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", replacementValue);
-                System.out.println("Replaced {" + placeholder + "} with " + replacementValue);
+                LOG.log(Level.INFO, "Replaced {" + placeholder + "} with " + replacementValue);
             } else {
                 // Replace with an empty string if no replacement value is found
                 updatedHtmlText = updatedHtmlText.replace("{" + placeholder + "}", "");
-                System.out.println("Replaced {" + placeholder + "} with an empty string.");
+                LOG.log(Level.INFO, "Replaced {" + placeholder + "} with an empty string.");
             }
         }
 
 // Save the updated HTML text back to the patient-specific report item
         for (PatientReportItemValue privHtml : currentPatientReport.getPatientReportItemValues()) {
-            System.out.println("privHtml = " + privHtml);
+            LOG.log(Level.INFO, "privHtml = " + privHtml);
 
             if (privHtml == null) {
-                System.out.println("Skipping null privHtml.");
+                LOG.log(Level.INFO, "Skipping null privHtml.");
                 continue; // Skip null PatientReportItemValue
             }
 
             if (privHtml.getInvestigationItem() == null) {
-                System.out.println("Skipping privHtml with null InvestigationItem.");
+                LOG.log(Level.INFO, "Skipping privHtml with null InvestigationItem.");
                 continue; // Skip if InvestigationItem is null
             }
 
-            System.out.println("privHtml.getInvestigationItem() = " + privHtml.getInvestigationItem());
-            System.out.println("templateItem = " + templateItem);
+            LOG.log(Level.INFO, "privHtml.getInvestigationItem() = " + privHtml.getInvestigationItem());
+            LOG.log(Level.INFO, "templateItem = " + templateItem);
 
             if (privHtml.getInvestigationItem().equals(templateItem)) {
-                System.out.println("InvestigationItem matches the templateItem.");
+                LOG.log(Level.INFO, "InvestigationItem matches the templateItem.");
 
                 // Set the updated HTML content
                 privHtml.setLobValue(updatedHtmlText);
 
-                System.out.println("Set updated HTML content for PatientReportItemValue: "
+                LOG.log(Level.INFO, "Set updated HTML content for PatientReportItemValue: "
                         + "ID: " + privHtml.getId() + ", Name: "
                         + privHtml.getInvestigationItem().getName());
             } else {
-                System.out.println("InvestigationItem does not match the templateItem.");
+                LOG.log(Level.INFO, "InvestigationItem does not match the templateItem.");
             }
         }
 
@@ -1793,7 +1795,7 @@ public class PatientReportController implements Serializable {
     }
 
     public BooleanMessage canApproveThePatientReport(PatientReport prForApproval) {
-        //System.out.println("canApproveThePatientReport");
+        //LOG.log(Level.INFO, "canApproveThePatientReport");
         BooleanMessage bm = new BooleanMessage();
         boolean flag = true;
         StringBuilder appMgs = new StringBuilder();
@@ -1802,12 +1804,12 @@ public class PatientReportController implements Serializable {
             bm.setMessage(appMgs.toString());
             return bm;
         }
-        //System.out.println("stage = " + 1);
+        //LOG.log(Level.INFO, "stage = " + 1);
         for (PatientReportItemValue temIv : prForApproval.getPatientReportItemValues()) {
             InvestigationItem temii = temIv.getInvestigationItem();
             if (temii.getIxItemType() == InvestigationItemType.Value || temii.getIxItemType() == InvestigationItemType.Calculation) {
                 if (temii.isCanNotApproveIfValueIsEmpty()) {
-                    //System.out.println("stage = " + 3);
+                    //LOG.log(Level.INFO, "stage = " + 3);
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                         if (temIv.getStrValue() == null || temIv.getStrValue().trim().isEmpty()) {
                             flag = false;
@@ -1828,7 +1830,7 @@ public class PatientReportController implements Serializable {
                     }
                 }
                 if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue() || temii.isCanNotApproveIfValueIsBelowAbsoluteLowValue()) {
-                    //System.out.println("stage = " + 12);
+                    //LOG.log(Level.INFO, "stage = " + 12);
                     Double tv = null;
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Double) {
                         tv = temIv.getDoubleValue();
@@ -1836,7 +1838,7 @@ public class PatientReportController implements Serializable {
                     if (temii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                         tv = CommonFunctions.getDouble(temIv.getStrValue());
                     }
-                    //System.out.println("tv = " + tv);
+                    //LOG.log(Level.INFO, "tv = " + tv);
                     if (temii.isCanNotApproveIfValueIsAboveAbsoluteHighValue()) {
                         if (tv > temii.getAbsoluteHighValue()) {
                             flag = false;
@@ -1893,7 +1895,7 @@ public class PatientReportController implements Serializable {
 
             params.put("pi", patientInvestigation);
             params.put("ret", false);
-            System.out.println("jpql = " + jpql);
+            LOG.log(Level.INFO, "jpql = " + jpql);
 
             pr = getFacade().findFirstByJpql(jpql, params);
 
@@ -1925,7 +1927,7 @@ public class PatientReportController implements Serializable {
             params.put("pi", patientInvestigation);
             params.put("ret", false);
             params.put("app", true);
-            System.out.println("jpql = " + jpql);
+            LOG.log(Level.INFO, "jpql = " + jpql);
 
             pr = getFacade().findFirstByJpql(jpql, params);
 
@@ -1953,7 +1955,7 @@ public class PatientReportController implements Serializable {
         int groupCount = currentPatientReport.getPatientReportGroups().size();
 
         if (groupCount == 1) {
-            System.out.println("first group");
+            LOG.log(Level.INFO, "first group");
             for (PatientReportItemValue pvm : currentPatientReport.getPatientReportItemValues()) {
                 if (pvm.getInvestigationItem() != null
                         && pvm.getInvestigationItem().getIxItemType() != null
@@ -1962,9 +1964,9 @@ public class PatientReportController implements Serializable {
                 }
             }
         } else {
-            System.out.println("more than one group");
+            LOG.log(Level.INFO, "more than one group");
             PatientReportGroup firstGroup = currentPatientReport.getPatientReportGroups().get(0);
-            System.out.println("firstGroup = " + firstGroup.getGroupName());
+            LOG.log(Level.INFO, "firstGroup = " + firstGroup.getGroupName());
             // Step 1: Filter the base items first
             List<PatientReportItemValue> baseAntibioticItems = new ArrayList<>();
             for (PatientReportItemValue basePvm : currentPatientReport.getPatientReportItemValues()) {
@@ -2250,7 +2252,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void sendEmailForPatientReport() {
-        System.out.println("sendEmailForPatientReport");
+        LOG.log(Level.INFO, "sendEmailForPatientReport");
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("No patient report selected");
             return;
@@ -2292,7 +2294,7 @@ public class PatientReportController implements Serializable {
             return;
         }
 
-        System.out.println("all checks ok");
+        LOG.log(Level.INFO, "all checks ok");
 
         AppEmail email = new AppEmail();
         email.setCreatedAt(new Date());
@@ -2310,7 +2312,7 @@ public class PatientReportController implements Serializable {
         email.setPending(true);
         getEmailFacade().create(email);
 
-        System.out.println("email = " + email);
+        LOG.log(Level.INFO, "email = " + email);
 
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             labTestHistoryController.addReportSentEmailHistory(currentPtIx, currentPatientReport, email);
@@ -2403,7 +2405,7 @@ public class PatientReportController implements Serializable {
     }
 
     public void printPatientReport() {
-        //////System.out.println("going to save as printed");
+        //////LOG.log(Level.INFO, "going to save as printed");
         if (currentPatientReport == null) {
             JsfUtil.addErrorMessage("Nothing to approve");
             return;
@@ -2448,22 +2450,22 @@ public class PatientReportController implements Serializable {
 
 //    public void pdfPatientReport() throws DocumentException, com.lowagie.text.DocumentException, IOException {
 ////        long serialVersionUID = 626953318628565053L;
-//        //System.out.println("enter 1");
+//        //LOG.log(Level.INFO, "enter 1");
 ////        long serialVersionUID = 626953318628565053L;
 //        //        long serialVersionUID = 626953318628565053L;
 //        //        long serialVersionUID = 626953318628565053L;
 //        //        long serialVersionUID = 626953318628565053L;
 //        FacesContext facesContext = FacesContext.getCurrentInstance();
 //        HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
-//        //System.out.println("enter 2");
+//        //LOG.log(Level.INFO, "enter 2");
 //        response.reset();
 //
 //        String pdf_url = commonController.getBaseUrl() + "faces/lab/patient_report.xhtml";
 //
 //        response.setHeader(pdf_url, "application/pdf");
-//        //System.out.println("enter 3");
+//        //LOG.log(Level.INFO, "enter 3");
 //        OutputStream outputStream = response.getOutputStream();
-//        //System.out.println("enter 4");
+//        //LOG.log(Level.INFO, "enter 4");
 //        URL url = new URL(pdf_url);
 //        InputStream pdfInputStream = url.openStream();
 //        byte[] byteBuffer = new byte[2048];
@@ -2648,7 +2650,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewPatientReport(PatientInvestigation pi, Investigation ix, String sampleIds) {
-        System.out.println("createNewPatientReport");
+        LOG.log(Level.INFO, "createNewPatientReport");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -2695,7 +2697,7 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewPatientReportForUpload(PatientInvestigation pi, Investigation ix, String sampleIds) {
-        System.out.println("createNewPatientReport");
+        LOG.log(Level.INFO, "createNewPatientReport");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
             r = new PatientReport();
@@ -2715,7 +2717,7 @@ public class PatientReportController implements Serializable {
                 }
             }
             getFacade().create(r);
-            System.out.println("r = " + r);
+            LOG.log(Level.INFO, "r = " + r);
             r.setPatientInvestigation(pi);
             getFacade().edit(r);
             setCurrentPatientReport(r);
@@ -2742,9 +2744,9 @@ public class PatientReportController implements Serializable {
     }
 
     public PatientReport createNewPatientTemplateReport(PatientInvestigation pi, Investigation ix) {
-        System.out.println("createNewPatientTemplateReport");
-        System.out.println("pi = " + pi);
-        System.out.println("ix = " + ix);
+        LOG.log(Level.INFO, "createNewPatientTemplateReport");
+        LOG.log(Level.INFO, "pi = " + pi);
+        LOG.log(Level.INFO, "ix = " + ix);
         //System.err.println("creating a new patient report");
         PatientReport r = null;
         if (pi != null && pi.getId() != null && ix != null) {
@@ -2836,7 +2838,7 @@ public class PatientReportController implements Serializable {
 //            cpt = getFacade().find(currentPatientReport.getId());
 //            currentPatientReport = cpt;
 //        }
-//        //System.out.println("currentPatientReport = " + currentPatientReport.toString());
+//        //LOG.log(Level.INFO, "currentPatientReport = " + currentPatientReport.toString());
         return currentPatientReport;
     }
 
@@ -2904,11 +2906,11 @@ public class PatientReportController implements Serializable {
         }
         currentPatientReport = newlyCreatedReport;
 
-        System.out.println("New Report = " + currentPatientReport);
+        LOG.log(Level.INFO, "New Report = " + currentPatientReport);
 
         getCommonReportItemController().setCategory(ix.getReportFormat());
 
-        System.out.println("currentPtIx = " + currentPtIx);
+        LOG.log(Level.INFO, "currentPtIx = " + currentPtIx);
 
         patientReportUploadController.setReportUpload(null);
         patientReportUploadController.setPatientInvestigation(pi);
@@ -2993,30 +2995,30 @@ public class PatientReportController implements Serializable {
     }
 
     public void createNewReport(PatientInvestigation pi) {
-        System.out.println("createNewReport");
-        System.out.println("pi = " + pi);
+        LOG.log(Level.INFO, "createNewReport");
+        LOG.log(Level.INFO, "pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Patient Report");
             return;
         }
         Investigation ix = null;
-        System.out.println("pi.getInvestigation() = " + pi.getInvestigation());
+        LOG.log(Level.INFO, "pi.getInvestigation() = " + pi.getInvestigation());
         if (pi.getInvestigation() == null) {
             JsfUtil.addErrorMessage("No Investigation for Patient Report");
             return;
         } else {
             ix = (Investigation) pi.getInvestigation();
-            System.out.println("ix = " + ix);
+            LOG.log(Level.INFO, "ix = " + ix);
         }
-        System.out.println("ix.getReportedAs() = " + ix.getReportedAs());
+        LOG.log(Level.INFO, "ix.getReportedAs() = " + ix.getReportedAs());
         if (ix.getReportedAs() != null) {
             ix = (Investigation) pi.getInvestigation().getReportedAs();
-            System.out.println("ix = " + ix);
+            LOG.log(Level.INFO, "ix = " + ix);
         }
 
         currentReportInvestigation = ix;
         currentPtIx = pi;
-        System.out.println("ix.getReportType()  = " + ix.getReportType());
+        LOG.log(Level.INFO, "ix.getReportType()  = " + ix.getReportType());
         if (ix.getReportType() == InvestigationReportType.Microbiology) {
             createNewMicrobiologyReport(pi, ix);
         } else if (ix.getReportType() == InvestigationReportType.HtmlTemplate) {
@@ -3062,15 +3064,15 @@ public class PatientReportController implements Serializable {
     }
 
     public void setCurrentPatientReport(PatientReport currentPatientReport) {
-        System.out.println("Setting current patient report: " + currentPatientReport);
+        LOG.log(Level.INFO, "Setting current patient report: " + currentPatientReport);
         this.currentPatientReport = currentPatientReport;
         if (currentPatientReport != null) {
-            System.out.println("Report format: " + currentPatientReport.getItem().getReportFormat());
+            LOG.log(Level.INFO, "Report format: " + currentPatientReport.getItem().getReportFormat());
             getCommonReportItemController().setCategory(currentPatientReport.getItem().getReportFormat());
             currentPtIx = currentPatientReport.getPatientInvestigation();
-            System.out.println("Current patient investigation index: " + currentPtIx);
+            LOG.log(Level.INFO, "Current patient investigation index: " + currentPtIx);
         } else {
-            System.out.println("No current patient report provided, skipping setting category and index.");
+            LOG.log(Level.INFO, "No current patient report provided, skipping setting category and index.");
         }
     }
 

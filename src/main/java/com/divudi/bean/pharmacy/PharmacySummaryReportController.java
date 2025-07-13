@@ -100,6 +100,8 @@ import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 // </editor-fold>
 
 /**
@@ -108,6 +110,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class PharmacySummaryReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacySummaryReportController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -1260,7 +1264,7 @@ public class PharmacySummaryReportController implements Serializable {
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
-                    System.out.println("Skipped BillItem: No PharmaceuticalBillItem.");
+                    LOG.log(Level.INFO, "Skipped BillItem: No PharmaceuticalBillItem.");
                     continue;
                 }
 
@@ -1271,7 +1275,7 @@ public class PharmacySummaryReportController implements Serializable {
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
-                    System.out.println("Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
+                    LOG.log(Level.INFO, "Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
                 }
 
                 double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
@@ -1286,17 +1290,17 @@ public class PharmacySummaryReportController implements Serializable {
                 costValue += itemCostValue;
 
                 // Print debug info
-                System.out.println("---- BillItem Debug ----");
-                System.out.println("Item: " + bi.getItem().getName());
-                System.out.println("Qty: " + qty);
-                System.out.println("Retail Rate: " + retailRate);
-                System.out.println("Purchase Rate: " + purchaseRate);
-                System.out.println("Cost Rate: " + cRate);
-                System.out.println("Factor: " + factor);
-                System.out.println("Item Sale Value: " + itemSaleValue);
-                System.out.println("Item Purchase Value: " + itemPurchaseValue);
-                System.out.println("Item Cost Value: " + itemCostValue);
-                System.out.println("------------------------");
+                LOG.log(Level.INFO, "---- BillItem Debug ----");
+                LOG.log(Level.INFO, "Item: " + bi.getItem().getName());
+                LOG.log(Level.INFO, "Qty: " + qty);
+                LOG.log(Level.INFO, "Retail Rate: " + retailRate);
+                LOG.log(Level.INFO, "Purchase Rate: " + purchaseRate);
+                LOG.log(Level.INFO, "Cost Rate: " + cRate);
+                LOG.log(Level.INFO, "Factor: " + factor);
+                LOG.log(Level.INFO, "Item Sale Value: " + itemSaleValue);
+                LOG.log(Level.INFO, "Item Purchase Value: " + itemPurchaseValue);
+                LOG.log(Level.INFO, "Item Cost Value: " + itemCostValue);
+                LOG.log(Level.INFO, "------------------------");
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();

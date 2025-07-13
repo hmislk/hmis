@@ -48,6 +48,8 @@ import javax.inject.Named;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 // </editor-fold>
 
 /**
@@ -56,6 +58,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class PharmacyProcurementReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacyProcurementReportController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -227,7 +231,7 @@ public class PharmacyProcurementReportController implements Serializable {
     }
 
     public void processProcurementItemList() {
-        System.out.println("processProcurementItemList");
+        LOG.log(Level.INFO, "processProcurementItemList");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN);
         billTypeAtomics.add(BillTypeAtomic.PHARMACY_GRN_CANCELLED);

@@ -64,6 +64,8 @@ import org.primefaces.event.RowEditEvent;
 @Named
 @SessionScoped
 public class GrnCostingController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(GrnCostingController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -589,15 +591,15 @@ public class GrnCostingController implements Serializable {
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
-            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
-            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+            LOG.log(Level.INFO, "Purchase Rate: " + pbi.getPurchaseRate());
+            LOG.log(Level.INFO, "Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
 
-            System.out.println("Retail Rate: " + pbi.getRetailRate());
-            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
-            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+            LOG.log(Level.INFO, "Retail Rate: " + pbi.getRetailRate());
+            LOG.log(Level.INFO, "Retail Rate (Pack): " + pbi.getRetailRatePack());
+            LOG.log(Level.INFO, "Retail Rate in Unit: " + pbi.getRetailRateInUnit());
 
-            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
-            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
+            LOG.log(Level.INFO, "Purchase Value: " + pbi.getPurchaseValue());
+            LOG.log(Level.INFO, "Retail Pack Value: " + pbi.getRetailPackValue());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
@@ -1894,6 +1896,8 @@ public class GrnCostingController implements Serializable {
         for (BillItem bi : importGrn.getBillItems()) {
             if (bi.getId() == null) {
                 billItemFacade.create(bi);
+import java.util.logging.Level;
+import java.util.logging.Logger;
             } else {
                 billItemFacade.edit(bi);
             }

@@ -29,6 +29,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,6 +40,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class SessionInstanceController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(SessionInstanceController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -78,7 +82,7 @@ public class SessionInstanceController implements Serializable {
 
     // Overloaded method with sessionDate parameter
     public List<SessionInstance> findSessionInstance(Institution institution, List<Speciality> specialities, Doctor consultant, Date fromDate, Date toDate, Date sessionDate) {
-        System.out.println("findSessionInstance with sessionDate");
+        LOG.log(Level.INFO, "findSessionInstance with sessionDate");
         List<SessionInstance> sessionInstances;
         Map<String, Object> m = new HashMap<>();
         StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret ");
@@ -117,12 +121,12 @@ public class SessionInstanceController implements Serializable {
 
         m.put("ret", false);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("m = " + m);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "m = " + m);
 
         sessionInstances = ejbFacade.findByJpql(jpql.toString(), m, TemporalType.DATE);
 
-        System.out.println("sessionInstances = " + sessionInstances);
+        LOG.log(Level.INFO, "sessionInstances = " + sessionInstances);
         return sessionInstances;
     }
 

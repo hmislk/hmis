@@ -60,6 +60,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -68,6 +70,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class OpticianPurchaseController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(OpticianPurchaseController.class.getName());
+
 
     /**
      * EJBs
@@ -405,10 +409,10 @@ public class OpticianPurchaseController implements Serializable {
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
 
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
+            ////// // LOG.log(Level.INFO, "gross" + grossTotal);
+            ////// // LOG.log(Level.INFO, "net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
+            ////// // LOG.log(Level.INFO, "net2" + getBill().getNetTotal());
         }
 
     }
@@ -478,25 +482,25 @@ public class OpticianPurchaseController implements Serializable {
             Stock stock = getPharmacyBean().addToStock(tmpPh, Math.abs(addingQty), getSessionController().getDepartment());
 
             tmpPh.setStock(stock);
-            System.out.println("i.getItem().getItemBarcodeGenerationStrategy() = " + i.getItem().getItemBarcodeGenerationStrategy());
+            LOG.log(Level.INFO, "i.getItem().getItemBarcodeGenerationStrategy() = " + i.getItem().getItemBarcodeGenerationStrategy());
             switch (i.getItem().getItemBarcodeGenerationStrategy()) {
                 case BY_INDIVIDUAL_UNIT: {
-                    System.out.println("by unit");
+                    LOG.log(Level.INFO, "by unit");
                     String initialPartOfBarcode = i.getItem().getBarcode();
-                    System.out.println("initialPartOfBarcode = " + initialPartOfBarcode);
+                    LOG.log(Level.INFO, "initialPartOfBarcode = " + initialPartOfBarcode);
                     Long startLongSecondPart = i.getItem().getLastBarcode() + 1;
-                    System.out.println("startLongSecondPart = " + startLongSecondPart);
+                    LOG.log(Level.INFO, "startLongSecondPart = " + startLongSecondPart);
                     Double qty = 0.0;
                     if (i.getPharmaceuticalBillItem() != null) {
                         qty += i.getPharmaceuticalBillItem().getQtyInUnit();
                         qty += i.getPharmaceuticalBillItem().getFreeQtyInUnit();
                     }
                     Long endLongSecondPart = i.getItem().getLastBarcode() + Math.round(qty);
-                    System.out.println("endLongSecondPart = " + endLongSecondPart);
+                    LOG.log(Level.INFO, "endLongSecondPart = " + endLongSecondPart);
                     Long startFullBarcode = createBarcode(initialPartOfBarcode, startLongSecondPart);
-                    System.out.println("startFullBarcode = " + startFullBarcode);
+                    LOG.log(Level.INFO, "startFullBarcode = " + startFullBarcode);
                     Long endFullBarcode = createBarcode(initialPartOfBarcode, endLongSecondPart);
-                    System.out.println("endLongSecondPart = " + endFullBarcode);
+                    LOG.log(Level.INFO, "endLongSecondPart = " + endFullBarcode);
                     stock.setStartBarcode(startFullBarcode);
                     stock.setEndBarcode(endFullBarcode);
                     i.getItem().setLastBarcode(endLongSecondPart);
@@ -519,7 +523,7 @@ public class OpticianPurchaseController implements Serializable {
                 }
                 default:
                     // Log or handle unexpected barcode generation strategies
-                    System.out.println("Unhandled barcode generation strategy: " + i.getItem().getItemBarcodeGenerationStrategy());
+                    LOG.log(Level.INFO, "Unhandled barcode generation strategy: " + i.getItem().getItemBarcodeGenerationStrategy());
                     break;
             }
 

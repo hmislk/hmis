@@ -42,6 +42,8 @@ import org.apache.poi.ss.util.AreaReference;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFTable;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -50,6 +52,8 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 @Named
 @SessionScoped
 public class ItemFeeManager implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ItemFeeManager.class.getName());
+
 
     /**
      * Creates a new instance of ItemFeeManager
@@ -468,24 +472,24 @@ public class ItemFeeManager implements Serializable {
     }
 
     public void fillDepartments() {
-        ////// // System.out.println("fill dept");
+        ////// // LOG.log(Level.INFO, "fill dept");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getInstitution());
         jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
-        ////// // System.out.println("m = " + m);
-        ////// // System.out.println("jpql = " + jpql);
+        ////// // LOG.log(Level.INFO, "m = " + m);
+        ////// // LOG.log(Level.INFO, "jpql = " + jpql);
         departments = departmentFacade.findByJpql(jpql, m);
     }
 
     public void fillStaff() {
-        ////// // System.out.println("fill staff");
+        ////// // LOG.log(Level.INFO, "fill staff");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getSpeciality());
         jpql = "select d from Staff d where d.retired=false and d.speciality=:ins order by d.person.name";
-        ////// // System.out.println("m = " + m);
-        ////// // System.out.println("jpql = " + jpql);
+        ////// // LOG.log(Level.INFO, "m = " + m);
+        ////// // LOG.log(Level.INFO, "jpql = " + jpql);
         staffs = staffFacade.findByJpql(jpql, m);
     }
 
@@ -892,8 +896,8 @@ public class ItemFeeManager implements Serializable {
     }
 
     public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
+        LOG.log(Level.INFO, "fillFees");
+        LOG.log(Level.INFO, "forInstitution = " + cc);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
@@ -909,14 +913,14 @@ public class ItemFeeManager implements Serializable {
         }
         jpql += " and f.forCategory is null";
 
-        System.out.println("m = " + m);
+        LOG.log(Level.INFO, "m = " + m);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + forInstitution);
+        LOG.log(Level.INFO, "fillFees");
+        LOG.log(Level.INFO, "forInstitution = " + forInstitution);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -944,14 +948,14 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
+        LOG.log(Level.INFO, "m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForCc(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
+        LOG.log(Level.INFO, "fillFees");
+        LOG.log(Level.INFO, "forInstitution = " + cc);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -975,7 +979,7 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
+        LOG.log(Level.INFO, "m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }

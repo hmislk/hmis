@@ -47,6 +47,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,6 +57,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class QuickBookReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(QuickBookReportController.class.getName());
+
 
     @EJB
     private CategoryFacade categoryFacade;
@@ -112,7 +116,7 @@ public class QuickBookReportController implements Serializable {
         if (errorCheck()) {
             return;
         }
-        System.out.println("report = " + report);
+        LOG.log(Level.INFO, "report = " + report);
         switch (report) {
             case "1":
                 createQBFormatOpdDayIncome();
@@ -146,8 +150,8 @@ public class QuickBookReportController implements Serializable {
     public void createAllBilledItemReport() {
         items = fetchBilledItem(BillType.OpdBill, fromDate, toDate, true);
         for (Item i : items) {
-            System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getId() = " + i.getId());
+            LOG.log(Level.INFO, "i.getName() = " + i.getName());
+            LOG.log(Level.INFO, "i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -159,8 +163,8 @@ public class QuickBookReportController implements Serializable {
         }
         List<Item> is = fetchBilledItem(BillType.InwardBill, fromDate, toDate, false);
         for (Item i : is) {
-            System.out.println("i.getName() = " + i.getName());
-            System.out.println("i.getId() = " + i.getId());
+            LOG.log(Level.INFO, "i.getName() = " + i.getName());
+            LOG.log(Level.INFO, "i.getId() = " + i.getId());
             if (i.getName().length() > 30) {
                 i.setTransName(i.getName().substring(0, 30));
             } else {
@@ -194,7 +198,7 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
+        LOG.log(Level.INFO, "tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -224,7 +228,7 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
+        LOG.log(Level.INFO, "tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -252,7 +256,7 @@ public class QuickBookReportController implements Serializable {
 
         List<Item> tmp = getItemFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("tmp.size() = " + tmp.size());
+        LOG.log(Level.INFO, "tmp.size() = " + tmp.size());
 
         return tmp;
 
@@ -356,14 +360,14 @@ public class QuickBookReportController implements Serializable {
             grantTot = 0.0;
             List<QuickBookFormat> qbfs = new ArrayList<>();
             if (i != null) {
-                System.out.println("****i.getName() = " + i.getName());
+                LOG.log(Level.INFO, "****i.getName() = " + i.getName());
             } else {
-                System.out.println("****i = " + i);
+                LOG.log(Level.INFO, "****i = " + i);
             }
             qbfs.addAll(fetchOPdListDayEndTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
             qbfs.addAll(fetchOPdDocPaymentTable(paymentMethods, CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate), i));
             if (qbfs.size() == 0) {
-                System.out.println("qbfs.size() = " + qbfs.size());
+                LOG.log(Level.INFO, "qbfs.size() = " + qbfs.size());
                 continue;
             }
             QuickBookFormat qbf = new QuickBookFormat();
@@ -399,7 +403,7 @@ public class QuickBookReportController implements Serializable {
         }
         if (reportKeyWord.getPaymentMethod() == PaymentMethod.Credit) {
             for (PatientEncounter pe : fetchPatientEncounters(fromDate, toDate, PaymentMethod.Credit, null, getReportKeyWord().getAdmissionType(), null)) {
-                System.out.println("pe.getBhtNo() = " + pe.getBhtNo());
+                LOG.log(Level.INFO, "pe.getBhtNo() = " + pe.getBhtNo());
                 grantTot = 0.0;
                 List<QuickBookFormat> qbfs = new ArrayList<>();
                 qbfs.addAll(createInwardIncomes(fromDate, toDate, pe, null, PaymentMethod.Credit, null));
@@ -485,7 +489,7 @@ public class QuickBookReportController implements Serializable {
 
             } else {
                 for (AdmissionType atype : getAdmissionTypeController().getItems()) {
-                    System.out.println("atype.getName() = " + atype.getName());
+                    LOG.log(Level.INFO, "atype.getName() = " + atype.getName());
                     grantTot = 0.0;
                     List<QuickBookFormat> qbfs = new ArrayList<>();
                     qbfs.addAll(createInwardIncomes(fromDate, toDate, null, atype, PaymentMethod.Cash, null));
@@ -526,7 +530,7 @@ public class QuickBookReportController implements Serializable {
             }
         }
 
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
+        LOG.log(Level.INFO, "quickBookFormats.size() = " + quickBookFormats.size());
 
     }
 
@@ -542,7 +546,7 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
+            LOG.log(Level.INFO, "d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -553,12 +557,12 @@ public class QuickBookReportController implements Serializable {
             billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
-        System.out.println("billsBilled.size() = " + billsBilled.size());
+        LOG.log(Level.INFO, "billsBilled.size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        System.out.println("billsBilledP.size() = " + billsBilledP.size());
+        LOG.log(Level.INFO, "billsBilledP.size() = " + billsBilledP.size());
         bills.addAll(billsBilledP);
 
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -580,8 +584,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
-            System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
-            System.out.println("b.getInsId() = " + b.getInsId());
+            LOG.log(Level.INFO, "b.getInvoiceDate() = " + b.getInvoiceDate());
+            LOG.log(Level.INFO, "b.getInsId() = " + b.getInsId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
@@ -595,7 +599,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -615,11 +619,11 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
         bills = new ArrayList<>();
-        System.out.println("billsCanceled.size() = " + billsCanceled.size());
+        LOG.log(Level.INFO, "billsCanceled.size() = " + billsCanceled.size());
         bills.addAll(billsCanceled);
-        System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
+        LOG.log(Level.INFO, "billsCanceledP.size() = " + billsCanceledP.size());
         bills.addAll(billsCanceledP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -652,7 +656,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -673,11 +677,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturn.size() = " + billsReturn.size());
+        LOG.log(Level.INFO, "billsReturn.size() = " + billsReturn.size());
         bills.addAll(billsReturn);
-        System.out.println("billsReturnP.size() = " + billsReturnP.size());
+        LOG.log(Level.INFO, "billsReturnP.size() = " + billsReturnP.size());
         bills.addAll(billsReturnP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -712,7 +716,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -733,11 +737,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
+        LOG.log(Level.INFO, "billsReturnCancel.size() = " + billsReturnCancel.size());
         bills.addAll(billsReturnCancel);
-        System.out.println("billsReturnCancelP.size() = " + billsReturnCancelP.size());
+        LOG.log(Level.INFO, "billsReturnCancelP.size() = " + billsReturnCancelP.size());
         bills.addAll(billsReturnCancelP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -772,7 +776,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -792,8 +796,8 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
 
-        System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "quickBookFormats.size() = " + quickBookFormats.size());
     }
 
     public void createQBFormatStoreGRNAndPurchaseBills() {
@@ -808,7 +812,7 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.StoreGrnBill, BillType.StoreGrnReturn, BillType.StorePurchase, BillType.StorePurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
+            LOG.log(Level.INFO, "d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.StorePurchase, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.StoreGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -819,12 +823,12 @@ public class QuickBookReportController implements Serializable {
             billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
-        System.out.println("billsBilled.size() = " + billsBilled.size());
+        LOG.log(Level.INFO, "billsBilled.size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        System.out.println("billsBilledP.size() = " + billsBilledP.size());
+        LOG.log(Level.INFO, "billsBilledP.size() = " + billsBilledP.size());
         bills.addAll(billsBilledP);
 
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -858,7 +862,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -878,11 +882,11 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
         bills = new ArrayList<>();
-        System.out.println("billsCanceled.size() = " + billsCanceled.size());
+        LOG.log(Level.INFO, "billsCanceled.size() = " + billsCanceled.size());
         bills.addAll(billsCanceled);
-        System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
+        LOG.log(Level.INFO, "billsCanceledP.size() = " + billsCanceledP.size());
         bills.addAll(billsCanceledP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -914,7 +918,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -935,11 +939,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturn.size() = " + billsReturn.size());
+        LOG.log(Level.INFO, "billsReturn.size() = " + billsReturn.size());
         bills.addAll(billsReturn);
-        System.out.println("billsReturnP.size() = " + billsReturnP.size());
+        LOG.log(Level.INFO, "billsReturnP.size() = " + billsReturnP.size());
         bills.addAll(billsReturnP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -971,7 +975,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -992,11 +996,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
+        LOG.log(Level.INFO, "billsReturnCancel.size() = " + billsReturnCancel.size());
         bills.addAll(billsReturnCancel);
-        System.out.println("billsReturnCancelP.size() = " + billsReturnCancelP.size());
+        LOG.log(Level.INFO, "billsReturnCancelP.size() = " + billsReturnCancelP.size());
         bills.addAll(billsReturnCancelP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -1016,8 +1020,8 @@ public class QuickBookReportController implements Serializable {
 //            qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
-            System.out.println("b.getInsId() = " + b.getInsId());
-            System.out.println("b.getDeptId() = " + b.getDeptId());
+            LOG.log(Level.INFO, "b.getInsId() = " + b.getInsId());
+            LOG.log(Level.INFO, "b.getDeptId() = " + b.getDeptId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getName());
             } else {
@@ -1030,7 +1034,7 @@ public class QuickBookReportController implements Serializable {
             qbf.setCustFld5("");
             grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getDeptId(), b.getDeptId(), b.getDepartment().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -1050,8 +1054,8 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
 
-        System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "quickBookFormats.size() = " + quickBookFormats.size());
 
     }
 
@@ -1067,7 +1071,7 @@ public class QuickBookReportController implements Serializable {
         List<Bill> billsReturnCancelP = new ArrayList<>();
 
         for (Department d : getDepartmentrs(Arrays.asList(new BillType[]{BillType.PharmacyGrnBill, BillType.PharmacyGrnReturn, BillType.PharmacyPurchaseBill, BillType.PurchaseReturn}), getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate))) {
-            System.out.println("d.getName() = " + d.getName());
+            LOG.log(Level.INFO, "d.getName() = " + d.getName());
             billsBilled.addAll(getBills(new BilledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsBilledP.addAll(getBills(new BilledBill(), BillType.PharmacyPurchaseBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
             billsCanceled.addAll(getBills(new CancelledBill(), BillType.PharmacyGrnBill, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
@@ -1078,12 +1082,12 @@ public class QuickBookReportController implements Serializable {
             billsReturnCancelP.addAll(getBills(new CancelledBill(), BillType.PurchaseReturn, d, getInstitution(), CommonFunctions.getStartOfDay(fromDate), CommonFunctions.getEndOfDay(toDate)));
         }
 
-        System.out.println("billsBilled.size() = " + billsBilled.size());
+        LOG.log(Level.INFO, "billsBilled.size() = " + billsBilled.size());
         bills.addAll(billsBilled);
-        System.out.println("billsBilledP.size() = " + billsBilledP.size());
+        LOG.log(Level.INFO, "billsBilledP.size() = " + billsBilledP.size());
         bills.addAll(billsBilledP);
 
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         quickBookFormats = new ArrayList<>();
 
@@ -1105,8 +1109,8 @@ public class QuickBookReportController implements Serializable {
             qbf.setDocNum(b.getInvoiceNumber());
             qbf.setPoNum(b.getDeptId());
             qbf.setQbClass(b.getDepartment().getName());
-            System.out.println("b.getInvoiceDate() = " + b.getInvoiceDate());
-            System.out.println("b.getInsId() = " + b.getInsId());
+            LOG.log(Level.INFO, "b.getInvoiceDate() = " + b.getInvoiceDate());
+            LOG.log(Level.INFO, "b.getInsId() = " + b.getInsId());
             if (b.getPaymentMethod() == PaymentMethod.Cash) {
                 qbf.setMemo(b.getPaymentMethod().toString() + " / " + sdf.format(b.getInvoiceDate()) + " / " + b.getFromInstitution().getChequePrintingName());
             } else {
@@ -1120,7 +1124,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -1140,11 +1144,11 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
         bills = new ArrayList<>();
-        System.out.println("billsCanceled.size() = " + billsCanceled.size());
+        LOG.log(Level.INFO, "billsCanceled.size() = " + billsCanceled.size());
         bills.addAll(billsCanceled);
-        System.out.println("billsCanceledP.size() = " + billsCanceledP.size());
+        LOG.log(Level.INFO, "billsCanceledP.size() = " + billsCanceledP.size());
         bills.addAll(billsCanceledP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -1177,7 +1181,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -1198,11 +1202,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturn.size() = " + billsReturn.size());
+        LOG.log(Level.INFO, "billsReturn.size() = " + billsReturn.size());
         bills.addAll(billsReturn);
-        System.out.println("billsReturnP.size() = " + billsReturnP.size());
+        LOG.log(Level.INFO, "billsReturnP.size() = " + billsReturnP.size());
         bills.addAll(billsReturnP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -1237,7 +1241,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -1258,11 +1262,11 @@ public class QuickBookReportController implements Serializable {
         }
 
         bills = new ArrayList<>();
-        System.out.println("billsReturnCancel.size() = " + billsReturnCancel.size());
+        LOG.log(Level.INFO, "billsReturnCancel.size() = " + billsReturnCancel.size());
         bills.addAll(billsReturnCancel);
-        System.out.println("billsReturnCancelP.size() = " + billsReturnCancelP.size());
+        LOG.log(Level.INFO, "billsReturnCancelP.size() = " + billsReturnCancelP.size());
         bills.addAll(billsReturnCancelP);
-        System.out.println("bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
 
         for (Bill b : bills) {
             grantTot = 0.0;
@@ -1297,7 +1301,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += b.getNetTotal();
 //            grantTot += b.getTotal();
             qbfs.add(qbf);
-            System.out.println("b.getBillExpenses().size() = " + b.getBillExpenses().size());
+            LOG.log(Level.INFO, "b.getBillExpenses().size() = " + b.getBillExpenses().size());
             for (BillItem bi : b.getBillExpenses()) {
                 System.err.println("expensess");
                 qbf = new QuickBookFormat("SPL", "Bill", sdf.format(b.getCreatedAt()), bi.getItem().getPrintName(), "", "", "", (0 - bi.getNetValue()), b.getInvoiceNumber(), b.getDeptId(), bi.getItem().getName(), bi.getDescreption(), "", "", "", "", "");
@@ -1317,8 +1321,8 @@ public class QuickBookReportController implements Serializable {
             quickBookFormats.add(qbf);
         }
 
-        System.out.println("bills.size() = " + bills.size());
-        System.out.println("quickBookFormats.size() = " + quickBookFormats.size());
+        LOG.log(Level.INFO, "bills.size() = " + bills.size());
+        LOG.log(Level.INFO, "quickBookFormats.size() = " + quickBookFormats.size());
     }
 
     public void createQBFormatPharmacyCredit() {
@@ -1385,11 +1389,11 @@ public class QuickBookReportController implements Serializable {
         params.put("bTp", BillType.OpdBill);
         params.put("pms", paymentMethods);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "params = " + params);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("lobjs.size = " + lobjs.size());
+        LOG.log(Level.INFO, "lobjs.size = " + lobjs.size());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         Item itemBefore = null;
@@ -1401,11 +1405,11 @@ public class QuickBookReportController implements Serializable {
             long d = (long) lobj[2];
             double sum = (double) lobj[3];
             BillClassType bclass = (BillClassType) lobj[4];
-//            System.out.println("iName = " + i.getName());
-//            System.out.println("i.getClass() = " + i.getClass());
-//            System.out.println("bclass = " + bclass);
-//            System.out.println("fValue = " + sum);
-//            System.out.println("d = " + d);
+//            LOG.log(Level.INFO, "iName = " + i.getName());
+//            LOG.log(Level.INFO, "i.getClass() = " + i.getClass());
+//            LOG.log(Level.INFO, "bclass = " + bclass);
+//            LOG.log(Level.INFO, "fValue = " + sum);
+//            LOG.log(Level.INFO, "d = " + d);
             if (itemBefore == null) {
 //                System.err.println("if");
                 qbf.setRowType("SPL");
@@ -1482,8 +1486,8 @@ public class QuickBookReportController implements Serializable {
                     }
                     grantTot += sum;
                 } else {
-//                    System.out.println("i.getName() = " + i.getName());
-//                    System.out.println("itemBefore.getName() = " + itemBefore.getName());
+//                    LOG.log(Level.INFO, "i.getName() = " + i.getName());
+//                    LOG.log(Level.INFO, "itemBefore.getName() = " + itemBefore.getName());
                     itemBefore = i;
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -1615,7 +1619,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pms", paymentMethods);
 
         List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("lobjs.size = " + (lobjs != null ? lobjs.size() : 0));
+        LOG.log(Level.INFO, "lobjs.size = " + (lobjs != null ? lobjs.size() : 0));
 
         if (lobjs != null && !lobjs.isEmpty()) {
             Object[] resultRow = lobjs.get(0);
@@ -1677,9 +1681,9 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pms", paymentMethods);
 
         double d = getBillFeeFacade().findDoubleByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-//        System.out.println("d = " + d);
+//        LOG.log(Level.INFO, "d = " + d);
 //        List<Object[]> lobjs = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
-//        System.out.println("lobjs.size = " + lobjs.size());
+//        LOG.log(Level.INFO, "lobjs.size = " + lobjs.size());
 
 //        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
 //        Item itemBefore = null;
@@ -1723,7 +1727,7 @@ public class QuickBookReportController implements Serializable {
 
                 qbf.setAmount(0 - value);
                 if (department != null) {
-                    System.out.println("department.getPrintingName()) " + department.getName());
+                    LOG.log(Level.INFO, "department.getPrintingName()) " + department.getName());
                     qbf.setQbClass(department.getName());
                     qbf.setInvItem(department.getName());
                     qbf.setMemo(department.getName());
@@ -1737,7 +1741,7 @@ public class QuickBookReportController implements Serializable {
                 qbfs.add(qbf);
             }
         }
-        System.out.println("qbfs.size() = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size() = " + qbfs.size());
         return qbfs;
 
     }
@@ -1755,7 +1759,7 @@ public class QuickBookReportController implements Serializable {
             String3Value2 newRow = new String3Value2();
             newRow.setString1(admissionType.getName() + " " + paymentMethod + " : ");
             newRow.setSummery(true);
-            System.out.println("admissionType.getName()  paymentMethod = " + admissionType.getName() + " " + paymentMethod);
+            LOG.log(Level.INFO, "admissionType.getName()  paymentMethod = " + admissionType.getName() + " " + paymentMethod);
 
             if (paymentMethod != PaymentMethod.Credit) {
                 QuickBookFormat qbf = new QuickBookFormat();
@@ -1840,7 +1844,7 @@ public class QuickBookReportController implements Serializable {
         qbfs.addAll(fetchInwardTimedService(fd, td, pe, admissionType, paymentMethod, cc));
         qbfs.addAll(fetchInwardDoctorPayment(fd, td, pe, admissionType, paymentMethod, cc));
         qbfs.addAll(fetchInwardOtherService(fd, td, pe, admissionType, paymentMethod, cc));
-        System.out.println("qbfs.size(All) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(All) = " + qbfs.size());
         return qbfs;
     }
 
@@ -1895,7 +1899,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("td", CommonFunctions.getEndOfDay(td));
         List<Object[]> results = getBillFacade().findAggregates(jpql, temMap, TemporalType.TIMESTAMP);
 
-        System.out.println("results.size() = " + results.size());
+        LOG.log(Level.INFO, "results.size() = " + results.size());
         grantTot = 0.0;
         List<QuickBookFormat> qbfs = new ArrayList<>();
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
@@ -1908,9 +1912,9 @@ public class QuickBookReportController implements Serializable {
             long d = (long) lobj[2];
             double sum = (double) lobj[3];
             BillClassType bclass = (BillClassType) lobj[4];
-            System.out.println("iName = " + i.getName());
-            System.out.println("i.getClass() = " + i.getClass());
-            System.out.println("bclass = " + bclass);
+            LOG.log(Level.INFO, "iName = " + i.getName());
+            LOG.log(Level.INFO, "i.getClass() = " + i.getClass());
+            LOG.log(Level.INFO, "bclass = " + bclass);
             String s = "";
             if (i.getInwardChargeType() == InwardChargeType.VAT) {
                 s = "VAT Control Account:Output";
@@ -1987,8 +1991,8 @@ public class QuickBookReportController implements Serializable {
                     }
                     grantTot += sum;
                 } else {
-                    System.out.println("i.getName() = " + i.getName());
-                    System.out.println("itemBefore.getName() = " + itemBefore.getName());
+                    LOG.log(Level.INFO, "i.getName() = " + i.getName());
+                    LOG.log(Level.INFO, "itemBefore.getName() = " + itemBefore.getName());
                     itemBefore = i;
                     if (qbf.getAmount() != 0.0) {
                         qbfs.add(qbf);
@@ -2028,7 +2032,7 @@ public class QuickBookReportController implements Serializable {
         if (qbf.getAmount() != 0.0) {
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(service) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(service) = " + qbfs.size());
         return qbfs;
 
     }
@@ -2075,7 +2079,7 @@ public class QuickBookReportController implements Serializable {
 
         List<QuickBookFormat> qbfs = new ArrayList<>();
         if (obj != null) {
-            System.out.println("obj.length = " + obj.length);
+            LOG.log(Level.INFO, "obj.length = " + obj.length);
             QuickBookFormat qbf;
             SimpleDateFormat sdf = new SimpleDateFormat("MMM yyyy");
             String name = "";
@@ -2192,7 +2196,7 @@ public class QuickBookReportController implements Serializable {
         } else {
             System.err.println("No Room data");
         }
-        System.out.println("qbfs.size(room) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(room) = " + qbfs.size());
         return qbfs;
 
     }
@@ -2259,8 +2263,8 @@ public class QuickBookReportController implements Serializable {
             String sp = (String) o[0];
             double value = (double) o[1];
             Speciality s = (Speciality) o[2];
-            System.out.println("s.getNmane() = " + s.getName());
-            System.out.println("s.getCreater().getWebUserPerson().getName() = " + s.getCreater().getWebUserPerson().getName());
+            LOG.log(Level.INFO, "s.getNmane() = " + s.getName());
+            LOG.log(Level.INFO, "s.getCreater().getWebUserPerson().getName() = " + s.getCreater().getWebUserPerson().getName());
             QuickBookFormat qbf;
             if (paymentMethod == PaymentMethod.Credit) {
                 if (pe != null) {
@@ -2280,7 +2284,7 @@ public class QuickBookReportController implements Serializable {
 
             }
         }
-        System.out.println("qbfs.size(Docpay) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(Docpay) = " + qbfs.size());
 
         return qbfs;
 
@@ -2367,7 +2371,7 @@ public class QuickBookReportController implements Serializable {
             grantTot += value;
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(Time Service) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(Time Service) = " + qbfs.size());
         return qbfs;
     }
 
@@ -2479,7 +2483,7 @@ public class QuickBookReportController implements Serializable {
         if (qbf.getAmount() != 0.0) {
             qbfs.add(qbf);
         }
-        System.out.println("qbfs.size(Other Service) = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size(Other Service) = " + qbfs.size());
         return qbfs;
     }
 
@@ -2507,7 +2511,7 @@ public class QuickBookReportController implements Serializable {
         temMap.put("pms", paymentMethods);
 
         List<Bill> bills = getBillFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("bills.size = " + bills.size());
+        LOG.log(Level.INFO, "bills.size = " + bills.size());
 
         SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yy");
         SimpleDateFormat sdf2 = new SimpleDateFormat("yyyyMMdd");
@@ -2553,7 +2557,7 @@ public class QuickBookReportController implements Serializable {
             qbfs.add(qbf);
 
         }
-        System.out.println("qbfs.size() = " + qbfs.size());
+        LOG.log(Level.INFO, "qbfs.size() = " + qbfs.size());
         return qbfs;
 
     }
@@ -2742,11 +2746,11 @@ public class QuickBookReportController implements Serializable {
 //        temMap.put("bTp", BillType.InwardBill);
         temMap.put("pm", PaymentMethod.Credit);
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("temMap = " + temMap);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "temMap = " + temMap);
 
         creditCompanies = getInstitutionFacade().findByJpql(jpql, temMap, TemporalType.TIMESTAMP);
-        System.out.println("creditCompanies.size() = " + creditCompanies.size());
+        LOG.log(Level.INFO, "creditCompanies.size() = " + creditCompanies.size());
         return creditCompanies;
     }
 
@@ -2831,7 +2835,7 @@ public class QuickBookReportController implements Serializable {
 
         pes = getPatientEncounterFacade().findByJpql(sql, m, TemporalType.TIMESTAMP);
 
-        System.out.println("pes.size() = " + pes.size());
+        LOG.log(Level.INFO, "pes.size() = " + pes.size());
 
         return pes;
     }

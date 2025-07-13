@@ -110,6 +110,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class PatientController implements Serializable, ControllerWithPatient {
+    private static final Logger LOG = Logger.getLogger(PatientController.class.getName());
+
 
     /**
      *
@@ -1400,7 +1402,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
 //        if (getPatient().getRunningBalance() < getBill().getNetTotal()) {
 //            JsfUtil.addErrorMessage("The Refunded Value is more than the Current Deposit Value of the Patient");
-//            System.out.println("error 4 = ");
+//            LOG.log(Level.INFO, "error 4 = ");
 //            return 4;
 //        }
         if (getBill().getPaymentMethod() == PaymentMethod.Cash) {
@@ -2048,7 +2050,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             admissionController.fillCurrentPatientAllergies(current);//TODO
 
             boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-            System.out.println("One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+            LOG.log(Level.INFO, "One patient found - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
             if (controller.getPatient().getHasAnAccount() != null) {
                 if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                     controller.setPatient(controller.getPatient());
@@ -2088,7 +2090,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.fillCurrentPatientAllergies(current); //TODO
 
         boolean automaticallySetPatientDeposit = configOptionApplicationController.getBooleanValueByKey("Automatically set the PatientDeposit payment Method if a Deposit is Available", false);
-        System.out.println("Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
+        LOG.log(Level.INFO, "Select Patient - controller.getPatient().getHasAnAccount() = " + controller.getPatient().getHasAnAccount());
         if (controller.getPatient().getHasAnAccount() != null) {
             if (controller.getPatient().getHasAnAccount() && automaticallySetPatientDeposit) {
                 controller.setPatient(controller.getPatient());
@@ -3095,7 +3097,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         String j = "select p from Patient p where p.retired=false and p.phn=:phn ";
         m.put("phn", phn.trim());
         List<Patient> searchedPatients = getFacade().findByJpql(j, m);
-        //System.out.println("searched Patients From PHN = " + searchedPatients.size());
+        //LOG.log(Level.INFO, "searched Patients From PHN = " + searchedPatients.size());
         return searchedPatients;
     }
 
@@ -3113,21 +3115,21 @@ public class PatientController implements Serializable, ControllerWithPatient {
             j = "select p from Patient p where p.retired=false and (p.patientPhoneNumber=:pp or p.patientMobileNumber=:pp ) ";
             m.put("pp", patientPhoneNumber);
             searchedPatients = getFacade().findByJpql(j, m);
-            //System.out.println("searched Patients From Phone Number = " + searchedPatients.size());
+            //LOG.log(Level.INFO, "searched Patients From Phone Number = " + searchedPatients.size());
             usePHN = false;
         } else {
             searchedPatients = findPatientUsingPhnNumber(searchPatientPhoneNumber);
             usePHN = true;
         }
 
-        //System.out.println("Use PHN = " + usePHN);
+        //LOG.log(Level.INFO, "Use PHN = " + usePHN);
         if (searchedPatients == null || searchedPatients.isEmpty()) {
             if (usePHN) {
-                //System.out.println("Use PHN");
+                //LOG.log(Level.INFO, "Use PHN");
                 JsfUtil.addErrorMessage("No Matches. Please use Correct PHN");
                 return "";
             } else {
-                //System.out.println("No Use PHN");
+                //LOG.log(Level.INFO, "No Use PHN");
                 JsfUtil.addErrorMessage("No Matches. Please use different criteria");
                 return navigateToAddNewPatientForOpd(searchPatientPhoneNumber);
             }

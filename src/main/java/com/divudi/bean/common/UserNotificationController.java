@@ -40,6 +40,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -49,6 +51,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class UserNotificationController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(UserNotificationController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -440,7 +444,7 @@ public class UserNotificationController implements Serializable {
                     break;
                 case PharmacyTransferIssue:
                     todept = n.getBill().getToDepartment();
-                    System.out.println("todept = " + todept);
+                    LOG.log(Level.INFO, "todept = " + todept);
                     break;
                 case PharmacyTransferRequest:
                     todept = n.getBill().getToDepartment();
@@ -459,7 +463,7 @@ public class UserNotificationController implements Serializable {
         }
 
         List<WebUser> notificationUsers = triggerSubscriptionController.fillSubscribedUsersByDepartment(n.getTriggerType(), todept);
-        System.out.println("notificationUsers = " + notificationUsers.size());
+        LOG.log(Level.INFO, "notificationUsers = " + notificationUsers.size());
         switch (n.getTriggerType().getMedium()) {
             case EMAIL:
                 for (WebUser u : notificationUsers) {

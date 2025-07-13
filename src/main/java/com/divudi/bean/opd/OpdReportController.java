@@ -71,6 +71,8 @@ import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
 
 import org.primefaces.model.StreamedContent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 // </editor-fold>
 
 /**
@@ -79,6 +81,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class OpdReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(OpdReportController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -341,8 +345,8 @@ public class OpdReportController implements Serializable {
 
         jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
 
-        // System.out.println("jpql.toString() = " + jpql.toString());
-        // System.out.println("params = " + params);
+        // LOG.log(Level.INFO, "jpql.toString() = " + jpql.toString());
+        // LOG.log(Level.INFO, "params = " + params);
         // Execute the query
         List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -470,7 +474,7 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeReport() {
-        System.out.println("processOpdIncomeReport");
+        LOG.log(Level.INFO, "processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -528,7 +532,7 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeSummaryByDate() {
-        System.out.println("processOpdIncomeReport");
+        LOG.log(Level.INFO, "processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
