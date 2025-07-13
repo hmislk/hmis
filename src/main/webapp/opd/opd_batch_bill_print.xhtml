@@ -342,22 +342,20 @@
 
                                     </p:column>
                                 </p:dataTable>
-
+                                
                                 <p:dataTable
-                                    value="#{billSearch.fetchPatientInvestigations(opdBillController.batchBill)}"
+                                    rendered="#{billSearch.viewingPatientInvestigations ne null}"
+                                    value="#{billSearch.viewingPatientInvestigations}"
                                     var="pi"
                                     class="mt-2">
                                     <f:facet name="header" >
-                                        <h:outputLabel value="Investigations" style="font-size: 18px; font-weight: 800;" />
+                                        <h:outputLabel value="Investigations " style="font-size: 18px; font-weight: 800;" />
                                     </f:facet>
                                     <p:column headerText="Investigation">
                                         <h:outputText value="#{pi.investigation.name}" />
                                     </p:column>
                                     <p:column headerText="Status">
                                         <h:outputText value="#{pi.status.label}" />
-                                    </p:column>
-                                    <p:column headerText="ID">
-                                        <h:outputText value="#{pi.id}" />
                                     </p:column>
                                     <p:column headerText="Actions" width="130px">
                                         <p:commandButton 
