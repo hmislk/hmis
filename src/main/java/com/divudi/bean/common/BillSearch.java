@@ -79,6 +79,7 @@ import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -5542,6 +5543,29 @@ public class BillSearch implements Serializable {
     public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill){
         return billService.fetchPatientInvestigationsOfBatchBill(batchBill);
     }
+
+    public List<PatientInvestigation> fetchPatientInvestigationsAllowBypassSampleProcess(Bill batchBill) {
+        if (batchBill == null) {
+            return new ArrayList<>();
+        }
+        viewingPatientInvestigations = new ArrayList<>();
+        String jpql = "SELECT pbi "
+                + "FROM PatientInvestigation pbi "
+                + "WHERE pbi.investigation.bypassSampleWorkflow = :bypass"
+                + " and pbi.billItem.bill IN ("
+                + " SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
+                + ") "
+                + "ORDER BY pbi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bb", batchBill);
+        params.put("bypass", true);
+        viewingPatientInvestigations = patientInvestigationFacade.findByJpql(jpql, params);
+        return viewingPatientInvestigations;
+    }
+
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+
     
     public Bill getViewingBill() {
         return viewingBill;
