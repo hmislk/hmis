@@ -918,9 +918,14 @@ public class GrnReturnWithCostingController implements Serializable {
             addDataToReturningBillItem(newBillItemInReturnBill);
             pharmacyCostingService.calculateUnitsPerPack(newBillItemFinanceDetailsInReturnBill);
             pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill, newBillItemFinanceDetailsInReturnBill);
-            newBillItemFinanceDetailsInReturnBill.setLineGrossRate(getReturnRateForUnits(pbiOfBilledBill.getBillItem()).multiply(newBillItemFinanceDetailsInReturnBill.getUnitsPerPack()));
+            BigDecimal lineGrossRateForAUnit = getReturnRateForUnits(pbiOfBilledBill.getBillItem());
+            System.out.println("lineGrossRateForAUnit = " + lineGrossRateForAUnit);
+            BigDecimal unitsPerPack = newBillItemFinanceDetailsInReturnBill.getUnitsPerPack();
+            System.out.println("unitsPerPack = " + unitsPerPack);
+            BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
+            System.out.println("lineGrossRateAsEntered = " + lineGrossRateAsEntered);
+            newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
             calculateLineTotalByLineGrossRate(newBillItemInReturnBill);
-            addDataToReturningBillItem(newBillItemInReturnBill);
             getBillItems().add(newBillItemInReturnBill);
         }
         calculateTotalReturnByLineNetTotals();
