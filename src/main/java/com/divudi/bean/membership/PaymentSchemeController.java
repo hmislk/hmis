@@ -27,6 +27,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -35,6 +37,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.ejb.EJBException;
+import javax.transaction.Transactional;
 
 /**
  *
@@ -46,6 +50,7 @@ import javax.inject.Named;
 public class PaymentSchemeController implements Serializable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(PaymentSchemeController.class.getName());
     @Inject
     SessionController sessionController;
     @EJB
@@ -317,6 +322,7 @@ public class PaymentSchemeController implements Serializable {
         getCurrent();
     }
 
+    @Transactional
     public void duplicateSelected() {
         if (paymentScheme == null) {
             JsfUtil.addErrorMessage("Nothing to Duplicate");
@@ -355,7 +361,7 @@ public class PaymentSchemeController implements Serializable {
 
         for (PriceMatrix pm : matrices) {
             try {
-                PriceMatrix npm = pm.getClass().getConstructor().newInstance();
+                PriceMatrix npm = new PriceMatrix();
                 npm.setBillType(pm.getBillType());
                 npm.setCategory(pm.getCategory());
                 npm.setInstitution(pm.getInstitution());
@@ -377,6 +383,9 @@ public class PaymentSchemeController implements Serializable {
                 npm.setCreater(getSessionController().getLoggedUser());
                 priceMatrixFacade.create(npm);
             } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to duplicate PriceMatrix", e);
+                JsfUtil.addErrorMessage("Failed to duplicate PriceMatrix entries");
+                throw new EJBException(e);
             }
         }
 
@@ -437,13 +446,14 @@ public class PaymentSchemeController implements Serializable {
             jpql.append(" AND i.validForBilledBills = true");
         }
 
-        boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
-                "Department Specific Discount Sehemes for " + sessionController.getDepartment().getName(), false
-        );
-
-        if (departmentSpecific) {
-            jpql.append(" AND i.department = :dep");
-            parameters.put("dep", sessionController.getDepartment());
+        if (sessionController.getDepartment() != null) {
+            boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
+                    "Department Specific Discount Schemes for " + sessionController.getDepartment().getId(), false
+            );
+            if (departmentSpecific) {
+                jpql.append(" AND i.department = :dep");
+                parameters.put("dep", sessionController.getDepartment());
+            }
         }
 
         jpql.append(" ORDER BY i.orderNo, i.name");
