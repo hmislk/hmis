@@ -310,7 +310,7 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
-    
+
     public void sendToOutLabSample() {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -328,7 +328,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         if (sampleTransportedToLabByStaff == null) {
             JsfUtil.addErrorMessage("Samples Transporter is Empty");
             return;
@@ -340,7 +340,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            
+
             if (ps.getDepartment() != sessionController.getDepartment()) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
@@ -404,7 +404,7 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
             billFacade.edit(tb);
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canSentOutLabSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
@@ -429,14 +429,19 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/alternative_report_selector?faces-redirect=true";
     }
 
-    public String navigateToCreatePatientReportBypassSampleProcess() {
+    public String navigateToCreatePatientReportBypassingSampleProcess() {
+        if (current == null || current.getBillItem() == null || current.getBillItem().getBill() == null) {
+            JsfUtil.addErrorMessage("No patient investigation selected");
+            return "";
+        }
+
         Bill selectedBill = current.getBillItem().getBill();
         List<PatientReport> billReport = patientReportController.patientReports(current);
 
         if (billReport == null || billReport.isEmpty()) {
             generateBarcodesForSelectedBill(selectedBill);
             List<PatientSample> investigationSmples = getPatientSamplesByInvestigation(current);
-            recordSampleSendingProdess(selectedBill, current, investigationSmples);
+            recordSampleSendingProcess(selectedBill, current, investigationSmples);
             patientReportController.createNewReport(current);
         } else {
             patientReportController.setCurrentPatientReport(billReport.get(0));
@@ -444,16 +449,26 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
     }
 
-    public void recordSampleSendingProdess(Bill bill, PatientInvestigation patientInvestigation, List<PatientSample> processingSamples) {
+    public void recordSampleSendingProcess(Bill bill, PatientInvestigation patientInvestigation, List<PatientSample> processingSamples) {
+        if (bill == null || patientInvestigation == null || processingSamples == null) {
+            JsfUtil.addErrorMessage("Invalid parameters for recording sample sending process");
+            return;
+        }
+
         List<PatientSample> canProcessSamples = new ArrayList<>();
         for (PatientSample ps : processingSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
-                return;
+                continue;
             }
             if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
                 canProcessSamples.add(ps);
             }
+        }
+
+        if (canProcessSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No valid samples to process");
+            return;
         }
 
         //Update Sample Data
@@ -506,7 +521,7 @@ public class PatientInvestigationController implements Serializable {
         //Update Bill Data
         bill.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
         billFacade.edit(bill);
-        
+
     }
 
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
