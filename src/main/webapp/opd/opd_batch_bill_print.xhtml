@@ -356,14 +356,20 @@
                                     <p:column headerText="Status">
                                         <h:outputText value="#{pi.status.label}" />
                                     </p:column>
-                                    <p:column headerText="Actions">
-                                        <p:commandLink id="btnNewReport" ajax="false"
-                                                       disabled="#{!pi.investigation.bypassSampleWorkflow}"
-                                                       action="/lab/patient_report?faces-redirect=true"
-                                                       actionListener="#{patientReportController.createNewReport(pi)}" >
-                                            <f:setPropertyActionListener value="#{pi}" target="#{patientReportController.currentPtIx}" />
-                                            <p:graphicImage library="image" styleClass="standedicon" name="data_entry.png" />
-                                        </p:commandLink>
+                                    <p:column headerText="ID">
+                                        <h:outputText value="#{pi.id}" />
+                                    </p:column>
+                                    <p:column headerText="Actions" width="130px">
+                                        <p:commandButton 
+                                            ajax="false"
+                                            value="To Report"
+                                            class="ui-button-warning m-1"
+                                            icon="fa fa-file-invoice"
+                                            disabled="#{!pi.investigation.bypassSampleWorkflow}"
+                                            action="#{patientInvestigationController.navigateToCreatePatientReportBypassSampleProcess()}">
+                                            <f:setPropertyActionListener value="#{pi}" target="#{patientInvestigationController.current}"/>
+                                        </p:commandButton>
+                                        
                                     </p:column>
                                 </p:dataTable>
 
