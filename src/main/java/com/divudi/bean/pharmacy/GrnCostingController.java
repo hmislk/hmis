@@ -507,32 +507,32 @@ public class GrnCostingController implements Serializable {
         for (BillItem bi : getBillItems()) {
             System.out.println("Processing BillItem ID: " + (bi != null ? bi.getId() : "null"));
 
-            BillItemFinanceDetails fd = bi.getBillItemFinanceDetails();
+            BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 
-            if (fd == null) {
+            if (bifd == null) {
                 System.out.println("  -> Skipped: FinanceDetails is null");
                 continue;
             }
 
-            double purchaseRate = fd.getLineNetRate().doubleValue();
-            double retailRate = fd.getRetailSaleRate().doubleValue();
-            double wholesaleRate = fd.getWholesaleRate().doubleValue();
-            double costRate = fd.getTotalCostRate().doubleValue();
+            double purchaseRate = bifd.getLineNetRate().doubleValue();
+            double retailRate = bifd.getRetailSaleRate().doubleValue();
+            double wholesaleRate = bifd.getWholesaleRate().doubleValue();
+            double costRate = bifd.getTotalCostRate().doubleValue();
 
-            System.out.println("  fd.getQuantity() = " + fd.getQuantity());
-            System.out.println("  fd.getFreeQuantity() = " + fd.getFreeQuantity());
-            System.out.println("  fd.getTotalQuantity() = " + fd.getTotalQuantity());
+            System.out.println("  fd.getQuantity() = " + bifd.getQuantity());
+            System.out.println("  fd.getFreeQuantity() = " + bifd.getFreeQuantity());
+            System.out.println("  fd.getTotalQuantity() = " + bifd.getTotalQuantity());
             System.out.println("  purchaseRate = " + purchaseRate);
             System.out.println("  retailRate = " + retailRate);
             System.out.println("  wholesaleRate = " + wholesaleRate);
             System.out.println("  costRate = " + costRate);
 
-            billTotalAtCostRate += fd.getTotalCost().doubleValue();
-            System.out.println("  Added to billTotalAtCostRate: " + fd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
+            billTotalAtCostRate += bifd.getTotalCost().doubleValue();
+            System.out.println("  Added to billTotalAtCostRate: " + bifd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
 
-            double freeQty = fd.getFreeQuantityByUnits().doubleValue();
-            double paidQty = fd.getQuantityByUnits().doubleValue();
+            double freeQty = bifd.getFreeQuantityByUnits().doubleValue();
+            double paidQty = bifd.getQuantityByUnits().doubleValue();
 
             System.out.println("  freeQty = " + freeQty);
             System.out.println("  paidQty = " + paidQty);
@@ -570,6 +570,22 @@ public class GrnCostingController implements Serializable {
             tmp = paidQty * costRate;
             costNonFree += tmp;
             System.out.println("  costNonFree += " + tmp + " -> " + costNonFree);
+
+            BigDecimal grossTotal = bifd.getGrossTotal();
+            if (grossTotal != null) {
+                bifd.setGrossRate(grossTotal.abs().negate());
+            } else {
+                bifd.setGrossRate(BigDecimal.ZERO);
+            }
+
+            BigDecimal netTotal = bifd.getNetTotal();
+            if (netTotal != null) {
+                bifd.setNetRate(netTotal.abs().negate());
+            } else {
+                bifd.setNetRate(BigDecimal.ZERO);
+            }
+            
+            
         }
 
         System.out.println("========= Final Aggregated Totals =========");
