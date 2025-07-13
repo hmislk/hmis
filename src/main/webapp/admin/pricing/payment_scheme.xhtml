@@ -24,7 +24,7 @@
                             id="btnAdd"
                             value="Add"
                             icon="pi pi-plus"  
-                            class="ui-button-warning "
+                            class="ui-button-success "
                             action="#{paymentSchemeController.prepareAdd()}" 
                             process="btnAdd"
                             update="gpDetail"/>                                      
@@ -33,20 +33,24 @@
                             ajax="false" 
                             id="btnDelete" 
                             icon="pi pi-trash" 
-                            class="ui-button-danger "
+                            class="ui-button-danger"
                             onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                        return false;" action="#{paymentSchemeController.delete()}"  
-                            value="Delete"  >
+                return false;"  
+                            action="#{paymentSchemeController.delete()}"  
+                            value="Delete" >
                         </p:commandButton>
 
                         <p:commandButton
                             id="btnDuplicate"
                             value="Duplicate"
-                            class="mx-2 ui-button-secondary"
+                            class="mx-2 ui-button-warning"
                             action="#{paymentSchemeController.duplicateSelected()}"
                             icon="pi pi-copy"
-                            ajax="false">
+                            ajax="false"
+                            onclick="if (!confirm('Are you sure you want to duplicate this record?'))
+                return false;">
                         </p:commandButton>
+
 
                         <p:commandButton 
                             ajax="false" 
