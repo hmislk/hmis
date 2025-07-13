@@ -40,7 +40,7 @@
                                 id="acIx" 
                                 forceSelection="true" 
                                 value="#{itemFeeManager.item}"
-                                completeMethod="#{itemController.completeInwardItems}" 
+                                completeMethod="#{itemController.completeAllServicesAndInvestigations}" 
                                 var="ix" 
                                 itemLabel="#{ix.name}" 
                                 itemValue="#{ix}" 
@@ -67,7 +67,7 @@
                                 <p:commandButton 
                                     id="btnFillExistingFee"
                                     value="Fill Existing Fees" 
-                                    action="#{itemFeeManager.updateItemAndDepartmentFees()}"
+                                    action="#{itemFeeManager.fillForDepartmentFeesForSelectedItem()}"
                                     process="btnFillExistingFee acIx acDept" 
                                     update="gpFees"
                                     class="m-2 ui-button-info" 
@@ -91,7 +91,7 @@
                                 <p:outputLabel value="Adding a new Fee" class="mr-5"></p:outputLabel>
                                 <p:commandButton
                                     value="Save"
-                                    action="#{itemFeeManager.addNewDepartmentFee()}"
+                                    action="#{itemFeeManager.addNewForDepartmentFee()}"
                                     style="margin-left: 30px;"
                                     update="gpFees dlg msg tblFees localFee foreignerFee "
                                     process="gpDetail @this"
