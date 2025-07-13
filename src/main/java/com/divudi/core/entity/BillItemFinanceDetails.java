@@ -128,6 +128,12 @@ public class BillItemFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal valueAtPurchaseRate = BigDecimal.ZERO;
 
+    @Column(precision = 18, scale = 4)
+    private BigDecimal valueAtCostRate = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal valueAtWholesaleRate = BigDecimal.ZERO;
+
     // Absolute tax values
     @Column(precision = 18, scale = 4)
     private BigDecimal billTax = BigDecimal.ZERO;
@@ -906,7 +912,23 @@ public class BillItemFinanceDetails implements Serializable {
     public void setValueAtPurchaseRate(BigDecimal valueAtPurchaseRate) {
         this.valueAtPurchaseRate = valueAtPurchaseRate;
     }
-    
-    
 
+    public BigDecimal getValueAtCostRate() {
+        return valueAtCostRate;
+    }
+
+    public void setValueAtCostRate(BigDecimal valueAtCostRate) {
+        this.valueAtCostRate = valueAtCostRate;
+    }
+
+    public BigDecimal getValueAtWholesaleRate() {
+        return valueAtWholesaleRate;
+    }
+
+    public void setValueAtWholesaleRate(BigDecimal valueAtWholesaleRate) {
+        this.valueAtWholesaleRate = valueAtWholesaleRate;
+    }
+
+    
+    
 }
