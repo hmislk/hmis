@@ -429,6 +429,86 @@ public class PatientInvestigationController implements Serializable {
         return "/lab/alternative_report_selector?faces-redirect=true";
     }
 
+    public String navigateToCreatePatientReportBypassSampleProcess() {
+        Bill selectedBill = current.getBillItem().getBill();
+        List<PatientReport> billReport = patientReportController.patientReports(current);
+
+        if (billReport == null || billReport.isEmpty()) {
+            generateBarcodesForSelectedBill(selectedBill);
+            List<PatientSample> investigationSmples = getPatientSamplesByInvestigation(current);
+            recordSampleSendingProdess(selectedBill, current, investigationSmples);
+            patientReportController.createNewReport(current);
+        } else {
+            patientReportController.setCurrentPatientReport(billReport.get(0));
+        }
+        return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
+    }
+
+    public void recordSampleSendingProdess(Bill bill, PatientInvestigation patientInvestigation, List<PatientSample> processingSamples) {
+        List<PatientSample> canProcessSamples = new ArrayList<>();
+        for (PatientSample ps : processingSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                canProcessSamples.add(ps);
+            }
+        }
+
+        //Update Sample Data
+        for (PatientSample ps : canProcessSamples) {
+
+            ps.setSampleCollected(true);
+            ps.setSampleCollectedAt(new Date());
+            ps.setSampleCollectedDepartment(sessionController.getDepartment());
+            ps.setSampleCollectedInstitution(sessionController.getInstitution());
+            ps.setSampleCollecter(sessionController.getLoggedUser());
+
+            ps.setSampleSent(true);
+            ps.setSampleSentBy(sessionController.getLoggedUser());
+            ps.setSampleSentAt(new Date());
+            ps.setSampleSentToInstitution(sessionController.getInstitution());
+            ps.setSampleSentToDepartment(sessionController.getDepartment());
+            ps.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
+
+            ps.setSampleReceivedAtLab(true);
+            ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
+            ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
+            ps.setSampleReceivedAtLabInstitution(sessionController.getInstitution());
+            ps.setSampleReceivedAtLabAt(new Date());
+
+            ps.setDepartment(sessionController.getDepartment());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+            patientSampleFacade.edit(ps);
+        }
+
+        //Update PatientInvestigation Data
+        patientInvestigation.setSampleCollected(true);
+        patientInvestigation.setSampleCollectedAt(new Date());
+        patientInvestigation.setSampleCollectedBy(sessionController.getLoggedUser());
+
+        patientInvestigation.setSampleSent(true);
+        patientInvestigation.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
+        patientInvestigation.setSampleSentAt(new Date());
+        patientInvestigation.setSampleSentBy(sessionController.getLoggedUser());
+
+        patientInvestigation.setSampleAccepted(true);
+        patientInvestigation.setSampleAcceptedAt(new Date());
+        patientInvestigation.setSampleAcceptedBy(sessionController.getLoggedUser());
+        patientInvestigation.setReceived(true);
+        patientInvestigation.setReceivedAt(new Date());
+        patientInvestigation.setReceiveDepartment(sessionController.getDepartment());
+        patientInvestigation.setReceiveInstitution(sessionController.getInstitution());
+        patientInvestigation.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        ejbFacade.edit(patientInvestigation);
+
+        //Update Bill Data
+        bill.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        billFacade.edit(bill);
+        
+    }
+
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
 
         String jpql;

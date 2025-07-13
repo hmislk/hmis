@@ -620,7 +620,7 @@
                     <p:dialog header="Sent Sample" widgetVar="dlg2" width="600" showEffect="fade" modal="true" closeOnEscape="true">
                         <div>
                             <div class="d-flex gap-3 my-2">
-                                <h:outputLabel class="w-50 mt-2" value="Transporter"/>
+                                <h:outputLabel class="w-50 mt-2" value="Sample Transporter"/>
                                 <p:autoComplete 
                                     completeMethod="#{staffController.completeStaff}"
                                     value="#{laboratoryManagementController.sampleTransportedToLabByStaff}" 
@@ -638,7 +638,7 @@
                             </div>
 
                             <div class="d-flex gap-3 my-2">
-                                <h:outputLabel class="w-50 mt-2" value="Sending Department"/>
+                                <h:outputLabel class="w-50 mt-2" value="Sending to Department"/>
                                 <p:selectOneMenu
                                     filter="true"
                                     value="#{laboratoryManagementController.sampleSendingDepartment}"
