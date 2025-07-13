@@ -96,6 +96,14 @@
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForBilledBills}" />
                                                 <h:outputLabel value="Valid for Channeling" />
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForChanneling}" />
+                                                <h:outputLabel value="Department" />
+                                                <p:autoComplete value="#{paymentSchemeController.current.department}"
+                                                               completeMethod="#{departmentController.completeDept}"
+                                                               var="d"
+                                                               itemLabel="#{d.name}"
+                                                               itemValue="#{d}"
+                                                               forceSelection="true"
+                                                               class="w-100" />
                                             </p:panelGrid>
                                         </p:tab>
 
