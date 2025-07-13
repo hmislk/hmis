@@ -43,6 +43,8 @@ import javax.faces.convert.Converter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -52,6 +54,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class ReportTemplateController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ReportTemplateController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -261,9 +265,9 @@ public class ReportTemplateController implements Serializable {
             Institution paramSite,
             Boolean excludeCredit,
             Boolean creditOnly) {
-        System.out.println("generateBillReport = ");
-        System.out.println("creditOnly = " + creditOnly);
-        System.out.println("excludeCredit = " + excludeCredit);
+        LOG.log(Level.INFO, "generateBillReport = ");
+        LOG.log(Level.INFO, "creditOnly = " + creditOnly);
+        LOG.log(Level.INFO, "excludeCredit = " + excludeCredit);
 
         ReportTemplateRowBundle pb = new ReportTemplateRowBundle();
 
@@ -319,8 +323,8 @@ public class ReportTemplateController implements Serializable {
 
         jpql += " group by bill";
 
-        System.out.println("jpql = " + jpql);
-        System.out.println("parameters = " + parameters);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "parameters = " + parameters);
 
         // Assuming you have an EJB or similar service to run the query
         List<ReportTemplateRow> results = (List<ReportTemplateRow>) ejbFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);

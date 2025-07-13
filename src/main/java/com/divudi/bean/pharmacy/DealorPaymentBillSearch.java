@@ -48,6 +48,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -56,6 +58,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class DealorPaymentBillSearch implements Serializable {
+    private static final Logger LOG = Logger.getLogger(DealorPaymentBillSearch.class.getName());
+
 
     private boolean printPreview = false;
     @EJB
@@ -188,10 +192,10 @@ public class DealorPaymentBillSearch implements Serializable {
 //        List<Bill> userBills;
 //        if (getUser() == null) {
 //            userBills = new ArrayList<>();
-//            //////// // System.out.println("user is null");
+//            //////// // LOG.log(Level.INFO, "user is null");
 //        } else {
 //            userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-//            //////// // System.out.println("user ok");
+//            //////// // LOG.log(Level.INFO, "user ok");
 //        }
 //        if (userBills == null) {
 //            userBills = new ArrayList<>();
@@ -357,7 +361,7 @@ public class DealorPaymentBillSearch implements Serializable {
 
         rb.setBillType(BillType.GrnPayment);
         rb.setBillTypeAtomic(BillTypeAtomic.SUPPLIER_PAYMENT_RETURNED);
-        System.out.println("BillTypeAtomic set to: " + rb.getBillTypeAtomic());
+        LOG.log(Level.INFO, "BillTypeAtomic set to: " + rb.getBillTypeAtomic());
 
         rb.setBillDate(new Date());
         rb.setBillTime(new Date());
@@ -463,7 +467,7 @@ public class DealorPaymentBillSearch implements Serializable {
             bill.setCancelled(true);
             bill.setCancelledBill(cb);
             JsfUtil.addSuccessMessage("Successfully Cancelled");
-            System.out.println("JsfUtil.addSuccessMessage(Successfully Cancelled);");
+            LOG.log(Level.INFO, "JsfUtil.addSuccessMessage(Successfully Cancelled);");
             getBilledBillFacade().edit(bill);
 
             WebUser wb = getCashTransactionBean().saveBillCashInTransaction(cb, getSessionController().getLoggedUser());
@@ -509,7 +513,7 @@ public class DealorPaymentBillSearch implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -654,13 +658,13 @@ public class DealorPaymentBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////// // System.out.println("getting user bills");
+        //////// // LOG.log(Level.INFO, "getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<>();
-            //////// // System.out.println("user is null");
+            //////// // LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
+            //////// // LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<>();

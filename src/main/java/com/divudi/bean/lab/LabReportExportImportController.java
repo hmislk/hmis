@@ -54,6 +54,8 @@ import org.primefaces.model.StreamedContent;
 @Named
 @SessionScoped
 public class LabReportExportImportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(LabReportExportImportController.class.getName());
+
 
 // <editor-fold defaultstate="collapsed" desc="Ejbs">
     @EJB
@@ -158,6 +160,8 @@ public class LabReportExportImportController implements Serializable {
     public void importFormat() {
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Pleace select Investigations ");
+import java.util.logging.Level;
+import java.util.logging.Logger;
             return;
         }
 
@@ -166,21 +170,21 @@ public class LabReportExportImportController implements Serializable {
             return;
         }
 
-        System.out.println("File = " + getFile().getFileName());
-        System.out.println("Type = " + getFile().getContentType());
+        LOG.log(Level.INFO, "File = " + getFile().getFileName());
+        LOG.log(Level.INFO, "Type = " + getFile().getContentType());
 
         if (file != null) {
-            System.out.println("file not Null");
+            LOG.log(Level.INFO, "file not Null");
             try (InputStream inputStream = file.getInputStream()) {
-                System.out.println("try");
+                LOG.log(Level.INFO, "try");
                 readAndUploadReportItemFromExcel(inputStream);
             } catch (IOException e) {
-                System.out.println("catch");
+                LOG.log(Level.INFO, "catch");
                 e.printStackTrace();
             }
         }
 
-        System.out.println("Done");
+        LOG.log(Level.INFO, "Done");
         JsfUtil.addSuccessMessage("Successfuly Uploaed !");
     }
 
@@ -200,7 +204,7 @@ public class LabReportExportImportController implements Serializable {
 
     public StreamedContent exportInvestigationItemsToExcel(List<InvestigationItem> investigationItems) throws IOException {
         // Define a predefined directory (e.g., user's desktop)
-        System.out.println("Investigation Items = " + investigationItems.size());
+        LOG.log(Level.INFO, "Investigation Items = " + investigationItems.size());
 //        String userHome = System.getProperty("user.home");
 //        String defaultDirectory = userHome + File.separator + "Desktop"; // Change to any other directory if needed
 //        String fullFilePath = defaultDirectory + File.separator + fileName;
@@ -236,7 +240,7 @@ public class LabReportExportImportController implements Serializable {
         int rowNum = 1;
         for (InvestigationItem item : investigationItems) {
             Row row = sheet.createRow(rowNum++);
-            System.out.println("Item = " + item.getId() + " - " + item);
+            LOG.log(Level.INFO, "Item = " + item.getId() + " - " + item);
             row.createCell(0).setCellValue(defaultIfNullOrEmpty(item.getName(), ""));
             row.createCell(1).setCellValue(defaultIfNullOrEmpty(item.getIxItemType() != null ? item.getIxItemType().toString() : null, ""));
             row.createCell(2).setCellValue(defaultIfNullOrEmpty(item.getIxItemValueType() != null ? item.getIxItemValueType().toString() : null, ""));
@@ -260,7 +264,7 @@ public class LabReportExportImportController implements Serializable {
             row.createCell(20).setCellValue(item.isAutomated());
 
             successItems.add(item);
-            System.out.println("success " + item.getName() + "Added");
+            LOG.log(Level.INFO, "success " + item.getName() + "Added");
         }
 
         // Resize columns to fit content
@@ -646,43 +650,43 @@ public class LabReportExportImportController implements Serializable {
                 cssColor = cssColorCell.getStringCellValue();
             }
 
-//            System.out.println("-------------------------");
-//            System.out.println("row : " + row.getRowNum());
-//            System.out.println("name: " + name);
-//            System.out.println("ixItemType: " + ixItemType);
-//            System.out.println("ixItemValueType: " + ixItemValueType);
-//            System.out.println("htmlText: " + htmlText);
+//            LOG.log(Level.INFO, "-------------------------");
+//            LOG.log(Level.INFO, "row : " + row.getRowNum());
+//            LOG.log(Level.INFO, "name: " + name);
+//            LOG.log(Level.INFO, "ixItemType: " + ixItemType);
+//            LOG.log(Level.INFO, "ixItemValueType: " + ixItemValueType);
+//            LOG.log(Level.INFO, "htmlText: " + htmlText);
 //
-//            System.out.println("riLeft: " + riLeft);
-//            System.out.println("riTop: " + riTop);
-//            System.out.println("riWidth: " + riWidth);
-//            System.out.println("riHeight: " + riHeight);
-//            System.out.println("htPix: " + htPix);
-//            System.out.println("wtPix: " + wtPix);
+//            LOG.log(Level.INFO, "riLeft: " + riLeft);
+//            LOG.log(Level.INFO, "riTop: " + riTop);
+//            LOG.log(Level.INFO, "riWidth: " + riWidth);
+//            LOG.log(Level.INFO, "riHeight: " + riHeight);
+//            LOG.log(Level.INFO, "htPix: " + htPix);
+//            LOG.log(Level.INFO, "wtPix: " + wtPix);
 //
-//            System.out.println("cssTextAlign: " + cssTextAlign);
-//            System.out.println("cssVerticalAlign: " + cssVerticalAlign);
-//            System.out.println("cssFontFamily: " + cssFontFamily);
+//            LOG.log(Level.INFO, "cssTextAlign: " + cssTextAlign);
+//            LOG.log(Level.INFO, "cssVerticalAlign: " + cssVerticalAlign);
+//            LOG.log(Level.INFO, "cssFontFamily: " + cssFontFamily);
 //
-//            System.out.println("riFontSize: " + riFontSize);
+//            LOG.log(Level.INFO, "riFontSize: " + riFontSize);
 //
-//            System.out.println("cssFontStyle: " + cssFontStyle);
-//            System.out.println("cssFontWeight: " + cssFontWeight);
-//            System.out.println("cssTextDecoration: " + cssTextDecoration);
-//            System.out.println("customCss: " + customCss);
-//            System.out.println("cssBackColor: " + cssBackColor);
-//            System.out.println("cssColor: " + cssColor);
+//            LOG.log(Level.INFO, "cssFontStyle: " + cssFontStyle);
+//            LOG.log(Level.INFO, "cssFontWeight: " + cssFontWeight);
+//            LOG.log(Level.INFO, "cssTextDecoration: " + cssTextDecoration);
+//            LOG.log(Level.INFO, "customCss: " + customCss);
+//            LOG.log(Level.INFO, "cssBackColor: " + cssBackColor);
+//            LOG.log(Level.INFO, "cssColor: " + cssColor);
 //
-//            System.out.println("***************************");
-//            System.out.println("investigationItemType: " + investigationItemType);
-//            System.out.println("investigationItemValueType: " + investigationItemValueType);
-//            System.out.println("verticalAlign: " + verticalAlign);
-//            System.out.println("textDecoration: " + textDecoration);
-//            System.out.println("fontStyle: " + fontStyle);
-//            System.out.println("textAlign: " + textAlign);
-//            System.out.println("***************************");
+//            LOG.log(Level.INFO, "***************************");
+//            LOG.log(Level.INFO, "investigationItemType: " + investigationItemType);
+//            LOG.log(Level.INFO, "investigationItemValueType: " + investigationItemValueType);
+//            LOG.log(Level.INFO, "verticalAlign: " + verticalAlign);
+//            LOG.log(Level.INFO, "textDecoration: " + textDecoration);
+//            LOG.log(Level.INFO, "fontStyle: " + fontStyle);
+//            LOG.log(Level.INFO, "textAlign: " + textAlign);
+//            LOG.log(Level.INFO, "***************************");
 //
-//            System.out.println("-------------------------");
+//            LOG.log(Level.INFO, "-------------------------");
             //Create New InvestigationItem for Current Investigation
             InvestigationItem newItem = new InvestigationItem();
             newItem.setName(name);
@@ -711,7 +715,7 @@ public class LabReportExportImportController implements Serializable {
             newItem.setCreater(sessionController.getLoggedUser());
 
             reportItemFacade.edit(newItem);
-            System.out.println("Added ---> " + newItem.getName());
+            LOG.log(Level.INFO, "Added ---> " + newItem.getName());
             uploadedSuccessItems.add(newItem);
 
         }

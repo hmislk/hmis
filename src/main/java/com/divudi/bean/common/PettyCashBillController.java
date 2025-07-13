@@ -39,6 +39,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -47,6 +49,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class PettyCashBillController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PettyCashBillController.class.getName());
+
 
     @Inject
     BillController billController;
@@ -181,7 +185,7 @@ public class PettyCashBillController implements Serializable {
         Calendar c = Calendar.getInstance();
         c.set(year.get(Calendar.YEAR), 3, 1, 0, 0, 0);
         Date fd = c.getTime();
-        //// // System.out.println("d = " + fd);
+        //// // LOG.log(Level.INFO, "d = " + fd);
         DecimalFormat df = new DecimalFormat("00000");
         String s = df.format(getCurrent().getIntInvoiceNumber());
         String inv = createInvoiceNumberSuffix() + s;
@@ -340,7 +344,7 @@ public class PettyCashBillController implements Serializable {
         }
 
         if (maximumRefundedAmount > 0.0) {
-            System.out.println("current = " + current);
+            LOG.log(Level.INFO, "current = " + current);
             if (getCurrent() != null && getCurrent().getId() != null && getCurrent().getId() != 0) {
                 currentReturnBill = createPettyCashReturnBill();
                 paymentService.createPayment(currentReturnBill, paymentMethodData);

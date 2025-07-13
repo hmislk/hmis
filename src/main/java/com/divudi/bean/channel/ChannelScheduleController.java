@@ -67,6 +67,8 @@ import javax.persistence.TemporalType;
 import static org.apache.commons.lang3.StringUtils.isNumeric;
 import org.primefaces.model.DefaultScheduleModel;
 import org.primefaces.model.ScheduleModel;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -75,6 +77,8 @@ import org.primefaces.model.ScheduleModel;
 @Named
 @SessionScoped
 public class ChannelScheduleController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ChannelScheduleController.class.getName());
+
 //SheduleController
 
     @EJB
@@ -661,7 +665,7 @@ public class ChannelScheduleController implements Serializable {
         } else {
             sql = "select p from Staff p where p.retired=false order by p.person.name";
         }
-        ////System.out.println(sql);
+        ////LOG.log(Level.INFO, sql);
         suggestions = getStaffFacade().findByJpql(sql);
 
         return suggestions;
@@ -835,7 +839,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void fillRetiredServiceSessions() {
-        System.out.println("fillRetiredServiceSessions");
+        LOG.log(Level.INFO, "fillRetiredServiceSessions");
         String sql;
         HashMap hm = new HashMap();
         sql = "Select s From ServiceSession s "
@@ -848,11 +852,11 @@ public class ChannelScheduleController implements Serializable {
         hm.put("stf", currentStaff);
         hm.put("class", ServiceSession.class);
         retiredItems = getFacade().findByJpql(sql, hm);
-        System.out.println("retiredItems = " + retiredItems);
+        LOG.log(Level.INFO, "retiredItems = " + retiredItems);
     }
 
     public void unretireCurrentServiceSession() {
-        System.out.println("unretireCurrentServiceSession");
+        LOG.log(Level.INFO, "unretireCurrentServiceSession");
         if (current == null) {
             JsfUtil.addErrorMessage("No Current Service Session");
             return;
@@ -1078,7 +1082,7 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void saveSelected() {
-        //System.out.println("session name"+current.getName());
+        //LOG.log(Level.INFO, "session name"+current.getName());
         if (checkError()) {
             return;
 
@@ -1127,7 +1131,7 @@ public class ChannelScheduleController implements Serializable {
             channelScheduleController.channelSheduleForAllDoctor(getCurrent().getStaff());
             JsfUtil.addSuccessMessage("Updated Successfully.");
         } else {
-            System.out.println("start persisting");
+            LOG.log(Level.INFO, "start persisting");
             getCurrent().setCreatedAt(new Date());
             getCurrent().setCreater(getSessionController().getLoggedUser());
             if (current.getEndingTime().equals(current.getStartingTime()) || current.getEndingTime().before(current.getStartingTime())) {
@@ -1246,24 +1250,24 @@ public class ChannelScheduleController implements Serializable {
     }
 
     public void fillStaff() {
-        ////// // System.out.println("fill staff");
+        ////// // LOG.log(Level.INFO, "fill staff");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getSpeciality());
         jpql = "select d from Staff d where d.retired=false and d.speciality=:ins order by d.person.name";
-        ////// // System.out.println("m = " + m);
-        ////// // System.out.println("jpql = " + jpql);
+        ////// // LOG.log(Level.INFO, "m = " + m);
+        ////// // LOG.log(Level.INFO, "jpql = " + jpql);
         staffs = staffFacade.findByJpql(jpql, m);
     }
 
     public void fillDepartments() {
-        ////// // System.out.println("fill dept");
+        ////// // LOG.log(Level.INFO, "fill dept");
         String jpql;
         Map m = new HashMap();
         m.put("ins", getItemFee().getInstitution());
         jpql = "select d from Department d where d.retired=false and d.institution=:ins order by d.name";
-        ////// // System.out.println("m = " + m);
-        ////// // System.out.println("jpql = " + jpql);
+        ////// // LOG.log(Level.INFO, "m = " + m);
+        ////// // LOG.log(Level.INFO, "jpql = " + jpql);
         departments = departmentFacade.findByJpql(jpql, m);
     }
 

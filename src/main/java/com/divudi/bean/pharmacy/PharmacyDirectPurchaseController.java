@@ -57,6 +57,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.SelectEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -65,6 +67,8 @@ import org.primefaces.event.SelectEvent;
 @Named
 @SessionScoped
 public class PharmacyDirectPurchaseController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacyDirectPurchaseController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     // </editor-fold>  
@@ -101,10 +105,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addItem() {
-        System.out.println("addItem");
+        LOG.log(Level.INFO, "addItem");
 
         Item item = getCurrentBillItem().getItem();
-        System.out.println("item = " + item);
+        LOG.log(Level.INFO, "item = " + item);
         BillItemFinanceDetails f = getCurrentBillItem().getBillItemFinanceDetails();
         PharmaceuticalBillItem pbi = getCurrentBillItem().getPharmaceuticalBillItem();
 
@@ -113,18 +117,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        System.out.println("1");
+        LOG.log(Level.INFO, "1");
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
         }
-        System.out.println("2");
+        LOG.log(Level.INFO, "2");
 
         if (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
             JsfUtil.addErrorMessage("Please enter quantity");
             return;
         }
-        System.out.println("3");
+        LOG.log(Level.INFO, "3");
 
         if (f.getLineGrossRate() == null || f.getLineGrossRate().compareTo(BigDecimal.ZERO) <= 0) {
             JsfUtil.addErrorMessage("Please enter the purchase rate");
@@ -147,18 +151,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        System.out.println("4");
+        LOG.log(Level.INFO, "4");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
-        System.out.println("5");
+        LOG.log(Level.INFO, "5");
         BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
         BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
 
         if (item instanceof Ampp) {
-            System.out.println("ampp");
+            LOG.log(Level.INFO, "ampp");
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
                     .orElse(BigDecimal.ONE);
             BigDecimal qtyUnits = f.getQuantity().multiply(unitsPerPack);
@@ -178,7 +182,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
 
         } else {
-            System.out.println("not ampp");
+            LOG.log(Level.INFO, "not ampp");
             // AMP: no packs; assign both units and packs as same
             pbi.setQty(f.getQuantityByUnits().doubleValue());
             pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
@@ -197,10 +201,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
 
         }
-        System.out.println("8");
+        LOG.log(Level.INFO, "8");
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
-        System.out.println("9 = " + 9);
+        LOG.log(Level.INFO, "9 = " + 9);
 
         currentBillItem = null;
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
@@ -645,15 +649,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
 
-            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
-            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+            LOG.log(Level.INFO, "Purchase Rate: " + pbi.getPurchaseRate());
+            LOG.log(Level.INFO, "Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
 
-            System.out.println("Retail Rate: " + pbi.getRetailRate());
-            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
-            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+            LOG.log(Level.INFO, "Retail Rate: " + pbi.getRetailRate());
+            LOG.log(Level.INFO, "Retail Rate (Pack): " + pbi.getRetailRatePack());
+            LOG.log(Level.INFO, "Retail Rate in Unit: " + pbi.getRetailRateInUnit());
 
-            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
-            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
+            LOG.log(Level.INFO, "Purchase Value: " + pbi.getPurchaseValue());
+            LOG.log(Level.INFO, "Retail Pack Value: " + pbi.getRetailPackValue());
 
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());

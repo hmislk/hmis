@@ -43,6 +43,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -51,6 +53,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class ChannelSearchController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ChannelSearchController.class.getName());
+
 
     /**
      * EJBs
@@ -130,10 +134,10 @@ public class ChannelSearchController implements Serializable {
     }
 
     public void searchForBillSessions() {
-        //System.out.println("getFromDate() = " + getFromDate());
-        //System.out.println("getToDate() = " + getToDate());
-        //// // System.out.println("txtSearch = " + txtSearch);
-        //// // System.out.println("txtSearchRef = " + txtSearchRef);
+        //LOG.log(Level.INFO, "getFromDate() = " + getFromDate());
+        //LOG.log(Level.INFO, "getToDate() = " + getToDate());
+        //// // LOG.log(Level.INFO, "txtSearch = " + txtSearch);
+        //// // LOG.log(Level.INFO, "txtSearchRef = " + txtSearchRef);
         if (getFromDate() == null && getToDate() == null
                 && (txtSearch == null || txtSearch.trim().isEmpty())
                 && (txtSearchRef == null || txtSearchRef.trim().isEmpty())
@@ -286,7 +290,7 @@ public class ChannelSearchController implements Serializable {
         p.setBill(bill);
         double valueToSet = Math.abs(bill.getNetTotal());
         p.setPaidValue(valueToSet);
-        System.out.println("value To Set " + valueToSet);
+        LOG.log(Level.INFO, "value To Set " + valueToSet);
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -339,7 +343,7 @@ public class ChannelSearchController implements Serializable {
 //        }
 //        if (!getWebUserController().hasPrivilege("LabBillCancelSpecial")) {
 //
-//            ////// // System.out.println("patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
+//            ////// // LOG.log(Level.INFO, "patientInvestigationController.sampledForAnyItemInTheBill(bill) = " + patientInvestigationController.sampledForAnyItemInTheBill(bill));
 //            if (patientInvestigationController.sampledForAnyItemInTheBill(bill)) {
 //                JsfUtil.addErrorMessage("Sample Already collected can't cancel");
 //                return true;

@@ -23,6 +23,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -31,6 +33,8 @@ import javax.persistence.TemporalType;
 @Named(value = "serviceSessionFunctions")
 @ApplicationScoped
 public class ServiceSessionFunctions {
+    private static final Logger LOG = Logger.getLogger(ServiceSessionFunctions.class.getName());
+
 
     /**
      * Creates a new instance of ServiceSessionFunctions
@@ -47,28 +51,28 @@ public class ServiceSessionFunctions {
     // Add business logic below. (Right-click in editor and choose
     // "Insert Code > Add Business Method")
     public List<BillSession> getBillSessions(Item i, Date d) {
-        //   ////// // System.out.println("getting bill sessions");
+        //   ////// // LOG.log(Level.INFO, "getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   ////// // System.out.println("by cat");
+                //   ////// // LOG.log(Level.INFO, "by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   ////// // System.out.println("by cat 2");
+                    //   ////// // LOG.log(Level.INFO, "by cat 2");
                     billSessions = getBillSessionsByCat(i.getCategory(), d);
                     return billSessions;
                 } else {
-                    //   ////// // System.out.println("by cat 3");
+                    //   ////// // LOG.log(Level.INFO, "by cat 3");
                     billSessions = getBillSessionsByCat(i.getCategory().getParentCategory(), d);
                     return billSessions;
                 }
             case BySubCategory:
-                //   ////// // System.out.println("by sc");
+                //   ////// // LOG.log(Level.INFO, "by sc");
                 billSessions = getBillSessionsByCat(i.getCategory(), d);
                 return billSessions;
             case ByItem:
-                //   ////// // System.out.println("by items 3");
+                //   ////// // LOG.log(Level.INFO, "by items 3");
                 billSessions = getBillSessionsByItem(i, d);
                 return billSessions;
             case ByBill:
@@ -81,29 +85,29 @@ public class ServiceSessionFunctions {
     }
 
     public Long calBillSessions(Item i, Date d) {
-        System.out.println("calBillSessions");
-        //   ////// // System.out.println("getting bill sessions");
+        LOG.log(Level.INFO, "calBillSessions");
+        //   ////// // LOG.log(Level.INFO, "getting bill sessions");
         if (i == null || i.getSessionNumberType() == null) {
             return null;
         }
         switch (i.getSessionNumberType()) {
             case ByCategory:
-                //   ////// // System.out.println("by cat");
+                //   ////// // LOG.log(Level.INFO, "by cat");
                 if (i.getCategory().getParentCategory() == null) {
-                    //   ////// // System.out.println("by cat 2");
+                    //   ////// // LOG.log(Level.INFO, "by cat 2");
                     countLong = calBillSessionsByCat(i.getCategory(), d);
                     return countLong;
                 } else {
-                    //   ////// // System.out.println("by cat 3");
+                    //   ////// // LOG.log(Level.INFO, "by cat 3");
                     countLong = calBillSessionsByCat(i.getCategory().getParentCategory(), d);
                     return countLong;
                 }
             case BySubCategory:
-                //   ////// // System.out.println("by sc");
+                //   ////// // LOG.log(Level.INFO, "by sc");
                 countLong = calBillSessionsByCat(i.getCategory(), d);
                 return countLong;
             case ByItem:
-                //   ////// // System.out.println("by items 3");
+                //   ////// // LOG.log(Level.INFO, "by items 3");
                 countLong = calBillSessionsByItem(i, d);
                 return countLong;
             case ByBill:
@@ -154,7 +158,7 @@ public class ServiceSessionFunctions {
         bi.setSessionDate(sessDate);
         bs.setSessionDate(sessDate);
 //        bs.setSessionDate(CommonFunctions.removeTime(bi.getSessionDate()));
-        // //////// // System.out.println("bill item session switch - pre");
+        // //////// // LOG.log(Level.INFO, "bill item session switch - pre");
         Long count = calBillSessions(i, bi.getSessionDate());
         if (count != null) {
             bs.setSerialNo(count.intValue() + 1);
@@ -231,8 +235,8 @@ public class ServiceSessionFunctions {
     }
 
     public Long calBillSessionsByBill(Item i, Date d) {
-        System.out.println("calBillSessionsByBill" );
-        System.out.println("d = " + d);
+        LOG.log(Level.INFO, "calBillSessionsByBill" );
+        LOG.log(Level.INFO, "d = " + d);
         if (i == null || i.getId() == null) {
             return null;
         }
@@ -244,7 +248,7 @@ public class ServiceSessionFunctions {
         Map m = new HashMap();
         m.put("stp", SessionNumberType.ByBill);
         m.put("sd", d);
-        System.out.println("m = " + m);
+        LOG.log(Level.INFO, "m = " + m);
         countLong = getBillSessionFacade().findLongByJpql(s, m, TemporalType.DATE);
         return countLong;
     }
@@ -262,7 +266,7 @@ public class ServiceSessionFunctions {
 //        try {
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //////// // System.out.println("Error in converting double to int is" + e.getMessage());
+//            //////// // LOG.log(Level.INFO, "Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }
@@ -279,12 +283,12 @@ public class ServiceSessionFunctions {
 //        m.put("catId", c.getId());
 //        m.put("sd", d);
 //        Double sn = getBillSessionFacade().findDoubleByJpql(s, m, TemporalType.DATE);
-//        //////// // System.out.println("id by cat count is " + sn );
+//        //////// // LOG.log(Level.INFO, "id by cat count is " + sn );
 //        try {
-//            //////// // System.out.println("int val of ount is " + sn.intValue());
+//            //////// // LOG.log(Level.INFO, "int val of ount is " + sn.intValue());
 //            return sn.intValue();
 //        } catch (Exception e) {
-//            //////// // System.out.println("Error in converting double to int is" + e.getMessage());
+//            //////// // LOG.log(Level.INFO, "Error in converting double to int is" + e.getMessage());
 //            return 0;
 //        }
 //    }

@@ -56,6 +56,8 @@ import org.apache.commons.beanutils.BeanUtils;
 @Named
 @SessionScoped
 public class InwardTimedItemController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardTimedItemController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -560,7 +562,7 @@ public class InwardTimedItemController implements Serializable {
         }
         double count = getInwardBean().calCount(timedItemFee, getCurrent().getPatientEncounter().getDateOfAdmission(), getCurrent().getToTime());
 
-        System.out.println("getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
+        LOG.log(Level.INFO, "getCurrent().getPatientEncounter().isForiegner() = " + getCurrent().getPatientEncounter().isForiegner());
 
         if (getCurrent().getPatientEncounter().isForiegner()) {
             getCurrent().setServiceValue(count * timedItemFee.getFfee());
@@ -615,16 +617,16 @@ public class InwardTimedItemController implements Serializable {
         TimedItemFee timedItemFee = getInwardBean().getTimedItemFee((TimedItem) temPi.getItem());
         double count = getInwardBean().calCount(timedItemFee, temPi.getFromTime(), temPi.getToTime());
 
-        System.out.println("pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
+        LOG.log(Level.INFO, "pic.getPatientEncounter().isForiegner() = " + pic.getPatientEncounter().isForiegner());
 
         if (pic.getPatientEncounter().isForiegner()) {
-            System.out.println("timedItemFee.getFfee() = " + timedItemFee.getFfee());
+            LOG.log(Level.INFO, "timedItemFee.getFfee() = " + timedItemFee.getFfee());
             pic.setServiceValue(count * timedItemFee.getFfee());
         } else {
-            System.out.println("timedItemFee.getFee() = " + timedItemFee.getFee());
+            LOG.log(Level.INFO, "timedItemFee.getFee() = " + timedItemFee.getFee());
             pic.setServiceValue(count * timedItemFee.getFee());
         }
-        System.out.println("pic.getServiceValue() = " + pic.getServiceValue());
+        LOG.log(Level.INFO, "pic.getServiceValue() = " + pic.getServiceValue());
 
         getPatientItemFacade().edit(pic);
 

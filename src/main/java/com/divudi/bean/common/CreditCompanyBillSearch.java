@@ -43,6 +43,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -51,6 +53,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class CreditCompanyBillSearch implements Serializable {
+    private static final Logger LOG = Logger.getLogger(CreditCompanyBillSearch.class.getName());
+
 
     private boolean printPreview = false;
     @EJB
@@ -125,10 +129,10 @@ public class CreditCompanyBillSearch implements Serializable {
         List<Bill> userBills;
         if (getUser() == null) {
             userBills = new ArrayList<Bill>();
-            //////// // System.out.println("user is null");
+            //////// // LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), getSessionController().getInstitution(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
+            //////// // LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<Bill>();
@@ -445,19 +449,19 @@ public class CreditCompanyBillSearch implements Serializable {
             }
         } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -611,7 +615,7 @@ public class CreditCompanyBillSearch implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -732,13 +736,13 @@ public class CreditCompanyBillSearch implements Serializable {
 
     public List<Bill> getUserBills() {
         List<Bill> userBills;
-        //////// // System.out.println("getting user bills");
+        //////// // LOG.log(Level.INFO, "getting user bills");
         if (getUser() == null) {
             userBills = new ArrayList<Bill>();
-            //////// // System.out.println("user is null");
+            //////// // LOG.log(Level.INFO, "user is null");
         } else {
             userBills = getBillBean().billsFromSearchForUser(txtSearch, getFromDate(), getToDate(), getUser(), BillType.OpdBill);
-            //////// // System.out.println("user ok");
+            //////// // LOG.log(Level.INFO, "user ok");
         }
         if (userBills == null) {
             userBills = new ArrayList<Bill>();
@@ -796,8 +800,8 @@ public class CreditCompanyBillSearch implements Serializable {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
             billItems = getBillItemFacede().findByJpql(sql);
-            //////// // System.out.println("sql for bill item search is " + sql);
-            //////// // System.out.println("results for bill item search is " + billItems);
+            //////// // LOG.log(Level.INFO, "sql for bill item search is " + sql);
+            //////// // LOG.log(Level.INFO, "results for bill item search is " + billItems);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

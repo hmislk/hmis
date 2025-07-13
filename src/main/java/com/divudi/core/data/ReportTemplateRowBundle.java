@@ -20,11 +20,15 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author buddhika
  */
 public class ReportTemplateRowBundle implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ReportTemplateRowBundle.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -845,7 +849,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundles(boolean forHandover) {
-        System.out.println("calculateTotalsByChildBundles");
+        LOG.log(Level.INFO, "calculateTotalsByChildBundles");
         resetTotalsAndFlags();
         boolean selectAll = !forHandover;
 
@@ -858,7 +862,7 @@ public class ReportTemplateRowBundle implements Serializable {
                         childBundle.calculateTotalsByPaymentsAndDenominationsForHandover();
                     }
 
-                    System.out.println("selected childBundle = " + childBundle.getName());
+                    LOG.log(Level.INFO, "selected childBundle = " + childBundle.getName());
                     addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
@@ -881,9 +885,9 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("staffTotal", safeDouble(childBundle.getStaffTotal()));
                     addValueAndUpdateFlag("ccTotal", safeDouble(childBundle.getCcTotal()));
 
-                    System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
+                    LOG.log(Level.INFO, "childBundle.getTotal() = " + childBundle.getTotal());
 
-                    System.out.println("total Before= " + total);
+                    LOG.log(Level.INFO, "total Before= " + total);
 
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
 
@@ -893,7 +897,7 @@ public class ReportTemplateRowBundle implements Serializable {
     }
 
     public void calculateTotalsByChildBundlesForHandover() {
-        System.out.println("calculateTotalsByChildBundlesForHandover");
+        LOG.log(Level.INFO, "calculateTotalsByChildBundlesForHandover");
         resetTotalsAndFlags();
 
         if (this.bundles != null && !this.bundles.isEmpty()) {
@@ -903,17 +907,17 @@ public class ReportTemplateRowBundle implements Serializable {
 
                     childBundle.calculateTotalsOfSelectedRowsPlusAllCashForHandover(patientDepositsAreConsideredInHandingover);
 
-                    System.out.println("selected childBundle = " + childBundle.getName());
-                    System.out.println("childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
-                    System.out.println("childBundle.getCashValue() = " + childBundle.getCashValue());
-                    System.out.println("childBundle.getCashHandoverValue() = " + childBundle.getCashHandoverValue());
+                    LOG.log(Level.INFO, "selected childBundle = " + childBundle.getName());
+                    LOG.log(Level.INFO, "childBundle.getSelectAllCashToHandover() = " + childBundle.getSelectAllCashToHandover());
+                    LOG.log(Level.INFO, "childBundle.getCashValue() = " + childBundle.getCashValue());
+                    LOG.log(Level.INFO, "childBundle.getCashHandoverValue() = " + childBundle.getCashHandoverValue());
                     if (childBundle.getSelectAllCashToHandover()) {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashHandoverValue()));
                     } else {
                         addValueAndUpdateFlag("cash", safeDouble(childBundle.getCashValue()), safeDouble(childBundle.getCashValue()));
                     }
-                    System.out.println("childBundle.getCashValue = " + childBundle.getCashValue());
-                    System.out.println("childBundle.getCashHandoverValue = " + childBundle.getCashHandoverValue());
+                    LOG.log(Level.INFO, "childBundle.getCashValue = " + childBundle.getCashValue());
+                    LOG.log(Level.INFO, "childBundle.getCashHandoverValue = " + childBundle.getCashHandoverValue());
                     addValueAndUpdateFlag("card", safeDouble(childBundle.getCardValue()), safeDouble(childBundle.getCardHandoverValue()));
                     addValueAndUpdateFlag("multiplePaymentMethods", safeDouble(childBundle.getMultiplePaymentMethodsValue()), safeDouble(childBundle.getMultiplePaymentMethodsHandoverValue()));
                     addValueAndUpdateFlag("staff", safeDouble(childBundle.getStaffValue()), safeDouble(childBundle.getStaffHandoverValue()));
@@ -925,7 +929,7 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("cheque", safeDouble(childBundle.getChequeValue()), safeDouble(childBundle.getChequeHandoverValue()));
                     addValueAndUpdateFlag("slip", safeDouble(childBundle.getSlipValue()), safeDouble(childBundle.getSlipHandoverValue()));
                     addValueAndUpdateFlag("eWallet", safeDouble(childBundle.getEwalletValue()), safeDouble(childBundle.getEwalletHandoverValue()));
-                    System.out.println("patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
+                    LOG.log(Level.INFO, "patientDepositsAreConsideredInHandingover = " + patientDepositsAreConsideredInHandingover);
                     if (patientDepositsAreConsideredInHandingover) {
                         addValueAndUpdateFlag("patientDeposit", safeDouble(childBundle.getPatientDepositValue()), safeDouble(childBundle.getPatientDepositHandoverValue()));
                     }
@@ -934,13 +938,13 @@ public class ReportTemplateRowBundle implements Serializable {
                     addValueAndUpdateFlag("grossTotal", safeDouble(childBundle.getGrossTotal()));
                     addValueAndUpdateFlag("discount", safeDouble(childBundle.getDiscount()));
 
-                    System.out.println("childBundle.getTotal() = " + childBundle.getTotal());
-                    System.out.println("total Before= " + total);
+                    LOG.log(Level.INFO, "childBundle.getTotal() = " + childBundle.getTotal());
+                    LOG.log(Level.INFO, "total Before= " + total);
                     addValueAndUpdateFlag("total", safeDouble(childBundle.getTotal()));
-                    System.out.println("total After= " + total);
+                    LOG.log(Level.INFO, "total After= " + total);
 
-                    System.out.println("childBundle.totalOut() = " + childBundle.getTotalOut());
-                    System.out.println("totalOut Before= " + totalOut);
+                    LOG.log(Level.INFO, "childBundle.totalOut() = " + childBundle.getTotalOut());
+                    LOG.log(Level.INFO, "totalOut Before= " + totalOut);
                     addValueAndUpdateFlag("totalOut", safeDouble(childBundle.getTotalOut()));
 
                 }
@@ -1789,20 +1793,20 @@ public class ReportTemplateRowBundle implements Serializable {
     public void createRowValuesFromBill() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                System.out.println("Processing row: " + row);
-                System.out.println("row.getBill() = " + row.getBill());
+                LOG.log(Level.INFO, "Processing row: " + row);
+                LOG.log(Level.INFO, "row.getBill() = " + row.getBill());
 
                 if (row.getBill() == null) {
                     continue;
                 }
 
                 // Debugging bill details
-                System.out.println("row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
-                System.out.println("row.getBill().getDiscount() = " + row.getBill().getDiscount());
-                System.out.println("row.getBill().getNetTotal() = " + row.getBill().getNetTotal());
-                System.out.println("row.getBill().getTotalStaffFee() = " + row.getBill().getTotalStaffFee());
-                System.out.println("row.getBill().getTotalCenterFee() = " + row.getBill().getTotalCenterFee());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
+                LOG.log(Level.INFO, "row.getBill().getGrantTotal() = " + row.getBill().getGrantTotal());
+                LOG.log(Level.INFO, "row.getBill().getDiscount() = " + row.getBill().getDiscount());
+                LOG.log(Level.INFO, "row.getBill().getNetTotal() = " + row.getBill().getNetTotal());
+                LOG.log(Level.INFO, "row.getBill().getTotalStaffFee() = " + row.getBill().getTotalStaffFee());
+                LOG.log(Level.INFO, "row.getBill().getTotalCenterFee() = " + row.getBill().getTotalCenterFee());
+                LOG.log(Level.INFO, "row.getHospitalTotal() = " + row.getHospitalTotal());
 
                 // Setting values
                 row.setGrossTotal(row.getBill().getGrantTotal());
@@ -1814,11 +1818,11 @@ public class ReportTemplateRowBundle implements Serializable {
                 // Debugging after setting
 
                 // Debugging after setting
-                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
-                System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
+                LOG.log(Level.INFO, "row.getGrossTotal() = " + row.getGrossTotal());
+                LOG.log(Level.INFO, "row.getDiscount() = " + row.getDiscount());
+                LOG.log(Level.INFO, "row.getTotal() = " + row.getTotal());
+                LOG.log(Level.INFO, "row.getHospitalTotal() = " + row.getHospitalTotal());
+                LOG.log(Level.INFO, "row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }
@@ -1827,8 +1831,8 @@ public class ReportTemplateRowBundle implements Serializable {
     public void createRowValuesFromBillItems() {
         if (this.reportTemplateRows != null && !this.reportTemplateRows.isEmpty()) {
             for (ReportTemplateRow row : this.reportTemplateRows) {
-                System.out.println("Processing row: " + row);
-                System.out.println("row.getBill() = " + row.getBill());
+                LOG.log(Level.INFO, "Processing row: " + row);
+                LOG.log(Level.INFO, "row.getBill() = " + row.getBill());
 
                 if (row.getBillItem() == null) {
                     continue;
@@ -1844,11 +1848,11 @@ public class ReportTemplateRowBundle implements Serializable {
                 // Debugging after setting
 
                 // Debugging after setting
-                System.out.println("row.getGrossTotal() = " + row.getGrossTotal());
-                System.out.println("row.getDiscount() = " + row.getDiscount());
-                System.out.println("row.getTotal() = " + row.getTotal());
-                System.out.println("row.getHospitalTotal() = " + row.getHospitalTotal());
-                System.out.println("row.getStaffTotal() = " + row.getStaffTotal());
+                LOG.log(Level.INFO, "row.getGrossTotal() = " + row.getGrossTotal());
+                LOG.log(Level.INFO, "row.getDiscount() = " + row.getDiscount());
+                LOG.log(Level.INFO, "row.getTotal() = " + row.getTotal());
+                LOG.log(Level.INFO, "row.getHospitalTotal() = " + row.getHospitalTotal());
+                LOG.log(Level.INFO, "row.getStaffTotal() = " + row.getStaffTotal());
             }
         } else {
         }

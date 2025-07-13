@@ -33,6 +33,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -41,6 +43,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class WebUserRoleUserController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(WebUserRoleUserController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -61,7 +65,7 @@ public class WebUserRoleUserController implements Serializable {
     private List<Department> departments;
 
     public void addUsersToDepartmentRoleWithPrivileges() {
-        System.out.println("addUsersToDepartmentRoleWithPrivileges");
+        LOG.log(Level.INFO, "addUsersToDepartmentRoleWithPrivileges");
         if (webUser == null) {
             JsfUtil.addErrorMessage("Select User");
             return;

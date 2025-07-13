@@ -39,6 +39,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -48,6 +50,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class OpdMemberShipDiscountController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(OpdMemberShipDiscountController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -436,8 +440,8 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null,
                         null);
                 p.setDiscountPercent(margin);
-                System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
+                LOG.log(Level.INFO, "p = " + p);
+                LOG.log(Level.INFO, "margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
         }
@@ -461,8 +465,8 @@ public class OpdMemberShipDiscountController implements Serializable {
                         null,
                         null);
                 p.setDiscountPercent(margin);
-                System.out.println("p = " + p);
-                System.out.println("margin = " + margin);
+                LOG.log(Level.INFO, "p = " + p);
+                LOG.log(Level.INFO, "margin = " + margin);
                 paymentSchemeDiscountFacade.edit(p);
             }
     }

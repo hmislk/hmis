@@ -86,6 +86,8 @@ import java.util.Map;
  */
 @Stateless
 public class BillService {
+    private static final Logger LOG = Logger.getLogger(BillService.class.getName());
+
 
     @EJB
     private DepartmentFacade departmentFacade;
@@ -1912,6 +1914,8 @@ public class BillService {
     public Bill importPharmacyGrnBillFromJson(JsonObject jsonObject) {
         if (jsonObject == null) {
             return null;
+import java.util.logging.Level;
+import java.util.logging.Logger;
         }
 
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -2005,7 +2009,7 @@ public class BillService {
             case PHARMACY_ORDER:
             case PHARMACY_ORDER_APPROVAL:
                 boolean billNetTotalIsNotEqualToBillItemNetTotalError = billNetTotalIsNotEqualToBillItemNetTotal(bill);
-                System.out.println("billNetTotalIsNotEqualToBillItemNetTotalError = " + billNetTotalIsNotEqualToBillItemNetTotalError);
+                LOG.log(Level.INFO, "billNetTotalIsNotEqualToBillItemNetTotalError = " + billNetTotalIsNotEqualToBillItemNetTotalError);
                 if (billNetTotalIsNotEqualToBillItemNetTotalError) {
                     hasAtLeatOneError = true;
                 }
@@ -2036,7 +2040,7 @@ public class BillService {
 
         }
         if (hasAtLeatOneError) {
-            System.out.println("hasAtLeatOneError = " + hasAtLeatOneError);
+            LOG.log(Level.INFO, "hasAtLeatOneError = " + hasAtLeatOneError);
         }
         return hasAtLeatOneError;
     }
@@ -2110,7 +2114,7 @@ public class BillService {
     // ChatGPT contributed method to check if bill has no bill items
     public boolean billHasNoBillItems(Bill bill) {
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("bill = " + bill + " has NO Bill Items.");
+            LOG.log(Level.INFO, "bill = " + bill + " has NO Bill Items.");
             bill.setTmpComments((bill.getTmpComments() == null ? "" : bill.getTmpComments())
                     + "This bill has no bill items. ");
             return true;

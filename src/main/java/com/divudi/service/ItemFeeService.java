@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -22,6 +24,8 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class ItemFeeService {
+    private static final Logger LOG = Logger.getLogger(ItemFeeService.class.getName());
+
 
     @EJB
     ItemFeeFacade itemFeeFacade;
@@ -29,9 +33,9 @@ public class ItemFeeService {
     FeeValueFacade feeValueFacade;
 
     public List<ItemFee> fetchSiteFeesByItem(String itemCode, Institution site) {
-        System.out.println("fetchSiteFeesByItem");
-        System.out.println("itemCode = " + itemCode);
-        System.out.println("site = " + site);
+        LOG.log(Level.INFO, "fetchSiteFeesByItem");
+        LOG.log(Level.INFO, "itemCode = " + itemCode);
+        LOG.log(Level.INFO, "site = " + site);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";

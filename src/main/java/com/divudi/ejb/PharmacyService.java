@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,6 +40,8 @@ import javax.ejb.Stateless;
  */
 @Stateless
 public class PharmacyService {
+    private static final Logger LOG = Logger.getLogger(PharmacyService.class.getName());
+
 
     @EJB
     private ClinicalFindingValueFacade clinicalFindingValueFacade;
@@ -260,7 +264,7 @@ public class PharmacyService {
 
     public PharmacyBundle fetchPharmacyIncomeByBillTypeAndDiscountTypeAndAdmissionType(Date fromDate, Date toDate, Institution institution, Institution site, Department department, WebUser webUser, AdmissionType admissionType, PaymentScheme paymentScheme) {
         PharmacyBundle bundle;
-        System.out.println("processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
+        LOG.log(Level.INFO, "processPharmacyIncomeReportByBillTypeAndDiscountTypeAndAdmissionType");
 
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
 

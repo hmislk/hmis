@@ -31,6 +31,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -39,6 +41,8 @@ import javax.inject.Named;
 @Named
 @ApplicationScoped
 public class PatientReportBean {
+    private static final Logger LOG = Logger.getLogger(PatientReportBean.class.getName());
+
 
     @EJB
     private InvestigationItemFacade ixItemFacade;
@@ -111,9 +115,9 @@ public class PatientReportBean {
         } else {
             String sql;
             sql = "select ii from InvestigationItem ii where ii.retired = false and ii.ixItemType = com.divudi.core.data.InvestigationItemType.Value and ii.item.id = " + ix.getId() + " order by ii.cssTop, ii.cssLeft ";
-            //////// // System.out.println(sql);
+            //////// // LOG.log(Level.INFO, sql);
             ii = getIxItemFacade().findByJpql(sql);
-            //////// // System.out.println("ii is " + ii + " and the cou");
+            //////// // LOG.log(Level.INFO, "ii is " + ii + " and the cou");
         }
         if (ii == null) {
             ii = new ArrayList<>();
@@ -151,7 +155,7 @@ public class PatientReportBean {
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
         for (ReportItem ii : temIx.getReportItems()) {
-            System.out.println("ii = " + ii);
+            LOG.log(Level.INFO, "ii = " + ii);
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value
                     || ii.getIxItemType() == InvestigationItemType.Image
@@ -163,7 +167,7 @@ public class PatientReportBean {
                     || ii.getIxItemType() == InvestigationItemType.Template)
                     && ii.isRetired() == false) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
-                    System.out.println("val = " + val);
+                    LOG.log(Level.INFO, "val = " + val);
 
                     val = new PatientReportItemValue();
                     if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
@@ -180,7 +184,7 @@ public class PatientReportBean {
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
                     // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
+                    ////// // LOG.log(Level.INFO, "New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -190,7 +194,7 @@ public class PatientReportBean {
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstByJpql(sql, hm);
                     if (val == null) {
-                        ////// // System.out.println("val is null");
+                        ////// // LOG.log(Level.INFO, "val is null");
                         val = new PatientReportItemValue();
                         if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                             val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -206,7 +210,7 @@ public class PatientReportBean {
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
                         //ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
+                        ////// // LOG.log(Level.INFO, "value added to pr teport" + ptReport);
 
                     }
 
@@ -221,7 +225,7 @@ public class PatientReportBean {
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
                     // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
+                    ////// // LOG.log(Level.INFO, "New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
@@ -234,7 +238,7 @@ public class PatientReportBean {
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
                         // ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
+                        ////// // LOG.log(Level.INFO, "value added to pr teport" + ptReport);
 
                     }
 
@@ -253,14 +257,14 @@ public class PatientReportBean {
 
 
      public void addPatientReportItemValuesForTemplateReport(PatientReport ptReport) {
-         System.out.println("addPatientReportItemValuesForTemplateReport");
+         LOG.log(Level.INFO, "addPatientReportItemValuesForTemplateReport");
         String sql = "";
         Investigation temIx = (Investigation) ptReport.getItem();
-         System.out.println("temIx = " + temIx);
+         LOG.log(Level.INFO, "temIx = " + temIx);
         for (ReportItem ii : temIx.getReportItems()) {
-            System.out.println("ii = " + ii);
-            System.out.println("ii.getName = " + ii.getName());
-            System.out.println("ii.getIxItemType() = " + ii.getIxItemType());
+            LOG.log(Level.INFO, "ii = " + ii);
+            LOG.log(Level.INFO, "ii.getName = " + ii.getName());
+            LOG.log(Level.INFO, "ii.getIxItemType() = " + ii.getIxItemType());
             PatientReportItemValue val = null;
             if ((ii.getIxItemType() == InvestigationItemType.Value
                     || ii.getIxItemType() == InvestigationItemType.Image
@@ -272,7 +276,7 @@ public class PatientReportBean {
                     || ii.getIxItemType() == InvestigationItemType.Template)
                     && !ii.isRetired()) {
                 if (ptReport.getId() == null || ptReport.getId() == 0) {
-                    System.out.println("val = " + val);
+                    LOG.log(Level.INFO, "val = " + val);
 
                     val = new PatientReportItemValue();
                     if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
@@ -289,7 +293,7 @@ public class PatientReportBean {
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
                     // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
+                    ////// // LOG.log(Level.INFO, "New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport=:ptRp"
@@ -299,7 +303,7 @@ public class PatientReportBean {
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstByJpql(sql, hm);
                     if (val == null) {
-                        ////// // System.out.println("val is null");
+                        ////// // LOG.log(Level.INFO, "val is null");
                         val = new PatientReportItemValue();
                         if (ii.getIxItemValueType() == InvestigationItemValueType.Varchar) {
                             val.setStrValue(getDefaultVarcharValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -315,7 +319,7 @@ public class PatientReportBean {
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
                         //ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
+                        ////// // LOG.log(Level.INFO, "value added to pr teport" + ptReport);
 
                     }
 
@@ -330,7 +334,7 @@ public class PatientReportBean {
                     val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                     val.setPatientReport(ptReport);
                     // ptReport.getPatientReportItemValues().add(val);
-                    ////// // System.out.println("New value added to pr teport" + ptReport);
+                    ////// // LOG.log(Level.INFO, "New value added to pr teport" + ptReport);
 
                 } else {
                     sql = "select i from PatientReportItemValue i where i.patientReport.id = " + ptReport.getId() + " and i.investigationItem.id = " + ii.getId() + " and i.investigationItem.ixItemType = com.divudi.core.data.InvestigationItemType.Value";
@@ -343,7 +347,7 @@ public class PatientReportBean {
                         val.setPatientEncounter(ptReport.getPatientInvestigation().getEncounter());
                         val.setPatientReport(ptReport);
                         // ptReport.getPatientReportItemValues().add(val);
-                        ////// // System.out.println("value added to pr teport" + ptReport);
+                        ////// // LOG.log(Level.INFO, "value added to pr teport" + ptReport);
 
                     }
 
@@ -361,13 +365,13 @@ public class PatientReportBean {
 
     public void addMicrobiologyReportItemValuesForReport(PatientReport ptReport) {
         String sql = "";
-//        ////// // System.out.println("going to add microbiology report item values for report");
+//        ////// // LOG.log(Level.INFO, "going to add microbiology report item values for report");
         Investigation temIx = (Investigation) ptReport.getItem();
-//        ////// // System.out.println("Items getting for ix is - " + temIx.getName());
+//        ////// // LOG.log(Level.INFO, "Items getting for ix is - " + temIx.getName());
         for (ReportItem ii : temIx.getReportItems()) {
-//            ////// // System.out.println("report items is " + ii.getName());
+//            ////// // LOG.log(Level.INFO, "report items is " + ii.getName());
             if (ii.isRetired()) {
-//                ////// // System.out.println("retired = " + ii.isRetired());
+//                ////// // LOG.log(Level.INFO, "retired = " + ii.isRetired());
                 continue;
             }
             PatientReportItemValue val = null;
@@ -382,7 +386,7 @@ public class PatientReportBean {
                     hm.put("ptRp", ptReport);
                     hm.put("inv", ii);
                     val = getPtRivFacade().findFirstByJpql(sql, hm);
-//                    ////// // System.out.println("val is " + val);
+//                    ////// // LOG.log(Level.INFO, "val is " + val);
                     if (val == null) {
                         val = new PatientReportItemValue();
                         val.setLobValue(getDefaultMemoValue((InvestigationItem) ii, ptReport.getPatientInvestigation().getPatient()));
@@ -395,7 +399,7 @@ public class PatientReportBean {
                         getPtRivFacade().create(val);
                         ptReport.getPatientReportItemValues().add(val);
 
-//                        ////// // System.out.println("value added to pr teport" + ptReport);
+//                        ////// // LOG.log(Level.INFO, "value added to pr teport" + ptReport);
                     }
 
                 }
@@ -450,7 +454,7 @@ public class PatientReportBean {
         m.put("a", a.getName());
         m.put("iit", InvestigationItemType.Antibiotic);
         InvestigationItem ii = getIiFacade().findFirstByJpql(sql, m);
-        //// // System.out.println("-------");
+        //// // LOG.log(Level.INFO, "-------");
 
         if (ii == null) {
             ii = new InvestigationItem();

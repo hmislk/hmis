@@ -47,6 +47,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.RowEditEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,6 +57,8 @@ import org.primefaces.event.RowEditEvent;
 @Named
 @SessionScoped
 public class TransferReceiveController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(TransferReceiveController.class.getName());
+
 
     private Bill issuedBill;
     private Bill receivedBill;
@@ -211,12 +215,12 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
-            System.out.println("issuedBillItem = " + issuedBillItem);
+            LOG.log(Level.INFO, "issuedBillItem = " + issuedBillItem);
             double remainingQty = calculateRemainingQty(issuedBillItem);
             if (remainingQty <= 0) {
                 continue;
             }
-            System.out.println("remainingQty = " + remainingQty);
+            LOG.log(Level.INFO, "remainingQty = " + remainingQty);
 
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
@@ -292,7 +296,7 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
-            System.out.println("i.getPharmaceuticalBillItem().getQty() = " + i.getPharmaceuticalBillItem().getQty());
+            LOG.log(Level.INFO, "i.getPharmaceuticalBillItem().getQty() = " + i.getPharmaceuticalBillItem().getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }

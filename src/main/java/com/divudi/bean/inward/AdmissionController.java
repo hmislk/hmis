@@ -67,6 +67,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -76,6 +78,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class AdmissionController implements Serializable, ControllerWithPatient {
+    private static final Logger LOG = Logger.getLogger(AdmissionController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -446,7 +450,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         hash.put("bta", BillTypeAtomic.INWARD_FINAL_BILL_PAYMENT_BY_CREDIT_COMPANY);
         //     hash.put("pm", PaymentMethod.Credit);
         List<Bill> lst = getBillFacade().findByJpql(sql, hash);
-        System.out.println("lst = " + lst);
+        LOG.log(Level.INFO, "lst = " + lst);
         return lst;
     }
 
@@ -859,7 +863,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //        } else {
 //            sql = "select c from Admission c where c.retired=false and c.paymentMethod=:pm  and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
 //            hm.put("pm", PaymentMethod.Credit);
-//            ////// // System.out.println(sql);
+//            ////// // LOG.log(Level.INFO, sql);
 //            suggestions = getFacade().findByJpql(sql, hm, TemporalType.TIME, 20);
 //        }
 //        return suggestions;
@@ -875,7 +879,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " ( c.paymentFinalized is null or c.paymentFinalized=false )"
                     + " and ( ((c.bhtNo) like :q )or ((c.patient.person.name)"
                     + " like :q) ) order by c.bhtNo";
-            ////// // System.out.println(sql);
+            ////// // LOG.log(Level.INFO, sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
@@ -907,7 +911,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         h.put("pe", ad);
         ads = getBillFacade().findByJpql(sql, h);
 
-        System.out.println("ads.size() = " + ads.size());
+        LOG.log(Level.INFO, "ads.size() = " + ads.size());
 
         if (ads.size() > 0 || !ads.isEmpty()) {
             return true;
@@ -972,7 +976,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
                     + " and ((c.bhtNo) like :q "
                     + " or (c.patient.person.name) like :q)"
                     + "  order by c.bhtNo";
-            ////// // System.out.println(sql);
+            ////// // LOG.log(Level.INFO, sql);
             //      h.put("btp", BillType.InwardPaymentBill);
             h.put("q", "%" + query.toUpperCase() + "%");
             suggestions = getFacade().findByJpql(sql, h, 20);
@@ -987,7 +991,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
 //            suggestions = new ArrayList<>();
 //        } else {
 //            sql = "select c from Admission c where c.retired=false and c.discharged=true and ((c.bhtNo) like '%" + query.toUpperCase() + "%' or (c.patient.person.name) like '%" + query.toUpperCase() + "%') order by c.bhtNo";
-//            ////// // System.out.println(sql);
+//            ////// // LOG.log(Level.INFO, sql);
 //            suggestions = getFacade().findByJpql(sql, 20);
 //        }
 //        return suggestions;
@@ -1019,7 +1023,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from Admission p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
-            ////// // System.out.println(sql);
+            ////// // LOG.log(Level.INFO, sql);
             suggestions = getFacade().findByJpql(sql, 20);
         }
         if (suggestions == null) {
@@ -1035,7 +1039,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             suggestions = new ArrayList<>();
         } else {
             sql = "select p from PatientEncounter p where c.patient.retired=false and (c.patient.bhtNo) like '%" + query.toUpperCase() + "%'";
-            ////// // System.out.println(sql);
+            ////// // LOG.log(Level.INFO, sql);
             suggestions = patientEncounterFacade.findByJpql(sql, 20);
         }
         if (suggestions == null) {

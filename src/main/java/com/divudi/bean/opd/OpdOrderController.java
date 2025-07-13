@@ -95,6 +95,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -104,6 +106,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class OpdOrderController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(OpdOrderController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -1842,7 +1846,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     public String settleOpdBill() {
-        System.out.println("settleOpdBill");
+        LOG.log(Level.INFO, "settleOpdBill");
         if (billSettlingStarted) {
             return null;
         }
@@ -1870,7 +1874,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     private boolean executeSettleBillActions() {
-        System.out.println("executeSettleBillActions");
+        LOG.log(Level.INFO, "executeSettleBillActions");
         if (errorCheck()) {
             return false;
         }
@@ -2431,7 +2435,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
-        System.out.println("calculatRemainForMultiplePaymentTotal");
+        LOG.log(Level.INFO, "calculatRemainForMultiplePaymentTotal");
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             double multiplePaymentMethodTotalValue = 0.0;
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -2443,22 +2447,22 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
-                System.out.println("multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
+                LOG.log(Level.INFO, "multiplePaymentMethodTotalValue = " + multiplePaymentMethodTotalValue);
             }
-            System.out.println("remainAmount = " + remainAmount);
-            System.out.println("total = " + total);
+            LOG.log(Level.INFO, "remainAmount = " + remainAmount);
+            LOG.log(Level.INFO, "total = " + total);
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
 
         }
         remainAmount = total;
-        System.out.println("total = " + total);
+        LOG.log(Level.INFO, "total = " + total);
         return total;
     }
 
     @Override
     public void recieveRemainAmountAutomatically() {
-        System.out.println("recieveRemainAmountAutomatically");
+        LOG.log(Level.INFO, "recieveRemainAmountAutomatically");
         //double remainAmount = calculatRemainForMultiplePaymentTotal();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             int arrSize = paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails().size();
@@ -2484,10 +2488,10 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
-                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
-                        System.out.println("remainAmount = " + remainAmount);
-                        System.out.println("patient.getRunningBalance() = " + patient.getRunningBalance());
+                        LOG.log(Level.INFO, "remainAmount = " + remainAmount);
+                        LOG.log(Level.INFO, "patient.getRunningBalance() = " + patient.getRunningBalance());
+                        LOG.log(Level.INFO, "remainAmount = " + remainAmount);
+                        LOG.log(Level.INFO, "patient.getRunningBalance() = " + patient.getRunningBalance());
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -2510,7 +2514,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             }
 
         }
-        System.out.println("this = " + this);
+        LOG.log(Level.INFO, "this = " + this);
         listnerForPaymentMethodChange();
 
     }
@@ -2657,8 +2661,8 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             runningBalance = pd.getBalance();
             double availableForPurchase = runningBalance + creditLimitAbsolute;
 
-            System.out.println("netTotal = " + netTotal);
-            System.out.println("availableForPurchase = " + availableForPurchase);
+            LOG.log(Level.INFO, "netTotal = " + netTotal);
+            LOG.log(Level.INFO, "availableForPurchase = " + availableForPurchase);
 
             if (netTotal > availableForPurchase) {
                 JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
@@ -2667,16 +2671,16 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
         }
 
-        System.out.println("paymentMethod = " + paymentMethod);
+        LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
         if (paymentMethod == PaymentMethod.Credit) {
             ComponentDetail cd = getPaymentMethodData().getCredit();
             if (cd.getInstitution() == null) {
                 JsfUtil.addErrorMessage("Please select Credit Company");
                 return true;
             }
-            System.out.println("cd.getInstitution() = " + cd.getInstitution());
+            LOG.log(Level.INFO, "cd.getInstitution() = " + cd.getInstitution());
             creditCompany = cd.getInstitution();
-            System.out.println("creditCompany = " + creditCompany);
+            LOG.log(Level.INFO, "creditCompany = " + creditCompany);
         }
 
         if (paymentMethod == PaymentMethod.Staff) {
@@ -2738,11 +2742,11 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
 
                     if (cd.getPaymentMethodData().getPatient_deposit().getTotalValue() > availableForPurchase) {
 
-                        System.out.println("cd.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
+                        LOG.log(Level.INFO, "cd.getPaymentMethodData().getPatient_deposit().getTotalValue() = " + cd.getPaymentMethodData().getPatient_deposit().getTotalValue());
 
-                        System.out.println("availableForPurchase = " + availableForPurchase);
+                        LOG.log(Level.INFO, "availableForPurchase = " + availableForPurchase);
 
-                        System.out.println("no sufficient data = ");
+                        LOG.log(Level.INFO, "no sufficient data = ");
                         JsfUtil.addErrorMessage("No Sufficient Patient Deposit");
                         return true;
                     }
@@ -2885,7 +2889,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             }
         }
 
-        System.out.println("Current BillItem QTY= " + getCurrentBillItemQty());
+        LOG.log(Level.INFO, "Current BillItem QTY= " + getCurrentBillItemQty());
 
         BillItem bi = new BillItem();
         bi.copy(getCurrentBillItem());
@@ -3501,10 +3505,10 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             }
         }
         billFeeBundleEntrys = newListOfBillFeeBundleEntries;
-        System.out.println("billFeeBundleEntrys = " + billFeeBundleEntrys.size());
+        LOG.log(Level.INFO, "billFeeBundleEntrys = " + billFeeBundleEntrys.size());
         lstBillEntries = temp;
         lstBillComponents = getBillBean().billComponentsFromBillEntries(lstBillEntries);
-        System.out.println("lstBillEntries.size() = " + lstBillEntries.size());
+        LOG.log(Level.INFO, "lstBillEntries.size() = " + lstBillEntries.size());
         lstBillFees = getBillBean().billFeesFromBillEntries(lstBillEntries);
     }
 
@@ -3515,7 +3519,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
     }
 
     public List<Payment> createPayment(Bill bill, PaymentMethod pm) {
-        System.out.println("createPayment");
+        LOG.log(Level.INFO, "createPayment");
         List<Payment> ps = new ArrayList<>();
         if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
@@ -3834,19 +3838,19 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);

@@ -47,6 +47,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,6 +57,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class AgentPaymentReceiveSearchController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(AgentPaymentReceiveSearchController.class.getName());
+
 
     private boolean printPreview = false;
     @EJB
@@ -372,15 +376,15 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
 
     public void cancelAgencyDepositBill() {
-        System.out.println("cancelAgencyDepositBill");
-        System.out.println("agencyDepositCanellationStarted = " + agencyDepositCanellationStarted);
+        LOG.log(Level.INFO, "cancelAgencyDepositBill");
+        LOG.log(Level.INFO, "agencyDepositCanellationStarted = " + agencyDepositCanellationStarted);
         if (agencyDepositCanellationStarted) {
             JsfUtil.addErrorMessage("Already Started");
             printPreview = false;
             return;
         }
         agencyDepositCanellationStarted = true;
-        System.out.println("getBill() = " + getBill());
+        LOG.log(Level.INFO, "getBill() = " + getBill());
         if (getBill() == null) {
             JsfUtil.addErrorMessage("No Bill to Calcel");
             printPreview = false;
@@ -388,7 +392,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             return;
         }
         Bill origianlBil = billBean.fetchBillBypassingCache(getBill().getId());
-        System.out.println("origianlBil = " + origianlBil);
+        LOG.log(Level.INFO, "origianlBil = " + origianlBil);
         if (origianlBil == null) {
             JsfUtil.addErrorMessage("No SUch Bill");
             printPreview = false;
@@ -396,14 +400,14 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             return;
         }
         boolean error = errorCheck(origianlBil);
-        System.out.println("error = " + error);
+        LOG.log(Level.INFO, "error = " + error);
         if (error) {
             JsfUtil.addErrorMessage("Error");
             printPreview = false;
             agencyDepositCanellationStarted = false;
             return;
         }
-        System.out.println("origianlBil.isCancelled() = " + origianlBil.isCancelled());
+        LOG.log(Level.INFO, "origianlBil.isCancelled() = " + origianlBil.isCancelled());
         if (origianlBil.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
             printPreview = false;
@@ -415,7 +419,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
             if (userDrawer.getCashInHandValue() < bill.getNetTotal()) {
                 if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
-                    System.out.println(origianlBil.getNetTotal());
+                    LOG.log(Level.INFO, origianlBil.getNetTotal());
                     JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
                     printPreview = false;
                     agencyDepositCanellationStarted = false;
@@ -423,7 +427,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 }
             }
         }
-        System.out.println(origianlBil.getNetTotal() + "this");
+        LOG.log(Level.INFO, origianlBil.getNetTotal() + "this");
 
 //        cancelBill(BillType.CollectingCentrePaymentReceiveBill, BillNumberSuffix.CCCAN, HistoryType.CollectingCentreDepositCancel, BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
         CancelledBill newlyCreatedCancelBill = generateCancelBillForCcDepositBill(origianlBil);
@@ -469,7 +473,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             return;
         }
         Bill origianlBil = billBean.fetchBillBypassingCache(getBill().getId());
-        System.out.println("origianlBil = " + origianlBil);
+        LOG.log(Level.INFO, "origianlBil = " + origianlBil);
         if (origianlBil == null) {
             JsfUtil.addErrorMessage("No SUch Bill");
             printPreview = false;
@@ -477,7 +481,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
             return;
         }
         boolean error = errorCheck(origianlBil);
-        System.out.println("error = " + error);
+        LOG.log(Level.INFO, "error = " + error);
         if (error) {
             JsfUtil.addErrorMessage("Error");
             printPreview = false;
@@ -500,7 +504,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
                 HistoryType.CollectingCentreDepositCancel,
                 cancelledBill, comment);
         printPreview = true;
-        System.out.println("cancelledBill = " + cancelledBill);
+        LOG.log(Level.INFO, "cancelledBill = " + cancelledBill);
         agencyDepositCanellationStarted = false;
         JsfUtil.addSuccessMessage("Cancelled");
     }
@@ -670,7 +674,7 @@ public class AgentPaymentReceiveSearchController implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -751,8 +755,8 @@ public class AgentPaymentReceiveSearchController implements Serializable {
         if (getBill() != null) {
             String sql = "SELECT b FROM BillItem b WHERE b.retired=false and b.bill.id=" + getBill().getId();
             billItems = getBillItemFacede().findByJpql(sql);
-            //////// // System.out.println("sql for bill item search is " + sql);
-            //////// // System.out.println("results for bill item search is " + billItems);
+            //////// // LOG.log(Level.INFO, "sql for bill item search is " + sql);
+            //////// // LOG.log(Level.INFO, "results for bill item search is " + billItems);
             if (billItems == null) {
                 billItems = new ArrayList<BillItem>();
             }

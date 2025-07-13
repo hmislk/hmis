@@ -49,6 +49,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -57,6 +59,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardReportControllerBht implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardReportControllerBht.class.getName());
+
 
     @EJB
     BillFeeFacade billFeeFacade;
@@ -121,7 +125,7 @@ public class InwardReportControllerBht implements Serializable {
     private List<Bill> issueBills;
 
     public String navigateToInpatientPharmacyItemList() {
-        System.out.println("navigateToInpatientPharmacyItemList");
+        LOG.log(Level.INFO, "navigateToInpatientPharmacyItemList");
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
             return null;
@@ -207,7 +211,7 @@ public class InwardReportControllerBht implements Serializable {
     }
 
     public String navigateToInpatientLabItemList() {
-        System.out.println("navigateToInpatientLabItemList");
+        LOG.log(Level.INFO, "navigateToInpatientLabItemList");
 
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
@@ -789,7 +793,7 @@ public class InwardReportControllerBht implements Serializable {
         sql = sql + " group by bf.billItem.item.category order by bf.billItem.item.category.name";
         List<Object[]> results = billFeeFacade.findAggregates(sql, m);
 
-        ////// // System.out.println("results = " + results);
+        ////// // LOG.log(Level.INFO, "results = " + results);
 //        PatientEncounter pe = new PatientEncounter();
 //        pe.getAdmissionType();
         if (results == null) {

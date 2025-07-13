@@ -24,6 +24,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -32,6 +34,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class DrawerEntryController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(DrawerEntryController.class.getName());
+
 
     @EJB
     DrawerEntryFacade ejbFacade;
@@ -114,7 +118,7 @@ public class DrawerEntryController implements Serializable {
 
         // Assign to the class field
         userDrawerEntry = result;
-        System.out.println("userDrawerEntry = " + userDrawerEntry);
+        LOG.log(Level.INFO, "userDrawerEntry = " + userDrawerEntry);
     }
 
     public void findAllUsersDrawerDetails() {
@@ -146,7 +150,7 @@ public class DrawerEntryController implements Serializable {
 
         // Assign to the class field
         userDrawerEntry = result;
-        System.out.println("userDrawerEntry = " + userDrawerEntry);
+        LOG.log(Level.INFO, "userDrawerEntry = " + userDrawerEntry);
     }
 
     public String navigateToMyDrawerEntry() {

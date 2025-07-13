@@ -118,6 +118,8 @@ import java.util.stream.Collectors;
 @Named
 @SessionScoped
 public class PharmacyReportController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacyReportController.class.getName());
+
 
     @EJB
     BillItemFacade billItemFacade;
@@ -1174,8 +1176,8 @@ public class PharmacyReportController implements Serializable {
         }
 
         jpql += " order by bi.id ";
-//        System.out.println("jpql = " + jpql);
-//        System.out.println("m = " + m);
+//        LOG.log(Level.INFO, "jpql = " + jpql);
+//        LOG.log(Level.INFO, "m = " + m);
         billLights = (List<BillLight>) billFacade.findLightsByJpql(jpql, m, TemporalType.DATE);
     }
 
@@ -2687,7 +2689,7 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             jpql += "and s.item=:itm ";
             m.put("itm", item);
         }
@@ -2748,9 +2750,9 @@ public class PharmacyReportController implements Serializable {
         // Fetch the IDs of the latest StockHistory rows per itemBatch
         ids = facade.findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
-        System.out.println("jpql = " + jpql.toString());
-        System.out.println("params = " + params);
-        System.out.println("ids = " + ids);
+        LOG.log(Level.INFO, "jpql = " + jpql.toString());
+        LOG.log(Level.INFO, "params = " + params);
+        LOG.log(Level.INFO, "ids = " + ids);
 
         rows = new ArrayList<>();
 
@@ -2823,7 +2825,7 @@ public class PharmacyReportController implements Serializable {
         List<StockHistory> histories = getStockLedgerHistories();
         if (histories == null || histories.isEmpty()) {
 
-            System.out.println("No stock ledger data available for the selected period");
+            LOG.log(Level.INFO, "No stock ledger data available for the selected period");
             return;
         }
 
@@ -3760,10 +3762,10 @@ public class PharmacyReportController implements Serializable {
             params.put("cat", category);
         }
 
-        System.out.println("amp = " + amp);
+        LOG.log(Level.INFO, "amp = " + amp);
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             jpql.append("and sh.itemBatch.item=:itm ");
             params.put("itm", item);
         }
@@ -3774,8 +3776,8 @@ public class PharmacyReportController implements Serializable {
         jpql.append("group by sh.itemBatch ");
         jpql.append("order by sh.itemBatch.item.name");
 
-        System.out.println("jpql.toString() = " + jpql.toString());
-        System.out.println("params = " + params);
+        LOG.log(Level.INFO, "jpql.toString() = " + jpql.toString());
+        LOG.log(Level.INFO, "params = " + params);
 
         ids = getStockFacade().findLongValuesByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -3794,7 +3796,7 @@ public class PharmacyReportController implements Serializable {
         }
 
         for (Long shid : ids) {
-            System.out.println("shid = " + shid);
+            LOG.log(Level.INFO, "shid = " + shid);
             PharmacyRow pr = new PharmacyRow();
             pr.setId(shid);
             pr.setStockHistory(facade.find(shid));
@@ -3849,7 +3851,7 @@ public class PharmacyReportController implements Serializable {
 
     //method for update dates when select date range
     public void updateDateRange() {
-        //System.out.println("Date Range Selected: " + dateRange);
+        //LOG.log(Level.INFO, "Date Range Selected: " + dateRange);
         LocalDate today = LocalDate.now();
 
         switch (dateRange) {
@@ -3869,8 +3871,8 @@ public class PharmacyReportController implements Serializable {
                 fromDate = convertToDate(today);
                 toDate = convertToDate(today.plusMonths(3));
         }
-        // System.out.println("Updated From Date: " + fromDate);
-        // System.out.println("Updated To Date: " + toDate);
+        // LOG.log(Level.INFO, "Updated From Date: " + fromDate);
+        // LOG.log(Level.INFO, "Updated To Date: " + toDate);
     }
 
     // Utility to convert LocalDate to Date
@@ -3906,7 +3908,7 @@ public class PharmacyReportController implements Serializable {
 
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }
@@ -4320,7 +4322,7 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -4332,12 +4334,12 @@ public class PharmacyReportController implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        ////System.out.println("sql = " + sql);
-        ////System.out.println("m = " + m);
+        ////LOG.log(Level.INFO, "sql = " + sql);
+        ////LOG.log(Level.INFO, "m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
-            ////System.out.println("objs = " + objs);
+            ////LOG.log(Level.INFO, "objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -4408,7 +4410,7 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             sql += "and bi.item=:itm ";
             m.put("itm", item);
         }
@@ -4470,8 +4472,8 @@ public class PharmacyReportController implements Serializable {
 
         jpql += " GROUP BY bi.item";
 
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
+        //LOG.log(Level.INFO, "sql = " + sql);
+        //LOG.log(Level.INFO, "m = " + m);
         Set<Item> bis = new HashSet<>(itemFacade.findByJpql(jpql, m));
 
         jpql = "SELECT s.itemBatch.item "
@@ -4494,7 +4496,7 @@ public class PharmacyReportController implements Serializable {
         }
         if (amp != null) {
             item = amp;
-            System.out.println("item = " + item);
+            LOG.log(Level.INFO, "item = " + item);
             jpql += "and s.itemBatch.item=:itm ";
             m.put("itm", item);
         }

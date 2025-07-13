@@ -65,6 +65,8 @@ import java.util.function.Supplier;
 @Named
 @RequestScoped
 public class PdfController {
+    private static final Logger LOG = Logger.getLogger(PdfController.class.getName());
+
 
     @Inject
     StaffImageController staffImageController;
@@ -111,10 +113,10 @@ public class PdfController {
     }
 
     public StreamedContent createPdfForPatientReport(PatientReport report) throws IOException {
-        System.out.println("createPdfForPatientReport");
-        System.out.println("Report: " + report);
+        LOG.log(Level.INFO, "createPdfForPatientReport");
+        LOG.log(Level.INFO, "Report: " + report);
         if (report == null) {
-            System.out.println("Report is null, returning null.");
+            LOG.log(Level.INFO, "Report is null, returning null.");
             return null;
         }
 
@@ -127,30 +129,30 @@ public class PdfController {
         float pageHeight = pdfDoc.getDefaultPageSize().getHeight();
 
         // <editor-fold defaultstate="collapsed" desc="Report Item Values">
-        System.out.println("Processing patient report item values...");
+        LOG.log(Level.INFO, "Processing patient report item values...");
         if (report.getPatientReportItemValues() != null) {
             for (PatientReportItemValue prv : report.getPatientReportItemValues()) {
-                System.out.println("Processing PatientReportItemValue: " + prv);
+                LOG.log(Level.INFO, "Processing PatientReportItemValue: " + prv);
                 InvestigationItem item = prv.getInvestigationItem();
                 if (item.isRetired()) {
-                    System.out.println("Item is retired, skipping.");
+                    LOG.log(Level.INFO, "Item is retired, skipping.");
                     continue;
                 }
 
                 String cssStyle = item.getCssStyle();
-                System.out.println("CSS Style: " + cssStyle);
+                LOG.log(Level.INFO, "CSS Style: " + cssStyle);
                 Map<String, String> styleMap = parseCssStyle(cssStyle);
-                System.out.println("Parsed Style Map: " + styleMap);
+                LOG.log(Level.INFO, "Parsed Style Map: " + styleMap);
 
                 float left = parseFloat(styleMap.get("left"), 0, pageWidth);
                 float top = parseFloat(styleMap.get("top"), 0, pageHeight);
                 float fontSize = parseFloat(styleMap.get("font-size"), 12, 0);
                 String color = styleMap.get("color");
 
-                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+                LOG.log(Level.INFO, "Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
 
                 String value = getValueBasedOnItemType(prv);
-                System.out.println("Value to display: " + value);
+                LOG.log(Level.INFO, "Value to display: " + value);
 
                 if (value != null && !value.isEmpty()) {
                     // Convert CSS top position to PDF coordinate (from bottom)
@@ -158,7 +160,7 @@ public class PdfController {
 
                     if (containsHtml(value)) {
                         // Handling of HTML content at specific positions requires additional code
-                        System.out.println("HTML content detected, adding to document.");
+                        LOG.log(Level.INFO, "HTML content detected, adding to document.");
 
                         // For simplicity, render HTML content directly
                         // Note: Positioning HTML content at specific coordinates is complex
@@ -179,31 +181,31 @@ public class PdfController {
                         document.add(paragraph);
                     }
                 } else {
-                    System.out.println("Value is null or empty, skipping.");
+                    LOG.log(Level.INFO, "Value is null or empty, skipping.");
                 }
             }
         } else {
-            System.out.println("Patient report item values are null.");
+            LOG.log(Level.INFO, "Patient report item values are null.");
         }
 
         // </editor-fold>
         // <editor-fold defaultstate="collapsed" desc="Report Labels">
-        System.out.println("Processing report items (Labels)...");
+        LOG.log(Level.INFO, "Processing report items (Labels)...");
         if (report.getItem() != null && report.getItem().getReportItems() != null) {
             for (InvestigationItem ii : report.getItem().getReportItems()) {
-                System.out.println("Processing InvestigationItem: " + ii);
+                LOG.log(Level.INFO, "Processing InvestigationItem: " + ii);
                 if (ii.isRetired()) {
-                    System.out.println("Item is retired, skipping.");
+                    LOG.log(Level.INFO, "Item is retired, skipping.");
                     continue;
                 }
                 if (ii.getIxItemType() != InvestigationItemType.Label) {
-                    System.out.println("Item is not a Label, skipping.");
+                    LOG.log(Level.INFO, "Item is not a Label, skipping.");
                     continue;
                 }
                 String cssStyle = ii.getCssStyle();
-                System.out.println("CSS Style: " + cssStyle);
+                LOG.log(Level.INFO, "CSS Style: " + cssStyle);
                 Map<String, String> styleMap = parseCssStyle(cssStyle);
-                System.out.println("Parsed Style Map: " + styleMap);
+                LOG.log(Level.INFO, "Parsed Style Map: " + styleMap);
 
                 float left = parseFloat(styleMap.get("left"), 0, pageWidth);
                 float top = parseFloat(styleMap.get("top"), 0, pageHeight);
@@ -214,10 +216,10 @@ public class PdfController {
                     color = cssColor;
                 }
 
-                System.out.println("Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
+                LOG.log(Level.INFO, "Position - Left: " + left + ", Top: " + top + ", Font Size: " + fontSize + ", Color: " + color);
 
                 String value = ii.getHtmltext(); // Assuming getHtmltext() method
-                System.out.println("Value to display: " + value);
+                LOG.log(Level.INFO, "Value to display: " + value);
 
                 if (value != null && !value.isEmpty()) {
                     // Convert CSS top position to PDF coordinate (from bottom)
@@ -225,7 +227,7 @@ public class PdfController {
 
                     if (containsHtml(value)) {
                         // Handling of HTML content at specific positions
-                        System.out.println("HTML content detected, adding to document at specific position.");
+                        LOG.log(Level.INFO, "HTML content detected, adding to document at specific position.");
 
                         // Convert HTML content to elements
                         // Create a Div with absolute positioning
@@ -265,11 +267,11 @@ public class PdfController {
                         document.add(paragraph);
                     }
                 } else {
-                    System.out.println("Value is null or empty, skipping.");
+                    LOG.log(Level.INFO, "Value is null or empty, skipping.");
                 }
             }
         } else {
-            System.out.println("Report items are null.");
+            LOG.log(Level.INFO, "Report items are null.");
         }
 
         // </editor-fold>
@@ -282,12 +284,12 @@ public class PdfController {
         if (commonReportItems != null) {
             for (CommonReportItem myCli : commonReportItems) {
 
-                System.out.println("myCli.getReportItemType() = " + myCli.getReportItemType());
-                System.out.println("myCli.getItem() = " + myCli.getItem());
-                System.out.println("myCli.getIxItemType() = " + myCli.getIxItemType());
-                System.out.println("myCli.getInnerCssStyle() = " + myCli.getInnerCssStyle());
-                System.out.println("myCli.getHtPix() = " + myCli.getHtPix());
-                System.out.println("myCli.getWtPix() = " + myCli.getWtPix());
+                LOG.log(Level.INFO, "myCli.getReportItemType() = " + myCli.getReportItemType());
+                LOG.log(Level.INFO, "myCli.getItem() = " + myCli.getItem());
+                LOG.log(Level.INFO, "myCli.getIxItemType() = " + myCli.getIxItemType());
+                LOG.log(Level.INFO, "myCli.getInnerCssStyle() = " + myCli.getInnerCssStyle());
+                LOG.log(Level.INFO, "myCli.getHtPix() = " + myCli.getHtPix());
+                LOG.log(Level.INFO, "myCli.getWtPix() = " + myCli.getWtPix());
 
                 if (myCli.isRetired()) {
                     continue;
@@ -484,12 +486,12 @@ public class PdfController {
                         case SampledID:
                             List<PatientSampleComponant> pscs = patientInvestigationController.getPatientSampleComponentsByInvestigation(report.getPatientInvestigation());
                             String sampleIds = "";
-                            System.out.println("pscs.size = " + pscs.size());
+                            LOG.log(Level.INFO, "pscs.size = " + pscs.size());
                             for (PatientSampleComponant psc : pscs) {
-                                System.out.println("psc = " + psc);
-                                System.out.println("psc.getSample() = " + psc.getPatientSample());
-                                System.out.println("psc.getSample().getId() = " + psc.getPatientSample().getId());
-                                System.out.println("");
+                                LOG.log(Level.INFO, "psc = " + psc);
+                                LOG.log(Level.INFO, "psc.getSample() = " + psc.getPatientSample());
+                                LOG.log(Level.INFO, "psc.getSample().getId() = " + psc.getPatientSample().getId());
+                                LOG.log(Level.INFO, "");
                             }
                             value = sampleIds;
 
@@ -514,7 +516,7 @@ public class PdfController {
                 }
             }
         } else {
-            System.out.println("Common report items are null.");
+            LOG.log(Level.INFO, "Common report items are null.");
         }
 
         if (report.getApproveUser() != null && report.getApproveUser().getStaff() != null) {
@@ -543,19 +545,19 @@ public class PdfController {
                         signatureImage.scaleToFit(100, 50); // Adjust size as needed
                         document.add(signatureImage);
                     } catch (IOException e) {
-                        System.out.println("Error reading signature image: " + e.getMessage());
+                        LOG.log(Level.INFO, "Error reading signature image: " + e.getMessage());
                     }
                 } else {
-                    System.out.println("Signature stream supplier is null.");
+                    LOG.log(Level.INFO, "Signature stream supplier is null.");
                 }
             } else {
-                System.out.println("Signature content is null or has no stream.");
+                LOG.log(Level.INFO, "Signature content is null or has no stream.");
             }
         }
 
         // </editor-fold>
         document.close();
-        System.out.println("Document closed.");
+        LOG.log(Level.INFO, "Document closed.");
 
         InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
 
@@ -681,6 +683,8 @@ public class PdfController {
         }
         try {
             value = value.replaceAll("!important", "").trim();
+import java.util.logging.Level;
+import java.util.logging.Logger;
             if (value.endsWith("%")) {
                 value = value.replace("%", "").trim();
                 float percentage = Float.parseFloat(value);

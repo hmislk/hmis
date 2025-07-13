@@ -74,6 +74,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -83,6 +85,8 @@ import org.json.JSONObject;
 @Named
 @SessionScoped
 public class BillBhtController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(BillBhtController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -375,7 +379,7 @@ public class BillBhtController implements Serializable {
             getBillSearch().setBill((BilledBill) b);
             getBillSearch().setPaymentMethod(b.getPaymentMethod());
             getBillSearch().setComment("Batch Cancell");
-            //////// // System.out.println("ggg : " + getBillSearch().getComment());
+            //////// // LOG.log(Level.INFO, "ggg : " + getBillSearch().getComment());
             getBillSearch().cancelOpdBill();
         }
 
@@ -854,12 +858,12 @@ public class BillBhtController implements Serializable {
         for (Fee i : itemFee) {
             BillFee billFee = getBillBean().createBillFee(billItem, i, patientEncounter);
 
-            System.out.println("billFee = " + billFee);
-            System.out.println("billFee.getFeeGrossValue() = " + billFee.getFeeGrossValue());
-            System.out.println("matrixDepartment = " + billFee);
-            System.out.println("paymentMethod = " + paymentMethod);
+            LOG.log(Level.INFO, "billFee = " + billFee);
+            LOG.log(Level.INFO, "billFee.getFeeGrossValue() = " + billFee.getFeeGrossValue());
+            LOG.log(Level.INFO, "matrixDepartment = " + billFee);
+            LOG.log(Level.INFO, "paymentMethod = " + paymentMethod);
             PriceMatrix priceMatrix = getPriceMatrixController().fetchInwardMargin(billItem, billFee.getFeeGrossValue(), matrixDepartment, paymentMethod);
-            System.out.println("priceMatrix = " + priceMatrix);
+            LOG.log(Level.INFO, "priceMatrix = " + priceMatrix);
 
             getInwardBean().setBillFeeMargin(billFee, billItem.getItem(), priceMatrix);
 
@@ -1019,7 +1023,7 @@ public class BillBhtController implements Serializable {
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////// // System.out.println(b.getBillItem().getNetValue());
+                //////// // LOG.log(Level.INFO, b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;

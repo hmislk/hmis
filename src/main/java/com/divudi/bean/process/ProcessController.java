@@ -20,6 +20,8 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -28,6 +30,8 @@ import javax.inject.Inject;
 @Named
 @SessionScoped
 public class ProcessController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ProcessController.class.getName());
+
 
     @EJB
     ProcessService processService;
@@ -110,8 +114,8 @@ public class ProcessController implements Serializable {
     }
 
     public String navigateToManageProcessInstance(ProcessInstance pi) {
-        System.out.println("navigateToManageProcessInstance");
-        System.out.println("pi = " + pi);
+        LOG.log(Level.INFO, "navigateToManageProcessInstance");
+        LOG.log(Level.INFO, "pi = " + pi);
         if (pi == null) {
             JsfUtil.addErrorMessage("No Process Selected");
             return null;
@@ -144,7 +148,7 @@ public class ProcessController implements Serializable {
             return null;
         }
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
+        LOG.log(Level.INFO, "processStepActionDefinitions = " + processStepActionDefinitions);
         if (processStepActionDefinitions == null || processStepActionDefinitions.isEmpty()) {
             JsfUtil.addErrorMessage("No Process Step Action Definitions for Selected Process Step Definition");
             return null;
@@ -155,7 +159,7 @@ public class ProcessController implements Serializable {
     }
 
     public String startProcessInstance() {
-        System.out.println("startProcessInstance");
+        LOG.log(Level.INFO, "startProcessInstance");
         if (processDefinition == null) {
             JsfUtil.addErrorMessage("Select a Process Definition");
             return null;
@@ -167,7 +171,7 @@ public class ProcessController implements Serializable {
         processService.save(processInstance);
 
         processStepDefinition = processService.fetchTheFirstProcessStepDefinition(processDefinition);
-        System.out.println("processStepDefinition = " + processStepDefinition);
+        LOG.log(Level.INFO, "processStepDefinition = " + processStepDefinition);
 
         processStepInstance = new ProcessStepInstance();
         processStepInstance.setProcessInstance(processInstance);
@@ -178,7 +182,7 @@ public class ProcessController implements Serializable {
         processService.save(processStepInstance);
 
         processStepActionDefinitions = processService.fetchProcessStepActionDefinitions(processStepDefinition);
-        System.out.println("processStepActionDefinitions = " + processStepActionDefinitions);
+        LOG.log(Level.INFO, "processStepActionDefinitions = " + processStepActionDefinitions);
         stage = "initiate_step";
         return null;
     }
@@ -205,7 +209,7 @@ public class ProcessController implements Serializable {
         ProcessStepActionDefinition actionDef = processStepInstance.getProcessStepActionDefinition();
         ProcessStepInstance previousProcessStepInstance;
         // Handle the specific action taken
-        System.out.println("actionDef.getActionType() = " + actionDef.getActionType());
+        LOG.log(Level.INFO, "actionDef.getActionType() = " + actionDef.getActionType());
         switch (actionDef.getActionType()) {
             case CANCEL_PROCESS:
                 processService.cancelProcessInstance(processStepInstance, sessionController.getLoggedUser());

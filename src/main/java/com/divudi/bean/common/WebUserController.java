@@ -51,6 +51,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.FlowEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -60,6 +62,8 @@ import org.primefaces.event.FlowEvent;
 @Named
 @SessionScoped
 public class WebUserController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(WebUserController.class.getName());
+
 
     /**
      * EJBs
@@ -509,7 +513,7 @@ public class WebUserController implements Serializable {
 
             if (userName != null && w != null && w.getName() != null) {
                 if (userName.equalsIgnoreCase((w.getName()))) {
-                    //////// // System.out.println("Ift");
+                    //////// // LOG.log(Level.INFO, "Ift");
                     available = true;
                     return available;// ok. that is may be the issue. we will try with it ok
                 }
@@ -972,7 +976,7 @@ public class WebUserController implements Serializable {
             return "";
         }
         String signatureType = staffImageController.getViewImageType();
-        System.out.println("signatureType = " + signatureType);
+        LOG.log(Level.INFO, "signatureType = " + signatureType);
         if (signatureType == null || signatureType.isEmpty()) {
             JsfUtil.addErrorMessage("Please select a Type");
             return "";

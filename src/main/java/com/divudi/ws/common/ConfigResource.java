@@ -14,6 +14,7 @@ import javax.inject.Inject;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import java.util.logging.Logger;
+import java.util.logging.Level;
 
 /**
  * REST Web Service
@@ -23,6 +24,8 @@ import java.util.logging.Logger;
 @Path("config")
 @RequestScoped
 public class ConfigResource {
+    private static final Logger LOG = Logger.getLogger(ConfigResource.class.getName());
+
 
     @Context
     private UriInfo context;
@@ -47,12 +50,12 @@ public class ConfigResource {
     public Response setBooleanValue(@PathParam("key") String key,
             @PathParam("value") boolean value,
             @Context HttpHeaders headers) {
-        System.out.println("setBooleanValue" );
-        System.out.println("headers = " + headers);
-        System.out.println("key = " + key);
-        System.out.println("value = " + value);
+        LOG.log(Level.INFO, "setBooleanValue" );
+        LOG.log(Level.INFO, "headers = " + headers);
+        LOG.log(Level.INFO, "key = " + key);
+        LOG.log(Level.INFO, "value = " + value);
         String apiKey = headers.getHeaderString("Config");
-        System.out.println("apiKey = " + apiKey);
+        LOG.log(Level.INFO, "apiKey = " + apiKey);
         if (!apiKeyController.isValidKey(apiKey)) {
             return unauthorizedResponse();
         }

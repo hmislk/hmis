@@ -15,6 +15,8 @@ import java.util.List;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,6 +25,8 @@ import javax.inject.Inject;
  */
 @Stateless
 public class DrawerService {
+    private static final Logger LOG = Logger.getLogger(DrawerService.class.getName());
+
 
     @EJB
     DrawerEntryFacade ejbFacade;
@@ -47,8 +51,8 @@ public class DrawerService {
     }
 
     public void updateDrawer(Payment payment, double paidValue, WebUser webUser) {
-        System.out.println("paidValue = " + paidValue);
-        System.out.println("payment = " + payment);
+        LOG.log(Level.INFO, "paidValue = " + paidValue);
+        LOG.log(Level.INFO, "payment = " + payment);
         if (payment == null || payment.getCreater() == null) {
             System.err.println("Payment or payment creator is null.");
             return;
@@ -173,7 +177,7 @@ public class DrawerService {
         for (Payment payment : payments) {
             updateDrawerForIns(payment);
         }
-        System.out.println("Draver & Draver Entry Updated...");
+        LOG.log(Level.INFO, "Draver & Draver Entry Updated...");
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer) {
@@ -181,7 +185,7 @@ public class DrawerService {
     }
 
     public void drawerEntryUpdate(Payment payment, Drawer currentDrawer, WebUser user) {
-        System.out.println("Drawer Entry Update");
+        LOG.log(Level.INFO, "Drawer Entry Update");
         if (payment == null) {
             return;
         }
@@ -257,17 +261,17 @@ public class DrawerService {
         }
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
-        System.out.println("beforeInHandValue = " + beforeInHandValue);
-        System.out.println("payment.getPaidValue() = " + payment.getPaidValue());
+        LOG.log(Level.INFO, "beforeInHandValue = " + beforeInHandValue);
+        LOG.log(Level.INFO, "payment.getPaidValue() = " + payment.getPaidValue());
         drawerEntry.setAfterInHandValue(beforeInHandValue + payment.getPaidValue());
-        System.out.println("drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
+        LOG.log(Level.INFO, "drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
         double totalBalance;
         if (currentDrawer.getCashInHandValue() == null) {
             totalBalance = 0.0;
         } else {
             totalBalance = currentDrawer.getTotalBalance();
         }
-        //System.out.println("totalBalance = " + totalBalance);
+        //LOG.log(Level.INFO, "totalBalance = " + totalBalance);
 
         drawerEntry.setBeforeBalance(totalBalance);
         drawerEntry.setAfterBalance(totalBalance + payment.getPaidValue());
@@ -278,19 +282,19 @@ public class DrawerService {
         } else {
             totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
         }
-        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
+        //LOG.log(Level.INFO, "totalShortageOrExcess = " + totalShortageOrExcess);
 
         drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
         drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
 
         save(drawerEntry);
 
-        //System.out.println("Drawer Entry Created = " + drawerEntry);
+        //LOG.log(Level.INFO, "Drawer Entry Created = " + drawerEntry);
     }
 
 
     public void drawerEntryUpdate(Bill bill, Drawer currentDrawer, PaymentMethod paymentMethod, WebUser user, Double value) {
-        System.out.println("Drawer Entry Update");
+        LOG.log(Level.INFO, "Drawer Entry Update");
         if (bill == null) {
             return;
         }
@@ -368,14 +372,14 @@ public class DrawerService {
 
         drawerEntry.setBeforeInHandValue(beforeInHandValue);
         drawerEntry.setAfterInHandValue(beforeInHandValue + value);
-        System.out.println("drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
+        LOG.log(Level.INFO, "drawerEntry.getAfterInHandValue() = " + drawerEntry.getAfterInHandValue());
         double totalBalance;
         if (currentDrawer.getCashInHandValue() == null) {
             totalBalance = 0.0;
         } else {
             totalBalance = currentDrawer.getTotalBalance();
         }
-        //System.out.println("totalBalance = " + totalBalance);
+        //LOG.log(Level.INFO, "totalBalance = " + totalBalance);
 
         drawerEntry.setBeforeBalance(totalBalance);
         drawerEntry.setAfterBalance(totalBalance + value);
@@ -386,14 +390,14 @@ public class DrawerService {
         } else {
             totalShortageOrExcess = currentDrawer.getTotalShortageOrExcess();
         }
-        //System.out.println("totalShortageOrExcess = " + totalShortageOrExcess);
+        //LOG.log(Level.INFO, "totalShortageOrExcess = " + totalShortageOrExcess);
 
         drawerEntry.setBeforeShortageExcess(totalShortageOrExcess);
         drawerEntry.setAfterShortageExcess(totalShortageOrExcess);
 
         save(drawerEntry);
 
-        //System.out.println("Drawer Entry Created = " + drawerEntry);
+        //LOG.log(Level.INFO, "Drawer Entry Created = " + drawerEntry);
     }
 
 
@@ -416,8 +420,8 @@ public class DrawerService {
     }
 
     public void updateDrawer(Payment payment, double paidValue) {
-        System.out.println("paidValue = " + paidValue);
-        System.out.println("payment = " + payment);
+        LOG.log(Level.INFO, "paidValue = " + paidValue);
+        LOG.log(Level.INFO, "payment = " + payment);
         if (payment == null || payment.getCreater() == null) {
             System.err.println("Payment or payment creator is null.");
             return;

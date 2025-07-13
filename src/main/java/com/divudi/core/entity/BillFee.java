@@ -18,6 +18,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.Temporal;
 import javax.persistence.Transient;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,6 +27,8 @@ import javax.persistence.Transient;
  */
 @Entity
 public class BillFee implements Serializable, RetirableEntity {
+    private static final Logger LOG = Logger.getLogger(BillFee.class.getName());
+
 
     static final long serialVersionUID = 1L;
     @Id
@@ -280,7 +284,7 @@ public class BillFee implements Serializable, RetirableEntity {
             this.feeValue = getFee().getFee() * this.getBillItem().getQty();
 //            this.feeVatPlusValue = this.feeVat + this.feeValue;
         }
-        //    //////// // System.out.println("Setting fee value as " + feeValue);
+        //    //////// // LOG.log(Level.INFO, "Setting fee value as " + feeValue);
     }
 
     public void setFeeValueForDiscountAllowedAndUserChangable(boolean foriegn, double discountPercent) {
@@ -369,8 +373,8 @@ public class BillFee implements Serializable, RetirableEntity {
     private Double tmpSettleChangedValue;
 
     public void setFeeValueForCreditCompany(boolean foriegn, double discountPercent) {
-        System.out.println("setFeeValueForCreditCompany");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
+        LOG.log(Level.INFO, "setFeeValueForCreditCompany");
+        LOG.log(Level.INFO, "tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {
@@ -409,8 +413,8 @@ public class BillFee implements Serializable, RetirableEntity {
     }
 
     public void setFeeValueForeignAndDiscount(boolean foriegn, double discountPercent) {
-        System.out.println("setFeeValueForeignAndDiscount");
-        System.out.println("tmpChangedValue = " + tmpChangedValue);
+        LOG.log(Level.INFO, "setFeeValueForeignAndDiscount");
+        LOG.log(Level.INFO, "tmpChangedValue = " + tmpChangedValue);
         if (tmpChangedValue == null) {
             if (getFee().getFeeType() != FeeType.Staff) {
                 if (foriegn) {

@@ -76,6 +76,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -84,6 +86,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class PharmacyPreSettleController implements Serializable, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(PharmacyPreSettleController.class.getName());
+
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -290,24 +294,24 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 //
         //PAYMENTSCHEME DISCOUNT
 
-        //System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        //LOG.log(Level.INFO, "getPaymentScheme() = " + getPaymentScheme());
         if (getPreBill().getPaymentScheme() != null && discountAllowed) {
-//            System.out.println("getPaymentMethod() = " + getPaymentMethod());
-//            System.out.println("getPaymentScheme() = " + getPaymentScheme());
-//            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
-//            System.out.println("bi.getItem() = " + bi.getItem());
+//            LOG.log(Level.INFO, "getPaymentMethod() = " + getPaymentMethod());
+//            LOG.log(Level.INFO, "getPaymentScheme() = " + getPaymentScheme());
+//            LOG.log(Level.INFO, "getSessionController().getDepartment() = " + getSessionController().getDepartment());
+//            LOG.log(Level.INFO, "bi.getItem() = " + bi.getItem());
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
             System.err.println("priceMatrix = " + priceMatrix);
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
                 discountRate = priceMatrix.getDiscountPercent();
-                System.out.println("discountRate = " + discountRate);
+                LOG.log(Level.INFO, "discountRate = " + discountRate);
             }
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("1 dr = " + dr);
+            LOG.log(Level.INFO, "1 dr = " + dr);
             return dr;
 
         }
@@ -323,7 +327,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("2 dr = " + dr);
+            LOG.log(Level.INFO, "2 dr = " + dr);
             return dr;
 
         }
@@ -334,10 +338,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("3 dr = " + dr);
+            LOG.log(Level.INFO, "3 dr = " + dr);
             return dr;
         }
-        System.out.println("no dr");
+        LOG.log(Level.INFO, "no dr");
         return 0;
 
     }
@@ -1060,7 +1064,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             Map<String, Object> params = new HashMap<>();
             params.put("pre", getPreBill().getId());
             Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
-            System.out.println("existing = " + existing);
+            LOG.log(Level.INFO, "existing = " + existing);
             if (existing != null) {
                 JsfUtil.addErrorMessage("Already Paid");
                 return;
@@ -1091,7 +1095,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void markInProgress(Bill bill) {
-        System.out.println("start unmark");
+        LOG.log(Level.INFO, "start unmark");
         Token t = findTokenFromBill(bill);
         if (t == null) {
             return;
@@ -1101,7 +1105,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         t.setInProgress(true);
         t.setCompleted(false);
         tokenController.save(t);
-        System.out.println("end unmark");
+        LOG.log(Level.INFO, "end unmark");
 
     }
 
@@ -1179,7 +1183,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
 //    public void removeSettledToken() {
 //        Token t = tokenController.findPharmacyTokens(getPreBill());
-//        System.out.println("t = " + t.getTokenNumber());
+//        LOG.log(Level.INFO, "t = " + t.getTokenNumber());
 //        if (t == null) {
 //            return;
 //        }

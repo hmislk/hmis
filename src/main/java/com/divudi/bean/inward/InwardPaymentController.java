@@ -46,6 +46,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -55,6 +57,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class InwardPaymentController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardPaymentController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @EJB
@@ -181,9 +185,9 @@ public class InwardPaymentController implements Serializable {
     }
 
     public String fillDataForInpatientsDepositBill(String template, Bill bill) {
-        //System.out.println("fillDataForInpatientsDepositBill");
+        //LOG.log(Level.INFO, "fillDataForInpatientsDepositBill");
         if (isInvalidInwardDepositBill(template, bill)) {
-            //System.out.println("Not Valid = " + bill);
+            //LOG.log(Level.INFO, "Not Valid = " + bill);
             return "";
         }
 
@@ -336,19 +340,19 @@ public class InwardPaymentController implements Serializable {
             }
         } else if (getCurrent().getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(getCurrent().getTotal());
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (getCurrent().getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(getCurrent().getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(getCurrent().getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);

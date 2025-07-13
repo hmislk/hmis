@@ -29,9 +29,13 @@ import javax.ejb.EJB;
 import org.carecode.lims.libraries.AnalyzerDetails;
 import org.carecode.lims.libraries.DataBundle;
 import org.carecode.lims.libraries.ResultsRecord;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/middleware")
 public class MiddlewareController {
+    private static final Logger LOG = Logger.getLogger(MiddlewareController.class.getName());
+
 
     @EJB
     WebUserFacade webUserFacade;
@@ -63,7 +67,7 @@ public class MiddlewareController {
     public Response processTestOrdersForSampleRequests(String jsonInput) {
         try {
             // Deserialize the incoming JSON into QueryRecord
-            System.out.println("Deserializing JSON input...");
+            LOG.log(Level.INFO, "Deserializing JSON input...");
 // Deserialize the incoming JSON into QueryRecord
             // Deserialize the incoming JSON into QueryRecord
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
@@ -77,13 +81,13 @@ public class MiddlewareController {
             // Logic to create a PatientDataBundle based on the QueryRecord
             PatientDataBundle pdb = new PatientDataBundle();
 
-            System.out.println("Generating test codes for analyzer...");
+            LOG.log(Level.INFO, "Generating test codes for analyzer...");
             List<String> testNames = limsMiddlewareController.generateTestCodesForAnalyzer(queryRecord.getSampleId(), analyzerName);
             if (testNames == null || testNames.isEmpty()) {
                 testNames = Arrays.asList("");
             }
 
-            System.out.println("Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
+            LOG.log(Level.INFO, "Fetching patient sample for Sample ID: " + queryRecord.getSampleId());
             PatientSample ptSample = limsMiddlewareController.patientSampleFromId(queryRecord.getSampleId());
             if (ptSample == null) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Patient sample not found").build();
@@ -92,7 +96,7 @@ public class MiddlewareController {
             OrderRecord or = new OrderRecord(0, queryRecord.getSampleId(), testNames, "S", new Date(), "testInformation");
             pdb.getOrderRecords().add(or);
 
-            System.out.println("Creating PatientRecord...");
+            LOG.log(Level.INFO, "Creating PatientRecord...");
             if (ptSample.getPatient() == null) {
                 return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Invalid patient data").build();
             }
@@ -106,7 +110,7 @@ public class MiddlewareController {
                 referringDoc = ptSample.getBill().getReferredBy().getPerson().getNameWithTitle();
             }
 
-            System.out.println("AA");
+            LOG.log(Level.INFO, "AA");
 
             PatientRecord pr = new PatientRecord(0,
                     ptSample.getPatient().getIdStr(),
@@ -120,7 +124,7 @@ public class MiddlewareController {
             pdb.setPatientRecord(pr);
             // Convert the PatientDataBundle to JSON and send it in the response
             // Convert the PatientDataBundle to JSON and send it in the response
-            System.out.println("BB");
+            LOG.log(Level.INFO, "BB");
             // Convert the PatientDataBundle to JSON and send it in the response
 
             String jsonResponse = gson.toJson(pdb);
@@ -136,7 +140,7 @@ public class MiddlewareController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response receivePatientResults(String jsonInput) {
-        System.out.println("receivePatientResults");
+        LOG.log(Level.INFO, "receivePatientResults");
         try {
             Gson gson = new Gson();
             DataBundle dataBundle = gson.fromJson(jsonInput, DataBundle.class);
@@ -146,16 +150,16 @@ public class MiddlewareController {
                         = findRequestSendingUser(dataBundle.getMiddlewareSettings().getLimsSettings().getUsername(),
                                 dataBundle.getMiddlewareSettings().getLimsSettings().getPassword());
 
-                System.out.println("requestSendingUser = " + requestSendingUser);
+                LOG.log(Level.INFO, "requestSendingUser = " + requestSendingUser);
 
                 if (requestSendingUser == null) {
                     return Response.status(Response.Status.UNAUTHORIZED).build();
                 }
 
                 AnalyzerDetails analyzerDetails = dataBundle.getMiddlewareSettings().getAnalyzerDetails();
-                System.out.println("analyzerDetails = " + analyzerDetails);
+                LOG.log(Level.INFO, "analyzerDetails = " + analyzerDetails);
                 Analyzer analyzer = Analyzer.valueOf(analyzerDetails.getAnalyzerName().replace(" ", "_")); // Ensuring enum compatibility
-                System.out.println("analyzer = " + analyzer);
+                LOG.log(Level.INFO, "analyzer = " + analyzer);
                 switch (analyzer) {
                     case BioRadD10:
                         return processBioRadD10(dataBundle);
@@ -181,7 +185,7 @@ public class MiddlewareController {
                     case HumaStar600:
                     case XL_200:
                     case AIA_360:
-                        System.out.println("going to direct to processResultsCommon");
+                        LOG.log(Level.INFO, "going to direct to processResultsCommon");
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());
@@ -273,22 +277,22 @@ public class MiddlewareController {
     }
 
     public Response processResultsCommon(DataBundle dataBundle) {
-        System.out.println("processResultsCommon");
+        LOG.log(Level.INFO, "processResultsCommon");
         List<ResultsRecord> observationDetails = new ArrayList<>();
-        System.out.println("observationDetails = " + observationDetails);
+        LOG.log(Level.INFO, "observationDetails = " + observationDetails);
 
         for (ResultsRecord rr : dataBundle.getResultsRecords()) {
-            System.out.println("dataBundle = " + dataBundle);
+            LOG.log(Level.INFO, "dataBundle = " + dataBundle);
             String sampleId = rr.getSampleId();
-            System.out.println("sampleId = " + sampleId);
+            LOG.log(Level.INFO, "sampleId = " + sampleId);
             String testStr = rr.getTestCode();
-            System.out.println("testStr = " + testStr);
+            LOG.log(Level.INFO, "testStr = " + testStr);
 
             String result = rr.getResultValueString();
 
-            System.out.println("Initial result = " + result);
+            LOG.log(Level.INFO, "Initial result = " + result);
 
-            System.out.println("Final result = " + result);
+            LOG.log(Level.INFO, "Final result = " + result);
 
             String unit = rr.getResultUnits();
             String error = "";

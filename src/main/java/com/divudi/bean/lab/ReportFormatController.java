@@ -46,6 +46,8 @@ import org.primefaces.model.file.UploadedFile;
 @Named
 @SessionScoped
 public class ReportFormatController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ReportFormatController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -176,10 +178,10 @@ public class ReportFormatController implements Serializable {
     }
 
     public void removeUrlFile() {
-        System.out.println("URL");
+        LOG.log(Level.INFO, "URL");
         getUpload().setFileUrl(null);
         uploadController.saveUpload(getUpload());
-        System.out.println("URL End");
+        LOG.log(Level.INFO, "URL End");
         JsfUtil.addSuccessMessage("Removed Successfully");
 
     }

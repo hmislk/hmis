@@ -34,6 +34,8 @@ import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -43,6 +45,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class PackageItemController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PackageItemController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @EJB
@@ -149,7 +153,7 @@ public class PackageItemController implements Serializable {
             calculateTotalFee();
             setCurrent(getCurrent());
         } catch (Exception e) {
-            //////// // System.out.println(e.getMessage());
+            //////// // LOG.log(Level.INFO, e.getMessage());
         }
     }
 
@@ -160,25 +164,25 @@ public class PackageItemController implements Serializable {
     }
 
     public void addToPackage() {
-        System.out.println("addToPackage");
-        System.out.println("getCurrentPackege() = " + getCurrentPackege());
+        LOG.log(Level.INFO, "addToPackage");
+        LOG.log(Level.INFO, "getCurrentPackege() = " + getCurrentPackege());
         if (getCurrentPackege() == null) {
             JsfUtil.addErrorMessage("Please select a package");
             return;
         }
-        System.out.println("getCurrent() = " + getCurrent());
+        LOG.log(Level.INFO, "getCurrent() = " + getCurrent());
         if (getCurrent() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
-        System.out.println("getCurrent().getItem() = " + getCurrent().getItem());
+        LOG.log(Level.INFO, "getCurrent().getItem() = " + getCurrent().getItem());
         if (getCurrent().getItem() == null) {
             JsfUtil.addErrorMessage("Please select an item");
             return;
         }
         PackageItem pi = current;
         pi.setPackege(getCurrentPackege());
-        System.out.println("pi.getId() = " + pi.getId());
+        LOG.log(Level.INFO, "pi.getId() = " + pi.getId());
         if(pi.getId() != null){
             packageItemFacade.edit(pi);
         }else{

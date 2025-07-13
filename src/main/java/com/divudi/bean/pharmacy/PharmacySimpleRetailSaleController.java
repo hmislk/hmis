@@ -102,6 +102,8 @@ import javax.persistence.TemporalType;
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -112,6 +114,8 @@ import org.primefaces.event.TabChangeEvent;
 @SessionScoped
 @Deprecated // Simple Sale feature removed. Use PharmacyRetailSaleController for retail sales.
 public class PharmacySimpleRetailSaleController implements Serializable, ControllerWithPatient, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(PharmacySimpleRetailSaleController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -322,7 +326,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                     return;
                 }
                 if (bi.getQty() <= 0.0) {
-                    ////System.out.println("bi.getQty() = " + bi.getQty());
+                    ////LOG.log(Level.INFO, "bi.getQty() = " + bi.getQty());
                     JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
                     billSettlingStarted = false;
                     return;
@@ -422,19 +426,19 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
         jpql.append(") ORDER BY i.itemName, i.dateOfExpire");
 
-        System.out.println("sql.toString() = " + jpql.toString());
-        System.out.println("parameters = " + parameters);
+        LOG.log(Level.INFO, "sql.toString() = " + jpql.toString());
+        LOG.log(Level.INFO, "parameters = " + parameters);
         List<Stock> ss = getStockFacade().findByJpql(jpql.toString(), parameters, 20);
-        System.out.println("ss = " + ss);
+        LOG.log(Level.INFO, "ss = " + ss);
         return ss;
     }
 
     public List<StockLight> completeStockLights(String qry) {
         long startTime = System.currentTimeMillis();
-        System.out.println("INFO:   completeStockLights started");
+        LOG.log(Level.INFO, "INFO:   completeStockLights started");
 
         if (qry == null || qry.trim().isEmpty()) {
-            System.out.println("INFO:   Validation check took: " + (System.currentTimeMillis() - startTime) + " ms");
+            LOG.log(Level.INFO, "INFO:   Validation check took: " + (System.currentTimeMillis() - startTime) + " ms");
             return Collections.emptyList();
         }
 
@@ -444,7 +448,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         parameters.put("stockMin", 0.0);
         parameters.put("query", qry.trim() + "%");  // changed from %qry% to qry%
         parameters.put("today", new Date());
-        System.out.println("INFO:   Building parameters took: " + (System.currentTimeMillis() - paramStartTime) + " ms");
+        LOG.log(Level.INFO, "INFO:   Building parameters took: " + (System.currentTimeMillis() - paramStartTime) + " ms");
 
         String jpql = "SELECT new com.divudi.core.data.StockLight("
                 + "s.id, s.itemName, s.code, s.barcode, s.dateOfExpire, s.retailsaleRate, s.stock) "
@@ -455,16 +459,16 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 + // filter for non-expired
                 "AND (s.itemName LIKE :query OR s.code LIKE :query OR s.barcode LIKE :query) "
                 + "ORDER BY s.itemName";
-        System.out.println("INFO:   JPQL built: " + jpql);
-        System.out.println("INFO:   Parameters: " + parameters);
+        LOG.log(Level.INFO, "INFO:   JPQL built: " + jpql);
+        LOG.log(Level.INFO, "INFO:   Parameters: " + parameters);
 
         long queryStartTime = System.currentTimeMillis();
         List<StockLight> sls = (List<StockLight>) stockFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP, 20);
         long queryEndTime = System.currentTimeMillis();
-        System.out.println("INFO:   Query execution took: " + (queryEndTime - queryStartTime) + " ms");
-        System.out.println("INFO:   Result size: " + sls.size());
+        LOG.log(Level.INFO, "INFO:   Query execution took: " + (queryEndTime - queryStartTime) + " ms");
+        LOG.log(Level.INFO, "INFO:   Result size: " + sls.size());
 
-        System.out.println("INFO:   completeStockLights finished. Total time: " + (System.currentTimeMillis() - startTime) + " ms");
+        LOG.log(Level.INFO, "INFO:   completeStockLights finished. Total time: " + (System.currentTimeMillis() - startTime) + " ms");
 
         return sls;
     }
@@ -776,11 +780,11 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     public void editQty(BillItem bi) {
         if (bi == null) {
-            //////System.out.println("No Bill Item to Edit Qty");
+            //////LOG.log(Level.INFO, "No Bill Item to Edit Qty");
             return;
         }
         if (editingQty == null) {
-            //////System.out.println("Editing qty is null");
+            //////LOG.log(Level.INFO, "Editing qty is null");
             return;
         }
 
@@ -1002,7 +1006,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
     public void processBillItems() {
-        System.out.println("processBillItems");
+        LOG.log(Level.INFO, "processBillItems");
         calculateAllRates();
         calculateTotals();
     }
@@ -1108,7 +1112,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         billItem.getPharmaceuticalBillItem().setStock(stock);
         billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
         calculateBillItem();
-        ////System.out.println("Rate*****" + billItem.getRate());
+        ////LOG.log(Level.INFO, "Rate*****" + billItem.getRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
         billItem.setItem(getStock().getItemBatch().getItem());
@@ -1194,9 +1198,9 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         }
 
 //        addedQty = addBillItemSingleItem();
-//        System.out.println("stock = " + userSelectedStock);
-//        System.out.println("stock item batch = " + userSelectedStock.getItemBatch());
-//        System.out.println("stock item batch item= " + userSelectedStock.getItemBatch().getItem());
+//        LOG.log(Level.INFO, "stock = " + userSelectedStock);
+//        LOG.log(Level.INFO, "stock item batch = " + userSelectedStock.getItemBatch());
+//        LOG.log(Level.INFO, "stock item batch item= " + userSelectedStock.getItemBatch().getItem());
         List<Stock> availableStocks = stockController.findNextAvailableStocks(userSelectedStock);
         for (Stock s : availableStocks) {
             stock = s;
@@ -1269,7 +1273,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
 //    public void calculateAllRatesNew() {
-//        ////////System.out.println("calculating all rates");
+//        ////////LOG.log(Level.INFO, "calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
 //            calculateRates(tbi);
 //            calculateBillItemForEditing(tbi);
@@ -1293,7 +1297,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getNetValue());
         }
-        ////System.out.println("2.discount = " + discount);
+        ////LOG.log(Level.INFO, "2.discount = " + discount);
         //   netTot = netTot + getPreBill().getServiceCharge();
         getPreBill().setNetTotal(netTot);
         getPreBill().setTotal(grossTot);
@@ -1608,7 +1612,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
                 }
 
                 newBil.setPrescription(tbi.getPrescription());
-                System.out.println(patient);
+                LOG.log(Level.INFO, patient);
                 tbi.getPrescription().setPatient(patient);
                 tbi.getPrescription().setCreatedAt(new Date());
                 tbi.getPrescription().setCreater(sessionController.getWebUser());
@@ -2153,7 +2157,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             discount = discount + b.getDiscount();
             getPreBill().setTotal(getPreBill().getTotal() + b.getGrossValue());
         }
-        ////System.out.println("1.discount = " + discount);
+        ////LOG.log(Level.INFO, "1.discount = " + discount);
         netTot = netTot + getPreBill().getServiceCharge();
 
         getPreBill().setNetTotal(netTot);
@@ -2225,18 +2229,18 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
-        //////System.out.println("calculateBillItemForEditing");
-        //////System.out.println("bi = " + bi);
+        //////LOG.log(Level.INFO, "calculateBillItemForEditing");
+        //////LOG.log(Level.INFO, "bi = " + bi);
         if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
-            //////System.out.println("calculateItemForEditingFailedBecause of null");
+            //////LOG.log(Level.INFO, "calculateItemForEditingFailedBecause of null");
             return;
         }
-        //////System.out.println("bi.getQty() = " + bi.getQty());
-        //////System.out.println("bi.getRate() = " + bi.getRate());
+        //////LOG.log(Level.INFO, "bi.getQty() = " + bi.getQty());
+        //////LOG.log(Level.INFO, "bi.getRate() = " + bi.getRate());
         bi.setGrossValue(bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate() * bi.getQty());
         bi.setNetValue(bi.getQty() * bi.getNetRate());
         bi.setDiscount(bi.getGrossValue() - bi.getNetValue());
-        //////System.out.println("bi.getNetValue() = " + bi.getNetValue());
+        //////LOG.log(Level.INFO, "bi.getNetValue() = " + bi.getNetValue());
 
     }
 
@@ -2279,7 +2283,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
     }
 
 //    public void calculateAllRates() {
-//        //////System.out.println("calculating all rates");
+//        //////LOG.log(Level.INFO, "calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
 //            calculateDiscountRates(tbi);
 //            calculateBillItemForEditing(tbi);
@@ -2312,7 +2316,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
 //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
-        System.out.println("calculateBillItemDiscountRate");
+        LOG.log(Level.INFO, "calculateBillItemDiscountRate");
         if (bi == null) {
             return 0.0;
         }
@@ -2329,7 +2333,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
         double retailRate = bi.getPharmaceuticalBillItem().getStock().getItemBatch().getRetailsaleRate();
         double discountRate = 0;
         boolean discountAllowed = bi.getItem().isDiscountAllowed();
-        System.out.println("discountAllowed = " + discountAllowed);
+        LOG.log(Level.INFO, "discountAllowed = " + discountAllowed);
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         //MEMBERSHIPSCHEME DISCOUNT
 //        if (membershipScheme != null && discountAllowed) {
@@ -2348,24 +2352,24 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 //
         //PAYMENTSCHEME DISCOUNT
 
-        System.out.println("getPaymentScheme() = " + getPaymentScheme());
+        LOG.log(Level.INFO, "getPaymentScheme() = " + getPaymentScheme());
         if (getPaymentScheme() != null && discountAllowed) {
-            System.out.println("getPaymentMethod() = " + getPaymentMethod());
-            System.out.println("getPaymentScheme() = " + getPaymentScheme());
-            System.out.println("getSessionController().getDepartment() = " + getSessionController().getDepartment());
-            System.out.println("bi.getItem() = " + bi.getItem());
+            LOG.log(Level.INFO, "getPaymentMethod() = " + getPaymentMethod());
+            LOG.log(Level.INFO, "getPaymentScheme() = " + getPaymentScheme());
+            LOG.log(Level.INFO, "getSessionController().getDepartment() = " + getSessionController().getDepartment());
+            LOG.log(Level.INFO, "bi.getItem() = " + bi.getItem());
             PriceMatrix priceMatrix = getPriceMatrixController().getPaymentSchemeDiscount(getPaymentMethod(), getPaymentScheme(), getSessionController().getDepartment(), bi.getItem());
 
             System.err.println("priceMatrix = " + priceMatrix);
             if (priceMatrix != null) {
                 bi.setPriceMatrix(priceMatrix);
                 discountRate = priceMatrix.getDiscountPercent();
-                System.out.println("discountRate = " + discountRate);
+                LOG.log(Level.INFO, "discountRate = " + discountRate);
             }
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("1 dr = " + dr);
+            LOG.log(Level.INFO, "1 dr = " + dr);
             return dr;
 
         }
@@ -2381,7 +2385,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("2 dr = " + dr);
+            LOG.log(Level.INFO, "2 dr = " + dr);
             return dr;
 
         }
@@ -2392,10 +2396,10 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
             double dr;
             dr = (retailRate * discountRate) / 100;
-            System.out.println("3 dr = " + dr);
+            LOG.log(Level.INFO, "3 dr = " + dr);
             return dr;
         }
-        System.out.println("no dr");
+        LOG.log(Level.INFO, "no dr");
         return 0;
 
     }
@@ -2680,22 +2684,22 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     @Override
     public void setPatient(Patient patient) {
-        System.out.println("setPatient in PharmacySaleController");
+        LOG.log(Level.INFO, "setPatient in PharmacySaleController");
         this.patient = patient;
         selectPaymentSchemeAsPerPatientMembership();
     }
 
     private void selectPaymentSchemeAsPerPatientMembership() {
-        System.out.println("selectPaymentSchemeAsPerPatientMembership");
-        System.out.println("patient = " + patient);
+        LOG.log(Level.INFO, "selectPaymentSchemeAsPerPatientMembership");
+        LOG.log(Level.INFO, "patient = " + patient);
         if (patient == null) {
             return;
         }
-        System.out.println("patient.getPerson().getMembershipScheme() = " + patient.getPerson().getMembershipScheme());
+        LOG.log(Level.INFO, "patient.getPerson().getMembershipScheme() = " + patient.getPerson().getMembershipScheme());
         if (patient.getPerson().getMembershipScheme() == null) {
             paymentScheme = null;
         } else {
-            System.out.println("patient.getPerson().getMembershipScheme().getPaymentScheme() = " + patient.getPerson().getMembershipScheme().getPaymentScheme());
+            LOG.log(Level.INFO, "patient.getPerson().getMembershipScheme().getPaymentScheme() = " + patient.getPerson().getMembershipScheme().getPaymentScheme());
             setPaymentScheme(patient.getPerson().getMembershipScheme().getPaymentScheme());
         }
         listnerForPaymentMethodChange();
@@ -3011,7 +3015,7 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
 
     @Override
     public void listnerForPaymentMethodChange() {
-        System.out.println("listnerForPaymentMethodChange");
+        LOG.log(Level.INFO, "listnerForPaymentMethodChange");
         if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
@@ -3022,19 +3026,19 @@ public class PharmacySimpleRetailSaleController implements Serializable, Control
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);

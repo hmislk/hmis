@@ -51,6 +51,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -59,6 +61,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class GrnReturnWithCostingController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(GrnReturnWithCostingController.class.getName());
+
 
     /**
      * EJBs
@@ -471,7 +475,7 @@ public class GrnReturnWithCostingController implements Serializable {
             }
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
-            System.out.println("pbi.getQty() = " + pbi.getQty());
+            LOG.log(Level.INFO, "pbi.getQty() = " + pbi.getQty());
             pharmacyCostingService.makeAllQuantityValuesNegative(pbi);
             if (i.getId() == null) {
                 i.setCreatedAt(new Date());
@@ -481,7 +485,7 @@ public class GrnReturnWithCostingController implements Serializable {
                 billItemFacade.edit(i);
             }
 
-            System.out.println("fd.getTotalQuantityByUnits().doubleValue() = " + fd.getTotalQuantityByUnits().doubleValue());
+            LOG.log(Level.INFO, "fd.getTotalQuantityByUnits().doubleValue() = " + fd.getTotalQuantityByUnits().doubleValue());
             
             boolean stockUpdatedSuccessfully = getPharmacyBean().deductFromStock(
                     pbi.getStock(),
@@ -552,9 +556,9 @@ public class GrnReturnWithCostingController implements Serializable {
             fd.setTotalQuantity(fd.getQuantity().add(fd.getFreeQuantity()));
             pharmacyCostingService.addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(pbi, fd);
 
-            System.out.println("fd.getQuantity() = " + fd.getQuantity());
-            System.out.println("fd.getFreeQuantity() = " + fd.getFreeQuantity());
-            System.out.println("fd.getTotalQuantity() = " + fd.getTotalQuantity());
+            LOG.log(Level.INFO, "fd.getQuantity() = " + fd.getQuantity());
+            LOG.log(Level.INFO, "fd.getFreeQuantity() = " + fd.getFreeQuantity());
+            LOG.log(Level.INFO, "fd.getTotalQuantity() = " + fd.getTotalQuantity());
             
             fd.setLineNetRate(fd.getLineGrossRate());
             fd.setLineCostRate(BigDecimal.valueOf(costRate));

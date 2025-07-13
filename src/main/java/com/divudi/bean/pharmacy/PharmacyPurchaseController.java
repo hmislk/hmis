@@ -60,6 +60,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -68,6 +70,8 @@ import org.primefaces.event.SelectEvent;
 @Named
 @SessionScoped
 public class PharmacyPurchaseController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(PharmacyPurchaseController.class.getName());
+
 
     /**
      * EJBs
@@ -158,8 +162,8 @@ public class PharmacyPurchaseController implements Serializable {
 
     public void onItemSelect(SelectEvent event) {
 //        Item selectedItem = (Item) event.getObject();
-//        System.out.println("selectedItem = " + selectedItem);
-//        System.out.println("getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
+//        LOG.log(Level.INFO, "selectedItem = " + selectedItem);
+//        LOG.log(Level.INFO, "getCurrentBillItem().getItem() = " + getCurrentBillItem().getItem());
         getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getPharmacyBean().getLastPurchaseRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
         getCurrentBillItem().getPharmaceuticalBillItem().setRetailRate(getPharmacyBean().getLastRetailRate(getCurrentBillItem().getItem(), getSessionController().getDepartment()));
     }
@@ -477,10 +481,10 @@ public class PharmacyPurchaseController implements Serializable {
         double grossTotal;
         if (getBill().getDiscount() > 0 || getBill().getTax() > 0) {
             grossTotal = getBill().getTotal() + getBill().getDiscount() - getBill().getTax();
-            ////// // System.out.println("gross" + grossTotal);
-            ////// // System.out.println("net1" + getBill().getNetTotal());
+            ////// // LOG.log(Level.INFO, "gross" + grossTotal);
+            ////// // LOG.log(Level.INFO, "net1" + getBill().getNetTotal());
             getBill().setNetTotal(grossTotal);
-            ////// // System.out.println("net2" + getBill().getNetTotal());
+            ////// // LOG.log(Level.INFO, "net2" + getBill().getNetTotal());
         }
 
     }
@@ -727,7 +731,7 @@ public class PharmacyPurchaseController implements Serializable {
     }
 
     public void addItem() {
-        System.out.println("add item = ");
+        LOG.log(Level.INFO, "add item = ");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
@@ -768,7 +772,7 @@ public class PharmacyPurchaseController implements Serializable {
             getCurrentBillItem().getPharmaceuticalBillItem().setPurchaseRate(getCurrentBillItem().getPharmaceuticalBillItem().getPurchaseRatePack() / getCurrentBillItem().getItem().getDblValue());
         }
 
-        System.out.println("getBillItems().size() = " + getBillItems().size());
+        LOG.log(Level.INFO, "getBillItems().size() = " + getBillItems().size());
 
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);

@@ -96,6 +96,8 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -105,6 +107,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class BillController implements Serializable, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(BillController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
 
@@ -510,10 +514,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         temp.setTotal(opdPaymentCredit);
         temp.setPaidAmount(opdPaymentCredit);
         temp.setNetTotal(opdPaymentCredit);
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
-        ////// // System.out.println("opdPaymentCredit = " + opdPaymentCredit);
+        ////// // LOG.log(Level.INFO, "opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+        ////// // LOG.log(Level.INFO, "opdPaymentCredit = " + opdPaymentCredit);
         opdBill.setPaidAmount(opdPaymentCredit + opdBill.getPaidAmount());
-        ////// // System.out.println("opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
+        ////// // LOG.log(Level.INFO, "opdBill.getPaidAmount() = " + opdBill.getPaidAmount());
         getBillFacade().edit(opdBill);
 
         temp.setDeptId(getBillNumberGenerator().departmentBillNumberGenerator(getSessionController().getDepartment(), getSessionController().getDepartment(), BillType.CashRecieveBill, BillClassType.BilledBill));
@@ -688,7 +692,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         try {
             cashPaid = Double.parseDouble(strTenderedValue);
         } catch (NumberFormatException e) {
-            //////// // System.out.println("Error in converting tendered value. \n " + e.getMessage());
+            //////// // LOG.log(Level.INFO, "Error in converting tendered value. \n " + e.getMessage());
         }
     }
 
@@ -757,7 +761,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 //    }
 //
     public List<Bill> completeOpdCreditPackageBatchBill(String qry) {
-        System.out.println("completeOpdCreditPackageBatchBill");
+        LOG.log(Level.INFO, "completeOpdCreditPackageBatchBill");
         List<Bill> a = null;
         String sql;
         HashMap hash = new HashMap();
@@ -780,10 +784,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             hash.put("pm", PaymentMethod.Credit);
             hash.put("val", 0.1);
             hash.put("q", "%" + qry.toUpperCase() + "%");
-            System.out.println("qry = " + qry);
-            System.out.println("hash = " + hash);
+            LOG.log(Level.INFO, "qry = " + qry);
+            LOG.log(Level.INFO, "hash = " + hash);
             a = getFacade().findByJpql(sql, hash);
-            System.out.println("a = " + a);
+            LOG.log(Level.INFO, "a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -792,7 +796,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public List<Bill> completeOpdCreditBatchBill(String qry) {
-        System.out.println("completeOpdCreditBatchBill");
+        LOG.log(Level.INFO, "completeOpdCreditBatchBill");
         List<Bill> a = null;
         String jpql;
         HashMap params = new HashMap();
@@ -816,9 +820,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             params.put("val", 0.1);
             params.put("q", "%" + qry.toUpperCase() + "%");
             a = getFacade().findByJpql(jpql, params);
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("a = " + a);
+            LOG.log(Level.INFO, "jpql = " + jpql);
+            LOG.log(Level.INFO, "params = " + params);
+            LOG.log(Level.INFO, "a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -827,7 +831,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public List<Bill> completeInwardCreditCompanyPaymentBill(String qry) {
-        System.out.println("completeInwardCreditCompanyPaymentBill");
+        LOG.log(Level.INFO, "completeInwardCreditCompanyPaymentBill");
         List<Bill> a = null;
         String jpql;
         HashMap params = new HashMap();
@@ -850,9 +854,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             params.put("val", 0.1);
             params.put("q", "%" + qry.toUpperCase() + "%");
             a = getFacade().findByJpql(jpql, params);
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("a = " + a);
+            LOG.log(Level.INFO, "jpql = " + jpql);
+            LOG.log(Level.INFO, "params = " + params);
+            LOG.log(Level.INFO, "a = " + a);
         }
         if (a == null) {
             a = new ArrayList<>();
@@ -885,10 +889,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             hash.put("q", "%" + qry.toUpperCase() + "%");
             hash.put("ins", getSessionController().getInstitution());
 //            hash.put("dep", getSessionController().getDepartment());
-//            //// // System.out.println("hash = " + hash);
-//            //// // System.out.println("sql = " + sql);
-//            //// // System.out.println("getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
-//            //// // System.out.println("getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
+//            //// // LOG.log(Level.INFO, "hash = " + hash);
+//            //// // LOG.log(Level.INFO, "sql = " + sql);
+//            //// // LOG.log(Level.INFO, "getSessionController().getInstitution().getName() = " + getSessionController().getInstitution().getName());
+//            //// // LOG.log(Level.INFO, "getSessionController().getDepartment().getName() = " + getSessionController().getDepartment().getName());
             a = getFacade().findByJpql(sql, hash);
         }
         if (a == null) {
@@ -1567,14 +1571,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void setPrintigBill() {
-        ////// // System.out.println("In Print");
+        ////// // LOG.log(Level.INFO, "In Print");
         billPrint = bill;
         billsPrint = bills;
         lstBillComponentsPrint = lstBillComponents;
         lstBillEntriesPrint = lstBillEntries;
         lstBillFeesPrint = lstBillFees;
         lstBillItemsPrint = lstBillItems;
-        ////// // System.out.println("Out Print");
+        ////// // LOG.log(Level.INFO, "Out Print");
     }
 
     @Deprecated
@@ -2615,9 +2619,9 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
     private String generateBillNumberInsId(Bill bill) {
 
-        ////// // System.out.println("getBillNumberGenerator() = " + getBillNumberGenerator());
-        ////// // System.out.println("bill = " + bill);
-        ////// // System.out.println("bill.getInstitution() = " + bill.getInstitution());
+        ////// // LOG.log(Level.INFO, "getBillNumberGenerator() = " + getBillNumberGenerator());
+        ////// // LOG.log(Level.INFO, "bill = " + bill);
+        ////// // LOG.log(Level.INFO, "bill.getInstitution() = " + bill.getInstitution());
         String insId = getBillNumberGenerator().institutionBillNumberGenerator(bill.getInstitution(), bill.getToDepartment(), bill.getBillType(), BillClassType.BilledBill, BillNumberSuffix.NONE);
 //        try {
 //            insId = getBillNumberGenerator().institutionBillNumberGenerator(bill, bill.getToDepartment(), BillClassType.BilledBill, BillNumberSuffix.NONE);
@@ -2807,14 +2811,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void fillBillSessions(SelectEvent event) {
-        ////// // System.out.println("event = " + event);
-        ////// // System.out.println("this = filling bill sessions");
+        ////// // LOG.log(Level.INFO, "event = " + event);
+        ////// // LOG.log(Level.INFO, "this = filling bill sessions");
         if (lastBillItem != null && lastBillItem.getItem() != null) {
             billSessions = getServiceSessionBean().getBillSessions(lastBillItem.getItem(), getSessionDate());
-            ////// // System.out.println("billSessions = " + billSessions);
-        } else ////// // System.out.println("billSessions = " + billSessions);
+            ////// // LOG.log(Level.INFO, "billSessions = " + billSessions);
+        } else ////// // LOG.log(Level.INFO, "billSessions = " + billSessions);
         if (billSessions == null || !billSessions.isEmpty()) {
-            ////// // System.out.println("new array");
+            ////// // LOG.log(Level.INFO, "new array");
             billSessions = new ArrayList<>();
         }
     }
@@ -2838,7 +2842,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 //        List<BillType> bts = new ArrayList<>();
 //        bts.add(bt);
-//        System.out.println("listBillsLights = ");
+//        LOG.log(Level.INFO, "listBillsLights = ");
 //        return listBillsLights(bts, ins, dep, fd, td);
 
         String sql;
@@ -2986,8 +2990,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         }
 
         // Logging
-        System.out.println("JPQL Query: " + jpql);
-        System.out.println("Parameters: " + params);
+        LOG.log(Level.INFO, "JPQL Query: " + jpql);
+        LOG.log(Level.INFO, "Parameters: " + params);
 
         return getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
@@ -3065,7 +3069,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * @param billTypeAtomic the atomic bill type to filter and process
      */
     public void fixTotalsInBillsByAtomicType(BillTypeAtomic billTypeAtomic) {
-        System.out.println("Starting temporary fix for bill type: " + billTypeAtomic);
+        LOG.log(Level.INFO, "Starting temporary fix for bill type: " + billTypeAtomic);
 
         String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
         Map<String, Object> params = new HashMap<>();
@@ -3074,14 +3078,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
 
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found for type: " + billTypeAtomic);
+            LOG.log(Level.INFO, "No matching bills found for type: " + billTypeAtomic);
             return;
         }
 
-        System.out.println("Found " + bills.size() + " bills to process.");
+        LOG.log(Level.INFO, "Found " + bills.size() + " bills to process.");
 
         for (Bill b : bills) {
-            System.out.println("Processing bill ID: " + b.getId());
+            LOG.log(Level.INFO, "Processing bill ID: " + b.getId());
 
             double total = 0.0;
             double netTotal = 0.0;
@@ -3097,19 +3101,19 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 netTotal += bi.getNetValue();
             }
 
-            System.out.println("Calculated Gross Total: " + total + " | Existing: " + b.getTotal());
-            System.out.println("Calculated Net Total: " + netTotal + " | Existing: " + b.getNetTotal());
+            LOG.log(Level.INFO, "Calculated Gross Total: " + total + " | Existing: " + b.getTotal());
+            LOG.log(Level.INFO, "Calculated Net Total: " + netTotal + " | Existing: " + b.getNetTotal());
 
             if (Math.abs(b.getNetTotal() - netTotal) >= 1.0) {
-                System.out.println("Skipping bill ID: " + b.getId() + ". Net total mismatch suggests deeper issue.");
+                LOG.log(Level.INFO, "Skipping bill ID: " + b.getId() + ". Net total mismatch suggests deeper issue.");
             } else {
-                System.out.println("Updating gross total for bill ID: " + b.getId());
+                LOG.log(Level.INFO, "Updating gross total for bill ID: " + b.getId());
                 b.setTotal(total);
                 getFacade().edit(b);
             }
         }
 
-        System.out.println("Completed processing for bill type: " + billTypeAtomic);
+        LOG.log(Level.INFO, "Completed processing for bill type: " + billTypeAtomic);
     }
 
     /**
@@ -3123,7 +3127,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * ChatGPT contributed - 2025-04
      */
     public void correctBillItemRatesInPHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY() {
-        System.out.println("Starting BillItem correction for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY");
+        LOG.log(Level.INFO, "Starting BillItem correction for PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY");
 
         String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
         Map<String, Object> params = new HashMap<>();
@@ -3131,14 +3135,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found.");
+            LOG.log(Level.INFO, "No matching bills found.");
             return;
         }
 
-        System.out.println("Number of bills found: " + bills.size());
+        LOG.log(Level.INFO, "Number of bills found: " + bills.size());
 
         for (Bill bill : bills) {
-            System.out.println("Processing bill ID: " + bill.getId());
+            LOG.log(Level.INFO, "Processing bill ID: " + bill.getId());
             for (BillItem bi : bill.getBillItems()) {
                 boolean updated = false;
 
@@ -3164,14 +3168,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
                 if (updated) {
                     billItemFacade.edit(bi);
-                    System.out.println("Updated BillItem ID: " + bi.getId());
+                    LOG.log(Level.INFO, "Updated BillItem ID: " + bi.getId());
                 } else {
-                    System.out.println("No update needed for BillItem ID: " + bi.getId());
+                    LOG.log(Level.INFO, "No update needed for BillItem ID: " + bi.getId());
                 }
             }
         }
 
-        System.out.println("Completed correction of BillItem values.");
+        LOG.log(Level.INFO, "Completed correction of BillItem values.");
     }
 
     /**
@@ -3187,7 +3191,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      * ChatGPT contributed - 2025-04
      */
     public void correctBillItemRatesInDIRECT_ISSUE_INWARD_MEDICINE_RETURN() {
-        System.out.println("Starting BillItem correction for DIRECT_ISSUE_INWARD_MEDICINE_RETURN");
+        LOG.log(Level.INFO, "Starting BillItem correction for DIRECT_ISSUE_INWARD_MEDICINE_RETURN");
 
         String jpql = "SELECT b FROM Bill b WHERE b.retired = false AND b.billTypeAtomic = :bta";
         Map<String, Object> params = new HashMap<>();
@@ -3195,14 +3199,14 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
         List<Bill> bills = getFacade().findByJpql(jpql, params, 1000);
         if (bills == null || bills.isEmpty()) {
-            System.out.println("No matching bills found.");
+            LOG.log(Level.INFO, "No matching bills found.");
             return;
         }
 
-        System.out.println("Number of bills found: " + bills.size());
+        LOG.log(Level.INFO, "Number of bills found: " + bills.size());
 
         for (Bill bill : bills) {
-            System.out.println("Processing bill ID: " + bill.getId());
+            LOG.log(Level.INFO, "Processing bill ID: " + bill.getId());
             for (BillItem bi : bill.getBillItems()) {
                 boolean updated = false;
 
@@ -3262,18 +3266,18 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
                 if (updated) {
                     billItemFacade.edit(bi);
-                    System.out.println("Updated BillItem ID: " + bi.getId());
+                    LOG.log(Level.INFO, "Updated BillItem ID: " + bi.getId());
                 } else {
-                    System.out.println("No update needed for BillItem ID: " + bi.getId());
+                    LOG.log(Level.INFO, "No update needed for BillItem ID: " + bi.getId());
                 }
             }
         }
 
-        System.out.println("Completed correction of BillItem and PharmaceuticalBillItem values.");
+        LOG.log(Level.INFO, "Completed correction of BillItem and PharmaceuticalBillItem values.");
     }
 
     public void addMissingBillTypeAtomics() {
-        System.out.println("addMissingBillTypeAtomics");
+        LOG.log(Level.INFO, "addMissingBillTypeAtomics");
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -3283,10 +3287,10 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         m.put("ret", false);
         List<Bill> billsWithoutBillTypeAtomic = getFacade().findByJpql(jpql, m, 1000);
         if (billsWithoutBillTypeAtomic == null) {
-            System.out.println("No Bills");
+            LOG.log(Level.INFO, "No Bills");
             return;
         }
-        System.out.println("billsWithoutBillTypeAtomic = " + billsWithoutBillTypeAtomic.size());
+        LOG.log(Level.INFO, "billsWithoutBillTypeAtomic = " + billsWithoutBillTypeAtomic.size());
         for (Bill b : billsWithoutBillTypeAtomic) {
             if (b.getBillTypeAtomic() != null) {
                 continue;
@@ -3310,7 +3314,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
      */
     public void convertPharmaceuticalBillItemReferanceFromErronouslyRecordedPharmacyRetailSaleCancellationPreBillToPharmacyRetailSalePreBillForAllBills() {
         if (getFromDate() == null || getToDate() == null) {
-            System.out.println("FromDate or ToDate is null. Aborting process.");
+            LOG.log(Level.INFO, "FromDate or ToDate is null. Aborting process.");
             return;
         }
 
@@ -3326,11 +3330,11 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         List<Bill> pharmacyRetailSaleCancellationBills = getFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
         if (pharmacyRetailSaleCancellationBills == null || pharmacyRetailSaleCancellationBills.isEmpty()) {
-            System.out.println("No matching bills found for type: " + billTypeAtomic);
+            LOG.log(Level.INFO, "No matching bills found for type: " + billTypeAtomic);
             return;
         }
 
-        System.out.println("Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
+        LOG.log(Level.INFO, "Found " + pharmacyRetailSaleCancellationBills.size() + " cancelled bills to process...");
 
         for (Bill cancelledBill : pharmacyRetailSaleCancellationBills) {
             if (cancelledBill == null) {
@@ -3345,12 +3349,12 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             Long billId = cancelledBill.getId() != null ? cancelledBill.getId() : -1L;
 
             if (pbis == null || pbis.isEmpty()) {
-                System.out.println("Cancelled bill ID " + billId + " has no pharmaceutical bill items.");
+                LOG.log(Level.INFO, "Cancelled bill ID " + billId + " has no pharmaceutical bill items.");
                 continue;
             }
 
             if (bis == null || bis.isEmpty()) {
-                System.out.println("Cancelled bill ID " + billId + " has no bill items.");
+                LOG.log(Level.INFO, "Cancelled bill ID " + billId + " has no bill items.");
                 continue;
             }
 
@@ -3358,7 +3362,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             int numberOfPharmaceuticalBillItems = pbis.size();
 
             if (numberOfPharmaceuticalBillItems != (numberOfBillItems * 2)) {
-                System.out.println("Cancelled bill ID " + billId
+                LOG.log(Level.INFO, "Cancelled bill ID " + billId
                         + " skipped: Expected PBI count = " + (numberOfBillItems * 2)
                         + ", Found = " + numberOfPharmaceuticalBillItems);
                 continue;
@@ -3378,7 +3382,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             }
         }
 
-        System.out.println("Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
+        LOG.log(Level.INFO, "Completed batch correction of wrongly assigned PharmaceuticalBillItems.");
     }
 
     /**
@@ -3459,27 +3463,27 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         PharmaceuticalBillItem pbiFromCancelledBill = null;
 
         if (pbi == null) {
-            System.out.println("No Selected Pharmaceutical Bill Item - returning");
+            LOG.log(Level.INFO, "No Selected Pharmaceutical Bill Item - returning");
             return;
         } else {
             pbiFromCancelledBill = pbi;
-            System.out.println("Selected Pharmaceutical Bill Item ID: " + pbiFromCancelledBill.getId());
+            LOG.log(Level.INFO, "Selected Pharmaceutical Bill Item ID: " + pbiFromCancelledBill.getId());
         }
 
         if (pbiFromCancelledBill.getBillItem() == null) {
-            System.out.println("Cancelled BillItem is null - returning");
+            LOG.log(Level.INFO, "Cancelled BillItem is null - returning");
             return;
         } else {
             originalBillItemNowWonglyAssignedToCancelledBill = pbi.getBillItem();
-            System.out.println("Original BillItem ID: " + originalBillItemNowWonglyAssignedToCancelledBill.getId());
+            LOG.log(Level.INFO, "Original BillItem ID: " + originalBillItemNowWonglyAssignedToCancelledBill.getId());
         }
 
         if (originalBillItemNowWonglyAssignedToCancelledBill.getBill() == null) {
-            System.out.println("Cancelled Bill is null - returning");
+            LOG.log(Level.INFO, "Cancelled Bill is null - returning");
             return;
         } else {
             cancelledBill = pbi.getBillItem().getBill();
-            System.out.println("Cancelled Bill ID: " + cancelledBill.getId());
+            LOG.log(Level.INFO, "Cancelled Bill ID: " + cancelledBill.getId());
         }
 
         Long cancelledBillId = originalBillItemNowWonglyAssignedToCancelledBill.getId();
@@ -3488,56 +3492,56 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         // Sampbple cancelledtion bill id is 542424
         // Sample Correct PBI ID is 542428
         // Sample Wrong PBI ID is 542417
-        System.out.println("Cancelled BillItem ID: " + cancelledBillId);
-        System.out.println("Selected PBI ID: " + pbiFromCancelledBillId);
+        LOG.log(Level.INFO, "Cancelled BillItem ID: " + cancelledBillId);
+        LOG.log(Level.INFO, "Selected PBI ID: " + pbiFromCancelledBillId);
 
         if (pbiFromCancelledBillId < cancelledBillId) {
-            System.out.println("Clicking on the wrong Pharmaceutical Bill Item. Select the other one - returning");
+            LOG.log(Level.INFO, "Clicking on the wrong Pharmaceutical Bill Item. Select the other one - returning");
             return;
         }
 
         if (cancelledBill.getBillTypeAtomic() == null) {
-            System.out.println("Cancelled BillTypeAtomic is null - returning");
+            LOG.log(Level.INFO, "Cancelled BillTypeAtomic is null - returning");
             return;
         }
 
         if (cancelledBill.getBillTypeAtomic() != BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED) {
-            System.out.println("Cancelled bill type is not PHARMACY_RETAIL_SALE_CANCELLED - returning");
+            LOG.log(Level.INFO, "Cancelled bill type is not PHARMACY_RETAIL_SALE_CANCELLED - returning");
             return;
         }
 
         if (cancelledBill.getBilledBill() == null) {
-            System.out.println("Cancelled bill has no billed bill - returning");
+            LOG.log(Level.INFO, "Cancelled bill has no billed bill - returning");
             return;
         } else {
             originalBill = cancelledBill.getBilledBill();
-            System.out.println("Original Bill ID: " + originalBill.getId());
+            LOG.log(Level.INFO, "Original Bill ID: " + originalBill.getId());
         }
 
         if (originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem() == null) {
-            System.out.println("Original BillItem has no PBI - returning");
+            LOG.log(Level.INFO, "Original BillItem has no PBI - returning");
             return;
         } else {
             pbiFromOriginalBillItem = originalBillItemNowWonglyAssignedToCancelledBill.getPharmaceuticalBillItem();
-            System.out.println("Original PBI ID: " + pbiFromOriginalBillItem.getId());
+            LOG.log(Level.INFO, "Original PBI ID: " + pbiFromOriginalBillItem.getId());
         }
 
-        System.out.println("Creating new BillItem for cancelled bill");
+        LOG.log(Level.INFO, "Creating new BillItem for cancelled bill");
         billItemNeededToCreateForCancellationBill = new BillItem();
         billItemNeededToCreateForCancellationBill.copy(originalBillItemNowWonglyAssignedToCancelledBill);
         billItemNeededToCreateForCancellationBill.setBill(cancelledBill);
         billItemNeededToCreateForCancellationBill.setReferanceBillItem(originalBillItemNowWonglyAssignedToCancelledBill);
         billItemFacade.create(billItemNeededToCreateForCancellationBill);
-        System.out.println("Created new BillItem with ID: " + billItemNeededToCreateForCancellationBill.getId());
+        LOG.log(Level.INFO, "Created new BillItem with ID: " + billItemNeededToCreateForCancellationBill.getId());
 
         billItemNeededToCreateForCancellationBill.setPharmaceuticalBillItem(null);
         billItemFacade.edit(billItemNeededToCreateForCancellationBill);
-        System.out.println("Linked new BillItem to Cancelled PBI ID: " + pbiFromCancelledBill.getId());
+        LOG.log(Level.INFO, "Linked new BillItem to Cancelled PBI ID: " + pbiFromCancelledBill.getId());
 
         originalBillItemNowWonglyAssignedToCancelledBill.setBill(originalBill);
         originalBillItemNowWonglyAssignedToCancelledBill.setPharmaceuticalBillItem(null);
         billItemFacade.edit(originalBillItemNowWonglyAssignedToCancelledBill);
-        System.out.println("Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
+        LOG.log(Level.INFO, "Reassigned original BillItem to Original Bill ID: " + originalBill.getId());
 
         pbiFromCancelledBill.setBillItem(billItemNeededToCreateForCancellationBill);
         pharmaceuticalBillItemFacade.edit(pbiFromCancelledBill);
@@ -3613,7 +3617,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         if (tb == null) {
             return null;
         }
-        //System.out.println("tb = " + tb);
+        //LOG.log(Level.INFO, "tb = " + tb);
         return tb;
     }
 
@@ -3819,21 +3823,21 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map m = new HashMap();
         m.put("bta", BillTypeAtomic.CC_BILL_REFUND);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 1000);
-        System.out.println("bis = " + bis);
+        LOG.log(Level.INFO, "bis = " + bis);
         if (bis == null) {
             return;
         }
         for (BillItem bi : bis) {
-            System.out.println("bi = " + bi);
+            LOG.log(Level.INFO, "bi = " + bi);
             BillItem originalBilItem = bi.getReferanceBillItem();
-            System.out.println("originalBilItem = " + originalBilItem);
-            System.out.println("1 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            LOG.log(Level.INFO, "originalBilItem = " + originalBilItem);
+            LOG.log(Level.INFO, "1 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
             originalBilItem.setRefunded(true);
-            System.out.println("2 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            LOG.log(Level.INFO, "2 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
             billItemFacade.edit(originalBilItem);
-            System.out.println("3 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            LOG.log(Level.INFO, "3 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
             billItemFacade.editAndCommit(originalBilItem);
-            System.out.println("4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
+            LOG.log(Level.INFO, "4 originalBilItem.isRefunded() = " + originalBilItem.isRefunded());
         }
     }
 
@@ -3849,20 +3853,20 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         Map m = new HashMap();
         m.put("bta", BillTypeAtomic.CC_BILL_CANCELLATION);
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, 10000);
-        System.out.println("bis = " + bis);
+        LOG.log(Level.INFO, "bis = " + bis);
         if (bis == null) {
             return;
         }
         for (BillItem bi : bis) {
-            System.out.println("bi = " + bi);
+            LOG.log(Level.INFO, "bi = " + bi);
             Institution cc = bi.getBill().getCollectingCentre();
             Double collectingCentreMargin = cc.getPercentage();
             Double netTotal = bi.getNetValue();
-            System.out.println("netTotal = " + netTotal);
+            LOG.log(Level.INFO, "netTotal = " + netTotal);
             Double ccFee = netTotal * collectingCentreMargin / 100;
-            System.out.println("ccFee = " + ccFee);
+            LOG.log(Level.INFO, "ccFee = " + ccFee);
             Double hosFee = netTotal - ccFee;
-            System.out.println("hosFee = " + hosFee);
+            LOG.log(Level.INFO, "hosFee = " + hosFee);
             if (bi.getHospitalFee() == 0.0) {
                 bi.setHospitalFee(hosFee);
                 billItemFacade.edit(bi);
@@ -3877,7 +3881,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     }
 
     public void calTotals() {
-//     //   ////// // System.out.println("calculating totals");
+//     //   ////// // LOG.log(Level.INFO, "calculating totals");
         if (paymentMethod == null) {
             return;
         }
@@ -3894,7 +3898,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
 
 //        MembershipScheme membershipScheme = membershipSchemeController.fetchPatientMembershipScheme(getSearchedPatient(), getSessionController().getApplicationPreference().isMembershipExpires());
         for (BillEntry be : getLstBillEntries()) {
-            //////// // System.out.println("bill item entry");
+            //////// // LOG.log(Level.INFO, "bill item entry");
             double entryGross = 0.0;
             double entryDis = 0.0;
             double entryNet = 0.0;
@@ -3933,7 +3937,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 entryVat += bf.getFeeVat();
                 entryVatPlusNet += bf.getFeeVatPlusValue();
 
-                //////// // System.out.println("fee net is " + bf.getFeeValue());
+                //////// // LOG.log(Level.INFO, "fee net is " + bf.getFeeValue());
             }
 
             bi.setDiscount(entryDis);
@@ -3942,8 +3946,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             bi.setVat(entryVat);
             bi.setVatPlusNetValue(roundOff(entryVatPlusNet));
 
-            //// // System.out.println("item is = " + bi.getItem().getName());
-            //// // System.out.println("item gross is = " + bi.getGrossValue());
+            //// // LOG.log(Level.INFO, "item is = " + bi.getItem().getName());
+            //// // LOG.log(Level.INFO, "item gross is = " + bi.getGrossValue());
             billGross += bi.getGrossValue();
             billNet += bi.getNetValue();
             billDiscount += bi.getDiscount();
@@ -3957,22 +3961,22 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         setNetPlusVat(getVat() + getNetTotal());
 
         if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
-            ////// // System.out.println("cashPaid = " + cashPaid);
-            ////// // System.out.println("billNet = " + billNet);
+            ////// // LOG.log(Level.INFO, "cashPaid = " + cashPaid);
+            ////// // LOG.log(Level.INFO, "billNet = " + billNet);
             if (cashPaid >= (billNet + billVat)) {
-                ////// // System.out.println("fully paid = ");
+                ////// // LOG.log(Level.INFO, "fully paid = ");
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(billNet + billVat);
                 setCashBalance(cashPaid - (billNet + billVat) - billDiscount);
-                ////// // System.out.println("cashBalance = " + cashBalance);
+                ////// // LOG.log(Level.INFO, "cashBalance = " + cashBalance);
             } else {
-                ////// // System.out.println("half paid = ");
+                ////// // LOG.log(Level.INFO, "half paid = ");
                 setDiscount(billDiscount);
                 setTotal(billGross);
                 setNetTotal(cashPaid);
                 setCashBalance((billNet + billVat) - cashPaid - billDiscount);
-                ////// // System.out.println("cashBalance = " + cashBalance);
+                ////// // LOG.log(Level.INFO, "cashBalance = " + cashBalance);
             }
             cashRemain = cashPaid;
         }
@@ -4083,16 +4087,16 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
     public void removeBillItem() {
 
         //TODO: Need to add Logic
-        //////// // System.out.println(getIndex());
+        //////// // LOG.log(Level.INFO, getIndex());
         if (getIndex() != null) {
             //  boolean remove;
             BillEntry temp = getLstBillEntries().get(getIndex());
-            //////// // System.out.println("Removed Item:" + temp.getBillItem().getNetValue());
+            //////// // LOG.log(Level.INFO, "Removed Item:" + temp.getBillItem().getNetValue());
             recreateList(temp);
             // remove = getLstBillEntries().remove(getIndex());
 
             //  getLstBillEntries().remove(index);
-            ////////// // System.out.println("Is Removed:" + remove);
+            ////////// // LOG.log(Level.INFO, "Is Removed:" + remove);
             calTotals();
 
         }
@@ -4112,7 +4116,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         for (BillEntry b : getLstBillEntries()) {
             if (b.getBillItem().getItem() != r.getBillItem().getItem()) {
                 temp.add(b);
-                //////// // System.out.println(b.getBillItem().getNetValue());
+                //////// // LOG.log(Level.INFO, b.getBillItem().getNetValue());
             }
         }
         lstBillEntries = temp;
@@ -4235,8 +4239,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed() || getSessionController().getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
-                        //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
+                        //// // LOG.log(Level.INFO, "In If reminingCashPaid = " + reminingCashPaid);
+                        //// // LOG.log(Level.INFO, "bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
                         bf.setSettleValue(bf.getFeeValue());
                         setBillFeePaymentAndPayment(d, bf, p);
@@ -4315,8 +4319,8 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
         m.put("ret", false);
 
         Bill b = billFacade.findFirstByJpql(jpql, m);
-        //System.out.println("b = " + b);
-        //System.out.println("b.getSessionId() = " + b.getSessionId());
+        //LOG.log(Level.INFO, "b = " + b);
+        //LOG.log(Level.INFO, "b.getSessionId() = " + b.getSessionId());
         if ((b.getSessionId() == null) || ("".equals(b.getSessionId().trim()))) {
             return "*0*";
         } else {
@@ -4690,7 +4694,7 @@ public class BillController implements Serializable, ControllerWithMultiplePayme
                 + " and ((p.patient.person.name)  "
                 + "like :q or (p.insId)  "
                 + "like :q) order by p.insId";
-        //////// // System.out.println(sql);
+        //////// // LOG.log(Level.INFO, sql);
         hm.put("q", "%" + query.toUpperCase() + "%");
         hm.put("btp", BillType.InwardAppointmentBill);
         suggestions = getFacade().findByJpql(sql, hm);

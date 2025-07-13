@@ -59,6 +59,8 @@ import javax.persistence.TemporalType;
 import kotlin.collections.ArrayDeque;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -67,6 +69,8 @@ import org.json.JSONObject;
 @Named
 @SessionScoped
 public class FinancialTransactionController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(FinancialTransactionController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -4175,22 +4179,22 @@ public class FinancialTransactionController implements Serializable {
     }
 
     public void calculateTotalFundsFromShiftStartToNow() {
-        //System.out.println("additions");
-        //System.out.println("financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getBankWithdrawals());
-        //System.out.println("financialReportByPayments.getCashTotal() = " + financialReportByPayments.getCashTotal());
-        //System.out.println("financialReportByPayments.getNetCreditCardTotal() = " + financialReportByPayments.getNetCreditCardTotal());
-        //System.out.println("financialReportByPayments.getCollectedVoucher() = " + financialReportByPayments.getCollectedVoucher());
-        //System.out.println("financialReportByPayments.getNetOtherNonCreditTotal() = " + financialReportByPayments.getNetOtherNonCreditTotal());
-        //System.out.println("financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getFloatReceived());
+        //LOG.log(Level.INFO, "additions");
+        //LOG.log(Level.INFO, "financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getBankWithdrawals());
+        //LOG.log(Level.INFO, "financialReportByPayments.getCashTotal() = " + financialReportByPayments.getCashTotal());
+        //LOG.log(Level.INFO, "financialReportByPayments.getNetCreditCardTotal() = " + financialReportByPayments.getNetCreditCardTotal());
+        //LOG.log(Level.INFO, "financialReportByPayments.getCollectedVoucher() = " + financialReportByPayments.getCollectedVoucher());
+        //LOG.log(Level.INFO, "financialReportByPayments.getNetOtherNonCreditTotal() = " + financialReportByPayments.getNetOtherNonCreditTotal());
+        //LOG.log(Level.INFO, "financialReportByPayments.getBankWithdrawals() = " + financialReportByPayments.getFloatReceived());
 
         //additions = financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getBankWithdrawals();
         //Deductions = financialReportByPayments.getRefundedCash() + financialReportByPayments.getRefundedCreditCard() + financialReportByPayments.getRefundedVoucher() + financialReportByPayments.getRefundedOtherNonCredit() + financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
         additions = financialReportByPayments.getBankWithdrawals() + financialReportByPayments.getCashTotal() + financialReportByPayments.getNetCreditCardTotal() + financialReportByPayments.getCollectedVoucher() + financialReportByPayments.getNetOtherNonCreditTotal() + financialReportByPayments.getFloatReceived();
         Deductions = financialReportByPayments.getFloatHandover() + financialReportByPayments.getBankDeposits();
 
-        //System.out.println("\n\nDeductions");
-        //System.out.println("financialReportByPayments.getFloatHandover() = " + financialReportByPayments.getFloatHandover());
-        //System.out.println("financialReportByPayments.getBankDeposits() = " + financialReportByPayments.getBankDeposits());
+        //LOG.log(Level.INFO, "\n\nDeductions");
+        //LOG.log(Level.INFO, "financialReportByPayments.getFloatHandover() = " + financialReportByPayments.getFloatHandover());
+        //LOG.log(Level.INFO, "financialReportByPayments.getBankDeposits() = " + financialReportByPayments.getBankDeposits());
         totalFunds = additions - Deductions;
         shiftEndTotalValue = totalFunds;
 
@@ -5065,10 +5069,10 @@ public class FinancialTransactionController implements Serializable {
         params.put("fd", getFromDate());
         params.put("td", getToDate());
         params.put("user", sessionController.getLoggedUser());
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("currentBills = " + currentBills);
+        LOG.log(Level.INFO, "currentBills = " + currentBills);
     }
 
     public void fillHandovers() {
@@ -5090,10 +5094,10 @@ public class FinancialTransactionController implements Serializable {
 
         }
         jpql += "order by s.createdAt ";
-        System.out.println("jpql = " + jpql);
-        System.out.println("params = " + params);
+        LOG.log(Level.INFO, "jpql = " + jpql);
+        LOG.log(Level.INFO, "params = " + params);
         currentBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        System.out.println("currentBills = " + currentBills);
+        LOG.log(Level.INFO, "currentBills = " + currentBills);
     }
 
     public List<Bill> findHandoverCompletionBills(ReportTemplateRow row) {
@@ -5245,8 +5249,8 @@ public class FinancialTransactionController implements Serializable {
 //        WebUser sender = selectedBill.getCreater();
 //        WebUser reciver = sessionController.getLoggedUser();
 //
-////        System.out.println("Sender = " + sender);
-////        System.out.println("Reciver = " + reciver);
+////        LOG.log(Level.INFO, "Sender = " + sender);
+////        LOG.log(Level.INFO, "Reciver = " + reciver);
 //        for (ReportTemplateRowBundle shiftBundle : bundle.getBundles()) {
 //            String id = billNumberGenerator.departmentBillNumberGeneratorYearly(department, BillTypeAtomic.FUND_SHIFT_COMPONANT_HANDOVER_CREATE);
 //            Bill shiftHandoverComponantAcceptBill = new Bill();
@@ -5265,13 +5269,13 @@ public class FinancialTransactionController implements Serializable {
 //            shiftHandoverComponantAcceptBill.setCreatedAt(new Date());
 //            shiftHandoverComponantAcceptBill.setReferenceNumber(shiftBundle.getBundleType());
 //            billFacade.create(shiftHandoverComponantAcceptBill);
-////            System.out.println("shiftBundle = " + shiftBundle);
-////            System.out.println("shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
+////            LOG.log(Level.INFO, "shiftBundle = " + shiftBundle);
+////            LOG.log(Level.INFO, "shiftBundle.getStartBill() = " + shiftBundle.getStartBill());
 //
 //            for (ReportTemplateRow row : shiftBundle.getReportTemplateRows()) {
-//                //System.out.println("row = " + row);
+//                //LOG.log(Level.INFO, "row = " + row);
 //                if (row.getPayment() == null) {
-//                    //System.out.println("row.getPayment() = " + row.getPayment());
+//                    //LOG.log(Level.INFO, "row.getPayment() = " + row.getPayment());
 //                    continue;
 //                }
 //
@@ -5290,7 +5294,7 @@ public class FinancialTransactionController implements Serializable {
 //            }
 //        }
 //
-//        System.out.println("payments = " + payments.size());
+//        LOG.log(Level.INFO, "payments = " + payments.size());
 //
 //        updateDraverForHandoverAccept(payments, reciver, sender);
 //
@@ -5308,14 +5312,14 @@ public class FinancialTransactionController implements Serializable {
         for (Payment p : payments) {
         }
 
-        //System.out.println("Update Resiver Drawer Start");//Accepted Cashier Dravr Update
+        //LOG.log(Level.INFO, "Update Resiver Drawer Start");//Accepted Cashier Dravr Update
         drawerController.updateDrawer(payments, reciver);
-        //System.out.println("Update Resiver Drawer End");
+        //LOG.log(Level.INFO, "Update Resiver Drawer End");
 
-        //System.out.println("*******************************************");
-        //System.out.println("Update Sender Drawer Start");//Sended Cashier Dravr Update
+        //LOG.log(Level.INFO, "*******************************************");
+        //LOG.log(Level.INFO, "Update Sender Drawer Start");//Sended Cashier Dravr Update
 //        drawerController.updateDrawerForOuts(payments, sender);
-        //System.out.println("Update Sender Drawer End");
+        //LOG.log(Level.INFO, "Update Sender Drawer End");
     }
 
     public String navigateToHandoverReprint() {

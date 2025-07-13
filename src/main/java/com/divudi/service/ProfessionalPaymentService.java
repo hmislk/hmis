@@ -17,6 +17,8 @@ import java.util.Map;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -25,6 +27,8 @@ import javax.persistence.TemporalType;
  */
 @Stateless
 public class ProfessionalPaymentService {
+    private static final Logger LOG = Logger.getLogger(ProfessionalPaymentService.class.getName());
+
 
     @EJB
     BillFacade billFacade;
@@ -134,7 +138,7 @@ public class ProfessionalPaymentService {
         params.put("toDate", toDate);
         params.put("staff", staff);
 
-        System.out.println("params = " + params);
+        LOG.log(Level.INFO, "params = " + params);
 
         Double sum = billFacade.findDoubleByJpql(jpql, params, TemporalType.TIMESTAMP);
         return sum;

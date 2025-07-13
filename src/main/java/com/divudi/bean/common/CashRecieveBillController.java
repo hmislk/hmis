@@ -43,6 +43,8 @@ import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -51,6 +53,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class CashRecieveBillController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(CashRecieveBillController.class.getName());
+
 
     @EJB
     private BillNumberGenerator billNumberBean;
@@ -291,7 +295,7 @@ public class CashRecieveBillController implements Serializable {
 
     public void selectBillListener() {
         double dbl = getReferenceBallance(getCurrentBillItem());
-        System.out.println(getCurrentBillItem().getReferenceBill());
+        LOG.log(Level.INFO, getCurrentBillItem().getReferenceBill());
 
         if (dbl > 0.1) {
             getCurrentBillItem().setNetValue(dbl);
@@ -419,7 +423,7 @@ public class CashRecieveBillController implements Serializable {
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
-        // //////// // System.out.println("AAA : " + n);
+        // //////// // LOG.log(Level.INFO, "AAA : " + n);
     }
 
     public void addToBill() {
@@ -505,15 +509,15 @@ public class CashRecieveBillController implements Serializable {
 
     public void calTotal() {
         double n = 0.0;
-//        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
-//        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+//        //// // LOG.log(Level.INFO, "getBillItems().size() = " + getBillItems().size());
+//        //// // LOG.log(Level.INFO, "getSelectedBillItems().size() = " + getSelectedBillItems().size());
         for (BillItem b : selectedBillItems) {
-//            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
-//            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
+//            //// // LOG.log(Level.INFO, "b.getNetValue() = " + b.getNetValue());
+//            //// // LOG.log(Level.INFO, "b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
         getCurrent().setNetTotal(n);
-        //////// // System.out.println("AAA : " + n);
+        //////// // LOG.log(Level.INFO, "AAA : " + n);
     }
 
     public void calulateTotalForSettlingCreditForOpdPackageBills() {
@@ -542,15 +546,15 @@ public class CashRecieveBillController implements Serializable {
 
     public void calTotalForVoucher() {
         double n = 0.0;
-//        //// // System.out.println("getBillItems().size() = " + getBillItems().size());
-//        //// // System.out.println("getSelectedBillItems().size() = " + getSelectedBillItems().size());
+//        //// // LOG.log(Level.INFO, "getBillItems().size() = " + getBillItems().size());
+//        //// // LOG.log(Level.INFO, "getSelectedBillItems().size() = " + getSelectedBillItems().size());
         for (BillItem b : selectedBillItems) {
-//            //// // System.out.println("b.getNetValue() = " + b.getNetValue());
-//            //// // System.out.println("b.getSearialNo() = " + b.getSearialNo());
+//            //// // LOG.log(Level.INFO, "b.getNetValue() = " + b.getNetValue());
+//            //// // LOG.log(Level.INFO, "b.getSearialNo() = " + b.getSearialNo());
             n += b.getNetValue();
         }
         getCurrent().setTotal(n);
-        //////// // System.out.println("AAA : " + n);
+        //////// // LOG.log(Level.INFO, "AAA : " + n);
     }
 
 //    public double getDue() {
@@ -855,7 +859,7 @@ public class CashRecieveBillController implements Serializable {
         calTotal();
 
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
+        LOG.log(Level.INFO, getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
 
@@ -980,7 +984,7 @@ public class CashRecieveBillController implements Serializable {
 
         //calTotal();
         getBillBean().setPaymentMethodData(getCurrent(), getCurrent().getPaymentMethod(), getPaymentMethodData());
-        System.out.println(getSelectedBillItems());
+        LOG.log(Level.INFO, getSelectedBillItems());
 
         getCurrent().setTotal(getCurrent().getNetTotal());
         getCurrent().setBalance(getCurrent().getNetTotal());
@@ -1069,7 +1073,7 @@ public class CashRecieveBillController implements Serializable {
                 + "AND b.retired = false "
                 + "AND b.balance > 0 "
                 + "ORDER BY b.id DESC";
-        System.out.println("sql = " + sql);
+        LOG.log(Level.INFO, "sql = " + sql);
         Map<String, Object> temMap = new HashMap<>();
         temMap.put("billTypes", billTypes);
         List<Bill> bills = getBillFacade().findByJpql(sql, temMap);
@@ -1354,26 +1358,26 @@ public class CashRecieveBillController implements Serializable {
     }
 
     private void updateSettlingCreditBillSettledValues(BillItem billItemWithReferanceToCreditBill) {
-        System.out.println("Starting updateSettlingCreditBillSettledValues");
-        System.out.println("Bill Item Reference: " + billItemWithReferanceToCreditBill);
+        LOG.log(Level.INFO, "Starting updateSettlingCreditBillSettledValues");
+        LOG.log(Level.INFO, "Bill Item Reference: " + billItemWithReferanceToCreditBill);
 
         double settledCreditValueByCompanies = getCreditBean().getSettledAmountByCompany(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Companies: " + settledCreditValueByCompanies);
+        LOG.log(Level.INFO, "Settled Credit Value By Companies: " + settledCreditValueByCompanies);
 
         double settledCreditValueByPatient = getCreditBean().getSettledAmountByPatient(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Settled Credit Value By Patient: " + settledCreditValueByPatient);
+        LOG.log(Level.INFO, "Settled Credit Value By Patient: " + settledCreditValueByPatient);
 
         double settleCreditValueTotal = settledCreditValueByCompanies + settledCreditValueByPatient;
-        System.out.println("Total Settled Credit Value: " + settleCreditValueTotal);
+        LOG.log(Level.INFO, "Total Settled Credit Value: " + settleCreditValueTotal);
 
         billItemWithReferanceToCreditBill.getReferenceBill().setPaidAmount(settleCreditValueTotal);
-        System.out.println("Paid Amount Set: " + settleCreditValueTotal);
+        LOG.log(Level.INFO, "Paid Amount Set: " + settleCreditValueTotal);
 
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountByPatient(settledCreditValueByPatient);
-        System.out.println("Settled Amount By Patient Set: " + settledCreditValueByPatient);
+        LOG.log(Level.INFO, "Settled Amount By Patient Set: " + settledCreditValueByPatient);
 
         billItemWithReferanceToCreditBill.getReferenceBill().setSettledAmountBySponsor(settledCreditValueByCompanies);
-        System.out.println("Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
+        LOG.log(Level.INFO, "Settled Amount By Sponsor Set: " + settledCreditValueByCompanies);
 
         double absBillAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getNetTotal());
         double absSettledAmount = Math.abs(billItemWithReferanceToCreditBill.getReferenceBill().getPaidAmount());
@@ -1384,8 +1388,8 @@ public class CashRecieveBillController implements Serializable {
         }
 
         getBillFacade().edit(billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
-        System.out.println("Completed updateSettlingCreditBillSettledValues");
+        LOG.log(Level.INFO, "Reference Bill Updated: " + billItemWithReferanceToCreditBill.getReferenceBill());
+        LOG.log(Level.INFO, "Completed updateSettlingCreditBillSettledValues");
     }
 
     private void updateReferenceBht(BillItem tmp) {

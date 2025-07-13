@@ -52,6 +52,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -61,6 +63,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardStaffPaymentBillController implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardStaffPaymentBillController.class.getName());
+
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
     @EJB
@@ -373,8 +377,8 @@ public class InwardStaffPaymentBillController implements Serializable {
     }
 
     public void settle() {
-        System.out.println("totalsettle = " + totalPaying);
-        System.out.println("this = " + getPayingBillFees().size());
+        LOG.log(Level.INFO, "totalsettle = " + totalPaying);
+        LOG.log(Level.INFO, "this = " + getPayingBillFees().size());
         if (errorCheck()) {
             return;
         }
@@ -432,7 +436,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             originalBillFee.setPaidValue(originalBillFee.getFeeValue());
             originalBillFee.setSettleValue(originalBillFee.getFeeValue());
             getBillFeeFacade().edit(originalBillFee);
-            //////// // System.out.println("marking as paid");
+            //////// // LOG.log(Level.INFO, "marking as paid");
         }
     }
 
@@ -858,7 +862,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("refType2", BillType.InwardProfessional);
 
         docPayDischarged = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        ////// // System.out.println("docPayDischarged = " + docPayDischarged);
+        ////// // LOG.log(Level.INFO, "docPayDischarged = " + docPayDischarged);
         return docPayDischarged;
     }
 
@@ -881,7 +885,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         temMap.put("refType2", BillType.InwardProfessional);
 
         docPayNotDischarged = getBillItemFacade().findByJpql(sql, temMap, TemporalType.TIMESTAMP);
-        ////// // System.out.println("docPayNotDischarged = " + docPayNotDischarged);
+        ////// // LOG.log(Level.INFO, "docPayNotDischarged = " + docPayNotDischarged);
         return docPayNotDischarged;
 
     }
@@ -896,7 +900,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public double calPaidTotal(List<BillItem> bhtbillItems) {
         double bhtTotal = 0.0;
-        ////// // System.out.println("Items = " + bhtbillItems);
+        ////// // LOG.log(Level.INFO, "Items = " + bhtbillItems);
         for (BillItem bhtb : bhtbillItems) {
             bhtTotal += bhtb.getPaidForBillFee().getFeeValue();
         }
@@ -906,7 +910,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 //    public double calBhtPaidTotal(List<BillFee> bhtbillItems) {
 //
 //        double bhtPaidTotal = 0.0;
-//        ////// // System.out.println("Bill Items = " + bhtbillItems);
+//        ////// // LOG.log(Level.INFO, "Bill Items = " + bhtbillItems);
 //        for (BillFee bhtb : bhtbillItems) {
 //            bhtPaidTotal += bhtb.getBillItem().getPaidForBillFee().getFeeValue();
 //        }
@@ -970,7 +974,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
     public double calDueTotal(List<BillFee> bhtbillItems) {
         double bhtDueTotal = 0.0;
-        ////// // System.out.println("Due Items = " + bhtbillItems);
+        ////// // LOG.log(Level.INFO, "Due Items = " + bhtbillItems);
         for (BillFee bhtb : bhtbillItems) {
             bhtDueTotal += bhtb.getFeeValue();
         }
@@ -1223,7 +1227,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             } else {
                 sql = "select p from Staff p where p.retired=false and ((p.person.name) like '%" + query.toUpperCase() + "%'or  (p.code) like '%" + query.toUpperCase() + "%' ) order by p.person.name";
             }
-            //   ////// // System.out.println(sql);
+            //   ////// // LOG.log(Level.INFO, sql);
             suggestions = staffFacade.findByJpql(sql);
         }
         return suggestions;
@@ -1321,49 +1325,49 @@ public class InwardStaffPaymentBillController implements Serializable {
         totalDue = 0;
         for (BillFee f : dueBillFees) {
             totalDue = totalDue + f.getFeeValue() - f.getPaidValue();
-            System.out.println("f.getFeeValue() - f.getPaidValue() = " + (f.getFeeValue() - f.getPaidValue()));
-            System.out.println("totalDue = " + totalDue);
+            LOG.log(Level.INFO, "f.getFeeValue() - f.getPaidValue() = " + (f.getFeeValue() - f.getPaidValue()));
+            LOG.log(Level.INFO, "totalDue = " + totalDue);
         }
-        System.out.println("total = " + totalDue);
+        LOG.log(Level.INFO, "total = " + totalDue);
     }
 
     public void performCalculations() {
         calculateTotalDue();
         calculatePaymentsSelected();
-        System.out.println("totalPay = " + totalPaying);
+        LOG.log(Level.INFO, "totalPay = " + totalPaying);
 
         switch (getWithholdingTaxCalculationStatus()) {
             case "Depending On Payments":
-                System.out.println("totalPaying1 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying1 = " + totalPaying);
                 calculateWithholdingTaxDependingOnPayments();
-                System.out.println("totalPaying11 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying11 = " + totalPaying);
                 break;
             case "Include Withholding Tax":
-                System.out.println("totalPaying2 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying2 = " + totalPaying);
                 calculateWithWithholdingTax();
-                System.out.println("totalPaying22 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying22 = " + totalPaying);
                 break;
             case "Exclude Withholding Tax":
-                System.out.println("totalPaying3 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying3 = " + totalPaying);
                 calculateWithoutWithholdingTax();
-                System.out.println("totalPaying33 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying33 = " + totalPaying);
                 break;
             default:
                 calculateWithholdingTaxDependingOnPayments();
-                System.out.println("totalPaying4 = " + totalPaying);
+                LOG.log(Level.INFO, "totalPaying4 = " + totalPaying);
         }
-        System.out.println("totalPaying5 = " + totalPaying);
+        LOG.log(Level.INFO, "totalPaying5 = " + totalPaying);
     }
 
     public void calculatePaymentsSelected() {
         totalPaying = 0;
-        System.out.println("payingBillFees = " + getPayingBillFees().size());
+        LOG.log(Level.INFO, "payingBillFees = " + getPayingBillFees().size());
         for (BillFee f : getPayingBillFees()) {
             totalPaying = totalPaying + (f.getFeeValue() - f.getPaidValue());
-            System.out.println("f.getFeeValue() - f.getPaidValue() = " + (f.getFeeValue() - f.getPaidValue()));
-            System.out.println("totalPaying = " + totalPaying);
+            LOG.log(Level.INFO, "f.getFeeValue() - f.getPaidValue() = " + (f.getFeeValue() - f.getPaidValue()));
+            LOG.log(Level.INFO, "totalPaying = " + totalPaying);
         }
-        System.out.println("total = " + totalPaying);
+        LOG.log(Level.INFO, "total = " + totalPaying);
     }
 
     private void calculateWithholdingTaxDependingOnPayments() {
@@ -1472,7 +1476,7 @@ public class InwardStaffPaymentBillController implements Serializable {
             JsfUtil.addErrorMessage("Please select payments to update 1");
             return true;
         }
-        System.out.println("totalPaying666 = " + totalPaying);
+        LOG.log(Level.INFO, "totalPaying666 = " + totalPaying);
         if (totalPaying == 0) {
             JsfUtil.addErrorMessage("Please select payments to update 2");
             return true;
@@ -1508,7 +1512,7 @@ public class InwardStaffPaymentBillController implements Serializable {
         WebUser wb = getCashTransactionBean().saveBillCashOutTransaction(b, getSessionController().getLoggedUser());
         getSessionController().setLoggedUser(wb);
         JsfUtil.addSuccessMessage("Successfully Paid");
-        //   ////// // System.out.println("Paid");
+        //   ////// // LOG.log(Level.INFO, "Paid");
     }
 
     private void saveBillCompo(Bill b) {
@@ -1518,7 +1522,7 @@ public class InwardStaffPaymentBillController implements Serializable {
 
             bf.setPaidValue(bf.getFeeValue());
             getBillFeeFacade().edit(bf);
-            //   ////// // System.out.println("marking as paid");
+            //   ////// // LOG.log(Level.INFO, "marking as paid");
             b.getBillFees().add(bf);
         }
     }

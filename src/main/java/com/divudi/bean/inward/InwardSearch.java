@@ -56,6 +56,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -64,6 +66,8 @@ import javax.persistence.TemporalType;
 @Named
 @SessionScoped
 public class InwardSearch implements Serializable {
+    private static final Logger LOG = Logger.getLogger(InwardSearch.class.getName());
+
 
     /**
      * EJBs
@@ -270,7 +274,7 @@ public class InwardSearch implements Serializable {
             return;
         }
         for (Bill b : bill.getBackwardReferenceBills()) {
-            //   ////// // System.out.println("b = " + b);
+            //   ////// // LOG.log(Level.INFO, "b = " + b);
         }
     }
 
@@ -1097,7 +1101,7 @@ public class InwardSearch implements Serializable {
         HashMap hm = new HashMap();
         hm.put("sbt", SurgeryBillType.TimedService);
         hm.put("bil", getBill());
-        ////// // System.out.println("getBillFacade().findFirstByJpql(sql, hm) = " + getBillFacade().findFirstByJpql(sql, hm));
+        ////// // LOG.log(Level.INFO, "getBillFacade().findFirstByJpql(sql, hm) = " + getBillFacade().findFirstByJpql(sql, hm));
         Bill b = getBillFacade().findFirstByJpql(sql, hm);
         if (b == null && checkBathcReferenceBillTimeService()) {
             return false;
@@ -1126,13 +1130,13 @@ public class InwardSearch implements Serializable {
         hm.put("bil", getBill());
 
         List<Bill> bs = getBillFacade().findByJpql(sql, hm);
-        ////// // System.out.println("bs = " + bs);
+        ////// // LOG.log(Level.INFO, "bs = " + bs);
         for (Bill b : bs) {
             List<EncounterComponent> enc = getBillBean().getEncounterComponents(b);
-            ////// // System.out.println("enc = " + enc);
+            ////// // LOG.log(Level.INFO, "enc = " + enc);
             for (EncounterComponent e : enc) {
-                ////// // System.out.println("e = " + e);
-                ////// // System.out.println("e.getBillFee().getPatientItem().isRetired() = " + e.getBillFee().getPatientItem().isRetired());
+                ////// // LOG.log(Level.INFO, "e = " + e);
+                ////// // LOG.log(Level.INFO, "e.getBillFee().getPatientItem().isRetired() = " + e.getBillFee().getPatientItem().isRetired());
                 if (!e.getBillFee().getPatientItem().isRetired()) {
                     return false;
                 }
@@ -1237,19 +1241,19 @@ public class InwardSearch implements Serializable {
             }
         } else if (getPaymentMethod() == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(b.getTotal());
-            System.out.println("this = " + this);
+            LOG.log(Level.INFO, "this = " + this);
         } else if (getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
 //            getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(b.getPatientEncounter().getPatient(), sessionController.getDepartment());
 
             if (pd != null && pd.getId() != null) {
-                System.out.println("pd = " + pd);
+                LOG.log(Level.INFO, "pd = " + pd);
                 boolean hasPatientDeposit = false;
                 for (ComponentDetail cd : getPaymentMethodData().getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                    System.out.println("cd = " + cd);
+                    LOG.log(Level.INFO, "cd = " + cd);
                     if (cd.getPaymentMethod() == PaymentMethod.PatientDeposit) {
-                        System.out.println("cd = " + cd);
+                        LOG.log(Level.INFO, "cd = " + cd);
                         hasPatientDeposit = true;
                         cd.getPaymentMethodData().getPatient_deposit().setPatient(b.getPatientEncounter().getPatient());
                         cd.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
@@ -1374,7 +1378,7 @@ public class InwardSearch implements Serializable {
     }
 
     public List<Bill> getBillsToApproveCancellation() {
-        //////// // System.out.println("1");
+        //////// // LOG.log(Level.INFO, "1");
         billsToApproveCancellation = ejbApplication.getBillsToCancel();
         return billsToApproveCancellation;
     }
@@ -1564,7 +1568,7 @@ public class InwardSearch implements Serializable {
 
             b.setPaidForBillFee(nB.getPaidForBillFee());
 
-            ////// // System.out.println("nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
+            ////// // LOG.log(Level.INFO, "nB.getPaidForBillFee() = " + nB.getPaidForBillFee());
             getBillItemFacede().create(b);
 
             cancelBillComponents(can, b);
@@ -1758,7 +1762,7 @@ public class InwardSearch implements Serializable {
         }
         double tot = 0.0;
         for (BillFee f : getBillFees()) {
-            //////// // System.out.println("Tot" + f.getFeeValue());
+            //////// // LOG.log(Level.INFO, "Tot" + f.getFeeValue());
             tot += f.getFeeValue();
         }
 

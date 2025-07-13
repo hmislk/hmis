@@ -57,6 +57,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * @author Buddhika
@@ -64,6 +66,8 @@ import org.joda.time.LocalDate;
 @Named
 @SessionScoped
 public class ReportsTransfer implements Serializable {
+    private static final Logger LOG = Logger.getLogger(ReportsTransfer.class.getName());
+
 
     @Inject
     private ReportTimerController reportTimerController;
@@ -285,12 +289,12 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        ////System.out.println("sql = " + sql);
-        ////System.out.println("m = " + m);
+        ////LOG.log(Level.INFO, "sql = " + sql);
+        ////LOG.log(Level.INFO, "m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
-            ////System.out.println("objs = " + objs);
+            ////LOG.log(Level.INFO, "objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -493,9 +497,9 @@ public class ReportsTransfer implements Serializable {
                         + " and b.retired=false "
                         + " order by b.id";
             }
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("getBillFacade() = " + getBillFacade());
+            LOG.log(Level.INFO, "jpql = " + jpql);
+            LOG.log(Level.INFO, "params = " + params);
+            LOG.log(Level.INFO, "getBillFacade() = " + getBillFacade());
 
             transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -1287,7 +1291,7 @@ public class ReportsTransfer implements Serializable {
     public void fillItemCountsWithOutMargin(BillType bt) {
 
         List<Object[]> list = fetchBillItemWithOutMargin(bt);
-        ////System.out.println("list = " + list);
+        ////LOG.log(Level.INFO, "list = " + list);
         if (list == null) {
             return;
         }
@@ -1812,7 +1816,7 @@ public class ReportsTransfer implements Serializable {
         for (Item i : fetchStockItems()) {
             ItemBHTIssueCountTrancerReciveCount count = new ItemBHTIssueCountTrancerReciveCount();
             count.setI(i);
-            //System.out.println("i.getName() = " + i.getName());
+            //LOG.log(Level.INFO, "i.getName() = " + i.getName());
             List<Object[]> object = fetchItemDetails(i);
             double qty;
             try {

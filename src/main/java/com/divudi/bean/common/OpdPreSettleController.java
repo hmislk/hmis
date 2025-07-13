@@ -69,6 +69,8 @@ import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
 import org.primefaces.event.TabChangeEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -77,6 +79,8 @@ import org.primefaces.event.TabChangeEvent;
 @Named
 @SessionScoped
 public class OpdPreSettleController implements Serializable, ControllerWithMultiplePayments {
+    private static final Logger LOG = Logger.getLogger(OpdPreSettleController.class.getName());
+
 
     /**
      * Creates a new instance of PharmacySaleController
@@ -244,7 +248,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 
 //                BillItem bi = bff.getBillItem();
 //                billGross += bi.getGrossValue();
-//                System.out.println("bi.getGrossValue() = " + bi.getGrossValue());
+//                LOG.log(Level.INFO, "bi.getGrossValue() = " + bi.getGrossValue());
 //                billNet += bi.getNetValue();
 //                billDiscount += bi.getDiscount();
 //
@@ -1364,11 +1368,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 //                //create BilledBills For PreBills
 //                BilledBill bb = createIndividualBilledBillFormIndividualPreBill(pb);
 //                bb.setBackwardReferenceBill(tmp);
-//                //// // System.out.println("bb.getCashPaid = " + bb.getCashPaid());
+//                //// // LOG.log(Level.INFO, "bb.getCashPaid = " + bb.getCashPaid());
 //                getBillFacade().edit(bb);
 //                tmp.getForwardReferenceBills().add(bb);
 //            }
-//            //// // System.out.println("tmp.getCashPaid = " + tmp.getCashPaid());
+//            //// // LOG.log(Level.INFO, "tmp.getCashPaid = " + tmp.getCashPaid());
 //            tmp.setBalance(tmp.getNetTotal());
 //            getBillFacade().edit(tmp);
 //            //set batch billed bill
@@ -1392,11 +1396,11 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
                 //create BilledBills For PreBills
                 BilledBill bb = createIndividualBilledBillFormIndividualPreBill(pb);
                 bb.setBackwardReferenceBill(tmp);
-                //// // System.out.println("bb.getCashPaid = " + bb.getCashPaid());
+                //// // LOG.log(Level.INFO, "bb.getCashPaid = " + bb.getCashPaid());
                 getBillFacade().edit(bb);
                 tmp.getForwardReferenceBills().add(bb);
             }
-            //// // System.out.println("tmp.getCashPaid = " + tmp.getCashPaid());
+            //// // LOG.log(Level.INFO, "tmp.getCashPaid = " + tmp.getCashPaid());
             tmp.setBalance(tmp.getNetTotal());
             getBillFacade().edit(tmp);
             //set batch billed bill
@@ -1453,17 +1457,17 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
 //            BilledBill bb = createIndividualBilledBillFormIndividualPreBill(b);
 //            bb.setBackwardReferenceBill(tmp);
 //
-//            //// // System.out.println("dbl = " + dbl);
-//            //// // System.out.println("reminingCashPaid = " + reminingCashPaid);
-//            //// // System.out.println("cashPaid = " + cashPaid);
+//            //// // LOG.log(Level.INFO, "dbl = " + dbl);
+//            //// // LOG.log(Level.INFO, "reminingCashPaid = " + reminingCashPaid);
+//            //// // LOG.log(Level.INFO, "cashPaid = " + cashPaid);
 //
 //            for (BillItem bi : bb.getBillItems()) {
 //
-//                //// // System.out.println("bi = " + bi);
+//                //// // LOG.log(Level.INFO, "bi = " + bi);
 //                String sql = "Select bf From BillFee bf where bf.retired=false and bf.billItem.id=" + bi.getId();
 //
 //                List<BillFee> billFees = getBillFeeFacade().findByJpql(sql);
-//                //// // System.out.println("billFees = " + billFees.size());
+//                //// // LOG.log(Level.INFO, "billFees = " + billFees.size());
 //                //for payments for billfees
 //
 //                calculateBillfeePayments(billFees, p);
@@ -1495,7 +1499,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         setPaymentMethodData(p, paymentMethod, paymentMethodData);
 
         for (Bill b : getBilledBill().getForwardReferenceBills()) {
-            //// // System.out.println("dbl = " + dbl);
+            //// // LOG.log(Level.INFO, "dbl = " + dbl);
             if (b.isCancelled()) {
                 if (getBilledBill().getForwardReferenceBills().size() == 1) {
 
@@ -1685,8 +1689,8 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             if (getSessionController().getApplicationPreference().isPartialPaymentOfOpdPreBillsAllowed()) {
                 if (Math.abs((bf.getFeeValue() - bf.getSettleValue())) > 0.1) {
                     if (reminingCashPaid >= (bf.getFeeValue() - bf.getSettleValue())) {
-                        //// // System.out.println("In If reminingCashPaid = " + reminingCashPaid);
-                        //// // System.out.println("bf.getPaidValue() = " + bf.getSettleValue());
+                        //// // LOG.log(Level.INFO, "In If reminingCashPaid = " + reminingCashPaid);
+                        //// // LOG.log(Level.INFO, "bf.getPaidValue() = " + bf.getSettleValue());
                         double d = (bf.getFeeValue() - bf.getSettleValue());
                         bf.setSettleValue(bf.getFeeValue());
                         setBillFeePaymentAndPayment(d, bf, p);
@@ -1727,42 +1731,42 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
 
-        //System.out.println("pm = " + pm);
+        //LOG.log(Level.INFO, "pm = " + pm);
         if (pm == PaymentMethod.PatientDeposit) {
-            //System.out.println("Before Balance = " + bill.getPatient().getRunningBalance());
+            //LOG.log(Level.INFO, "Before Balance = " + bill.getPatient().getRunningBalance());
             if (bill.getPatient().getRunningBalance() == null) {
-                //System.out.println("Null");
+                //LOG.log(Level.INFO, "Null");
                 bill.getPatient().setRunningBalance(Math.abs(bill.getNetTotal()));
             } else {
-                //System.out.println("Not Null - Add BillValue");
+                //LOG.log(Level.INFO, "Not Null - Add BillValue");
                 bill.getPatient().setRunningBalance(bill.getPatient().getRunningBalance() + Math.abs(bill.getNetTotal()));
             }
             patientFacade.edit(bill.getPatient());
-            //System.out.println("After Balance = " + bill.getPatient().getRunningBalance());
+            //LOG.log(Level.INFO, "After Balance = " + bill.getPatient().getRunningBalance());
         }
 
         if (pm == PaymentMethod.Staff) {
-            //System.out.println("PaymentMethod - Staff");
-            //System.out.println("Before Balance = " + bill.getToStaff().getCurrentCreditValue());
+            //LOG.log(Level.INFO, "PaymentMethod - Staff");
+            //LOG.log(Level.INFO, "Before Balance = " + bill.getToStaff().getCurrentCreditValue());
             bill.getToStaff().setCurrentCreditValue(bill.getToStaff().getCurrentCreditValue() - Math.abs(bill.getNetTotal()));
-            //System.out.println("After Balance = " + bill.getToStaff().getCurrentCreditValue());
+            //LOG.log(Level.INFO, "After Balance = " + bill.getToStaff().getCurrentCreditValue());
             staffFacade.edit(bill.getToStaff());
-            //System.out.println("Staff Credit Updated");
+            //LOG.log(Level.INFO, "Staff Credit Updated");
         }
 
-        //System.out.println("001");
+        //LOG.log(Level.INFO, "001");
         if (p.getId() == null) {
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");
+        //LOG.log(Level.INFO, "End Payment");
         return p;
     }
 
     public List<Payment> createPaymentsForCancellationsforOPDBill(Bill bill, PaymentMethod pm) {
-        System.out.println("createPaymentsForCancellationsforOPDBill");
-        System.out.println("bill = " + bill);
-        System.out.println("pm = " + pm);
+        LOG.log(Level.INFO, "createPaymentsForCancellationsforOPDBill");
+        LOG.log(Level.INFO, "bill = " + bill);
+        LOG.log(Level.INFO, "pm = " + pm);
         List<Payment> ps = new ArrayList<>();
         if (pm == null) {
             Bill originalIndividualBill = bill.getBilledBill();
@@ -1840,7 +1844,7 @@ public class OpdPreSettleController implements Serializable, ControllerWithMulti
             getPaymentFacade().create(p);
         }
         getPaymentFacade().edit(p);
-        //System.out.println("End Payment");
+        //LOG.log(Level.INFO, "End Payment");
         return p;
     }
 

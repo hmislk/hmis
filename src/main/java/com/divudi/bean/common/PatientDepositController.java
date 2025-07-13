@@ -47,6 +47,8 @@ import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
 import javax.inject.Inject;
 import javax.inject.Named;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -56,6 +58,8 @@ import javax.inject.Named;
 @Named
 @SessionScoped
 public class PatientDepositController implements Serializable, ControllerWithPatient {
+    private static final Logger LOG = Logger.getLogger(PatientDepositController.class.getName());
+
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -168,7 +172,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "current = " + current);
     }
 
     public void getPatientDepositOnPatientDepositAddingMulti() {
@@ -180,7 +184,7 @@ public class PatientDepositController implements Serializable, ControllerWithPat
         current = getDepositOfThePatient(patient, sessionController.getDepartment());
         fillLatestPatientDeposits(current);
         fillLatestPatientDepositHistory(current);
-        System.out.println("current = " + current);
+        LOG.log(Level.INFO, "current = " + current);
     }
 
     private boolean validatePaymentMethodDataForPatientDeposit() {
