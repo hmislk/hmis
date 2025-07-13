@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.component.UIComponent;
@@ -350,24 +351,32 @@ public class PaymentSchemeController implements Serializable {
         return createPaymentSchemes(false, true, false);
     }
 
-    public List<PaymentScheme> createPaymentSchemes(boolean opd, boolean pharmacy, boolean channel) {
-        String temSql;
-        temSql = "SELECT i FROM PaymentScheme i "
-                + " where  i.retired=false ";
+    public List<PaymentScheme> createPaymentSchemes(boolean includeOpd, boolean includePharmacy, boolean includeChannel) {
+        StringBuilder jpql = new StringBuilder("SELECT i FROM PaymentScheme i WHERE i.retired = false");
+        Map<String, Object> parameters = new HashMap<>();
 
-        if (pharmacy) {
-            temSql += " and i.validForPharmacy=true ";
+        if (includePharmacy) {
+            jpql.append(" AND i.validForPharmacy = true");
         }
-        if (channel) {
-            temSql += " and i.validForChanneling=true ";
+        if (includeChannel) {
+            jpql.append(" AND i.validForChanneling = true");
         }
-        if (opd) {
-            temSql += " and i.validForBilledBills=true ";
+        if (includeOpd) {
+            jpql.append(" AND i.validForBilledBills = true");
         }
 
-        temSql += " order by i.orderNo, i.name";
+        boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
+                "Department Specific Discount Sehemes for " + sessionController.getDepartment().getName(), false
+        );
 
-        return getFacade().findByJpql(temSql);
+        if (departmentSpecific) {
+            jpql.append(" AND i.department = :dep");
+            parameters.put("dep", sessionController.getDepartment());
+        }
+
+        jpql.append(" ORDER BY i.orderNo, i.name");
+
+        return getFacade().findByJpql(jpql.toString(), parameters);
     }
 
     public List<PaymentScheme> completePaymentScheme(String qry) {
