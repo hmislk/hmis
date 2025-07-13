@@ -39,11 +39,20 @@
                             value="Delete"  >
                         </p:commandButton>
 
+                        <p:commandButton
+                            id="btnDuplicate"
+                            value="Duplicate"
+                            class="mx-2 ui-button-secondary"
+                            action="#{paymentSchemeController.duplicateSelected()}"
+                            icon="pi pi-copy"
+                            ajax="false">
+                        </p:commandButton>
+
                         <p:commandButton 
                             ajax="false" 
                             class="ui-button-info" 
                             icon="pi pi-refresh" 
-                            value="Fill"
+                            value="Refresh"
                             action="#{paymentSchemeController.createPaymentSchemes()}"/>
                     </div>
                     <div class="row"  >
@@ -98,12 +107,12 @@
                                                 <p:selectBooleanCheckbox value="#{paymentSchemeController.current.validForChanneling}" />
                                                 <h:outputLabel value="Department" />
                                                 <p:autoComplete value="#{paymentSchemeController.current.department}"
-                                                               completeMethod="#{departmentController.completeDept}"
-                                                               var="d"
-                                                               itemLabel="#{d.name}"
-                                                               itemValue="#{d}"
-                                                               forceSelection="true"
-                                                               class="w-100" />
+                                                                completeMethod="#{departmentController.completeDept}"
+                                                                var="d"
+                                                                itemLabel="#{d.name}"
+                                                                itemValue="#{d}"
+                                                                forceSelection="true"
+                                                                class="w-100" />
                                             </p:panelGrid>
                                         </p:tab>
 
