@@ -344,7 +344,7 @@
                                 </p:dataTable>
                                 
                                 <p:dataTable
-                                    rendered="#{billSearch.viewingPatientInvestigations ne null}"
+                                    rendered="#{billSearch.viewingPatientInvestigations.size() > 0}"
                                     value="#{billSearch.viewingPatientInvestigations}"
                                     var="pi"
                                     class="mt-2">
