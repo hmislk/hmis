@@ -102,6 +102,7 @@
                                     width="6em">  
                                     <h:panelGroup id="price">
                                         <p:inputText
+                                            id="txtRetailRate"
                                             onfocus="this.select()"
                                             autocomplete="off" 
                                             style="padding: 0;" 
@@ -120,6 +121,7 @@
                                     width="6em">  
                                     <h:panelGroup id="total">
                                         <h:outputText 
+                                            id="lblTotal"
                                             value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
