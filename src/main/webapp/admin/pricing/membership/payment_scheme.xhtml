@@ -19,11 +19,20 @@
                 <div class="row"  style="min-height: 200px">
                     <div class="col-md-4">
                         <p:commandButton
-                            id="btnAdd" 
-                            value="Add" 
-                            class="mx-2 ui-button-warning" 
-                            action="#{paymentSchemeController.prepareAdd()}" 
-                            icon="pi pi-plus"  
+                            id="btnAdd"
+                            value="Add"
+                            class="mx-2 ui-button-warning"
+                            action="#{paymentSchemeController.prepareAdd()}"
+                            icon="pi pi-plus"
+                            ajax="false">
+                        </p:commandButton>
+
+                        <p:commandButton
+                            id="btnDuplicate"
+                            value="Duplicate"
+                            class="mx-2 ui-button-secondary"
+                            action="#{paymentSchemeController.duplicateSelected()}"
+                            icon="pi pi-copy"
                             ajax="false">
                         </p:commandButton>
 
