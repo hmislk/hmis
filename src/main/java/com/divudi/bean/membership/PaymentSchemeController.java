@@ -448,7 +448,7 @@ public class PaymentSchemeController implements Serializable {
 
         if (sessionController.getDepartment() != null) {
             boolean departmentSpecific = configOptionApplicationController.getBooleanValueByKey(
-                    "Department Specific Discount Schemes for " + sessionController.getDepartment().getId(), false
+                    "Department Specific Discount Schemes for " + sessionController.getDepartment().getName(), false
             );
             if (departmentSpecific) {
                 jpql.append(" AND i.department = :dep");
