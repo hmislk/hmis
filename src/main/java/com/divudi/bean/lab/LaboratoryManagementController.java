@@ -193,13 +193,21 @@ public class LaboratoryManagementController implements Serializable {
 
         if (null == currentPatientReport.getReportType()) {
             patientReportController.setCurrentPatientReport(currentPatientReport);
-            return "/lab/patient_report?faces-redirect=true";
+            if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
+                return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
+            } else {
+                return "/lab/patient_report?faces-redirect=true";
+            }
         } else {
             switch (currentPatientReport.getReportType()) {
                 case GENARATE:
                     patientReportController.setCurrentPatientReport(currentPatientReport);
                     patientReportController.fillReportFormats(currentPatientReport);
-                    return "/lab/patient_report?faces-redirect=true";
+                    if (currentPatientReport.getPatientInvestigation().getInvestigation().isBypassSampleWorkflow()) {
+                        return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
+                    } else {
+                        return "/lab/patient_report?faces-redirect=true";
+                    }
                 case UPLOAD:
 
                     Upload u = patientReportController.loadUpload(currentPatientReport);
@@ -797,11 +805,25 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
+        List<PatientSample> canCollectSamples = new ArrayList<>();
+        
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click Collect again");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                canCollectSamples.add(ps);
+            }
+        }
+        
+        if (canCollectSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+            return;
         }
 
         listingEntity = ListingEntity.PATIENT_SAMPLES;
@@ -809,19 +831,8 @@ public class LaboratoryManagementController implements Serializable {
         Map<Long, PatientInvestigation> collectedPtixs = new HashMap<>();
         Map<Long, Bill> collectedBills = new HashMap<>();
 
-        for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
-                JsfUtil.addErrorMessage("There are samples already colleted. Please unselect and click Collect again");
-                return;
-            }
-        }
-
         // Update sample collection details and gather associated patient investigations
-        for (PatientSample ps : selectedPatientSamples) {
-
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_GENERATED) {
-
-            }
+        for (PatientSample ps : canCollectSamples) {
             ps.setDepartment(sessionController.getDepartment());
             ps.setSampleCollected(true);
             ps.setSampleCollectedAt(new Date());
@@ -871,11 +882,25 @@ public class LaboratoryManagementController implements Serializable {
             return;
         }
 
+        List<PatientSample> canSentSamples = new ArrayList<>();
+        
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
+            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                JsfUtil.addErrorMessage("There are samples which are yet to collect. Please select them and click the sent to lab button again");
+                return;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_COLLECTED) {
+                canSentSamples.add(ps);
+            }
+        }
+        
+        if (canSentSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+            return;
         }
 
         listingEntity = ListingEntity.PATIENT_SAMPLES;
@@ -883,15 +908,8 @@ public class LaboratoryManagementController implements Serializable {
         Map<Long, PatientInvestigation> samplePtixs = new HashMap<>();
         Map<Long, Bill> sampleBills = new HashMap<>();
 
-        for (PatientSample ps : selectedPatientSamples) {
-            if (ps.getStatus() != PatientInvestigationStatus.SAMPLE_COLLECTED) {
-                JsfUtil.addErrorMessage("There are samples which are yet to collect. Please select them and click the sent to lab button again");
-                return;
-            }
-        }
-
         // Process each selected patient sample
-        for (PatientSample ps : selectedPatientSamples) {
+        for (PatientSample ps : canSentSamples) {
             ps.setSampleTransportedToLabByStaff(sampleTransportedToLabByStaff);
             ps.setSampleSent(true);
             ps.setDepartment(sessionController.getDepartment());
@@ -933,12 +951,22 @@ public class LaboratoryManagementController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        List<PatientSample> canReciveSamples = new ArrayList<>();
 
         for (PatientSample ps : selectedPatientSamples) {
             if (ps.getBill().isCancelled()) {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_SENT) {
+                canReciveSamples.add(ps);
+            }
+        }
+        
+        if (canReciveSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("There are no suitable samples to send from the selected samples.");
+            return;
         }
 
         listingEntity = ListingEntity.PATIENT_SAMPLES;
@@ -947,7 +975,7 @@ public class LaboratoryManagementController implements Serializable {
         Map<Long, Bill> receivedBills = new HashMap<>();
 
         // Update sample details and collect associated patient investigations
-        for (PatientSample ps : selectedPatientSamples) {
+        for (PatientSample ps : canReciveSamples) {
             ps.setSampleReceivedAtLab(true);
             ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
             ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
