@@ -202,7 +202,9 @@
                                 <div class="row mt-2">
                                     <div class="col-md-3"><h:outputText value="Report Format" ></h:outputText></div>
                                     <div class="col-md-1"><h:outputLabel value=" : " style="text-align: center"/></div>
-                                    <div class="col-md-6"><p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                    <div class="col-md-6">
+                                        <p:selectOneMenu class="form-control" id="cmbRf"  value="#{investigationController.current.reportFormat}" >
+                                            <f:selectItem itemLabel="Please select a Report Format"/>
                                             <f:selectItems value="#{reportFormatController.fillParentReportFormats()}" var="rf1" itemLabel="#{rf1.name}" itemValue="#{rf1}" />
                                         </p:selectOneMenu></div>
                                 </div>

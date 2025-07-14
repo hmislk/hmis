@@ -194,6 +194,9 @@ public class PatientInvestigationController implements Serializable {
     private Priority priority;
     private Sample speciman;
     private Long sampleId;
+    // Range filters for large queries
+    private Long fromId;
+    private Long toId;
     private String patientName;
     private Sample specimen;
     private String type;
@@ -307,7 +310,7 @@ public class PatientInvestigationController implements Serializable {
     public String navigateToPatientSampelIndex() {
         return "/lab/sample_index?faces-redirect=true";
     }
-    
+
     public void sendToOutLabSample() {
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
@@ -325,7 +328,7 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         if (sampleTransportedToLabByStaff == null) {
             JsfUtil.addErrorMessage("Samples Transporter is Empty");
             return;
@@ -337,7 +340,7 @@ public class PatientInvestigationController implements Serializable {
                 JsfUtil.addErrorMessage("This Bill is Already Cancel");
                 return;
             }
-            
+
             if (ps.getDepartment() != sessionController.getDepartment()) {
                 JsfUtil.addErrorMessage("Sample (" + ps.getId() + ") belongs to " + ps.getDepartment().getName() + " department. You cannot process samples from other departments.");
                 return;
@@ -401,7 +404,7 @@ public class PatientInvestigationController implements Serializable {
             tb.setStatus(PatientInvestigationStatus.SAMPLE_SENT_TO_OUTLAB);
             billFacade.edit(tb);
         }
-        
+
         if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
             for (PatientSample ps : canSentOutLabSamples) {
                 for (PatientInvestigation pi : getPatientInvestigationsBySample(ps)) {
@@ -424,6 +427,101 @@ public class PatientInvestigationController implements Serializable {
         itemsForParentItem = itemForItemController.getItemsForParentItem(patientInvestigation.getInvestigation());
         patientSampleComponentsByInvestigation = getPatientSampleComponentsByInvestigation(patientInvestigation);
         return "/lab/alternative_report_selector?faces-redirect=true";
+    }
+
+    public String navigateToCreatePatientReportBypassingSampleProcess() {
+        if (current == null || current.getBillItem() == null || current.getBillItem().getBill() == null) {
+            JsfUtil.addErrorMessage("No patient investigation selected");
+            return "";
+        }
+
+        Bill selectedBill = current.getBillItem().getBill();
+        List<PatientReport> billReport = patientReportController.patientReports(current);
+
+        if (billReport == null || billReport.isEmpty()) {
+            generateBarcodesForSelectedBill(selectedBill);
+            List<PatientSample> investigationSmples = getPatientSamplesByInvestigation(current);
+            recordSampleSendingProcess(selectedBill, current, investigationSmples);
+            patientReportController.createNewReport(current);
+        } else {
+            patientReportController.setCurrentPatientReport(billReport.get(0));
+        }
+        return "/lab/patient_report_without_sample_sending_process?faces-redirect=true";
+    }
+
+    public void recordSampleSendingProcess(Bill bill, PatientInvestigation patientInvestigation, List<PatientSample> processingSamples) {
+        if (bill == null || patientInvestigation == null || processingSamples == null) {
+            JsfUtil.addErrorMessage("Invalid parameters for recording sample sending process");
+            return;
+        }
+
+        List<PatientSample> canProcessSamples = new ArrayList<>();
+        for (PatientSample ps : processingSamples) {
+            if (ps.getBill().isCancelled()) {
+                JsfUtil.addErrorMessage("This Bill is Already Cancel");
+                continue;
+            }
+            if (ps.getStatus() == PatientInvestigationStatus.SAMPLE_GENERATED) {
+                canProcessSamples.add(ps);
+            }
+        }
+
+        if (canProcessSamples.isEmpty()) {
+            JsfUtil.addErrorMessage("No valid samples to process");
+            return;
+        }
+
+        //Update Sample Data
+        for (PatientSample ps : canProcessSamples) {
+
+            ps.setSampleCollected(true);
+            ps.setSampleCollectedAt(new Date());
+            ps.setSampleCollectedDepartment(sessionController.getDepartment());
+            ps.setSampleCollectedInstitution(sessionController.getInstitution());
+            ps.setSampleCollecter(sessionController.getLoggedUser());
+
+            ps.setSampleSent(true);
+            ps.setSampleSentBy(sessionController.getLoggedUser());
+            ps.setSampleSentAt(new Date());
+            ps.setSampleSentToInstitution(sessionController.getInstitution());
+            ps.setSampleSentToDepartment(sessionController.getDepartment());
+            ps.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
+
+            ps.setSampleReceivedAtLab(true);
+            ps.setSampleReceiverAtLab(sessionController.getLoggedUser());
+            ps.setSampleReceivedAtLabDepartment(sessionController.getDepartment());
+            ps.setSampleReceivedAtLabInstitution(sessionController.getInstitution());
+            ps.setSampleReceivedAtLabAt(new Date());
+
+            ps.setDepartment(sessionController.getDepartment());
+            ps.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+            patientSampleFacade.edit(ps);
+        }
+
+        //Update PatientInvestigation Data
+        patientInvestigation.setSampleCollected(true);
+        patientInvestigation.setSampleCollectedAt(new Date());
+        patientInvestigation.setSampleCollectedBy(sessionController.getLoggedUser());
+
+        patientInvestigation.setSampleSent(true);
+        patientInvestigation.setSampleTransportedToLabByStaff(sessionController.getLoggedUser().getStaff());
+        patientInvestigation.setSampleSentAt(new Date());
+        patientInvestigation.setSampleSentBy(sessionController.getLoggedUser());
+
+        patientInvestigation.setSampleAccepted(true);
+        patientInvestigation.setSampleAcceptedAt(new Date());
+        patientInvestigation.setSampleAcceptedBy(sessionController.getLoggedUser());
+        patientInvestigation.setReceived(true);
+        patientInvestigation.setReceivedAt(new Date());
+        patientInvestigation.setReceiveDepartment(sessionController.getDepartment());
+        patientInvestigation.setReceiveInstitution(sessionController.getInstitution());
+        patientInvestigation.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        ejbFacade.edit(patientInvestigation);
+
+        //Update Bill Data
+        bill.setStatus(PatientInvestigationStatus.SAMPLE_ACCEPTED);
+        billFacade.edit(bill);
+
     }
 
     public String navigateToSampleManagementFromOPDBatchBillView(Bill bill) {
@@ -474,23 +572,41 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void fillPatientReportItemValues() {
-        String j = "select v from PatientReportItemValue v "
+        fillPatientReportItemValues(fromId, toId, fromDate, toDate);
+    }
+
+    public void fillPatientReportItemValues(Long fromId, Long toId, Date fromDate, Date toDate) {
+        StringBuilder j = new StringBuilder("select v from PatientReportItemValue v "
                 + "where v.patientReport.approved=:app "
                 + " and (v.investigationItem.ixItemType=:vtv or v.investigationItem.ixItemType=:vtc)"
-                + " and  v.patientReport.patientInvestigation.investigation.reportType=:rt";
-        Map m = new HashMap();
+                + " and v.patientReport.patientInvestigation.investigation.reportType=:rt");
+
+        Map<String, Object> m = new HashMap<>();
         m.put("app", true);
         m.put("vtv", InvestigationItemType.Value);
         m.put("vtc", InvestigationItemType.Calculation);
         m.put("rt", InvestigationReportType.General);
-        if (false) {
-            PatientReportItemValue v = new PatientReportItemValue();
-            if (v.getPatientReport().getPatientInvestigation().getInvestigation().getReportType()
-                    == InvestigationReportType.General) {
 
-            }
+        if (fromId != null) {
+            j.append(" and v.id >= :fromId");
+            m.put("fromId", fromId);
         }
-        patientReportItemValues = getPatientReportItemValueFacade().findByJpql(j, m, 10000000);
+        if (toId != null) {
+            j.append(" and v.id <= :toId");
+            m.put("toId", toId);
+        }
+        if (fromDate != null) {
+            j.append(" and v.patientReport.approveAt >= :fd");
+            m.put("fd", fromDate);
+        }
+        if (toDate != null) {
+            j.append(" and v.patientReport.approveAt <= :td");
+            m.put("td", toDate);
+        }
+
+        j.append(" order by v.id");
+
+        patientReportItemValues = getPatientReportItemValueFacade().findByJpql(j.toString(), m, TemporalType.TIMESTAMP);
     }
 
     public void sentRequestToAnalyzer() {
@@ -4953,6 +5069,22 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSampleId(Long sampleId) {
         this.sampleId = sampleId;
+    }
+
+    public Long getFromId() {
+        return fromId;
+    }
+
+    public void setFromId(Long fromId) {
+        this.fromId = fromId;
+    }
+
+    public Long getToId() {
+        return toId;
+    }
+
+    public void setToId(Long toId) {
+        this.toId = toId;
     }
 
     public String getPatientName() {

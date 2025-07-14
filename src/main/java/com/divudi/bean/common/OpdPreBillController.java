@@ -1250,7 +1250,7 @@ public class OpdPreBillController implements Serializable, ControllerWithPatient
         if (addAllBillFees) {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         } else if (siteBasedBillFees) {
-            addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeefromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
+            addingEntry.setLstBillFees(getBillBean().forInstitutionBillFeesFromBillItem(lastBillItem, sessionController.getDepartment().getSite()));
         } else {
             addingEntry.setLstBillFees(getBillBean().baseBillFeefromBillItem(getCurrentBillItem()));
         }
