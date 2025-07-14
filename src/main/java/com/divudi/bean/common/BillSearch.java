@@ -54,7 +54,7 @@ import com.divudi.core.facade.WebUserFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.opd.OpdBillController;
 import com.divudi.bean.pharmacy.BhtIssueReturnController;
-import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
+import com.divudi.bean.pharmacy.GrnReturnWithCostingController;
 import com.divudi.bean.pharmacy.GoodsReturnController;
 import com.divudi.bean.pharmacy.IssueReturnController;
 import com.divudi.bean.pharmacy.PharmacyBillSearch;
@@ -80,6 +80,7 @@ import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.facade.FeeFacade;
 import com.divudi.core.facade.PatientFacade;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.StaffFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -89,6 +90,8 @@ import com.divudi.service.ProfessionalPaymentService;
 import com.divudi.service.StaffService;
 
 import java.io.Serializable;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -107,9 +110,14 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
+import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
 
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.DefaultStreamedContent;
+import org.primefaces.model.StreamedContent;
+
+import java.nio.charset.StandardCharsets;
 
 /**
  * @author Buddhika
@@ -239,6 +247,9 @@ public class BillSearch implements Serializable {
     PurchaseReturnController purchaseReturnController;
     @Inject
     DirectPurchaseReturnController directPurchaseReturnController;
+
+    @Inject
+    GrnReturnWithCostingController grnReturnWithCostingController;
     @Inject
     PharmacyReturnwithouttresing pharmacyReturnwithouttresing;
     @Inject
@@ -4257,9 +4268,18 @@ public class BillSearch implements Serializable {
             return null;
         }
         loadBillDetails(bill);
-        goodsReturnController.setReturnBill(bill);
-        goodsReturnController.setPrintPreview(true);
-        return "/pharmacy/pharmacy_return_good";
+        grnReturnWithCostingController.resetValuesForReturn();
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        if (manageCosting) {
+            grnReturnWithCostingController.setBill(bill);
+            grnReturnWithCostingController.prepareReturnBill();
+            grnReturnWithCostingController.setPrintPreview(false);
+            return "/pharmacy/grn_return_with_costing?faces-redirect=true";
+        } else {
+            goodsReturnController.setReturnBill(bill);
+            goodsReturnController.setPrintPreview(true);
+            return "/pharmacy/pharmacy_return_good";
+        }
     }
 
     public String navigateToPharmacyIssue() {
@@ -5782,6 +5802,29 @@ public class BillSearch implements Serializable {
     public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill){
         return billService.fetchPatientInvestigationsOfBatchBill(batchBill);
     }
+
+    public List<PatientInvestigation> fetchPatientInvestigationsAllowBypassSampleProcess(Bill batchBill) {
+        if (batchBill == null) {
+            return new ArrayList<>();
+        }
+        viewingPatientInvestigations = new ArrayList<>();
+        String jpql = "SELECT pbi "
+                + "FROM PatientInvestigation pbi "
+                + "WHERE pbi.investigation.bypassSampleWorkflow = :bypass"
+                + " and pbi.billItem.bill IN ("
+                + " SELECT b FROM Bill b WHERE b.backwardReferenceBill = :bb"
+                + ") "
+                + "ORDER BY pbi.id";
+        Map<String, Object> params = new HashMap<>();
+        params.put("bb", batchBill);
+        params.put("bypass", true);
+        viewingPatientInvestigations = patientInvestigationFacade.findByJpql(jpql, params);
+        return viewingPatientInvestigations;
+    }
+
+    @EJB
+    PatientInvestigationFacade patientInvestigationFacade;
+
     
     public Bill getViewingBill() {
         return viewingBill;
@@ -6082,6 +6125,22 @@ public class BillSearch implements Serializable {
 
     public String navigateToDownloadBillsAndBillItems1() {
         return "/analytics/download_bills_and_items?faces-redirect=true";
+    }
+
+    public StreamedContent exportAsJson() {
+        if (viewingBill == null) {
+            JsfUtil.addErrorMessage("No bill is selected");
+            return null;
+        }
+
+        String json = billService.convertBillToJson(viewingBill);
+        InputStream stream = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
+
+        return DefaultStreamedContent.builder()
+                .name("bill_" + viewingBill.getDeptId() + ".json")
+                .contentType("application/json")
+                .stream(() -> stream)
+                .build();
     }
 
     public String findOriginalBillFromCancelledBill(Bill cancelBill) {
