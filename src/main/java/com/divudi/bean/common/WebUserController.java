@@ -149,7 +149,7 @@ public class WebUserController implements Serializable {
 
     private LoginPage loginPage;
 
-    private boolean grantAllPrivilegesToAllUsersForTesting = false;
+    private boolean grantAllPrivilegesToAllUsersForTesting = true;
 
     private boolean skipDevelopersPrivilege = true;
 
