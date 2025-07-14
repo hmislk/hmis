@@ -465,7 +465,7 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
         }
-        return "/pharmacy/pharmacy_return_good";
+        return "/pharmacy/pharmacy_return_good?faces-redirect=true";
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {

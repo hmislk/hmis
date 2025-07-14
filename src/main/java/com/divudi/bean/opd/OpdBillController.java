@@ -2802,7 +2802,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         List<BillFee> allBillFees;
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
         if (addAllBillFees) {
@@ -3200,6 +3200,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String navigateToNewOpdBill() {
+        patientController.setQuickSearchPhoneNumber(null);
         if (sessionController.getOpdBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
@@ -3304,7 +3305,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         int maxResults = maxResultsLong.intValue();
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
         // Split the query into individual tokens (space-separated)

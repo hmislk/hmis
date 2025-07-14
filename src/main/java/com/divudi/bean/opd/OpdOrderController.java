@@ -2899,7 +2899,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         List<BillFee> allBillFees;
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
@@ -3344,7 +3344,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         int maxResults = maxResultsLong.intValue();
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
 
         // Split the query into individual tokens (space-separated)
         String[] tokens = query.toLowerCase().split("\\s+");
