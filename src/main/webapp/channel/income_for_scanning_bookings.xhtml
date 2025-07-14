@@ -82,7 +82,15 @@
 
                         <p:dataTable id="tableForReport"  
                                      value="#{channelReportController.billSessions}" var="r" 
+                                     paginator="true"
+                                     scrollable="true"
+                                     scrollHeight="800px"
+                                     rows="10"
                                      rowIndexVar="n"
+                                     paginatorPosition="bottom"
+                                     paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
+                                     rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
+                                     rowKey="#{row.bill.id}"
                                      >
                             <f:facet name="header">
 
@@ -146,7 +154,7 @@
                                 <h:outputText styleClass="hosFee" value="#{r.bill.hospitalFee}">
 
                                 </h:outputText>
-                                
+
                                 <f:facet name="footer">
                                     <h:outputText styleClass="hosFeeTotal" value="">
                                         <f:convertNumber pattern="#,##0.00"/>
