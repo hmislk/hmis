@@ -344,29 +344,34 @@ public class ChannelReportController implements Serializable {
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
     }
-    
+
     @EJB
     ChannelService channelService;
-    
+
     private ReportTemplateRowBundle dataBundle;
-    
-    public void fetchScanningSessionForIncome(){
+
+    public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
-        
-        ReportTemplateRowBundle bundle =  channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning");
+
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning");
         dataBundle = bundle;
 
     }
-    
-    public List<Bill> getChildBills(Bill parent){
+
+    public void fetchAgentSessionIncome() {
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent");
+        dataBundle = bundle;
+    }
+
+    public List<Bill> getChildBills(Bill parent) {
         List<Bill> childList = new ArrayList<>();
-        
-        if(parent.isCancelled()){
+
+        if (parent.isCancelled()) {
             childList.add(parent.getCancelledBill());
-        }else if(parent.isRefunded()){
+        } else if (parent.isRefunded()) {
             childList.addAll(parent.getRefundBills());
         }
-        
+
         return childList;
     }
 

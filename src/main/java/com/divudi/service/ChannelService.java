@@ -1212,7 +1212,7 @@ public class ChannelService {
             jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
             parameters.put("catogery", "Scanning");
         }else if(status.equalsIgnoreCase("Agent")){
-            jpql += "and bill.paymentMethod = :method";
+            jpql += " and bill.paymentMethod = :method ";
             parameters.put("method", PaymentMethod.Agent);
         }
         
