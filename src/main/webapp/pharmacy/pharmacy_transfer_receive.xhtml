@@ -88,9 +88,9 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                             <p:ajax 
                                                 event="keyup" 
-                                                    process="@this"
-                                                    update="value :#{p:resolveFirstComponentWithId('txtReceivingNetTotal',view).clientId}"
-                                                    listener="#{transferReceiveController.onQuantityChangeForTransferReceive(ph)}"/>
+                                                process="@this"
+                                                update="value :#{p:resolveFirstComponentWithId('txtReceivingNetTotal',view).clientId}"
+                                                listener="#{transferReceiveController.onQuantityChangeForTransferReceive(ph)}"/>
                                         </p:inputText>
                                     </p:column>
 
@@ -209,6 +209,12 @@
 
                     <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
                         <ph:transfeRecieve_detailed bill="#{transferReceiveController.receivedBill}"/>
+                    </h:panelGroup>
+
+                    <h:panelGroup 
+                        id="gpBillTemplate" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"> 
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
                     </h:panelGroup>
 
                 </h:panelGroup>
