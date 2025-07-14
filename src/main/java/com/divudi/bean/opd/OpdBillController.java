@@ -2403,7 +2403,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -2805,9 +2804,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
-        System.out.println("addAllBillFees = " + addAllBillFees);
-        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
-        System.out.println("departmentBasedBillFees = " + departmentBasedBillFees);
         
         
         if (addAllBillFees) {

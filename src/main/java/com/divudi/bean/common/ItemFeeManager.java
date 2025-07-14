@@ -905,8 +905,6 @@ public class ItemFeeManager implements Serializable {
     }
 
     public List<ItemFee> fillCollectingCentreSpecificFees(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
         String jpql = "select f "
                 + " from ItemFee f "
                 + " where f.retired=:ret ";
@@ -922,14 +920,11 @@ public class ItemFeeManager implements Serializable {
         }
         jpql += " and f.forCategory is null";
 
-        System.out.println("m = " + m);
         List<ItemFee> fs = itemFeeFacade.findByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForSite(Institution forInstitution) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + forInstitution);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -957,14 +952,11 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
 
     public List<ItemLight> fillItemLightsForCc(Institution cc) {
-        System.out.println("fillFees");
-        System.out.println("forInstitution = " + cc);
         String jpql = "SELECT new com.divudi.core.data.ItemLight("
                 + "f.item.id, "
                 + "f.item.department.name, "
@@ -988,7 +980,6 @@ public class ItemFeeManager implements Serializable {
         jpql += " GROUP BY f.item "
                 + " ORDER BY f.item.name";
 
-        System.out.println("m = " + m);
         List<ItemLight> fs = (List<ItemLight>) itemFacade.findLightsByJpql(jpql, m);
         return fs;
     }
