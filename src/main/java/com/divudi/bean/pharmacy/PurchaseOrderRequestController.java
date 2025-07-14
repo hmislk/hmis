@@ -209,14 +209,9 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     private PharmacyController pharmacyController;
 
-    public void onFocus(BillItem bi) {
-        getPharmacyController().setPharmacyItem(bi.getItem());
-    }
-
     public void onEdit(BillItem bi) {
         bi.getPharmaceuticalBillItem().setQty(bi.getQty());
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
-        getPharmacyController().setPharmacyItem(bi.getItem());
         calTotal();
     }
 

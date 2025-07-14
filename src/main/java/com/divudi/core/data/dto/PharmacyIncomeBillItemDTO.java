@@ -2,7 +2,6 @@ package com.divudi.core.data.dto;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
-import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.PatientEncounter;
 import com.divudi.core.entity.PaymentScheme;
 
@@ -11,6 +10,8 @@ import java.util.Date;
 
 public class PharmacyIncomeBillItemDTO implements Serializable {
 
+    private Long billId;
+    private Long billItemId;
     private String deptId;
     private String patientName;
     private BillTypeAtomic billTypeAtomic;
@@ -22,7 +23,6 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
     private Double discount;
     private Double margin;
     private PaymentScheme paymentScheme;
-    private BillFinanceDetails billFinanceDetails;
 
     private Double qty;
     private Double retailRate;
@@ -33,9 +33,9 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
     public PharmacyIncomeBillItemDTO() {
     }
 
-    public PharmacyIncomeBillItemDTO(String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
-                                     PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double discount, Double margin,
-                                     PaymentScheme paymentScheme, BillFinanceDetails billFinanceDetails, Double qty, Double retailRate, Double purchaseRate,
+    public PharmacyIncomeBillItemDTO(Long billId, Long billItemId, String deptId, String patientName, BillTypeAtomic billTypeAtomic,
+                                     Date createdAt, Double netTotal, PaymentMethod paymentMethod, Double total,
+                                     PatientEncounter patientEncounter, Double qty, Double retailRate, Double purchaseRate,
                                      Double netRate, String itemName) {
         this.deptId = deptId;
         this.patientName = patientName;
@@ -45,33 +45,13 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
         this.paymentMethod = paymentMethod;
         this.total = total;
         this.patientEncounter = patientEncounter;
-        this.discount = discount;
-        this.margin = margin;
-        this.paymentScheme = paymentScheme;
-        this.billFinanceDetails = billFinanceDetails;
         this.qty = qty;
         this.retailRate = retailRate;
         this.purchaseRate = purchaseRate;
         this.netRate = netRate;
         this.itemName = itemName;
-    }
-
-    public PharmacyIncomeBillItemDTO(String deptId, String patientName, BillTypeAtomic billTypeAtomic, Date createdAt, Double netTotal,
-                                     PaymentMethod paymentMethod, Double total, PatientEncounter patientEncounter, Double qty,
-                                     Double retailRate, Double purchaseRate, Double netRate, String itemName) {
-        this.deptId = deptId;
-        this.patientName = patientName;
-        this.billTypeAtomic = billTypeAtomic;
-        this.createdAt = createdAt;
-        this.netTotal = netTotal;
-        this.paymentMethod = paymentMethod;
-        this.total = total;
-        this.patientEncounter = patientEncounter;
-        this.qty = qty;
-        this.retailRate = retailRate;
-        this.purchaseRate = purchaseRate;
-        this.netRate = netRate;
-        this.itemName = itemName;
+        this.billId = billId;
+        this.billItemId = billItemId;
     }
 
     public String getDeptId() {
@@ -162,14 +142,6 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
         this.paymentScheme = paymentScheme;
     }
 
-    public BillFinanceDetails getBillFinanceDetails() {
-        return billFinanceDetails;
-    }
-
-    public void setBillFinanceDetails(BillFinanceDetails billFinanceDetails) {
-        this.billFinanceDetails = billFinanceDetails;
-    }
-
     public Double getQty() {
         return qty;
     }
@@ -208,5 +180,21 @@ public class PharmacyIncomeBillItemDTO implements Serializable {
 
     public void setItemName(String itemName) {
         this.itemName = itemName;
+    }
+
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
+    }
+
+    public Long getBillItemId() {
+        return billItemId;
+    }
+
+    public void setBillItemId(Long billItemId) {
+        this.billItemId = billItemId;
     }
 }

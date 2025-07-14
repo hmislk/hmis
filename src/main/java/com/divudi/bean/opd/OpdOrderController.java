@@ -2904,7 +2904,7 @@ public class OpdOrderController implements Serializable, ControllerWithPatient, 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
-            allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
+            allBillFees = getBillBean().forInstitutionBillFeesFromBillItem(bi, sessionController.getDepartment().getSite());
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
