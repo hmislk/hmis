@@ -1101,7 +1101,9 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setBillNetRate(rateOfTaxPortionFromBill.add(rateOfExpensePortionFromBill).subtract(rateOfDiscountPortionFromBill));
         bifd.setNetRate(bifd.getLineNetRate().add(bifd.getBillNetRate()));
 
-        BigDecimal lineDiscountRate = BigDecimal.valueOf(bi.getDiscountRate());
+        BigDecimal lineDiscountRate = Optional.ofNullable(bifd.getLineDiscountRate())
+                .filter(r -> r.compareTo(BigDecimal.ZERO) != 0)
+                .orElse(BigDecimal.valueOf(bi.getDiscountRate()));
         bifd.setLineDiscountRate(lineDiscountRate);
         bifd.setBillDiscountRate(rateOfDiscountPortionFromBill);
         bifd.setTotalDiscountRate(lineDiscountRate.add(rateOfDiscountPortionFromBill));
