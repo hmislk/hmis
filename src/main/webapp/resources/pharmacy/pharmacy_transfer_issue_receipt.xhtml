@@ -107,6 +107,11 @@
                     <thead>
                         <tr>
                             <th class="item-name">Item</th>
+                            <th class="item-name">Batch</th>
+                            <th class="item-qty">DOE</th>
+                            <th class="item-rate">PR</th>
+                            <th class="item-rate">RR</th>
+                            <th class="item-rate">CR</th>
                             <th class="item-qty">Qty</th>
                             <th class="item-rate">Rate</th>
                             <th class="item-value">Value</th>
@@ -116,21 +121,48 @@
                         <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
 
 
-                            <!--
-                            Columns to add
-                            
-                            -->
-                            DOE:                      #{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}
-                            Batch No:                 #{bip.pharmaceuticalBillItem.itemBatch.batchNo}
-                            PR:                       #{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}
-                            RR:                       #{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}
-                            CR:                       #{bip.pharmaceuticalBillItem.itemBatch.costRate}
-
                             <tr>
-                                <td class="item-name"><h:outputLabel value="#{bip.item.name}" /></td>
-                                <td class="item-qty"><h:outputLabel value="#{bip.qty}"><f:convertNumber integerOnly="true" /></h:outputLabel></td>
-                                <td class="item-rate"><h:outputLabel value="#{bip.rate}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
-                                <td class="item-value"><h:outputLabel value="#{bip.netValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                <td class="item-name">
+                                    <h:outputLabel value="#{bip.item.name}" />
+                                </td>
+                                <td class="item-name">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.batchNo}" />
+                                </td>
+                                <td class="item-qty">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-rate">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-rate">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-rate">
+                                    <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.costRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-qty">
+                                    <h:outputLabel value="#{bip.qty}">
+                                        <f:convertNumber integerOnly="true" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-rate">
+                                    <h:outputLabel value="#{bip.rate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
+                                <td class="item-value">
+                                    <h:outputLabel value="#{bip.netValue}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </td>
                             </tr>
                         </ui:repeat>
                     </tbody>
