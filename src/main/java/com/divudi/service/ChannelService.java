@@ -1185,7 +1185,7 @@ public class ChannelService {
 
     }
     
-     public ReportTemplateRowBundle generateChannelIncomeForScanningSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff) {
+     public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
@@ -1206,15 +1206,18 @@ public class ChannelService {
                 + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
-                + "WHERE p.retired <> :bfr AND bill.retired <> :br "
-                + "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+    
+        if(status.equalsIgnoreCase("Scanning")){
+            jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
+            parameters.put("catogery", "Scanning");
+        }else if(status.equalsIgnoreCase("Agent")){
+            jpql += "and bill.paymentMethod = :method";
+            parameters.put("method", PaymentMethod.Agent);
+        }
         
-//        Bill bill = new Bill();
-//        bill.getSingleBillSession().getSessionInstance().getOriginatingSession().getCategory().getName();
-
         parameters.put("bfr", true);
         parameters.put("br", true);
-        parameters.put("catogery", "Scanning");
 
         List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
         bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);

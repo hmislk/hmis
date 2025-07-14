@@ -418,6 +418,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.temporaryBillSessions = temporaryBillSessions;
     }
 
+    public String checkBillClass(Bill bill){
+        if(bill instanceof CancelledBill){
+            return "CancelBill";
+        }else if(bill instanceof RefundBill){
+            return "RefundBill";
+        }else{
+            return "";
+        }
+    }    
+    
     public boolean isAbsent() {
         if (selectedBillSession != null) {
             return selectedBillSession.isAbsent();

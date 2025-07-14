@@ -351,12 +351,23 @@ public class ChannelReportController implements Serializable {
     private ReportTemplateRowBundle dataBundle;
     
     public void fetchScanningSessionForIncome(){
-        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+//        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
         
-        ReportTemplateRowBundle bundle =  channelService.generateChannelIncomeForScanningSessions(fromDate, toDate, institution, null, null);
+        ReportTemplateRowBundle bundle =  channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning");
         dataBundle = bundle;
+
+    }
+    
+    public List<Bill> getChildBills(Bill parent){
+        List<Bill> childList = new ArrayList<>();
         
-        billSessions = bsList;
+        if(parent.isCancelled()){
+            childList.add(parent.getCancelledBill());
+        }else if(parent.isRefunded()){
+            childList.addAll(parent.getRefundBills());
+        }
+        
+        return childList;
     }
 
     public void fillSessionsForChannelDoctorCard() {

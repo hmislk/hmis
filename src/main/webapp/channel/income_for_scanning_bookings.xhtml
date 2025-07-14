@@ -80,6 +80,12 @@
                             </p:commandButton>
                         </h:panelGrid>
 
+                        <style>
+                            .no-header thead {
+                                display: none !important;
+                            }
+                        </style>
+
                         <p:dataTable id="tableForReport"  
                                      value="#{channelReportController.dataBundle.reportTemplateRows}" var="row" 
                                      paginator="true"
@@ -87,6 +93,7 @@
                                      scrollHeight="800px"
                                      rows="10"
                                      rowIndexVar="n"
+                                     expandedRow="true"
                                      paginatorPosition="bottom"
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
@@ -105,7 +112,7 @@
                                 </h:outputLabel>
                             </f:facet>
 
-                            <p:column headerText="Serial No" style=" text-align: center;">
+                            <p:column  headerText="Serial No" style=" text-align: center;">
                                 <h:outputText value="#{n+1}">
 
                                 </h:outputText>
@@ -128,17 +135,19 @@
                                 <p:commandLink
                                     id="billNo"
                                     disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
-                                                                            or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
-                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
-                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
-                                                                            }"
+                                                 or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                 or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                 or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                 or bookingControllerViewScope.checkBillClass(row.bill) eq 'CancelBill'                           }"
                                     ajax="false"
                                     style="font-weight: bold"
                                     value="#{row.bill.deptId}"
                                     action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
-                            </p:commandLink>
-                                
+                                </p:commandLink>
+
                                 <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
+                                <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" ></p:tag>
+                                <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
                                 <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
                             </p:column>
 
@@ -148,7 +157,7 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Patient" style=" text-align: center;">
+                            <p:column headerText="Patient" style=" text-align: center;" filterMatchMode="contains" filterBy="#{row.bill.patient.person.name}">
                                 <h:outputText value="#{row.bill.patient.person.name}">
 
                                 </h:outputText>
@@ -194,175 +203,175 @@
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
-                            
+
                             <p:column class="text-end" sortBy="#{row.cashValue}" filterBy="#{row.cashValue}"
-                                  rendered="#{channelReportController.dataBundle.hasCashTransaction}">
-                            <f:facet name="header">
-                                <h:outputText value="Cash"/>
-                            </f:facet>
-                            <h:outputText styleClass="cashValue" value="#{row.cashValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText styleClass="totalCashValue" value="#{channelReportController.dataBundle.cashValue}">
+                                      rendered="#{channelReportController.dataBundle.hasCashTransaction}">
+                                <f:facet name="header">
+                                    <h:outputText value="Cash"/>
+                                </f:facet>
+                                <h:outputText styleClass="cashValue" value="#{row.cashValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalCashValue" value="#{channelReportController.dataBundle.cashValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Card" sortBy="#{row.cardValue}"
-                                  filterBy="#{row.cardValue}" rendered="#{channelReportController.dataBundle.hasCardTransaction}">
-                            <h:outputText styleClass="cardValue" value="#{row.cardValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText styleClass="totalCardValue" value="#{channelReportController.dataBundle.cardValue}">
+                            <p:column class="text-end" headerText="Card" sortBy="#{row.cardValue}"
+                                      filterBy="#{row.cardValue}" rendered="#{channelReportController.dataBundle.hasCardTransaction}">
+                                <h:outputText styleClass="cardValue" value="#{row.cardValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalCardValue" value="#{channelReportController.dataBundle.cardValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Credit" sortBy="#{row.creditValue}"
-                                  filterBy="#{row.creditValue}"
-                                  rendered="#{channelReportController.dataBundle.hasCreditTransaction}">
-                            <h:outputText value="#{row.creditValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.creditValue}">
+                            <p:column class="text-end" headerText="Credit" sortBy="#{row.creditValue}"
+                                      filterBy="#{row.creditValue}"
+                                      rendered="#{channelReportController.dataBundle.hasCreditTransaction}">
+                                <h:outputText value="#{row.creditValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.creditValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <!-- Continuing from Credit -->
-                        <p:column class="text-end" headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}"
-                                  filterBy="#{row.staffWelfareValue}"
-                                  rendered="#{channelReportController.dataBundle.hasStaffWelfareTransaction}">
-                            <h:outputText value="#{row.staffWelfareValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.staffWelfareValue}">
+                            <!-- Continuing from Credit -->
+                            <p:column class="text-end" headerText="Staff Welfare" sortBy="#{row.staffWelfareValue}"
+                                      filterBy="#{row.staffWelfareValue}"
+                                      rendered="#{channelReportController.dataBundle.hasStaffWelfareTransaction}">
+                                <h:outputText value="#{row.staffWelfareValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.staffWelfareValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Voucher" sortBy="#{row.voucherValue}"
-                                  filterBy="#{row.voucherValue}"
-                                  rendered="#{channelReportController.dataBundle.hasVoucherTransaction}">
-                            <h:outputText value="#{row.voucherValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.voucherValue}">
+                            <p:column class="text-end" headerText="Voucher" sortBy="#{row.voucherValue}"
+                                      filterBy="#{row.voucherValue}"
+                                      rendered="#{channelReportController.dataBundle.hasVoucherTransaction}">
+                                <h:outputText value="#{row.voucherValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.voucherValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"
-                                  rendered="#{channelReportController.dataBundle.hasIouTransaction}">
-                            <h:outputText value="#{row.iouValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.iouValue}">
+                            <p:column class="text-end" headerText="IOU" sortBy="#{row.iouValue}" filterBy="#{row.iouValue}"
+                                      rendered="#{channelReportController.dataBundle.hasIouTransaction}">
+                                <h:outputText value="#{row.iouValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.iouValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Agent" sortBy="#{row.agentValue}"
-                                  filterBy="#{row.agentValue}"
-                                  rendered="#{channelReportController.dataBundle.hasAgentTransaction}">
-                            <h:outputText styleClass="agentValue" value="#{row.agentValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText styleClass="totalAgentValue" value="0.00">
+                            <p:column class="text-end" headerText="Agent" sortBy="#{row.agentValue}"
+                                      filterBy="#{row.agentValue}"
+                                      rendered="#{channelReportController.dataBundle.hasAgentTransaction}">
+                                <h:outputText styleClass="agentValue" value="#{row.agentValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText styleClass="totalAgentValue" value="0.00">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Cheque" sortBy="#{row.chequeValue}"
-                                  filterBy="#{row.chequeValue}"
-                                  rendered="#{channelReportController.dataBundle.hasChequeTransaction}">
-                            <h:outputText value="#{row.chequeValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.chequeValue}">
+                            <p:column class="text-end" headerText="Cheque" sortBy="#{row.chequeValue}"
+                                      filterBy="#{row.chequeValue}"
+                                      rendered="#{channelReportController.dataBundle.hasChequeTransaction}">
+                                <h:outputText value="#{row.chequeValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.chequeValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Slip" sortBy="#{row.slipValue}"
-                                  filterBy="#{row.slipValue}" rendered="#{channelReportController.dataBundle.hasSlipTransaction}">
-                            <h:outputText value="#{row.slipValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.slipValue}">
+                            <p:column class="text-end" headerText="Slip" sortBy="#{row.slipValue}"
+                                      filterBy="#{row.slipValue}" rendered="#{channelReportController.dataBundle.hasSlipTransaction}">
+                                <h:outputText value="#{row.slipValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.slipValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="eWallet" sortBy="#{row.ewalletValue}"
-                                  filterBy="#{row.ewalletValue}"
-                                  rendered="#{channelReportController.dataBundle.hasEWalletTransaction}">
-                            <h:outputText value="#{row.ewalletValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.ewalletValue}">
+                            <p:column class="text-end" headerText="eWallet" sortBy="#{row.ewalletValue}"
+                                      filterBy="#{row.ewalletValue}"
+                                      rendered="#{channelReportController.dataBundle.hasEWalletTransaction}">
+                                <h:outputText value="#{row.ewalletValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.ewalletValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Patient Deposit" sortBy="#{row.patientDepositValue}"
-                                  filterBy="#{row.patientDepositValue}"
-                                  rendered="#{channelReportController.dataBundle.hasPatientDepositTransaction}">
-                            <h:outputText value="#{row.patientDepositValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.patientDepositValue}">
+                            <p:column class="text-end" headerText="Patient Deposit" sortBy="#{row.patientDepositValue}"
+                                      filterBy="#{row.patientDepositValue}"
+                                      rendered="#{channelReportController.dataBundle.hasPatientDepositTransaction}">
+                                <h:outputText value="#{row.patientDepositValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.patientDepositValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Patient Points" sortBy="#{row.patientPointsValue}"
-                                  filterBy="#{row.patientPointsValue}"
-                                  rendered="#{channelReportController.dataBundle.hasPatientPointsTransaction}">
-                            <h:outputText value="#{row.patientPointsValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.patientPointsValue}">
+                            <p:column class="text-end" headerText="Patient Points" sortBy="#{row.patientPointsValue}"
+                                      filterBy="#{row.patientPointsValue}"
+                                      rendered="#{channelReportController.dataBundle.hasPatientPointsTransaction}">
+                                <h:outputText value="#{row.patientPointsValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.patientPointsValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
-                        <p:column class="text-end" headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}"
-                                  filterBy="#{row.onlineSettlementValue}"
-                                  rendered="#{channelReportController.dataBundle.hasOnCallTransaction}">
-                            <h:outputText value="#{row.onlineSettlementValue}">
-                                <f:convertNumber pattern="#,##0.00"/>
-                            </h:outputText>
-                            <f:facet name="footer">
-                                <h:outputText value="#{channelReportController.dataBundle.onlineSettlementValue}">
+                            <p:column class="text-end" headerText="Online Settlement" sortBy="#{row.onlineSettlementValue}"
+                                      filterBy="#{row.onlineSettlementValue}"
+                                      rendered="#{channelReportController.dataBundle.hasOnCallTransaction}">
+                                <h:outputText value="#{row.onlineSettlementValue}">
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
-                            </f:facet>
-                        </p:column>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{channelReportController.dataBundle.onlineSettlementValue}">
+                                        <f:convertNumber pattern="#,##0.00"/>
+                                    </h:outputText>
+                                </f:facet>
+                            </p:column>
 
                         </p:dataTable>
 
