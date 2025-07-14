@@ -1,1 +1,0 @@
-update patientsample SET `READYTOSENTTOANALYZER` = false where id > 0;

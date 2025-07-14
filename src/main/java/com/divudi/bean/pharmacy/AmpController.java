@@ -107,6 +107,7 @@ public class AmpController implements Serializable {
     private ItemController itemController;
 
     private boolean duplicateCode;
+    private boolean editable;
 
     private UploadedFile file;
 
@@ -528,6 +529,20 @@ public class AmpController implements Serializable {
         current = new Amp();
         current.setItemType(ItemType.Amp);
         current.setDepartmentType(DepartmentType.Pharmacy);
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void listnerCategorySelect() {
@@ -891,6 +906,7 @@ public class AmpController implements Serializable {
         }
         recreateModel();
         // getItems();
+        editable = false;
     }
 
     public void saveAmp(Amp amp) {
@@ -955,6 +971,7 @@ public class AmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private AmpFacade getFacade() {
@@ -1085,6 +1102,14 @@ public class AmpController implements Serializable {
 
     public void setDuplicateCode(boolean duplicateCode) {
         this.duplicateCode = duplicateCode;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

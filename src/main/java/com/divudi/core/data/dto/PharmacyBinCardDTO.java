@@ -10,37 +10,36 @@ import java.util.Date;
  * entity graphs.
  */
 public class PharmacyBinCardDTO implements Serializable {
+
     private Long id;
     private Date createdAt;
     private BillType billType;
     private BillTypeAtomic billTypeAtomic;
     private String itemName;
-    private String itemClass;
-    private double qty;
-    private double freeQty;
-    private double qtyPacks;
-    private double freeQtyPacks;
-    private double itemDblValue;
-    private double itemStock;
+    private Class<?> itemClass;
+    private Double qty;
+    private Double freeQty;
+    private Double qtyPacks;
+    private Double freeQtyPacks;
+    private Double itemDblValue;
+    private Double itemStock;
 
     public PharmacyBinCardDTO(Long id,
-                              Date createdAt,
-                              BillType billType,
-                              BillTypeAtomic billTypeAtomic,
-                              String itemName,
-                              Class<?> itemClass,
-                              double qty,
-                              double freeQty,
-                              double qtyPacks,
-                              double freeQtyPacks,
-                              double itemDblValue,
-                              double itemStock) {
+            Date createdAt,
+            BillType billType,
+            BillTypeAtomic billTypeAtomic,
+            String itemName,
+            Double qty,
+            Double freeQty,
+            Double qtyPacks,
+            Double freeQtyPacks,
+            Double itemDblValue,
+            Double itemStock) {
         this.id = id;
         this.createdAt = createdAt;
         this.billType = billType;
         this.billTypeAtomic = billTypeAtomic;
         this.itemName = itemName;
-        this.itemClass = itemClass == null ? null : itemClass.getSimpleName();
         this.qty = qty;
         this.freeQty = freeQty;
         this.qtyPacks = qtyPacks;
@@ -92,65 +91,67 @@ public class PharmacyBinCardDTO implements Serializable {
         this.itemName = itemName;
     }
 
-    public String getItemClass() {
+    public Class<?> getItemClass() {
         return itemClass;
     }
 
-    public void setItemClass(String itemClass) {
+    public void setItemClass(Class<?> itemClass) {
         this.itemClass = itemClass;
     }
 
-    public double getQty() {
+    public Double getQty() {
         return qty;
     }
 
-    public void setQty(double qty) {
+    public void setQty(Double qty) {
         this.qty = qty;
     }
 
-    public double getFreeQty() {
+    public Double getFreeQty() {
         return freeQty;
     }
 
-    public void setFreeQty(double freeQty) {
+    public void setFreeQty(Double freeQty) {
         this.freeQty = freeQty;
     }
 
-    public double getQtyPacks() {
+    public Double getQtyPacks() {
         return qtyPacks;
     }
 
-    public void setQtyPacks(double qtyPacks) {
+    public void setQtyPacks(Double qtyPacks) {
         this.qtyPacks = qtyPacks;
     }
 
-    public double getFreeQtyPacks() {
+    public Double getFreeQtyPacks() {
         return freeQtyPacks;
     }
 
-    public void setFreeQtyPacks(double freeQtyPacks) {
+    public void setFreeQtyPacks(Double freeQtyPacks) {
         this.freeQtyPacks = freeQtyPacks;
     }
 
-    public double getItemDblValue() {
+    public Double getItemDblValue() {
         return itemDblValue;
     }
 
-    public void setItemDblValue(double itemDblValue) {
+    public void setItemDblValue(Double itemDblValue) {
         this.itemDblValue = itemDblValue;
     }
 
-    public double getItemStock() {
+    public Double getItemStock() {
         return itemStock;
     }
 
-    public void setItemStock(double itemStock) {
+    public void setItemStock(Double itemStock) {
         this.itemStock = itemStock;
     }
 
     // Derived helper properties
     public double getTransQtyPlusFreeQty() {
-        return qty + freeQty;
+        double q = qty == null ? 0.0 : qty;
+        double fq = freeQty == null ? 0.0 : freeQty;
+        return q + fq;
     }
 
     public double getTransAbsoluteQtyPlusFreeQty() {
