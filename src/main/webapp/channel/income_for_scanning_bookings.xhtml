@@ -124,10 +124,20 @@
                                 </h:outputText>
                             </p:column>
 
-                            <p:column headerText="Bill No" style=" text-align: center;">
-                                <h:outputText value="#{row.bill.deptId}">
-
-                                </h:outputText>
+                            <p:column width="8em" headerText="Bill No" style=" text-align: center;">
+                                <p:commandLink
+                                    id="billNo"
+                                    disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                                                            or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                                                            or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                                                            }"
+                                    ajax="false"
+                                    style="font-weight: bold"
+                                    value="#{row.bill.deptId}"
+                                    action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(row.bill))}">
+                            </p:commandLink>
+                                
                                 <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
                                 <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
                             </p:column>
