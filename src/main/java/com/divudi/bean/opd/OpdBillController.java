@@ -50,6 +50,8 @@ import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -606,6 +608,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         switch (batchBill.getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
+                billSearch.fetchPatientInvestigationsAllowBypassSampleProcess(batchBill);
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
                 return "/opd/opd_package_batch_bill_print?faces-redirect=true";
@@ -1866,6 +1869,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (patientEncounter != null) {
             return "/inward/inward_service_batch_bill_print?faces-redirect=true";
         } else {
+            billSearch.fetchPatientInvestigationsAllowBypassSampleProcess(getBatchBill());
             return "/opd/opd_batch_bill_print?faces-redirect=true";
         }
     }
@@ -2799,11 +2803,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
-            allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
+            allBillFees = getBillBean().forInstitutionBillFeesFromBillItem(bi, sessionController.getDepartment().getSite());
+        }  else if (departmentBasedBillFees) {
+            allBillFees = getBillBean().forDepartmentBillFeesFromBillItem(bi, sessionController.getDepartment());
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
@@ -2835,7 +2842,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         // charge. Issue #12544 requires allowing such entries, so the check for
         // a zero net value is removed. Items with a value of 0 are now
         // permitted and will be processed like any other item.
-
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
         if (clearItemAfterAddingToOpdBill) {
@@ -3299,6 +3305,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
         // Split the query into individual tokens (space-separated)
         String[] tokens = query.toLowerCase().split("\\s+");
@@ -3318,6 +3325,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (matchFound) {
                 if (siteBasedBillFees) {
                     FeeValue f = feeValueController.getSiteFeeValue(opdItem.getId(), sessionController.getLoggedSite());
+                    if (f != null) {
+                        opdItem.setTotal(f.getTotalValueForLocals());
+                        opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
+                    }
+                } else if(departmentBasedBillFees){
+                    FeeValue f = feeValueController.getDepartmentFeeValue(opdItem.getId(), sessionController.getDepartment());
                     if (f != null) {
                         opdItem.setTotal(f.getTotalValueForLocals());
                         opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
