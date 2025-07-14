@@ -436,6 +436,7 @@ public class PatientReportController implements Serializable {
         if (pr != null) {
             currentPatientReport = pr;
         }
+        setShowBackground(true);
     }
 
     public List<PatientReport> patientReports(PatientInvestigation pi) {
