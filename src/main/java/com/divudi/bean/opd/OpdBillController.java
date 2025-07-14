@@ -2805,6 +2805,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
+        System.out.println("addAllBillFees = " + addAllBillFees);
+        System.out.println("siteBasedBillFees = " + siteBasedBillFees);
+        System.out.println("departmentBasedBillFees = " + departmentBasedBillFees);
+        
+        
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {

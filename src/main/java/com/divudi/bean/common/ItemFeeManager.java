@@ -634,6 +634,18 @@ public class ItemFeeManager implements Serializable {
                 .sum();
         feeValueController.updateFeeValue(ti, dept, tlf, tfff);
     }
+    
+    public void updateDepartmentFeeValues(Item item, Department dept, List<ItemFee> tfs) {
+        double localFeeTotal = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFee)
+                .sum();
+        double foreignerFeeTotal = tfs.stream()
+                .filter(Objects::nonNull)
+                .mapToDouble(ItemFee::getFfee)
+                .sum();
+        feeValueController.updateFeeValue(item, dept, localFeeTotal, foreignerFeeTotal);
+    }
 
     public void updateCcFeeValues(Item ti, Institution cc) {
         List<ItemFee> tfs = fillFees(ti, cc);
@@ -818,6 +830,7 @@ public class ItemFeeManager implements Serializable {
             return;
         }
         itemFees = fetchForDepartmentFees(item, forDepartment);
+        updateDepartmentFeeValues(item, forDepartment, itemFees);
     }
 
     public void fillForDepartmentFees() {

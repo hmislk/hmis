@@ -5081,6 +5081,7 @@ public class BillBeanController implements Serializable {
      * @throws IllegalArgumentException if {@code forDep} is {@code null}
      */
     public List<BillFee> forDepartmentBillFeesFromBillItem(BillItem billItem, Department forDep) {
+        System.out.println("forDepartmentBillFeesFromBillItem");
         if (forDep == null) {
             throw new IllegalArgumentException("forDep must be specified");
         }
@@ -5096,11 +5097,13 @@ public class BillBeanController implements Serializable {
      * @return list of calculated bill fees
      */
     private List<BillFee> calculateBillFees(BillItem billItem, Institution forIns, Department forDep) {
+        System.out.println("calculateBillFees");
         List<BillFee> t = new ArrayList<>();
         BillFee f;
         String jpql;
         Map params = new HashMap();
         if (billItem.getItem() instanceof Packege) {
+            System.out.println("package");
             jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
             List<Item> packageItems = getItemFacade().findByJpql(jpql);
             for (Item pi : packageItems) {
@@ -5163,6 +5166,7 @@ public class BillBeanController implements Serializable {
                 }
             }
         } else {
+            System.out.println("not package");
             jpql = "Select f "
                     + " from ItemFee f "
                     + " where f.retired=:ret "
@@ -5183,8 +5187,10 @@ public class BillBeanController implements Serializable {
                 params.put("forDep", forDep);
             }
 
-
+            System.out.println("jpql = " + jpql);
+            System.out.println("params = " + params);
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
+            System.out.println("itemFee = " + itemFee);
 
             for (Fee i : itemFee) {
                 f = new BillFee();
