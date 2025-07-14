@@ -165,6 +165,11 @@ public class ChannelReportController implements Serializable {
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
 
+    @EJB
+    ChannelService channelService;
+
+    private ReportTemplateRowBundle dataBundle;
+
     public Institution getInstitution() {
         return institution;
     }
@@ -344,11 +349,16 @@ public class ChannelReportController implements Serializable {
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
     }
-
-    @EJB
-    ChannelService channelService;
-
-    private ReportTemplateRowBundle dataBundle;
+    
+    public String navigateToIncomeForScainning(){
+        makeNull();
+        return "/channel/income_for_scanning_bookings?faces-redirect=true";
+    }
+    
+    public String navigateToIncomeForAgentBookings(){
+        makeNull();
+        return "/channel/income_with_agent_bookings?faces-redirect=true";
+    }
 
     public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
@@ -3347,6 +3357,7 @@ public class ChannelReportController implements Serializable {
         serviceSession = null;
         billSessions = null;
         valueList = null;
+        dataBundle = null;
     }
 
     List<BillSession> nurseViewSessions;
