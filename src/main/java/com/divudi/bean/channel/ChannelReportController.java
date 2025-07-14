@@ -12,6 +12,7 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.channel.DateEnum;
 import com.divudi.core.data.channel.PaymentEnum;
 import com.divudi.core.data.dataStructure.BillsTotals;
@@ -347,8 +348,13 @@ public class ChannelReportController implements Serializable {
     @EJB
     ChannelService channelService;
     
+    private ReportTemplateRowBundle dataBundle;
+    
     public void fetchScanningSessionForIncome(){
         List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
+        
+        ReportTemplateRowBundle bundle =  channelService.generateChannelIncomeForScanningSessions(fromDate, toDate, institution, null, null);
+        dataBundle = bundle;
         
         billSessions = bsList;
     }
@@ -4280,6 +4286,14 @@ public class ChannelReportController implements Serializable {
 
     public void setPaymentMethods(List<PaymentMethod> paymentMethods) {
         this.paymentMethods = paymentMethods;
+    }
+
+    public ReportTemplateRowBundle getDataBundle() {
+        return dataBundle;
+    }
+
+    public void setDataBundle(ReportTemplateRowBundle dataBundle) {
+        this.dataBundle = dataBundle;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
