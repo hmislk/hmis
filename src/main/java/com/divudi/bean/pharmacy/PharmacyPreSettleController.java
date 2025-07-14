@@ -485,7 +485,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     @Inject
     private PaymentSchemeController paymentSchemeController;
 
-    @SuppressWarnings("empty-statement")
     private boolean errorCheckForSaleBill() {
 
         if (getPreBill().getPaymentMethod() == null) {
@@ -511,7 +510,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 return true;
             }
         }
-        if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), paymentMethodData));
+        //pharmacyPreSettleController.cashPaid
+        if (paymentService.checkPaymentMethodError(getPreBill().getPaymentMethod(), getPaymentMethodData(), getPreBill().getNetTotal(), cashPaid)) {
+            return true;
+        }
         if (getPreBill().getPaymentMethod() == PaymentMethod.Cash && (getCashPaid() - getPreBill().getNetTotal()) < 0.0) {
             JsfUtil.addErrorMessage("Please select tendered amount correctly");
             return true;
@@ -1007,82 +1009,82 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void settleBillWithPay2() {
 
-            Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
+        Boolean pharmacyBillingAfterShiftStart = configOptionApplicationController.getBooleanValueByKey("Pharmacy billing can be done after shift start", false);
 
-            if (pharmacyBillingAfterShiftStart) {
-                financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
-                if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
-                    JsfUtil.addErrorMessage("Start Your Shift First !");
-                    financialTransactionController.navigateToFinancialTransactionIndex();
-                }
+        if (pharmacyBillingAfterShiftStart) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() == null) {
+                JsfUtil.addErrorMessage("Start Your Shift First !");
+                financialTransactionController.navigateToFinancialTransactionIndex();
             }
+        }
 
-            editingQty = null;
-            if (getPreBill().getBillType() == BillType.PharmacyPre
-                    && getPreBill().getBillClassType() != BillClassType.PreBill) {
-                JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
-                makeNull();
-                return;
-            }
-            if (errorCheckForSaleBill()) {
-                return;
-            }
-            if (!billItemCountMatches()) {
-                JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
-                return;
-            }
-            if (errorCheckForSaleBillAraedyAddToStock()) {
-                JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
-                return;
-            }
-            if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
-                JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
-                return;
-            }
+        editingQty = null;
+        if (getPreBill().getBillType() == BillType.PharmacyPre
+                && getPreBill().getBillClassType() != BillClassType.PreBill) {
+            JsfUtil.addErrorMessage("This Bill isn't Accept. Please Try Again.");
+            makeNull();
+            return;
+        }
+        if (errorCheckForSaleBill()) {
+            return;
+        }
+        if (!billItemCountMatches()) {
+            JsfUtil.addErrorMessage("Bill was opened in multiple windows. Please close all windows and start again");
+            return;
+        }
+        if (errorCheckForSaleBillAraedyAddToStock()) {
+            JsfUtil.addErrorMessage("This Bill Can't Pay.Because this bill already added to stock in Pharmacy.");
+            return;
+        }
+        if (!getPreBill().getDepartment().equals(getSessionController().getLoggedUser().getDepartment())) {
+            JsfUtil.addErrorMessage("Can't settle bills of " + getPreBill().getDepartment().getName());
+            return;
+        }
 
-            if (errorCheckOnPaymentMethod()) {
+        if (errorCheckOnPaymentMethod()) {
+            return;
+        }
+
+        if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
+            if (checkAndUpdateBalance() > 0) {
+                JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
                 return;
             }
+        }
 
-            if (getPreBill().getPaymentMethod() == PaymentMethod.Cash) {
-                if (checkAndUpdateBalance() > 0) {
-                    JsfUtil.addErrorMessage("Missmatch in bill total and paid total amounts.");
-                    return;
-                }
-            }
+        BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getPaymentMethodData());
+        if (!discountSchemeValidation.isFlag()) {
+            JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
+            return;
+        }
 
-            BooleanMessage discountSchemeValidation = discountSchemeValidationService.validateDiscountScheme(getPreBill().getPaymentMethod(), getPreBill().getPaymentScheme(), getPaymentMethodData());
-            if (!discountSchemeValidation.isFlag()) {
-                JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
-                return;
-            }
+        Map<String, Object> params = new HashMap<>();
+        params.put("pre", getPreBill().getId());
+        Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
+        System.out.println("existing = " + existing);
+        if (existing != null) {
+            JsfUtil.addErrorMessage("Already Paid");
+            return;
+        }
 
-            Map<String, Object> params = new HashMap<>();
-            params.put("pre", getPreBill().getId());
-            Bill existing = getBillFacade().findFirstByJpql("select b from BilledBill b where b.referenceBill.id=:pre", params, true);
-            System.out.println("existing = " + existing);
-            if (existing != null) {
-                JsfUtil.addErrorMessage("Already Paid");
-                return;
-            }
-
-            saveSaleBill();
+        saveSaleBill();
 //        saveSaleBillItems();
 
-            List<Payment> payments = createPaymentsForBill(getSaleBill());
-            drawerController.updateDrawerForIns(payments);
-            saveSaleBillItems();
+        List<Payment> payments = createPaymentsForBill(getSaleBill());
+        drawerController.updateDrawerForIns(payments);
+        saveSaleBillItems();
 
-            getBillFacade().editAndCommit(getPreBill());
+        getBillFacade().editAndCommit(getPreBill());
 
-            WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
-            getSessionController().setLoggedUser(wb);
-            setBill(getBillFacade().find(getSaleBill().getId()));
+        WebUser wb = getCashTransactionBean().saveBillCashInTransaction(getSaleBill(), getSessionController().getLoggedUser());
+        getSessionController().setLoggedUser(wb);
+        setBill(getBillFacade().find(getSaleBill().getId()));
 
-            paymentService.updateBalances(payments);
+        paymentService.updateBalances(payments);
 
-            markComplete(getPreBill());
-            billPreview = true;
+        markComplete(getPreBill());
+        billPreview = true;
 
     }
 
