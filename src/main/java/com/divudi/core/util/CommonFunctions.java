@@ -176,7 +176,9 @@ public class CommonFunctions {
         }
 
         int intPart = (int) number;
-        int decimalPart = (int) (Double.parseDouble(String.format("%.2f", number % 1)) * 100);
+
+        // Correctly round to two decimal places and extract the cents
+        int decimalPart = (int) Math.round((number - intPart) * 100);
 
         StringBuilder result = new StringBuilder();
 
@@ -264,10 +266,10 @@ public class CommonFunctions {
     /**
      * Escape HTML special characters to safely render dynamic text.
      * <p>
-     * This method should be used when outputting user-provided content in
-     * JSF components with <code>escape="false"</code> to avoid XSS issues.
-     * It will convert characters such as <code>&lt;</code> and
-     * <code>&gt;</code> to their HTML entity equivalents.
+     * This method should be used when outputting user-provided content in JSF
+     * components with <code>escape="false"</code> to avoid XSS issues. It will
+     * convert characters such as <code>&lt;</code> and <code>&gt;</code> to
+     * their HTML entity equivalents.
      *
      * @param input Raw string
      * @return Sanitised string safe for HTML output
