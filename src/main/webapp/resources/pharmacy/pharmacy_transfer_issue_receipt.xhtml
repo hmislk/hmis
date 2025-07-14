@@ -114,6 +114,18 @@
                     </thead>
                     <tbody>
                         <ui:repeat value="#{billBeanController.fetchBillItems(cc.attrs.bill)}" var="bip">
+
+
+                            <!--
+                            Columns to add
+                            
+                            -->
+                            DOE:                      #{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}
+                            Batch No:                 #{bip.pharmaceuticalBillItem.itemBatch.batchNo}
+                            PR:                       #{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}
+                            RR:                       #{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}
+                            CR:                       #{bip.pharmaceuticalBillItem.itemBatch.costRate}
+
                             <tr>
                                 <td class="item-name"><h:outputLabel value="#{bip.item.name}" /></td>
                                 <td class="item-qty"><h:outputLabel value="#{bip.qty}"><f:convertNumber integerOnly="true" /></h:outputLabel></td>
