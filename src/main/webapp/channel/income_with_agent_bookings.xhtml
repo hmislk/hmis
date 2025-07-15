@@ -13,8 +13,10 @@
             <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with Agent Bookings" >
-                        <h:panelGrid columns="3" class="my-2" >
-                            <h:outputLabel value="From " />
+                        <h:panelGrid columns="14" class="my-2" >
+                            <h:outputText class="mx-2" value="&#xf073;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="From " />
                             <h:outputLabel value=":" />
                             <p:datePicker 
                                 class="mx-4 w-100"
@@ -22,9 +24,12 @@
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
-                                value="#{channelReportTemplateController.fromDate}" 
+                                value="#{channelReportController.fromDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker> 
-                            <h:outputLabel value="To" />
+                            <p:spacer width="50"/>
+                            <h:outputText class="mx-2" value="&#xf073;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2" value="To" />
                             <h:outputLabel value=":" />
                             <p:datePicker
                                 class="mx-4 w-100"
@@ -32,17 +37,48 @@
                                 showTime="true"
                                 showButtonBar="true"
                                 timeInput="true"
-                                value="#{channelReportTemplateController.toDate}" 
+                                value="#{channelReportController.toDate}" 
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></p:datePicker>
-                            <h:outputLabel  value="Institution"  ></h:outputLabel>
+                            <p:spacer width="50"/>
+                            <h:outputText class="mx-2" value="&#xf0e8;"
+                                          styleClass="fa mr-2"/>
+                            <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
-                            <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportTemplateController.institution}"
+                            <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportController.institution}"
                                              completeMethod="#{institutionController.completeIns}" 
-                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" required="true" forceSelection="true" rendered="true" requiredMessage="You must select a Institution" >
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" ></p:commandButton>
+                            
+                             <p:commandButton
+                                id="btnPdf"
+                                class="m-1 ui-button-info"
+                                ajax="false"
+                                rendered="true"
+                                icon="fas fa-file-pdf"
+                                value="Export as PDF">
+                                <p:dataExporter type="pdf" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnPrint"
+                                class="m-1 ui-button-danger mx-2"
+                                icon="fas fa-print"
+                                ajax="false"
+                                value="Print Table"
+                                action="channel_income_bill_print?faces-redirect=true">
+                            </p:commandButton>
+
+                            <p:commandButton
+                                id="btnExcel"
+                                class="m-1 ui-button-success"
+                                icon="fas fa-file-excel"
+                                ajax="false" value="Export to Excel">
+                                <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
+                            </p:commandButton>
+                        
                         </h:panelGrid>
 
 
@@ -62,6 +98,7 @@
                                          rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
                                          rowKey="#{row.bill.id}"
                                          >
+                                <p:ajax event="page" oncomplete="updateTotals()" />
                                 <f:facet name="header">
 
                                     <h:outputLabel value="#{channelReportController.institution.name}"/>
@@ -112,7 +149,7 @@
                                     <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
                                     <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" ></p:tag>
                                     <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
-                                    <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
+                                    <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                                 </p:column>
 
                                 <p:column headerText="Bill Type" style=" text-align: center;">
@@ -271,7 +308,7 @@
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText styleClass="totalAgentValue" value="0.00">
+                                        <h:outputText styleClass="totalAgentValue" value="#{channelReportController.dataBundle.agentValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>

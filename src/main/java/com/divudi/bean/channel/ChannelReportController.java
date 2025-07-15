@@ -350,7 +350,7 @@ public class ChannelReportController implements Serializable {
         this.serviceSessions = serviceSessions;
     }
     
-    public String navigateToIncomeForScainning(){
+    public String navigateToIncomeForScanning(){
         makeNull();
         return "/channel/income_for_scanning_bookings?faces-redirect=true";
     }

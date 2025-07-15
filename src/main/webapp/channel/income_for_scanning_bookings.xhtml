@@ -46,7 +46,7 @@
                             <h:outputLabel value=":" />
                             <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportController.institution}"
                                              completeMethod="#{institutionController.completeIns}" 
-                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" forceSelection="true" rendered="true" requiredMessage="You must select a department" >
+                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" required="true" forceSelection="true" rendered="true" requiredMessage="You must select a Institution" >
                             </p:autoComplete>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
@@ -98,7 +98,10 @@
                                      paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                      rowsPerPageTemplate="5,10,20,{ShowAll|'Show All'"
                                      rowKey="#{row.bill.id}"
+                                     
                                      >
+                            
+                            <p:ajax event="page" oncomplete="updateTotals()" />
                             <f:facet name="header">
 
                                 <h:outputLabel value="#{channelReportController.institution.name}"/>
@@ -291,7 +294,7 @@
                                     <f:convertNumber pattern="#,##0.00"/>
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="totalAgentValue" value="0.00">
+                                    <h:outputText styleClass="totalAgentValue" value="#{channelReportController.dataBundle.agentValue}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>

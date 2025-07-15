@@ -1210,17 +1210,17 @@ public class ChannelService {
 
         List<BillTypeAtomic> bts = new ArrayList<>();
 
-        if (status.equalsIgnoreCase("Scanning")) {
+        if (status != null && status.equalsIgnoreCase("Scanning")) {
             jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
             parameters.put("catogery", "Scanning");
 
             bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
             bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
-            
-        } else if (status.equalsIgnoreCase("Agent")) {
+
+        } else if (status != null && status.equalsIgnoreCase("Agent")) {
             jpql += " and bill.billType = :type ";
             parameters.put("type", BillType.ChannelAgent);
-            
+
             bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
             bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
             bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
