@@ -46,7 +46,7 @@
                                           onchange="#{pastBookingController.fillSessionInstance()}">
                                 <p:ajax
                                     process="@this"
-                                    update="viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    update="moreInfo viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
                                     listener="#{pastBookingController.fillSessionInstance()}"/>
                             </p:datePicker>
                         </div>
@@ -148,7 +148,7 @@
                                 <p:ajax  
                                     process="@this" 
 
-                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession"/>
+                                    update=":#{p:resolveFirstComponentWithId('acDate',view).clientId} scStaff acBookings acSessions viewSession moreInfo"/>
 
                                 <f:selectItems value="#{pastBookingController.consultants}"
                                                var="con" 
@@ -232,17 +232,56 @@
                             <p:ajax 
                                 event="change"
                                 process="@this"
-                                update="acBookings acSessions viewSession"
+                                update="acBookings acSessions viewSession moreInfo"
                                 listener="#{pastBookingController.fillBillSessions}" />
                             <p:ajax 
                                 event="click"
                                 process="@this"
-                                update="acBookings acSessions viewSession"
+                                update="acBookings acSessions viewSession moreInfo"
                                 listener="#{pastBookingController.fillBillSessions}" />
                         </p:selectOneListbox>
                     </div>
 
                     <div class="col-4" >
+                         <p:accordionPanel multiple="true" 
+                                          id="moreInfo"
+                                          rendered="#{not empty pastBookingController.selectedSessionInstance}"
+                                          style="width:100%;">
+
+                            <p:tab title="More Info">
+                                <h:panelGrid columns="3" cellpadding="5">
+                                    <h:outputText value="Institution" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.institution.name} " />
+
+                                    <h:outputText value="Max No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.maxNo} " />
+
+                                    <h:outputText value="Room No " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.roomNo} " rendered="#{pastBookingController.selectedSessionInstance.roomNo ne 0}"/>
+                                    <h:outputText value="Not Specified Yet " rendered="#{pastBookingController.selectedSessionInstance.roomNo eq 0}"/>
+
+                                    <h:outputText value="End Time" />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.endingTime}">
+                                        <f:convertDateTime pattern="hh:mm a"/>
+                                    </h:outputText>
+                                    
+                                    <h:outputText value="Booked Patient Count " />
+                                    <h:outputText value=":" />
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.bookedPatientCount != null ? pastBookingController.selectedSessionInstance.bookedPatientCount : ' '}" />
+                                    
+
+                                    <h:outputText value="Note " rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" />
+                                    <h:outputText value=":" rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}"/>
+                                    <h:outputText value="#{pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" 
+                                                  rendered="#{not empty pastBookingController.selectedSessionInstance.specialNoticeSessionInstance}" style="color: red"/>
+                                </h:panelGrid>
+                            </p:tab>
+                        </p:accordionPanel>
+
 
                         <p:selectOneListbox 
                             id="acBookings" 
