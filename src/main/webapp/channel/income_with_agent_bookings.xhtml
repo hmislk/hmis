@@ -170,7 +170,7 @@
                                     </h:outputText>
                                 </p:column>
                                 
-                                <p:column headerText="Ref No" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.agentRefNo}}">
+                                <p:column headerText="Ref No" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.agentRefNo}">
                                     <h:outputText value="#{row.bill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'BilledBill'}">
 
                                     </h:outputText>
