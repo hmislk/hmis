@@ -405,6 +405,23 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return assignedReleasedAppoinmentNumber;
     }
+    
+    private List<PaymentMethod> paymentMethodsToChannelCancellation;
+    
+    public List<PaymentMethod> getPaymentMethodsToChannelCancellation(){
+        PaymentMethod[] p = enumController.getPaymentMethodsForChannel();
+        paymentMethodsToChannelCancellation = new ArrayList<>(Arrays.asList(p));
+        
+        if(selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+            paymentMethodsToChannelCancellation.add(PaymentMethod.OnlineBookingAgent);
+        }
+        
+        return paymentMethodsToChannelCancellation;
+    }
+
+    public void setPaymentMethodsToChannelCancellation(List<PaymentMethod> paymentMethodsToChannelCancellation) {
+        this.paymentMethodsToChannelCancellation = paymentMethodsToChannelCancellation;
+    }
 
     public void setAssignedReleasedAppoinmentNumber(long assignedReleasedAppoinmentNumber) {
         this.assignedReleasedAppoinmentNumber = assignedReleasedAppoinmentNumber;
