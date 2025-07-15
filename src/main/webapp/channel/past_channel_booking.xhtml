@@ -34,6 +34,23 @@
                             <h:outputText styleClass="fa-solid fa-stethoscope"/>
                             <h:outputText class="mx-4" value=" Past Channel Booking"/>
                         </div>
+                        
+                        <div class="d-flex justify-content-center align-items-center">
+                            <h:outputLabel style="width: 100%" value="Select the Past Date : "></h:outputLabel>
+                            <p:datePicker id="acDate"
+                                          value="#{pastBookingController.date}"
+                                          readonlyInput="true"
+                                          placeholder="Select Date"
+                                          style="width: 100%"
+                                          class="mx-2"
+                                          onchange="#{pastBookingController.fillSessionInstance()}">
+                                <p:ajax
+                                    process="@this"
+                                    update="viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
+                                    listener="#{pastBookingController.fillSessionInstance()}"/>
+                            </p:datePicker>
+                        </div>
+
 
                         <div class="d-flex justify-content-center align-items-center">
                             <p:commandButton 
@@ -142,28 +159,15 @@
                         </div>
                     </div>
 
-                    <div class="col-1 p-0 my-2">
-                        <div>
-                            <p:datePicker id="acDate"
-                                          value="#{pastBookingController.date}"
-                                          readonlyInput="true"
-                                          placeholder="Select Date"
+                    
 
-                                          class="w-50"
-                                          onchange="#{pastBookingController.fillSessionInstance()}">
-                                <p:ajax
-                                    process="@this"
-                                    update="viewSession acBookings :#{p:resolveFirstComponentWithId('acSessions',view).clientId} #{p:resolveFirstComponentWithId('acBookings',view).clientId}"
-                                    listener="#{pastBookingController.fillSessionInstance()}"/>
-                            </p:datePicker>
-                        </div>
-                    </div>
-
-                    <div class="col-md-3 p-0" >
-
+                    <div class="col-md-4 p-0" >
+                        
+                        
                         <p:selectOneListbox 
                             id="acSessions"
                             filter="true"
+                            filterMatchMode="contains"
                             value="#{pastBookingController.selectedSessionInstance}"
                             class="w-100 fullHeightListbox"
                             var="s">
