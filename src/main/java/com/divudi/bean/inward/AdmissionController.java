@@ -1269,6 +1269,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             JsfUtil.addErrorMessage("Select Patient");
             return true;
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission",false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getTitle()== null) {
+                    JsfUtil.addErrorMessage("Patient Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getSex()== null) {
+                    JsfUtil.addErrorMessage("Patient Gender is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getDob()== null) {
+                    JsfUtil.addErrorMessage("Patient Age is Required");
+                    return true;
+                }
+            }
+        }
 
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {
             if (getCurrent().getComments() == null || getCurrent().getComments().isEmpty()) {
