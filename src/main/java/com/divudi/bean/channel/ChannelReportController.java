@@ -164,6 +164,8 @@ public class ChannelReportController implements Serializable {
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    
+    private String reportStatus;
 
     @EJB
     ChannelService channelService;
@@ -363,13 +365,13 @@ public class ChannelReportController implements Serializable {
     public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
 
-        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning");
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
         dataBundle = bundle;
 
     }
 
     public void fetchAgentSessionIncome() {
-        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent");
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
         dataBundle = bundle;
     }
 
@@ -4321,6 +4323,14 @@ public class ChannelReportController implements Serializable {
 
     public void setDataBundle(ReportTemplateRowBundle dataBundle) {
         this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {

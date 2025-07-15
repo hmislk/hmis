@@ -13,7 +13,7 @@
             <ui:define name="subContent">
                 <h:form>
                     <p:panel header="Income By Institution with Agent Bookings" >
-                        <h:panelGrid columns="14" class="my-2" >
+                        <h:panelGrid columns="19" class="my-2" >
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2" value="From " />
@@ -48,11 +48,27 @@
                                              completeMethod="#{institutionController.completeIns}" 
                                              var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" required="true" forceSelection="true" rendered="true" requiredMessage="You must select a Institution" >
                             </p:autoComplete>
+
+                            <p:spacer width="50"/>
+                            <i class="fa-solid fa-circle-check"></i>
+                            <h:outputLabel class="mx-2"  value="Report Status"  ></h:outputLabel>
+                            <h:outputLabel value=":" />
+                            <p:selectOneMenu
+                                id="cmbDept"
+                                style="width: 350px;"
+                                class="w-100 mx-4"
+                                value="#{channelReportController.reportStatus}"
+                                >
+                                <f:selectItem itemLabel="Summery View" itemValue="Summery" />
+                                <f:selectItem itemLabel="Details View" itemValue="Details"/>
+
+                            </p:selectOneMenu>
+
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
                             <p:commandButton class="ui-button-warning mt-2 mb-2" icon="fas fa-cogs" value="Process" action="#{channelReportController.fetchAgentSessionIncome}" ajax="false" ></p:commandButton>
-                            
-                             <p:commandButton
+
+                            <p:commandButton
                                 id="btnPdf"
                                 class="m-1 ui-button-info"
                                 ajax="false"
@@ -78,7 +94,7 @@
                                 ajax="false" value="Export to Excel">
                                 <p:dataExporter type="xlsx" target="tableForReport" fileName="Channel_Agent_Income_Report"/>
                             </p:commandButton>
-                        
+
                         </h:panelGrid>
 
 
@@ -169,14 +185,14 @@
 
                                     </h:outputText>
                                 </p:column>
-                                
+
                                 <p:column headerText="Ref No" style=" text-align: center; font-weight: bold" filterMatchMode="contains" filterBy="#{row.bill.agentRefNo}">
                                     <h:outputText value="#{row.bill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'BilledBill'}">
 
                                     </h:outputText>
-                                    
+
                                     <h:outputText value="#{row.bill.billedBill.agentRefNo}" rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'CancelBill'
-                                                                                                          or bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}">
+                                                           or bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}">
 
                                     </h:outputText>
                                 </p:column>
@@ -193,7 +209,7 @@
                                     </h:outputText>
 
                                     <f:facet name="footer">
-                                        <h:outputText styleClass="hosFeeTotal" value="">
+                                        <h:outputText styleClass="hosFeeTotal" value="#{channelReportController.dataBundle.long2}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
@@ -205,7 +221,7 @@
                                     </h:outputText>
 
                                     <f:facet name="footer">
-                                        <h:outputText styleClass="staffFeeTotal" value="">
+                                        <h:outputText styleClass="staffFeeTotal" value="#{channelReportController.dataBundle.long3}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
@@ -216,7 +232,7 @@
 
                                     </h:outputText>
                                     <f:facet name="footer">
-                                        <h:outputText styleClass="grossTotal" value="">
+                                        <h:outputText styleClass="grossTotal" value="#{channelReportController.dataBundle.long1}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </f:facet>
@@ -393,7 +409,7 @@
 
                             </p:dataTable>
 
-                            <script>
+<!--                            <script>
                                 function calculateTotals(selector, targeter) {
                                     const values = Array.from(document.querySelectorAll(selector));
                                     const totalValue = values
@@ -417,7 +433,7 @@
                                 }
 
                                 setTimeout(updateTotals, 500);
-                            </script>
+                            </script>-->
 
                         </p:panel>
                     </p:panel>

@@ -1185,7 +1185,7 @@ public class ChannelService {
 
     }
 
-    public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status) {
+    public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status, String reportStatus) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
@@ -1260,8 +1260,51 @@ public class ChannelService {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
+        
+        for(ReportTemplateRow row : bundle.getReportTemplateRows()){
+            if(bundle.getLong1() != null){ //long1 for billTotals
+                bundle.setLong1(bundle.getLong1()+(long)row.getBill().getTotal());
+            }else{
+                bundle.setLong1((long)row.getBill().getTotal());
+            }
+            
+            if(bundle.getLong2()!= null){ //long2 for hospitalfee totals
+                bundle.setLong2(bundle.getLong2()+(long)row.getBill().getHospitalFee());
+            }else{
+                bundle.setLong2((long)row.getBill().getHospitalFee());
+            }
+            
+            if(bundle.getLong3()!= null){ //long3 for stafffee totals
+                bundle.setLong3(bundle.getLong3()+(long)row.getBill().getStaffFee());
+            }else{
+                bundle.setLong3((long)row.getBill().getStaffFee());
+            }
+        }
 
-        return bundle;
+        if (reportStatus != null && reportStatus.equalsIgnoreCase("Summery")) {
+            List<ReportTemplateRow> newList = removeCancelAndREfundBillsFromDTO(bundle.getReportTemplateRows());
+            bundle.setReportTemplateRows(newList);
+            return bundle;
+        }else{
+            return bundle;
+        }
+ 
+    }
+
+    public List<ReportTemplateRow> removeCancelAndREfundBillsFromDTO(List<ReportTemplateRow> dto) {
+        List<ReportTemplateRow> newList = new ArrayList<>();
+
+        if (dto != null && !dto.isEmpty()) {
+            for (ReportTemplateRow row : dto) {
+                if ((row.getBill() instanceof CancelledBill) || (row.getBill() instanceof RefundBill)) {
+                    continue;
+                } else {
+                    newList.add(row);
+                }
+            }
+        }
+
+        return newList;
     }
 
     public List<BillSession> fetchScanningSessionBillSessions(Date fromDate, Date toDate, Institution institution) {
