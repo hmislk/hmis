@@ -423,6 +423,8 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return "CancelBill";
         }else if(bill instanceof RefundBill){
             return "RefundBill";
+        }else if(bill instanceof BilledBill){
+            return "BilledBill";
         }else{
             return "";
         }
