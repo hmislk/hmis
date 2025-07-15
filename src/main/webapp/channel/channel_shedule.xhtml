@@ -25,8 +25,22 @@
 
                         <p:panel>
                             <f:facet name="header">
-                                <h:outputText styleClass="fa-solid fa-stethoscope"/>
-                                <h:outputText class="mx-4" value="Channel Schedule Management" />
+
+                                <div class="d-flex justify-content-between align-item-center">
+                                    <div>
+                                        <h:outputText styleClass="fa-solid fa-stethoscope"/>
+                                        <h:outputText class="mx-4" value="Channel Schedule Management" />
+                                    </div>
+
+                                    <p:commandButton value="Go To Channel Booking"
+                                                     icon="fa-solid fa-location-arrow"
+                                                     class="ui-button-secondary"
+                                                     rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}"
+                                                     action="/channel/channel_booking"
+                                                     immediate="true"
+                                                     ajax="false"  />
+                                </div>
+
                             </f:facet>
                             <div class="row">
                                 <div class="col-4">

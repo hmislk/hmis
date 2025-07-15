@@ -30,8 +30,9 @@
                                     <p:commandButton value="Go To Channel Booking"
                                                      icon="fa-solid fa-location-arrow"
                                                      class="ui-button-secondary"
-                                                     rendered="#{webUserController.hasPrivilege('Developers')}"
-                                                     action="/channel/channel_booking" 
+                                                     rendered="#{webUserController.hasPrivilege('ChannellingChannelBooking')}"
+                                                     action="/channel/channel_booking"
+                                                     immediate="true"
                                                      ajax="false"  />
                                 </div>
                             </f:facet>
