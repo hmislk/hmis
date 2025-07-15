@@ -138,7 +138,8 @@
                                                  or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
                                                  or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
                                                  or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
-                                                 or bookingControllerViewScope.checkBillClass(row.bill) eq 'CancelBill'                           }"
+                                                 or bookingControllerViewScope.checkBillClass(row.bill) eq 'CancelBill'
+                                                 or bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'                           }"
                                     ajax="false"
                                     style="font-weight: bold"
                                     value="#{row.bill.deptId}"
@@ -148,7 +149,7 @@
                                 <p:tag rendered="#{row.bill.cancelled}" value="Cancelled - #{row.bill.cancelledBill.deptId}" severity="danger" ></p:tag>
                                 <p:tag rendered="#{row.bill.refunded}" value="Refunded - #{row.bill.refundedBill.deptId}"  severity="warning" ></p:tag>
                                 <p:tag rendered="#{bookingControllerViewScope.checkBillClass(row.bill) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
-                                <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="warning" ></p:tag>
+                                <p:tag rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
                             </p:column>
 
                             <p:column headerText="Bill Type" style=" text-align: center;">

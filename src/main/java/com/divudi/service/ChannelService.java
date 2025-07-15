@@ -1184,8 +1184,8 @@ public class ChannelService {
         return billFacade.findByJpql(jpql, params);
 
     }
-    
-     public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status) {
+
+    public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status) {
         Map<String, Object> parameters = new HashMap<>();
         String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
                 + "bill, "
@@ -1207,20 +1207,27 @@ public class ChannelService {
                 + "FROM Payment p "
                 + "JOIN p.bill bill "
                 + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
-    
-        if(status.equalsIgnoreCase("Scanning")){
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (status.equalsIgnoreCase("Scanning")) {
             jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
             parameters.put("catogery", "Scanning");
-        }else if(status.equalsIgnoreCase("Agent")){
-            jpql += " and bill.paymentMethod = :method ";
-            parameters.put("method", PaymentMethod.Agent);
+
+            bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+            bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+            
+        } else if (status.equalsIgnoreCase("Agent")) {
+            jpql += " and bill.billType = :type ";
+            parameters.put("type", BillType.ChannelAgent);
+            
+            bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         }
-        
+
         parameters.put("bfr", true);
         parameters.put("br", true);
-
-        List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
-        bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
 
         //List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
         jpql += "AND bill.billTypeAtomic IN :bts ";
@@ -1238,7 +1245,7 @@ public class ChannelService {
             jpql += "AND bill.staff = :stf ";
             parameters.put("stf", staff);
         }
- 
+
         jpql += "AND p.createdAt BETWEEN :fd AND :td ";
         parameters.put("fd", fromDate);
         parameters.put("td", toDate);
@@ -1253,12 +1260,12 @@ public class ChannelService {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
-        
+
         return bundle;
     }
 
     public List<BillSession> fetchScanningSessionBillSessions(Date fromDate, Date toDate, Institution institution) {
-        
+
         StringBuilder sql = new StringBuilder("Select bs from BillSession bs where "
                 + " bs.bill.billType <> :type "
                 + " and bs.sessionInstance.originatingSession.category.name = :category "
