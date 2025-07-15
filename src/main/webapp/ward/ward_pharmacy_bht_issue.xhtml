@@ -167,9 +167,15 @@
                     </f:facet>
 
                     <p:column headerText="Requested Item" style="width: 50px!important;"  >
-                        <h:outputText id="item" value="#{bItm.item.name}" >
+                        <h:outputText id="item" value="#{bItm.referanceBillItem.item.name}" >
                         </h:outputText>
                     </p:column>
+                    
+                    <p:column headerText="Issuing Bill Item" style="width: 50px!important;"  rendered="#{webUserController.hasPrivilege('Developers')}" >
+                        <h:outputText id="Isitem" value="#{bItm.item.name}" >
+                        </h:outputText>
+                    </p:column>
+                    
                     <p:column headerText="Issuing Item" style="width: 50px!important;"  >
                         <p:autoComplete accesskey="i"    id="acStock"
                                         value="#{bItm.pharmaceuticalBillItem.stock}"
@@ -211,7 +217,7 @@
                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                 </h:outputLabel>
                             </p:column>
-                            <p:ajax process="@this" update="batchNo"/>
+                            <p:ajax process="@this" update="@all" event="change" listener="#{pharmacySaleBhtController.changeBillItem(bItm , bItm.pharmaceuticalBillItem.stock)}"/>
                         </p:autoComplete>
                     </p:column>
 

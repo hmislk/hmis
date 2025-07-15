@@ -29,5 +29,7 @@ public enum MessageType {
     ChannelTimeDateChange,
     ChannelDoctorReminder,
     ChannelStatusUpdate,
-    DoctorPayment
+    DoctorPayment,
+    BulkPatientSms,
+    BulkNumberSms
 }
