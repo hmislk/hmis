@@ -1260,24 +1260,24 @@ public class ChannelService {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
-        
-        for(ReportTemplateRow row : bundle.getReportTemplateRows()){
-            if(bundle.getLong1() != null){ //long1 for billTotals
-                bundle.setLong1(bundle.getLong1()+(long)row.getBill().getTotal());
-            }else{
-                bundle.setLong1((long)row.getBill().getTotal());
+
+        for (ReportTemplateRow row : bundle.getReportTemplateRows()) {
+            if (bundle.getLong1() != null) { //long1 for billTotals
+                bundle.setLong1(bundle.getLong1() + (long) row.getBill().getTotal());
+            } else {
+                bundle.setLong1((long) row.getBill().getTotal());
             }
-            
-            if(bundle.getLong2()!= null){ //long2 for hospitalfee totals
-                bundle.setLong2(bundle.getLong2()+(long)row.getBill().getHospitalFee());
-            }else{
-                bundle.setLong2((long)row.getBill().getHospitalFee());
+
+            if (bundle.getLong2() != null) { //long2 for hospitalfee totals
+                bundle.setLong2(bundle.getLong2() + (long) row.getBill().getHospitalFee());
+            } else {
+                bundle.setLong2((long) row.getBill().getHospitalFee());
             }
-            
-            if(bundle.getLong3()!= null){ //long3 for stafffee totals
-                bundle.setLong3(bundle.getLong3()+(long)row.getBill().getStaffFee());
-            }else{
-                bundle.setLong3((long)row.getBill().getStaffFee());
+
+            if (bundle.getLong3() != null) { //long3 for stafffee totals
+                bundle.setLong3(bundle.getLong3() + (long) row.getBill().getStaffFee());
+            } else {
+                bundle.setLong3((long) row.getBill().getStaffFee());
             }
         }
 
@@ -1285,10 +1285,10 @@ public class ChannelService {
             List<ReportTemplateRow> newList = removeCancelAndREfundBillsFromDTO(bundle.getReportTemplateRows());
             bundle.setReportTemplateRows(newList);
             return bundle;
-        }else{
+        } else {
             return bundle;
         }
- 
+
     }
 
     public List<ReportTemplateRow> removeCancelAndREfundBillsFromDTO(List<ReportTemplateRow> dto) {
@@ -1495,7 +1495,7 @@ public class ChannelService {
         if (bill.getPaidBill() != null) {
             bill.getPaidBill().setCancelled(true);
         }
-        
+
         List<Payment> payments = createPayment(cb, PaymentMethod.Agent);
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bill);
@@ -1844,6 +1844,50 @@ public class ChannelService {
         return false;
 
     }
+    public List<SessionInstance> findSessionInstanceForDoctorSessions(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
+        List<SessionInstance> sessionInstances;
+        Map<String, Object> m = new HashMap<>();
+        StringBuilder jpql = new StringBuilder("select i from SessionInstance i where i.retired=:ret and i.originatingSession.retired=:ret "
+                + " and i.cancelled = false"
+                + " and i.completed = false");
+
+        // Handle sessionDate equality check
+        if (sessionDate != null) {
+            jpql.append(" and i.sessionDate >= :sd ");
+            m.put("sd", sessionDate);
+        } else if (sessionDate == null) {
+            Date today = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_YEAR, (configOptionApplicationController.getLongValueByKey("How Many days sessions need to share with online booking agent through API", 14L)).intValue());
+            Date toDate = cal.getTime();
+            
+            jpql.append(" and i.sessionDate between :sd and :td ");
+            m.put("sd", new Date());
+            m.put("td", toDate);
+
+            
+        }
+
+        // Additional conditions for consultant, institution, and specialities
+        if (doctorList != null && !doctorList.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff in :os");
+            m.put("os", doctorList);
+        }
+        if (institution != null && !institution.isEmpty()) {
+            jpql.append(" and i.originatingSession.institution in :ins");
+            m.put("ins", institution);
+        }
+        if (specialities != null && !specialities.isEmpty()) {
+            jpql.append(" and i.originatingSession.staff.speciality in :spe ");
+            m.put("spe", specialities);
+        }
+
+        m.put("ret", false);
+
+        sessionInstances = sessionInstanceFacade.findByJpqlWithoutCache(jpql.toString(), m, TemporalType.TIMESTAMP);
+        return sessionInstances;
+    }
 
     public List<SessionInstance> findSessionInstance(List<Institution> institution, List<Speciality> specialities, List<Doctor> doctorList, Date sessionDate) {
         List<SessionInstance> sessionInstances;
@@ -1857,8 +1901,17 @@ public class ChannelService {
             jpql.append(" and i.sessionDate >= :sd ");
             m.put("sd", sessionDate);
         } else if (sessionDate == null) {
-            jpql.append(" and i.sessionDate >= :sd ");
+            Date today = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(today);
+            cal.add(Calendar.DAY_OF_YEAR, configOptionApplicationController.getIntegerValueByKey("How Many days sessions need to share with online booking agent", 14));
+            Date toDate = cal.getTime();
+            
+            jpql.append(" and i.sessionDate between :sd and :td ");
             m.put("sd", new Date());
+            m.put("td", toDate);
+
+            
         }
 
         // Additional conditions for consultant, institution, and specialities
