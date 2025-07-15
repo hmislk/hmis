@@ -405,17 +405,17 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         }
         return assignedReleasedAppoinmentNumber;
     }
-    
+
     private List<PaymentMethod> paymentMethodsToChannelCancellation;
-    
-    public List<PaymentMethod> getPaymentMethodsToChannelCancellation(){
+
+    public List<PaymentMethod> getPaymentMethodsToChannelCancellation() {
         PaymentMethod[] p = enumController.getPaymentMethodsForChannel();
         paymentMethodsToChannelCancellation = new ArrayList<>(Arrays.asList(p));
-        
-        if(selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+
+        if (selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             paymentMethodsToChannelCancellation.add(PaymentMethod.OnlineBookingAgent);
         }
-        
+
         return paymentMethodsToChannelCancellation;
     }
 
@@ -435,18 +435,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         this.temporaryBillSessions = temporaryBillSessions;
     }
 
-    public String checkBillClass(Bill bill){
-        if(bill instanceof CancelledBill){
+    public String checkBillClass(Bill bill) {
+        if (bill instanceof CancelledBill) {
             return "CancelBill";
-        }else if(bill instanceof RefundBill){
+        } else if (bill instanceof RefundBill) {
             return "RefundBill";
-        }else if(bill instanceof BilledBill){
+        } else if (bill instanceof BilledBill) {
             return "BilledBill";
-        }else{
+        } else {
             return "";
         }
-    }    
-    
+    }
+
     public boolean isAbsent() {
         if (selectedBillSession != null) {
             return selectedBillSession.isAbsent();
@@ -2751,7 +2751,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("This is a cancel Bill. Cant cancel it.");
             return;
         }
-        
+
         if (getCancelPaymentMethod() != null) {
             if (getCancelPaymentMethod() == Cash) {
                 double drawerBalance = financialTransactionController.getLoggedUserDrawer().getCashInHandValue();
@@ -2765,7 +2765,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             }
         }
 
-        if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent) {
+        if (selectedBillSession.getBill().getBillType() == BillType.ChannelAgent || selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             cancelAgentPaidBill();
             return;
         }
@@ -3052,7 +3052,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             CancelledBill cb = createCancelCashBill(bill);
             List<Payment> payments = channelService.createPaymentForChannelAppoinmentCancellation(cb, cancelPaymentMethod, getPaymentMethodData(), getSessionController());
             //Payment p = createPaymentForCancellationsAndRefunds(cb, cb.getPaymentMethod());
-            if (cancelPaymentMethod != PaymentMethod.Agent) {
+            if (cancelPaymentMethod != PaymentMethod.Agent && cancelPaymentMethod != PaymentMethod.OnlineBookingAgent) {
                 drawerController.updateDrawerForOuts(payments);
             }
 
@@ -3338,7 +3338,12 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return null;
         }
         cb.setDeptId(deptId);
-        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        if (cancelPaymentMethod == PaymentMethod.OnlineBookingAgent) {
+            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
+        } else {
+            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        }
+
         getBillFacade().create(cb);
 
 //        if (bill.getPaymentMethod() == PaymentMethod.MultiplePaymentMethods) {

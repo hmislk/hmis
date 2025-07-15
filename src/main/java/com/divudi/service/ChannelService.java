@@ -1495,6 +1495,8 @@ public class ChannelService {
         if (bill.getPaidBill() != null) {
             bill.getPaidBill().setCancelled(true);
         }
+        
+        List<Payment> payments = createPayment(cb, PaymentMethod.Agent);
         bs.getBill().setCancelledBill(cb);
         getBillFacade().edit(bill);
         getBillFacade().edit(bill.getReferenceBill());
