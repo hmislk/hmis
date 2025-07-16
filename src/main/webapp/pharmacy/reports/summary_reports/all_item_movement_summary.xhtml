@@ -197,6 +197,15 @@
                                     <p:fileDownload value="#{pharmacySummaryReportController.downloadHistoricalRecordFile(rec)}" />
                                 </p:commandButton>
                             </p:column>
+                            <p:column headerText="Delete" exportable="false">
+                                <p:commandButton
+                                    icon="pi pi-trash"
+                                    styleClass="ui-button-danger"
+                                    value="Delete"
+                                    action="#{pharmacySummaryReportController.retireHistoricalRecord(rec)}"
+                                    update="tblReports"
+                                    onclick="if (!confirm('Are you sure you want to delete this record?')) return false;" />
+                            </p:column>
                         </p:dataTable>
 
                     </h:form>

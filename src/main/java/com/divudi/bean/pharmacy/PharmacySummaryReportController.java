@@ -665,12 +665,12 @@ public class PharmacySummaryReportController implements Serializable {
         }
 
         if (fromDate != null) {
-            jpql.append(" and hr.fromDateTime >= :fd ");
+            jpql.append(" and hr.fromDateTime = :fd ");
             params.put("fd", fromDate);
         }
 
         if (toDate != null) {
-            jpql.append(" and hr.toDateTime <= :td ");
+            jpql.append(" and hr.toDateTime = :td ");
             params.put("td", toDate);
         }
 
@@ -2099,6 +2099,33 @@ public class PharmacySummaryReportController implements Serializable {
 
     public void setHistoricalRecords(List<HistoricalRecord> historicalRecords) {
         this.historicalRecords = historicalRecords;
+    }
+
+    public void retireHistoricalRecord(HistoricalRecord hr) {
+        if (hr == null) {
+            JsfUtil.addErrorMessage("Nothing to delete");
+            return;
+        }
+        hr.setRetired(true);
+        hr.setRetiredAt(new Date());
+        hr.setRetiredBy(sessionController.getLoggedUser());
+        historicalRecordFacade.edit(hr);
+
+        String jpql = "select u from Upload u where u.retired=false and u.historicalRecord=:hr";
+        Map<String, Object> params = new HashMap<>();
+        params.put("hr", hr);
+        List<Upload> uploads = uploadFacade.findByJpql(jpql, params);
+        if (uploads != null) {
+            for (Upload u : uploads) {
+                u.setRetired(true);
+                u.setRetiredAt(new Date());
+                u.setRetirer(sessionController.getLoggedUser());
+                uploadFacade.edit(u);
+            }
+        }
+
+        JsfUtil.addSuccessMessage("Deleted");
+        viewAlreadyAvailableAllItemMovementSummaryReports();
     }
 
 }
