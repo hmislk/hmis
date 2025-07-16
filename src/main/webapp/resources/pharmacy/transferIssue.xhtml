@@ -16,14 +16,14 @@
                 <p:panel header="Reprint" >
                     <f:facet name="header" >
                         <div class="d-flex justify-content-between">
-                            <h:outputLabel value="Reprint Pre Bill" ></h:outputLabel>
+                            <h:outputLabel value="Reprint Cancel Bill" />
                             <div class="d-flex">
                                 <p:commandButton
                                         icon="fa fa-print"
                                         class="ui-button-info"
                                         value="Reprint"
                                         ajax="false" >
-                                    <p:printer target="gpBillPreview" ></p:printer>
+                                    <p:printer target="gpBillPreview" />
                                 </p:commandButton>
                             </div>
                         </div>
@@ -279,7 +279,7 @@
                         </h:outputScript>
 
                         <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
-                            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></h:outputText>
+                            <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" />
                         </div>
                         <ph:consumptionIssue bill="#{pharmacyBillSearch.bill}" duplicate="true" />
                     </h:panelGroup>
