@@ -33,7 +33,6 @@ public class HistoricalRecord implements Serializable {
     @Enumerated(EnumType.STRING)
     private HistoricalRecordType historicalRecordType;
 
-    @NotNull
     private Double recordValue;
 
     @ManyToOne
