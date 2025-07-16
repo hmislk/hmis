@@ -278,6 +278,10 @@ public class PharmacySummaryReportController implements Serializable {
         return "/pharmacy/reports/summary_reports/bill_type_income?faces-redirect=true";
     }
 
+    public String navigateToAllItemMovementSummary() {
+        return "/pharmacy/reports/summary_reports/all_item_movement_summary?faces-redirect=true";
+    }
+
     public String navigatToBillListByBillTypeAtomic(BillTypeAtomic billTypeAtomic) {
         this.billTypeAtomic = billTypeAtomic;
         listBills();
@@ -593,6 +597,9 @@ public class PharmacySummaryReportController implements Serializable {
         List<Bill> bills = billService.fetchBills(fromDate, toDate, institution, site, department, webUser, billTypeAtomics, null, null);
         pharmacyBundle = new PharmacyBundle(bills);
         pharmacyBundle.generateProcurementForBills();
+    }
+
+    public void processAllItemMovementSummary() {
     }
 
     public void processPharmacyIncomeReportByBillType() {
