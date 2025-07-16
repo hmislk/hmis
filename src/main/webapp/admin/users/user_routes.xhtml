@@ -37,7 +37,7 @@
                         <h:outputLabel value=":" style="width: 40px; text-align: center;"/>
                         <p:autoComplete 
                             forceSelection="true"
-                            value="#{userDepartmentController.currentInstituion}"
+                            value="#{userDepartmentController.currentInstitution}"
                             completeMethod="#{institutionController.completeIns}" id="ins2"
                             var="ix" itemLabel="#{ix.name}" itemValue="#{ix}" 
                             class="w-100" inputStyleClass="w-100"
@@ -56,7 +56,7 @@
                             >
                             <f:selectItem  itemLabel="Please select a Route"/>
                             <f:selectItems 
-                                value="#{departmentController.getInstitutionRoutes(userDepartmentController.currentInstituion)}" 
+                                value="#{departmentController.getInstitutionRoutes(userDepartmentController.currentInstitution)}"
                                 var="d" 
                                 itemLabel="#{d.name}" itemValue="#{d}" 
                                 />

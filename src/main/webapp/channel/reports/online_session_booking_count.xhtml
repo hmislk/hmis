@@ -231,7 +231,7 @@
                                 </f:facet>
                                 <p:badge rendered="#{a.billSession.bill.cancelled eq true}" value="Cancelled Bill" severity="danger"></p:badge>
                                 <p:badge rendered="#{a.billSession.bill.refunded eq true}" value="Refunded bill" severity="warning"></p:badge>
-                                <p:badge rendered="#{a.billSession.bill.cancelled eq false and a.billSession.bill.refunded eq false}" value="Completed bill" severity="success">
+                                <p:badge rendered="#{a.billSession.bill.referenceBill.onlineBooking.onlineBookingStatus eq 'COMPLETED'}" value="Completed bill" severity="success">
                                 </p:badge>
                                 <p:badge value="Absent" rendered="#{(a.billSession.bill.cancelled eq false and a.billSession.bill.refunded eq false) and a.billSession.absent == true}"></p:badge>
 

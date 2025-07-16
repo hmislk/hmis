@@ -1225,7 +1225,7 @@ public class StaffSalaryController implements Serializable {
             setAdjustments();
 
             //Record Late No Pay Leave
-            //Not consider in any calcualtion is alredy with general NO Pay
+            // Not considered in any calculation as it is already part of general No Pay
             //only for reporting purpose
 //            double noPayCountLate = getHumanResourceBean().fetchStaffLeaveSystem(getCurrent().getStaff(), LeaveType.No_Pay, getSalaryCycle().getSalaryFromDate(), getSalaryCycle().getSalaryToDate());
             //Issue #311

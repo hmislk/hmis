@@ -93,14 +93,14 @@
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">QTY</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.quantity}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
                     </p:column>
 
                     <p:column style="padding: 4px; width: 3em;" class="text-end">
                         <f:facet name="header">Free</f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty}">
+                        <h:outputLabel value="#{bip.billItemFinanceDetails.freeQuantity}">
                             <f:convertNumber pattern="#,##0" />
                         </h:outputLabel>
 
@@ -157,7 +157,7 @@
                         style="padding: 4px; width: 6em;" 
                         class="text-end #{configOptionApplicationController.getBooleanValueByKey('Print Profit % in Direct Purchase Bill', true) ? 'showProfit' : 'hideProfit' }">
                         <f:facet name="header">Profit %</f:facet>
-                        <h:outputText id="profMargin" value="#{pharmacyDirectPurchaseController.calcProfitMargin(bip)}" >
+                        <h:outputText id="profMargin" value="#{pharmacyDirectPurchaseController.calculateProfitMargin(bip)}" >
                             <f:convertNumber pattern="0.0" ></f:convertNumber>
                         </h:outputText>
                     </p:column>

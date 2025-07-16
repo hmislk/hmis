@@ -81,6 +81,7 @@ import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -97,14 +98,15 @@ import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.inject.Inject;
 import javax.inject.Named;
+
 import org.primefaces.event.RowEditEvent;
 import org.primefaces.event.SelectEvent;
 import org.primefaces.event.TabChangeEvent;
 
 /**
- *
  * @author Buddhika
  */
+
 /**
  *
  * @author Buddhika
@@ -139,7 +141,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     @Inject
     DrawerController drawerController;
 
-////////////////////////
+    ////////////////////////
     @EJB
     private BillFacade billFacade;
     @EJB
@@ -180,7 +182,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
-/////////////////////////
+    /////////////////////////
     Item selectedAvailableAmp;
     Item selectedAlternative;
     private PreBill preBill;
@@ -244,9 +246,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.currentToken = currentToken;
     }
 
-//    public String navigateToPharmacySaleWithoutStocks() {
+    //    public String navigateToPharmacySaleWithoutStocks() {
 //        prepareForPharmacySaleWithoutStock();
-//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true;";
+//        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
     public String navigateToPharmacyBillForCashier() {
         if (sessionController.getPharmacyBillingAfterShiftStart()) {
@@ -258,18 +260,18 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             } else {
                 setBillSettlingStarted(false);
                 JsfUtil.addErrorMessage("Start Your Shift First !");
-                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+                return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
             }
         } else {
             resetAll();
             setBillSettlingStarted(false);
-            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+            return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
         }
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
         setBillSettlingStarted(false);
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToBillCancellationView() {
@@ -612,7 +614,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return pat;
     }
 
-//    private Patient savePatient() {
+    //    private Patient savePatient() {
 //        switch (getPatientTabId()) {
 //            case "tabPt":
 //                if (!getSearchedPatient().getPerson().getName().trim().equals("")) {
@@ -805,7 +807,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         paymentScheme = ps;
         setPatient(getPatient());
         setBillSettlingStarted(false);
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyRetailSaleForCashier(Patient pt, PaymentScheme ps) {
@@ -1008,9 +1010,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return getStockFacade().findByJpql(sql, parameters, 20);
     }
 
-    
-    
-    
+
     public List<Stock> completeAvailableStockOptimized(String qry) {
         if (qry == null || qry.trim().isEmpty()) {
             return Collections.emptyList();
@@ -1026,9 +1026,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
                 "Enable search medicines by item code", true);
         boolean searchByBarcode = qry.length() > 6
                 ? configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", true)
+                "Enable search medicines by barcode", true)
                 : configOptionApplicationController.getBooleanValueByKey(
-                        "Enable search medicines by barcode", false);
+                "Enable search medicines by barcode", false);
         boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
                 "Enable search medicines by generic name(VMP)", false);
 
@@ -1121,7 +1121,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         handleSelectAction();
     }
 
-//    public void calculateRates(BillItem bi) {
+    //    public void calculateRates(BillItem bi) {
 //        ////////System.out.println("calculating rates");
 //        if (bi.getPharmaceuticalBillItem().getStock() == null) {
 //            ////////System.out.println("stock is null");
@@ -1537,7 +1537,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return us;
     }
 
-//    public void calculateAllRatesNew() {
+    //    public void calculateAllRatesNew() {
 //        ////////System.out.println("calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
 //            calculateRates(tbi);
@@ -1572,7 +1572,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-//    Checked
+    //    Checked
     public BillItem getBillItem() {
         if (billItem == null) {
             billItem = new BillItem();
@@ -1589,7 +1589,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.billItem = billItem;
     }
 
-//    private boolean errorCheckForPreBill() {
+    //    private boolean errorCheckForPreBill() {
 //        if (getPreBill().getBillItems().isEmpty()) {
 //            JsfUtil.addErrorMessage("No Items added to bill to sale");
 //            return true;
@@ -2091,17 +2091,27 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         }
 
         Patient pt = null;
-        if (patientRequiredForPharmacySale) {
-            if (getPatient() == null
-                    || getPatient().getPerson() == null
-                    || getPatient().getPerson().getName() == null
-                    || getPatient().getPerson().getName().trim().isEmpty()) {
-                JsfUtil.addErrorMessage("Please Select a Patient");
-                billSettlingStarted = false;
-                return;
+        if (getPatient() != null && getPatient().getPerson() != null) {
+            String name = getPatient().getPerson().getName();
+            boolean hasValidName = name != null && !name.trim().isEmpty();
+
+            if (patientRequiredForPharmacySale) {
+                if (!hasValidName) {
+                    JsfUtil.addErrorMessage("Please Select a Patient");
+                    billSettlingStarted = false;
+                    return;
+                } else {
+                    pt = savePatient();
+                }
             } else {
-                pt = savePatient();
+                if (hasValidName) {
+                    pt = savePatient();
+                }
             }
+        } else if (patientRequiredForPharmacySale) {
+            JsfUtil.addErrorMessage("Please Select a Patient");
+            billSettlingStarted = false;
+            return;
         }
 
         if (billPreview) {
@@ -2537,7 +2547,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return "pharmacy_bill_retail_sale";
     }
 
-//    checked
+    //    checked
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
             if (bItem.getPharmaceuticalBillItem().getStock().equals(getBillItem().getPharmaceuticalBillItem().getStock())) {
@@ -2661,7 +2671,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calTotal();
     }
 
-//    Checked
+    //    Checked
     public void handleQuentityEntryListner(AjaxBehaviorEvent event) {
         if (stock == null) {
             errorMessage = "No stock";
@@ -2710,7 +2720,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-//    Checked
+    //    Checked
     public void handleStockSelect(SelectEvent event) {
         if (stock == null) {
             JsfUtil.addErrorMessage("Empty Stock");
@@ -2748,7 +2758,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calculateAllRates();
     }
 
-//    public void calculateAllRates() {
+    //    public void calculateAllRates() {
 //        //////System.out.println("calculating all rates");
 //        for (BillItem tbi : getPreBill().getBillItems()) {
 //            calculateDiscountRates(tbi);
@@ -2760,7 +2770,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     }
 
-//    Checked
+    //    Checked
     public void calculateDiscountRates(BillItem bi) {
         bi.setDiscountRate(calculateBillItemDiscountRate(bi));
         bi.setDiscount(bi.getDiscountRate() * bi.getQty());
@@ -2780,7 +2790,7 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.priceMatrixController = priceMatrixController;
     }
 
-//    TO check the functionality
+    //    TO check the functionality
     public double calculateBillItemDiscountRate(BillItem bi) {
         System.out.println("calculateBillItemDiscountRate");
         if (bi == null) {

@@ -164,6 +164,17 @@ public class GoodsReturnController implements Serializable {
 
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
+        //Out of all the payment methods allowed, only credit payments should not have a balance. They are paid in full amount and balance is zero.
+        if (getReturnBill().getPaymentMethod() != PaymentMethod.Credit) {
+            getReturnBill().setBalance(0d);
+            getReturnBill().setPaid(true);
+            getReturnBill().setPaidAmount(getReturnBill().getNetTotal());
+            getReturnBill().setPaidAt(new Date());
+        } else {
+            getReturnBill().setBalance(getReturnBill().getNetTotal());
+            getReturnBill().setPaid(false);
+            getReturnBill().setPaidAmount(0d);
+        }
 
         if (getReturnBill().getId() == null) {
             getBillFacade().create(getReturnBill());
@@ -308,6 +319,24 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("Select Dealor");
             return;
         }
+        if (getReturnBill().getPaymentMethod() == null) {
+            JsfUtil.addErrorMessage("Please select a Payment Method");
+            return;
+        }
+        switch (getReturnBill().getPaymentMethod()) {
+            case MultiplePaymentMethods:
+                JsfUtil.addErrorMessage("Multiple Payment Methods NOT allowed");
+                return;
+            case Agent:
+            case OnCall:
+            case PatientDeposit:
+            case PatientPoints:
+            case Staff:
+            case Staff_Welfare:
+            case None:
+                JsfUtil.addErrorMessage("This Payment Method is NOT allowed");
+                return;
+        }
         if (getReturnBill().getComments() == null || getReturnBill().getComments().trim().isEmpty()) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return;
@@ -425,6 +454,7 @@ public class GoodsReturnController implements Serializable {
     public Payment createPayment(Bill bill, PaymentMethod pm) {
         Payment p = new Payment();
         p.setBill(bill);
+        p.setComments(bill.getPaymentMemo());
         setPaymentMethodData(p, pm);
         return p;
     }
@@ -435,7 +465,7 @@ public class GoodsReturnController implements Serializable {
             JsfUtil.addErrorMessage("No Bill get selected");
             return "";
         }
-        return "/pharmacy/pharmacy_return_good";
+        return "/pharmacy/pharmacy_return_good?faces-redirect=true";
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {

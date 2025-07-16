@@ -938,13 +938,13 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
             loggedDepartment = sessionController.getLoggedUser().getDepartment();
         }
         clearSearchValues();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public String navigateToListChildAdmissions() {
         perantAddmission = current;
         searchAdmissions();
-        return "/inward/inpatient_search?faces-redirect=true;";
+        return "/inward/inpatient_search?faces-redirect=true";
     }
 
     public void listCurrentInpatients() {
@@ -1124,10 +1124,10 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         String tc = sessionController.getApplicationPreference().getChangeTextCasesPatientName();
         String updatedPersonName = CommonFunctions.changeTextCases(getPatient().getPerson().getName(), tc);
         String updatedAddress = CommonFunctions.changeTextCases(getPatient().getPerson().getAddress(), tc);
-        if (updatedPersonName == null) {
+        if (updatedPersonName != null) {
             getPatient().getPerson().setName(updatedPersonName);
         }
-        if (updatedAddress == null) {
+        if (updatedAddress != null) {
             getPatient().getPerson().setAddress(updatedAddress);
         }
         Person person = getPatient().getPerson();
@@ -1268,6 +1268,27 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         if (getCurrent().getPatient() == null) {
             JsfUtil.addErrorMessage("Select Patient");
             return true;
+        }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Patient Details Required in Patient Admission",false)) {
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Title is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getTitle()== null) {
+                    JsfUtil.addErrorMessage("Patient Title is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Gender is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getSex()== null) {
+                    JsfUtil.addErrorMessage("Patient Gender is Required");
+                    return true;
+                }
+            }
+            if (configOptionApplicationController.getBooleanValueByKey("Patient Age is Required in Patient Admission", false)) {
+                if (getCurrent().getPatient().getPerson().getDob()== null) {
+                    JsfUtil.addErrorMessage("Patient Age is Required");
+                    return true;
+                }
+            }
         }
 
         if (getCurrent().getAdmissionType().getAdmissionTypeEnum().equals(AdmissionTypeEnum.DayCase) && sessionController.getApplicationPreference().getApplicationInstitution().equals(ApplicationInstitution.Cooperative)) {

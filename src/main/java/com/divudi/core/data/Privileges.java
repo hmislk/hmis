@@ -55,6 +55,7 @@ public enum Privileges {
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
+    OpdPackageBillCancel("OPD Package Bill Cancel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -135,6 +136,7 @@ public enum Privileges {
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
     LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
@@ -187,6 +189,7 @@ public enum Privileges {
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
+    AccessLabTestHistory("Access Lab Test History"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -369,6 +372,14 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    
+    ChannelSessionMultipleDeletion("Delete Multiple Channel Sessions"),
+    ChannelSessionHolidayMark("Channel Sessions Holidays Mark"),
+    ChannelSessionManagement("Channel Session Management"),
+    ChannelSheduleManagement("Channel Shedule Management"),
+    ChannelBookingByMonth("Channel Booking by Month"),
+    ChannelDoctorCard("Doctor Card"),
+    ChannelPatientPortal("Patient Portal"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Clinis">
@@ -615,6 +626,7 @@ public enum Privileges {
     AdminStaff("Admin Staff"),
     AdminItems("Admin Items"),
     AdminPrices("Admin Prices"),
+    ManageCreditCompany("Manage Credit Company"),
     AdminFilterWithoutDepartment("Admin Filter Without Department"),
     //</editor-fold>
 
@@ -668,6 +680,7 @@ public enum Privileges {
         switch (this) {
             case Opd:
             case OpdCancel:
+            case OpdPackageBillCancel:
             case OpdReturn:
             case OpdBilling:
             case OpdOrdering:
@@ -723,6 +736,7 @@ public enum Privileges {
             case LabBillReactivating:
             case LabInvestigationFee:
             case LabSampleCollecting:
+            case OutLabSampleSending:
             case LabAddInwardServices:
             case LabBillCancelSpecial:
             case LabBillRefundSpecial:
@@ -734,6 +748,7 @@ public enum Privileges {
             case LabReportSearchByDepartment:
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
+            case AccessLabTestHistory:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:

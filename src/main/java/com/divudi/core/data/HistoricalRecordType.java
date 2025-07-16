@@ -10,7 +10,9 @@ public enum HistoricalRecordType {
     COLLECTION_CENTRE_BALANCE("Collection Centre Balance"),
     CREDIT_COMPANY_BALANCE("Credit Company Balance"),
     DRAWER_BALANCE("Drawer Balance"),
-    ASYNC_REPORT("Async Report");
+    ASYNC_REPORT("Async Report"),
+    DRAWER_BALANCE("Drawer Balance");
+
 
     private final String label;
 
@@ -22,3 +24,4 @@ public enum HistoricalRecordType {
         return label;
     }
 }
+
