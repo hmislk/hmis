@@ -40,7 +40,6 @@ public class PharmacyAsyncReportService {
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
 
-
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr, String longDateFormat) {
         if (hr == null) {
@@ -49,7 +48,80 @@ public class PharmacyAsyncReportService {
         hr.setStartedAt(new Date());
         historicalRecordFacade.edit(hr);
         try {
-            List<BillTypeAtomic> types = Arrays.asList(BillTypeAtomic.values());
+
+            // Pharmacy Retail Sale (not pre bill)
+            List<BillTypeAtomic> types = Arrays.asList(
+                    // Sale in one colour - starts here
+                    // Pharmacy Retail Sale (not pre bill)
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE, //Quantities should be minus, values should be plus
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_WITHOUT_STOCKS, //Quantities should be minus, values should be plus
+
+                    // Pharmacy Retail Sale Cancellation
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED, //Quantities should be plus, values should be minus
+                    BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK_CANCELLED, //Quantities should be plus, values should be minus
+
+                    // Pharmacy Retail Sale Return
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND, //Quantities should be plus, values should be minus
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY, //Quantities should be plus, values should be neutral (no money)
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS, //Quantities should be neutral (no stock), values should be minus
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS, //Quantities should be plus, values should be minus
+                    BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, //Quantities should be minus, values should be plus
+
+                    // Pharmacy Wholesale Sale
+                    BillTypeAtomic.PHARMACY_WHOLESALE, //Quantities should be minus, values should be plus
+
+                    // Pharmacy Wholesale Cancellation
+                    BillTypeAtomic.PHARMACY_WHOLESALE_CANCELLED, //Quantities should be plus, values should be minus
+
+                    // Pharmacy Wholesale Return
+                    BillTypeAtomic.PHARMACY_WHOLESALE_REFUND, //Quantities should be plus, values should be minus
+
+                // Sale in one background colour - ends here                    
+                    // inpatient Sale in one background colour - starts here                    
+                    // Inpatient Issue
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE, //Quantities should be minus, values neutral
+
+                    // Inpatient Issue Return
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN, //Quantities should be plus, values neutral
+
+                    // Inpatient Issue Cancellation
+                    BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION, //Quantities should be plus, values neutral
+
+                    // inpatient Sale in one background colour - ends here                    
+                    // Goods purchase in one background colour - starts here                    
+                    // GRN
+                    BillTypeAtomic.PHARMACY_GRN, //Quantities should be plus, values should be minus (money going out)
+
+                    // GRN Cancellation
+                    BillTypeAtomic.PHARMACY_GRN_CANCELLED, //Quantities should be minus, values should be plus
+
+                    // GRN Return
+                    BillTypeAtomic.PHARMACY_GRN_RETURN, //Quantities should be minus, values should be plus
+
+                    // GRN Return Cancellation
+                    BillTypeAtomic.PHARMACY_GRN_REFUND, //Quantities should be plus, values should be minus
+
+                    // Direct Purchase
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, //Quantities should be plus, values should be minus
+
+                    // Direct Purchase Cancellation
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED, //Quantities should be minus, values should be plus
+
+                    // Direct Purchase Return
+                    BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND, //Quantities should be minus, values should be plus
+                    
+                    // Goods purchase in one background colour - starts here                    
+                    // Goods transferred in one background colour - starts here                    
+
+                    // Transfer Issue
+                    BillTypeAtomic.PHARMACY_DIRECT_ISSUE, //Quantities should be minus, values neutral
+
+                    // Transfer Receive
+                    BillTypeAtomic.PHARMACY_RECEIVE //Quantities should be plus, values neutral
+                    
+                    // Goods transferred in one background colour - ends here                    
+            );
+
             List<ItemMovementSummaryDTO> rows = billService.fetchItemMovementSummaryDTOs(
                     hr.getFromDateTime(),
                     hr.getToDateTime(),
