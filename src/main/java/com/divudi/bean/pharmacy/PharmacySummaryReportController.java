@@ -89,6 +89,7 @@ import org.primefaces.model.file.UploadedFile;
 import com.divudi.core.entity.Upload;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayInputStream;
+import org.primefaces.model.DefaultStreamedContent;
 
 import org.primefaces.model.StreamedContent;
 // </editor-fold>
