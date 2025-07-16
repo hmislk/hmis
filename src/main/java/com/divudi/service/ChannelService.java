@@ -638,9 +638,9 @@ public class ChannelService {
         return getBillFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
     }
 
-    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, OnlineBookingStatus status) {
+    public List<OnlineBooking> fetchOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, boolean paid, List<OnlineBookingStatus> status) {
         String sql = "Select ob from OnlineBooking ob"
-                + " where ob.onlineBookingStatus = :status "
+                + " where ob.onlineBookingStatus in :status "
                 + " and ob.retired = :retire "
                 + " and ob.paidToHospital = :paid "
                 + " and ob.createdAt between :from and :to";
@@ -663,7 +663,20 @@ public class ChannelService {
 
         sql += " order by ob.createdAt desc";
 
-        return getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+        List<OnlineBooking> list =  getOnlineBookingFacade().findByJpql(sql, params, TemporalType.TIMESTAMP);
+        List<OnlineBooking> listNew = new ArrayList<>();
+        
+        for(OnlineBooking ob : list){
+            if(ob.getOnlineBookingStatus() == OnlineBookingStatus.DOCTOR_CANCELED){
+                if(findBillFromOnlineBooking(ob).getPaidBill() != null && findBillFromOnlineBooking(ob).getPaidBill().getCancelledBill().getPaymentMethod() != PaymentMethod.OnlineBookingAgent){
+                    listNew.add(ob);
+                }
+            }else{
+                listNew.add(ob);
+            }
+        }
+        
+        return listNew;
     }
 
     public List<OnlineBooking> fetchAllOnlineBookings(Date fromDate, Date toDate, Institution agent, Institution hospital, Boolean paid, List<OnlineBookingStatus> status) {

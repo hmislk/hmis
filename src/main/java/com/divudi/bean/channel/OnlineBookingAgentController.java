@@ -851,7 +851,11 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
         }
-        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
+        List<OnlineBookingStatus> status = new ArrayList<>();
+        status.add(OnlineBookingStatus.COMPLETED);
+        status.add(OnlineBookingStatus.DOCTOR_CANCELED);
+         
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, status);
 
         if (bookingList != null) {
             onlineBookingList = bookingList;

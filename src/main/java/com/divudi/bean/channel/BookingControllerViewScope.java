@@ -2608,7 +2608,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 bs.getBill().getReferenceBill().getOnlineBooking().setAbsent(false);
                 bs.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
-                getOnlineBookingFacade().edit(getSelectedBillSession().getBill().getReferenceBill().getOnlineBooking());
+                getOnlineBookingFacade().edit(bs.getBill().getReferenceBill().getOnlineBooking());
             }
             if (bs.getBill().getPaymentMethod() == PaymentMethod.OnCall) {
                 if (bs.getPaidBillSession() != null) {
@@ -2941,7 +2941,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             getBillSession().getBill().getReferenceBill().setCancelled(true);
             getBillSession().getBill().getCancelledBill().setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
             OnlineBooking booking = getBillSession().getBill().getReferenceBill().getOnlineBooking();
-            booking.setOnlineBookingStatus(OnlineBookingStatus.PATIENT_CANCELED);
+            booking.setOnlineBookingStatus(OnlineBookingStatus.DOCTOR_CANCELED);
             booking.setCanceled(true);
             booking.setCancelledBy("From system : " + getSessionController().getLoggedUser().getName());
             onlineBookingFacade.edit(booking);
