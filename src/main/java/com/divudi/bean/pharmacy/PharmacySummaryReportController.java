@@ -66,6 +66,7 @@ import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.divudi.service.HistoricalRecordService;
 import com.divudi.core.facade.HistoricalRecordFacade;
+import com.divudi.service.PharmacyAsyncReportService;
 import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.service.StockHistoryService;
@@ -125,6 +126,8 @@ public class PharmacySummaryReportController implements Serializable {
     HistoricalRecordService historicalRecordService;
     @EJB
     HistoricalRecordFacade historicalRecordFacade;
+    @EJB
+    PharmacyAsyncReportService pharmacyAsyncReportService;
     @EJB
     PharmacyService pharmacyService;
 
@@ -618,39 +621,7 @@ public class PharmacySummaryReportController implements Serializable {
         hr.setCreatedAt(new Date());
         hr.setCreatedBy(sessionController.getLoggedUser());
         historicalRecordFacade.create(hr);
-        
-        // have to have a asyc method to be called by passing the historical record
-        // in that new method there is a need to create a DTO to list Pharmaceutical
-
-        
-        PharmaceuticalBillItem pbi = new PharmaceuticalBillItem();
-        
-        // filters to be used
-        pbi.getBillItem().getBill().getInstitution();
-        pbi.getBillItem().getBill().getDepartment();
-        pbi.getBillItem().getBill().getDepartment().getSite();
-        pbi.getBillItem().getBill().getCreatedAt();
-                
-        // Data co capture
-        // sum of the qty and free qty as totalQty
-        pbi.getQty();
-        pbi.getFreeQty();
-        //sum of the net value
-        pbi.getBillItem().getNetValue();
-        // grouped by the following
-        pbi.getBillItem().getBill().getBillTypeAtomic();
-        pbi.getBillItem().getItem();
-        
-        // an excel file is required to generate using the above data. The filters should be there at the top rows
-        // the columns should be there for the data captured
-        
-        // the excel needs to be stored in a newly created Upload object with a referance to the HistoricalRecord hr
-        
-        // the historical record should be updated with completion details
-        
-        
-        
-        
+        pharmacyAsyncReportService.generateAllItemMovementReport(hr);
         
         JsfUtil.addSuccessMessage("Async report generation request added");
         viewAlreadyAvailableAllItemMovementSummaryReports();
