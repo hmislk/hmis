@@ -39,11 +39,10 @@ public class PharmacyAsyncReportService {
     private UploadFacade uploadFacade;
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
-    @Inject
-    SessionController sessionController;
+
 
     @Asynchronous
-    public void generateAllItemMovementReport(HistoricalRecord hr) {
+    public void generateAllItemMovementReport(HistoricalRecord hr, String longDateFormat) {
         if (hr == null) {
             return;
         }
@@ -58,6 +57,8 @@ public class PharmacyAsyncReportService {
                     hr.getSite(),
                     hr.getDepartment(),
                     types);
+            System.out.println("DTOs fetched: " + rows.size());
+
             XSSFWorkbook wb = new XSSFWorkbook();
             XSSFSheet sheet = wb.createSheet("Item Movement Summary");
 
@@ -68,26 +69,16 @@ public class PharmacyAsyncReportService {
             borderStyle.setBorderRight(BorderStyle.THIN);
 
             int r = 0;
-            
-            //TODO: If institution, Site, Department is not given, it should come as Department: All, Site : All, , Institution: All
-            //TODO: Date time should be formatted with - sessionController.getApplicationPreference().getLongDateFormat()
-            // TODO: THe rows should have a border
-            // TODO: the Bill TYpe Atomic should be in a merged cell above the respective Quantity and Net value columns
-            // TODO: For each item: the final Qty and final value should be added as the total columns
-            // TODO: as the last column the current stock should be listed . the total stock can be taken from 
-            // StockController
-            // method depending on selection, public double findInstitutionStock(Institution institution, Item item) {, public double findDepartmentStock(Department department, Item item) { or  public double findSiteStock(Institution site, Item item) {
-            // TODO: at the bottom, there should be a row to total all the net values ( quentities are not useful to total as they are from different items)
-            
+
             if (hr.getFromDateTime() != null) {
                 Row fr = sheet.createRow(r++);
                 fr.createCell(0).setCellValue("From");
-                fr.createCell(1).setCellValue(CommonFunctions.getDateFormat(hr.getFromDateTime(), sessionController.getApplicationPreference().getLongDateFormat()));
+                fr.createCell(1).setCellValue(CommonFunctions.getDateFormat(hr.getFromDateTime(), longDateFormat));
             }
             if (hr.getToDateTime() != null) {
                 Row tr = sheet.createRow(r++);
                 tr.createCell(0).setCellValue("To");
-                tr.createCell(1).setCellValue(CommonFunctions.getDateFormat(hr.getToDateTime(), sessionController.getApplicationPreference().getLongDateFormat()));
+                tr.createCell(1).setCellValue(CommonFunctions.getDateFormat(hr.getToDateTime(), longDateFormat));
             }
             {
                 Row ir = sheet.createRow(r++);
@@ -105,18 +96,20 @@ public class PharmacyAsyncReportService {
                 dr.createCell(1).setCellValue(hr.getDepartment() != null ? hr.getDepartment().getName() : "All");
             }
             r++; // blank line
-// ChatGPT contribution: One row per item, with Qty and Net Value as adjacent columns under each Bill Type
+
             Map<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> grouped = new TreeMap<>();
             Set<BillTypeAtomic> billTypes = new TreeSet<>(Comparator.comparing(BillTypeAtomic::getLabel));
 
-// Group data
             for (ItemMovementSummaryDTO dto : rows) {
-                grouped.computeIfAbsent(dto.getItemName(), k -> new EnumMap<>(BillTypeAtomic.class))
-                        .put(dto.getBillTypeAtomic(), dto);
-                billTypes.add(dto.getBillTypeAtomic());
+                String itemName = dto.getItemName() != null ? dto.getItemName().trim() : "";
+                BillTypeAtomic bt = dto.getBillTypeAtomic();
+                if (!itemName.isEmpty() && bt != null) {
+                    grouped.computeIfAbsent(itemName, k -> new EnumMap<>(BillTypeAtomic.class))
+                            .put(bt, dto);
+                    billTypes.add(bt);
+                }
             }
 
-// First header row: Bill type names
             Row header1 = sheet.createRow(r++);
             Cell hItem = header1.createCell(0);
             hItem.setCellValue("Item");
@@ -137,7 +130,6 @@ public class PharmacyAsyncReportService {
             totalHeadVal.setCellValue("Total Value");
             totalHeadVal.setCellStyle(borderStyle);
 
-// Second header row: Qty / Net Value
             Row header2 = sheet.createRow(r++);
             Cell hb = header2.createCell(0);
             hb.setCellStyle(borderStyle);
@@ -157,7 +149,6 @@ public class PharmacyAsyncReportService {
             tVal.setCellValue("Net Value");
             tVal.setCellStyle(borderStyle);
 
-// Data rows: One row per item
             double grandTotal = 0.0;
             for (Map.Entry<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> entry : grouped.entrySet()) {
                 Row dataRow = sheet.createRow(r++);
@@ -198,8 +189,8 @@ public class PharmacyAsyncReportService {
             Cell totalLabel = totalRow.createCell(0);
             totalLabel.setCellValue("Total Net Value");
             totalLabel.setCellStyle(borderStyle);
-            sheet.addMergedRegion(new CellRangeAddress(r - 1, r - 1, 0, billTypes.size()*2));
-            Cell totalValueCell = totalRow.createCell(billTypes.size()*2 + 1);
+            sheet.addMergedRegion(new CellRangeAddress(r - 1, r - 1, 0, billTypes.size() * 2));
+            Cell totalValueCell = totalRow.createCell(billTypes.size() * 2 + 1);
             totalValueCell.setCellValue(grandTotal);
             totalValueCell.setCellStyle(borderStyle);
 
@@ -223,4 +214,5 @@ public class PharmacyAsyncReportService {
             historicalRecordFacade.edit(hr);
         }
     }
+
 }

@@ -627,7 +627,7 @@ public class PharmacySummaryReportController implements Serializable {
         hr.setCreatedAt(new Date());
         hr.setCreatedBy(sessionController.getLoggedUser());
         historicalRecordFacade.create(hr);
-        pharmacyAsyncReportService.generateAllItemMovementReport(hr);
+        pharmacyAsyncReportService.generateAllItemMovementReport(hr, sessionController.getApplicationPreference().getLongDateTimeFormat());
         
         JsfUtil.addSuccessMessage("Async report generation request added");
         viewAlreadyAvailableAllItemMovementSummaryReports();
