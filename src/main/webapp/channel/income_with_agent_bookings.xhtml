@@ -44,10 +44,11 @@
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
-                            <p:autoComplete  class="mx-4 w-100" inputStyleClass="w-100" value="#{channelReportController.institution}"
-                                             completeMethod="#{institutionController.completeIns}" 
-                                             var="dept" itemValue="#{dept}" itemLabel="#{dept.name}" required="true" forceSelection="true" rendered="true" requiredMessage="You must select a Institution" >
-                            </p:autoComplete>
+                            <p:selectOneMenu class="w-100" value="#{channelReportController.institution}" filter="true" >
+                                <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <p:ajax event="itemSelect" process="@this"/>
+                            </p:selectOneMenu>
 
                             <p:spacer width="50"/>
                             <i class="fa-solid fa-circle-check"></i>
@@ -409,31 +410,31 @@
 
                             </p:dataTable>
 
-<!--                            <script>
-                                function calculateTotals(selector, targeter) {
-                                    const values = Array.from(document.querySelectorAll(selector));
-                                    const totalValue = values
-                                            .map(value => {
-                                                const cleanValue = value.innerText.replace(/,/g, "");
-                                                return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                            })
-                                            .reduce((total, value) => total + value, 0);
-
-                                    const targetElement = document.querySelector(targeter);
-                                    if (targetElement) {
-                                        targetElement.innerText = totalValue.toFixed(2);
-                                    }
-
-                                }
-
-                                function updateTotals() {
-                                    calculateTotals('.grossFee', '.grossTotal');
-                                    calculateTotals('.staffFee', '.staffFeeTotal');
-                                    calculateTotals('.hosFee', '.hosFeeTotal');
-                                }
-
-                                setTimeout(updateTotals, 500);
-                            </script>-->
+                            <!--                            <script>
+                                                            function calculateTotals(selector, targeter) {
+                                                                const values = Array.from(document.querySelectorAll(selector));
+                                                                const totalValue = values
+                                                                        .map(value => {
+                                                                            const cleanValue = value.innerText.replace(/,/g, "");
+                                                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                                                        })
+                                                                        .reduce((total, value) => total + value, 0);
+                            
+                                                                const targetElement = document.querySelector(targeter);
+                                                                if (targetElement) {
+                                                                    targetElement.innerText = totalValue.toFixed(2);
+                                                                }
+                            
+                                                            }
+                            
+                                                            function updateTotals() {
+                                                                calculateTotals('.grossFee', '.grossTotal');
+                                                                calculateTotals('.staffFee', '.staffFeeTotal');
+                                                                calculateTotals('.hosFee', '.hosFeeTotal');
+                                                            }
+                            
+                                                            setTimeout(updateTotals, 500);
+                                                        </script>-->
 
                         </p:panel>
                     </p:panel>

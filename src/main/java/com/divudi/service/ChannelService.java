@@ -1184,6 +1184,42 @@ public class ChannelService {
         return billFacade.findByJpql(jpql, params);
 
     }
+    
+    public List<Payment> fetchCardPaymentsFromChannelIncome(Date fromDate, Date toDate, Institution institution, String reportStatus){
+        String jpql = "Select p from Payment p where "
+                + " p.bill.billType = :bt "
+                + " and p.bill.paymentMethod = :type "
+                + " and p.bill.retired = false "
+                + " and p.bill.createdAt between :fromDate and :toDate ";
+                
+        Map params = new HashMap();
+        params.put("bt", BillType.ChannelCash);
+        params.put("type", PaymentMethod.Card);
+        params.put("fromDate", fromDate);
+        params.put("toDate",toDate);
+        
+        if(institution != null){
+            jpql += "and p.bill.institution = :ins";
+            params.put("ins", institution);
+        }
+        
+        jpql += " order by p.bill.createdAt desc" ;
+        
+        List<Payment> list = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        if(reportStatus != null && reportStatus.equalsIgnoreCase("Summery")){
+            List<Payment> newList = new ArrayList<>();
+            for(Payment p : list){
+                if(p.getBill() instanceof BilledBill){
+                    newList.add(p);
+                }
+            }
+            
+            return newList;
+        }else{
+            return list;
+        }
+    }
 
     public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status, String reportStatus) {
         Map<String, Object> parameters = new HashMap<>();

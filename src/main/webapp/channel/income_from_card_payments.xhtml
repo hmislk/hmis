@@ -12,7 +12,7 @@
 
             <ui:define name="subContent">
                 <h:form>
-                    <p:panel header="Income By Institution with Scanning Bookings" >
+                    <p:panel header="Income By Institution with Card Paid Appoinments" >
                         <h:panelGrid columns="19" class="my-2" >
                             <h:outputText class="mx-2" value="&#xf073;"
                                           styleClass="fa mr-2"/>
@@ -44,7 +44,8 @@
                                           styleClass="fa mr-2"/>
                             <h:outputLabel class="mx-2"  value="Institution"  ></h:outputLabel>
                             <h:outputLabel value=":" />
-                            <p:selectOneMenu class=" w-100" value="#{channelReportController.institution}" filter="true" >
+
+                            <p:selectOneMenu class="w-50" value="#{channelReportController.institution}" filter="true" >
                                 <f:selectItem itemLabel="Select Institution" ></f:selectItem>
                                 <f:selectItems value="#{channelReportController.institutionForChannelReports}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
@@ -66,7 +67,7 @@
                             </p:selectOneMenu>
                         </h:panelGrid>
                         <h:panelGrid columns="6" class="my-2">
-                            <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.fetchScanningSessionForIncome()}" ajax="false" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning mt-2 mb-2 mx-2" icon="fas fa-cogs" value="Process Report" action="#{channelReportController.getPaymentsForChannelCardAppoinments()}" ajax="false" ></p:commandButton>
 
                             <p:commandButton
                                 id="btnPdf"
@@ -103,7 +104,7 @@
                         </style>
 
                         <p:dataTable id="tableForReport"  
-                                     value="#{channelReportController.dataBundle.reportTemplateRows}" var="row" 
+                                     value="#{channelReportController.paymentsFromCardAppoinments}" var="row" 
                                      paginator="true"
                                      scrollable="true"
                                      scrollHeight="800px"
