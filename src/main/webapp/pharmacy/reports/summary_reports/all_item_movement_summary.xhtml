@@ -141,7 +141,14 @@
                         <p:commandButton
                             value="Process"
                             ajax="false"
-                            action="#{pharmacySummaryReportController.processAllItemMovementSummary()}"
+                            action="#{pharmacySummaryReportController.generateAllItemMovementReport()}"
+                            styleClass="ui-button-success m-1"
+                            icon="pi pi-cog" />
+                        
+                         <p:commandButton
+                            value="View Available Reports"
+                            ajax="false"
+                            action="#{pharmacySummaryReportController.generateAllItemMovementReport()}"
                             styleClass="ui-button-success m-1"
                             icon="pi pi-cog" />
 

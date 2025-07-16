@@ -245,6 +245,8 @@ public class PharmacySummaryReportController implements Serializable {
     // Numeric variables
     private int maxResult = 50;
 
+    private List<HistoricalRecord> historicalRecords;
+    
     //transferOuts;
     //adjustments;
 // </editor-fold>
@@ -599,7 +601,19 @@ public class PharmacySummaryReportController implements Serializable {
         pharmacyBundle.generateProcurementForBills();
     }
 
-    public void processAllItemMovementSummary() {
+    public void generateAllItemMovementReport() {
+        // have to create a HistoricalRecord with data captured from page for fromDateTime,  toDateTime, Institution, Site, Department match the selection
+        // and HistoricalRecordType is ASYNC_REPORT
+        // and variableName eq 'AllItemMovementSummary'
+        // and fill other possible types like createdAt, createdBy, etc
+        // this should give a message and call the viewAlreadyAvailableAllItemMovementSummaryReports method
+    }
+    
+    public void viewAlreadyAvailableAllItemMovementSummaryReports() {
+        // have to list all HistoricalRecord where fromDateTime,  toDateTime, Institution, Site, Department match the selection
+        // and HistoricalRecordType is ASYNC_REPORT
+        // and variableName eq 'AllItemMovementSummary'
+        // and assign it to the historicalRecords list
     }
 
     public void processPharmacyIncomeReportByBillType() {
@@ -1984,6 +1998,8 @@ public class PharmacySummaryReportController implements Serializable {
         this.reportViewTypes = reportViewTypes;
     }
 
+    
+    
     private void addCurrentItemStock(PharmacyBundle pharmacyBundle) {
         if (pharmacyBundle == null) {
             return;
@@ -1994,6 +2010,14 @@ public class PharmacySummaryReportController implements Serializable {
             }
             pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
         }
+    }
+
+    public List<HistoricalRecord> getHistoricalRecords() {
+        return historicalRecords;
+    }
+
+    public void setHistoricalRecords(List<HistoricalRecord> historicalRecords) {
+        this.historicalRecords = historicalRecords;
     }
 
 }

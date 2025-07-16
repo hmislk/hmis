@@ -9,7 +9,8 @@ public enum HistoricalRecordType {
     PHARMACY_STOCK_VALUE_COST_RATE("Pharmacy Stock Value Cost Rate"),
     COLLECTION_CENTRE_BALANCE("Collection Centre Balance"),
     CREDIT_COMPANY_BALANCE("Credit Company Balance"),
-    DRAWER_BALANCE("Drawer Balance");
+    DRAWER_BALANCE("Drawer Balance"),
+    ASYNC_REPORT("Async Report");
 
     private final String label;
 
