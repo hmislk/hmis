@@ -58,7 +58,7 @@
                             <h:outputLabel value="Institution"/>                                
                             <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
                                 <f:selectItem itemLabel="All Institution" ></f:selectItem>
-                                <f:selectItems value="#{sessionController.loggableInstitutions}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                 <p:ajax event="itemSelect" process="@this"/>
                             </p:selectOneMenu>
 

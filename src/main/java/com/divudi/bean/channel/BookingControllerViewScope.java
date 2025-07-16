@@ -2432,6 +2432,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bs != null) {
             bs.setCompleted(true);
             bs.setNextInLine(false);
+            
+            if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+                bs.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
+                onlineBookingFacade.edit(bs.getBill().getReferenceBill().getOnlineBooking());
+            }
             billSessionFacade.edit(bs);
         }
 
@@ -2442,6 +2447,10 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bs != null) {
             bs.setCompleted(false);
             bs.setNextInLine(false);
+            if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+                bs.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
+                onlineBookingFacade.edit(bs.getBill().getReferenceBill().getOnlineBooking());
+            }
             billSessionFacade.edit(bs);
         }
 
