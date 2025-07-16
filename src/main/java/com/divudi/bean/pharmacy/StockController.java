@@ -346,10 +346,12 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findStock(Item item) {
         return findStock(null, item);
     }
 
+    @Deprecated
     public double findStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -363,6 +365,7 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findInstitutionStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -376,6 +379,7 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findDepartmentStock(Department department, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -390,6 +394,7 @@ public class StockController implements Serializable {
     }
     
 
+    @Deprecated
     public double findSiteStock(Institution site, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -459,6 +464,7 @@ public class StockController implements Serializable {
         return 0.0;
     }
 
+    @Deprecated
     public double findStock(Institution institution, Institution site, Department department, Item item) {
         if (item instanceof Amp) {
             return findStock(institution, site, department, (Amp) item);
