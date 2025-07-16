@@ -132,7 +132,7 @@
                             <h:outputLabel value="Total"/>
                         </f:facet>
                     </p:column>
-                    
+
                     <p:column style="margin: 0px; padding: 0px;" width="5em" rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
@@ -182,8 +182,9 @@
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.netTotal}">
-                                <f:convertNumber pattern="#,##0.00" />
+                            sdfsd
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
+                                <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
@@ -208,7 +209,7 @@
                         <h:outputLabel styleClass="retail-value" value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qtyInUnit}">
                             <f:convertNumber pattern="#,##0.00" />
                         </h:outputLabel>
-                        
+
                         <f:facet name="footer">
                             <h:outputLabel styleClass="totalRetailValue" value="0.00">
                                 <f:convertNumber pattern="#,##0.00" />
@@ -216,7 +217,7 @@
                         </f:facet>
                     </p:column>
 
-                   
+
 
                     <p:ajax event="page" oncomplete="calculateSaleTotalInBill()" />
                     <p:ajax event="sort" oncomplete="calculateSaleTotalInBill()" />
@@ -227,27 +228,27 @@
             </div>
             <h:outputScript>
                 function calculateSaleTotalInBill(){
-                    let total = 0;
-                    document.querySelectorAll('.retail-value').forEach(cell=>{
+                let total = 0;
+                document.querySelectorAll('.retail-value').forEach(cell=>{
 
-                    let value = cell.innerText.replace(/,/g, ''); 
-                        total += parseFloat(value) || 0
-                    });
+                let value = cell.innerText.replace(/,/g, ''); 
+                total += parseFloat(value) || 0
+                });
 
-                    let footerElement = document.querySelector('.totalRetailValue');
-                    if (footerElement) {
-                        footerElement.innerText = total.toFixed(2); 
-                    }
+                let footerElement = document.querySelector('.totalRetailValue');
+                if (footerElement) {
+                footerElement.innerText = total.toFixed(2); 
+                }
 
-                    }
+                }
 
-                    PrimeFaces.widget.DataTable.prototype.refresh = function() {
-                        setTimeout(calculateSaleTotalInBill, 100); 
-                    };
+                PrimeFaces.widget.DataTable.prototype.refresh = function() {
+                setTimeout(calculateSaleTotalInBill, 100); 
+                };
 
-                    document.addEventListener("DOMContentLoaded", function() {
-                        setTimeout(calculateSaleTotalInBill, 500);
-                    });
+                document.addEventListener("DOMContentLoaded", function() {
+                setTimeout(calculateSaleTotalInBill, 500);
+                });
             </h:outputScript>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Bill Footer CSS')}" >
