@@ -391,7 +391,6 @@ public class PharmacyAsyncReportService {
             Cell totalLabel = totalRow.createCell(0);
             totalLabel.setCellValue("Total Net Value");
             totalLabel.setCellStyle(thickValStyle);
-            sheet.addMergedRegion(new CellRangeAddress(r - 1, r - 1, 0, billTypes.size() * 2 + 1));
 
             int tc = 1;
             for (BillTypeAtomic bt : billTypes) {
