@@ -131,7 +131,7 @@
                                     styleClass="no-border-table"
                                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
                                     class="my-4"
-                                    value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
+                                    value="#{pharmacyBillSearch.bill.billItems}" sortBy="#{bip.searialNo}" var="bip" >
 
                                 <p:column
                                         width="2em"
@@ -191,7 +191,7 @@
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.billFinanceDetails.totalPurchaseValue}">
                                             <f:convertNumber pattern="#0.00" />
                                         </h:outputLabel>
                                     </f:facet>
@@ -218,7 +218,7 @@
                                         <f:convertNumber pattern="#0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                                        <h:outputLabel value="#{pharmacyBillSearch.bill.billFinanceDetails.totalRetailSaleValue}">
                                             <f:convertNumber pattern="#0.00" />
                                         </h:outputLabel>
                                     </f:facet>
