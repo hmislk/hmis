@@ -59,33 +59,62 @@
                         </td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Location From" styleClass="label" /></td>
+                        <td><h:outputLabel value="Transferred From" styleClass="label" /></td>
                         <td><h:outputLabel value=":" /></td>
-                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.department.name}" /></td>
+                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.fromDepartment.name}" /></td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Location To" styleClass="label" /></td>
+                        <td><h:outputLabel value="Transferred To" styleClass="label" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.toDepartment.name}" /></td>
                     </tr>
-                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}">
+                    <tr>
+                        <td><h:outputLabel value="Transporter" styleClass="label" /></td>
+                        <td><h:outputLabel value=":" /></td>
+                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.fromStaff.person.nameWithTitle}" /></td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" >
+                            <hr/>
+                        </td>
+                    </tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.backwardReferenceBill ne null}">
                         <tr>
                             <td><h:outputLabel value="Requested Person" styleClass="label" /></td>
+                            <td><h:outputLabel value=":" /></td>
+                            <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.backwardReferenceBill.creater.staff.code}" /></td>
+                        </tr>
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.backwardReferenceBill ne null}">
+                        <tr>
+                            <td><h:outputLabel value="Request No" styleClass="label" /></td>
+                            <td><h:outputLabel value=":" /></td>
+                            <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.backwardReferenceBill.deptId}" /></td>
+                        </tr>
+                    </h:panelGroup>
+                    <tr>
+                        <td colspan="3" >
+                            <hr/>
+                        </td>
+                    </tr>
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}">
+                        <tr>
+                            <td><h:outputLabel value="Issued Person" styleClass="label" /></td>
                             <td><h:outputLabel value=":" /></td>
                             <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" /></td>
                         </tr>
                     </h:panelGroup>
-                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill ne null}">
+                    <h:panelGroup rendered="#{cc.attrs.bill.backwardReferenceBill.creater ne null}">
                         <tr>
-                            <td><h:outputLabel value="Request No" styleClass="label" /></td>
+                            <td><h:outputLabel value="Issued Number" styleClass="label" /></td>
                             <td><h:outputLabel value=":" /></td>
                             <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.deptId}" /></td>
                         </tr>
                     </h:panelGroup>
                     <tr>
-                        <td><h:outputLabel value="Issued Person" styleClass="label" /></td>
-                        <td><h:outputLabel value=":" /></td>
-                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" /></td>
+                        <td colspan="3" >
+                            <hr/>
+                        </td>
                     </tr>
                     <tr>
                         <td><h:outputLabel value="Received Person" styleClass="label" /></td>
@@ -97,11 +126,7 @@
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
-                    <tr>
-                        <td><h:outputLabel value="Transporter" styleClass="label" /></td>
-                        <td><h:outputLabel value=":" /></td>
-                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.toStaff.person.nameWithTitle}" /></td>
-                    </tr>
+
                 </table>
             </div>
 
