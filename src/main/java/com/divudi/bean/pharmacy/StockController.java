@@ -370,10 +370,12 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findStock(Item item) {
         return findStock(null, item);
     }
 
+    @Deprecated
     public double findStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
@@ -385,6 +387,49 @@ public class StockController implements Serializable {
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findInstitutionStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findDepartmentStock(Department department, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findDepartmentStock(department, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(department, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+    
+
+    @Deprecated
+    public double findSiteStock(Institution site, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findSiteStock(site, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findSiteStock(site, amps);
         } else {
             //TO Do for Ampp, Vmpp,
             return 0.0;
@@ -423,7 +468,31 @@ public class StockController implements Serializable {
         }
         return 0.0;
     }
+    
+    public double findSiteStock(Institution site, List<Amp> amps) {
+        Double stock;
+        String jpql;
+        Map m = new HashMap();
 
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (site == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("ins", site);
+            jpql += " where i.department.site=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
+    @Deprecated
     public double findStock(Institution institution, Institution site, Department department, Item item) {
         if (item instanceof Amp) {
             return findStock(institution, site, department, (Amp) item);
