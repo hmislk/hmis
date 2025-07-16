@@ -1,6 +1,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -131,6 +132,17 @@ public class OnlineBookingAgentController implements Serializable {
 
     public PaymentMethod getCancelPaymentMethod() {
         return cancelPaymentMethod;
+    }
+    
+    @Inject
+    private InstitutionController institutionController;
+    
+    public List<Institution> getInstitutionForOnlineBookingManegement(){
+        List<Institution> list =  institutionController.getItems();
+        
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+        
+        return list;
     }
 
     public Bill getCancelBill() {
