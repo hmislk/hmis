@@ -144,13 +144,50 @@
                             action="#{pharmacySummaryReportController.generateAllItemMovementReport()}"
                             styleClass="ui-button-success m-1"
                             icon="pi pi-cog" />
-                        
-                         <p:commandButton
+
+                        <p:commandButton
                             value="View Available Reports"
                             ajax="false"
-                            action="#{pharmacySummaryReportController.generateAllItemMovementReport()}"
-                            styleClass="ui-button-success m-1"
-                            icon="pi pi-cog" />
+                            action="#{pharmacySummaryReportController.viewAlreadyAvailableAllItemMovementSummaryReports()}"
+                            styleClass="ui-button-info m-1"
+                            icon="pi pi-search" />
+
+                        <p:dataTable
+                            id="tblReports"
+                            value="#{pharmacySummaryReportController.historicalRecords}"
+                            var="rec"
+                            rowIndexVar="i"
+                            paginator="true"
+                            paginatorAlwaysVisible="false"
+                            paginatorPosition="top"
+                            rows="10"
+                            rowsPerPageTemplate="5,10,15,50"
+                            styleClass="my-3">
+                            <p:column headerText="No" exportable="false">
+                                <h:outputText value="#{i+1}" />
+                            </p:column>
+                            <p:column headerText="From">
+                                <h:outputText value="#{rec.fromDateTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="To">
+                                <h:outputText value="#{rec.toDateTime}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Created At">
+                                <h:outputText value="#{rec.createdAt}">
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Created By">
+                                <h:outputText value="#{rec.createdBy == null ? 'N/A' : rec.createdBy.webUserPerson.name}" />
+                            </p:column>
+                            <p:column headerText="Completed">
+                                <h:outputText value="#{rec.completed ? 'Yes' : 'No'}" />
+                            </p:column>
+                        </p:dataTable>
 
                     </h:form>
 
