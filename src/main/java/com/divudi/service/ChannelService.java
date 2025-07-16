@@ -12,6 +12,9 @@ import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.OnlineBookingStatus;
 import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.ReportTemplateRow;
+import com.divudi.core.data.ReportTemplateRowBundle;
+import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.ejb.BillNumberGenerator;
@@ -24,6 +27,7 @@ import com.divudi.core.entity.BillSession;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Consultant;
+import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Doctor;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
@@ -35,6 +39,7 @@ import com.divudi.core.entity.PriceMatrix;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Speciality;
+import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.facade.ApiKeyFacade;
@@ -120,7 +125,7 @@ public class ChannelService {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
-    
+
     private static final Logger LOGGER = Logger.getLogger(ChannelService.class.getName());
 
     @PermitAll //TODO: Fix this to appropriate roles .
@@ -766,31 +771,31 @@ public class ChannelService {
         return billItemFacade.findByJpql(jpql, params);
 
     }
-    
+
     //this is for physical agentBookings not for online bookings
-    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo){
+    public boolean checkDuplicateAgentRefNo(Institution creditCompany, String refNo) {
 
         Map params = new HashMap();
         params.put("type", BillType.ChannelAgent);
         params.put("bta", BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         params.put("retire", false);
         params.put("refNo", refNo);
-        
+
         StringBuilder sql = new StringBuilder("Select count(bill) from Bill bill where "
                 + " bill.billType = :type and bill.billTypeAtomic = :bta and bill.agentRefNo = :refNo and"
                 + " bill.retired = :retire");
-        
-        if(creditCompany != null){
+
+        if (creditCompany != null) {
             sql.append(" and bill.creditCompany = :company");
             params.put("company", creditCompany);
         }
-        
+
         Long count = getBillFacade().countByJpql(sql.toString(), params);
-        
-        if(count != null && count > 0){
+
+        if (count != null && count > 0) {
             return true;
         }
-        
+
         return false;
     }
 
@@ -1178,6 +1183,111 @@ public class ChannelService {
 
         return billFacade.findByJpql(jpql, params);
 
+    }
+
+    public ReportTemplateRowBundle generateChannelIncomeSummeryForSessions(Date fromDate, Date toDate, Institution institution, Department department, Staff staff, String status) {
+        Map<String, Object> parameters = new HashMap<>();
+        String jpql = "SELECT new com.divudi.core.data.ReportTemplateRow("
+                + "bill, "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Card THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.MultiplePaymentMethods THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Staff_Welfare THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Voucher THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.IOU THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Agent THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Cheque THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.Slip THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.ewallet THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientDeposit THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.PatientPoints THEN p.paidValue ELSE 0 END), "
+                + "SUM(CASE WHEN p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement THEN p.paidValue ELSE 0 END)) "
+                + "FROM Payment p "
+                + "JOIN p.bill bill "
+                + "WHERE p.retired <> :bfr AND bill.retired <> :br ";
+
+        List<BillTypeAtomic> bts = new ArrayList<>();
+
+        if (status != null && status.equalsIgnoreCase("Scanning")) {
+            jpql += "and bill.singleBillSession.sessionInstance.originatingSession.category.name = :catogery ";
+            parameters.put("catogery", "Scanning");
+
+            bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+            bts.remove(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_PENDING_ONLINE);
+
+        } else if (status != null && status.equalsIgnoreCase("Agent")) {
+            jpql += " and bill.billType = :type ";
+            parameters.put("type", BillType.ChannelAgent);
+
+            bts.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_REFUND_WITH_PAYMENT);
+            bts.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+        }
+
+        parameters.put("bfr", true);
+        parameters.put("br", true);
+
+        //List<BillTypeAtomic> bts = BillTypeAtomic.findByServiceType(ServiceType.CHANNELLING);
+        jpql += "AND bill.billTypeAtomic IN :bts ";
+        parameters.put("bts", bts);
+
+        if (institution != null) {
+            jpql += "AND bill.department.institution = :ins ";
+            parameters.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += "AND bill.department = :dep ";
+            parameters.put("dep", department);
+        }
+        if (staff != null) {
+            jpql += "AND bill.staff = :stf ";
+            parameters.put("stf", staff);
+        }
+
+        jpql += "AND p.createdAt BETWEEN :fd AND :td ";
+        parameters.put("fd", fromDate);
+        parameters.put("td", toDate);
+
+        // Ensure proper grouping
+        jpql += "GROUP BY bill";
+
+        List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
+
+        ReportTemplateRowBundle bundle = new ReportTemplateRowBundle();
+        bundle = new ReportTemplateRowBundle();
+        bundle.setReportTemplateRows(rs);
+        bundle.createRowValuesFromBill();
+        bundle.calculateTotals();
+
+        return bundle;
+    }
+
+    public List<BillSession> fetchScanningSessionBillSessions(Date fromDate, Date toDate, Institution institution) {
+
+        StringBuilder sql = new StringBuilder("Select bs from BillSession bs where "
+                + " bs.bill.billType <> :type "
+                + " and bs.sessionInstance.originatingSession.category.name = :category "
+                + " and bs.bill.retired = :state "
+                + " and bs.createdAt between :fromDate and :toDate");
+
+        Map params = new HashMap();
+        params.put("type", BillType.ChannelOnCall);
+        params.put("category", "Scanning");
+        params.put("state", false);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            sql.append(" and bs.institution = :ins");
+            params.put("ins", institution);
+        }
+
+        sql.append(" order by bs.createdAt desc");
+
+        List<BillSession> list = billSessionFacade.findByJpql(sql.toString(), params, TemporalType.TIMESTAMP);
+        return list;
     }
 
     public List<SessionInstance> findSessionInstanceFromId(String id) {
