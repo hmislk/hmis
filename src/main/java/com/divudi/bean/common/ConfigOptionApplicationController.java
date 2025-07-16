@@ -342,6 +342,8 @@ public class ConfigOptionApplicationController implements Serializable {
                 + "  }\n"
                 + "}"
         );
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Header", "");
+        getLongTextValueByKey("Pharmacy Transfer Receive Receipt Footer", "");
     }
 
     private void loadPharmacyTransferRequestReceiptConfigurationDefaults() {
