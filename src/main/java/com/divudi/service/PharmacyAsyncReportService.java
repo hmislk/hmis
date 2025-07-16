@@ -65,7 +65,7 @@ public class PharmacyAsyncReportService {
             // TODO: as the last column the current stock should be listed . the total stock can be taken from 
             // StockController
             // method depending on selection, public double findInstitutionStock(Institution institution, Item item) {, public double findDepartmentStock(Department department, Item item) { or  public double findSiteStock(Institution site, Item item) {
-            
+            // TODO: at the bottom, there should be a row to total all the net values ( quentities are not useful to total as they are from different items)
             
             if (hr.getFromDateTime() != null) {
                 Row fr = sheet.createRow(r++);
