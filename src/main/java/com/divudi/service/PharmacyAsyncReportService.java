@@ -7,6 +7,9 @@ import com.divudi.core.entity.Upload;
 import com.divudi.core.data.dto.ItemMovementSummaryDTO;
 import com.divudi.core.facade.HistoricalRecordFacade;
 import com.divudi.core.facade.UploadFacade;
+import com.divudi.core.facade.ItemFacade;
+import com.divudi.bean.pharmacy.StockController;
+import com.divudi.core.entity.Item;
 import com.divudi.core.util.CommonFunctions;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
@@ -38,6 +41,10 @@ public class PharmacyAsyncReportService {
     private UploadFacade uploadFacade;
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
+    @EJB
+    private ItemFacade itemFacade;
+    @Inject
+    private StockController stockController;
 
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr, String longDateFormat) {
@@ -213,7 +220,6 @@ public class PharmacyAsyncReportService {
 
             Map<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> grouped = new TreeMap<>();
             List<BillTypeAtomic> billTypes = types;
-
             for (ItemMovementSummaryDTO dto : rows) {
                 String itemName = dto.getItemName() != null ? dto.getItemName().trim() : "";
                 BillTypeAtomic bt = dto.getBillTypeAtomic();
@@ -221,6 +227,33 @@ public class PharmacyAsyncReportService {
                     grouped.computeIfAbsent(itemName, k -> new EnumMap<>(BillTypeAtomic.class))
                             .put(bt, dto);
                 }
+            }
+
+            Map<String, Double> stockMap = new TreeMap<>();
+            for (Map.Entry<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> inEntry : grouped.entrySet()) {
+                Map<BillTypeAtomic, ItemMovementSummaryDTO> im = inEntry.getValue();
+                ItemMovementSummaryDTO first = null;
+                if (im != null && !im.isEmpty()) {
+                    first = im.values().iterator().next();
+                }
+                Item itm = null;
+                if (first != null && first.getItemId() != null) {
+                    itm = itemFacade.find(first.getItemId());
+                }
+                double st = 0.0;
+                if (itm != null) {
+                    if (hr.getDepartment() != null) {
+                        Double d = stockController.departmentItemStock(hr.getDepartment(), itm);
+                        st = d != null ? d : 0.0;
+                    } else if (hr.getSite() != null) {
+                        st = stockController.findSiteStock(hr.getSite(), itm);
+                    } else if (hr.getInstitution() != null) {
+                        st = stockController.findStock(hr.getInstitution(), itm);
+                    } else {
+                        st = stockController.findStock(itm);
+                    }
+                }
+                stockMap.put(inEntry.getKey(), st);
             }
 
             Row header1 = sheet.createRow(r++);
@@ -244,6 +277,9 @@ public class PharmacyAsyncReportService {
             Cell totalHeadVal = header1.createCell(col + 1);
             totalHeadVal.setCellValue("Total Value");
             totalHeadVal.setCellStyle(borderStyle);
+            Cell stockHead = header1.createCell(col + 2);
+            stockHead.setCellValue("Current Stock");
+            stockHead.setCellStyle(borderStyle);
 
             Row header2 = sheet.createRow(r++);
             Cell hb = header2.createCell(0);
@@ -264,6 +300,9 @@ public class PharmacyAsyncReportService {
             Cell tVal = header2.createCell(col++);
             tVal.setCellValue("Net Value");
             tVal.setCellStyle(borderStyle);
+            Cell stkVal = header2.createCell(col++);
+            stkVal.setCellValue("Qty");
+            stkVal.setCellStyle(borderStyle);
 
             double grandTotal = 0.0;
             for (Map.Entry<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> entry : grouped.entrySet()) {
@@ -298,6 +337,10 @@ public class PharmacyAsyncReportService {
                 Cell tv = dataRow.createCell(col + 1);
                 tv.setCellValue(rowVal);
                 tv.setCellStyle(borderStyle);
+                Cell stockCell = dataRow.createCell(col + 2);
+                Double sc = stockMap.get(entry.getKey());
+                stockCell.setCellValue(sc != null ? sc : 0.0);
+                stockCell.setCellStyle(borderStyle);
 
                 grandTotal += rowVal;
             }
@@ -311,7 +354,7 @@ public class PharmacyAsyncReportService {
             totalValueCell.setCellValue(grandTotal);
             totalValueCell.setCellStyle(borderStyle);
 
-            for (int i = 0; i <= billTypes.size() * 2 + 1; i++) {
+            for (int i = 0; i <= billTypes.size() * 2 + 2; i++) {
                 sheet.autoSizeColumn(i);
             }
 
