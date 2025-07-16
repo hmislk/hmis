@@ -2034,7 +2034,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processSaleCash() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Cash));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void exportIpDrugReturnPdf() {
