@@ -8,8 +8,14 @@ import com.divudi.core.facade.HistoricalRecordFacade;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -26,7 +32,6 @@ public class PharmacyAsyncReportService {
     private UploadFacade uploadFacade;
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
-
 
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr) {
@@ -73,18 +78,56 @@ public class PharmacyAsyncReportService {
                 dr.createCell(1).setCellValue(hr.getDepartment().getName());
             }
             r++; // blank line
-            Row header = sheet.createRow(r++);
-            header.createCell(0).setCellValue("Bill Type");
-            header.createCell(1).setCellValue("Item");
-            header.createCell(2).setCellValue("Total Qty");
-            header.createCell(3).setCellValue("Net Value");
-            for (ItemMovementSummaryDTO d : rows) {
-                Row row = sheet.createRow(r++);
-                row.createCell(0).setCellValue(d.getBillTypeAtomic().getLabel());
-                row.createCell(1).setCellValue(d.getItemName());
-                row.createCell(2).setCellValue(d.getQuantity());
-                row.createCell(3).setCellValue(d.getNetValue());
+// ChatGPT contribution: One row per item, with Qty and Net Value as adjacent columns under each Bill Type
+            Map<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> grouped = new TreeMap<>();
+            Set<BillTypeAtomic> billTypes = new TreeSet<>(Comparator.comparing(BillTypeAtomic::getLabel));
+
+// Group data
+            for (ItemMovementSummaryDTO dto : rows) {
+                grouped.computeIfAbsent(dto.getItemName(), k -> new EnumMap<>(BillTypeAtomic.class))
+                        .put(dto.getBillTypeAtomic(), dto);
+                billTypes.add(dto.getBillTypeAtomic());
             }
+
+// First header row: Bill type names
+            Row header1 = sheet.createRow(r++);
+            header1.createCell(0).setCellValue("Item");
+            int col = 1;
+            for (BillTypeAtomic bt : billTypes) {
+                header1.createCell(col).setCellValue(bt.getLabel());
+                header1.createCell(col + 1).setCellValue(""); // Placeholder for merge visual
+                col += 2;
+            }
+
+// Second header row: Qty / Net Value
+            Row header2 = sheet.createRow(r++);
+            header2.createCell(0).setCellValue("");
+            col = 1;
+            for (int i = 0; i < billTypes.size(); i++) {
+                header2.createCell(col++).setCellValue("Total Qty");
+                header2.createCell(col++).setCellValue("Net Value");
+            }
+
+// Data rows: One row per item
+            for (Map.Entry<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> entry : grouped.entrySet()) {
+                Row dataRow = sheet.createRow(r++);
+                dataRow.createCell(0).setCellValue(entry.getKey());
+                Map<BillTypeAtomic, ItemMovementSummaryDTO> itemMap = entry.getValue();
+
+                col = 1;
+                for (BillTypeAtomic bt : billTypes) {
+                    ItemMovementSummaryDTO dto = itemMap.get(bt);
+                    if (dto != null) {
+                        dataRow.createCell(col).setCellValue(dto.getQuantity());
+                        dataRow.createCell(col + 1).setCellValue(dto.getNetValue());
+                    } else {
+                        dataRow.createCell(col).setCellValue("");
+                        dataRow.createCell(col + 1).setCellValue("");
+                    }
+                    col += 2;
+                }
+            }
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             wb.write(baos);
             wb.close();
