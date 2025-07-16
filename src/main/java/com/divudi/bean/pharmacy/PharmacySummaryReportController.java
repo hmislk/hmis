@@ -86,6 +86,9 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 import org.primefaces.model.file.UploadedFile;
+import com.divudi.core.entity.Upload;
+import com.divudi.core.facade.UploadFacade;
+import java.io.ByteArrayInputStream;
 
 import org.primefaces.model.StreamedContent;
 // </editor-fold>
@@ -130,6 +133,8 @@ public class PharmacySummaryReportController implements Serializable {
     PharmacyAsyncReportService pharmacyAsyncReportService;
     @EJB
     PharmacyService pharmacyService;
+    @EJB
+    UploadFacade uploadFacade;
 
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Controllers">
@@ -2067,6 +2072,24 @@ public class PharmacySummaryReportController implements Serializable {
             }
             pr.setStockQty(stockController.findStock(institution, site, department, pr.getItem()));
         }
+    }
+
+    public StreamedContent downloadHistoricalRecordFile(HistoricalRecord hr) {
+        if (hr == null) {
+            return null;
+        }
+        String jpql = "select u from Upload u where u.retired=false and u.historicalRecord=:hr order by u.id desc";
+        Map<String, Object> params = new HashMap<>();
+        params.put("hr", hr);
+        Upload u = uploadFacade.findFirstByJpql(jpql, params);
+        if (u == null || u.getBaImage() == null) {
+            return null;
+        }
+        return DefaultStreamedContent.builder()
+                .name(u.getFileName())
+                .contentType(u.getFileType())
+                .stream(() -> new ByteArrayInputStream(u.getBaImage()))
+                .build();
     }
 
     public List<HistoricalRecord> getHistoricalRecords() {
