@@ -1,5 +1,6 @@
 package com.divudi.service;
 
+import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.HistoricalRecord;
 import com.divudi.core.entity.Upload;
@@ -19,6 +20,7 @@ import java.util.TreeSet;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
+import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -32,6 +34,8 @@ public class PharmacyAsyncReportService {
     private UploadFacade uploadFacade;
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
+    @Inject
+    SessionController sessionController;
 
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr) {
@@ -52,6 +56,17 @@ public class PharmacyAsyncReportService {
             XSSFWorkbook wb = new XSSFWorkbook();
             XSSFSheet sheet = wb.createSheet("Item Movement Summary");
             int r = 0;
+            
+            //TODO: If institution, Site, Department is not given, it should come as Department: All, Site : All, , Institution: All
+            //TODO: Date time should be formatted with - sessionController.getApplicationPreference().getLongDateFormat()
+            // TODO: THe rows should have a border
+            // TODO: the Bill TYpe Atomic should be in a merged cell above the respective Quantity and Net value columns
+            // TODO: For each item: the final Qty and final value should be added as the total columns
+            // TODO: as the last column the current stock should be listed . the total stock can be taken from 
+            // StockController
+            // method depending on selection, public double findInstitutionStock(Institution institution, Item item) {, public double findDepartmentStock(Department department, Item item) { or  public double findSiteStock(Institution site, Item item) {
+            
+            
             if (hr.getFromDateTime() != null) {
                 Row fr = sheet.createRow(r++);
                 fr.createCell(0).setCellValue("From");
