@@ -228,44 +228,44 @@
                             </p:column>
 
                             <p:column headerText="Card Last 4 Numbers" style=" text-align: center;">
-                                <h:outputText value="#{row.creditCardRefNo}">
+                                <h:outputText value="#{row.creditCardRefNo}" style="font-weight: bold">
 
                                 </h:outputText>
                             </p:column>
 
                             <p:column headerText="Bank" style=" text-align: center;">
-                                <h:outputText value="#{row.bank.name}">
+                                <h:outputText value="#{row.bank.name}" style="font-weight: bold">
 
                                 </h:outputText>
                             </p:column>
 
                         </p:dataTable>
 
-                        <!--                        <script>
-                                                    function calculateTotals(selector, targeter) {
-                                                        const values = Array.from(document.querySelectorAll(selector));
-                                                        const totalValue = values
-                                                                .map(value => {
-                                                                    const cleanValue = value.innerText.replace(/,/g, "");
-                                                                    return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
-                                                                })
-                                                                .reduce((total, value) => total + value, 0);
+                        <script>
+                            function calculateTotals(selector, targeter) {
+                                const values = Array.from(document.querySelectorAll(selector));
+                                const totalValue = values
+                                        .map(value => {
+                                            const cleanValue = value.innerText.replace(/,/g, "");
+                                            return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                        })
+                                        .reduce((total, value) => total + value, 0);
                         
-                                                        const targetElement = document.querySelector(targeter);
-                                                        if (targetElement) {
-                                                            targetElement.innerText = totalValue.toFixed(2);
-                                                        }
+                                const targetElement = document.querySelector(targeter);
+                                if (targetElement) {
+                                    targetElement.innerText = totalValue.toFixed(2);
+                                }
                         
-                                                    }
+                            }
                         
-                                                    function updateTotals() {
-                                                        calculateTotals('.grossFee', '.grossTotal');
-                                                        calculateTotals('.staffFee', '.staffFeeTotal');
-                                                        calculateTotals('.hosFee', '.hosFeeTotal');
-                                                    }
+                            function updateTotals() {
+                                calculateTotals('.grossFee', '.grossTotal');
+                                calculateTotals('.staffFee', '.staffFeeTotal');
+                                calculateTotals('.hosFee', '.hosFeeTotal');
+                            }
                         
-                                                    setTimeout(updateTotals, 500);
-                                                </script>-->
+                            setTimeout(updateTotals, 500);
+                        </script>
 
                     </p:panel>
                 </h:form>
