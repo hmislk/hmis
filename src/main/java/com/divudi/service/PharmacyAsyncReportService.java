@@ -2,17 +2,14 @@ package com.divudi.service;
 
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.HistoricalRecord;
-import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Upload;
-import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.data.dto.ItemMovementSummaryDTO;
 import com.divudi.core.facade.HistoricalRecordFacade;
 import com.divudi.core.facade.UploadFacade;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -30,10 +27,6 @@ public class PharmacyAsyncReportService {
     @EJB
     private HistoricalRecordFacade historicalRecordFacade;
 
-    private static class Summary {
-        double qty;
-        double value;
-    }
 
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr) {
@@ -44,31 +37,13 @@ public class PharmacyAsyncReportService {
         historicalRecordFacade.edit(hr);
         try {
             List<BillTypeAtomic> types = Arrays.asList(BillTypeAtomic.values());
-            List<PharmaceuticalBillItem> pbis = billService.fetchPharmaceuticalBillItems(
+            List<ItemMovementSummaryDTO> rows = billService.fetchItemMovementSummaryDTOs(
                     hr.getFromDateTime(),
                     hr.getToDateTime(),
                     hr.getInstitution(),
                     hr.getSite(),
                     hr.getDepartment(),
-                    null,
-                    types,
-                    null,
-                    null);
-            Map<BillTypeAtomic, Map<Item, Summary>> grouped = new ConcurrentHashMap<>();
-            for (PharmaceuticalBillItem pbi : pbis) {
-                if (pbi == null || pbi.getBillItem() == null || pbi.getBillItem().getBill() == null) {
-                    continue;
-                }
-                BillTypeAtomic bt = pbi.getBillItem().getBill().getBillTypeAtomic();
-                Item item = pbi.getBillItem().getItem();
-                if (bt == null || item == null) {
-                    continue;
-                }
-                Map<Item, Summary> itemMap = grouped.computeIfAbsent(bt, k -> new ConcurrentHashMap<>());
-                Summary s = itemMap.computeIfAbsent(item, k -> new Summary());
-                s.qty += pbi.getQty() + pbi.getFreeQty();
-                s.value += pbi.getBillItem().getNetValue();
-            }
+                    types);
             XSSFWorkbook wb = new XSSFWorkbook();
             XSSFSheet sheet = wb.createSheet("Item Movement Summary");
             int r = 0;
@@ -103,14 +78,12 @@ public class PharmacyAsyncReportService {
             header.createCell(1).setCellValue("Item");
             header.createCell(2).setCellValue("Total Qty");
             header.createCell(3).setCellValue("Net Value");
-            for (Map.Entry<BillTypeAtomic, Map<Item, Summary>> e1 : grouped.entrySet()) {
-                for (Map.Entry<Item, Summary> e2 : e1.getValue().entrySet()) {
-                    Row row = sheet.createRow(r++);
-                    row.createCell(0).setCellValue(e1.getKey().getLabel());
-                    row.createCell(1).setCellValue(e2.getKey().getName());
-                    row.createCell(2).setCellValue(e2.getValue().qty);
-                    row.createCell(3).setCellValue(e2.getValue().value);
-                }
+            for (ItemMovementSummaryDTO d : rows) {
+                Row row = sheet.createRow(r++);
+                row.createCell(0).setCellValue(d.getBillTypeAtomic().getLabel());
+                row.createCell(1).setCellValue(d.getItemName());
+                row.createCell(2).setCellValue(d.getQuantity());
+                row.createCell(3).setCellValue(d.getNetValue());
             }
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             wb.write(baos);

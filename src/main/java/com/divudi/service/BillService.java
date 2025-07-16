@@ -22,6 +22,7 @@ import com.divudi.core.data.ReportTemplateRow;
 import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.data.dto.ItemMovementSummaryDTO;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
@@ -1099,6 +1100,47 @@ public class BillService {
         jpql += " order by b.createdAt desc  ";
         List<PharmaceuticalBillItem> fetchedPharmaceuticalBillItems = pharmaceuticalBillItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedPharmaceuticalBillItems;
+    }
+
+    public List<ItemMovementSummaryDTO> fetchItemMovementSummaryDTOs(
+            Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            List<BillTypeAtomic> billTypeAtomics) {
+        String jpql = "select new com.divudi.core.data.dto.ItemMovementSummaryDTO(" +
+                " b.billTypeAtomic, bi.item.name, sum(pbi.qty + pbi.freeQty), sum(bi.netValue))" +
+                " from PharmaceuticalBillItem pbi" +
+                " join pbi.billItem bi" +
+                " join bi.bill b" +
+                " where (b.retired=false or b.retired is null)" +
+                " and (bi.retired=false or bi.retired is null)" +
+                " and b.billTypeAtomic in :billTypesAtomics" +
+                " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+
+        jpql += " group by b.billTypeAtomic, bi.item.name" +
+                " order by b.billTypeAtomic, bi.item.name";
+
+        return pharmaceuticalBillItemFacade.findItemMovementSummaryDTOs(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,
