@@ -554,8 +554,8 @@
                                                 <p:outputLabel rendered="#{bs.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT'}" value="#{bs.bill.referenceBill.onlineBooking.phoneNo}" style="font-size: 12px;" />
                                             </p:column>
                                             <p:column headerText="Remarks" style="font-size: 12px; width: 20%!important; padding: 1px" >
-                                                <p:outputLabel rendered="#{bs.bill.balance ne 0.0 or bs.bill.paymentMethod eq 'OnCall'}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
-                                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0 and bs.bill.paymentMethod ne 'OnCall' }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
+                                                <p:outputLabel rendered="#{bs.bill.paymentMethod eq 'OnCall' and empty bs.bill.paidBill}" value="Not Paid" style="color: red;font-size: 12px;font-weight: bold" />
+                                                <p:outputLabel rendered="#{bs.bill.balance eq 0.0 or (bs.bill.paymentMethod eq 'OnCall' and not empty bs.bill.paidBill) }" value="Paid" style="color: green;font-size: 12px;font-weight: bold"/>
                                             </p:column>
                                             <!--                            <p:column headerText="Billed By" style="font-size: 12px;width: 15%!important;" >
                                                                             <p:outputLabel value="#{bs.bill.creater.name}" style="font-size: 11px;font-weight: bold" />
