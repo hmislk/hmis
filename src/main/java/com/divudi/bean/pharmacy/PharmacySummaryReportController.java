@@ -665,12 +665,12 @@ public class PharmacySummaryReportController implements Serializable {
         }
 
         if (fromDate != null) {
-            jpql.append(" and hr.fromDateTime >= :fd ");
+            jpql.append(" and hr.fromDateTime = :fd ");
             params.put("fd", fromDate);
         }
 
         if (toDate != null) {
-            jpql.append(" and hr.toDateTime <= :td ");
+            jpql.append(" and hr.toDateTime = :td ");
             params.put("td", toDate);
         }
 
