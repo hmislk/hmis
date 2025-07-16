@@ -2430,6 +2430,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void completeAppoinmentFromSessionInstance(BillSession bs) {
 
         if (bs != null) {
+            
+            if(bs.getBill().getPaymentMethod() == PaymentMethod.OnCall){
+                if(bs.getBill().getPaidBill() == null){
+                    JsfUtil.addErrorMessage("Not a paid Appoinment");
+                    return;
+                }
+            }
+            
             bs.setCompleted(true);
             bs.setNextInLine(false);
             

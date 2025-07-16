@@ -257,7 +257,7 @@
                                                         process="@this"
                                                         title="Complete Appoinment"
                                                         disabled="#{bs.absent or bs.bill.cancelled or bs.completed}"
-                                                        update="acBookings"
+                                                        update="acBookings msg"
                                                         icon="fa-solid fa-circle-check"
                                                         action="#{bookingControllerViewScope.completeAppoinmentFromSessionInstance(bs)}" 
                                                         class="ui-button-success">
