@@ -10,14 +10,11 @@ import com.divudi.core.facade.UploadFacade;
 import com.divudi.core.util.CommonFunctions;
 import java.io.ByteArrayOutputStream;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 import javax.ejb.Asynchronous;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
@@ -25,6 +22,8 @@ import javax.inject.Inject;
 import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.IndexedColors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
@@ -139,6 +138,50 @@ public class PharmacyAsyncReportService {
             borderStyle.setBorderLeft(BorderStyle.THIN);
             borderStyle.setBorderRight(BorderStyle.THIN);
 
+            CellStyle salesStyle = wb.createCellStyle();
+            salesStyle.cloneStyleFrom(borderStyle);
+            salesStyle.setFillForegroundColor(IndexedColors.LIGHT_YELLOW.getIndex());
+            salesStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle inpatientStyle = wb.createCellStyle();
+            inpatientStyle.cloneStyleFrom(borderStyle);
+            inpatientStyle.setFillForegroundColor(IndexedColors.LIGHT_GREEN.getIndex());
+            inpatientStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle purchaseStyle = wb.createCellStyle();
+            purchaseStyle.cloneStyleFrom(borderStyle);
+            purchaseStyle.setFillForegroundColor(IndexedColors.LIGHT_CORNFLOWER_BLUE.getIndex());
+            purchaseStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            CellStyle transferStyle = wb.createCellStyle();
+            transferStyle.cloneStyleFrom(borderStyle);
+            transferStyle.setFillForegroundColor(IndexedColors.LIGHT_TURQUOISE.getIndex());
+            transferStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+
+            Map<BillTypeAtomic, CellStyle> styleMap = new EnumMap<>(BillTypeAtomic.class);
+            for (BillTypeAtomic bt : types) {
+                CellStyle style;
+                if (bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN
+                        || bt == BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION) {
+                    style = inpatientStyle;
+                } else if (bt == BillTypeAtomic.PHARMACY_GRN
+                        || bt == BillTypeAtomic.PHARMACY_GRN_CANCELLED
+                        || bt == BillTypeAtomic.PHARMACY_GRN_RETURN
+                        || bt == BillTypeAtomic.PHARMACY_GRN_REFUND
+                        || bt == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE
+                        || bt == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_CANCELLED
+                        || bt == BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND) {
+                    style = purchaseStyle;
+                } else if (bt == BillTypeAtomic.PHARMACY_DIRECT_ISSUE
+                        || bt == BillTypeAtomic.PHARMACY_RECEIVE) {
+                    style = transferStyle;
+                } else {
+                    style = salesStyle;
+                }
+                styleMap.put(bt, style);
+            }
+
             int r = 0;
 
             if (hr.getFromDateTime() != null) {
@@ -169,7 +212,7 @@ public class PharmacyAsyncReportService {
             r++; // blank line
 
             Map<String, Map<BillTypeAtomic, ItemMovementSummaryDTO>> grouped = new TreeMap<>();
-            Set<BillTypeAtomic> billTypes = new TreeSet<>(Comparator.comparing(BillTypeAtomic::getLabel));
+            List<BillTypeAtomic> billTypes = types;
 
             for (ItemMovementSummaryDTO dto : rows) {
                 String itemName = dto.getItemName() != null ? dto.getItemName().trim() : "";
@@ -177,7 +220,6 @@ public class PharmacyAsyncReportService {
                 if (!itemName.isEmpty() && bt != null) {
                     grouped.computeIfAbsent(itemName, k -> new EnumMap<>(BillTypeAtomic.class))
                             .put(bt, dto);
-                    billTypes.add(bt);
                 }
             }
 
@@ -187,10 +229,12 @@ public class PharmacyAsyncReportService {
             hItem.setCellStyle(borderStyle);
             int col = 1;
             for (BillTypeAtomic bt : billTypes) {
+                CellStyle st = styleMap.get(bt);
                 Cell c = header1.createCell(col);
                 c.setCellValue(bt.getLabel());
-                c.setCellStyle(borderStyle);
-                header1.createCell(col + 1).setCellStyle(borderStyle);
+                c.setCellStyle(st);
+                Cell dummy = header1.createCell(col + 1);
+                dummy.setCellStyle(st);
                 sheet.addMergedRegion(new CellRangeAddress(r - 1, r - 1, col, col + 1));
                 col += 2;
             }
@@ -205,13 +249,14 @@ public class PharmacyAsyncReportService {
             Cell hb = header2.createCell(0);
             hb.setCellStyle(borderStyle);
             col = 1;
-            for (int i = 0; i < billTypes.size(); i++) {
+            for (BillTypeAtomic bt : billTypes) {
+                CellStyle st = styleMap.get(bt);
                 Cell q = header2.createCell(col++);
                 q.setCellValue("Qty");
-                q.setCellStyle(borderStyle);
+                q.setCellStyle(st);
                 Cell v = header2.createCell(col++);
                 v.setCellValue("Net Value");
-                v.setCellStyle(borderStyle);
+                v.setCellStyle(st);
             }
             Cell tQty = header2.createCell(col++);
             tQty.setCellValue("Qty");
@@ -234,6 +279,7 @@ public class PharmacyAsyncReportService {
                 col = 1;
                 for (BillTypeAtomic bt : billTypes) {
                     ItemMovementSummaryDTO dto = itemMap.get(bt);
+                    CellStyle st = styleMap.get(bt);
                     Cell qCell = dataRow.createCell(col);
                     Cell vCell = dataRow.createCell(col + 1);
                     if (dto != null) {
@@ -242,8 +288,8 @@ public class PharmacyAsyncReportService {
                         rowQty += dto.getQuantity() != null ? dto.getQuantity() : 0;
                         rowVal += dto.getNetValue() != null ? dto.getNetValue() : 0;
                     }
-                    qCell.setCellStyle(borderStyle);
-                    vCell.setCellStyle(borderStyle);
+                    qCell.setCellStyle(st);
+                    vCell.setCellStyle(st);
                     col += 2;
                 }
                 Cell tq = dataRow.createCell(col);
@@ -264,6 +310,10 @@ public class PharmacyAsyncReportService {
             Cell totalValueCell = totalRow.createCell(billTypes.size() * 2 + 1);
             totalValueCell.setCellValue(grandTotal);
             totalValueCell.setCellStyle(borderStyle);
+
+            for (int i = 0; i <= billTypes.size() * 2 + 1; i++) {
+                sheet.autoSizeColumn(i);
+            }
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             wb.write(baos);
