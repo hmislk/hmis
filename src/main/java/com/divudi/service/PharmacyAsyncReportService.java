@@ -62,8 +62,7 @@ public class PharmacyAsyncReportService {
 
                     // Pharmacy Retail Sale Return
                     BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND, //Quantities should be plus, values should be minus
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY, //Quantities should be plus, values should be neutral (no money)
-                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEM_PAYMENTS, //Quantities should be neutral (no stock), values should be minus
+                    BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY, //Quantities should be plus, values should be minus
                     BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS, //Quantities should be plus, values should be minus
                     BillTypeAtomic.PHARMACY_RETURN_ITEMS_AND_PAYMENTS_CANCELLATION, //Quantities should be minus, values should be plus
 
