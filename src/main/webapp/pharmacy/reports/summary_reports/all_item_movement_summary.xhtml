@@ -187,6 +187,16 @@
                             <p:column headerText="Completed">
                                 <h:outputText value="#{rec.completed ? 'Yes' : 'No'}" />
                             </p:column>
+                            <p:column headerText="Download" exportable="false">
+                                <p:commandButton
+                                    rendered="#{rec.completed}"
+                                    ajax="false"
+                                    styleClass="ui-button-warning"
+                                    icon="pi pi-download"
+                                    value="Download">
+                                    <p:fileDownload value="#{pharmacySummaryReportController.downloadHistoricalRecordFile(rec)}" />
+                                </p:commandButton>
+                            </p:column>
                         </p:dataTable>
 
                     </h:form>
