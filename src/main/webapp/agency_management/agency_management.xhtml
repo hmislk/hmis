@@ -156,6 +156,18 @@
                                 <p:commandButton 
                                     id="btnSave" 
                                     value="Save" 
+                                    disabled="#{not empty institutionController.current.id}"
+                                    action="#{institutionController.saveSelected()}" 
+                                    process="btnSave gpDetail" 
+                                    update="lstSelect msg" 
+                                    class=" m-1 ui-button-warning w-25"
+                                    icon="fas fa-save">
+                                </p:commandButton>
+                                
+                                <p:commandButton 
+                                    id="btnUpdate" 
+                                    value="Update"
+                                    disabled="#{!(not empty institutionController.current.id)}"
                                     action="#{institutionController.saveSelected()}" 
                                     process="btnSave gpDetail" 
                                     update="lstSelect msg" 
