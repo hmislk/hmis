@@ -27,9 +27,6 @@ public class HistoricalRecord implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    /**
-     * @deprecated use {@link #historicalRecordType} instead.
-     */
     @Size(max = 255)
     private String variableName;
 
@@ -121,18 +118,10 @@ public class HistoricalRecord implements Serializable {
         return "com.divudi.core.entity.HistoricalRecord[ id=" + id + " ]";
     }
 
-    /**
-     * @deprecated use {@link #historicalRecordType}
-     */
-    @Deprecated
     public String getVariableName() {
         return variableName;
     }
 
-    /**
-     * @deprecated use {@link #historicalRecordType}
-     */
-    @Deprecated
     public void setVariableName(String variableName) {
         this.variableName = variableName;
     }
