@@ -43,8 +43,8 @@ public class PharmacyAsyncReportService {
     private HistoricalRecordFacade historicalRecordFacade;
     @EJB
     private ItemFacade itemFacade;
-    @Inject
-    private StockController stockController;
+    @EJB
+    private StockService stockService;
 
     @Asynchronous
     public void generateAllItemMovementReport(HistoricalRecord hr, String longDateFormat) {
@@ -243,14 +243,14 @@ public class PharmacyAsyncReportService {
                 double st = 0.0;
                 if (itm != null) {
                     if (hr.getDepartment() != null) {
-                        Double d = stockController.departmentItemStock(hr.getDepartment(), itm);
+                        Double d = stockService.findDepartmentStock(hr.getDepartment(), itm);
                         st = d != null ? d : 0.0;
                     } else if (hr.getSite() != null) {
-                        st = stockController.findSiteStock(hr.getSite(), itm);
+                        st = stockService.findSiteStock(hr.getSite(), itm);
                     } else if (hr.getInstitution() != null) {
-                        st = stockController.findStock(hr.getInstitution(), itm);
+                        st = stockService.findStock(hr.getInstitution(), itm);
                     } else {
-                        st = stockController.findStock(itm);
+                        st = stockService.findStock(itm);
                     }
                 }
                 stockMap.put(inEntry.getKey(), st);
