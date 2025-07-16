@@ -36,7 +36,7 @@
                                 <p:ajax event="rowEdit" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}"  />  
                                 <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEditDepartmentTransfer(bItm)}" /> 
 
-                                <p:column headerText="Item Name">
+                                <p:column headerText="Item Name" style="min-width: 10em;">
                                     <h:outputText id="item" value="#{bItm.item.name}" />
                                     <p:commandButton
                                         icon="pi pi-search"
@@ -46,6 +46,15 @@
                                         update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
                                         process="@this"
                                         class="ui-button-icon-only mx-3"/>
+                                    <p:commandButton
+                                        icon="pi pi-info-circle"
+                                        id="btnViewBatchDetails"
+                                        title="View Batch Details"
+                                        actionListener="#{transferIssueController.prepareBatchDetails(bItm)}"
+                                        update=":#{p:resolveFirstComponentWithId('batchDetailsForm',view).clientId}"
+                                        oncomplete="PF('batchDetailsDialog').show();"
+                                        process="@this"
+                                        class="ui-button-info ui-button-icon-only mx-1"/>
                                 </p:column>
 
                                 <p:column
@@ -183,6 +192,50 @@
 
 
                 <ph:history/>
+
+                <p:dialog 
+                    widgetVar="batchDetailsDialog" 
+                    modal="true" 
+                    position="top"
+                    fitViewport="true"
+                    appendTo="@(body)"
+                    header="Batch Details" 
+                    width="40%">
+                    <p:panelGrid 
+                        id="batchDetailsForm" 
+                        layout="tabular"
+                        columns="2" class="table table-striped" >
+                        <f:facet name="header" >
+                            <h:outputLabel value="Batch Details" styleClass="fw-bold"/>
+                        </f:facet>
+                        <h:outputLabel value="Item" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.item.name}"/>
+
+                        <h:outputLabel value="Batch No" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.batchNo}"/>
+
+                        <h:outputLabel value="Expiry Date" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputText>
+
+                        <h:outputLabel value="Purchase Price" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+
+                        <h:outputLabel value="Retail Rate" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+
+                        <h:outputLabel value="Cost" styleClass="fw-bold"/>
+                        <h:outputText value="#{transferIssueController.selectedBillItem.pharmaceuticalBillItem.itemBatch.costRate}">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputText>
+                    </p:panelGrid>
+
+                </p:dialog>
 
             </p:panel>
             <p:panel rendered="#{transferIssueController.printPreview}">

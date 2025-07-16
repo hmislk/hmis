@@ -181,27 +181,28 @@ public class PharmacyBean {
         return false;
     }
 
-// ChatGPT Contribution
-    // ChatGPT Contribution
     public boolean isReturingMoreThanPurchased(List<BillItem> billItems) {
         boolean checkTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
 
         for (BillItem returningBillItem : billItems) {
+            if (returningBillItem == null) {
+                continue;
+            }
+
             BillItem billedBillItem = returningBillItem.getReferanceBillItem();
             if (billedBillItem == null) {
                 continue;
             }
 
             BillItemFinanceDetails billedFd = billedBillItem.getBillItemFinanceDetails();
-
             if (billedFd == null) {
                 continue;
             }
 
-            BigDecimal billedQty = billedFd.getQuantity();
-            BigDecimal billedFreeQty = billedFd.getFreeQuantity();
-            BigDecimal totalReturnedQty = billedFd.getReturnQuantity();
-            BigDecimal totalReturnedFreeQty = billedFd.getReturnFreeQuantity();
+            BigDecimal billedQty = safe(billedFd.getQuantity());
+            BigDecimal billedFreeQty = safe(billedFd.getFreeQuantity());
+            BigDecimal totalReturnedQty = safe(billedFd.getReturnQuantity());
+            BigDecimal totalReturnedFreeQty = safe(billedFd.getReturnFreeQuantity());
 
             if (checkTotalQuantity) {
                 BigDecimal totalReturning = totalReturnedQty.add(totalReturnedFreeQty);
@@ -217,6 +218,10 @@ public class PharmacyBean {
         }
 
         return false;
+    }
+
+    private BigDecimal safe(BigDecimal val) {
+        return val == null ? BigDecimal.ZERO : val;
     }
 
     private Bill createPreBill(Bill bill, WebUser user, Department department, BillNumberSuffix billNumberSuffix) {
@@ -1791,7 +1796,7 @@ public class PharmacyBean {
             return getLastPurchaseRateByPharmaceuticalBillItem(item, dept);
         }
     }
-    
+
     public double getLastCostRate(Item item, Department dept) {
         boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
         if (manageCosting) {
@@ -1883,7 +1888,7 @@ public class PharmacyBean {
 
         return f.getLineGrossRate().doubleValue();
     }
-    
+
     public double getLastCostRateByBillItemFinanceDetails(Item item, Department dept) {
         if (item == null) {
             return 0.0;
@@ -1907,7 +1912,7 @@ public class PharmacyBean {
         }
 
         BillItemFinanceDetails f = bi.getBillItemFinanceDetails();
-        if (f == null || f.getTotalCostRate()== null) {
+        if (f == null || f.getTotalCostRate() == null) {
             return 0.0;
         }
 

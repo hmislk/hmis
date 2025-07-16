@@ -124,6 +124,7 @@
                             <th style="width: 8%; text-align: right!important; font-weight: bold!important;">Received Free Qty</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Purchase Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Discount Rate</th>
+                            <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Sale Rate</th>
                             <th style="width: 7%; text-align: right!important; font-weight: bold!important;">Line Net Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Cost Value</th>
                             <th style="width: 9%; text-align: right!important; font-weight: bold!important;">Sale Value</th>
@@ -176,6 +177,11 @@
                                     </h:outputText>
                                 </td>
                                 <td style="text-align: right;">
+                                    <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputText>
+                                </td>
+                                <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.lineNetTotal}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
@@ -186,16 +192,19 @@
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
+
+
+
                                 <td style="text-align: right;">
                                     <h:outputText value="#{bip.billItemFinanceDetails.retailSaleRate * bip.billItemFinanceDetails.totalQuantity}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </td>
-<!--                                <td style="text-align: right;">
-                                    <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
-                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
-                                    </h:outputText>
-                                </td>-->
+                                <!--                                <td style="text-align: right;">
+                                                                    <h:outputText id="profMargin" value="#{bip.billItemFinanceDetails.profitMargin}" >
+                                                                        <f:convertNumber pattern="0.0" ></f:convertNumber>
+                                                                    </h:outputText>
+                                                                </td>-->
 
                             </tr>
                         </ui:repeat>
@@ -328,32 +337,21 @@
                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" ></f:convertDateTime>
                 </h:outputLabel>
             </div>
-
-
             <div class="row my-5">
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>
                     <h:outputLabel value="Prepared By. " />
                 </div>
-
                 <div class="col-6 text-center">
                     <h:outputLabel value="......................................................................"/><br></br>
                     <h:outputLabel value="Authorized By. " />
                 </div>
-
             </div>
-
-
-
             <div style="page-break-after: always;"></div>
-
             <div >
-
                 <h4 style="color: #000000; text-align: center " >
                     <h:outputLabel value="Payment Voucher" style="text-decoration: underline; margin-bottom: 20px;"/>
                 </h4>
-
-
                 <div>
                     <h:outputLabel value="Date :"  style="position: relative; left: 70%;" />
                     <h:outputLabel value="Payee : " style="text-align: right!important;"/>

@@ -464,11 +464,15 @@
                                         <p:column headerText="Free Qty" style="text-align: left;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.freeQty}"/>
                                         </p:column>
-                                        <p:column headerText="Item Rate" style="text-align: left;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}"/>
+                                        <p:column headerText="Purchase Rate" style="text-align: left;">
+                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Item MRP" style="text-align: left;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"/>
+                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Batch Code" style="text-align: left;">
                                             <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
@@ -580,11 +584,15 @@
                                         <p:column headerText="Free Qty" style="text-align: left;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.freeQty}"/>
                                         </p:column>
-                                        <p:column headerText="Item Rate" style="text-align: left;">
-                                            <h:outputText value="#{bi.pharmaceuticalBillItem.purchaseRate}"/>
+                                        <p:column headerText="Purchase Rate" style="text-align: left;">
+                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Item MRP" style="text-align: left;">
-                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}"/>
+                                            <h:outputLabel value="#{bi.pharmaceuticalBillItem.retailRate}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
                                         </p:column>
                                         <p:column headerText="Batch Code" style="text-align: left;">
                                             <h:outputText value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
@@ -694,8 +702,10 @@
                                     <p:column headerText="Free Qty" style="text-align: left;">
                                         <h:outputText value="#{cbi.pharmaceuticalBillItem.freeQty}"/>
                                     </p:column>
-                                    <p:column headerText="Item Rate" style="text-align: left;">
-                                        <h:outputText value="#{cbi.pharmaceuticalBillItem.purchaseRate}"/>
+                                    <p:column headerText="Purchase Rate" style="text-align: left;">
+                                        <h:outputText value="#{cbi.pharmaceuticalBillItem.purchaseRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
                                     </p:column>
                                     <p:column headerText="Item MRP" style="text-align: left;">
                                         <h:outputText value="#{cbi.pharmaceuticalBillItem.retailRate}"/>

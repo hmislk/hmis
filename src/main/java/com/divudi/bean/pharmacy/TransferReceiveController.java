@@ -93,13 +93,32 @@ public class TransferReceiveController implements Serializable {
     private PharmacyCalculation pharmacyCalculation;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
+    private BillItem selectedBillItem;
+
+    public static class ConfigOptionInfo {
+        private final String key;
+        private final String defaultValue;
+
+        public ConfigOptionInfo(String key, String defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+    }
 
     public void onFocus(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
     public String navigateBackToRecieveList() {
-        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
     public String navigateToRecieveRequest() {
@@ -129,6 +148,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
+        selectedBillItem=null;
     }
 
     public TransferReceiveController() {
@@ -146,7 +166,7 @@ public class TransferReceiveController implements Serializable {
     }
 
 //   public String navigateBackToRecieveList(){
-//        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+//        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
@@ -191,10 +211,12 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
+            System.out.println("issuedBillItem = " + issuedBillItem);
             double remainingQty = calculateRemainingQty(issuedBillItem);
             if (remainingQty <= 0) {
                 continue;
             }
+            System.out.println("remainingQty = " + remainingQty);
 
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
@@ -270,6 +292,7 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
+            System.out.println("i.getPharmaceuticalBillItem().getQty() = " + i.getPharmaceuticalBillItem().getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -595,16 +618,18 @@ public class TransferReceiveController implements Serializable {
     }
 
     private double calculateRemainingQty(BillItem issuedItem) {
-        double issuedQty = 0.0;
+        double issuedQtyInUnits = 0.0;
+        double remainingQtyInUnits = 0.0;
         if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
-            issuedQty = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
+            issuedQtyInUnits = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
         }
 
-        double receivedBilled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
-        double receivedCancelled = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
+        double receivedBilledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
+        double receivedCancelledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
 
-        double receivedNet = receivedBilled - receivedCancelled;
-        return issuedQty - receivedNet;
+        double receivedNet = receivedBilledQtyInUnits - receivedCancelledQtyInUnits;
+        remainingQtyInUnits = issuedQtyInUnits - receivedNet;
+        return remainingQtyInUnits;
     }
 
     public void onQuantityChangeForTransferReceive(BillItem bi) {
@@ -756,6 +781,41 @@ public class TransferReceiveController implements Serializable {
             tot += Math.abs(b.getNetValue());
         }
         return tot;
+    }
+
+
+    public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
+        List<ConfigOptionInfo> list = new ArrayList<>();
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Purchase Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Cost Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Retail Rate", "true"));
+        list.add(new ConfigOptionInfo("Report Font Size of Item List in Pharmacy Disbursement Reports", "10pt"));
+        list.add(new ConfigOptionInfo("Report Columns - Serial Number is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Code is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Rate is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer CSS", ""));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
+        return list;
+    }
+    
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }

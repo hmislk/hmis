@@ -139,7 +139,7 @@ public class DirectPurchaseReturnController implements Serializable {
             if (bilItem.getPharmaceuticalBillItem() != null) {
                 originalFreeQty = bilItem.getPharmaceuticalBillItem().getFreeQty();
             }
-            double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(bilItem, BillType.PurchaseReturn, new BilledBill());
+            double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(bilItem, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
             return originalQty + originalFreeQty - Math.abs(returnedTotal);
         } else {
             String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
@@ -612,7 +612,7 @@ public class DirectPurchaseReturnController implements Serializable {
             double originalFreeQty = pbiOfBilledBill.getFreeQty();
 
             if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
-                double returnedTotal = getPharmacyRecieveBean().getTotalQtyWithFreeQty(pbiOfBilledBill.getBillItem(), BillType.PurchaseReturn, new BilledBill());
+                double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillTypeAtomic.PHARMACY_DIRECT_PURCHASE_REFUND);
                 newPharmaceuticalBillItemInReturnBill.setQty(originalQty + originalFreeQty - Math.abs(returnedTotal));
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
