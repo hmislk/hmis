@@ -1110,7 +1110,7 @@ public class BillService {
             Department department,
             List<BillTypeAtomic> billTypeAtomics) {
         String jpql = "select new com.divudi.core.data.dto.ItemMovementSummaryDTO(" +
-                " b.billTypeAtomic, bi.item.name, sum(pbi.qty + pbi.freeQty), sum(bi.netValue))" +
+                " b.billTypeAtomic, bi.item.id, bi.item.name, sum(pbi.qty + pbi.freeQty), sum(bi.netValue))" +
                 " from PharmaceuticalBillItem pbi" +
                 " join pbi.billItem bi" +
                 " join bi.bill b" +
@@ -1137,7 +1137,7 @@ public class BillService {
             params.put("site", site);
         }
 
-        jpql += " group by b.billTypeAtomic, bi.item.name" +
+        jpql += " group by b.billTypeAtomic, bi.item.id, bi.item.name" +
                 " order by b.billTypeAtomic, bi.item.name";
 
         return pharmaceuticalBillItemFacade.findItemMovementSummaryDTOs(jpql, params, TemporalType.TIMESTAMP);
