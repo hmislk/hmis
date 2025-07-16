@@ -65,6 +65,8 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.ejb.PharmacyService;
 import com.divudi.service.BillService;
 import com.divudi.service.HistoricalRecordService;
+import com.divudi.core.facade.HistoricalRecordFacade;
+import com.divudi.core.data.HistoricalRecordType;
 import com.divudi.service.StockHistoryService;
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -120,6 +122,8 @@ public class PharmacySummaryReportController implements Serializable {
     StockHistoryService stockHistoryService;
     @EJB
     HistoricalRecordService historicalRecordService;
+    @EJB
+    HistoricalRecordFacade historicalRecordFacade;
     @EJB
     PharmacyService pharmacyService;
 
@@ -602,18 +606,65 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void generateAllItemMovementReport() {
-        // have to create a HistoricalRecord with data captured from page for fromDateTime,  toDateTime, Institution, Site, Department match the selection
-        // and HistoricalRecordType is ASYNC_REPORT
-        // and variableName eq 'AllItemMovementSummary'
-        // and fill other possible types like createdAt, createdBy, etc
-        // this should give a message and call the viewAlreadyAvailableAllItemMovementSummaryReports method
+        HistoricalRecord hr = new HistoricalRecord();
+        hr.setHistoricalRecordType(HistoricalRecordType.ASYNC_REPORT);
+        hr.setVariableName("AllItemMovementSummary");
+        hr.setFromDateTime(fromDate);
+        hr.setToDateTime(toDate);
+        hr.setInstitution(institution);
+        hr.setSite(site);
+        hr.setDepartment(department);
+        hr.setCreatedAt(new Date());
+        hr.setCreatedBy(sessionController.getLoggedUser());
+        historicalRecordFacade.create(hr);
+        JsfUtil.addSuccessMessage("Async report generation request added");
+        viewAlreadyAvailableAllItemMovementSummaryReports();
     }
-    
+
     public void viewAlreadyAvailableAllItemMovementSummaryReports() {
-        // have to list all HistoricalRecord where fromDateTime,  toDateTime, Institution, Site, Department match the selection
-        // and HistoricalRecordType is ASYNC_REPORT
-        // and variableName eq 'AllItemMovementSummary'
-        // and assign it to the historicalRecords list
+        StringBuilder jpql = new StringBuilder("select hr from HistoricalRecord hr "
+                + "where hr.retired=false "
+                + "and hr.historicalRecordType=:type "
+                + "and hr.variableName=:vn ");
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("type", HistoricalRecordType.ASYNC_REPORT);
+        params.put("vn", "AllItemMovementSummary");
+
+        if (institution != null) {
+            jpql.append(" and hr.institution=:ins ");
+            params.put("ins", institution);
+        } else {
+            jpql.append(" and hr.institution is null ");
+        }
+
+        if (site != null) {
+            jpql.append(" and hr.site=:site ");
+            params.put("site", site);
+        } else {
+            jpql.append(" and hr.site is null ");
+        }
+
+        if (department != null) {
+            jpql.append(" and hr.department=:dep ");
+            params.put("dep", department);
+        } else {
+            jpql.append(" and hr.department is null ");
+        }
+
+        if (fromDate != null) {
+            jpql.append(" and hr.fromDateTime >= :fd ");
+            params.put("fd", fromDate);
+        }
+
+        if (toDate != null) {
+            jpql.append(" and hr.toDateTime <= :td ");
+            params.put("td", toDate);
+        }
+
+        jpql.append(" order by hr.fromDateTime desc");
+
+        historicalRecords = historicalRecordFacade.findByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
     }
 
     public void processPharmacyIncomeReportByBillType() {
