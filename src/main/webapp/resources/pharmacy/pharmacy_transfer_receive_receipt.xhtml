@@ -17,11 +17,11 @@
 
         <style>
             <h:outputText escape="false"
-            value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Receipt CSS')}"/>
+            value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Receipt CSS')}"/>
         </style>
 
         <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Receipt Header')}"/>
+                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Receipt Header')}"/>
 
         <div class="receipt-container">
             <div class="receipt-header">
@@ -37,7 +37,7 @@
             </div>
 
             <div class="receipt-title">
-                <h:outputLabel value="Pharmacy Transfer Issue Receipt" />
+                <h:outputLabel value="Pharmacy Transfer Receive Receipt" />
                 <h:outputLabel value="**Duplicate**" rendered="#{cc.attrs.duplicate eq true}"/>
                 <h:outputLabel value="**Cancelled**" rendered="#{cc.attrs.bill.cancelled eq true}"/>
             </div>
@@ -85,10 +85,15 @@
                     <tr>
                         <td><h:outputLabel value="Issued Person" styleClass="label" /></td>
                         <td><h:outputLabel value=":" /></td>
+                        <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.backwardReferenceBill.creater.webUserPerson.name} - #{cc.attrs.bill.backwardReferenceBill.creater.staff.code}" /></td>
+                    </tr>
+                    <tr>
+                        <td><h:outputLabel value="Received Person" styleClass="label" /></td>
+                        <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" /></td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Issue No" styleClass="label" /></td>
+                        <td><h:outputLabel value="Receive No" styleClass="label" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
@@ -198,7 +203,7 @@
         </div>
 
         <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Receipt Footer')}"/>
+                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Receive Receipt Footer')}"/>
 
     </cc:implementation>
 </html>
