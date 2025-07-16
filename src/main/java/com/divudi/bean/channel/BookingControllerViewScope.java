@@ -8916,6 +8916,9 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
 //        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
+        if(paymentMethod == PaymentMethod.Card){
+            getPaymentMethodData().getCreditCard().setTotalValue(feeNetTotalForSelectedBill);
+        }
     }
 
     public void calculateSelectedBillSessionTotalWithBillUpdate() {
