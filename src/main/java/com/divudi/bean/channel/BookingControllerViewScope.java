@@ -1960,15 +1960,15 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         selectedSessionInstance.setCompleted(false);
         sessionInstanceController.save(selectedSessionInstance);
         JsfUtil.addSuccessMessage("Session Re-Started");
-        for (BillSession bs : billSessions) {
-            if (!bs.isCompleted()) {
-                bs.setNextInLine(true);
-                billSessionFacade.edit(bs);
-                selectedSessionInstance.setNextInLineBillSession(bs);
-                sessionInstanceFacade.edit(selectedSessionInstance);
-                return;
-            }
-        }
+//        for (BillSession bs : billSessions) {
+//            if (!bs.isCompleted()) {
+//                bs.setNextInLine(true);
+//                billSessionFacade.edit(bs);
+//                selectedSessionInstance.setNextInLineBillSession(bs);
+//                sessionInstanceFacade.edit(selectedSessionInstance);
+//                return;
+//            }
+//        }
     }
 
     public void sendChannellingStatusUpdateNotificationSms(BillSession methodBillSession) {
