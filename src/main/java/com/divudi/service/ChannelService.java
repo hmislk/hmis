@@ -1931,6 +1931,8 @@ public class ChannelService {
             jpql.append(" and i.originatingSession.staff.speciality in :spe ");
             m.put("spe", specialities);
         }
+       
+        jpql.append(" order by i.sessionDate, i.sessionTime asc") ;
 
         m.put("ret", false);
 
