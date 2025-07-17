@@ -227,12 +227,6 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
-
-                    <p:ajax event="page" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="sort" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="filter" oncomplete="calculateSaleTotalInBill()" />
-
-
                 </p:dataTable>
             </div>
             <h:outputScript>
