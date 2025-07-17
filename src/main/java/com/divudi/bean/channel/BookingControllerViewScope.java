@@ -2840,6 +2840,11 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("This is a cancel Bill. Cant cancel it.");
             return;
         }
+        
+        if (selectedBillSession.getBill() instanceof RefundBill) {
+            JsfUtil.addErrorMessage("This is a Refund Bill. Cant cancel it.");
+            return;
+        }
 
         if (getCancelPaymentMethod() != null) {
             if (getCancelPaymentMethod() == Cash) {
