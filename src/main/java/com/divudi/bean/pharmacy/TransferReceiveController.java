@@ -37,6 +37,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -96,6 +97,7 @@ public class TransferReceiveController implements Serializable {
     private BillItem selectedBillItem;
 
     public static class ConfigOptionInfo {
+
         private final String key;
         private final String defaultValue;
 
@@ -148,7 +150,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
-        selectedBillItem=null;
+        selectedBillItem = null;
     }
 
     public TransferReceiveController() {
@@ -337,7 +339,7 @@ public class TransferReceiveController implements Serializable {
         getBillFacade().edit(getIssuedBill());
         printPreview = true;
     }
-    
+
     private void fillData(Bill inputBill) {
         double billTotalAtCostRate = 0.0;
 
@@ -383,7 +385,7 @@ public class TransferReceiveController implements Serializable {
             System.out.println("  Added to billTotalAtCostRate: " + bifd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
 
             double freeQty = pbi.getQty() / bifd.getUnitsPerPack().doubleValue();
-            double paidQty =  pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
+            double paidQty = pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
 
             System.out.println("  freeQty = " + freeQty);
             System.out.println("  paidQty = " + paidQty);
@@ -430,17 +432,36 @@ public class TransferReceiveController implements Serializable {
             }
 
             BigDecimal netTotal = bifd.getNetTotal();
-            if (netTotal != null) {
-                bifd.setNetRate(netTotal.abs().negate());
-            } else {
-                bifd.setNetRate(BigDecimal.ZERO);
-            }
-            
+
             bifd.setValueAtPurchaseRate(bifd.getLineGrossRate().multiply(bifd.getTotalQuantity()));
             bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity()));
             bifd.setValueAtCostRate(bifd.getTotalCostRate().multiply(bifd.getTotalQuantity()).multiply(bifd.getUnitsPerPack()));
             bifd.setValueAtWholesaleRate(bifd.getWholesaleRate().multiply(bifd.getTotalQuantity()));
-            
+
+            if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
+            }
+
+            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
+
+            if (bifd.getQuantityByUnits() != null && bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) > 0) {
+                bifd.setTotalCostRate(BigDecimal.valueOf(costFree + costNonFree)
+                        .divide(bifd.getQuantityByUnits(), 6, RoundingMode.HALF_UP));
+            } else {
+                bifd.setTotalCostRate(BigDecimal.ZERO);
+            }
+
+            bifd.setProfitMargin(BigDecimal.ZERO);
+
+            bifd.setTotalDiscount(BigDecimal.ZERO);
+            bifd.setTotalDiscountRate(BigDecimal.ZERO);
+
+            bifd.setTotalExpense(BigDecimal.ZERO);
+            bifd.setTotalExpenseRate(BigDecimal.ZERO);
+
+            bifd.setTotalTax(BigDecimal.ZERO);
+            bifd.setTotalTaxRate(BigDecimal.ZERO);
+
         }
 
         System.out.println("========= Final Aggregated Totals =========");
@@ -924,7 +945,6 @@ public class TransferReceiveController implements Serializable {
         return tot;
     }
 
-
     public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
         List<ConfigOptionInfo> list = new ArrayList<>();
         list.add(new ConfigOptionInfo("Pharmacy Transfer is by Purchase Rate", "false"));
@@ -942,7 +962,7 @@ public class TransferReceiveController implements Serializable {
         list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
         return list;
     }
-    
+
     public void displayItemDetails(BillItem bi) {
         getPharmacyController().fillItemDetails(bi.getItem());
     }
