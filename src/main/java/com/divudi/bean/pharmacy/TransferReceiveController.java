@@ -335,8 +335,9 @@ public class TransferReceiveController implements Serializable {
         getBillFacade().edit(getReceivedBill());
 
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
-        fillData(getIssuedBill());
+        fillData(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
+        getBillFacade().edit(getReceivedBill());
         printPreview = true;
     }
 
