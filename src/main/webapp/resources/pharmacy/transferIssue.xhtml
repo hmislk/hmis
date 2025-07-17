@@ -257,7 +257,6 @@
                             function calculateSaleTotalInBill(){
                                 let total = 0;
                                 document.querySelectorAll('.sale-value').forEach(cell=>{
-
                                     let value = cell.innerText.replace(/,/g, '');
                                     total += parseFloat(value) || 0
                                 });

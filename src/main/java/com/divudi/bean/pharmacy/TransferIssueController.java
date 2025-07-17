@@ -247,6 +247,7 @@ public class TransferIssueController implements Serializable {
         this.requestedBill = requestedBill;
         issuedBill = null;
         generateBillComponent();
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getIssuedBill(), getBillItems());
     }
 
     public void createGrnIssueBillItems(Bill grn) {
