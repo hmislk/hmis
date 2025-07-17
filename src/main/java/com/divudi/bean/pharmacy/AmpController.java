@@ -426,12 +426,31 @@ public class AmpController implements Serializable {
         }
         return a;
     }
+
+    public List<Amp> completeAmpWithRetired(String qry) {
+        List<Amp> a = null;
+        Map m = new HashMap();
+        m.put("n", "%" + qry + "%");
+        m.put("dep", DepartmentType.Store);
+        if (qry != null) {
+            a = getFacade().findByJpql("select c from Amp c where "
+                    + " (c.departmentType!=:dep or c.departmentType is null) "
+                    + " and ((c.name) like :n or (c.code)  "
+                    + "like :n or (c.barcode) like :n) order by c.name", m, 30);
+        }
+
+        if (a == null) {
+            a = new ArrayList<>();
+        }
+        return a;
+    }
+
     List<Amp> ampList = null;
 
     public List<Item> getPharmaceuticalAndStoreItemAmp(String qry) {
         List<Item> a = new ArrayList<>();
-        a.addAll(completeAmp(qry));
-        a.addAll(itemController.completeStoreItemOnly(qry));
+        a.addAll(completeAmpWithRetired(qry));
+        a.addAll(itemController.completeStoreItemOnlyWithRetired(qry));
 
         return a;
     }
