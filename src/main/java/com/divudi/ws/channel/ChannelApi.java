@@ -641,7 +641,7 @@ public class ChannelApi {
             }
         }
 
-        List<SessionInstance> sessions = channelService.findSessionInstance(hospitals, null, doctorList, null);
+        List<SessionInstance> sessions = channelService.findSessionInstanceForDoctorSessions(hospitals, null, doctorList, null);
         if (sessions == null || sessions.isEmpty()) {
             JSONObject json = commonFunctionToErrorResponse("No data for this criteria.");
             return Response.status(Response.Status.NOT_ACCEPTABLE).entity(json.toString()).build();

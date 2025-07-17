@@ -727,8 +727,10 @@
                                                             <h:outputLabel id="card" value="Card" />
                                                         </div>
                                                     </f:facet>
+                                                    
+                                                    <pa:creditCard paymentMethodData="#{bookingControllerViewScope.paymentMethodData}"/>
 
-                                                    <p:row>
+<!--                                                    <p:row>
                                                         <p:column>
                                                             <p:outputLabel id="creditCardbnkLbl" value="Select Bank" />
                                                         </p:column>
@@ -746,7 +748,7 @@
                                                         <p:column>
                                                             <p:inputText class="w-75 mx-2" id="creditCardTxt" autocomplete="off" value="#{bookingControllerViewScope.paymentMethodData.creditCard.no}" />
                                                         </p:column>
-                                                    </p:row>
+                                                    </p:row>-->
                                                 </p:panelGrid>
 
                                                 <!-- Cheque Payment Method -->

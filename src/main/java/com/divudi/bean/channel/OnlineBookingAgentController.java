@@ -1,6 +1,7 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -131,6 +132,17 @@ public class OnlineBookingAgentController implements Serializable {
 
     public PaymentMethod getCancelPaymentMethod() {
         return cancelPaymentMethod;
+    }
+    
+    @Inject
+    private InstitutionController institutionController;
+    
+    public List<Institution> getInstitutionForOnlineBookingManegement(){
+        List<Institution> list =  institutionController.getItems();
+        
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+        
+        return list;
     }
 
     public Bill getCancelBill() {
@@ -839,7 +851,11 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
         }
-        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
+        List<OnlineBookingStatus> status = new ArrayList<>();
+        status.add(OnlineBookingStatus.COMPLETED);
+        status.add(OnlineBookingStatus.DOCTOR_CANCELED);
+         
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, status);
 
         if (bookingList != null) {
             onlineBookingList = bookingList;

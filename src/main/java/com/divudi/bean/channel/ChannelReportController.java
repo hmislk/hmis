@@ -4,12 +4,14 @@
  */
 package com.divudi.bean.channel;
 
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.ReportTimerController;
 import com.divudi.bean.common.SessionController;
 
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.HistoryType;
+import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.MessageType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.ReportTemplateRowBundle;
@@ -33,6 +35,7 @@ import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.RefundBill;
 import com.divudi.core.entity.ServiceSession;
 import com.divudi.core.entity.Sms;
@@ -66,6 +69,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -158,12 +162,16 @@ public class ChannelReportController implements Serializable {
     SessionInstanceFacade sessionInstanceFacade;
     @EJB
     private ReportTimerController reportTimerController;
+    @Inject
+    private InstitutionController institutionController;
 
     private Speciality speciality;
 
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
+    
+    private String reportStatus;
 
     @EJB
     ChannelService channelService;
@@ -359,17 +367,55 @@ public class ChannelReportController implements Serializable {
         makeNull();
         return "/channel/income_with_agent_bookings?faces-redirect=true";
     }
+    
+    private List<Payment> paymentsFromCardAppoinments;
+
+    public List<Payment> getPaymentsFromCardAppoinments() {
+        return paymentsFromCardAppoinments;
+    }
+
+    public void setPaymentsFromCardAppoinments(List<Payment> paymentsFromCardAppoinments) {
+        this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
+    }
+
+    public List<Institution> getInstitutionForChannelReports(){
+        List<Institution> list =  institutionController.getItems();
+        
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+        
+        return list;
+    }
+    
+    public void getPaymentsForChannelCardAppoinments(){
+        
+        if(institution == null){
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+        
+        paymentsFromCardAppoinments =  channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+    }
 
     public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
-
-        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning");
+        if(institution == null){
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+        
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
         dataBundle = bundle;
 
     }
 
     public void fetchAgentSessionIncome() {
-        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent");
+        
+        if(institution == null){
+            JsfUtil.addErrorMessage("Please Select The Institution");
+            return;
+        }
+        
+        ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
         dataBundle = bundle;
     }
 
@@ -4321,6 +4367,14 @@ public class ChannelReportController implements Serializable {
 
     public void setDataBundle(ReportTemplateRowBundle dataBundle) {
         this.dataBundle = dataBundle;
+    }
+
+    public String getReportStatus() {
+        return reportStatus;
+    }
+
+    public void setReportStatus(String reportStatus) {
+        this.reportStatus = reportStatus;
     }
 
     public class ChannelReportColumnModelBundle implements Serializable {
