@@ -412,7 +412,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         PaymentMethod[] p = enumController.getPaymentMethodsForChannel();
         paymentMethodsToChannelCancellation = new ArrayList<>(Arrays.asList(p));
 
-        if (selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+        if (selectedBillSession != null && selectedBillSession.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
             paymentMethodsToChannelCancellation.add(PaymentMethod.OnlineBookingAgent);
         }
 
