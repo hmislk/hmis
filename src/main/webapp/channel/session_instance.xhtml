@@ -243,7 +243,7 @@
                                             <p:column headerText="Manage" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Appoinment Status manage from session Instance', false)}">
                                                 <div class="d-flex">
                                                     <p:commandButton 
-                                                        ajax="false" 
+                                                        ajax="true" 
                                                         disabled="#{bs.absent or bs.bill.cancelled or bs.completed}"
                                                         process="@this"
                                                         title="Call Patient"
@@ -253,7 +253,7 @@
                                                         class="ui-button-info mx-1">
                                                     </p:commandButton>
                                                     <p:commandButton 
-                                                        ajax="false" 
+                                                        ajax="true" 
                                                         process="@this"
                                                         title="Complete Appoinment"
                                                         disabled="#{bs.absent or bs.bill.cancelled or bs.completed}"
@@ -264,7 +264,7 @@
                                                     </p:commandButton>
 
                                                     <p:commandButton 
-                                                        ajax="false" 
+                                                        ajax="true" 
                                                         process="@this"
                                                         disabled="#{bs.absent or bs.bill.cancelled}"
                                                         update="acBookings"
@@ -275,7 +275,7 @@
                                                     </p:commandButton>
 
                                                     <p:commandButton 
-                                                        ajax="false" 
+                                                        ajax="true" 
                                                         process="@this"
                                                         disabled="#{bs.bill.cancelled or bs.completed}"
                                                         update="acBookings"
