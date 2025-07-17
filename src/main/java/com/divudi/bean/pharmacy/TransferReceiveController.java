@@ -391,8 +391,8 @@ public class TransferReceiveController implements Serializable {
             billTotalAtCostRate += bifd.getTotalCost().doubleValue();
             System.out.println("  Added to billTotalAtCostRate: " + bifd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
 
-            double freeQty = pbi.getQty() / bifd.getUnitsPerPack().doubleValue();
-            double paidQty = pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
+            double paidQty = pbi.getQty() / bifd.getUnitsPerPack().doubleValue();
+            double freeQty = pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
 
             System.out.println("  freeQty = " + freeQty);
             System.out.println("  paidQty = " + paidQty);
