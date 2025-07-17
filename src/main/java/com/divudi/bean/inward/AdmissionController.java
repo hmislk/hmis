@@ -1380,6 +1380,14 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
         getBillFacade().edit(getAppointmentBill());
 
     }
+    
+    public void listnerForAppoimentSelect(Bill ap){
+        System.out.println("ap = " + ap);
+        if(ap == null){
+            return;
+        }
+        setPatient(ap.getPatient());
+    }
 
     @Inject
     private InwardBeanController inwardBean;
