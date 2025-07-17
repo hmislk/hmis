@@ -445,7 +445,10 @@ public class TransferReceiveController implements Serializable {
                 bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
             }
 
-            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
+-            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
++            double itemCostFree = freeQty * costRate;
++            double itemCostNonFree = paidQty * costRate;
++            bifd.setTotalCost(BigDecimal.valueOf(itemCostFree + itemCostNonFree));
 
             if (bifd.getQuantityByUnits() != null && bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) > 0) {
                 bifd.setTotalCostRate(BigDecimal.valueOf(costFree + costNonFree)
