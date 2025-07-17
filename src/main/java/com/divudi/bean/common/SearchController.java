@@ -17906,6 +17906,7 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
+        
     }
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {

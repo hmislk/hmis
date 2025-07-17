@@ -192,11 +192,8 @@
                                 class="ui-button-danger mx-1" 
                                 icon= "fas fa-file-pdf" 
                                 ajax="false" 
-                                value="PDF">
-                                <p:dataExporter 
-                                    type="pdf" 
-                                    target="tbl" 
-                                    fileName="OPD Sale Report" />
+                                value="PDF"
+                                action="#{pharmacyReportController.exportSaleCashPdf()}">
                             </p:commandButton>
 
                         </div>
