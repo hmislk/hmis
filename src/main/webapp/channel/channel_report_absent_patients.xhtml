@@ -73,8 +73,7 @@
                                              or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
                                              or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
                                              or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
-                                             or bookingControllerViewScope.checkBillClass(b) eq 'CancelBill'
-                                             or bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'                           }"
+                                                                       }"
                                 ajax="false"
                                 style="font-weight: bold"
                                 value="#{b.deptId}"
