@@ -354,7 +354,7 @@ public class TransferReceiveController implements Serializable {
 
         double costFree = 0.0;
         double costNonFree = 0.0;
-        
+
         double netTotal = 0.0;
 
         System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
@@ -439,7 +439,7 @@ public class TransferReceiveController implements Serializable {
             }
 
             BigDecimal biNetTotal = bifd.getNetTotal();
-            netTotal+=biNetTotal.doubleValue();
+            netTotal += biNetTotal.doubleValue();
 
             bifd.setValueAtPurchaseRate(bifd.getLineGrossRate().multiply(bifd.getTotalQuantity()));
             bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity()));
@@ -450,10 +450,10 @@ public class TransferReceiveController implements Serializable {
                 bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
             }
 
--            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
-+            double itemCostFree = freeQty * costRate;
-+            double itemCostNonFree = paidQty * costRate;
-+            bifd.setTotalCost(BigDecimal.valueOf(itemCostFree + itemCostNonFree));
+            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
+            double itemCostFree = freeQty * costRate;
+            double itemCostNonFree = paidQty * costRate;
+            bifd.setTotalCost(BigDecimal.valueOf(itemCostFree + itemCostNonFree));
 
             if (bifd.getQuantityByUnits() != null && bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) > 0) {
                 bifd.setTotalCostRate(BigDecimal.valueOf(costFree + costNonFree)
