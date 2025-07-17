@@ -84,11 +84,11 @@ public class AgentReferenceBookController implements Serializable {
 
     public String navigateToBookEditHistory(Long refBookID) {
         fillBookEditDetails(refBookID);
-        return "/collecting_centre/cc_book_edit_history?faces-redirect=true;";
+        return "/collecting_centre/cc_book_edit_history?faces-redirect=true";
     }
 
     public String navigateToBackCCBookSearch() {
-        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true;";
+        return "/collecting_centre/report_collecting_center_referece_book?faces-redirect=true";
     }
 
     private List<AuditEvent> refBookEditDetails;

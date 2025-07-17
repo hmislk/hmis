@@ -1,0 +1,324 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <h:body>
+        <ui:composition template="/reports/index.xhtml">
+            <ui:define name="subcontent">
+
+                <h:form >
+
+                    <p:panel header="Stock Correction Details" style="margin-bottom:2em;">
+                        <h:panelGrid columns="8" class="w-100">          
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="From Date" for="fromDate" class="m-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="fromDate" 
+                                value="#{pharmacyReportController.fromDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+                            <p:spacer width="20"></p:spacer>
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText value="&#xf073;" styleClass="fa mr-2" />
+                                <p:outputLabel value="To Date" for="toDate" class="m-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:calendar 
+                                styleClass="w-100" 
+                                inputStyleClass="w-100 form-control" 
+                                id="toDate" 
+                                value="#{pharmacyReportController.toDate}" 
+                                navigator="false" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                />
+
+
+                            <p:spacer width="20"></p:spacer>  
+                            <p:spacer width="20"></p:spacer>
+                            <p:spacer width="20"></p:spacer>
+
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-university mr-2" />
+                                <p:outputLabel value="Institution" for="phmIns" class="m-3" >
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="phmIns"
+                                class="w-100"
+                                value="#{pharmacyReportController.institution}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Institutions" />
+                                <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" />
+                                <p:ajax process="phmIns" update="phmDept" />
+                            </p:selectOneMenu>        
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-map-marker-alt mr-2" />
+                                <p:outputLabel value="Site" for="phmSite" class="m-3"></p:outputLabel>
+                            </h:panelGroup>
+                            <p:selectOneMenu 
+                                id="phmSite"
+                                class="w-100"
+                                value="#{pharmacyReportController.site}"
+                                filter="true">
+                                <f:selectItem itemLabel="All Sites" />
+                                <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}" itemValue="#{site}" />
+                                <p:ajax process="phmSite" update="phmDept" />
+                            </p:selectOneMenu>
+
+
+                            <p:spacer width="20"></p:spacer>
+
+
+                            <h:panelGroup layout="block" styleClass="form-group">
+                                <h:outputText styleClass="fa fa-building mr-2" />
+                                <p:outputLabel value="Department" for="phmDept" class="m-3">
+                                </p:outputLabel>
+                            </h:panelGroup>
+                            <h:panelGroup id="phmDept">
+
+                                <!-- Component 1: Without Institution and Site -->
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite()}"
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 2: With Site Only -->
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution eq null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.site)}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 3: With Institution Only --> 
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site eq null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution)}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+
+                                <!-- Component 4: With Both Institution and Site --> 
+                                <p:selectOneMenu
+                                    rendered="#{pharmacyReportController.institution ne null and pharmacyReportController.site ne null}"
+                                    styleClass="w-100 form-control"
+                                    value="#{pharmacyReportController.department}"
+                                    filterMatchMode="contains"
+                                    filter="true"> 
+                                    <f:selectItem itemLabel="All Departments" />
+                                    <f:selectItems  
+                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(pharmacyReportController.institution, pharmacyReportController.site)}" 
+                                        var="dept" 
+                                        itemLabel="#{dept.name}" 
+                                        itemValue="#{dept}" />
+                                </p:selectOneMenu>
+                            </h:panelGroup>
+
+
+
+                        </h:panelGrid>
+                        <br/>
+                        <div class="d-flex align-items-center">
+                            <p:commandButton class="ui-button-warning mx-1" 
+                                             icon="fas fa-cogs" 
+                                             ajax="false"  
+                                             value="Process" 
+                                             action="#{pharmacyReportController.createStockCorrectionReport()}">
+                            </p:commandButton>
+                            <p:commandButton class="ui-button- mx-1" icon="fas fa-print" ajax="false" value="Print All"
+                                             onclick="hidePaginatorBeforePrint()">
+                                <p:printer target="tbl1" />
+                            </p:commandButton>
+
+                            <p:commandButton class="ui-button-success mx-1" icon="fas fa-file-excel" ajax="false" value="Download">
+                                <p:dataExporter 
+                                    type="xlsx" 
+                                    fileName="Stock Correction Report" 
+                                    target="tbl1"  />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-danger mx-1" icon= "fas fa-file-pdf" ajax="false" value="PDF">
+                                <p:dataExporter type="pdf"
+                                                target="tbl1"
+                                                fileName="Stock Correction Report"/>
+                            </p:commandButton>
+                        </div>
+                        <h:outputScript>
+                            function hidePaginatorBeforePrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = 'none');
+                            }
+
+                            function restorePaginatorAfterPrint() {
+                            let paginators = document.querySelectorAll('.ui-paginator');
+                            paginators.forEach(el => el.style.display = '');
+                            }
+
+                            window.onafterprint = function () {
+                            restorePaginatorAfterPrint();
+                            };
+                        </h:outputScript>
+
+                        <br/>
+                        <p:dataTable value="#{pharmacyReportController.stockCorrectionRows}" var="item" style="width:100%;" id="tbl1">
+                            <p:column headerText="Item">
+                                <h:outputText value="#{item.itemName}" />
+                            </p:column>
+                            <p:column headerText="Qty">
+                                <h:outputText value="#{item.qty}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Rate">
+                                <h:outputText value="#{item.oldRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Value">
+                                <h:outputText value="#{item.oldValue}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="New Rate">
+                                <h:outputText value="#{item.newRate}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="New Value">
+                                <h:outputText value="#{item.newValue}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                            <p:column headerText="Variance">
+                                <h:outputText value="#{item.variance}" >
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </p:column>
+                        </p:dataTable>
+                    </p:panel>
+
+                    <h:outputText value="2 Examples for How to manage the case" style="color:red;font-weight:bold;" />
+
+                    <p:panel header="Case 01" style="margin-bottom:1em;">
+                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
+                        <p:dataTable value="" var="os">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Adjustments +" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="adj">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="cs">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Opening Stock" />
+                            <h:outputText value="" />
+                            <h:outputText value="Stock Correction" />
+                            <h:outputText value="" />
+                            <h:outputText value="Closing Stock" />
+                            <h:outputText value="" />
+                        </h:panelGrid>
+                    </p:panel>
+
+                    <p:panel header="Case 02" style="margin-bottom:2em;">
+                        <h:outputText value="Opening Stock" style="font-weight:bold;" />
+                        <p:dataTable value="" var="os">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Adjustments -" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="adj">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="New Value"><h:outputText value="" /></p:column>
+                            <p:column headerText="Variance"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Closing Stock" style="font-weight:bold; margin-top:1em;" />
+                        <p:dataTable value="" var="cs">
+                            <p:column headerText="Item"><h:outputText value="" /></p:column>
+                            <p:column headerText="Qty"><h:outputText value="" /></p:column>
+                            <p:column headerText="Rate"><h:outputText value="" /></p:column>
+                            <p:column headerText="Value"><h:outputText value="" /></p:column>
+                        </p:dataTable>
+                        <h:outputText value="Cost of Sold" style="font-weight:bold; margin-top:1em;" />
+                        <h:panelGrid columns="2">
+                            <h:outputText value="Opening Stock" />
+                            <h:outputText value="" />
+                            <h:outputText value="Stock Correction" />
+                            <h:outputText value="" />
+                            <h:outputText value="Closing Stock" />
+                            <h:outputText value="" />
+                        </h:panelGrid>
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+
+</html>

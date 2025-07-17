@@ -25,78 +25,83 @@
                                 <h:outputLabel value="Add Items" class="mx-4"></h:outputLabel>
                             </f:facet>
 
-                            <h:panelGrid columns="6" >
-                                <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
-                                    <p:autoComplete accesskey="i"    id="acStock"
-                                                    value="#{transferIssueController.tmpStock}"
-                                                    completeMethod="#{stockController.completeAvailableStocks}"
-                                                    var="i" itemLabel="#{i.itemBatch.item.name}" itemValue="#{i}" maxResults="20"
-                                                    >
-                                        <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
-                                                &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
-                                                                         commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                             severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
-                                            </h:outputText>
-                                            <h:outputLabel value=" (" ></h:outputLabel>
-                                            <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
-                                            <h:outputLabel value=") - " ></h:outputLabel>
-                                            <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
-                                        </p:column>
-                                        <p:column headerText="Rate" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                  commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                    commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.stock}" >
-                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                                                                                                  commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
-                                                           style="width: 100px!important;" >
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                            </h:outputLabel>
-                                        </p:column>
-                                        <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
-                                    </p:autoComplete>
-                                </h:panelGrid>
+                            <div class="row" >
+                                <div class="col-6" >
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <p:outputLabel value="Medicines/Devices" ></p:outputLabel>
+                                        <p:autoComplete 
+                                            accesskey="i"  
+                                            class="w-100"
+                                            inputStyleClass="w-100"
+                                            id="acStock"
+                                            value="#{transferIssueController.tmpStock}"
+                                            completeMethod="#{stockController.completeAvailableStocks}"
+                                            var="i" 
+                                            itemLabel="#{i.itemBatch.item.name}" 
+                                            itemValue="#{i}"
+                                            maxResults="5"
+                                            >
+                                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
+                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
+                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
+                                                                 severity="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'warning':''}" />
+                                                </h:outputText>
+                                                <h:outputLabel value=" (" ></h:outputLabel>
+                                                <h:outputText value="#{i.itemBatch.item.code}" style="width: 50px!important;"></h:outputText>
+                                                <h:outputLabel value=") - " ></h:outputLabel>
+                                                <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Stocks" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                        commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.stock}" >
+                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
+                                                                                                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
+                                                               style="width: 100px!important;" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
+                                                </h:outputLabel>
+                                            </p:column>
+                                            <p:ajax event="itemSelect" update="txtQty txtRate focusQty" ></p:ajax>
+                                        </p:autoComplete>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-4" >
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <p:outputLabel value="Quantity" ></p:outputLabel>
+                                        <p:inputText
+                                            accesskey="q"
+                                            autocomplete="off"
+                                            id="txtQty"
+                                            value="#{transferIssueController.qty}"
+                                            class="w-100">
 
-                                <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="Quantity" ></p:outputLabel>
-                                    <p:inputText
-                                        accesskey="q"
-                                        autocomplete="off"
-                                        id="txtQty"
-                                        value="#{transferIssueController.qty}"
-                                        class="w-100">
+                                        </p:inputText>
+                                    </h:panelGrid>
+                                </div>
+                                <div class="col-2" >
+                                    <h:panelGrid columns="1" class="w-100">
+                                        <p:outputLabel value="&nbsp;" ></p:outputLabel>
+                                        <p:commandButton  
+                                            accesskey="a"
+                                            id="btnAdd"
+                                            icon="fa fa-plus"
+                                            value="Add"
+                                            class="ui-button-success"
+                                            action="#{transferIssueController.addNewBillItem}"
+                                            ajax="false"
+                                            update="focusItem"
+                                            >
+                                        </p:commandButton>
+                                        <p:focus id="focusQty" for="txtQty"></p:focus>
+                                        <p:focus id="focusItem" for="acStock"></p:focus>
+                                    </h:panelGrid>
 
-                                    </p:inputText>
-                                </h:panelGrid>
-
-                                <h:panelGrid columns="1" class="w-100">
-                                    <p:outputLabel value="" class="my-2"></p:outputLabel>
-                                    <p:commandButton  
-                                        accesskey="a"
-                                        id="btnAdd"
-                                        icon="fa fa-plus"
-                                        value="Add"
-                                        class="ui-button-success"
-                                        action="#{transferIssueController.addBillItemNew}"
-                                        ajax="false"
-                                        update="focusItem"
-                                        >
-                                    </p:commandButton>
-                                </h:panelGrid>
-                                <p:focus id="focusQty" for="txtQty"></p:focus>
-                                <p:focus id="focusItem" for="acStock"></p:focus>
-
-                            </h:panelGrid>
+                                </div>
+                            </div>
                         </p:panel>
                         <p:panel >
                             <f:facet name="header" >
@@ -118,44 +123,69 @@
                                 sortBy="#{bItm.searialNo}"  
                                 editable="true">
 
-                                <p:ajax event="rowEdit" listener="#{transferIssueController.onEdit}"  />
-                                <p:ajax event="rowEditCancel" listener="#{transferIssueController.onEdit}" />
-
-                                <p:column headerText="Item Name" style="width: 50px!important;"  >
-                                    <h:outputText id="item" value="#{bItm.item.name}" >
-                                    </h:outputText>
+                                <p:column headerText="Item Name">
+                                    <h:outputText 
+                                        id="item" 
+                                        value="#{bItm.item.name}" />
+                                    <p:commandButton 
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{transferIssueController.displayItemDetails(bItm)}"
+                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
 
-                                <p:column headerText="Batch No"  style="width:50px!important; text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
+                                <p:column 
+                                    headerText="Qty" 
+                                    width="8em" 
+                                    class="text-end">
+                                    <h:outputText 
+                                        id="qty" 
+                                        class="w-100"
+                                        value="#{bItm.qty}" />
                                 </p:column>
 
-                                <p:column headerText="Sale Rate"  style="width:50px!important; text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate}" style="text-align: right;">
+
+                                <p:column 
+                                    width="6em"
+                                    headerText="Transfer Rate"  
+                                    class="text-end">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Cost Rate"  style="width:50px!important; text-align: right;text-align: right;text-align: right;text-align: right;text-align: right;">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" style="text-align: right;">
+                                <p:column 
+                                    width="6em"
+                                    headerText="Transfer Value"  
+                                    class="text-end">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" style="text-align: right;">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="DOE"  style="width:50px!important; text-align: center">
+
+
+                                <p:column 
+                                    headerText="DOE" 
+                                    class="text-end"
+                                    width="6em">
                                     <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
-
-                                <p:column headerText="Qty" style="width:25px!important; text-align: right;">
-                                    <p:inputText autocomplete="off" id="qty" value="#{bItm.qty}">
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" execute="@this" listener="#{transferIssueController.onFocus(bItm)}"/>
-                                    </p:inputText>
+                                <p:column 
+                                    headerText="Batch No" width="6em">
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.batchNo}"/>
                                 </p:column>
-
-                                <p:column style="width: 10px!important;">
-                                    <p:commandButton icon="fas fa-trash" class="ui-button-danger" ajax="false" action="#{transferIssueController.removeBillItem(bItm)}">
+                                <p:column width="3em" class="text-end" >
+                                    <p:commandButton
+                                        icon="fas fa-trash" 
+                                        class="ui-button-danger"
+                                        ajax="false"
+                                        action="#{transferIssueController.removeBillItem(bItm)}">
                                     </p:commandButton>
                                 </p:column>
                             </p:dataTable>
@@ -165,7 +195,6 @@
                         <p:panel >
                             <f:facet name="header" >
                                 <h:outputText value="Issue Details" ></h:outputText>
-                                
                                 <p:commandButton  
                                     value="Issue" 
                                     icon="fas fa-check" 
@@ -175,10 +204,12 @@
                                     class="ui-button-success mx-2" >
                                 </p:commandButton>
                             </f:facet>
-                            <h:panelGrid columns="3">
+                            <h:panelGrid columns="3" class="w-100">
                                 <h:outputLabel value="Items will be issued from &nbsp;" />
                                 <h:outputLabel value=": &nbsp;"/>
                                 <p:autoComplete 
+                                    class="w-100"
+                                    inputStyleClass="w-100"
                                     value="#{transferIssueController.issuedBill.fromDepartment}" 
                                     disabled="true"
                                     var="vt" 
@@ -189,7 +220,8 @@
                                 <h:outputLabel value=": &nbsp;"/>
                                 <p:autoComplete 
                                     value="#{transferIssueController.issuedBill.toDepartment}" 
-                                    class="mb-1"
+                                    class="w-100"
+                                    inputStyleClass="w-100"
                                     var="to" 
                                     itemLabel="#{to.name}" 
                                     itemValue="#{to}"
@@ -199,6 +231,8 @@
                                 <h:outputLabel value="Select Staff Name" />
                                 <h:outputLabel value=": &nbsp;"/>
                                 <p:autoComplete  
+                                    class="w-100"
+                                    inputStyleClass="w-100"
                                     completeMethod="#{staffController.completeStaffWithoutDoctors}"
                                     forceSelection="true"
                                     var="w" 
@@ -206,10 +240,29 @@
                                     itemValue="#{w}"
                                     value="#{transferIssueController.issuedBill.toStaff}" >
                                 </p:autoComplete>
-                                
+
+                                <h:outputLabel value="Transfer Value" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <h:outputLabel 
+                                    class="w-100 text-end"
+                                    value="#{transferIssueController.issuedBill.netTotal}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
+                                <h:outputLabel value="Transfer Cost Value" />
+                                <h:outputLabel value=": &nbsp;"/>
+                                <h:outputLabel 
+                                    class="w-100 text-end"
+                                    value="#{transferIssueController.issuedBill.billFinanceDetails.totalCostValue}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputLabel>
+
                                 <h:outputLabel value="Comment" />
                                 <h:outputLabel value=": &nbsp;"/>
-                                <p:inputTextarea value="#{transferIssueController.issuedBill.comments}" rows="3" cols="20"/>
+                                <p:inputTextarea 
+                                    class="w-100"
+                                    value="#{transferIssueController.issuedBill.comments}" 
+                                    rows="3" />
 
                             </h:panelGrid>
                         </p:panel>
@@ -269,8 +322,13 @@
                     <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
- 
-<!--                    <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>-->
+
+                    <h:panelGroup 
+                        id="gpBillTemplate" 
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
+                        <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
+                    </h:panelGroup>
+
 
                 </h:panelGroup>
 

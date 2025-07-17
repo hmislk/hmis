@@ -65,9 +65,15 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal lineCostValue = BigDecimal.ZERO;
 
-    // Total cost (bill-level + all line-level)
+    // Total cost value for all BillItems (excluding discounts/taxes)
     @Column(precision = 18, scale = 4)
     private BigDecimal totalCostValue = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalCostValueFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalCostValueNonFree = BigDecimal.ZERO;
 
     // ------------------ TAXES ------------------
     // Tax applied to the whole Bill (e.g., VAT)
@@ -87,17 +93,42 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4)
     private BigDecimal totalPurchaseValue = BigDecimal.ZERO;
 
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalPurchaseValueFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalPurchaseValueNonFree = BigDecimal.ZERO;
+
     // Estimated value of items given free of charge
     @Column(precision = 18, scale = 4)
+    @Deprecated // User 
     private BigDecimal totalOfFreeItemValues = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalOfFreeItemValuesFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalOfFreeItemValuesNonFree = BigDecimal.ZERO;
 
     // Expected total if all items sold at retail rate
     @Column(precision = 18, scale = 4)
     private BigDecimal totalRetailSaleValue = BigDecimal.ZERO;
 
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalRetailSaleValueFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalRetailSaleValueNonFree = BigDecimal.ZERO;
+
     // Expected total if all items sold at wholesale rate
     @Column(precision = 18, scale = 4)
     private BigDecimal totalWholesaleValue = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalWholesaleValueFree = BigDecimal.ZERO;
+
+    @Column(precision = 18, scale = 4)
+    private BigDecimal totalWholesaleValueNonFree = BigDecimal.ZERO;
 
     // ------------------ QUANTITIES ------------------
     // Total quantity of all BillItems (excluding free)
@@ -178,6 +209,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setBillCostValue(this.billCostValue);
         clone.setLineCostValue(this.lineCostValue);
         clone.setTotalCostValue(this.totalCostValue);
+        clone.setTotalCostValueFree(this.totalCostValueFree);
+        clone.setTotalCostValueNonFree(this.totalCostValueNonFree);
 
         // ------------------ TAXES ------------------
         clone.setBillTaxValue(this.billTaxValue);
@@ -186,9 +219,17 @@ public class BillFinanceDetails implements Serializable {
 
         // ------------------ VALUES ------------------
         clone.setTotalPurchaseValue(this.totalPurchaseValue);
+        clone.setTotalPurchaseValueFree(this.totalPurchaseValueFree);
+        clone.setTotalPurchaseValueNonFree(this.totalPurchaseValueNonFree);
         clone.setTotalOfFreeItemValues(this.totalOfFreeItemValues);
+        clone.setTotalOfFreeItemValuesFree(this.totalOfFreeItemValuesFree);
+        clone.setTotalOfFreeItemValuesNonFree(this.totalOfFreeItemValuesNonFree);
         clone.setTotalRetailSaleValue(this.totalRetailSaleValue);
+        clone.setTotalRetailSaleValueFree(this.totalRetailSaleValueFree);
+        clone.setTotalRetailSaleValueNonFree(this.totalRetailSaleValueNonFree);
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
+        clone.setTotalWholesaleValueFree(this.totalWholesaleValueFree);
+        clone.setTotalWholesaleValueNonFree(this.totalWholesaleValueNonFree);
 
         // ------------------ QUANTITIES ------------------
         clone.setTotalQuantity(this.totalQuantity);
@@ -307,12 +348,30 @@ public class BillFinanceDetails implements Serializable {
         this.totalExpense = totalExpense;
     }
 
+    @Deprecated
     public BigDecimal getTotalOfFreeItemValues() {
         return totalOfFreeItemValues;
     }
 
+    @Deprecated
     public void setTotalOfFreeItemValues(BigDecimal totalOfFreeItemValues) {
         this.totalOfFreeItemValues = totalOfFreeItemValues;
+    }
+
+    public BigDecimal getTotalOfFreeItemValuesFree() {
+        return totalOfFreeItemValuesFree;
+    }
+
+    public void setTotalOfFreeItemValuesFree(BigDecimal totalOfFreeItemValuesFree) {
+        this.totalOfFreeItemValuesFree = totalOfFreeItemValuesFree;
+    }
+
+    public BigDecimal getTotalOfFreeItemValuesNonFree() {
+        return totalOfFreeItemValuesNonFree;
+    }
+
+    public void setTotalOfFreeItemValuesNonFree(BigDecimal totalOfFreeItemValuesNonFree) {
+        this.totalOfFreeItemValuesNonFree = totalOfFreeItemValuesNonFree;
     }
 
     public BigDecimal getTotalCostValue() {
@@ -323,12 +382,44 @@ public class BillFinanceDetails implements Serializable {
         this.totalCostValue = totalCostValue;
     }
 
+    public BigDecimal getTotalCostValueFree() {
+        return totalCostValueFree;
+    }
+
+    public void setTotalCostValueFree(BigDecimal totalCostValueFree) {
+        this.totalCostValueFree = totalCostValueFree;
+    }
+
+    public BigDecimal getTotalCostValueNonFree() {
+        return totalCostValueNonFree;
+    }
+
+    public void setTotalCostValueNonFree(BigDecimal totalCostValueNonFree) {
+        this.totalCostValueNonFree = totalCostValueNonFree;
+    }
+
     public BigDecimal getTotalPurchaseValue() {
         return totalPurchaseValue;
     }
 
     public void setTotalPurchaseValue(BigDecimal totalPurchaseValue) {
         this.totalPurchaseValue = totalPurchaseValue;
+    }
+
+    public BigDecimal getTotalPurchaseValueFree() {
+        return totalPurchaseValueFree;
+    }
+
+    public void setTotalPurchaseValueFree(BigDecimal totalPurchaseValueFree) {
+        this.totalPurchaseValueFree = totalPurchaseValueFree;
+    }
+
+    public BigDecimal getTotalPurchaseValueNonFree() {
+        return totalPurchaseValueNonFree;
+    }
+
+    public void setTotalPurchaseValueNonFree(BigDecimal totalPurchaseValueNonFree) {
+        this.totalPurchaseValueNonFree = totalPurchaseValueNonFree;
     }
 
     public BigDecimal getTotalQuantity() {
@@ -363,12 +454,44 @@ public class BillFinanceDetails implements Serializable {
         this.totalRetailSaleValue = totalRetailSaleValue;
     }
 
+    public BigDecimal getTotalRetailSaleValueFree() {
+        return totalRetailSaleValueFree;
+    }
+
+    public void setTotalRetailSaleValueFree(BigDecimal totalRetailSaleValueFree) {
+        this.totalRetailSaleValueFree = totalRetailSaleValueFree;
+    }
+
+    public BigDecimal getTotalRetailSaleValueNonFree() {
+        return totalRetailSaleValueNonFree;
+    }
+
+    public void setTotalRetailSaleValueNonFree(BigDecimal totalRetailSaleValueNonFree) {
+        this.totalRetailSaleValueNonFree = totalRetailSaleValueNonFree;
+    }
+
     public BigDecimal getTotalWholesaleValue() {
         return totalWholesaleValue;
     }
 
     public void setTotalWholesaleValue(BigDecimal totalWholesaleValue) {
         this.totalWholesaleValue = totalWholesaleValue;
+    }
+
+    public BigDecimal getTotalWholesaleValueFree() {
+        return totalWholesaleValueFree;
+    }
+
+    public void setTotalWholesaleValueFree(BigDecimal totalWholesaleValueFree) {
+        this.totalWholesaleValueFree = totalWholesaleValueFree;
+    }
+
+    public BigDecimal getTotalWholesaleValueNonFree() {
+        return totalWholesaleValueNonFree;
+    }
+
+    public void setTotalWholesaleValueNonFree(BigDecimal totalWholesaleValueNonFree) {
+        this.totalWholesaleValueNonFree = totalWholesaleValueNonFree;
     }
 
     public BigDecimal getTotalQuantityInAtomicUnitOfMeasurement() {

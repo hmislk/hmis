@@ -768,9 +768,11 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void removeselected(BillItem billItem) {
-        getSelectedBillItems().remove(billItem); // removes by object, not by index
-        calTotalWithResetingIndexSelected();
-        calculateTotalBySelectedBillItems();
+        if (selectedBillItems != null) {
+            selectedBillItems.remove(billItem); // removes by object, not by index
+            calTotalWithResetingIndexSelected();
+            calculateTotalBySelectedBillItems();
+        }
     }
 
     public void removeFromCurrent(BillItem billItem) {
@@ -1051,7 +1053,6 @@ public class SupplierPaymentController implements Serializable {
         BillTypeAtomic[] billTypesArrayBilled = {
             BillTypeAtomic.PHARMACY_GRN,
             BillTypeAtomic.PHARMACY_GRN_CANCELLED,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
@@ -1215,14 +1216,12 @@ public class SupplierPaymentController implements Serializable {
 
     public void fillSettledCreditPharmacyBills() {
         BillTypeAtomic[] billTypesArrayBilled = {
-            BillTypeAtomic.PHARMACY_GRN, 
-            BillTypeAtomic.PHARMACY_GRN_CANCELLED, 
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_GRN_CANCELLED,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
-            BillTypeAtomic.PHARMACY_GRN_RETURN,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, 
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL_CANCELLED,
-            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, 
-            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, 
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
@@ -1285,7 +1284,6 @@ public class SupplierPaymentController implements Serializable {
             BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_DIRECT_PURCHASE,
             BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL,
-            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
             BillTypeAtomic.PHARMACY_GRN_RETURN,
             BillTypeAtomic.PHARMACY_GRN_REFUND,
             BillTypeAtomic.STORE_GRN,
@@ -1313,7 +1311,13 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public void fillSettledCreditBills() {
-        BillTypeAtomic[] billTypesArrayBilled = {BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL, BillTypeAtomic.STORE_GRN, BillTypeAtomic.STORE_DIRECT_PURCHASE};
+        BillTypeAtomic[] billTypesArrayBilled = {
+            BillTypeAtomic.PHARMACY_GRN,
+            BillTypeAtomic.PHARMACY_WHOLESALE_GRN_BILL,
+            BillTypeAtomic.PHARMACY_DIRECT_PURCHASE, 
+            BillTypeAtomic.PHARMACY_WHOLESALE_DIRECT_PURCHASE_BILL, 
+            BillTypeAtomic.STORE_GRN, 
+            BillTypeAtomic.STORE_DIRECT_PURCHASE};
         List<BillTypeAtomic> billTypesListBilled = Arrays.asList(billTypesArrayBilled);
         bills = billController.findPaidBills(fromDate, toDate, billTypesListBilled, PaymentMethod.Credit, 0.01);
         netTotal = 0.0;
@@ -1893,7 +1897,7 @@ public class SupplierPaymentController implements Serializable {
             getBillItems().add(currentBillItem);
         }
 
-        return "/dealerPayment/approve_bill_for_payment?faces-redirect=true;";
+        return "/dealerPayment/approve_bill_for_payment?faces-redirect=true";
     }
 
     public String approvePayment() {
@@ -1925,7 +1929,7 @@ public class SupplierPaymentController implements Serializable {
             JsfUtil.addErrorMessage("Please select a bill");
             return null;
         }
-        return "/dealerPayment/complete_bill_payment?faces-redirect=true;";
+        return "/dealerPayment/complete_bill_payment?faces-redirect=true";
     }
 
     public String completePayment() {
@@ -3201,7 +3205,7 @@ public class SupplierPaymentController implements Serializable {
     }
 
     public String convertToWord(Double d) {
-        return CommonFunctions.convertToWord(d);
+        return d == null ? "" : CommonFunctions.convertToWord(d);
     }
 
     public Payment findPaymentFromBill(Bill b) {
