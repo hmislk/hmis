@@ -10,6 +10,7 @@ package com.divudi.bean.common;
 
 import com.divudi.bean.membership.PaymentSchemeController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
@@ -55,7 +56,7 @@ import org.primefaces.event.TabChangeEvent;
  */
 @Named
 @SessionScoped
-public class AppointmentController implements Serializable {
+public class AppointmentController implements Serializable, ControllerWithPatient {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -100,6 +101,9 @@ public class AppointmentController implements Serializable {
     private YearMonthDay yearMonthDay;
     private PaymentMethodData paymentMethodData;
     private Reservation reservation;
+    private PaymentMethod paymentMethod;
+    private boolean patientDetailsEditable;
+    private Patient patient;
 
     public Title[] getTitle() {
         return Title.values();
@@ -205,7 +209,7 @@ public class AppointmentController implements Serializable {
             return;
         }
 
-        Patient p = savePatient(getSearchedPatient());
+        Patient p = savePatient(getPatient());
 
         saveBill(p);
         saveAppointment(p);
@@ -290,17 +294,17 @@ public class AppointmentController implements Serializable {
 //            }
 //        }
         //if (getPatientTabId().toString().equals("tabNewPt")) {
-        if (getSearchedPatient() == null) {
+        if (getPatient() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
 
-        if (getSearchedPatient().getPerson() == null) {
+        if (getPatient().getPerson() == null) {
             JsfUtil.addErrorMessage("No patient Selected");
             return false;
         }
 
-        if (getSearchedPatient().getPerson().getName() == null || getSearchedPatient().getPerson().getName().trim().equals("")) {
+        if (getPatient().getPerson().getName() == null || getPatient().getPerson().getName().trim().equals("")) {
             JsfUtil.addErrorMessage("Can not bill without Patient Name");
             return true;
         }
@@ -579,6 +583,7 @@ public class AppointmentController implements Serializable {
     public void prepereForInwardAppointPatient() {
         printPreview = false;
         searchedPatient = null;
+        patient = null;
         currentBill = null;
         currentAppointment = null;
         reservation = null;
@@ -589,10 +594,11 @@ public class AppointmentController implements Serializable {
 
     public String navigateToInwardAppointmentFromMenu() {
         prepereForInwardAppointPatient();
-        setSearchedPatient(getNewPatient());
-        getCurrentBill().setPatient(getSearchedPatient());
-        getCurrentAppointment().setPatient(getSearchedPatient());
-        return "/inward/inward_appointment";
+        setSearchedPatient(getPatient());
+        setPatient(getNewPatient());
+        getCurrentBill().setPatient(getPatient());
+        getCurrentAppointment().setPatient(getPatient());
+        return "/inward/inward_appointment?faces-redirect=true;";
     }
 
     public ReservationFacade getReservationFacade() {
@@ -601,6 +607,52 @@ public class AppointmentController implements Serializable {
 
     public void setReservationFacade(ReservationFacade reservationFacade) {
         this.reservationFacade = reservationFacade;
+    }
+    
+    @Override
+    public Patient getPatient() {
+        if (patient == null) {
+            Person p = new Person();
+            patient = new Patient();
+            patientDetailsEditable = true;
+            patient.setPerson(p);
+        }
+        return patient;
+    }
+
+    @Override
+    public void setPatient(Patient patient) {
+        this.patient = patient;
+    }
+    
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+    
+    @Override
+    public boolean isPatientDetailsEditable() {
+        return patientDetailsEditable;
+    }
+
+    @Override
+    public void setPatientDetailsEditable(boolean patientDetailsEditable) {
+        this.patientDetailsEditable = patientDetailsEditable;
+    }
+    
+    @Override
+    public PaymentMethod getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    @Override
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+    
+    @Override
+    public void listnerForPaymentMethodChange() {
+        // ToDo: Add Logic
     }
 
     /**
