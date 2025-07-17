@@ -370,6 +370,11 @@ public class TransferReceiveController implements Serializable {
                 continue;
             }
 
+            if (pbi.getStock() == null || pbi.getStock().getItemBatch() == null) {
+                System.out.println("  -> Skipped: Stock or ItemBatch is null");
+                continue;
+            }
+
             double purchaseRate = pbi.getStock().getItemBatch().getPurcahseRate() * bifd.getUnitsPerPack().doubleValue();
             double retailRate = pbi.getStock().getItemBatch().getRetailsaleRate() * bifd.getUnitsPerPack().doubleValue();
             double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * bifd.getUnitsPerPack().doubleValue();
