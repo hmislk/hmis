@@ -1653,6 +1653,30 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Request For Quentity");
     }
+    
+    public void markSelectedItemsForRatesvisibleduringInwardBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setChargesVisibleForInward(true);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Marked for Rates visible during Inward Billing");
+    }
+
+    public void unMarkSelectedItemsForRatesvisibleduringInwardBilling() {
+        if (selectedList == null || selectedList.isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing is selected");
+            return;
+        }
+        for (Item i : selectedList) {
+            i.setChargesVisibleForInward(false);
+            itemFacade.edit(i);
+        }
+        JsfUtil.addSuccessMessage("All Unmarked for Rates visible during Inward Billing");
+    }
 
     public void addSessionNumberType() {
         if (selectedList == null || selectedList.isEmpty()) {
