@@ -52,7 +52,8 @@ public class UserDepartmentController implements Serializable {
     List<WebUserDepartment> selectedItems;
     private WebUserDepartment current;
     private WebUser selectedUser;
-    private Institution currentInstituion;
+    private Institution currentInstitution;
+    private Institution currentSite;
     Department currentDepartment;
     private List<Department> lstDep;
     private List<Department> currentInsDepartments;
@@ -282,23 +283,23 @@ public class UserDepartmentController implements Serializable {
         this.institutionFacade = institutionFacade;
     }
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
 //        getCurrentInsDepartments();
     }
 
 //    public List<Department> getCurrentInsDepartments() {
-//        if (currentInstituion == null) {
+//        if (currentInstitution == null) {
 //            //////// // System.out.println("1");
 //            return new ArrayList<>();
 //        }
 //        //////// // System.out.println("2");
 //        Map m = new HashMap();
-//        m.put("ins", currentInstituion);
+//        m.put("ins", currentInstitution);
 //        String sql = "SELECT i FROM Department i where i.retired=false and i.institution=:ins order by i.name";
 //        currentInsDepartments = getDepartmentFacade().findByJpql(sql,m);
 //        //////// // System.out.println("3");
@@ -315,6 +316,8 @@ public class UserDepartmentController implements Serializable {
     public List<Department> getLstDep() {
         return lstDep;
     }
+    
+    
 
     public void setLstDep(List<Department> lstDep) {
         this.lstDep = lstDep;
@@ -322,6 +325,14 @@ public class UserDepartmentController implements Serializable {
 
     public void setItems(List<WebUserDepartment> items) {
         this.items = items;
+    }
+
+    public Institution getCurrentSite() {
+        return currentSite;
+    }
+
+    public void setCurrentSite(Institution currentSite) {
+        this.currentSite = currentSite;
     }
 
     /**

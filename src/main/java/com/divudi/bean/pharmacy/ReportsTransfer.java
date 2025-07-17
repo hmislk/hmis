@@ -37,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -63,6 +64,7 @@ import org.joda.time.LocalDate;
 @Named
 @SessionScoped
 public class ReportsTransfer implements Serializable {
+
     @Inject
     private ReportTimerController reportTimerController;
 
@@ -77,6 +79,8 @@ public class ReportsTransfer implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemFacade itemFacade;
+    @EJB
+    BillService billService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -106,6 +110,8 @@ public class ReportsTransfer implements Serializable {
     private double discountsValue;
     private double marginValue;
     private double netTotalValues;
+    private double netTotalSaleValues;
+    private double netTotalPurchaseValues;
     private double retailValue;
     private Category category;
 
@@ -575,7 +581,18 @@ public class ReportsTransfer implements Serializable {
             discountsValue = 0.0;
             netTotalValues = 0.0;
             marginValue = 0;
+            netTotalPurchaseValues = 0.0;
             for (Bill b : transferBills) {
+                if (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0) {
+                    billService.createBillFinancialDetailsForPharmacyBill(b);
+                }
+                Double pv = (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null)
+                        ? 0.0
+                        : b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                netTotalPurchaseValues += pv;
                 totalsValue = totalsValue + (b.getTotal());
                 discountsValue = discountsValue + b.getDiscount();
                 marginValue += b.getMargin();
@@ -751,20 +768,40 @@ public class ReportsTransfer implements Serializable {
     public void fetchBillTotalByToDepartment(Date fd, Date td, Department dep, BillType bt) {
         listz = new ArrayList<>();
         netTotalValues = 0.0;
+        netTotalSaleValues = 0.0;
+        netTotalPurchaseValues = 0.0;
 
         List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
+        List<Object[]> objectsItems = getBillBeanController().fetchBilledDepartmentBillItem(fd, td, dep, bt, true);
+
+        // Create a map for efficient lookup
+        Map<Department, Double> departmentSaleValues = new HashMap<>();
+        Map<Department, Double> departmentPurchaseValues = new HashMap<>();
+        for (Object[] obItem : objectsItems) {
+            Department dItem = (Department) obItem[0];
+            double itemValue = (double) obItem[1];
+            double itemPurchaseValue = (double) obItem[2];
+            departmentSaleValues.merge(dItem, itemValue, Double::sum);
+            departmentPurchaseValues.merge(dItem, itemPurchaseValue, Double::sum);
+        }
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
             double dbl = (double) ob[1];
+            double db2 = departmentSaleValues.getOrDefault(d, 0.0);
+            double db3 = departmentPurchaseValues.getOrDefault(d, 0.0);
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
             sv.setValue1(dbl);
+            sv.setValue2(db2);
+            sv.setValue3(db3);
             listz.add(sv);
 
             netTotalValues += dbl;
-
+            netTotalSaleValues += db2;
+            netTotalPurchaseValues += db3;
+            
         }
 
     }
@@ -1896,6 +1933,22 @@ public class ReportsTransfer implements Serializable {
 
     public void setPreviewBill(Bill previewBill) {
         this.previewBill = previewBill;
+    }
+
+    public double getNetTotalSaleValues() {
+        return netTotalSaleValues;
+    }
+
+    public void setNetTotalSaleValues(double netTotalSaleValues) {
+        this.netTotalSaleValues = netTotalSaleValues;
+    }
+
+    public double getNetTotalPurchaseValues() {
+        return netTotalPurchaseValues;
+    }
+
+    public void setNetTotalPurchaseValues(double netTotalPurchaseValues) {
+        this.netTotalPurchaseValues = netTotalPurchaseValues;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {

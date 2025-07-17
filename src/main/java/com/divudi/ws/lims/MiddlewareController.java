@@ -178,6 +178,10 @@ public class MiddlewareController {
                     case SwelabLumi:
                     case HumaCount5D:
                     case HumaLyte:
+                    case HumaStar600:
+                    case XL_200:
+                    case AIA_360:
+                        System.out.println("going to direct to processResultsCommon");
                         return processResultsCommon(dataBundle);
                     default:
                         throw new IllegalArgumentException("Unsupported analyzer type: " + analyzerDetails.getAnalyzerName());

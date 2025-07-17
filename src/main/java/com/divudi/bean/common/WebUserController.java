@@ -123,6 +123,7 @@ public class WebUserController implements Serializable {
     @EJB
     private InstitutionFacade institutionFacade;
     private Institution institution;
+    private Institution site;
     private Department department;
     private Privileges[] currentPrivilegeses;
     Speciality speciality;
@@ -223,6 +224,22 @@ public class WebUserController implements Serializable {
         } else {
             getFacade().edit(wu);
         }
+    }
+
+    public WebUser findWebUserById(Long userID) {
+        if (userID == null) {
+            return null;
+        } else {
+            return getFacade().find(userID);
+        }
+    }
+
+    public String findWebUserNameWithTitleById(Long userID) {
+        WebUser user = findWebUserById(userID);
+        if (user == null || user.getWebUserPerson() == null) {
+            return "";
+        }
+        return user.getWebUserPerson().getNameWithTitle();
     }
 
     public void saveUser() {
@@ -469,7 +486,7 @@ public class WebUserController implements Serializable {
         department = null;
         institution = null;
         loginPage = null;
-        return "/admin/users/user_add_new";
+        return "/admin/users/user_add_new?faces-redirect=true";
     }
 
     public SecurityController getSecurityController() {
@@ -521,6 +538,8 @@ public class WebUserController implements Serializable {
         getCurrent().getWebUserPerson().setCreater(getSessionController().getLoggedUser());
 
         getCurrent().setLoginPage(loginPage);
+
+        getCurrent().setSite(site);
 
         getPersonFacade().create(getCurrent().getWebUserPerson());
         if (createOnlyUserForExsistingUser) {
@@ -1218,7 +1237,7 @@ public class WebUserController implements Serializable {
     }
 
     public String navigateToManageUsers() {
-        return "/admin/users/index?faces-redirect=true;";
+        return "/admin/users/index?faces-redirect=true";
     }
 
     public List<WebUserLight> getWebUseLights() {
@@ -1280,6 +1299,14 @@ public class WebUserController implements Serializable {
 
     public void setSkipDevelopersPrivilege(boolean skipDevelopersPrivilege) {
         this.skipDevelopersPrivilege = skipDevelopersPrivilege;
+    }
+
+    public Institution getSite() {
+        return site;
+    }
+
+    public void setSite(Institution site) {
+        this.site = site;
     }
 
     @FacesConverter(forClass = WebUser.class)

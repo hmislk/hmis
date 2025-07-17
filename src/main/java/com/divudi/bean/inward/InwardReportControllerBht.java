@@ -118,6 +118,7 @@ public class InwardReportControllerBht implements Serializable {
     Bill finalBill;
     private Department department;
     private Patient patient;
+    private List<Bill> issueBills;
 
     public String navigateToInpatientPharmacyItemList() {
         System.out.println("navigateToInpatientPharmacyItemList");
@@ -132,6 +133,9 @@ public class InwardReportControllerBht implements Serializable {
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
             btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+            btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
             pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
             pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
             if (pharmacyIssueBillItemsToPatientEncounter != null) {
@@ -140,10 +144,13 @@ public class InwardReportControllerBht implements Serializable {
                         case PHARMACY_DIRECT_ISSUE_CANCELLED:
                         case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                         case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                        case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
+                        case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                             break;
                         case PHARMACY_DIRECT_ISSUE:
                         case DIRECT_ISSUE_INWARD_MEDICINE:
+                        case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                             pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                             break;
                     }
@@ -186,10 +193,17 @@ public class InwardReportControllerBht implements Serializable {
         //department = null;
         return "/inward/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
-    
+
     public String madeNull() {
         patientEncounter = null;
         return "/pharmacy/reports/inpatient_pharmacy_item_list.xhtml?faces-redirect=true";
+    }
+
+    public String madeNullIssue() {
+        patientEncounter = null;
+        bill = null;
+        //department = null;
+        return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
     }
 
     public String navigateToInpatientLabItemList() {
@@ -244,6 +258,14 @@ public class InwardReportControllerBht implements Serializable {
         return "/pharmacy/reports/inpatient_pharmacy_item_list?faces-redirect=true";
     }
 
+    public String navigateToInpatientPharmacyRequestedAndIssuedOverviewInPharmacy() {
+        department = sessionController.getLoggedUser().getDepartment();
+        patientEncounter = null;
+        bill = null;
+        //department = null;
+        return "/pharmacy/reports/inpatient_pharmacy_requested_item_overview_by_bill?faces-redirect=true";
+    }
+
     public void processInpatientPharmacyItemList() {
         if (patientEncounter == null) {
             JsfUtil.addErrorMessage("No encounter");
@@ -256,6 +278,9 @@ public class InwardReportControllerBht implements Serializable {
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION);
         btas.add(BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
         pharmacyIssueBillItemsToPatientEncounterNetTotal = 0.0;
         pharmacyIssueBillItemsToPatientEncounter = billService.fetchBillItems(null, null, null, null, department, null, btas, patientEncounter);
         if (pharmacyIssueBillItemsToPatientEncounter != null) {
@@ -264,10 +289,13 @@ public class InwardReportControllerBht implements Serializable {
                     case PHARMACY_DIRECT_ISSUE_CANCELLED:
                     case DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION:
                     case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
+                    case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
+                    case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal -= Math.abs(bi.getNetValue());
                         break;
                     case PHARMACY_DIRECT_ISSUE:
                     case DIRECT_ISSUE_INWARD_MEDICINE:
+                    case ISSUE_MEDICINE_ON_REQUEST_INWARD:
                         pharmacyIssueBillItemsToPatientEncounterNetTotal += Math.abs(bi.getNetValue());
                         break;
                 }
@@ -1122,6 +1150,55 @@ public class InwardReportControllerBht implements Serializable {
 
     }
 
+    public void fetchIssueBill() {
+        issueBills = new ArrayList<>();
+        if (getPatientEncounter() == null) {
+            JsfUtil.addErrorMessage("No Patient Encounter");
+            return;
+        }
+        if (department == null) {
+            JsfUtil.addErrorMessage("No Department selected");
+            return;
+        }
+        String jpql;
+        HashMap hm = new HashMap();
+        jpql = "select b from Bill b "
+                + "where b.patientEncounter=:pe "
+                + "and b.billType=:bTp "
+                + "and b.retired=false "
+                + "and b.cancelled=false "
+                + "and  b.toDepartment=:toDep";
+        hm.put("pe", getPatientEncounter());
+        hm.put("toDep", department);
+        hm.put("bTp", BillType.InwardPharmacyRequest);
+
+        issueBills = getBillFacade().findByJpql(jpql, hm);
+
+    }
+
+    public List<Bill> getBHTIssudBills(Bill b) {
+        String sql = "Select b From Bill b where b.retired=false "
+                + " and b.billType=:btp "
+                + " and b.referenceBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        hm.put("btp", BillType.PharmacyBhtPre);
+        return getBillFacade().findByJpql(sql, hm);
+    }
+    
+    public List<Bill> getReturnAndCancelBHTIssueBills(Bill b) {
+        String sql = "Select b From Bill b where b.retired=false "
+                + " and b.billTypeAtomic IN :btp "
+                + " and b.referenceBill=:ref ";
+        HashMap hm = new HashMap();
+        hm.put("ref", b);
+        List<BillTypeAtomic> btas = new ArrayList<>();
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN);
+        btas.add(BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION);
+        hm.put("btp", btas);
+        return getBillFacade().findByJpql(sql, hm);
+    }
+
     ////////////GETTERS AND SETTERS
     public List<String1Value2> getTimedServices() {
         return timedServices;
@@ -1404,6 +1481,14 @@ public class InwardReportControllerBht implements Serializable {
 
     public void setLabBillItemsToPatientEncounterNetTotal(double labBillItemsToPatientEncounterNetTotal) {
         this.labBillItemsToPatientEncounterNetTotal = labBillItemsToPatientEncounterNetTotal;
+    }
+
+    public List<Bill> getIssueBills() {
+        return issueBills;
+    }
+
+    public void setIssueBills(List<Bill> issueBills) {
+        this.issueBills = issueBills;
     }
 
     //DATA STRUCTURE

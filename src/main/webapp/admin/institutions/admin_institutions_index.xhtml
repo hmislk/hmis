@@ -111,11 +111,12 @@
                                             action="#{navigationController.navigateToCollectingCenter()}" >
                                         </p:commandButton>
                                         
-                                        <p:commandButton  
-                                            styleClass="linkButton" 
-                                            ajax="false" 
-                                            value="Credit Companies" 
-                                            icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}" >
+                                        <p:commandButton
+                                            styleClass="linkButton"
+                                            ajax="false"
+                                            value="Credit Companies"
+                                            icon="fas fa-credit-card" action="#{navigationController.navigateToCreditCompany()}"
+                                            rendered="#{webUserController.hasPrivilege('ManageCreditCompany')}" >
                                         </p:commandButton>
 
                                         <p:commandButton  
@@ -180,12 +181,11 @@
 
                                 <p:tab title="Developer" >
                                     <div class="d-grid gap-2">
-
-
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" icon="fa-solid fa-trash"/>
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  icon="fa-solid fa-trash-can"/>
-
-
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Config Options" icon="pi pi-database" action="#{configOptionController.navigateToDuplicateOptions()}"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Departments" icon="pi pi-database" action="#{departmentController.navigateToDuplicateDepartments()}"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Institutions" icon="pi pi-database" action="#{institutionController.navigateToDuplicateInstitutions()}"/>
                                     </div>
                                 </p:tab>
                             </p:accordionPanel>

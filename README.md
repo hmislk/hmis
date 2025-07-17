@@ -26,7 +26,8 @@ In 2004, Dr. M H B Ariyaratne, a medical doctor, pioneered the development of an
 
 Recognising the diverse needs of its users, which included clinical laboratories, medical channelling centres, and hospitals, the system expanded with additional modules to cater to these requirements.
 
-By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This project was fortunate to receive the dedicated support of students from the Sri Lanka Institute of Advanced Technical Education in Labuduwa, Galle. As part of their Higher National Diploma in Information Technology (HNDIT) programme, these students contributed under Mr. K.M.G.T.R. Waidyarathne, a Department Of Information Technology lecturer. Post-graduation, several students remained involved, continuing their support with financial backing from Dr. M H B Ariyaratne.
+By 2012, a shift was made towards a more robust platform. A new JavaEE-based system was launched as an Open Source Initiative, hosted on GitHub under the MIT license. This transaction was supported by students from the Sri Lanka Institute of Advanced Technical Education, who contributed to the project as a part of their studies.
+
 
 Commercial support was introduced to enhance the system's reach and reliability, offering services such as installations, user training, maintenance, cloud hosting, and troubleshooting. 
 
@@ -47,6 +48,12 @@ Commercial support was introduced to enhance the system's reach and reliability,
 * Inventory Management System
 * Assets and Consumable Management System
 
+### Scheduled Processes
+Scheduled tasks such as stock value recordings run automatically based on
+configured frequencies. The date calculations for these schedules are handled
+by `ScheduledProcessService`. The `Year End` calculation now correctly sets the
+next run to December 31st of the following year.
+
 
 ## Installation
 
@@ -56,7 +63,28 @@ The installation is very easy for testing. In a development setting, simply clon
 
 The features available to different roles of the users are stated in detail in the User Manual.
 
-## User Requirements 
+### Sanitizing Admin-Defined HTML
+
+Text values saved via `setLongTextValueByKey` are cleaned with JSoup's basic
+safelist before being stored. This prevents administrators from accidentally
+introducing unsafe markup.
+
+### Pharmacy Analytics Configuration
+
+Administrators can toggle individual tabs and reports in the Pharmacy Analytics page using application options. Each tab and each command button label has a corresponding boolean configuration key. Setting a value to `false` hides that element from the UI.
+
+Example keys include:
+
+- `Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab`
+- `Pharmacy Analytics - Show Pharmacy Income Report`
+
+### Pharmacy Transfer Receipt Size
+
+Transfer issue and request receipts are formatted for A4 printing. The default
+CSS sets the `.receipt-container` to `width: 21cm` so pages centre correctly on
+screen and when printed.
+
+## Request Originators 
 * Dr M H B Ariyaratne
 * Dr Jagath Samarasekara
 * Dr Krishantha Widisingha
@@ -72,62 +100,70 @@ The features available to different roles of the users are stated in detail in t
 ## System Architect 
 * Dr M H B Ariyaratne - Initiated the Project, Product owner, System Architect, Lead Developer since 2004 to date
 
-## Project Management 
-* Mr.K.M.G.T.R. Waidyarathne - Project Management from 2013 to date
+## Managing Director
+* Mr Thisara De Silva - From 2024 to date
+
+## Project Manager
+* Mr Ramath Manjitha - From 2024 to date
+
+## Technical Lead
+* Mr Geeth Madhushan - From 2024 to date
 
 ## Business Analyst
 * Miss Binuthi Nilakna Ariyaratne - From 2024 to date
   
 ## Developers
-* Dr M H B Ariyaratne
-* Mr Dushan Madhuranga
-* Mr Lahiru Madhushanka
-* Mr A C M Safrin
-* Mr K Pasan Anuradha
-* Mr Rohan Jayasundara
-* Mr Dilshan Kanishka
-* Ms Ravisarani Ranawaka
-* Ms Anushka De Silva
-* Mr Priyanka Sandaruwan
-* Mr Anura Wijesinghe
-* Mr Ruwan Tharaka
-* Mr Gayan Malshan
-* Mr Isuru Pathum
-* Mr A R C Sanka
-* Mr Senula Nanayakkara
-* Mr Pavan Thiwanka Madhushan
-* Mr Pasindu Wathsara
-* Mr Damith Deshan
-* Mr Lawan Chaamindu Jayalath Samarasekara
-
-## Business Analyst 
-* Miss Binuthi Nilakna Ariyaratne (Since 2024)
+* Dr M H B Ariyaratne(Active)
+* Mr Dushan Madhuranga (Former)
+* Mr Lahiru Madhushanka (Former) 
+* Mr A C M Safrin (Former)
+* Mr K Pasan Anuradha (Former)
+* Mr Rohan Jayasundara (Former)
+* Mr Dilshan Kanishka (Former)
+* Ms Ravisarani Ranawaka (Former)
+* Ms Anushka De Silva (Former)
+* Mr Priyanka Sandaruwan (Former)
+* Mr Anura Wijesinghe (Former)
+* Mr Ruwan Tharaka (Former)
+* Mr Gayan Malshan (Former)
+* Mr Isuru Pathum  (Former)
+* Mr A R C Sanka (Former)
+* Mr Senula Nanayakkara (Former)
+* Mr Pavan Thiwanka Madhushan (Former)
+* Mr Pasindu Wathsara (Active)
+* Mr Damith Deshan (Active)
+* Mr Lawan Chaamindu Jayalath Samarasekara (Active)
+* Mr Chinthaka Prasad Wajerathna (Active)
+* Mr Imesh Ranawella (Active)
+* Mr Pubudu Piyankara (Active)
+* Miss Dinuri Kithmini (Active)
 
 ## Quantity Control Feedback
 
-* Dr A N E M Gunasekara
-* Ms Nadeeka Darshani Wijesooriya
-* Mr Janith Liyanage
-* Ms D W C Piumini
-* Ms Irani Madushika
-* Ms Deshani Pubudu
+* Dr A N E M Gunasekara (Former)
+* Ms Nadeeka Darshani Wijesooriya (Former)
+* Mr Janith Liyanage (Former)
+* Ms D W C Piumini (Former)
+* Ms Irani Madushika (Active) 
+* Ms Deshani Pubudu (Active) 
+
 
 ## Credits 
-Our contributors and Open Source Community for their knowledge and time. Healthcare Institutions that provided financial supporters are listed below.
+Our contributors and the Open Source Community for their knowledge and time. Healthcare Institutions that provided financial supporters are listed below.
 
 * Ruhunu MediHospital, Hambanthota  - 2012 Up to date
-* Arogya Hospital, Tangalle - 2014 Up to date
-* University Medical Centre, Faculty of Medicine, University of Colombo - Starting
+* Arogya Hospital, Tangalle - 2014 to 2024
+* University Medical Centre, Faculty of Medicine, University of Colombo - 2025 onwards
 * Kirillawela Family Healthcare Centre - 2024 onwards
 * Kirinda Medical Centre - 2023 Onwards
 * Sethma Hospital, Gampaha - Implementing
 * Southern Lanka Hospital, Tangalle - Implementing
-* Arogya Channelling Centre, Tangalle -  2010 Up to date
-* Arogya Pharmacy, Tangalle -  2015 Up to date
+* Arogya Channelling Centre, Tangalle -  2010 to 2024
+* Arogya Pharmacy, Tangalle -  2015 to 2024
 * St. George Hospital, Biyagama -  2016 Up to 2019
-* Digasiri Hospital, Puttalama  2015 Up to date
-* Suwasarana Hospital, Ragama   -  2016 Up to date
-* Suwani Hospital, Galle -  2015 Up to date
+* Digasiri Hospital, Puttalama - 2015 Up to date
+* Suwasarana Hospital, Ragama -  2016 Up to date
+* Suwani Hospital, Galle - 2015 Up to date
 * Sahana Medicare, Thissamaharamaya  -  2012 Up to date
 * Matara Nursing Home, Matara - 2008 - 2010
 * BestLife Medical Centre, Kamburupitiya - 2008 - 2016
@@ -136,14 +172,14 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * Suwasahana Medical Center, Kataragama - 2015 Up to date
 * Suwana Medical Center, Akuressa - 2015 Up to date
 * New Multi Drugs, Galle - 2015 up to date
-* Matara Pharamcy, Akuressa, 2013  up to date
+* Matara Pharmacy, Akuressa, 2013 up to date
 * Matara Pharmacy, Deniyaya, 2013 up to date
 * Matara Pharmacy, Urubokka, 2013 - 2015
 * Matara Pharmacy, Galle, 2015 up to date
 * Supipi Medical Centre, Kamburupitiya 2011  up to date
 * Ahangama Medical Centre, Ahangama - 2008 up to date
-* Galle Cooperative Hospital, Galle, Sri Lanka - 2008 - 2018
-* Ruhunu Hospital, Karapitiya - 2008 - 2019
+* Galle Cooperative Hospital, Galle, Sri Lanka - 2008 up to date
+* Ruhunu Hospital, Karapitiya - 2008 up to date
 * Weligama Medical Center, Weligama - 2009  up to date
 * Osethra Medical Centre, Beliatta - 2010 up to date
 * Isuru Medihouse, Hambanthota - 2014  up to date
@@ -151,16 +187,16 @@ Our contributors and Open Source Community for their knowledge and time. Healthc
 * Horizon Medical Centre, Deberawewa - 2013  up to date
 * Pubudhu Medical Centre, Hakmana - 2008 - 2014
 * City Lab, Matara - 2013
-* Roseth Hospital, Ambalangoda - 2014 tp to date
+* Roseth Hospital, Ambalangoda - 2014 to date
 * Richmond Laboratory Services, Galle - 2010 up to date
-* Clinical Laboratory , Boossa - 2010 up 2020
+* Clinical Laboratory, Boossa - 2010 to 2020
 * Baddegama Medical Services, Baddegama - 2014 up to date
 * Sahana Medicare, Thissamaharamaya - 2014 up to date
 * Medray Medical Laboratory, Matara - 2014 up to date
-* Agunukolapelssa Medical Centre, Agunukolapelessa - 2014 up to date
+* Agunukolapelssa Medical Centre, Agunukolapelssa - 2014 up to date
 * Holton Hospital, Walasmulla - 2015 up to date
-* Unawatuna Medical Centre, Unawatuna, Galle 2015 up to date
-* Kegalu Medi Lab, 2014 up to date
+* Unawatuna Medical Centre, Unawatuna, Galle - 2015 up to date
+* Kegalu Medi Lab - 2014 up to date
 * Raliable Medi Lab, Monaragala - 2016
 * Asiri Pharmacy, Karapitiya - 2019 to date
 * LifeCare Pharmacy, Thanipolgaha - 2020 to date

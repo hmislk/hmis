@@ -31,15 +31,28 @@
                             <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                             <h:outputLabel class="mx-3" value="From Date"/>
                         </h:panelGroup>
-
-                        <p:datePicker inputStyleClass="w-100" id="fromDate" showTime="true" value="#{patientInvestigationController.fromDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="fromDate"
+                                showButtonPanel="true"
+                                value="#{patientInvestigationController.fromDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        />
 
                         <h:panelGroup class="mx-2">
                             <h:outputText value="&#xf073;" styleClass="fa mr-2" />
                             <h:outputLabel class="mx-3" value="To Date"/>
                         </h:panelGroup>
 
-                        <p:datePicker id="toDate" inputStyleClass="w-100" showTime="true" value="#{patientInvestigationController.toDate}" class="w-100" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                        <p:calendar
+                                styleClass="w-100"
+                                inputStyleClass="w-100 form-control"
+                                id="toDate"
+                                showButtonPanel="true"
+                                value="#{patientInvestigationController.toDate}"
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                        />
 
                         <h:panelGroup >
                             <h:outputText value="&#xf46d;" styleClass="fa mr-2" />
@@ -188,6 +201,20 @@
                         </h:outputLabel>
                     </p:column>
 
+                    <!-- Bill Item ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="ID" >
+                        <h:outputLabel 
+                            value="#{billItem.id}" >
+                        </h:outputLabel>
+                    </p:column>
+
+                    <!-- Bill ID ID Column -->
+                    <p:column rendered="#{webUserController.hasPrivilege('Developers')}" headerText="BILL ID" >
+                        <h:outputLabel 
+                            value="#{billItem.bill.id}" >
+                        </h:outputLabel>
+                    </p:column>
+
                     <!-- Bill Date Column -->
                     <p:column headerText="Bill Date" filterBy="#{billItem.bill.createdAt}" sortBy="#{billItem.bill.createdAt}">
                         <h:outputLabel value="#{billItem.bill.createdAt}">
@@ -330,7 +357,7 @@
                             rendered="#{billItem.bill.cancelled}" 
                             value="#{billItem.bill.cancelledBill.deptId}">
                         </h:outputLabel>
-                        
+
                     </p:column>
 
                     <p:column headerText="Refunded">

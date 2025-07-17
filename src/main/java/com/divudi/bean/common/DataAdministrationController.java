@@ -85,7 +85,7 @@ import com.divudi.core.facade.StockVarientBillItemFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
-import java.io.Serializable;
+import com.divudi.service.LogFileService;
 import java.sql.SQLSyntaxErrorException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
@@ -99,11 +99,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.persistence.Entity;
 import javax.persistence.PersistenceException;
 import javax.persistence.TemporalType;
@@ -113,6 +111,15 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.reflections.Reflections;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.nio.file.*;
+import java.time.*;
+import java.util.*;
+import javax.ejb.EJB;
+import javax.inject.Named;
+import org.primefaces.model.StreamedContent;
 
 /**
  *
@@ -205,6 +212,8 @@ public class DataAdministrationController implements Serializable {
     BillSearch billSearch;
     @Inject
     InstitutionController institutionController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
 
     @EJB
     ItemFacade itemFacade;
@@ -243,6 +252,9 @@ public class DataAdministrationController implements Serializable {
 
     @EJB
     BillEjb billEjb;
+
+    @EJB
+    private LogFileService logService;
 
     List<Bill> bills;
     List<Bill> selectedBills;
@@ -295,6 +307,44 @@ public class DataAdministrationController implements Serializable {
     private String progressMessage;
     int processedRecords = 0;
     int totalRecords = 0;
+
+    private List<Path> logs;
+    private Path selected;
+    private Path logDir;
+
+    private Path findLogDir(String p) {
+        return Paths.get(p.trim()).normalize();
+    }
+
+    public void refresh() {
+        try {
+            String configuredPath = getPayaraLogLocation();
+            if (configuredPath == null || configuredPath.trim().isEmpty()) {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Payara log location is not configured.");
+                return;
+            }
+            logDir = findLogDir(configuredPath);
+
+            if (Files.isDirectory(logDir)) {
+                logs = logService.list(logDir, fromDate, toDate);
+            } else {
+                logs = Collections.emptyList();
+                JsfUtil.addErrorMessage("Log directory not found. Please set the configuration option for Payara Log File Path");
+            }
+        } catch (IOException e) {
+            logs = Collections.emptyList();
+            JsfUtil.addErrorMessage("Error accessing log directory: " + e.getMessage());
+        }
+    }
+
+    public StreamedContent downloadFile(Path file) throws IOException {
+        return logService.download(file);
+    }
+
+    private static LocalDate toLocalDate(Date d) {
+        return d.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+    }
 
     public void convertNameToCode() {
         code = CommonFunctions.nameToCode(name);
@@ -363,10 +413,13 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public String getPayaraLogLocation() {
+        return configOptionApplicationController.getLongTextValueByKey("Location of the Payara Log", "/opt/payara/logs/app/");
+    }
+
     public void retireAllPharmacyRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for pharmacy-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -388,7 +441,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No pharmacy-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -404,13 +456,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for pharmacy-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllBillRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process for bill-related data...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -444,7 +494,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No bill-related records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -470,13 +519,11 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process for bill-related data completed.";
-        System.out.println(progressMessage);
     }
 
     public void retireAllMembershipData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
         String jpql = "Select f from Family f where f.retired=:ret";
         Map params = new HashMap();
         params.put("ret", false);
@@ -531,7 +578,6 @@ public class DataAdministrationController implements Serializable {
     public void retireAllPatientInvestigationRelatedData() {
         progress = 0;
         progressMessage = "Starting retirement process...";
-        System.out.println(progressMessage);
 
         Date retiredAt = new Date(); // Common timestamp for all retire operations
         WebUser retirer = sessionController.getLoggedUser(); // The user performing the operation
@@ -565,7 +611,6 @@ public class DataAdministrationController implements Serializable {
         if (totalRecords == 0) {
             progress = 100;
             progressMessage = "No records to retire.";
-            System.out.println(progressMessage);
             return;
         }
 
@@ -587,7 +632,6 @@ public class DataAdministrationController implements Serializable {
         // Completion message
         progress = 100;
         progressMessage = "Retirement process completed.";
-        System.out.println(progressMessage);
     }
 
     private <T> int retireEntities(List<T> entities, Date retiredAt, WebUser retirer, String uuid, AbstractFacade<T> facade) {
@@ -604,8 +648,6 @@ public class DataAdministrationController implements Serializable {
                 retirable.setRetireComments(uuid);
                 facade.edit(entity); // Use the specific facade passed as a parameter
             } else {
-                System.out.println("Entity that does not implement retirable");
-                System.out.println("entity = " + entity);
             }
             processedRecords++;
             updateProgress();
@@ -619,7 +661,6 @@ public class DataAdministrationController implements Serializable {
 
     private void updateProgress() {
         progress = (processedRecords * 100) / totalRecords;
-        System.out.println("Progress: " + progress + "%");
     }
 
     public void detectWholeSaleBills() {
@@ -648,16 +689,24 @@ public class DataAdministrationController implements Serializable {
     }
 
     public String navigateToCheckMissingFields() {
-        allCreateStetements ="";
-        executionFeedback="";
-        errors="";
-        createdSql="";
-        suggestedSql="";
+        allCreateStetements = "";
+        executionFeedback = "";
+        errors = "";
+        createdSql = "";
+        suggestedSql = "";
         return "/dataAdmin/missing_database_fields?faces-redirect=true";
+    }
+
+    public String navigateToDownloadLogFiles() {
+        return "/dataAdmin/download_log_files?faces-redirect=true";
     }
 
     public String navigateToNameToCode() {
         return "/dataAdmin/name_to_code?faces-redirect=true";
+    }
+
+    public String navigateToReportExecutionLogs() {
+        return "/dataAdmin/report_execution_logs?faces-redirect=true";
     }
 
     public String navigateToListOpdBillsAndBillItemsFields() {
@@ -713,12 +762,26 @@ public class DataAdministrationController implements Serializable {
 
     public void checkMissingFields() {
         suggestedSql = "";
-        List<EntityFieldError> entityFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingFieldErrors = new ArrayList<>();
+        List<EntityFieldError> missingTableErrors = new ArrayList<>();
 
         for (Class<?> entityClass : findEntityClassNames()) {
+            // Get root entity class name (skip base classes like Item if needed)
+            Class<?> rootEntityClass = entityClass;
+            while (rootEntityClass.getSuperclass() != null
+                    && rootEntityClass.getSuperclass().getAnnotation(javax.persistence.Entity.class) != null) {
+                rootEntityClass = rootEntityClass.getSuperclass();
+            }
+
+            // Skip subclasses so we only evaluate root-level entities
+            if (!entityClass.equals(rootEntityClass)) {
+                continue;
+            }
+
             String entityName = entityClass.getSimpleName();
             EntityFieldError entityFieldError = new EntityFieldError(entityName);
             String jpql = "SELECT e FROM " + entityName + " e";
+
             try {
                 itemFacade.executeQueryFirstResult(entityClass, jpql);
             } catch (Exception e) {
@@ -728,26 +791,52 @@ public class DataAdministrationController implements Serializable {
                 }
                 if (cause != null) {
                     String message = cause.getMessage();
-                    Pattern pattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
-                    Matcher matcher = pattern.matcher(message);
-                    while (matcher.find()) {
-                        String missingColumn = matcher.group(1);
+
+                    // Check for missing table
+                    Pattern tablePattern = Pattern.compile("Table '.*?\\.(.*?)' doesn't exist");
+                    Matcher tableMatcher = tablePattern.matcher(message);
+                    if (tableMatcher.find()) {
+                        String missingTable = tableMatcher.group(1);
+                        entityFieldError.addMissingField("Table not found: " + missingTable);
+                        missingTableErrors.add(entityFieldError);
+                        continue;
+                    }
+
+                    // Check for missing fields
+                    Pattern columnPattern = Pattern.compile("Unknown column '([^']+)' in 'field list'");
+                    Matcher columnMatcher = columnPattern.matcher(message);
+                    while (columnMatcher.find()) {
+                        String missingColumn = columnMatcher.group(1);
                         entityFieldError.addMissingField(missingColumn);
                     }
-                    if (!entityFieldError.missingFields.isEmpty()) {
-                        entityFieldErrors.add(entityFieldError);
+
+                    if (!entityFieldError.getMissingFields().isEmpty()) {
+                        missingFieldErrors.add(entityFieldError);
                     }
                 }
             }
         }
 
-        // Convert the list of EntityFieldError objects to a string
-        StringBuilder errorsBuilder = new StringBuilder();
-        for (EntityFieldError error : entityFieldErrors) {
-            errorsBuilder.append(error.toString()).append("\n");
+        StringBuilder outputBuilder = new StringBuilder();
+
+        if (!missingTableErrors.isEmpty()) {
+            outputBuilder.append("=== Missing Tables ===\n");
+            for (EntityFieldError error : missingTableErrors) {
+                for (String field : error.getMissingFields()) {
+                    outputBuilder.append("Entity: ").append(error.getEntityName())
+                            .append(", ").append(field).append("\n");
+                }
+            }
         }
 
-        errors = errorsBuilder.toString();
+        if (!missingFieldErrors.isEmpty()) {
+            outputBuilder.append("\n=== Missing Fields ===\n");
+            for (EntityFieldError error : missingFieldErrors) {
+                outputBuilder.append(error.toString()).append("\n");
+            }
+        }
+
+        errors = outputBuilder.toString().trim();
     }
 
     public List<Class<?>> findEntityClassNames() {
@@ -818,20 +907,44 @@ public class DataAdministrationController implements Serializable {
         int end = sql.lastIndexOf(")");
         String columnsSection = sql.substring(start + 1, end);
 
-        String[] definitions = columnsSection.split(",");
-        for (String def : definitions) {
-            def = def.trim();
-            // Skip constraints
-            if (def.toUpperCase().startsWith("PRIMARY KEY")
-                    || def.toUpperCase().startsWith("FOREIGN KEY")
-                    || def.toUpperCase().startsWith("CONSTRAINT")
-                    || def.toUpperCase().startsWith("UNIQUE")
-                    || def.toUpperCase().startsWith("CHECK")) {
-                continue;
+        StringBuilder current = new StringBuilder();
+        int parens = 0;
+
+        for (char c : columnsSection.toCharArray()) {
+            if (c == '(') {
+                parens++;
+            } else if (c == ')') {
+                parens--;
             }
-            columns.add(def);
+
+            if (c == ',' && parens == 0) {
+                String def = current.toString().trim();
+                if (!isConstraintDefinition(def)) {
+                    columns.add(def);
+                }
+                current.setLength(0);
+            } else {
+                current.append(c);
+            }
         }
+
+        if (current.length() > 0) {
+            String def = current.toString().trim();
+            if (!isConstraintDefinition(def)) {
+                columns.add(def);
+            }
+        }
+
         return columns;
+    }
+
+    private boolean isConstraintDefinition(String def) {
+        String upper = def.toUpperCase();
+        return upper.startsWith("PRIMARY KEY")
+                || upper.startsWith("FOREIGN KEY")
+                || upper.startsWith("CONSTRAINT")
+                || upper.startsWith("UNIQUE")
+                || upper.startsWith("CHECK");
     }
 
     private List<String> extractConstraintDefinitions(String sql) {
@@ -874,9 +987,6 @@ public class DataAdministrationController implements Serializable {
     public void createTablesAndFieldsForAllCreateStatements() {
         StringBuilder executionResults = new StringBuilder();
 
-        System.out.println("===== Starting CREATE TABLE parsing and ALTER execution =====");
-
-        // Split by CREATE TABLE, keeping it in the output
         String[] rawParts = allCreateStetements.split("(?i)CREATE TABLE");
         int counter = 0;
 
@@ -887,21 +997,24 @@ public class DataAdministrationController implements Serializable {
             }
 
             String createStatement = "CREATE TABLE " + part;
-            System.out.println("\n[INFO] Processing statement #" + (++counter));
-            System.out.println("Create SQL:\n" + createStatement);
 
             try {
+                // First execute the CREATE TABLE
+                try {
+                    itemFacade.executeNativeSql(createStatement);
+                    executionResults.append("<br/>Successfully executed: ").append(createStatement);
+                } catch (Exception e) {
+                    executionResults.append("<br/>CREATE TABLE failed (likely already exists): ").append(e.getMessage());
+                }
+
+                // Proceed with ALTER logic
                 String tableName = extractTableName(createStatement);
                 if (tableName == null || tableName.isEmpty()) {
-                    System.out.println("[WARNING] Skipping statement — table name not found.");
                     executionResults.append("<br/>Skipped malformed CREATE TABLE statement.");
                     continue;
                 }
 
-                System.out.println("[INFO] Extracted table name: " + tableName);
-
                 String alterSql = generateAlterStatements(createStatement);
-                System.out.println("[INFO] Generated ALTER statements:\n" + alterSql);
 
                 String[] sqlStatements = alterSql.split(";");
                 for (String sql : sqlStatements) {
@@ -912,22 +1025,17 @@ public class DataAdministrationController implements Serializable {
 
                     try {
                         if (isValidSqlStatement(sql)) {
-                            System.out.println("[EXEC] Running SQL: " + sql);
                             itemFacade.executeNativeSql(sql);
                             executionResults.append("<br/>Successfully executed: ").append(sql);
                         } else {
-                            System.out.println("[ERROR] Potentially harmful SQL rejected: " + sql);
                             executionResults.append("<br/>Rejected potentially harmful SQL: ").append(sql);
                         }
                     } catch (Exception e) {
-                        System.out.println("[ERROR] SQL failed: " + sql);
-                        System.out.println("[ERROR] Exception: " + e.getMessage());
                         executionResults.append("<br/>Failed to execute: ").append(sql);
                         executionResults.append("<br/>Error: ").append(e.getMessage());
                     }
                 }
             } catch (Exception e) {
-                System.out.println("[ERROR] Unexpected error while processing create statement.");
                 e.printStackTrace();
                 executionResults.append("<br/>Error processing create statement: ").append(e.getMessage());
             }
@@ -935,20 +1043,19 @@ public class DataAdministrationController implements Serializable {
 
         executionFeedback = executionResults.toString();
 
-        System.out.println("===== All CREATE TABLE processing complete =====");
     }
-    
+
     // Add this method to validate SQL statements
     private boolean isValidSqlStatement(String sql) {
         sql = sql.trim().toLowerCase();
         // Only allow CREATE TABLE, ALTER TABLE statements, and setting foreign key checks
-        return (sql.startsWith("create table") || 
-                sql.startsWith("alter table") ||
-                sql.startsWith("set foreign_key_checks")) &&
-               !sql.contains("drop") &&
-               !sql.contains("truncate") &&
-               !sql.contains("delete") &&
-               !sql.contains("update");
+        return (sql.startsWith("create table")
+                || sql.startsWith("alter table")
+                || sql.startsWith("set foreign_key_checks"))
+                && !sql.contains("drop")
+                && !sql.contains("truncate")
+                && !sql.contains("delete")
+                && !sql.contains("update");
     }
 
     public void runSqlToCreateFields() {
@@ -1817,6 +1924,10 @@ public class DataAdministrationController implements Serializable {
         fillPharmacyCategory();
     }
 
+    public void causeError() {
+        throw new RuntimeException("This is a test exception to verify error handling.");
+    }
+
     public void deActveSelectedCategories() {
         if (selectedPharmaceuticalItemCategorys.isEmpty()) {
             JsfUtil.addErrorMessage("Please Select Category");
@@ -2370,8 +2481,22 @@ public class DataAdministrationController implements Serializable {
     public void setTabIndexMissingFields(int tabIndexMissingFields) {
         this.tabIndexMissingFields = tabIndexMissingFields;
     }
-    
-    
+
+    public List<Path> getLogs() {
+        return logs;
+    }
+
+    public void setLogs(List<Path> logs) {
+        this.logs = logs;
+    }
+
+    public Path getSelected() {
+        return selected;
+    }
+
+    public void setSelected(Path selected) {
+        this.selected = selected;
+    }
 
     public class EntityFieldError {
 

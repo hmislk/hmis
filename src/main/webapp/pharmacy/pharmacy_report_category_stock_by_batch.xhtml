@@ -17,20 +17,20 @@
                     <p:panel header="Category Stock Report" >
 
                         <h:panelGrid columns="8" class="my-2" >
-                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <h:outputLabel value="Department" />
                             <p:autoComplete class="mx-2" completeMethod="#{departmentController.completeDept}" 
                                             var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
                                             forceSelection="true" value="#{reportsStock.department}" />
 
-                            <h:outputLabel value="Category" ></h:outputLabel>
+                            <h:outputLabel value="Category" />
                             <p:autoComplete class="mx-2" completeMethod="#{pharmaceuticalItemCategoryController.completeCategory}" var="dept" 
                                             itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" value="#{reportsStock.category}" >
                             </p:autoComplete>
-                            <p:commandButton class="ui-button-warning " icon="fas fa-cogs"  ajax="false" value="Process" actionListener="#{reportsStock.fillCategoryStocks()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-warning " icon="fas fa-cogs"  ajax="false" value="Process" actionListener="#{reportsStock.fillCategoryStocks()}" />
                             <p:commandButton class="ui-button-info mx-2" icon="fas fa-print"  value="Print" ajax="false" >
-                                <p:printer target="gpBillPreview" ></p:printer>
+                                <p:printer target="gpBillPreview" />
                             </p:commandButton>
-                            <p:commandButton class="ui-button-success " icon="fas fa-file-excel"  ajax="false" value="Excel" styleClass="noPrintButton" style="float: right;" >
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel"  ajax="false" value="Excel" style="float: right;" >
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Category_report"  />
                             </p:commandButton> 
                             
@@ -61,7 +61,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>    
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.name}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.name}" />
                                 </p:column>
 
                                 <p:column headerText="Code" 
@@ -72,7 +72,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemBatch.item.code}" style="width: 100px!important;" />
                                 </p:column>
 
                                 <p:column headerText="Stock Quentity" 
@@ -82,11 +82,11 @@
                                         <h:outputLabel value="Stock Quantity"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.stock}"  >
-                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,###" />
                                     </h:outputLabel>      
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.totalQty}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -97,7 +97,7 @@
                                         <h:outputLabel value="Expiry"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.dateOfExpire}"  >
-                                        <f:convertDateTime pattern="dd MMM yy" ></f:convertDateTime>
+                                        <f:convertDateTime pattern="dd MMM yy" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -110,7 +110,7 @@
                                         <h:outputLabel value="Purchase Rate"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -121,11 +121,11 @@
                                         <h:outputLabel value="Purchase Value"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.purcahseRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockPurchaseValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
@@ -137,7 +137,7 @@
                                         <h:outputLabel value="Sale Rate"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
 
@@ -148,20 +148,20 @@
                                         <h:outputLabel value="Sale Value"/>    
                                     </f:facet>
                                     <h:outputLabel value="#{i.itemBatch.retailsaleRate * i.stock}"  >
-                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                     <f:facet name="footer" >
                                         <h:outputLabel value="#{reportsStock.stockSaleValue}" >
-                                            <f:convertNumber parent="#,##0.00" ></f:convertNumber>
+                                            <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
                             </p:dataTable>
                         </h:panelGroup>
                         <p:panel>
-                            <h:outputLabel value="Printed At " ></h:outputLabel>
+                            <h:outputLabel value="Printed At " />
                             <h:outputLabel value="#{sessionController.currentDate}" >
-                                <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a" ></f:convertDateTime>
+                                <f:convertDateTime pattern="dd MMMM yyyy - hh:mm a"/>
                             </h:outputLabel>
                         </p:panel>
                     </p:panel>

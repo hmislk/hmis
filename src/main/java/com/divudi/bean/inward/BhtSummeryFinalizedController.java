@@ -697,15 +697,17 @@ public class BhtSummeryFinalizedController implements Serializable {
     }
 
     public void createTablesFinalized() {
+        
+        List<PatientEncounter> cpts = getInwardBean().fetchChildPatientEncounter(patientEncounter);
         makeNullList();
-        patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter());
+        patientRooms = getInwardBean().fetchPatientRoomAll(getPatientEncounter(),cpts);
         billItems = getInwardBean().fetchEagerBillItems(getPatientEncounter());
         billFees = getInwardBean().fetchBillFees(getPatientEncounter());
-        patientItems = getInwardBean().fetchPatientItem(getPatientEncounter());
+        patientItems = getInwardBean().fetchPatientItem(getPatientEncounter(),cpts);
         outSideBills = getInwardBean().fetchOutSideBill2(getPatientEncounter());
-        proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter());
-        assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter());
-        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter());
+        proBillFee = getInwardBean().createProfesionallFee(getPatientEncounter(),cpts);
+        assistBillFee = getInwardBean().createDoctorAndNurseFee(getPatientEncounter(),cpts);
+        paymentBills = getInwardBean().fetchPaymentBill(getPatientEncounter(),cpts);
         paidbyPatientTotalValue = getInwardReportControllerBht().calPaidbyPatient(paymentBills);
         pharmacyItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.PharmacyBhtPre);
         storeItems = getInwardBean().fetchPharmacyIssueBillItem(getPatientEncounter(), BillType.StoreBhtPre);

@@ -41,18 +41,31 @@
                 <p:inputText value="#{bi.qty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <p:outputLabel value="#{bi.qty}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
-             <p:column headerText="Rate" class="text-end">
+            <p:column headerText="Remaining Qty" class="text-end">
+                <p:inputText value="#{bi.remainingQty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.remainingQty}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Remaining Free Qty" class="text-end">
+                <p:inputText value="#{bi.pharmaceuticalBillItem.remainingFreeQty}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.pharmaceuticalBillItem.remainingFreeQty}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Rate" class="text-end">
                 <p:inputText value="#{bi.rate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <p:outputLabel value="#{bi.rate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Discount Rate" class="text-end">
+                <p:inputText value="#{bi.discountRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.discountRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Margin Rate" class="text-end">
+                <p:inputText value="#{bi.marginRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.marginRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
             <p:column headerText="Net Rate" class="text-end">
                 <p:inputText value="#{bi.netRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <p:outputLabel value="#{bi.netRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
-             <p:column headerText="Margin Rate" class="text-end">
-                <p:inputText value="#{bi.marginRate}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
-                <p:outputLabel value="#{bi.marginRate}" rendered="#{!cc.attrs.editable}" class="text-end" />
-            </p:column>
+
             <p:column headerText="Hospital Fee" class="text-end">
                 <p:inputText value="#{bi.hospitalFee}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <h:outputText value="#{bi.hospitalFee}" rendered="#{!cc.attrs.editable}" class="text-end" />
@@ -77,7 +90,11 @@
                 <p:inputText value="#{bi.discount}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <h:outputText value="#{bi.discount}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>
-              <p:column headerText="Service Charge" class="text-end">
+            <p:column headerText="VAT" class="text-end">
+                <p:inputText value="#{bi.vat}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
+                <p:outputLabel value="#{bi.vat}" rendered="#{!cc.attrs.editable}" class="text-end" />
+            </p:column>
+            <p:column headerText="Service Charge" class="text-end">
                 <p:inputText value="#{bi.marginValue}" rendered="#{cc.attrs.editable}" class="w-100 m-1 text-end" />
                 <h:outputText value="#{bi.marginValue}" rendered="#{!cc.attrs.editable}" class="text-end" />
             </p:column>

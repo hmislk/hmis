@@ -12,7 +12,16 @@ public enum PharmacyReports implements IReportType {
     ALL_CASHIER_REPORT("All Cashier Report"),
     ALL_CASHIER_SUMMERY_TOTAL_INCOME_REPORT("All Cashier summary Total Income Report"),
     ALL_CASHIER_SUMMERY_CHANNEL_INCOME_REPORT("All Cashier summary Channel Income Report"),
-    ALL_CASHIER_SUMMERY_CASHIER_INCOME_REPORT("All Cashier summary Cashier Income Report"),;
+    ALL_CASHIER_SUMMERY_CASHIER_INCOME_REPORT("All Cashier summary Cashier Income Report"),
+    PHARMACY_SALE_SUMMARY("Pharmacy Sale Summary"),
+    PHARMACY_SALE_SUMMARY_DATE("Pharmacy Sale Summary Date"),
+    ALL_DEPARTMENT_SALE_SUMMARY("All department Sale Summary"),
+    SALE_SUMMARY_BY_BILL_TYPE("Sale summary by Bill Type"),
+    SALE_SUMMARY_BY_PAYMENT_METHOD("Sale summary by payment method"),
+    SALE_SUMMARY_BY_PAYMENT_METHOD_BY_BILL("Sale summary by payment method by Bill"),
+    STOCK_REPORT_BY_EXPIRY("Stock report by Expiry"),
+    STOCK_REPORT_BY_ITEM("Stock report by Item"),
+    STOCK_REPORT_BY_ZERO_ITEM("Stock report by Zero Item");
 
 
     private final String displayName;

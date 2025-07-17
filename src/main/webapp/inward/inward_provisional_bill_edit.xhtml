@@ -27,7 +27,7 @@
                                         <p:commandButton 
                                             icon=" fa fa-refresh"
                                             value="Refresh" 
-                                            action="#"
+                                            action="#{inwardSearch.refreshBill}"
                                             class="ui-button-warning"
                                             process="@this"
                                             update="@all" />
@@ -304,16 +304,10 @@
                                             <div class="d-flex justify-content-between">
                                                 <div><h:outputLabel value="Original" class="mt-2"/></div>
                                                 <div class="d-flex gap-2">
-                                                    <p:selectBooleanCheckbox
-                                                        id="box"
-                                                        value="#{inwardSearch.withProfessionalFee}"
-                                                        itemLabel="With Professional Fee"  
-                                                        onchange="#{inwardSearch.showProfessionalFee()}">
-                                                        <p:ajax process="@this" update="finalOriginalBillPriview"/>
-                                                    </p:selectBooleanCheckbox>
                                                     <p:commandButton 
                                                         icon="fa fa-print"
                                                         value="Hospital Bill"
+                                                        disabled="#{inwardSearch.changed}"
                                                         class="ui-button-info"
                                                         ajax="false">
                                                         <p:printer target="finalOriginalBillPriview" ></p:printer>

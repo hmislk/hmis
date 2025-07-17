@@ -25,6 +25,14 @@
                                              class="ui-button-success"
                                              action="#{dataUploadController.uploadDepartments()}"
                                              ajax="false"/>
+                            <p:commandButton
+                                    value="Download Template"
+                                    ajax="false"
+                                    style="float: right;"
+                                    class="ui-button-warning"
+                                    icon="fa fa-download">
+                                <p:fileDownload value="#{dataUploadController.getTemplateForDepartmentUpload()}" />
+                            </p:commandButton>
                             <p:dialog modal="true" widgetVar="statusDialog" header="Status" draggable="false" closable="false" resizable="false">
                             </p:dialog>
                             <script type="text/javascript">

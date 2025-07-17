@@ -225,10 +225,10 @@
                                     </f:facet>
                                 </p:column>
                                 <p:column headerText="Supplier"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.bill.fromInstitution.name}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.bill.transientSupplier.name}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column headerText="Bill Type"  style="padding: 0px!important; margin: 0px!important;" >
-                                    <h:outputText value="#{row.billTypeAtomic.label}"  style="padding: 0px!important; margin: 0px!important;" />
+                                    <h:outputText value="#{row.bill.billTypeAtomic.label}"  style="padding: 0px!important; margin: 0px!important;" />
                                 </p:column>
                                 <p:column 
                                     rendered="#{webUserController.hasPrivilege('Developers')}"

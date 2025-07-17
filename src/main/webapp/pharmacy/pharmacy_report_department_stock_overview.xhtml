@@ -1,0 +1,301 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      >
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form id="frm">
+                    <p:panel header="Stock Overview Report" >
+
+                        <h:panelGrid columns="8" >
+                            <h:outputLabel value="Department" ></h:outputLabel>
+                            <p:autoComplete class=" mx-2"  completeMethod="#{departmentController.completeDept}"
+                                            var="dept" itemLabel="#{dept.name}" 
+                                            itemValue="#{dept}" forceSelection="true" 
+                                            value="#{reportsStock.department}"  >
+                            </p:autoComplete>
+                            <h:outputLabel value="Month" ></h:outputLabel>
+                            <p:datePicker 
+                                value="#{reportsStock.toDate}" 
+                                view="month"
+                                maxdate="#{sessionController.currentDate}"
+                                pattern="MM/yyyy"
+                                showIcon="true"
+                                class="mx-1"
+                                />
+                            <h:outputLabel />
+                            <p:commandButton class="ui-button-warning" icon="fas fa-cogs" ajax="false" value="Process" 
+                                             actionListener="#{reportsStock.generateDepartmentStockOverviewReport()}" ></p:commandButton>
+                            <p:commandButton class="ui-button-success mx-2" icon="fas fa-file-excel" value="Excel" ajax="false">
+                                <p:dataExporter type="xlsx" target="tbl" fileName="Stock_Overview_Report"
+
+                                                />
+                            </p:commandButton>
+                            <p:commandButton class="ui-button-info" icon="fas fa-print" value="Print" ajax="false">
+                                <p:printer target="gpBillPreview" />
+                            </p:commandButton>
+                            
+                        </h:panelGrid>
+
+                        <h:panelGroup id="gpBillPreview"  styleClass="noBorder summeryBorder" class="w-100 my-4">
+
+                            <p:panel class="my-2">
+                                <table class="table w-100">
+                                    <thead>
+                                        <tr class="text-light bg-dark">
+                                            <th colspan="3">
+                                                <h:outputText value="Description" ></h:outputText>
+                                            </th>
+                                            <th class="text-end">Purchase Value</th>
+                                            <th class="text-end">Retail Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="font-bold" style="font-weight: 600">Starting Stock at 
+                                                <h:outputLabel value="#{reportsStock.findStartOfMonth(reportsStock.toDate)}" >
+                                                    <f:convertDateTime pattern="dd.MM.yyyy" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.startingPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.startingSaleValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 700">Purchases at 
+                                                <h:outputLabel class="font-bold" value="#{reportsStock.findStartOfMonth(reportsStock.toDate)}" >
+                                                    <f:convertDateTime pattern="MMMM yyyy" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td >GRN - Credit</td>
+                                            <td>
+                                                <h:outputText value="#{reportsStock.totalGrnCreditPurchaseValue lt 0 ? -reportsStock.totalGrnCreditPurchaseValue : reportsStock.totalGrnCreditPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{reportsStock.totalGrnCreditRetailValue lt 0 ? -reportsStock.totalGrnCreditRetailValue : reportsStock.totalGrnCreditRetailValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td >GRN - Cash</td>
+                                            <td >
+                                                <h:outputText value="#{reportsStock.totalGrnCashPurchaseValue lt 0 ? -reportsStock.totalGrnCashPurchaseValue : reportsStock.totalGrnCashPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{reportsStock.totalGrnCashRetailValue lt 0 ? -reportsStock.totalGrnCashRetailValue : reportsStock.totalGrnCashRetailValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td >Direct Purchase</td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalDirectPurchasePurchaseValue lt 0 ? -reportsStock.totalDirectPurchasePurchaseValue : reportsStock.totalDirectPurchasePurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalDirectPurchaseRetailValue lt 0 ? -reportsStock.totalDirectPurchaseRetailValue : reportsStock.totalDirectPurchaseRetailValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.purchaseValueAfterGrn}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.saleValueAfterGrn}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td >GRN Return</td>
+                                            <td >
+                                                <h:outputText value="#{reportsStock.totalGrnReturnPurchaseValue lt 0 ? -reportsStock.totalGrnReturnPurchaseValue : reportsStock.totalGrnReturnPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td>
+                                                <h:outputText value="#{reportsStock.totalGrnReturnRetailValue lt 0 ? -reportsStock.totalGrnReturnRetailValue : reportsStock.totalGrnReturnRetailValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td >Free Quantity</td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalGrnFreeQtyPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalGrnFreeQtyRetailValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.purchaseValueAfterGrnReturnAndFreeQty}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.saleValueAfterGrnReturnAndFreeQty}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 700">#{reportsStock.department.name} Sale</td>
+                                            <td style="font-weight: 700">Purchase Rate</td>
+                                            <td style="font-weight: 700">Retail Rate</td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-end">Credit - </td>
+                                            <td >
+                                                <h:outputText value="#{reportsStock.totalPurchaseSaleCreditValue lt 0 ? -reportsStock.totalPurchaseSaleCreditValue : reportsStock.totalPurchaseSaleCreditValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td >
+                                                <h:outputText value="#{reportsStock.totalRetailSaleCreditValue lt 0 ? -reportsStock.totalRetailSaleCreditValue : reportsStock.totalRetailSaleCreditValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-end">Cash - </td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalPurchaseSaleCashValue lt 0 ? -reportsStock.totalPurchaseSaleCashValue : reportsStock.totalPurchaseSaleCashValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.totalRetailSaleCashValue lt 0 ? -reportsStock.totalRetailSaleCashValue : reportsStock.totalRetailSaleCashValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.purchaseValueAfterSale}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end">
+                                                <h:outputText value="#{reportsStock.saleValueAfterSale}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="font-weight: 700">#{reportsStock.department.name} Disbursement</td>
+                                            <td style="font-weight: 700"></td>
+                                            <td style="font-weight: 700"></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        <ui:repeat value="#{reportsTransfer.listz}" var="i">
+                                            <tr>
+                                            <td>#{i.string}</td>
+                                            <td >
+                                                <h:outputText value="#{-i.value3}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td >
+                                                <h:outputText value="#{-i.value2}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                        </ui:repeat>
+                                        <tr>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="text-end" style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.purchaseValueAfterDisbursement}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end" style="border-bottom: 1px solid">
+                                                <h:outputText value="#{reportsStock.saleValueAfterDisbursement}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>                                            
+                                        </tr>
+                                        <tr>
+                                            <td class="font-bold" style="font-weight: 600">Closing Stock at 
+                                                <h:outputLabel value="#{reportsStock.findEndofMonth(reportsStock.toDate)}" >
+                                                    <f:convertDateTime pattern="dd.MM.yyyy" />
+                                                </h:outputLabel>
+                                            </td>
+                                            <td></td>
+                                            <td></td>
+                                            <td class="text-end" style="font-weight: 700">
+                                                <h:outputText value="#{reportsStock.finalTotalPurchaseValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>
+                                            <td class="text-end" style="font-weight: 700">
+                                                <h:outputText value="#{reportsStock.finalTotalSaleValue}" >
+                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                </h:outputText>
+                                            </td>                                            
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </p:panel>
+
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+
+
+            </ui:define>
+
+
+        </ui:composition>
+
+    </h:body>
+</html>

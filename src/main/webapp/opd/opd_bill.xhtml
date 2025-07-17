@@ -56,7 +56,7 @@
                                                     </div>
                                                 </div>-->
                         <div class="row" >
-                            <div class="col-md-6" >
+                            <div class="col-md-8" >
                                 <p:focus  context="txtQuickSearchPhoneNumber" ></p:focus>
 
                                 <p:panel id="ptImp">
@@ -643,157 +643,201 @@
                                     <p:tabView id="tblBillItem" activeIndex="#{configOptionApplicationController.getLongValueByKey('OPD Bill Item and Fee Active Index')}" >
                                         <p:tab id="tabBillItems" title="Bill Items" >
                                             <p:dataTable id="tblRequests" rowIndexVar="rowIndex" value="#{opdBillController.lstBillEntries}" var="bi" >
-                                                <p:column  style="width: 2em;" >
-                                                    <f:facet name="header">No</f:facet>
-                                                        #{rowIndex+1}
-                                                </p:column>
-                                                <p:column  style="min-width: 9em; text-align: left;" >
+                                                <p:column  width="2em" >
                                                     <f:facet name="header">
-                                                        <h:outputText style="min-width: 10em;" value="Item" />
+                                                        <h:outputText value="No." />
                                                     </f:facet>
-                                                    <h:outputText value="#{bi.billItem.item.name}" style="width: 5em;"  ></h:outputText>
+                                                    <h:outputText value="#{rowIndex+1}" />
 
-                                                    <h:outputText value="#{bi.billItem.qty}" class="mx-3" rendered="#{bi.billItem.item.requestForQuentity}" ></h:outputText>
 
                                                 </p:column>
+                                                <p:column class="6em" >
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Item" />
+                                                    </f:facet>
 
-                                                <p:column  style="width: 6em; text-align: left;" >
+                                                    <p:commandLink
+                                                        title="View Details"
+                                                        value="#{bi.billItem.item.name}"
+                                                        oncomplete="PF('dialog#{rowIndex}').show()"
+                                                        update="tblRequests"
+                                                        process="tblRequests">
+                                                    </p:commandLink>
+
+                                                    <p:dialog id="dialog"
+                                                              widgetVar="dialog#{rowIndex}"
+                                                              header="Details"
+                                                              modal="true"
+                                                              closable="true"
+                                                              resizable="false"
+                                                              class="w-75"
+                                                              dynamic="true">
+
+                                                        <p:tabView >
+                                                            <p:tab title="Basic Details" >
+                                                                <p:panelGrid 
+                                                                    layout="tabular"
+                                                                    columns="2" styleClass="w-100">
+                                                                    <p:outputLabel value="Item Name" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.name}" />
+
+                                                                    <p:outputLabel value="Item Code" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.code}" />
+
+                                                                    <p:outputLabel  value="Rate" class="w-100"/>
+                                                                    <p:outputLabel value="#{bi.billItem.netRate}" class="w-100 text-end">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </p:outputLabel>
+
+                                                                    <p:outputLabel value="Quantity" />
+                                                                    <p:outputLabel value="#{bi.billItem.qty}" class="w-100 text-end">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </p:outputLabel>
+
+                                                                    <p:outputLabel value="Value" />
+                                                                    <p:outputLabel value="#{bi.billItem.netValue}" class="w-100 text-end">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </p:outputLabel>
+
+                                                                </p:panelGrid>
+
+                                                            </p:tab>
+                                                            <p:tab title="Item Details" >
+                                                                <p:panelGrid 
+                                                                    layout="tabular"
+                                                                    columns="2" styleClass="w-100">
+
+                                                                    <p:outputLabel value="Item Name" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.name}" />
+
+                                                                    <p:outputLabel value="Item Code" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.code}" />
+
+                                                                    <p:outputLabel value="Item Institution" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.institution.name}" />
+
+                                                                    <p:outputLabel value="Item Department" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.department.name}" />
+
+                                                                    <p:outputLabel value="Requested Institution" />
+                                                                    <h:outputText value="#{bi.billItem.requestedFromDepartment.institution.name}">
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Requested Site" />
+                                                                    <h:outputText value="#{bi.billItem.requestedFromDepartment.site.name}">
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Requested Department" />
+                                                                    <h:outputText value="#{bi.billItem.requestedFromDepartment.name}">
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Peforming Institution" />
+                                                                    <h:outputText value="#{bi.billItem.peformedDepartment.institution.name}">
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Peforming Site" />
+                                                                    <h:outputText value="#{bi.billItem.peformedDepartment.site.name}">
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Peforming Department" />
+                                                                    <h:outputText value="#{bi.billItem.peformedDepartment.name}">
+                                                                    </h:outputText>
+
+
+                                                                </p:panelGrid>
+                                                            </p:tab>
+                                                            <p:tab title="Financial Details" >
+                                                                <p:panelGrid 
+                                                                    layout="tabular"
+                                                                    columns="2" styleClass="w-100">
+
+                                                                    <p:outputLabel value="Item Name" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.name}" />
+
+                                                                    <p:outputLabel value="Item Code" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.code}" />
+
+                                                                    <p:outputLabel value="Item Institution" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.institution.name}" />
+
+                                                                    <p:outputLabel value="Item Department" />
+                                                                    <p:outputLabel value="#{bi.billItem.item.department.name}" />
+
+                                                                    <p:outputLabel value="Gross Rate" />
+                                                                    <h:outputText value="#{bi.billItem.rate}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Discount Rate" />
+                                                                    <h:outputText value="#{bi.billItem.discountRate}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Net Rate" />
+                                                                    <h:outputText value="#{bi.billItem.netRate}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Quantity" />
+                                                                    <h:outputText value="#{bi.billItem.qty}" />
+
+                                                                    <p:outputLabel value="Gross Value" />
+                                                                    <h:outputText value="#{bi.billItem.grossValue}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Discount" />
+                                                                    <h:outputText value="#{bi.billItem.discount}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                    <p:outputLabel value="Net Value" />
+                                                                    <h:outputText value="#{bi.billItem.netValue}">
+                                                                        <f:convertNumber pattern="#,##0.00" />
+                                                                    </h:outputText>
+
+                                                                </p:panelGrid>
+                                                            </p:tab>
+
+                                                        </p:tabView>
+
+
+                                                    </p:dialog>
+
+
+
+                                                </p:column>
+                                                <p:column  width="2em" class="text-end" >
+                                                    <f:facet name="header">
+                                                        <h:outputText value="Qty" />
+                                                    </f:facet>
+                                                    <h:outputText value="#{bi.billItem.qty}" class="mx-1 text-end"  ></h:outputText>
+                                                </p:column>
+                                                <p:column  width="4em" >
                                                     <f:facet name="header">Department</f:facet>
                                                         #{bi.billItem.item.department.name}
                                                 </p:column>
-                                                <p:column style="width: 6em;">
+                                                <p:column width="5em">
                                                     <f:facet name="header">Priority</f:facet>
-                                                    <p:selectOneMenu value="#{bi.billItem.priority}"    >
+                                                    <p:selectOneMenu value="#{bi.billItem.priority}" class="w-100" >
                                                         <p:ajax event="blur" process="@this" ></p:ajax>
                                                         <f:selectItem itemLabel="Not Set" ></f:selectItem>
                                                         <f:selectItems value="#{enumController.priorities}" ></f:selectItems>
                                                     </p:selectOneMenu>
                                                 </p:column>
-                                                <p:column style="width: 4em;">
+                                                <p:column width="5em" class="text-end">
                                                     <f:facet name="header">Fee</f:facet>
                                                     <h:outputText value="#{bi.billItem.netValue}">
                                                         <f:convertNumber pattern="#,##0.00" />
                                                     </h:outputText>
                                                 </p:column>
-                                                <p:column style="width: 2em;">
+                                                <p:column width="2em">
                                                     <p:commandButton id="btnRemove" value="X" action="#{opdBillController.removeBillItem}" process="btnRemove" update=":#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} :#{p:resolveFirstComponentWithId('tabBillFeeBundled',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"  >
                                                         <f:setPropertyActionListener  value="#{rowIndex}" target="#{opdBillController.index}" />
                                                     </p:commandButton>
                                                 </p:column>
                                             </p:dataTable>
                                         </p:tab>
-
-                                        <p:tab id="tabBillFee" title="Fees" rendered="false" >
-                                            <p:dataTable rowIndexVar="rowIndex" value="#{opdBillController.lstBillFees}" var="bif" rowKey="#{bif.id}" class="w-100">
-                                                <p:column>
-                                                    <f:facet name="header">Item Name</f:facet>
-                                                    <h:outputText value="#{bif.billItem.item.name}" />
-                                                    <h:outputText value=" - " />
-                                                    <h:outputText value="#{bif.fee.name}" rendered="#{bif.fee !=null}" ></h:outputText>
-                                                </p:column>
-
-                                                <p:column>
-                                                    <f:facet name="header">Payee</f:facet>  
-
-                                                    <h:panelGroup rendered="#{bif.fee.feeType eq 'Staff'}" >
-
-                                                        <h:panelGroup>
-                                                            <p:outputLabel 
-                                                                value="Speciality"  
-                                                                rendered="#{bif.fee.speciality!=null}" 
-                                                                class="mx-2">
-                                                            </p:outputLabel>
-                                                            <p:selectOneMenu
-                                                                id="drSp" 
-                                                                value="#{bif.fee.speciality}" 
-                                                                rendered="#{bif.fee.speciality!=null}" 
-                                                                filter="true" 
-                                                                filterMatchMode="contains"
-                                                                class="mx-2">
-                                                                <f:selectItems  value="#{specialityController.items}" var="bis" itemLabel="#{bis.name}" itemValue="#{bis}" />
-                                                                <p:ajax process="drSp" update="drs"/>
-                                                            </p:selectOneMenu>
-                                                            <h:panelGroup rendered="#{bif.fee.speciality!=null}"  >
-                                                                <br/>
-                                                            </h:panelGroup>
-                                                        </h:panelGroup>
-                                                        <h:panelGroup id="drs" >
-                                                            <p:outputLabel value="Doctor" ></p:outputLabel>
-                                                            <p:selectOneMenu  
-                                                                value="#{bif.staff}" 
-                                                                rendered="#{bif.fee.speciality ne null}" 
-                                                                filter="true" 
-                                                                filterMatchMode="contains"
-                                                                class="mx-2">
-                                                                <f:selectItems  value="#{staffController.getSpecialityStaff(bif.fee.speciality)}" var="bifs" itemLabel="#{bifs.person.name}" itemValue="#{bifs}" />
-                                                            </p:selectOneMenu>
-
-
-
-                                                            <p:autoComplete 
-                                                                class="w-100 mx-2"
-                                                                inputStyleClass="w-100"
-                                                                forceSelection="true" 
-                                                                rendered="#{bif.fee.speciality eq null}" 
-                                                                value="#{bif.staff}" 
-                                                                completeMethod="#{doctorController.completeDoctor}" var="mys" 
-                                                                itemLabel="#{mys.person.name}" 
-                                                                itemValue="#{mys}">
-                                                                <p:column headerText="Speciality">
-                                                                    <h:outputText value="#{mys.speciality.name}" ></h:outputText>
-                                                                </p:column>
-                                                                <p:column headerText="Doctor">
-                                                                    <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                                </p:column>
-                                                            </p:autoComplete>
-
-                                                        </h:panelGroup>
-
-                                                        <p:commandButton 
-                                                            id="btnChangeDocByFee"
-                                                            process="btnChangeDocByFee  drs"
-                                                            update=":#{p:resolveFirstComponentWithId('panelWorkingStaff',view).clientId}"
-                                                            title="Set Doctor"  
-                                                            icon="fa fa-user-md" 
-                                                            action="#{opdBillController.changeBillDoctorByFee(bif)}">
-                                                        </p:commandButton>
-
-
-                                                    </h:panelGroup>
-
-                                                </p:column>
-
-
-                                                <p:column style="width:10em;">
-                                                    <f:facet name="header">Fee</f:facet>
-                                                    <p:inputText 
-                                                        autocomplete="off"  
-                                                        required="true" 
-                                                        requiredMessage="Please Check Changed Fees.Please enter correct value or Zero"
-                                                        id="txtFeeVal" 
-                                                        class="m-2"
-                                                        style="width: 6em;"
-                                                        value="#{bif.feeGrossValue}" disabled="#{!bif.billItem.item.userChangable}" >
-                                                        <f:convertNumber pattern="#,##0.00" />
-                                                        <f:ajax event="keyup" execute="@this" 
-                                                                render=":#{p:resolveFirstComponentWithId('tblRequests',view).clientId}  :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                listener="#{opdBillController.feeChangeListener(bif)}" />
-                                                        <f:ajax event="blur" execute="@this :#{p:resolveFirstComponentWithId('tabBillFee',view).clientId}" 
-                                                                render=":#{p:resolveFirstComponentWithId('panelBillItems',view).clientId} :#{p:resolveFirstComponentWithId('msg',view).clientId} :#{p:resolveFirstComponentWithId('pBillDetails',view).clientId}"
-                                                                listener="#{opdBillController.feeChangeListener(bif)}" />
-
-
-                                                    </p:inputText>
-                                                    <p:commandButton ajax="false" 
-                                                                     icon="fa fa-refresh" 
-                                                                     disabled="#{!bif.billItem.item.userChangable}" 
-                                                                     action="#{opdBillController.feeChangeListener(bif)}" />
-                                                </p:column>
-                                            </p:dataTable>
-
-
-                                        </p:tab>
-
 
                                         <p:tab id="tabBillFeeBundled" title="Fees" >
                                             <table class="table table-striped">
@@ -814,24 +858,85 @@
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <ui:repeat value="#{opdBillController.billFeeBundleEntrys}" var="billFeeBundleEntry">
+                                                    <ui:repeat 
+                                                        value="#{opdBillController.billFeeBundleEntrys}" 
+                                                        var="billFeeBundleEntry">
                                                         <tr>
                                                             <td>
-                                                                <h:panelGrid columns="3" >
+                                                                <p:commandLink 
+                                                                    title="View Fee Details"
+                                                                    oncomplete="PF('bundleFeeDialog#{status.index}').show()"
+                                                                    update="bundleFeeDialog#{status.index}"
+                                                                    process="@this">
                                                                     <p:outputLabel class="m-1" value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
                                                                     <p:outputLabel value=" - " ></p:outputLabel>
                                                                     <p:outputLabel  class="m-1"  value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
-                                                                </h:panelGrid>
+                                                                </p:commandLink>
+                                                                <p:dialog id="bundleFeeDialog#{status.index}"
+                                                                          widgetVar="bundleFeeDialog#{status.index}"
+                                                                          header="Bill Fee Details"
+                                                                          modal="true"
+                                                                          closable="true"
+                                                                          resizable="false"
+                                                                          class="w-75"
+                                                                          dynamic="true">
+
+                                                                    <p:panelGrid layout="tabular" columns="2" class="w-100">
+
+                                                                        <p:outputLabel value="Item Name" />
+                                                                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.item.name}" />
+
+                                                                        <p:outputLabel value="Fee Name" />
+                                                                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.name}" />
+
+                                                                        <p:outputLabel value="Gross Value" />
+                                                                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                        <p:outputLabel value="Doctor" rendered="#{billFeeBundleEntry.selectedBillFee.staff ne null}" />
+                                                                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.staff.person.nameWithTitle}" rendered="#{billFeeBundleEntry.selectedBillFee.staff ne null}" />
+
+                                                                        <p:outputLabel value="Speciality" rendered="#{billFeeBundleEntry.selectedBillFee.fee.speciality ne null}" />
+                                                                        <p:outputLabel value="#{billFeeBundleEntry.selectedBillFee.fee.speciality.name}" rendered="#{billFeeBundleEntry.selectedBillFee.fee.speciality ne null}" />
 
 
+                                                                        <p:outputLabel value="Fee Value" />
+                                                                        <p:outputLabel styleClass="text-end" value="#{billFeeBundleEntry.selectedBillFee.feeValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                        <p:outputLabel value="Gross Value" />
+                                                                        <p:outputLabel styleClass="text-end" value="#{billFeeBundleEntry.selectedBillFee.feeGrossValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                        <p:outputLabel value="Discount" />
+                                                                        <p:outputLabel styleClass="text-end" value="#{billFeeBundleEntry.selectedBillFee.feeDiscount}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                        <p:outputLabel value="VAT" />
+                                                                        <p:outputLabel styleClass="text-end" value="#{billFeeBundleEntry.selectedBillFee.feeVat}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                        <p:outputLabel value="VAT + Value" />
+                                                                        <p:outputLabel styleClass="text-end" value="#{billFeeBundleEntry.selectedBillFee.feeVatPlusValue}">
+                                                                            <f:convertNumber pattern="#,##0.00" />
+                                                                        </p:outputLabel>
+
+                                                                    </p:panelGrid>
+
+
+
+                                                                </p:dialog>
                                                                 <p:selectOneMenu id="feeDropdown" value="#{billFeeBundleEntry.selectedBillFee}" converter="billFeeConverter">
                                                                     <f:selectItems value="#{billFeeBundleEntry.availableBillFees}" var="availableFee"
                                                                                    itemValue="#{availableFee}"
                                                                                    itemLabel="#{availableFee.staff.person.nameWithTitle} (#{availableFee.fee.fee})" />
                                                                     <p:ajax event="change" listener="#{opdBillController.changeTheSelectedFeeFromFeeBundle(billFeeBundleEntry.selectedBillFee)}" update="@form" />
                                                                 </p:selectOneMenu>
-
-
                                                             </td>
 
                                                             <td>
@@ -965,7 +1070,7 @@
                                     </p:tabView>
                                 </h:panelGroup>
                             </div>
-                            <div class="col-md-6" >
+                            <div class="col-md-4" >
 
                                 <p:panel class="mb-2" id="payment">
                                     <f:facet name="header" >
@@ -1034,7 +1139,6 @@
 
                                     <div>
                                         <h:panelGroup id="paymentDetails"  >
-
                                             <h:panelGroup
                                                 class="row"
                                                 layout="block"  
@@ -1084,18 +1188,18 @@
                                                 class="row"
                                                 layout="block"  
                                                 rendered="#{opdBillController.paymentMethod eq 'Staff_Welfare'}" >
-                                                <div class="my-1" id="credit">
+                                                <div class="my-1" id="staffWelfare">
                                                     <div class="row mt-1">
                                                         <div class="col-12">
-                                                            <p:autoComplete  
-                                                                minQueryLength="3"
+                                                            <p:autoComplete
+                                                                minQueryLength="1"
                                                                 forceSelection="true" 
                                                                 value="#{opdBillController.toStaff}" 
                                                                 id="welfareStaff"
                                                                 completeMethod="#{staffController.completeStaff}" 
                                                                 var="mys" 
                                                                 class="w-100"
-                                                                placeholder="Staff (Type at least 4 letters to search)"
+                                                                placeholder="Staff (Type Name, Code or EPF No to search)"
                                                                 inputStyleClass="form-control"
                                                                 itemLabel="#{mys.person.name}" 
                                                                 itemValue="#{mys}"
@@ -1103,7 +1207,10 @@
                                                                 <p:column headerText="Name" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
                                                                 </p:column>
-                                                                <p:column headerText="EPF" style="padding: 2px;">
+                                                                <p:column headerText="Code" style="padding: 2px;">
+                                                                    <h:outputText value="#{mys.staffCode}" ></h:outputText>
+                                                                </p:column>
+                                                                <p:column headerText="EPF No" style="padding: 2px;">
                                                                     <h:outputText value="#{mys.epfNo}" ></h:outputText>
                                                                 </p:column>
                                                                 <p:column headerText="Welfare Entitlement" style="padding: 2px;">
@@ -1129,7 +1236,7 @@
                                                 class="row my-1"
                                                 layout="block"  
                                                 id="creditCard" rendered="#{opdBillController.paymentMethod eq 'Card'}" >
-                                                <pa:creditCard paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                                <pa:creditCardDetailsAsOnlyPayment paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
                                             <h:panelGroup
                                                 class="row my-1"
@@ -1149,15 +1256,22 @@
                                                 id="cheque"  rendered="#{opdBillController.paymentMethod eq 'Cheque'}" >
                                                 <pa:cheque paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup 
+                                            <h:panelGroup
                                                 class="row my-1"
-                                                layout="block" 
+                                                layout="block"
                                                 id="slip"  rendered="#{opdBillController.paymentMethod eq 'Slip'}" >
                                                 <pa:slip paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
-                                            <h:panelGroup 
+                                            <h:panelGroup
                                                 class="row my-1"
-                                                layout="block" 
+                                                layout="block"
+                                                id="onlinePayment"  rendered="#{opdBillController.paymentMethod eq 'OnlineSettlement'}" >
+                                                
+                                                <pa:online_settlement paymentMethodData="#{opdBillController.paymentMethodData}"/>
+                                            </h:panelGroup>
+                                            <h:panelGroup
+                                                class="row my-1"
+                                                layout="block"
                                                 id="patientDeposit"  rendered="#{opdBillController.paymentMethod eq 'PatientDeposit'}" >
                                                 <pa:patient_deposit paymentMethodData="#{opdBillController.paymentMethodData}"/>
                                             </h:panelGroup>
@@ -1166,7 +1280,10 @@
                                                 layout="block" 
                                                 id="multiplePaymentMethods"  rendered="#{opdBillController.paymentMethod eq 'MultiplePaymentMethods'}" 
                                                 >
-                                                <pa:multiple_payment_methods controller="#{opdBillController}" paymentMethods="#{enumController.paymentMethodsForOpdBilling}" class="w-100"/>
+                                                <pa:multiple_payment_methods
+                                                    controller="#{opdBillController}"
+                                                    paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"
+                                                    class="w-100"/>
 
                                             </h:panelGroup>
 
@@ -1348,7 +1465,6 @@
                                             <p:column headerText="Code" style="padding: 2px;">#{ri.institutionCode}</p:column>
                                         </p:autoComplete>
 
-
                                         <h:panelGroup class="w-100">
                                             <p:outputLabel for="cmbDoc" value="Doctor" ></p:outputLabel>
                                             <p:commandLink id="btnAddNewDoc" 
@@ -1403,8 +1519,6 @@
                                             </p:dialog> 
                                         </h:panelGroup>
                                         <h:panelGroup>
-
-
                                             <p:autoComplete forceSelection="true" 
                                                             id="cmbDoc" 
                                                             value="#{opdBillController.referredBy}" 
@@ -1463,6 +1577,15 @@
 
                                         </p:autoComplete>
 
+
+
+                                        <h:panelGroup class="w-100" >
+                                            <p:outputLabel 
+                                                value="Indication" />
+                                        </h:panelGroup>
+                                        <p:inputTextarea 
+                                            class="w-100" 
+                                            value="#{opdBillController.indication}"></p:inputTextarea>
                                     </h:panelGrid>
                                 </p:panel>
 

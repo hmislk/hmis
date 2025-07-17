@@ -103,19 +103,19 @@
                                     disabled="#{p.checkedBy ne null or p.cancelled eq true}"
                                     action="#{transferRequestController.navigateToEditRequest}">
                                     <f:setPropertyActionListener 
-                                        target="#{transferRequestController.transerRequestBillPre}"
+                                        target="#{transferRequestController.transferRequestBillPre}"
                                         value="#{p}"/>
                                 </p:commandButton>
                                 <p:commandButton 
                                     id="approve"
                                     ajax="false"
-                                    title="Approve Request" 
+                                    title="To Approve" 
                                     icon="fas fa-check-circle"
                                     class="ui-button-success m-1"
                                     disabled="#{p.checkedBy eq null or p.approveUser ne null or p.cancelled eq true and not webUserController.hasPrivilege('PharmacyDisbursementRequestApproval')}"
                                     action="#{transferRequestController.navigateToApproveRequest()}">
                                     <f:setPropertyActionListener 
-                                        target="#{transferRequestController.transerRequestBillPre}"
+                                        target="#{transferRequestController.transferRequestBillPre}"
                                         value="#{p}"/>
                                 </p:commandButton>
 

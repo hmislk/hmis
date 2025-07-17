@@ -4,7 +4,9 @@
  */
 package com.divudi.ejb;
 
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
@@ -33,14 +35,18 @@ import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.TemporalType;
 
@@ -73,6 +79,11 @@ public class PharmacyCalculation implements Serializable {
     @EJB
     private BillNumberGenerator billNumberBean;
 
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+
+    private static final int PRICE_SCALE = 6;
+
 //    public void editBill(Bill bill, Bill ref, SessionController sc) {
 //
 //
@@ -93,21 +104,21 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public List<Item> getItemsForDealor(Institution i) {
-        String temSql;
-        HashMap hm = new HashMap();
-        List<Item> tmp;
-        hm.put("ins", i);
-        temSql = "SELECT i.item FROM ItemsDistributors i "
+        String jpql;
+        HashMap params = new HashMap();
+        List<Item> dealerItems;
+        params.put("ins", i);
+        jpql = "SELECT i.item FROM ItemsDistributors i "
                 + " where i.retired=false "
                 + " and i.item.retired=false"
                 + " and i.institution=:ins "
                 + " order by i.item.name ";
-        tmp = getItemFacade().findByJpql(temSql, hm);
+        dealerItems = getItemFacade().findByJpql(jpql, params);
 
-        if (tmp == null) {
-            tmp = new ArrayList<>();
+        if (dealerItems == null) {
+            dealerItems = new ArrayList<>();
         }
-        return tmp;
+        return dealerItems;
     }
 
     public boolean checkItem(Institution ins, Item i) {
@@ -161,17 +172,50 @@ public class PharmacyCalculation implements Serializable {
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
-    public double getTotalQtyWithFreeQty(BillItem b, BillType billType, Bill bill) {
+    public double getQtyPlusFreeQtyInUnits(BillItem b, BillType billType, Bill bill) {
         String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) from BillItem p where"
                 + "  type(p.bill)=:class and p.creater is not null and"
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
-
         HashMap hm = new HashMap();
         hm.put("bt", b);
         hm.put("btp", billType);
         hm.put("class", bill.getClass());
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
 
-        //System.err.println("GETTING TOTAL QTY " + value);
+    public double getQtyPlusFreeQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty+p.pharmaceuticalBillItem.freeQty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+    
+    public double getFreeQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.freeQty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
+        return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
+    }
+    
+    public double getQtyInUnits(BillItem b, BillTypeAtomic billTypeAtomic) {
+        String sql = "Select sum(p.pharmaceuticalBillItem.qty) "
+                + " from BillItem p "
+                + " where p.retired=false "
+                + " and p.referanceBillItem=:bt "
+                + " and p.bill.billTypeAtomic=:btp";
+        HashMap hm = new HashMap();
+        hm.put("bt", b);
+        hm.put("btp", billTypeAtomic);
         return getPharmaceuticalBillItemFacade().findDoubleByJpql(sql, hm);
     }
 
@@ -216,7 +260,7 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double getBilledIssuedByRequestedItem(BillItem b, BillType billType) {
-        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+        String sql = "Select sum(p.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
                 + " p.referanceBillItem=:bt and p.bill.billType=:btp";
 
@@ -260,7 +304,7 @@ public class PharmacyCalculation implements Serializable {
     }
 
     public double getCancelledIssuedByRequestedItem(BillItem b, BillType billType) {
-        String sql = "Select sum(p.pharmaceuticalBillItem.qty) from BillItem p where"
+        String sql = "Select sum(p.qty) from BillItem p where"
                 + "  p.creater is not null and type(p.bill)=:class and "
                 + " p.referanceBillItem.referanceBillItem=:bt and p.bill.billType=:btp";
 
@@ -411,54 +455,55 @@ public class PharmacyCalculation implements Serializable {
 
     }
 
-    public double calQty(PharmaceuticalBillItem po) {
-
+    /**
+     * Calculates the remaining quantity of items from a purchase order. Initial
+     * quantity is equal to the ordered quantity. GRNs (Goods Received Notes)
+     * reduce the remaining quantity. Cancelled GRNs increase the remaining
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining quantity from the original order.
+     */
+    public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());;
-        double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
-
+//      double returnedB = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+//      double returnedC = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
-        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
-        //System.err.println("BILLED " + billed);
-        //System.err.println("Cancelled " + cancelled);
-        //System.err.println("recieveNet " + recieveNet);
-        //System.err.println("Refunded Bill " + returnedB);
-        //System.err.println("Refunded Cancelld " + returnedC);
-        //System.err.println("retuernedNet " + retuernedNet);
-        //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
-
-        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+//      double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
+//      return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+        return Math.abs(recieveNet);
     }
 
-    public double calFreeQty(PharmaceuticalBillItem po) {
-
+    /**
+     * Calculates the remaining free quantity of items from a purchase order.
+     * Initial quantity is equal to the free quantity in the order. GRNs reduce
+     * the remaining free quantity. Cancelled GRNs increase the remaining free
+     * quantity. GRN Returns and GRN Return Cancellations are not considered.
+     *
+     * @param po The pharmaceutical bill item linked to the purchase order.
+     * @return Remaining free quantity from the original order.
+     */
+    public double calculateRemainingFreeQtyFromOrder(PharmaceuticalBillItem po) {
         double billed = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new BilledBill());
         double cancelled = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill, new CancelledBill());
-        double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-        double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
+//      double returnedB = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
+//      double returnedC = getReturnedTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnReturn, new CancelledBill());
 
         double recieveNet = Math.abs(billed) - Math.abs(cancelled);
-        double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
-        //System.err.println("BILLED " + billed);
-        //System.err.println("Cancelled " + cancelled);
-        //System.err.println("recieveNet " + recieveNet);
-        //System.err.println("Refunded Bill " + returnedB);
-        //System.err.println("Refunded Cancelld " + returnedC);
-        //System.err.println("retuernedNet " + retuernedNet);
-        //System.err.println("Cal Qty " + (Math.abs(recieveNet) - Math.abs(retuernedNet)));
-
-        return (Math.abs(recieveNet) - Math.abs(retuernedNet));
+//      double retuernedNet = Math.abs(returnedB) - Math.abs(returnedC);
+//      returned values are not considered
+        return (Math.abs(recieveNet));
     }
 
+    @Deprecated // Use calculateRemainigQtyFromOrder
     public double calQtyInTwoSql(PharmaceuticalBillItem po) {
-
         double grns = getTotalQty(po.getBillItem(), BillType.PharmacyGrnBill);
         double grnReturn = getReturnedTotalQty(po.getBillItem(), BillType.PharmacyGrnReturn);
-
-        return grns - grnReturn;
+        return Math.abs(grns) - Math.abs(grnReturn);
     }
 
+    @Deprecated // use calculateRemainingFreeQtyFromOrder
     public double calFreeQtyInTwoSql(PharmaceuticalBillItem po) {
 
         double grnsFree = getTotalFreeQty(po.getBillItem(), BillType.PharmacyGrnBill);
@@ -489,7 +534,7 @@ public class PharmacyCalculation implements Serializable {
         return bil.getQty() - returnBill;
     }
 
-//     public double calQty(PharmaceuticalBillItem po) {
+//     public double calculateRemainigQtyFromOrder(PharmaceuticalBillItem po) {
 //
 //        double billed =getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new BilledBill());
 //        double cancelled = getTotalQty(po.getBillItem(),BillType.PharmacyGrnBill,new CancelledBill());;
@@ -557,7 +602,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remainsFree;
         poQty = po.getQtyInUnit();
-        remainsFree = poQty - calFreeQty(po);
+        remainsFree = poQty - calculateRemainingFreeQtyFromOrder(po);
 
         return remainsFree;
 
@@ -572,7 +617,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remains;
         poQty = po.getFreeQtyInUnit();
-        remains = poQty - calFreeQty(po);
+        remains = poQty - calculateRemainingFreeQtyFromOrder(po);
 
         return remains;
 
@@ -587,7 +632,7 @@ public class PharmacyCalculation implements Serializable {
         //    Item grnItem = ph.getBillItem().getItem();
         double poQty, grnQty, remains;
         poQty = Math.abs(po.getQtyInUnit());
-        remains = Math.abs(poQty) - calQty(po);
+        remains = Math.abs(poQty) - calculateRemainigQtyFromOrder(po);
         grnQty = Math.abs(ph.getQtyInUnit());
 
         //System.err.println("poQty : " + poQty);
@@ -701,6 +746,129 @@ public class PharmacyCalculation implements Serializable {
         return itemBatch;
     }
 
+    private ItemBatch fetchItemBatchWithCosting(Item item, double purchaseRate, double retailRate, double costRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.costRate = :cr "
+                + "AND p.purcahseRate = :pur";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("cr", costRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    private ItemBatch fetchItemBatchWithoutCosting(Item item, double purchaseRate, double retailRate, Date dateOfExpiry) {
+        String jpql = "SELECT p FROM ItemBatch p "
+                + "WHERE p.retired = false "
+                + "AND p.item = :itm "
+                + "AND p.dateOfExpire = :doe "
+                + "AND p.retailsaleRate = :ret "
+                + "AND p.purcahseRate = :pur";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("itm", item);
+        params.put("doe", dateOfExpiry);
+        params.put("ret", retailRate);
+        params.put("pur", purchaseRate);
+
+        return getItemBatchFacade().findFirstByJpql(jpql, params, TemporalType.DATE);
+    }
+
+    /**
+     * Creates or fetches an existing ItemBatch based on costing and expiry
+     * logic.Ensures uniqueness based on AMP, purchaseRate, retailRate,
+     * costRate, and expiry.Additional fields like wholesaleRate, make, etc.,
+     * are set but not used for uniqueness.
+     *
+     * @param inputBillItem
+     * @return
+     */
+    public ItemBatch saveItemBatchWithCosting(BillItem inputBillItem) {
+        if (inputBillItem == null || inputBillItem.getItem() == null || inputBillItem.getPharmaceuticalBillItem() == null) {
+            return null;
+        }
+
+        // Extract AMP (Actual Medicinal Product) even if input is AMPP (Pack)
+        Item amp = inputBillItem.getItem();
+        if (amp instanceof Ampp) {
+            amp = ((Ampp) amp).getAmp();
+        }
+
+        Date expiryDate = inputBillItem.getPharmaceuticalBillItem().getDoe();
+        if (expiryDate == null || amp == null) {
+            return null;
+        }
+
+        ItemBatch itemBatch = null;
+
+        double purchaseRatePerUnit;
+        double retailRatePerUnit;
+        double wholesaleRate = 0.0;
+        double costRatePerUnit = 0.0;
+
+        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+
+        if (manageCosting) {
+            // Use finance details when costing is enabled
+            if (inputBillItem.getBillItemFinanceDetails() == null) {
+                return null;
+            }
+
+            BigDecimal prGiven = inputBillItem.getBillItemFinanceDetails().getLineGrossRate();
+
+            BigDecimal unitsPerPack = inputBillItem.getBillItemFinanceDetails().getUnitsPerPack();
+            if (unitsPerPack.compareTo(BigDecimal.ZERO) <= 0) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+
+            BigDecimal prPerUnit = prGiven.divide(
+                    unitsPerPack,
+                    PRICE_SCALE,
+                    RoundingMode.HALF_EVEN
+            );
+
+            purchaseRatePerUnit = prPerUnit.doubleValue();
+            retailRatePerUnit = inputBillItem.getBillItemFinanceDetails().getRetailSaleRatePerUnit().doubleValue();
+            costRatePerUnit = inputBillItem.getBillItemFinanceDetails().getTotalCostRate().doubleValue();
+
+            itemBatch = fetchItemBatchWithCosting(amp, purchaseRatePerUnit, retailRatePerUnit, costRatePerUnit, expiryDate);
+        } else {
+            // Use values from PharmaceuticalBillItem when costing is not enabled
+            purchaseRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getPurchaseRate();
+            retailRatePerUnit = inputBillItem.getPharmaceuticalBillItem().getRetailRateInUnit();
+            wholesaleRate = inputBillItem.getPharmaceuticalBillItem().getWholesaleRate();
+
+            itemBatch = fetchItemBatchWithoutCosting(amp, purchaseRatePerUnit, retailRatePerUnit, expiryDate);
+        }
+
+        // If no matching batch found, create a new one
+        if (itemBatch == null) {
+            itemBatch = new ItemBatch();
+            itemBatch.setItem(amp);
+            itemBatch.setDateOfExpire(expiryDate);
+            itemBatch.setBatchNo(inputBillItem.getPharmaceuticalBillItem().getStringValue());
+            itemBatch.setPurcahseRate(purchaseRatePerUnit);
+            itemBatch.setRetailsaleRate(retailRatePerUnit);
+            itemBatch.setWholesaleRate(wholesaleRate);
+            itemBatch.setCostRate(costRatePerUnit);
+            itemBatch.setLastPurchaseBillItem(inputBillItem);
+            itemBatch.setMake(inputBillItem.getPharmaceuticalBillItem().getMake());
+            itemBatch.setModal(inputBillItem.getPharmaceuticalBillItem().getModel());
+
+            getItemBatchFacade().create(itemBatch);
+        }
+
+        return itemBatch;
+    }
+
     public List<Item> findItem(Amp tmp, List<Item> items) {
 
         String sql;
@@ -782,7 +950,7 @@ public class PharmacyCalculation implements Serializable {
 
         getBillItemFacade().edit(i.getBillItem());
 //
-//        double consumed = calQty(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
+//        double consumed = calculateRemainigQtyFromOrder(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem());
 //        i.getBillItem().setRemainingQty(i.getBillItem().getReferanceBillItem().getPharmaceuticalBillItem().getQty() - consumed);
 //        getBillItemFacade().edit(i.getBillItem());
     }

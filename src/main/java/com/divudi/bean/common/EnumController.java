@@ -6,6 +6,8 @@
 package com.divudi.bean.common;
 
 import com.divudi.core.data.*;
+import com.divudi.core.data.ScheduledProcess;
+import com.divudi.core.data.ScheduledFrequency;
 import com.divudi.core.data.analytics.ReportTemplateColumn;
 import com.divudi.core.data.analytics.ReportTemplateFilter;
 import com.divudi.core.data.hr.*;
@@ -16,14 +18,18 @@ import com.divudi.core.data.inward.PatientEncounterComponentType;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
 import com.divudi.core.data.lab.Priority;
 import com.divudi.core.data.lab.SearchDateType;
+import com.divudi.core.data.lab.TestHistoryType;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Person;
+import com.divudi.service.BillService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
+import javax.ejb.EJB;
+import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -33,8 +39,11 @@ import javax.inject.Named;
  * @author safrin
  */
 @Named
-@SessionScoped
+@ApplicationScoped
 public class EnumController implements Serializable {
+
+    @EJB
+    BillService billService;
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
@@ -58,6 +67,9 @@ public class EnumController implements Serializable {
 
     private List<PatientInvestigationStatus> availableStatusforCancel;
 
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomics;
+    private List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy;
+
     @PostConstruct
     public void init() {
         enumList = new ArrayList<>();
@@ -65,6 +77,11 @@ public class EnumController implements Serializable {
         enumList.add(PaperType.class);
         enumList.add(ItemType.class);
         enumList.add(DiscountType.class);
+    }
+    
+
+    public Sex[] getSex() {
+        return Sex.values();
     }
 
     public List<PaymentMethod> getPaymentMethodsForOpdBilling() {
@@ -270,6 +287,18 @@ public class EnumController implements Serializable {
         return Arrays.asList(HistoryType.values());
     }
 
+    public List<ScheduledProcess> getScheduledProcesses() {
+        return Arrays.asList(ScheduledProcess.values());
+    }
+    
+     public List<EmployeeStatus> getEmploymentStatuses() {
+        return Arrays.asList(EmployeeStatus.values());
+    }
+
+    public List<ScheduledFrequency> getScheduledFrequencies() {
+        return Arrays.asList(ScheduledFrequency.values());
+    }
+
     public Dashboard[] getDashboardTypes() {
         return Dashboard.values();
     }
@@ -298,6 +327,15 @@ public class EnumController implements Serializable {
                 ReportViewType.BY_BILL_TYPE,
                 ReportViewType.BY_DISCOUNT_TYPE_AND_ADMISSION_TYPE,
                 ReportViewType.BY_BILL_TYPE_AND_DISCOUNT_TYPE_AND_ADMISSION_TYPE
+//                ReportViewType.BY_ITEM
+        );
+    }
+
+    public List<ReportViewType> getPharmacyIncomeCostReportViewTypes() {
+        return Arrays.asList(
+                ReportViewType.BY_BILL,
+                ReportViewType.BY_BILL_ITEM,
+                ReportViewType.BY_BILL_TYPE
         );
     }
 
@@ -546,10 +584,6 @@ public class EnumController implements Serializable {
             Title.Mrs,
             Title.Other,};
         return tem;
-    }
-
-    public Sex[] getSex() {
-        return Sex.values();
     }
 
     public Sex[] getGender() {
@@ -1022,7 +1056,9 @@ public class EnumController implements Serializable {
         for (PaymentMethod pm : PaymentMethod.values()) {
             boolean include = configOptionApplicationController.getBooleanValueByKey(pm.getLabel() + " is available for OPD Bill Cancel", true);
             if (include) {
-                paymentMethodsForOpdBillCanceling.add(pm);
+                if (pm != PaymentMethod.MultiplePaymentMethods) {
+                    paymentMethodsForOpdBillCanceling.add(pm);
+                }
             }
         }
         return paymentMethodsForOpdBillCanceling;
@@ -1134,6 +1170,62 @@ public class EnumController implements Serializable {
         for (CssTextAlign txetAlign : CssTextAlign.values()) {
             if (txetAlign.toString().equalsIgnoreCase(name)) {
                 return txetAlign;
+            }
+        }
+        return null;
+    }
+
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomics() {
+        if (allUtilizedBillTypeAtomics == null) {
+            try {
+                allUtilizedBillTypeAtomics = billService.fetchAllUtilizedBillTypeAtomics();
+            } catch (Exception e) {
+                java.util.logging.Logger.getLogger(getClass().getName()).log(java.util.logging.Level.SEVERE, "Error fetching BillTypeAtomics", e);
+                allUtilizedBillTypeAtomics = new ArrayList<>();
+            }
+        }
+        return allUtilizedBillTypeAtomics;
+    }
+
+    public void setAllUtilizedBillTypeAtomics(List<BillTypeAtomic> allUtilizedBillTypeAtomics) {
+        this.allUtilizedBillTypeAtomics = allUtilizedBillTypeAtomics;
+    }
+
+    public synchronized List<BillTypeAtomic> getAllUtilizedBillTypeAtomicsForPharmacy() {
+        if (allUtilizedBillTypeAtomicsForPharmacy == null) {
+            allUtilizedBillTypeAtomicsForPharmacy = filterBillTypeAtomics(getAllUtilizedBillTypeAtomics(), ServiceType.PHARMACY);
+        }
+        return allUtilizedBillTypeAtomicsForPharmacy;
+    }
+
+    public List<BillTypeAtomic> filterBillTypeAtomics(List<BillTypeAtomic> btas, ServiceType serviceType) {
+        List<BillTypeAtomic> filteredList = new ArrayList<>();
+
+        if (btas == null || serviceType == null) {
+            return filteredList;
+        }
+
+        for (BillTypeAtomic bta : btas) {
+            if (bta != null && serviceType.equals(bta.getServiceType())) {
+                filteredList.add(bta);
+            }
+        }
+
+        return filteredList;
+    }
+
+    public void setAllUtilizedBillTypeAtomicsForPharmacy(List<BillTypeAtomic> allUtilizedBillTypeAtomicsForPharmacy) {
+        this.allUtilizedBillTypeAtomicsForPharmacy = allUtilizedBillTypeAtomicsForPharmacy;
+    }
+    
+    public TestHistoryType[] getLabTestHistoryList() {
+        return TestHistoryType.values();
+    }
+    
+    public TestHistoryType getLabTestHistory(String name) {
+        for (TestHistoryType type : TestHistoryType.values()) {
+            if (type.toString().equalsIgnoreCase(name)) {
+                return type;
             }
         }
         return null;

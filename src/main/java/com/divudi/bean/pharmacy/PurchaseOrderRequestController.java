@@ -209,15 +209,14 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     private PharmacyController pharmacyController;
 
-    public void onFocus(BillItem bi) {
-        getPharmacyController().setPharmacyItem(bi.getItem());
-    }
-
     public void onEdit(BillItem bi) {
         bi.getPharmaceuticalBillItem().setQty(bi.getQty());
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
-        getPharmacyController().setPharmacyItem(bi.getItem());
         calTotal();
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
     }
 
     public void saveBill() {
@@ -268,32 +267,32 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void generateBillComponentsForAllSupplierItems(List<Item> items) {
-        if (items == null) {
+        if (items == null || items.isEmpty()) {
             return;
         }
-        if (items.isEmpty()) {
-            return;
+
+        if (getBillItems() == null) {
+            setBillItems(new ArrayList<>());
         }
-        setBillItems(new ArrayList<>());
+
+        int serialStart = getBillItems().size();
+
         for (Item i : items) {
             BillItem bi = new BillItem();
             bi.setItem(i);
 
             PharmaceuticalBillItem tmp = new PharmaceuticalBillItem();
             tmp.setBillItem(bi);
-//            tmp.setQty(getPharmacyBean().getOrderingQty(bi.getItem(), getSessionController().getDepartment()));
-            tmp.setPurchaseRateInUnit(getPharmacyBean().getLastPurchaseRate(bi.getItem(), getSessionController().getDepartment()));
-            tmp.setRetailRateInUnit(getPharmacyBean().getLastRetailRate(bi.getItem(), getSessionController().getDepartment()));
-
-//            bi.setTmpQty(tmp.getQty());
             bi.setPharmaceuticalBillItem(tmp);
 
-            getBillItems().add(bi);
+            bi.setSearialNo(serialStart++);
+            tmp.setPurchaseRate(getPharmacyBean().getLastPurchaseRate(i, getSessionController().getDepartment()));
+            tmp.setRetailRate(getPharmacyBean().getLastRetailRate(i, getSessionController().getDepartment()));
 
+            getBillItems().add(bi);
         }
 
         calTotal();
-
     }
 
     public void saveBillComponent() {
@@ -324,8 +323,8 @@ public class PurchaseOrderRequestController implements Serializable {
     public void finalizeBillComponent() {
         getBillItems().removeIf(BillItem::isRetired);
         for (BillItem b : getBillItems()) {
-            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
-            b.setNetValue(b.getPharmaceuticalBillItem().getQtyInUnit() * b.getPharmaceuticalBillItem().getPurchaseRateInUnit());
+            b.setRate(b.getPharmaceuticalBillItem().getPurchaseRate());
+            b.setNetValue(b.getPharmaceuticalBillItem().getQty() * b.getPharmaceuticalBillItem().getPurchaseRate());
             b.setBill(getCurrentBill());
             b.setCreatedAt(new Date());
             b.setCreater(getSessionController().getLoggedUser());
@@ -392,10 +391,6 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void request() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getCurrentBill().getPaymentMethod() == null) {
             JsfUtil.addErrorMessage("Please Select Paymntmethod");
             return;
@@ -435,29 +430,55 @@ public class PurchaseOrderRequestController implements Serializable {
     }
 
     public void requestFinalize() {
-        Date startTime = new Date();
-        Date fromDate = null;
-        Date toDate = null;
-
         if (getCurrentBill().getPaymentMethod() == null) {
-            JsfUtil.addErrorMessage("Please Select Paymntmethod");
+            JsfUtil.addErrorMessage("Please select a payment method.");
             return;
         }
+
         if (getBillItems() == null || getBillItems().isEmpty()) {
-            JsfUtil.addErrorMessage("Please add bill items");
+            JsfUtil.addErrorMessage("Please add bill items.");
+            return;
+        }
+
+        if (!allBillItemsValid(billItems)) {
+            JsfUtil.addErrorMessage("Please ensure each item has quantity and purchase price.");
             return;
         }
 
         finalizeBill();
         totalBillItemsCount = 0;
         finalizeBillComponent();
+
         if (totalBillItemsCount == 0) {
-            JsfUtil.addErrorMessage("Please add item quantities for the bill");
+            JsfUtil.addErrorMessage("Please enter item quantities for the bill.");
             return;
         }
-        JsfUtil.addSuccessMessage("Request Succesfully Finalized");
-        printPreview = true;
 
+        JsfUtil.addSuccessMessage("Request successfully finalized.");
+        printPreview = true;
+    }
+
+    // Extracted magic number for clarity
+    private static final double MIN_PURCHASE_RATE = 0.00001;
+
+    private boolean allBillItemsValid(List<BillItem> items) {
+        if (items == null || items.isEmpty()) {
+            return false;
+        }
+        for (BillItem bi : items) {
+            // Null‐check to avoid NPE when accessing pharmaceutical details
+            if (bi.getPharmaceuticalBillItem() == null) {
+                return false;
+            }
+            if ((bi.getQty() + bi.getPharmaceuticalBillItem().getFreeQty()) < 1) {
+                return false;
+            }
+            // Use named constant instead of hardcoded threshold
+            if (bi.getPharmaceuticalBillItem().getPurchaseRate() < MIN_PURCHASE_RATE) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public void calTotal() {

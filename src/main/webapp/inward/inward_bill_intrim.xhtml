@@ -20,7 +20,7 @@
 
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <h:form  >
+                <h:form id="pageForm" >
 
                     <p:panel rendered="#{bhtSummeryController.patientEncounter eq null}">
                         <f:facet name="header">
@@ -55,7 +55,7 @@
                             <p:commandButton ajax="false"
                                              value="Select"
                                              class="ml-2"
-                                             action="#{bhtSummeryController.createTables()}" >
+                                             action="#{bhtSummeryController.createIntrimBillTable()}" >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -482,39 +482,26 @@
                                                                   (iss.billedBill ne null
                                                                   and iss.billClass eq 'class com.divudi.core.entity.RefundBill'))? '':'noDisplayRow'}">
                                         <p:column headerText="Bill No">
-
-                                            #{iss.deptId}
+                                            <h:outputLabel  value="#{iss.deptId}"></h:outputLabel>
                                         </p:column>
-                                        <p:column headerText="Bill Total" >
+
+                                        <p:column headerText="Billed At">
+                                            <h:outputLabel value="#{iss.createdAt}">
+                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
+                                            </h:outputLabel>
+                                            <br/>
+                                            <h:panelGroup rendered="#{iss.cancelled}" >
+                                                <h:outputLabel style="color: red;" value="Cancelled at " />
+                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
+                                                               value="#{iss.cancelledBill.createdAt}" >
+                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}"/>
+                                                </h:outputLabel>
+                                            </h:panelGroup>
+                                        </p:column>
+                                        <p:column headerText="Bill Total" class="text-end">
                                             <h:outputLabel  value="#{iss.netTotal}">
                                                 <f:convertNumber pattern="#,##0.00"/>
                                             </h:outputLabel>
-                                        </p:column>
-                                        <p:column headerText="Billed Date">
-                                            <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:panelGroup rendered="#{iss.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                               value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
-                                        </p:column>
-                                        <p:column headerText="Billed Time" >
-                                            <h:outputLabel value="#{iss.createdAt}">
-                                                <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                                            </h:outputLabel>
-                                            <br/>
-                                            <h:panelGroup rendered="#{iss.cancelled}" >
-                                                <h:outputLabel style="color: red;" value="Cancelled at " />
-                                                <h:outputLabel style="color: red;" rendered="#{iss.cancelled}"
-                                                               value="#{iss.cancelledBill.createdAt}" >
-                                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}"/>
-                                                </h:outputLabel>
-                                            </h:panelGroup>
                                         </p:column>
                                         <p:column headerText="Billed By">
                                             <h:outputLabel value="#{iss.creater.webUserPerson.name}"/>
@@ -533,6 +520,29 @@
                                             <h:outputLabel value="#{iss.checkeAt}">
                                                 <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                             </h:outputLabel>
+                                        </p:column>
+                                        <p:column headerText="Comments"> 
+                                            <h:panelGroup id="commentContainer" layout="block" class="row">
+                                                <div class="row" >
+                                                    <div class="col-8" >
+                                                        <p:inputText id="commentInput"
+                                                                     class="w-100"
+                                                                     value="#{iss.comments}"/>
+                                                    </div>
+                                                    <div class="col-4" >
+                                                        <p:commandButton 
+                                                            id="saveBtn"
+                                                            icon="fa fa-save"
+                                                            class="col-3"
+                                                            action="#{billController.save(iss)}"
+                                                            process="commentContainer"
+                                                            update="pageForm:pageMessages"
+                                                            title="Save"/>
+                                                    </div>
+                                                </div>
+
+
+                                            </h:panelGroup>
                                         </p:column>
                                         <p:column>
                                             <p:commandButton ajax="false" action="pharmacy_reprint_bill_sale_bht"
@@ -884,7 +894,7 @@
 
 
 
-
+                    <p:messages id="pageMessages" ></p:messages>
 
 
                 </h:form>

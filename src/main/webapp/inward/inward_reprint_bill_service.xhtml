@@ -215,7 +215,7 @@
                             
                             <h:panelGroup rendered="#{sessionController.departmentPreference.inwardServiceBillPaperType eq 'FiveEightInchPaper'}" >
                                 <ui:repeat value="#{inwardSearch.bill}" var="pp">
-                                    <print:five_eight_opd_bill bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
+                                    <print:five_eight_opd_bill_inward bill="#{pp}" duplicate="true" payments="#{inwardSearch.bill.size()}"/>
                                     <br/>
                                 </ui:repeat>
                             </h:panelGroup>

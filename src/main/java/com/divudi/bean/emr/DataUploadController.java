@@ -280,6 +280,8 @@ public class DataUploadController implements Serializable {
     private StreamedContent templateForAmpUpload;
     private StreamedContent templateForAmpMinimalUpload;
     private StreamedContent templateForCreditCompanyUpload;
+    private StreamedContent templateForItemFeeUpload;
+    private StreamedContent templateForDepartmentUpload;
 
     List<Item> itemsToSave;
     List<Item> itemsSaved;
@@ -5686,6 +5688,93 @@ public class DataUploadController implements Serializable {
                 e.printStackTrace();
             }
         }
+    }
+    public StreamedContent getTemplateForDepartmentUpload() {
+        try {
+            createTemplateForDepartmentUpload();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error creating department upload template: " + e.getMessage());
+            return null;
+        }
+        return templateForDepartmentUpload;
+    }
+
+    public void createTemplateForDepartmentUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Department Code", "Department Name", "Bill Prefix", "Department Type", "Phone", "Email", "Address", "Institution", "Active"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForDepartmentUpload = DefaultStreamedContent.builder()
+                .name("template_for_Department_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public StreamedContent getTemplateForItemFeeUpload() {
+        try {
+            createTemplateForItemFeeUpload();
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage("Error creating Item Fee template: " + e.getMessage());
+            return null;
+        }
+        return templateForItemFeeUpload;
+    }
+
+    public void createTemplateForItemFeeUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Data Entry");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Item Fee ID", "Item Name", "Institution", "Department", "Staff", "Fee Type", "Fee", "Fee for foreigner"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForItemFeeUpload = DefaultStreamedContent.builder()
+                .name("template_for_Item_Fee_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
     }
 
     public void uploadCollectingCentrePriceList() {

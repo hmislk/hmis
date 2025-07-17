@@ -45,6 +45,26 @@ public abstract class AbstractFacade<T> {
         }
     }
 
+    /**
+     * Executes native SQL using positional parameters, suitable for MySQL.
+     *
+     * @param sql The SQL with positional placeholders (e.g., "UPDATE table SET
+     * col = ? WHERE id = ?")
+     * @param parameters List of parameter values in exact order.
+     * @throws Exception if query fails.
+     */
+    public void executeNativeSql(String sql, List<Object> parameters) throws Exception {
+        try {
+            Query query = getEntityManager().createNativeQuery(sql);
+            for (int i = 0; i < parameters.size(); i++) {
+                query.setParameter(i + 1, parameters.get(i));
+            }
+            query.executeUpdate();
+        } catch (Exception e) {
+            throw e;
+        }
+    }
+
     public void flush() {
         getEntityManager().flush();
 
@@ -259,11 +279,21 @@ public abstract class AbstractFacade<T> {
     public void createAndFlush(T entity) {
         getEntityManager().persist(entity);
         getEntityManager().flush(); // Immediately write to the database
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        if (id != null) {
+            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+        }
     }
 
     public void editAndFlush(T entity) {
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
         getEntityManager().flush(); // Immediately write to the database
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        if (id != null) {
+            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+        }
     }
 
     public void refresh(T entity) {
@@ -313,8 +343,13 @@ public abstract class AbstractFacade<T> {
     }
 
     public void editAndCommit(T entity) {
+        Object id = getEntityManager().getEntityManagerFactory().getPersistenceUnitUtil().getIdentifier(entity);
         getEntityManager().merge(entity);
-        getEntityManager().flush(); // Immediately write to the database
+        getEntityManager().flush(); // Write to DB immediately
+        getEntityManager().clear(); // Clear first-level (persistence context) cache
+        if (id != null) {
+            getEntityManager().getEntityManagerFactory().getCache().evict(entityClass, id); // Evict from second-level cache
+        }
     }
 
     public void remove(T entity) {
@@ -379,6 +414,27 @@ public abstract class AbstractFacade<T> {
     public List<T> findByJpql(String jpql) {
         TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
         return qry.getResultList();
+    }
+
+    // ChatGPT Contribution - Overloaded method to support optional cache bypass and refresh
+    public List<T> findByJpql(String jpql, boolean noCache) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
+        return qry.getResultList();
+    }
+
+    // ChatGPT contributed - 2025-05
+    public List<T> findByJpqlWithRange(String jpql, int startPosition, int maxResults) {
+        return getEntityManager()
+                .createQuery(jpql, entityClass)
+                .setFirstResult(startPosition)
+                .setMaxResults(maxResults)
+                .getResultList();
     }
 
     public List<?> findLightsByJpql(String jpql) {
@@ -448,6 +504,36 @@ public abstract class AbstractFacade<T> {
         Set<Map.Entry<String, Object>> entries = parameters.entrySet();
 
         for (Map.Entry<String, Object> entry : entries) {
+            String paramName = entry.getKey();
+            Object paramValue = entry.getValue();
+
+            if (paramValue instanceof Date) {
+                qry.setParameter(paramName, (Date) paramValue, tt);
+            } else {
+                qry.setParameter(paramName, paramValue);
+            }
+        }
+
+        List<?> resultList;
+        try {
+            resultList = qry.getResultList();
+        } catch (Exception e) {
+            resultList = new ArrayList<>();
+        }
+
+        return resultList;
+    }
+
+    // ChatGPT Contribution - Overloaded method to support optional cache bypass and refresh
+    public List<?> findLightsByJpql(String jpql, Map<String, Object> parameters, TemporalType tt, boolean noCache) {
+        Query qry = getEntityManager().createQuery(jpql);
+
+        if (noCache) {
+            qry.setHint("javax.persistence.cache.storeMode", "REFRESH");
+            qry.setHint("javax.persistence.cache.retrieveMode", "BYPASS");
+        }
+
+        for (Map.Entry<String, Object> entry : parameters.entrySet()) {
             String paramName = entry.getKey();
             Object paramValue = entry.getValue();
 
@@ -568,6 +654,40 @@ public abstract class AbstractFacade<T> {
                 Object pVal = (Object) m.getValue();
                 qry.setParameter(pPara, pVal);
             }
+        }
+
+        List<T> ts;
+        try {
+            ts = qry.getResultList();
+        } catch (Exception e) {
+            ts = new ArrayList<>();
+        }
+
+        return ts;
+    }
+
+    public List<T> findByJpql(String jpql, Map<String, Object> parameters, int fromRecord, int toRecord) {
+        TypedQuery<T> qry = getEntityManager().createQuery(jpql, entityClass);
+        Set s = parameters.entrySet();
+        Iterator it = s.iterator();
+        while (it.hasNext()) {
+            Map.Entry m = (Map.Entry) it.next();
+            String pPara = (String) m.getKey();
+            if (m.getValue() instanceof Date) {
+                Date pVal = (Date) m.getValue();
+                qry.setParameter(pPara, pVal, TemporalType.DATE);
+            } else {
+                Object pVal = m.getValue();
+                qry.setParameter(pPara, pVal);
+            }
+        }
+
+        // Apply pagination if valid range is provided
+        if (fromRecord >= 0) {
+            qry.setFirstResult(fromRecord);
+        }
+        if (toRecord > 0) {
+            qry.setMaxResults(toRecord - fromRecord + 1);
         }
 
         List<T> ts;

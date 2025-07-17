@@ -87,6 +87,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private double otherFee;
     private double reagentFee;
 
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    private BillItemFinanceDetails billItemFinanceDetails;
 
 //    private double dblValue;
     @ManyToOne
@@ -276,8 +278,57 @@ public class BillItem implements Serializable, RetirableEntity {
         agentRefNo = billItem.getAgentRefNo();
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
-        collectingCentreFee=billItem.getCollectingCentreFee();
+        collectingCentreFee = billItem.getCollectingCentreFee();
         //  referanceBillItem=billItem.getReferanceBillItem();
+        // Copy BillItemFinanceDetails if present
+        if (billItem.getBillItemFinanceDetails() != null) {
+            BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+            clonedFinanceDetails.setBillItem(this);
+            this.setBillItemFinanceDetails(clonedFinanceDetails);
+        }
+    }
+
+    public void copyWithPharmaceuticalAndFinancialData(BillItem billItem) {
+        item = billItem.getItem();
+        sessionDate = billItem.getSessionDate();
+        patientEncounter = billItem.getPatientEncounter();
+        patientInvestigation = billItem.getPatientInvestigation();
+        inwardChargeType = billItem.getInwardChargeType();
+        agentRefNo = billItem.getAgentRefNo();
+        item = billItem.getItem();
+        qty = billItem.getQty();
+        descreption = billItem.getDescreption();
+        billTime = billItem.getBillTime();
+        grossValue = billItem.getGrossValue();
+        netValue = billItem.getNetValue();
+        discount = billItem.getDiscount();
+        adjustedValue = billItem.getAdjustedValue();
+        discountRate = billItem.getDiscountRate();
+        staffFee = billItem.getStaffFee();
+        hospitalFee = billItem.getHospitalFee();
+        otherFee = billItem.getOtherFee();
+        reagentFee = billItem.getReagentFee();
+        Rate = billItem.getRate();
+        marginRate = billItem.getMarginRate();
+        netRate = billItem.getNetRate();
+        searialNo = billItem.getSearialNo();
+        tmpQty = billItem.tmpQty;
+        referenceBill = billItem.getReferenceBill();
+        marginValue = billItem.getMarginValue();
+        priceMatrix = billItem.getPriceMatrix();
+        agentRefNo = billItem.getAgentRefNo();
+        vat = billItem.getVat();
+        vatPlusNetValue = billItem.getVatPlusNetValue();
+        collectingCentreFee = billItem.getCollectingCentreFee();
+
+        BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
+        clonedFinanceDetails.setBillItem(this);
+        this.setBillItemFinanceDetails(clonedFinanceDetails);
+        
+        PharmaceuticalBillItem clonedPharmaceuticalBillItem = new PharmaceuticalBillItem();
+        clonedPharmaceuticalBillItem.copy(billItem.getPharmaceuticalBillItem());
+        clonedPharmaceuticalBillItem.setBillItem(this);
+        this.setPharmaceuticalBillItem(clonedPharmaceuticalBillItem);
     }
 
     public void copyWithoutFinancialData(BillItem billItem) {
@@ -309,7 +360,7 @@ public class BillItem implements Serializable, RetirableEntity {
         staffFee = 0.0;
         hospitalFee = 0.0;
         Rate = 0.0;
-        marginRate =0.0;
+        marginRate = 0.0;
         netRate = 0.0;
         tmpQty = 0.0;
         marginValue = 0.0;
@@ -746,6 +797,7 @@ public class BillItem implements Serializable, RetirableEntity {
         this.tmpSuggession = tmpSuggession;
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public double getTmpQty() {
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
             return tmpQty / getItem().getDblValue();
@@ -754,6 +806,7 @@ public class BillItem implements Serializable, RetirableEntity {
         }
     }
 
+    @Deprecated // Will be remnoved soon. Use other variables like qty, free qty
     public void setTmpQty(double tmpQty) {
         qty = tmpQty;
         if (getItem() instanceof Ampp || getItem() instanceof Vmpp) {
@@ -1103,7 +1156,7 @@ public class BillItem implements Serializable, RetirableEntity {
     }
 
     public Prescription getPrescription() {
-        if(prescription == null){
+        if (prescription == null) {
             prescription = new Prescription();
         }
         return prescription;
@@ -1121,6 +1174,19 @@ public class BillItem implements Serializable, RetirableEntity {
         this.reagentFee = reagentFee;
     }
 
+    public BillItemFinanceDetails getBillItemFinanceDetails() {
+        if (billItemFinanceDetails == null) {
+            billItemFinanceDetails = new BillItemFinanceDetails();
+            billItemFinanceDetails.setBillItem(this);
+        }
+        return billItemFinanceDetails;
+    }
 
+    public void setBillItemFinanceDetails(BillItemFinanceDetails billItemFinanceDetails) {
+        this.billItemFinanceDetails = billItemFinanceDetails;
+        if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
+            billItemFinanceDetails.setBillItem(this);
+        }
+    }
 
 }

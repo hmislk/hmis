@@ -172,19 +172,18 @@
                             <h:outputText value="&#xf491;" styleClass="fa mr-2"/>
                             <h:outputLabel value="Laboratory" for="cmbCat" class="m-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu
-                                class="w-100"
-                                id="cmbCat"
-                                filter="true"
-                                filterMatchMode="contains"
-                                value="#{reportsController.category}">
-                            <f:selectItem itemLabel="Please select a Laboratory"/>
-                            <f:selectItems
-                                    value="#{investigationCategoryController.itemsWithServiceCategories}"
-                                    var="cat"
-                                    itemLabel="#{cat.name}"
-                                    itemValue="#{cat}"/>
-                        </p:selectOneMenu>
+                        <p:autoComplete
+                                completeMethod="#{categoryController.completeCategory}"
+                                var="pta"
+                                itemLabel="#{pta.name}"
+                                itemValue="#{pta}"
+                                forceSelection="true"
+                                value="#{reportsController.category}"
+                                inputStyleClass="w-100"
+                                class="w-100 m-1"
+                                maxResults="20"
+                                id="cat">
+                        </p:autoComplete>
 
                         <p:spacer width="20"/>
 
@@ -292,6 +291,59 @@
                                 itemLabel="#{rd.person.nameWithTitle}"
                                 itemValue="#{rd}"/>
 
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Sent Institution" class="m-3"/>
+                        </h:panelGroup>
+                        <p:autoComplete
+                                inputStyleClass="w-100"
+                                class="w-100"
+                                id="sendSampleIns"
+                                value="#{reportsController.toInstitution}"
+                                completeMethod="#{institutionController.completeIns}"
+                                var="oi"
+                                maxResults="15"
+                                itemLabel="#{oi.name}"
+                                itemValue="#{oi}">
+                            <p:column style="padding: 4px;">#{oi.institutionCode}</p:column>
+                            <p:column style="padding: 4px;">#{oi.name}</p:column>
+                            <p:ajax event="itemSelect"
+                                    process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
+                                    update="sendSampleDept"/>
+                            <p:ajax event="itemUnselect"
+                                    process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
+                                    update="sendSampleDept"/>
+                            <p:ajax event="change"
+                                    process="@this"
+                                    listener="#{reportsController.resetToDepartment}"
+                                    update="sendSampleDept"/>
+                        </p:autoComplete>
+
+                        <p:spacer width="20"/>
+
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0f0;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Sent Department" class="m-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                                inputStyleClass="w-100"
+                                class="w-100"
+                                filter="true"
+                                value="#{reportsController.toDepartment}"
+                                filterMatchMode="contains"
+                                id="sendSampleDept">
+                            <f:selectItem itemLabel="Any"/>
+                            <f:selectItems
+                                    value="#{departmentController.getAllDepartmentsWithInstitutionFilter(reportsController.toInstitution)}"
+                                    var="odpt"
+                                    itemLabel="#{odpt.name}"
+                                    itemValue="#{odpt}">
+                            </f:selectItems>
+                        </p:selectOneMenu>
                     </h:panelGrid>
 
                     <p:commandButton
@@ -417,15 +469,35 @@
                                                     row.billItem.patientEncounter.finalBill.creater.webUserPerson.nameWithTitle :
                                                     row.billItem.bill.creater.webUserPerson.nameWithTitle}"/>
                             </p:column>
-                            <p:column headerText="Received Date" width="5rem">
-                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">
+                            <!--                            <p:column headerText="Received Date" width="5rem">-->
+                            <!--                                <h:outputText value="#{row.billItem.patientInvestigation.sampleAcceptedAt}">-->
+                            <!--                                    <f:convertDateTime-->
+                            <!--                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                            <!--                                </h:outputText>-->
+                            <!--                            </p:column>-->
+                            <!--                            <p:column headerText="Received By" width="5rem">-->
+                            <!--                                <h:outputText-->
+                            <!--                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>-->
+                            <!--                            </p:column>-->
+                            <!--                            <p:column headerText="Collected Date" width="5rem">-->
+                            <!--                                <h:outputText value="#{row.billItem.patientInvestigation.sampleCollectedAt}">-->
+                            <!--                                    <f:convertDateTime-->
+                            <!--                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>-->
+                            <!--                                </h:outputText>-->
+                            <!--                            </p:column>-->
+                            <!--                            <p:column headerText="Collected By" width="5rem">-->
+                            <!--                                <h:outputText-->
+                            <!--                                        value="#{row.billItem.patientInvestigation.sampleCollectedBy.webUserPerson.nameWithTitle}"/>-->
+                            <!--                            </p:column>-->
+                            <p:column headerText="Sent Date" width="5rem">
+                                <h:outputText value="#{row.billItem.patientInvestigation.outsourcedAt}">
                                     <f:convertDateTime
                                             pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
-                            <p:column headerText="Received By" width="5rem">
+                            <p:column headerText="Sent By" width="5rem">
                                 <h:outputText
-                                        value="#{row.billItem.patientInvestigation.sampleAcceptedBy.webUserPerson.nameWithTitle}"/>
+                                        value="#{row.billItem.patientInvestigation.outsourcedUser.webUserPerson.nameWithTitle}"/>
                             </p:column>
                             <p:column headerText="Remarks" width="5rem">
                                 <h:outputText value="#{row.billItem.bill.comments}"/>
@@ -475,8 +547,11 @@
                             </p:column>
                             <p:column headerText="Test Name" width="5rem">
                                 <h:outputText value="#{row.categoryName}"/>
+                                <f:facet name="footer">
+                                    <h:outputText value="Total Test Performed"/>
+                                </f:facet>
                             </p:column>
-                            <p:column headerText="Total Tests Performed" width="1rem">
+                            <p:column headerText="Total Test Performed" width="1rem">
                                 <h:outputText value="#{row.rowValue}">
                                     <f:convertNumber pattern="#,##0.0"/>
                                 </h:outputText>

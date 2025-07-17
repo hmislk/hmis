@@ -18,17 +18,25 @@
                         </f:facet>
                         <div class="row">
                             <div class="col-2">
+                                
                                 <h:outputLabel value="From Date"/>
-                                <p:calendar id="fromDate" value="#{supplierPaymentController.fromDate}" navigator="false"
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
-                                            class="w-100" inputStyleClass="w-100">
-
+                                <p:calendar 
+                                    id="fromDate" 
+                                    value="#{supplierPaymentController.fromDate}" 
+                                    navigator="false"
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}" 
+                                    class="w-100" 
+                                    inputStyleClass="w-100">
                                 </p:calendar>
+                                
                                 <h:outputLabel value="To Date"/>
-                                <p:calendar id="toDate" value="#{supplierPaymentController.toDate}" navigator="false" 
-                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            class="w-100" inputStyleClass="w-100">
-
+                                <p:calendar 
+                                    id="toDate" 
+                                    value="#{supplierPaymentController.toDate}" 
+                                    navigator="false" 
+                                    pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                    class="w-100" 
+                                    inputStyleClass="w-100">
                                 </p:calendar>
 
                                 <p:commandButton 
@@ -36,7 +44,8 @@
                                     action="#{supplierPaymentController.fillApprovedSupplierPaymentsToComplete()}" 
                                     ajax="false"  
                                     icon="fas fa-prescription-bottle-alt" 
-                                    class="my-1 w-100 ui-button-warning" />
+                                    class="my-1 w-100 ui-button-warning" >
+                                </p:commandButton>
 
                             </div>
                             <div class="col-10">
@@ -87,7 +96,7 @@
                                         </h:outputText>
                                     </p:column>
                                     <p:column headerText="Approved By" sortBy="#{b.creater.webUserPerson.name}" filterBy="#{b.creater.webUserPerson.name}" filterMatchMode="contains">
-                                        <h:outputText value="#{b.creater.webUserPerson.name}">
+                                        <h:outputText value="#{b.paymentApprovedBy.webUserPerson.name}">
                                         </h:outputText>
                                     </p:column>
 
