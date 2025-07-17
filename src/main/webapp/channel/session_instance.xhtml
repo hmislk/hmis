@@ -240,7 +240,7 @@
                                                 </h:panelGroup>
                                             </p:column>
 
-                                            <p:column headerText="Manage" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Appoinment Status manage from session Instance', false)}">
+                                            <p:column headerText="Manage" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable Appoinment Status manage from session Instance', false) and bookingControllerViewScope.selectedSessionInstance.started}">
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         ajax="true" 
