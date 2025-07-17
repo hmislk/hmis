@@ -263,7 +263,7 @@
                                                                     completeMethod="#{billController.completeAppointmentBill}" 
                                                                     var="apt2" itemLabel="#{apt2.patient.person.nameWithTitle}" 
                                                                     itemValue="#{apt2}" >
-                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2" />
+                                                        <p:ajax event="itemSelect" process="aBill" update="panSearch2 :#{p:resolveFirstComponentWithId('ptd',view).clientId} @all" listener="#{admissionController.listnerForAppoimentSelect(admissionController.appointmentBill)}" />
                                                         <p:column>
                                                             #{apt2.deptId}
                                                         </p:column>
