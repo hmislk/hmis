@@ -32,7 +32,9 @@ import com.divudi.service.PaymentService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -98,6 +100,19 @@ public class AgentAndCcPaymentController implements Serializable {
         getCurrentBillItem().setRate(getCurrent().getNetTotal());
         getBillItems().add(getCurrentBillItem());
         currentBillItem = null;
+    }
+    
+    public List<Institution> getAgentInstitutions() {
+        String j;
+        j = "select i "
+                + " from Institution i "
+                + " where i.retired=:ret"
+                + " and i.institutionType = :type"
+                + " order by i.name";
+        Map m = new HashMap();
+        m.put("ret", false);
+        m.put("type", InstitutionType.Agency);
+        return getInstitutionFacade().findByJpql(j, m);
     }
 
     public AgentAndCcPaymentController() {
