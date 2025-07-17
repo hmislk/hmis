@@ -61,30 +61,27 @@
                     </f:facet>
 
                     <p:dataTable value="#{channelReportController.channelBills}" var="b" id="tbl1" >
-                        <f:facet name="header" >
-                            <p:outputLabel value="Billed Bill" />                                
-                        </f:facet>
 
-                        <p:column style="text-align: left;" >
+                        <p:column style="text-align: left;" width="10em">
                             <f:facet name="header" >
                                 <p:outputLabel value="Channel Reciept No" />
                             </f:facet>
-                            
+
                             <p:commandLink
-                                        id="billNo"
-                                        disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
-                                                     or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
-                                                     or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
-                                                     or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
-                                                     or bookingControllerViewScope.checkBillClass(b) eq 'CancelBill'
-                                                     or bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'                           }"
-                                        ajax="false"
-                                        style="font-weight: bold"
-                                        value="#{b.deptId}"
-                                        action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(b))}">
-                                    </p:commandLink>
-                            
-                             
+                                id="billNo"
+                                disabled ="#{row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION' 
+                                             or row.bill.billTypeAtomic eq 'PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN'
+                                             or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL'
+                                             or row.bill.billTypeAtomic eq 'CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION'
+                                             or bookingControllerViewScope.checkBillClass(b) eq 'CancelBill'
+                                             or bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'                           }"
+                                ajax="false"
+                                style="font-weight: bold"
+                                value="#{b.deptId}"
+                                action="#{bookingControllerViewScope.navigateToViewBillSession(bookingControllerViewScope.getBillSessionFromBill(b))}">
+                            </p:commandLink>
+
+
                             <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" ></p:tag>
                             <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" ></p:tag>
                             <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
@@ -98,7 +95,11 @@
                             <p:outputLabel value="#{b.singleBillSession.serviceSession.name}" />                                    
                         </p:column>
 
-                        <p:column style="text-align: center;" filterMatchMode="contains">
+                        <p:column style="text-align: center;" filterMatchMode="contains" 
+                                  filterBy="#{b.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' 
+                                              or b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING' ? 
+                                              'Online Booking' : 'System Booking'}"
+                                  >
                             <f:facet name="header">
                                 <p:outputLabel value="Booking Type" />
                             </f:facet>
@@ -106,11 +107,11 @@
                             <p:outputLabel value="System Booking" style="font-weight: bold" rendered="#{b.billTypeAtomic ne 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' and b.billTypeAtomic ne 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}"/>
                         </p:column>
 
-                        <p:column style="text-align: left;" >
+                        <p:column style="text-align: center;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Appinment No" />
                             </f:facet>
-                            <p:outputLabel value="#{b.singleBillSession.serialNo}" />                                    
+                            <p:outputLabel value="#{b.singleBillSession.serialNo}" style="font-weight: bold"/>                                    
                         </p:column>
 
                         <p:column style="text-align: center;" >
@@ -134,59 +135,89 @@
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Name" />
                             </f:facet>
-                            <p:outputLabel value="#{b.staff.person.name}" />                                    
+                            <p:outputLabel value="#{b.staff.person.name}" />    
+
+                            <f:facet name="footer">
+                                <h:outputText  value="Totals">
+
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Doctor Fee" />
                             </f:facet>
-                            <p:outputLabel value="#{b.staffFee}" >
+                            <p:outputLabel styleClass="staffFee" value="#{b.staffFee}" >
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="staffFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Hospital Fee" />
                             </f:facet>
-                            <p:outputLabel value="#{b.hospitalFee}">
+                            <p:outputLabel styleClass="hosFee" value="#{b.hospitalFee}">
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel>   
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="hosFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
                         <p:column style="text-align: right;" >
                             <f:facet name="header" >
                                 <p:outputLabel value="Net Total" />
                             </f:facet>
-                            <p:outputLabel value="#{b.netTotal}" >
+                            <p:outputLabel styleClass="netFee" value="#{b.netTotal}" >
                                 <f:convertNumber pattern="#,##0.00"/>
-                            </p:outputLabel>                                    
+                            </p:outputLabel> 
+
+                            <f:facet name="footer">
+                                <h:outputText styleClass="netFeeTotal" value="">
+                                    <f:convertNumber pattern="#,##0.00"/>
+                                </h:outputText>
+                            </f:facet>
                         </p:column>
 
 
-                        <p:columnGroup type="footer">
-
-                            <p:row>
-                                <p:column colspan="3"/>
-                                <p:column footerText="Total" style=" text-align: left;">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="Total"/>
-                                    </f:facet>
-                                </p:column>
-                                <p:column footerText="#{channelReportController.doctorFeeBilledTotal}" style=" text-align: right">
-                                    <f:facet name="footer">
-                                        <h:outputLabel value="#{channelReportController.doctorFeeTotal}">
-                                            <f:convertNumber pattern="#,##0.00"/>
-                                        </h:outputLabel>
-                                    </f:facet>
-                                </p:column>
-
-                            </p:row>
-
-                        </p:columnGroup>
 
                     </p:dataTable>
+
+                    <script>
+                        function calculateTotals(selector, targeter) {
+                            const values = Array.from(document.querySelectorAll(selector));
+                            const totalValue = values
+                                    .map(value => {
+                                        const cleanValue = value.innerText.replace(/,/g, "");
+                                        return isNaN(parseFloat(cleanValue)) ? 0 : parseFloat(cleanValue);
+                                    })
+                                    .reduce((total, value) => total + value, 0);
+
+                            const targetElement = document.querySelector(targeter);
+                            if (targetElement) {
+                                targetElement.innerText = totalValue.toFixed(2);
+                            }
+
+                        }
+
+                        function updateTotals() {
+                            calculateTotals('.netFee', '.netFeeTotal');
+                            calculateTotals('.staffFee', '.staffFeeTotal');
+                            calculateTotals('.hosFee', '.hosFeeTotal');
+                        }
+
+                        setTimeout(updateTotals, 500);
+                    </script>
 
                 </p:panel>
 
