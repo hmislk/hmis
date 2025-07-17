@@ -2109,6 +2109,39 @@ public class ItemController implements Serializable {
         return lst;
     }
 
+    public List<Item> completeItemWithRetired(String query, Class[] itemClasses, DepartmentType[] departmentTypes, int count) {
+        String sql;
+        List<Item> lst;
+        HashMap tmpMap = new HashMap();
+        if (query == null) {
+            lst = new ArrayList<>();
+        } else {
+            sql = "select c "
+                    + " from Item c "
+                    + " where ((c.name) like :q or (c.code) like :q or (c.barcode) like :q  ) ";
+            tmpMap.put("q", "%" + query.toUpperCase() + "%");
+
+            if (departmentTypes != null) {
+                sql += " and c.departmentType in :deps ";
+                tmpMap.put("deps", Arrays.asList(departmentTypes));
+            }
+
+            if (itemClasses != null) {
+                sql += " and type(c) in :types ";
+                tmpMap.put("types", Arrays.asList(itemClasses));
+            }
+
+            sql += " order by c.name";
+
+            if (count != 0) {
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, count);
+            } else {
+                lst = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP);
+            }
+        }
+        return lst;
+    }
+
     public List<Item> findItemsFromBarcode(String barcode) {
         String sql;
         List<Item> lst;
@@ -2322,6 +2355,12 @@ public class ItemController implements Serializable {
 //        }
 //        return suggestions;
 
+    }
+
+    public List<Item> completeStoreItemOnlyWithRetired(String query) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Store};
+        Class[] classes = new Class[]{Amp.class};
+        return completeItemWithRetired(query, classes, dts, 0);
     }
 
     public List<Item> completeStoreItemOnly(String query) {
