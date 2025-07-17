@@ -354,6 +354,8 @@ public class TransferReceiveController implements Serializable {
 
         double costFree = 0.0;
         double costNonFree = 0.0;
+        
+        double netTotal = 0.0;
 
         System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
 
@@ -431,7 +433,8 @@ public class TransferReceiveController implements Serializable {
                 bifd.setGrossRate(BigDecimal.ZERO);
             }
 
-            BigDecimal netTotal = bifd.getNetTotal();
+            BigDecimal biNetTotal = bifd.getNetTotal();
+            netTotal+=biNetTotal.doubleValue();
 
             bifd.setValueAtPurchaseRate(bifd.getLineGrossRate().multiply(bifd.getTotalQuantity()));
             bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity()));
@@ -492,6 +495,9 @@ public class TransferReceiveController implements Serializable {
 
         inputBill.setSaleValue(retailFree + retailNonFree);
         inputBill.setFreeValue(retailFree);
+        inputBill.setNetTotal(netTotal);
+        inputBill.setGrantTotal(netTotal);
+        inputBill.setTotal(netTotal);
 
         System.out.println("inputBill.setSaleValue = " + inputBill.getSaleValue());
         System.out.println("inputBill.setFreeValue = " + inputBill.getFreeValue());
