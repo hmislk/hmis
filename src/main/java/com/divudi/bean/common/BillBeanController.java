@@ -5183,7 +5183,6 @@ public class BillBeanController implements Serializable {
                 params.put("forDep", forDep);
             }
 
-
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
 
             for (Fee i : itemFee) {

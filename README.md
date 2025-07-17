@@ -78,6 +78,12 @@ Example keys include:
 - `Pharmacy Analytics - Show Pharmacy Analytics Summary Reports Tab`
 - `Pharmacy Analytics - Show Pharmacy Income Report`
 
+### Pharmacy Transfer Receipt Size
+
+Transfer issue and request receipts are formatted for A4 printing. The default
+CSS sets the `.receipt-container` to `width: 21cm` so pages centre correctly on
+screen and when printed.
+
 ## Request Originators 
 * Dr M H B Ariyaratne
 * Dr Jagath Samarasekara
