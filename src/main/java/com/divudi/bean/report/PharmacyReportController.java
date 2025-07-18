@@ -2030,7 +2030,11 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processSaleCreditCard() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Card));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Card));
     }
 
     public void processSaleCash() {
@@ -2431,7 +2435,7 @@ public class PharmacyReportController implements Serializable {
 
             // Title
             Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
-            Paragraph titlePara = new Paragraph("Sale Cash Report", titleFont);
+            Paragraph titlePara = new Paragraph(reportType, titleFont);
             titlePara.setAlignment(Element.ALIGN_CENTER);
             titlePara.setSpacingAfter(20);
             document.add(titlePara);
@@ -2550,6 +2554,10 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void selectReportName(String name) {
+        reportType = name;
     }
 
     public void processCollectingCentreTestWiseCountReport() {
