@@ -395,6 +395,38 @@ public class ChannelReportController implements Serializable {
         
         paymentsFromCardAppoinments =  channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
     }
+    
+    public double calculateTotalsFromPayment(List<Payment> payments, String type){
+        if(payments == null || payments.isEmpty()){
+            return 0;
+        }
+        double total = 0;
+        switch (type) {
+            case "TotalFee":
+                for(Payment p : payments){
+                    if(!p.getBill().isCancelled()){
+                        total += p.getBill().getTotal();
+                    }
+                }
+                return total;
+            case "HosFee": 
+                for(Payment p : payments){
+                    if(!p.getBill().isCancelled()){
+                        total += p.getBill().getHospitalFee();
+                    }
+                }
+                return total;
+            case "StaffFee":
+                for(Payment p : payments){
+                    if(!p.getBill().isCancelled()){
+                        total += p.getBill().getStaffFee();
+                    }
+                }
+                return total;
+            default:
+                throw new AssertionError();
+        }
+    }
 
     public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);

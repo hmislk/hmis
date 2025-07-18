@@ -196,7 +196,7 @@
                                 </h:outputText>
 
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="hosFeeTotal" value="">
+                                    <h:outputText styleClass="hosFeeTotal" value="#{channelReportController.calculateTotalsFromPayment(channelReportController.paymentsFromCardAppoinments, 'HosFee')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -208,7 +208,7 @@
                                 </h:outputText>
 
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="staffFeeTotal" value="">
+                                    <h:outputText styleClass="staffFeeTotal" value="#{channelReportController.calculateTotalsFromPayment(channelReportController.paymentsFromCardAppoinments, 'StaffFee')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -221,7 +221,7 @@
 
                                 </h:outputText>
                                 <f:facet name="footer">
-                                    <h:outputText styleClass="grossTotal" value="">
+                                    <h:outputText styleClass="grossTotal" value="#{channelReportController.calculateTotalsFromPayment(channelReportController.paymentsFromCardAppoinments, 'TotalFee')}">
                                         <f:convertNumber pattern="#,##0.00"/>
                                     </h:outputText>
                                 </f:facet>
@@ -241,7 +241,7 @@
 
                         </p:dataTable>
 
-                        <script>
+<!--                        <script>
                             function calculateTotals(selector, targeter) {
                                 const values = Array.from(document.querySelectorAll(selector));
                                 const totalValue = values
@@ -265,7 +265,7 @@
                             }
                         
                             setTimeout(updateTotals, 500);
-                        </script>
+                        </script>-->
 
                     </p:panel>
                 </h:form>
