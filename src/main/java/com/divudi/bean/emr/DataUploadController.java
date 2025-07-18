@@ -48,6 +48,7 @@ import com.divudi.core.data.CollectingCentrePaymentMethod;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -320,7 +321,10 @@ public class DataUploadController implements Serializable {
     private int distributorCol = 11;
     private int manufacturerCol = 12;
     private int importerCol = 13;
-    private int doeCol = 14;
+    private int departmentTypeCol = 14;
+    private int doeCol = 15;
+    private int batchCol = 16;
+    private int stockQtyCol = 17;
     private int batchCol = 15;
     private int stockQtyCol = 16;
     private int pruchaseRateCol = 17;
@@ -745,6 +749,14 @@ public class DataUploadController implements Serializable {
                 strImporter = getCellValueAsString(row.getCell(importerCol));
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setImporter(importer);
+
+
+                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
+                if (deptType == null) {
+                    deptType = DepartmentType.Pharmacy;
+                }
+                amp.setDepartmentType(deptType);
 
                 System.out.println("amp = " + amp);
                 System.out.println("rowCount at End of a row= " + rowCount);
