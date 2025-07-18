@@ -2524,7 +2524,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     }
 
     public String navigateToViewBillSession(BillSession bs) {
-//        System.out.println("bs = " + bs);
+
         selectedBillSession = bs;
         setSelectedSessionInstance(selectedBillSession.getSessionInstance());
         if (selectedBillSession == null) {
@@ -3027,7 +3027,6 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 
         can.setSingleBillSession(bs);
         getBillFacade().edit(can);
-
         return bs;
     }
 
@@ -3154,7 +3153,14 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             BillSession cbs = cancelBillSession(billSession, cb, cItem);
             bill.setCancelled(true);
             bill.setCancelledBill(cb);
+            cb.setSingleBillSession(cbs);
+            cItem = billItemFacade.findWithoutCache(cItem.getId());
+            List<BillItem> billItems = new ArrayList<>();
+            billItems.add(cItem);
+            cb.setBillItems(billItems);
+
             getBillFacade().edit(bill);
+            getBillFacade().edit(cb);
 
             if (bill.getPaymentMethod() == PaymentMethod.Agent) {
                 if (cancelPaymentMethod == PaymentMethod.Agent) {
