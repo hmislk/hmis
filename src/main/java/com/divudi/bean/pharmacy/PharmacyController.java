@@ -465,6 +465,10 @@ public class PharmacyController implements Serializable {
         return "/pharmacy/pharmacy_item_import?faces-redirect=true";
     }
 
+    public String navigateToItemImportWithoutStock() {
+        return "/pharmacy/pharmacy_item_import_without_stock?faces-redirect=true";
+    }
+
     public String navigateToItemImportWithStock() {
         return "/pharmacy/pharmacy_item_import_with_stock?faces-redirect=true";
     }

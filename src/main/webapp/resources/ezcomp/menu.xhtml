@@ -1016,13 +1016,6 @@
                                     actionListener="#{transferIssueController.makeNull()}" 
                                     rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" 
                                     icon="fas fa-pills"></p:menuitem>
-                        
-                         <p:menuitem ajax="false" 
-                                    action="/pharmacy/pharmacy_transfer_issue_direct_department?faces-redirect=true"  
-                                    value="Direct Issue Tmp" 
-                                    actionListener="#{transferIssueController.makeNull()}" 
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementDirectIssue')}" 
-                                    icon="fas fa-pills"></p:menuitem>
 
                         <p:menuitem ajax="false" 
                                     action="/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true"  
