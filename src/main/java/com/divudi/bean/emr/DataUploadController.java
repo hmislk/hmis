@@ -584,7 +584,7 @@ public class DataUploadController implements Serializable {
         }
     }
 
-    public String importToExcelWithoutStock() {
+    public String importFromExcelWithoutStock() {
         if (file == null) {
             JsfUtil.addErrorMessage("No File");
             return "";
