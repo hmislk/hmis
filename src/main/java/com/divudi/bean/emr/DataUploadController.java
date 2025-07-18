@@ -48,6 +48,7 @@ import com.divudi.core.data.CollectingCentrePaymentMethod;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -320,9 +321,10 @@ public class DataUploadController implements Serializable {
     private int distributorCol = 11;
     private int manufacturerCol = 12;
     private int importerCol = 13;
-    private int doeCol = 14;
-    private int batchCol = 15;
-    private int stockQtyCol = 16;
+    private int departmentTypeCol = 14;
+    private int doeCol = 15;
+    private int batchCol = 16;
+    private int stockQtyCol = 17;
     private int pruchaseRateCol = 17;
     private int saleRateCol = 18;
     private List<PharmacyImportCol> itemNotPresent;
@@ -578,6 +580,190 @@ public class DataUploadController implements Serializable {
             }
             JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
             return "/pharmacy/pharmacy_purchase";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
+    public String importFromExcelWithoutStock() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        String strCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        PharmaceuticalItemCategory cat;
+        PharmaceuticalItemType phType;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VirtualProductIngredient vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        StringBuilder warningMessages = new StringBuilder();
+
+        int rowCount = 0;
+
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            JsfUtil.addSuccessMessage(file.getFileName());
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue;
+                }
+
+                Map<String, Object> m = new HashMap<>();
+
+                Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
+                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
+
+                Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+
+                Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    continue;
+                }
+
+                Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    continue;
+                }
+
+                Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getCellValueAsString(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
+
+                Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getCellValueAsString(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getCellValueAsString(vtmCell);
+                vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
+
+                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                if (vmp == null) {
+                    continue;
+                } else {
+                    vmp.setCategory(phType);
+                    getVmpFacade().edit(vmp);
+                }
+
+                strCode = getCellValueAsString(row.getCell(codeCol));
+                strBarcode = getCellValueAsString(row.getCell(barcodeCol));
+
+                strDistributor = getCellValueAsString(row.getCell(distributorCol));
+
+                Cell ampCell = row.getCell(ampCol);
+                strAmp = getCellValueAsString(ampCell);
+                m.put("v", vmp);
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(strAmp);
+                    amp.setCode(strCode);
+                    amp.setBarcode(strBarcode);
+                    amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
+                    amp.setDblValue(strengthUnitsPerIssueUnit);
+                    amp.setCategory(cat);
+                    amp.setVmp(vmp);
+                    getAmpFacade().create(amp);
+                } else {
+                    amp.setRetired(false);
+                    getAmpFacade().edit(amp);
+                }
+
+                if (amp == null) {
+                    continue;
+                }
+
+                if (issueUnitsPerPack > 1.0) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                amp.setBarcode(strBarcode);
+                getAmpFacade().edit(amp);
+
+                strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+
+                strImporter = getCellValueAsString(row.getCell(importerCol));
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setImporter(importer);
+
+
+                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
+                if (deptType == null) {
+                    deptType = DepartmentType.Pharmacy;
+                }
+                amp.setDepartmentType(deptType);
+
+                System.out.println("amp = " + amp);
+                System.out.println("rowCount at End of a row= " + rowCount);
+            }
+            if (warningMessages.length() > 0) {
+                JsfUtil.addErrorMessage(warningMessages.toString());
+            }
+            JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
+            return "";
         } catch (IOException e) {
             JsfUtil.addErrorMessage(e.getMessage());
             return "";

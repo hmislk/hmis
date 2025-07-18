@@ -14,6 +14,7 @@ import com.divudi.bean.cashTransaction.DrawerController;
 import com.divudi.bean.channel.BookingController;
 import com.divudi.bean.collectingCentre.CourierController;
 import com.divudi.bean.pharmacy.PharmacySaleController;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.InstitutionType;
 import static com.divudi.core.data.LoginPage.CHANNELLING_QUEUE_PAGE;
 import static com.divudi.core.data.LoginPage.CHANNELLING_TV_DISPLAY;
@@ -218,8 +219,8 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String ipAddr;
     private String ipAddress;
     private String host;
-    
-        //
+
+    //
     private WebUser current;
     private String userName;
     private String password;
@@ -232,11 +233,12 @@ public class SessionController implements Serializable, HttpSessionListener {
     private String newDesignation;
     private String newInstitution;
     private String newPasswordHint;
-   private  String telNo;
+    private String telNo;
     private String email;
     private String displayName;
     private WebUserRole role;
 
+    private List<DepartmentType> availableDepartmentTypesForPharmacyTransactions;
 
     // </editor-fold>  
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -415,6 +417,35 @@ public class SessionController implements Serializable, HttpSessionListener {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public List<DepartmentType> getAvailableDepartmentTypesForPharmacyTransactions() {
+        if (availableDepartmentTypesForPharmacyTransactions == null) {
+            fillAvailableDepartmentTypesForPharmacyTransactions();
+        }
+        return availableDepartmentTypesForPharmacyTransactions;
+    }
+
+    private void fillAvailableDepartmentTypesForPharmacyTransactions() {
+        availableDepartmentTypesForPharmacyTransactions = new ArrayList<>();
+
+        if (getDepartment() == null) {
+            return;
+        }
+
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Pharmacy Items In Pharmacy Transactions for " + getDepartment().getName(), true)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Pharmacy);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Lab Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Lab);
+        }
+        if (configOptionApplicationController.getBooleanValueByKey("Allow Store Items In Pharmacy Transactions for " + getDepartment().getName(), false)) {
+            availableDepartmentTypesForPharmacyTransactions.add(DepartmentType.Store);
+        }
+    }
+
+    public void setAvailableDepartmentTypesForPharmacyTransactions(List<DepartmentType> availableDepartmentTypesForPharmacyTransactions) {
+        this.availableDepartmentTypesForPharmacyTransactions = availableDepartmentTypesForPharmacyTransactions;
     }
 
 // ---------- HELPER CLASS ----------
@@ -862,7 +893,6 @@ public class SessionController implements Serializable, HttpSessionListener {
         this.securityController = securityController;
     }
 
-
     public WebUserRole getRole() {
         return role;
     }
@@ -1151,7 +1181,7 @@ public class SessionController implements Serializable, HttpSessionListener {
                             getUserPreferenceFacade().create(insPre);
                         }
                     }
-
+                    fillAvailableDepartmentTypesForPharmacyTransactions();
                     setLoggedPreference(insPre);
 
                     recordLogin();
@@ -1828,6 +1858,7 @@ public class SessionController implements Serializable, HttpSessionListener {
         opdBillItemSearchByAutocomplete = null;
         pharmacyBillingAfterShiftStart = null;
         paymentManagementAfterShiftStart = null;
+        availableDepartmentTypesForPharmacyTransactions = null;
     }
 
     public WebUser getCurrent() {
