@@ -325,8 +325,6 @@ public class DataUploadController implements Serializable {
     private int doeCol = 15;
     private int batchCol = 16;
     private int stockQtyCol = 17;
-    private int batchCol = 15;
-    private int stockQtyCol = 16;
     private int pruchaseRateCol = 17;
     private int saleRateCol = 18;
     private List<PharmacyImportCol> itemNotPresent;
