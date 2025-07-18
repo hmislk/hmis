@@ -31,7 +31,7 @@
             </div>
 
             <div class="receipt-title">
-                <h:outputLabel value="Pharmacy Transfer Request Receipt" />
+                <h:outputLabel value="Pharmacy Transfer Request" />
             </div>
 
             <div class="receipt-separator"><hr /></div>
@@ -54,24 +54,24 @@
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.deptId}" /></td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Req Person" /></td>
+                        <td><h:outputLabel value="Req By" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4"><h:outputLabel value="#{cc.attrs.bill.creater.webUserPerson.name}" /></td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Req Date" /></td>
+                        <td><h:outputLabel value="Req Date/Time" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4">
                             <h:outputLabel value="#{cc.attrs.bill.createdAt}">
-                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                <f:convertDateTime timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                             </h:outputLabel>
                         </td>
                     </tr>
                     <tr>
-                        <td><h:outputLabel value="Req Time" /></td>
+                        <td><h:outputLabel value="Document Status" /></td>
                         <td><h:outputLabel value=":" /></td>
                         <td colspan="4">
-                            <h:outputLabel value="#{cc.attrs.bill.createdAt}">
+                            <h:outputLabel value="#{cc.attrs.bill.status}">
                                 <f:convertDateTime pattern="#{sessionController.applicationPreference.longTimeFormat}" />
                             </h:outputLabel>
                         </td>
