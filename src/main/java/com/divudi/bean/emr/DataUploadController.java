@@ -744,7 +744,7 @@ public class DataUploadController implements Serializable {
 
                 strImporter = getCellValueAsString(row.getCell(importerCol));
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
-                amp.setManufacturer(importer);
+                amp.setImporter(importer);
 
                 System.out.println("amp = " + amp);
                 System.out.println("rowCount at End of a row= " + rowCount);
