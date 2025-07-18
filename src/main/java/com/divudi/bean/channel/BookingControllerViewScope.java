@@ -2430,18 +2430,18 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
     public void completeAppoinmentFromSessionInstance(BillSession bs) {
 
         if (bs != null) {
-            
-            if(bs.getBill().getPaymentMethod() == PaymentMethod.OnCall){
-                if(bs.getBill().getPaidBill() == null){
+
+            if (bs.getBill().getPaymentMethod() == PaymentMethod.OnCall) {
+                if (bs.getBill().getPaidBill() == null) {
                     JsfUtil.addErrorMessage("Not a paid Appoinment");
                     return;
                 }
             }
-            
+
             bs.setCompleted(true);
             bs.setNextInLine(false);
-            
-            if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+
+            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 bs.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.COMPLETED);
                 onlineBookingFacade.edit(bs.getBill().getReferenceBill().getOnlineBooking());
             }
@@ -2455,7 +2455,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
         if (bs != null) {
             bs.setCompleted(false);
             bs.setNextInLine(false);
-            if(bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT){
+            if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 bs.getBill().getReferenceBill().getOnlineBooking().setOnlineBookingStatus(OnlineBookingStatus.ACTIVE);
                 onlineBookingFacade.edit(bs.getBill().getReferenceBill().getOnlineBooking());
             }
@@ -2603,7 +2603,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
                     billSessionFacade.edit(bs.getPaidBillSession());
                 }
             }
-        }else if(bs.isAbsent()){
+        } else if (bs.isAbsent()) {
             bs.setAbsent(false);
             if (bs.getBill().getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
                 bs.getBill().getReferenceBill().getOnlineBooking().setAbsent(false);
@@ -2840,7 +2840,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             JsfUtil.addErrorMessage("This is a cancel Bill. Cant cancel it.");
             return;
         }
-        
+
         if (selectedBillSession.getBill() instanceof RefundBill) {
             JsfUtil.addErrorMessage("This is a Refund Bill. Cant cancel it.");
             return;
@@ -3432,11 +3432,16 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
             return null;
         }
         cb.setDeptId(deptId);
-        if (cancelPaymentMethod == PaymentMethod.OnlineBookingAgent) {
-            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
+        if (bill.getBillTypeAtomic() == BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT) {
+            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
         } else {
             cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
         }
+//        if (cancelPaymentMethod == PaymentMethod.OnlineBookingAgent) {
+//            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITHOUT_PAYMENT);
+//        } else {
+//            cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT);
+//        }
 
         getBillFacade().create(cb);
 
@@ -8921,7 +8926,7 @@ public class BookingControllerViewScope implements Serializable, ControllerWithP
 //        System.out.println("feeNetTotalForSelectedBill 3 = " + feeNetTotalForSelectedBill);
         feeNetTotalForSelectedBill = feeTotalForSelectedBill - feeDiscountForSelectedBill;
 //        System.out.println("feeNetTotalForSelectedBill 4 = " + feeNetTotalForSelectedBill);
-        if(paymentMethod == PaymentMethod.Card){
+        if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(feeNetTotalForSelectedBill);
         }
     }
