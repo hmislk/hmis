@@ -228,37 +228,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:ajax event="page" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="sort" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="filter" oncomplete="calculateSaleTotalInBill()" />
-
 
                 </p:dataTable>
             </div>
-            <h:outputScript>
-                function calculateSaleTotalInBill(){
-                let total = 0;
-                document.querySelectorAll('.sale-value').forEach(cell=>{
-
-                let value = cell.innerText.replace(/,/g, ''); 
-                total += parseFloat(value) || 0
-                });
-
-                let footerElement = document.querySelector('.totalSaleValue');
-                if (footerElement) {
-                footerElement.innerText = total.toFixed(2); 
-                }
-
-                }
-
-                PrimeFaces.widget.DataTable.prototype.refresh = function() {
-                setTimeout(calculateSaleTotalInBill, 100); 
-                };
-
-                document.addEventListener("DOMContentLoaded", function() {
-                setTimeout(calculateSaleTotalInBill, 500);
-                });
-            </h:outputScript>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></h:outputText>
