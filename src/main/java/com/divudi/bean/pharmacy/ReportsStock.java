@@ -123,6 +123,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private double saleValueAfterDisbursement;
     private double finalTotalPurchaseValue;
     private double finalTotalSaleValue;
+    private boolean includeZeroStock;
 
     private int fromRecord;
     private int toRecord;
@@ -240,27 +241,41 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
+    public void toggleIncludeZeroStock() {
+        includeZeroStock = !includeZeroStock;
+    }
+
     public void fillDepartmentStocksForDownload() {
         reportTimerController.trackReportExecution(() -> {
             System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
             System.out.println("startedAt = " + startedAt);
-            Map<String, Object> m = new HashMap<>();
-            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
-            if (department != null) {
-                sql.append(" and s.department=:d");
-                m.put("d", department);
-            } else if (site != null) {
-                sql.append(" and s.department.site=:site");
-                m.put("site", site);
-            } else if (institution != null) {
-                sql.append(" and s.department.institution=:ins");
-                m.put("ins", institution);
+
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT s FROM Stock s WHERE 1=1");
+
+            if (!includeZeroStock) {
+                jpql.append(" AND s.stock > 0");
             }
-            sql.append(" order by s.id");
+
+            if (department != null) {
+                jpql.append(" AND s.department = :dept");
+                parameters.put("dept", department);
+            } else if (site != null) {
+                jpql.append(" AND s.department.site = :site");
+                parameters.put("site", site);
+            } else if (institution != null) {
+                jpql.append(" AND s.department.institution = :ins");
+                parameters.put("ins", institution);
+            }
+
+            jpql.append(" ORDER BY s.id");
+
             Date beforeJpql = new Date();
             System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql.toString(), m, fromRecord, toRecord);
+
+            stocks = getStockFacade().findByJpql(jpql.toString(), parameters);
+
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
@@ -2086,6 +2101,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
         this.reportViewTypes = reportViewTypes;
+    }
+
+    public boolean isIncludeZeroStock() {
+        return includeZeroStock;
+    }
+
+    public void setIncludeZeroStock(boolean includeZeroStock) {
+        this.includeZeroStock = includeZeroStock;
     }
 
 }
