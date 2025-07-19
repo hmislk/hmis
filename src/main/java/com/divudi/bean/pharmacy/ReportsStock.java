@@ -243,7 +243,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void toggleIncludeZeroStock() {
         includeZeroStock = !includeZeroStock;
-        fillDepartmentStocksForDownload();
     }
 
     public void fillDepartmentStocksForDownload() {

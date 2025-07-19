@@ -18,11 +18,14 @@
                                         class="w-100" inputStyleClass="w-100" />
 
                         <h:outputLabel value="Include Zero Stocks" />
-                        <p:commandButton value="#{reportsStock.includeZeroStock ? '✅ Included' : '❌ Excluded'}"
-                                         action="#{reportsStock.toggleIncludeZeroStock}"
-                                         ajax="false"
-                                         icon="fas fa-toggle-on"
-                                         styleClass="ui-button-secondary" />
+                        <p:commandButton 
+                            id="btnZeroStocks"
+                            value="#{reportsStock.includeZeroStock ? '✅ Included' : '❌ Excluded'}"
+                            action="#{reportsStock.toggleIncludeZeroStock}"
+                            process="btnZeroStocks"
+                            update="btnZeroStocks"
+                            icon="fas fa-toggle-on"
+                            styleClass="ui-button-secondary" />
 
 
                     </p:panelGrid>
@@ -30,13 +33,13 @@
                     <p:commandButton value="Process"
                                      ajax="false"
                                      icon="fas fa-sync"
-                                     class="ui-button-warning"
-                                     actionListener="#{reportsStock.fillDepartmentStocksForDownload}" />
+                                     class="ui-button-warning m-1"
+                                     action="#{reportsStock.fillDepartmentStocksForDownload}" />
 
                     <p:commandButton value="Excel"
                                      ajax="false"
                                      icon="fas fa-file-excel"
-                                     class="ui-button-success">
+                                     class="ui-button-success m-1">
                         <p:dataExporter type="xlsx"
                                         target="tbl"
                                         fileName="stock_by_batch_#{reportsStock.department.name}" />
@@ -48,9 +51,9 @@
                                  var="s"
                                  rowIndexVar="idx"
                                  paginator="true"
-                                 rows="50"
+                                 rows="10"
                                  rowsPerPageTemplate="20,50,100,200"
-                                 paginatorPosition="bottom"
+                                 paginatorPosition="top"
                                  paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
 
 
