@@ -375,26 +375,26 @@ public class DataUploadController implements Serializable {
             JsfUtil.addErrorMessage("No File");
             return "";
         }
-        int startRow = 1; // Assuming row 0 is header
+        catCol = 1;                   // B
+        ampCol = 2;                   // C
+        codeCol = 3;                  // D
+        barcodeCol = 4;               // E
+        vtmCol = 5;                   // F
+        strengthOfIssueUnitCol = 6;  // G
+        strengthUnitCol = 7;         // H
+        issueUnitsPerPackCol = 8;    // I
+        issueUnitCol = 9;            // J
+        packUnitCol = 10;            // K
+        distributorCol = 11;         // L
+        manufacturerCol = 12;        // M
+        importerCol = 13;            // N
+        doeCol = 14;                 // O
+        batchCol = 15;               // P
+        stockQtyCol = 16;            // Q
+        pruchaseRateCol = 17;        // R
+        saleRateCol = 18;            // S
 
-        catCol = 0;
-        ampCol = 1;
-        codeCol = 2;
-        barcodeCol = 3;
-        vtmCol = 4;
-        strengthOfIssueUnitCol = 5;
-        strengthUnitCol = 6;
-        issueUnitsPerPackCol = 7;
-        issueUnitCol = 8;
-        packUnitCol = 9;
-        distributorCol = 10;
-        manufacturerCol = 11;
-        importerCol = 12;
-        doeCol = 13;
-        batchCol = 14;
-        stockQtyCol = 15;
-        pruchaseRateCol = 16;
-        saleRateCol = 17;
+        startRow = 1; // If header is on row 0
 
         String strCat;
         String strAmp;
