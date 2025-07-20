@@ -304,7 +304,7 @@
                             autoWidth="false"
                             value="#{opdReportController.paymentMethod}" >
                             <f:selectItem itemLabel="All Payment Methods" />
-                            <f:selectItems value="#{enumController.paymentMethodsForIncome}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}"/>
+                            <f:selectItems value="#{enumController.paymentMethods}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}"/>
                         </p:selectOneMenu>
 
                     </h:panelGrid>
