@@ -552,7 +552,6 @@ public class ItemController implements Serializable {
         return itemFeesSaved;
     }
 
-
     private String getCellValueAsString(Cell cell) {
         if (cell == null) {
             return "";
@@ -1833,7 +1832,7 @@ public class ItemController implements Serializable {
         }
         JsfUtil.addSuccessMessage("All Unmarked for Request For Quentity");
     }
-    
+
     public void markSelectedItemsForRatesvisibleduringInwardBilling() {
         if (selectedList == null || selectedList.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing is selected");
@@ -2476,6 +2475,39 @@ public class ItemController implements Serializable {
         }
         return suggestions;
 
+    }
+
+    public List<Item> completeAmpAndAmppItemForLoggedDepartment(String query) {
+        List<Item> suggestions;
+        String sql;
+        HashMap tmpMap = new HashMap();
+
+        if (query == null) {
+            suggestions = new ArrayList<>();
+        } else {
+            if (query.length() > 4) {
+                // Criteria:
+                // - Not retired
+                // - Type is Amp or Ampp
+                // - Query matches name, code, or barcode (case-insensitive)
+                // - Department type is in allowed list
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%' or (c.barcode) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+            } else {
+                // Criteria:
+                // - Not retired
+                // - Type is Amp or Ampp
+                // - Query matches name or code only
+                // - Department type is in allowed list
+                sql = "select c from Item c where c.retired=false and (type(c)= :amp or type(c)=:ampp ) and ((c.name) like '%" + query.toUpperCase() + "%' or (c.code) like '%" + query.toUpperCase() + "%') and c.departmentType in :dts order by c.name";
+            }
+
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("ampp", Ampp.class);
+            tmpMap.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+
+        return suggestions;
     }
 
     public List<Item> completeAmpAmppVmpVmppItems(String query) {
