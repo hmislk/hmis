@@ -2273,8 +2273,7 @@ public class ItemController implements Serializable {
             return suggestions;
         } else {
             String[] words = query.split("\\s+");
--           String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND ";
-+           String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND (";
+           String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND (";
 
             StringBuilder nameConditions = new StringBuilder();
             for (int i = 0; i < words.length; i++) {
