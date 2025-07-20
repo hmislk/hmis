@@ -4,6 +4,7 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.converter.DepartmentTypeConverter;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBarcodeGenerationStrategy;
@@ -32,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -58,7 +60,7 @@ import javax.persistence.Transient;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
-public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
+public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;
@@ -184,8 +186,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = DepartmentTypeConverter.class)
     private DepartmentType departmentType;
+
     @Transient
     private double transBillItemCount;
     @Transient
@@ -1509,8 +1512,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
-
-
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 
