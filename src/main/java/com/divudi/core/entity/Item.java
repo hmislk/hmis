@@ -186,7 +186,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
-    @Convert(converter = DepartmentTypeConverter.class)
     private DepartmentType departmentType;
 
     @Transient

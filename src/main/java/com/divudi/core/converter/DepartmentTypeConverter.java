@@ -4,7 +4,7 @@ import com.divudi.core.data.DepartmentType;
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 
-@Converter(autoApply = false)
+@Converter(autoApply = true)
 public class DepartmentTypeConverter implements AttributeConverter<DepartmentType, String> {
 
     @Override
