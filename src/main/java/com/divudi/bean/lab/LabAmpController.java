@@ -6,7 +6,7 @@
  * (94) 71 5812399
  * (94) 71 5812399
  */
-package com.divudi.bean.store;
+package com.divudi.bean.lab;
 
 import com.divudi.bean.common.SessionController;
 
@@ -38,7 +38,7 @@ import javax.inject.Named;
  */
 @Named
 @SessionScoped
-public class StoreAmpController implements Serializable {
+public class LabAmpController implements Serializable {
 
     private static final long serialVersionUID = 1L;
     @Inject
@@ -125,13 +125,13 @@ public class StoreAmpController implements Serializable {
         this.editing = editing;
     }
 
-    public StoreAmpController() {
+    public LabAmpController() {
     }
 
     public Amp getCurrent() {
         if (current == null) {
             current = new Amp();
-            current.setDepartmentType(DepartmentType.Store);
+            current.setDepartmentType(DepartmentType.Lab);
 //            current.setCode(billNumberBean.storeItemNumberGenerator());
         }
         return current;
@@ -168,20 +168,20 @@ public class StoreAmpController implements Serializable {
     public List<Amp> getItems() {
         if (items == null) {
             Map m = new HashMap();
-            m.put("dt", DepartmentType.Store);
-            String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
+            m.put("dt", DepartmentType.Lab);
+            String sql = "Select a from Amp a where a.retired=false and a.departmentType=:dt order by a.name";
             items = getFacade().findByJpql(sql, m);
         }
         return items;
     }
 
-    public void createStoreItemsWithRetierd() {
+    public void createLabItemsWithRetired() {
         items = null;
         getItems();
         itemsAll.addAll(items);
         Map m = new HashMap();
-        m.put("dt", DepartmentType.Store);
-        String sql = "Select a from Item a where a.retired=true and a.departmentType=:dt order by a.name";
+        m.put("dt", DepartmentType.Lab);
+        String sql = "Select a from Amp a where a.retired=true and a.departmentType=:dt order by a.name";
         itemsAll.addAll(getFacade().findByJpql(sql, m));
     }
 
@@ -223,7 +223,7 @@ public class StoreAmpController implements Serializable {
                 + " and c.departmentType=:dep "
                 + " order by c.code desc";
 
-        m.put("dep", DepartmentType.Store);
+        m.put("dep", DepartmentType.Lab);
         m.put("cat", getCurrent().getCategory());
 
         Amp amp = getFacade().findFirstByJpql(sql, m);
@@ -256,7 +256,7 @@ public class StoreAmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter("stoAmpCon")
+    @FacesConverter("labAmpCon")
     public static class AmpControllerConverter implements Converter {
 
         @Override
@@ -264,8 +264,8 @@ public class StoreAmpController implements Serializable {
             if (value == null || value.length() == 0) {
                 return null;
             }
-            StoreAmpController controller = (StoreAmpController) facesContext.getApplication().getELResolver().
-                    getValue(facesContext.getELContext(), null, "storeAmpController");
+            LabAmpController controller = (LabAmpController) facesContext.getApplication().getELResolver().
+                    getValue(facesContext.getELContext(), null, "labAmpController");
             return controller.getEjbFacade().find(getKey(value));
         }
 
@@ -291,7 +291,7 @@ public class StoreAmpController implements Serializable {
                 return getStringKey(o.getId());
             } else {
                 throw new IllegalArgumentException("object " + object + " is of type "
-                        + object.getClass().getName() + "; expected type: " + StoreAmpController.class.getName());
+                        + object.getClass().getName() + "; expected type: " + LabAmpController.class.getName());
             }
         }
     }

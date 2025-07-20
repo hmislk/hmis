@@ -2224,6 +2224,12 @@ public class ItemController implements Serializable {
         return completeItem(query, classes, dts, 0);
     }
 
+    public List<Item> completeLabItemOnly(String query) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Lab};
+        Class[] classes = new Class[]{Amp.class};
+        return completeItem(query, classes, dts, 0);
+    }
+
     public List<Item> completeItem(String query, Class[] itemClasses, DepartmentType[] departmentTypes) {
         return completeItem(query, itemClasses, departmentTypes, 0);
     }
