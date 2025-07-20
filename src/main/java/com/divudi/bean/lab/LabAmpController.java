@@ -169,7 +169,7 @@ public class LabAmpController implements Serializable {
         if (items == null) {
             Map m = new HashMap();
             m.put("dt", DepartmentType.Lab);
-            String sql = "Select a from Item a where a.retired=false and a.departmentType=:dt order by a.name";
+            String sql = "Select a from Amp a where a.retired=false and a.departmentType=:dt order by a.name";
             items = getFacade().findByJpql(sql, m);
         }
         return items;
@@ -181,7 +181,7 @@ public class LabAmpController implements Serializable {
         itemsAll.addAll(items);
         Map m = new HashMap();
         m.put("dt", DepartmentType.Lab);
-        String sql = "Select a from Item a where a.retired=true and a.departmentType=:dt order by a.name";
+        String sql = "Select a from Amp a where a.retired=true and a.departmentType=:dt order by a.name";
         itemsAll.addAll(getFacade().findByJpql(sql, m));
     }
 
