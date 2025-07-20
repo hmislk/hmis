@@ -773,11 +773,6 @@ public class DataUploadController implements Serializable {
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setImporter(importer);
 
-                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
-                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
-                if (deptType == null) {
-                    deptType = DepartmentType.Pharmacy;
-                }
                 amp.setDepartmentType(deptType);
 
                 System.out.println("amp = " + amp);
