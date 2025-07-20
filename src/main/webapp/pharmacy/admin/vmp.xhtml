@@ -26,7 +26,7 @@
                                     value="Add New" 
                                     action="#{vmpController.prepareAdd()}"
                                     styleClass="ui-button-success"
-                                    update="vmpForm" 
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     icon="fas fa-plus"
                                     process="@this"
                                     disabled="#{vmpController.editable}"
@@ -38,7 +38,7 @@
                                     value="Edit Selected"
                                     action="#{vmpController.edit()}"
                                     icon="fas fa-edit"
-                                    update="vmpForm" 
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     process="@this"
                                     styleClass="ui-button-warning"
                                     disabled="#{vmpController.editable or vmpController.current.id eq null}"
@@ -91,6 +91,7 @@
                     <div class="col-md-7">
                         <p:panel id="detailPanel" header="#{empty vmpController.current ? 'VMP Details' : (empty vmpController.current.id ? 'Add New VMP' : 'Edit VMP Details')}" styleClass="h-100">
                             <p:panelGrid 
+                                id="vmpDetailForm"
                                 columns="2" 
                                 styleClass="w-100 ui-panelgrid-blank"
                                 columnClasses="col-form-label,w-100">
@@ -227,9 +228,9 @@
                                 <p:commandButton 
                                     id="btnSave"
                                     value="Save"
-                                    action="#{vmpController.save}" 
-                                    process="detailPanel" 
-                                    update="vmpForm" 
+                                    action="#{vmpController.saveSelected}" 
+                                    process="vmpDetailForm" 
+                                    update="lstSelect detailPanel messages btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     styleClass="ui-button-success"
                                     icon="fas fa-save"
                                     disabled="#{!vmpController.editable}"
@@ -240,7 +241,7 @@
                                     value="Cancel"
                                     action="#{vmpController.cancel()}"
                                     process="@this" 
-                                    update="vmpForm" 
+                                    update="lstSelect detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     styleClass="ui-button-secondary"
                                     icon="fas fa-times"
                                     disabled="#{!vmpController.editable}"
