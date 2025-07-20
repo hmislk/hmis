@@ -2030,11 +2030,19 @@ public class PharmacyReportController implements Serializable {
     }
 
     public void processSaleCreditCard() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Card));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Card));
     }
 
     public void processSaleCash() {
-        retrieveBillItems("b.billTypeAtomic", Collections.singletonList(BillTypeAtomic.PHARMACY_RETAIL_SALE), Collections.singletonList(PaymentMethod.Cash));
+        List<BillTypeAtomic> billTypes = Arrays.asList(
+                BillTypeAtomic.PHARMACY_RETAIL_SALE,
+                BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER
+        );
+        retrieveBillItems("b.billTypeAtomic", billTypes, Collections.singletonList(PaymentMethod.Cash));
     }
 
     public void exportIpDrugReturnPdf() {
@@ -2405,6 +2413,151 @@ public class PharmacyReportController implements Serializable {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void exportSaleCashPdf() {
+        List<String> headers = Arrays.asList(
+                "Date", "Item Name", "Code", "Doc No", "Batch Code", "QTY", "Rate",
+                "Sale Value", "Net Total", "Payment Mode/Methods", "MRP", "MRP Value", "Discount"
+        );
+
+        FacesContext context = FacesContext.getCurrentInstance();
+        HttpServletResponse response = (HttpServletResponse) context.getExternalContext().getResponse();
+
+        response.reset();
+        response.setContentType("application/pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=sale_cash_report.pdf");
+
+        try (OutputStream out = response.getOutputStream()) {
+            Document document = new Document(PageSize.A4.rotate());
+            PdfWriter.getInstance(document, out);
+            document.open();
+
+            // Title
+            Font titleFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16);
+            Paragraph titlePara = new Paragraph(reportType, titleFont);
+            titlePara.setAlignment(Element.ALIGN_CENTER);
+            titlePara.setSpacingAfter(20);
+            document.add(titlePara);
+
+            // Table setup
+            PdfPTable table = new PdfPTable(headers.size());
+            table.setWidthPercentage(100);
+
+            Font headerFont = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 10);
+            Font cellFont = FontFactory.getFont(FontFactory.HELVETICA, 9);
+
+            // Table header
+            for (String header : headers) {
+                PdfPCell cell = new PdfPCell(new Phrase(header, headerFont));
+                cell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                cell.setHorizontalAlignment(Element.ALIGN_CENTER);
+                table.addCell(cell);
+            }
+
+            // Formatters
+            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy HH:mm:ss");
+            DecimalFormat qtyFormat = new DecimalFormat("#,##0");
+            DecimalFormat moneyFormat = new DecimalFormat("#,##0.00");
+
+            double netTotalSum = 0.0;
+
+            for (BillItem row : billItems) {
+                // Date
+                table.addCell(new Phrase(
+                        row.getBill() != null && row.getBill().getCreatedAt() != null
+                        ? sdf.format(row.getBill().getCreatedAt()) : "", cellFont));
+
+                // Item Name
+                table.addCell(new Phrase(
+                        row.getItem() != null ? row.getItem().getName() : "", cellFont));
+
+                // Code
+                table.addCell(new Phrase(
+                        row.getItem() != null ? row.getItem().getCode() : "", cellFont));
+
+                // Doc No
+                table.addCell(new Phrase(
+                        row.getBill() != null ? row.getBill().getDeptId() : "", cellFont));
+
+                // Batch Code
+                table.addCell(new Phrase(
+                        (row.getPharmaceuticalBillItem() != null
+                        && row.getPharmaceuticalBillItem().getItemBatch() != null)
+                        ? row.getPharmaceuticalBillItem().getItemBatch().getBatchNo() : "", cellFont));
+
+                // QTY
+                Double qty = row.getQty();
+                table.addCell(new Phrase(qty != null ? qtyFormat.format(qty) : "", cellFont));
+
+                // Rate
+                Double rate = (row.getPharmaceuticalBillItem() != null)
+                        ? row.getPharmaceuticalBillItem().getPurchaseRate() : null;
+                table.addCell(new Phrase(rate != null ? moneyFormat.format(rate) : "", cellFont));
+
+                // Sale Value = retailRate * qty
+                Double retailRate = (row.getPharmaceuticalBillItem() != null)
+                        ? row.getPharmaceuticalBillItem().getRetailRate() : null;
+                Double saleValue = (retailRate != null && qty != null) ? retailRate * qty : null;
+                table.addCell(new Phrase(saleValue != null ? moneyFormat.format(saleValue) : "", cellFont));
+
+                // Net Total
+                Double netTotal = row.getBill() != null ? row.getBill().getNetTotal() : null;
+                table.addCell(new Phrase(
+                        netTotal != null ? moneyFormat.format(netTotal) : "", cellFont));
+                if (netTotal != null) {
+                    netTotalSum += netTotal;
+                }
+
+                // Payment Method
+                table.addCell(new Phrase(
+                        row.getBill() != null && row.getBill().getPaymentMethod() != null
+                        ? row.getBill().getPaymentMethod().toString() : "", cellFont));
+
+                // MRP
+                table.addCell(new Phrase(
+                        retailRate != null ? moneyFormat.format(retailRate) : "", cellFont));
+
+                // MRP Value
+                Double mrpValue = (retailRate != null && qty != null) ? retailRate * qty : null;
+                table.addCell(new Phrase(mrpValue != null ? moneyFormat.format(mrpValue) : "", cellFont));
+
+                // Discount
+                Double discount = row.getBill() != null ? row.getBill().getDiscount() : null;
+                table.addCell(new Phrase(
+                        discount != null ? moneyFormat.format(discount) : "", cellFont));
+            }
+
+            // Footer row with Net Total sum
+            for (int i = 0; i < headers.size(); i++) {
+                PdfPCell footerCell;
+                if (i == 0) {
+                    footerCell = new PdfPCell(new Phrase("Net Total", headerFont));
+                    footerCell.setColspan(8);
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                } else if (i == 1) {
+                    footerCell = new PdfPCell(new Phrase(moneyFormat.format(netTotalSum), headerFont));
+                    footerCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                } else {
+                    footerCell = new PdfPCell(new Phrase(""));
+                    footerCell.setBackgroundColor(BaseColor.LIGHT_GRAY);
+                }
+                table.addCell(footerCell);
+            }
+
+            document.add(table);
+            document.close();
+            context.responseComplete();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void selectReportName(String name) {
+        reportType = name;
     }
 
     public void processCollectingCentreTestWiseCountReport() {
