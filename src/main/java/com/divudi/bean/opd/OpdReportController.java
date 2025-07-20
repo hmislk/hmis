@@ -490,7 +490,8 @@ public class OpdReportController implements Serializable {
                 webUser,
                 billTypeAtomics,
                 admissionType,
-                paymentScheme
+                paymentScheme,
+                paymentMethod
         );
 
         bundle = new IncomeBundle(incomeBills);
@@ -569,7 +570,8 @@ public class OpdReportController implements Serializable {
                 webUser,
                 billTypeAtomics,
                 admissionType,
-                paymentScheme
+                paymentScheme,
+                paymentMethod
         );
         List<BillItem> billItems = new ArrayList<>();
         for (Bill b : tempBills) {
