@@ -9,7 +9,7 @@
 
     <ui:define name="subcontent">
         <h:form id="vmpForm">
-            <p:growl id="messages" autoUpdate="true" life="3000"/>
+            <p:growl id="messages"  life="3000"/>
             <p:focus id="selectFocus" for="lstSelect" />
 
             <p:panel header="Virtual Medicinal Product (VMP) Management" styleClass="w-100 mb-3">
@@ -20,12 +20,12 @@
                         <!-- Action Buttons -->
                         <div class="mb-3">
                             <h5 class="mb-2">Actions</h5>
-                            <div class="d-grid gap-2" id="actionButtons">
+                            <div  id="actionButtons">
                                 <p:commandButton 
                                     id="btnAdd" 
                                     value="Add New" 
                                     action="#{vmpController.prepareAdd()}"
-                                    styleClass="ui-button-success"
+                                    styleClass="ui-button-success m-1"
                                     update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     icon="fas fa-plus"
                                     process="@this"
@@ -38,9 +38,9 @@
                                     value="Edit Selected"
                                     action="#{vmpController.edit()}"
                                     icon="fas fa-edit"
-                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
+                                    update="detailPanel btnAdd btnEdit btnDelete btnSave btnCancel lstSelect" 
                                     process="@this"
-                                    styleClass="ui-button-warning"
+                                    styleClass="ui-button-warning m-1"
                                     disabled="#{vmpController.editable or vmpController.current.id eq null}"
                                     title="Edit selected VMP record">
                                 </p:commandButton>
@@ -52,7 +52,7 @@
                                     icon="fas fa-trash"
                                     update="vmpForm" 
                                     process="@this"
-                                    styleClass="ui-button-danger"
+                                    styleClass="ui-button-danger m-1"
                                     disabled="#{vmpController.editable}"
                                     title="Delete selected VMP record">
                                     <p:confirm 
@@ -93,8 +93,7 @@
                             <p:panelGrid 
                                 id="vmpDetailForm"
                                 columns="2" 
-                                styleClass="w-100 ui-panelgrid-blank"
-                                columnClasses="col-form-label,w-100">
+                                styleClass="w-100 ui-panelgrid-blank">
 
                                 <p:outputLabel for="txtName" value="Name *" styleClass="fw-bold"/>
                                 <p:inputText 
@@ -225,12 +224,12 @@
 
                             <!-- Action Buttons -->
                             <div class="mt-3 d-flex gap-2">
+                                #{vmpController.editable}
                                 <p:commandButton 
                                     id="btnSave"
                                     value="Save"
+                                    ajax="false"
                                     action="#{vmpController.saveSelected}" 
-                                    process="vmpDetailForm" 
-                                    update="lstSelect detailPanel messages btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     styleClass="ui-button-success"
                                     icon="fas fa-save"
                                     disabled="#{!vmpController.editable}"
@@ -241,6 +240,7 @@
                                     value="Cancel"
                                     action="#{vmpController.cancel()}"
                                     process="@this" 
+                                    ajax="false"
                                     update="lstSelect detailPanel btnAdd btnEdit btnDelete btnSave btnCancel" 
                                     styleClass="ui-button-secondary"
                                     icon="fas fa-times"
