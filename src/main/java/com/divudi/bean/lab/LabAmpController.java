@@ -251,7 +251,7 @@ public class LabAmpController implements Serializable {
     /**
      *
      */
-    @FacesConverter("stoAmpCon")
+    @FacesConverter("labAmpCon")
     public static class AmpControllerConverter implements Converter {
 
         @Override
