@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/store/store_admin.xhtml"
+                template="/admin/lims/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:f="http://xmlns.jcp.org/jsf/core"
                 xmlns="http://www.w3.org/1999/xhtml"
@@ -18,13 +18,13 @@
                 <div class="col-4" >
                     <p:panelGrid id="gpSelect" columns="1" class="w-100">
                         <h:outputLabel value="Search " />
-                        <p:autoComplete disabled="#{storeAmpController.editing}" 
+                        <p:autoComplete disabled="#{labAmpController.editing}" 
                             id="lstSelect1" 
-                            size="10" value="#{storeAmpController.current}" 
+                            size="10" value="#{labAmpController.current}" 
                             forceSelection="true"
                             class="w-100"
                             inputStyleClass="w-100"
-                            completeMethod="#{itemController.completeStoreItemOnly}" 
+                            completeMethod="#{itemController.completeLabItemOnly}" 
                             var="myItem" 
                             itemValue="#{myItem}" 
                             itemLabel="#{myItem.name}">
@@ -43,15 +43,15 @@
                         <h:panelGrid id="gpSelectButtons" columns="4">
                             <p:commandButton id="btnAdd" value="Add"
                                              icon="pi pi-plus"
-                                             action="#{storeAmpController.prepareAdd()}"
+                                             action="#{labAmpController.prepareAdd()}"
                                              styleClass="ui-button-primary"
-                                             disabled="#{storeAmpController.editing}">
+                                             disabled="#{labAmpController.editing}">
                                 <f:ajax render="btnAdd btnEdit btnDelete btnSave btnCancel gpDetail" execute="@this" />
                             </p:commandButton>
 
                             <p:commandButton id="btnEdit" value="Edit" icon="pi pi-pencil"
-                                             action="#{storeAmpController.startEdit()}"
-                                             disabled="#{storeAmpController.editing or storeAmpController.current.id == null}"
+                                             action="#{labAmpController.startEdit()}"
+                                             disabled="#{labAmpController.editing or labAmpController.current.id == null}"
                                              styleClass="ui-button-secondary">
                                 <f:ajax render="btnAdd btnEdit btnDelete btnSave btnCancel gpDetail" execute="@this" />
                             </p:commandButton>
@@ -60,8 +60,8 @@
                                              icon="pi pi-trash"
                                              styleClass="ui-button-danger"
                                              onclick="if (!confirm('Are you sure you want to delete this record?')) return false;"
-                                             action="#{storeAmpController.delete()}"
-                                             disabled="#{storeAmpController.editing}" />
+                                             action="#{labAmpController.delete()}"
+                                             disabled="#{labAmpController.editing}" />
                         </h:panelGrid>
                     </p:panelGrid>
                 </div>
@@ -69,56 +69,56 @@
                     <p:panelGrid id="gpDetail" columns="2" columnClasses="custom-col-40 custom-col-60">
                         <f:facet name="header" >
                             <p:commandButton id="btnSave" value="Save" icon="pi pi-save"
-                                             action="#{storeAmpController.saveSelected()}"
-                                             styleClass="ui-button-success" disabled="#{!storeAmpController.editing}">
+                                             action="#{labAmpController.saveSelected()}"
+                                             styleClass="ui-button-success" disabled="#{!labAmpController.editing}">
                                 <f:ajax render="btnAdd btnEdit btnDelete btnSave btnCancel gpDetail" execute="gpDetail" />
                             </p:commandButton>
                             <p:commandButton id="btnCancel" value="Cancel" icon="pi pi-times"
-                                             action="#{storeAmpController.cancelEdit()}"
-                                             styleClass="ui-button-secondary" disabled="#{!storeAmpController.editing}">
+                                             action="#{labAmpController.cancelEdit()}"
+                                             styleClass="ui-button-secondary" disabled="#{!labAmpController.editing}">
                                 <f:ajax render="btnAdd btnEdit btnDelete btnSave btnCancel gpDetail lstSelect1" execute="@this" />
                             </p:commandButton>
                         </f:facet>
 
                         <p:outputLabel  class="form-label"  value="Display Name" />
-                        <p:inputText disabled="#{!storeAmpController.editing}" class="form-control w-100" autocomplete="off" id="txtName" value="#{storeAmpController.current.name}" />
+                        <p:inputText disabled="#{!labAmpController.editing}" class="form-control w-100" autocomplete="off" id="txtName" value="#{labAmpController.current.name}" />
 
                         <p:outputLabel value="Item Code" />
-                        <p:inputText disabled="#{!storeAmpController.editing}"  class="form-control" autocomplete="off" id="code" value="#{storeAmpController.current.code}" />
+                        <p:inputText disabled="#{!labAmpController.editing}"  class="form-control" autocomplete="off" id="code" value="#{labAmpController.current.code}" />
 
                         <p:outputLabel value="Bar Code" />
-                        <p:inputText disabled="#{!storeAmpController.editing}"  class="form-control" autocomplete="off" value="#{storeAmpController.current.barcode}" />
+                        <p:inputText disabled="#{!labAmpController.editing}"  class="form-control" autocomplete="off" value="#{labAmpController.current.barcode}" />
 
                         <p:outputLabel value="Measurement Unit" />
-                        <p:selectOneMenu disabled="#{!storeAmpController.editing}"  class="form-control" value="#{storeAmpController.current.measurementUnit}">
+                        <p:selectOneMenu disabled="#{!labAmpController.editing}"  class="form-control" value="#{labAmpController.current.measurementUnit}">
                             <f:selectItem itemLabel="Select Measurement Unit" />
                             <f:selectItems value="#{measurementUnitController.items}" var="mu" itemValue="#{mu}" itemLabel="#{mu.name}" />
                         </p:selectOneMenu>
 
                         <p:outputLabel value="Manufacturer" />
-                        <p:autoComplete  class="form-control" disabled="#{!storeAmpController.editing}" completeMethod="#{manufacturerController.completeManu}" 
+                        <p:autoComplete  class="form-control" disabled="#{!labAmpController.editing}" completeMethod="#{manufacturerController.completeManu}" 
                                          var="pta" itemLabel="#{pta.name}" itemValue="#{pta}" 
                                          forceSelection="true" 
-                                         value="#{storeAmpController.current.institution}" />
+                                         value="#{labAmpController.current.institution}" />
 
                         <h:outputLabel value="Item Category" />
-                        <p:selectOneMenu disabled="#{!storeAmpController.editing}"  class="form-control" id="parentCategory" value="#{storeAmpController.current.category}">
+                        <p:selectOneMenu disabled="#{!labAmpController.editing}"  class="form-control" id="parentCategory" value="#{labAmpController.current.category}">
                             <f:selectItem itemLabel="Select Category" />
-                            <f:selectItems value="#{consumableCategoryController.itemsAvailableSelectOne}" 
+                            <f:selectItems value="#{investigationCategoryController.itemsAvailableSelectOne}" 
                                            var="parentCategoryItem" 
                                            itemValue="#{parentCategoryItem}" />
                             <f:ajax event="change" render="code" execute="parentCategory" 
-                                    listener="#{storeAmpController.listnerCategorySelect()}" />
+                                    listener="#{labAmpController.listnerCategorySelect()}" />
                         </p:selectOneMenu>
 
                         <p:outputLabel value="" />
-                        <p:selectBooleanCheckbox disabled="#{!storeAmpController.editing}"  class="form-control" value="#{storeAmpController.current.discountAllowed}" itemLabel="Discount Allowed" />
+                        <p:selectBooleanCheckbox disabled="#{!labAmpController.editing}"  class="form-control" value="#{labAmpController.current.discountAllowed}" itemLabel="Discount Allowed" />
 
                         <h:outputLabel value="Creator" />
-                        <h:outputLabel  class="form-control" value="#{storeAmpController.current.creater.webUserPerson.nameWithTitle}" />
+                        <h:outputLabel  class="form-control" value="#{labAmpController.current.creater.webUserPerson.nameWithTitle}" />
 
                         <h:outputLabel value="Created At" />
-                        <h:outputLabel  class="form-control" value="#{storeAmpController.current.createdAt}">
+                        <h:outputLabel  class="form-control" value="#{labAmpController.current.createdAt}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                         </h:outputLabel>
 
