@@ -9,8 +9,7 @@
       "Bash(git commit:*)",
       "Bash(git checkout:*)",
       "Bash(git stash:*)",
-      "Bash(git status:*)",
-      "Bash(git add:*)"
+      "Bash(git status:*)"
     ],
     "deny": []
   }
