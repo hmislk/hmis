@@ -5,7 +5,9 @@
       "Bash(git fetch:*)",
       "Bash(git merge:*)",
       "Bash(git push:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git status)"
     ],
     "deny": []
   }
