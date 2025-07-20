@@ -723,6 +723,12 @@ public class DataUploadController implements Serializable {
                 strBarcode = getCellValueAsString(row.getCell(barcodeCol));
 
                 strDistributor = getCellValueAsString(row.getCell(distributorCol));
+                
+                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
+                if (deptType == null) {
+                    deptType = DepartmentType.Pharmacy;
+                }
 
                 Cell ampCell = row.getCell(ampCol);
                 strAmp = getCellValueAsString(ampCell);
@@ -740,6 +746,7 @@ public class DataUploadController implements Serializable {
                     amp.setDblValue(strengthUnitsPerIssueUnit);
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
+                    amp.setDepartmentType(deptType);
                     getAmpFacade().create(amp);
                 } else {
                     amp.setRetired(false);
@@ -766,11 +773,6 @@ public class DataUploadController implements Serializable {
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setImporter(importer);
 
-                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
-                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
-                if (deptType == null) {
-                    deptType = DepartmentType.Pharmacy;
-                }
                 amp.setDepartmentType(deptType);
 
                 System.out.println("amp = " + amp);
