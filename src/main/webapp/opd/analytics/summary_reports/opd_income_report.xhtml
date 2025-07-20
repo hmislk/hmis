@@ -284,13 +284,27 @@
                             <h:outputText value="&#xf80d;" styleClass="fa mr-2" /> <!-- FontAwesome sitemap icon -->
                             <h:outputLabel value="Discount Scheme" for="cmbDept" class="mx-3"/>
                         </h:panelGroup>
-                        <p:selectOneMenu 
+                        <p:selectOneMenu
                             id="cmdDiscount"
                             class="w-100"
                             autoWidth="false"
                             value="#{opdReportController.paymentScheme}" >
                             <f:selectItem itemLabel="Select"/>
                             <f:selectItems value="#{paymentSchemeController.items}" var="ps" itemLabel="#{ps.name}"/>
+                        </p:selectOneMenu>
+
+                        <p:spacer ></p:spacer>
+                        <h:panelGroup layout="block" styleClass="form-group">
+                            <h:outputText value="&#xf0d6;" styleClass="fa mr-2"/>
+                            <h:outputLabel value="Payment Method" for="cmbPayMethod" class="mx-3"/>
+                        </h:panelGroup>
+                        <p:selectOneMenu
+                            id="cmbPayMethod"
+                            class="w-100"
+                            autoWidth="false"
+                            value="#{opdReportController.paymentMethod}" >
+                            <f:selectItem itemLabel="All Payment Methods" />
+                            <f:selectItems value="#{enumController.paymentMethodsForIncome}" var="pm" itemLabel="#{pm.label}" itemValue="#{pm}"/>
                         </p:selectOneMenu>
 
                     </h:panelGrid>

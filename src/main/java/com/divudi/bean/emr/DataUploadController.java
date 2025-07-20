@@ -336,6 +336,9 @@ public class DataUploadController implements Serializable {
 
     private int startRow = 1;
 
+    private boolean skipDepartmentTypeColumn;
+    private DepartmentType defaultDepartmentType = DepartmentType.Pharmacy;
+
     public String navigateToRouteUpload() {
         uploadComplete = false;
         return "/admin/institutions/route_upload?faces-redirect=true";
@@ -723,6 +726,15 @@ public class DataUploadController implements Serializable {
                 strBarcode = getCellValueAsString(row.getCell(barcodeCol));
 
                 strDistributor = getCellValueAsString(row.getCell(distributorCol));
+                
+                DepartmentType deptType = null;
+                if (!skipDepartmentTypeColumn) {
+                    String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                    deptType = departmentController.findDepartmentType(strDepartmentType);
+                }
+                if (deptType == null) {
+                    deptType = defaultDepartmentType != null ? defaultDepartmentType : DepartmentType.Pharmacy;
+                }
 
                 Cell ampCell = row.getCell(ampCol);
                 strAmp = getCellValueAsString(ampCell);
@@ -740,6 +752,7 @@ public class DataUploadController implements Serializable {
                     amp.setDblValue(strengthUnitsPerIssueUnit);
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
+                    amp.setDepartmentType(deptType);
                     getAmpFacade().create(amp);
                 } else {
                     amp.setRetired(false);
@@ -766,11 +779,6 @@ public class DataUploadController implements Serializable {
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setImporter(importer);
 
-                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
-                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
-                if (deptType == null) {
-                    deptType = DepartmentType.Pharmacy;
-                }
                 amp.setDepartmentType(deptType);
 
                 System.out.println("amp = " + amp);
@@ -811,6 +819,18 @@ public class DataUploadController implements Serializable {
             default:
                 return "";
         }
+    }
+
+    public String importFromExcelWithoutStockLab() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Lab;
+        return importFromExcelWithoutStock();
+    }
+
+    public String importFromExcelWithoutStockStore() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Store;
+        return importFromExcelWithoutStock();
     }
 
     private double parseDouble(String value) {
@@ -8173,6 +8193,22 @@ public class DataUploadController implements Serializable {
 
     public void setRejecteditemFees(List<ItemLight> rejecteditemFees) {
         this.rejecteditemFees = rejecteditemFees;
+    }
+
+    public boolean isSkipDepartmentTypeColumn() {
+        return skipDepartmentTypeColumn;
+    }
+
+    public void setSkipDepartmentTypeColumn(boolean skipDepartmentTypeColumn) {
+        this.skipDepartmentTypeColumn = skipDepartmentTypeColumn;
+    }
+
+    public DepartmentType getDefaultDepartmentType() {
+        return defaultDepartmentType;
+    }
+
+    public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
+        this.defaultDepartmentType = defaultDepartmentType;
     }
 
 }

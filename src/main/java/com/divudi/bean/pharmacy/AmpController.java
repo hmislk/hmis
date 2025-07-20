@@ -565,6 +565,11 @@ public class AmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            getCurrent().setCode("");
+            return;
+        }
         if (getCurrent().getCategory().getDescription() == null || getCurrent().getCategory().getDescription().isEmpty()) {
             getCurrent().getCategory().setDescription(getCurrent().getName());
         }

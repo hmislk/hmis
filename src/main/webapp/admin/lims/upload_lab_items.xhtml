@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8' ?>
 <!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-                template="/store/store_admin.xhtml"
+                template="/admin/lims/index.xhtml"
                 xmlns:h="http://xmlns.jcp.org/jsf/html"
                 xmlns:p="http://primefaces.org/ui"
                 xmlns:f="http://xmlns.jcp.org/jsf/core">
@@ -11,7 +11,7 @@
             <p:panel>
                 <p:fileUpload value="#{dataUploadController.file}" mode="simple"/>
                 <p:commandButton ajax="false" value="Submit"
-                                 action="#{dataUploadController.importFromExcelWithoutStockStore}"/>
+                                 action="#{dataUploadController.importFromExcelWithoutStockLab}"/>
 
                 <p:panel header="Import Items from Excel (No Stock)" >
                     <h:outputLabel value="Instructions" ></h:outputLabel>
@@ -25,8 +25,6 @@
                     </p:panel>
 
                 </p:panel>
-
-
 
                 <p:panelGrid columns="1" style="border: 1px solid blue;" >
                     <h:outputLabel value ="0. Serial No " ></h:outputLabel>
@@ -47,10 +45,5 @@
 
             </p:panel>
         </h:form>
-
-
-
     </ui:define>
-
-
 </ui:composition>
