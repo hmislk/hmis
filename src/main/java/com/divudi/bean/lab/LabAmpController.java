@@ -205,6 +205,11 @@ public class LabAmpController implements Serializable {
     }
 
     public void listnerCategorySelect() {
+        if (getCurrent().getCategory() == null) {
+            JsfUtil.addErrorMessage("Please Select Category");
+            getCurrent().setCode("");
+            return;
+        }
         if (getCurrent().getCategory().getCode() == null || getCurrent().getCategory().getCode().equals("")) {
             JsfUtil.addErrorMessage("Please Select Category Code");
             getCurrent().setCode("");
