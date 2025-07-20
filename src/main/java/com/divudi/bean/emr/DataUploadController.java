@@ -336,6 +336,9 @@ public class DataUploadController implements Serializable {
 
     private int startRow = 1;
 
+    private boolean skipDepartmentTypeColumn;
+    private DepartmentType defaultDepartmentType = DepartmentType.Pharmacy;
+
     public String navigateToRouteUpload() {
         uploadComplete = false;
         return "/admin/institutions/route_upload?faces-redirect=true";
@@ -724,10 +727,13 @@ public class DataUploadController implements Serializable {
 
                 strDistributor = getCellValueAsString(row.getCell(distributorCol));
                 
-                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
-                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
+                DepartmentType deptType = null;
+                if (!skipDepartmentTypeColumn) {
+                    String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                    deptType = departmentController.findDepartmentType(strDepartmentType);
+                }
                 if (deptType == null) {
-                    deptType = DepartmentType.Pharmacy;
+                    deptType = defaultDepartmentType != null ? defaultDepartmentType : DepartmentType.Pharmacy;
                 }
 
                 Cell ampCell = row.getCell(ampCol);
@@ -813,6 +819,18 @@ public class DataUploadController implements Serializable {
             default:
                 return "";
         }
+    }
+
+    public String importFromExcelWithoutStockLab() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Lab;
+        return importFromExcelWithoutStock();
+    }
+
+    public String importFromExcelWithoutStockStore() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Store;
+        return importFromExcelWithoutStock();
     }
 
     private double parseDouble(String value) {
@@ -8175,6 +8193,22 @@ public class DataUploadController implements Serializable {
 
     public void setRejecteditemFees(List<ItemLight> rejecteditemFees) {
         this.rejecteditemFees = rejecteditemFees;
+    }
+
+    public boolean isSkipDepartmentTypeColumn() {
+        return skipDepartmentTypeColumn;
+    }
+
+    public void setSkipDepartmentTypeColumn(boolean skipDepartmentTypeColumn) {
+        this.skipDepartmentTypeColumn = skipDepartmentTypeColumn;
+    }
+
+    public DepartmentType getDefaultDepartmentType() {
+        return defaultDepartmentType;
+    }
+
+    public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
+        this.defaultDepartmentType = defaultDepartmentType;
     }
 
 }
