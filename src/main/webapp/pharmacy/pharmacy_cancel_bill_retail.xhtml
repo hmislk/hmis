@@ -73,12 +73,12 @@
                                             <p:outputLabel value="Bill No :" ></p:outputLabel>
                                             <p:outputLabel value="#{pharmacyBillSearch.bill.deptId}" ></p:outputLabel>
                                             <p:outputLabel value="Total :" ></p:outputLabel>
-                                            <p:outputLabel value="#{pharmacyBillSearch.bill.total}" ></p:outputLabel>
+                                            <p:outputLabel value="#{pharmacyBillSearch.bill.total}" ><f:convertNumber pattern="#,##0.00"/></p:outputLabel>
                                             <p:outputLabel value="Discount :" ></p:outputLabel>
                                             <p:outputLabel value="#{pharmacyBillSearch.bill.discount}" ><f:convertNumber pattern="#,##0.00"/>
                                             </p:outputLabel>
                                             <p:outputLabel value="Net Total :" ></p:outputLabel>
-                                            <p:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ></p:outputLabel>
+                                            <p:outputLabel value="#{pharmacyBillSearch.bill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></p:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </div>
@@ -100,7 +100,8 @@
                                     </p:column>
                                     <p:column>
                                         <f:facet name="header">Value</f:facet>
-                                            #{bip.netValue}
+                                        <p:outputLabel value="#{bip.netValue}"><f:convertNumber pattern="#,##0.00"/></p:outputLabel>
+                                            
                                     </p:column>
                                 </p:dataTable>
                             </p:panel>
