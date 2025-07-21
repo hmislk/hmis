@@ -444,7 +444,6 @@ public class TransferRequestController implements Serializable {
         getTransferRequestBillPre().setToInstitution(getToDepartment().getInstitution());
         getTransferRequestBillPre().setFromDepartment(getSessionController().getDepartment());
         getTransferRequestBillPre().setFromInstitution(getSessionController().getInstitution());
-
         if (getToDepartment().equals(getTransferRequestBillPre().getFromDepartment())) {
             JsfUtil.addErrorMessage("You cant request from you own department.");
             return;
@@ -549,6 +548,7 @@ public class TransferRequestController implements Serializable {
         if (errorsPresent()) {
             return;
         }
+        System.out.println("1 = " + 1);
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
