@@ -24,6 +24,7 @@ import static com.divudi.core.data.PaymentMethod.ewallet;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Institution;
@@ -31,6 +32,7 @@ import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Payment;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -624,7 +626,9 @@ public class OnlineBookingAgentController implements Serializable {
             List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod, false);
 //            drawerController.updateDrawerForIns(payments);
         }
-
+        
+        createBillItemForPaidToHospitalBill(paidBill);
+        
         if (paidBill != null) {
             for (OnlineBooking ob : paidToHospitalList) {
                 if (!ob.isPaidToHospital()) {
@@ -705,6 +709,24 @@ public class OnlineBookingAgentController implements Serializable {
         bookinsToAgenHospitalPayementCancellation.remove(selected);
         prepareCancellationAgentPaidToHospitalBills();
     }
+    
+    @EJB
+    private BillItemFacade billItemFacade;
+    
+    public void createBillItemForPaidToHospitalBill(Bill bill) {
+        BillItem bi = new BillItem();
+        bi.setNetValue(bill.getNetTotal());
+        bi.setGrossValue(bill.getNetTotal());
+        bi.setBillSession(null);
+        bi.setDiscount(0.0);
+        bi.setItem(null);
+        bi.setQty(1.0);
+        bi.setRate(bill.getNetTotal());
+        bi.setBill(bill);
+        
+        billItemFacade.create(bi);
+        
+    }
 
     public void settleDirectFundBill() {
         if (paidToHospitalPaymentMethod == null) {
@@ -757,6 +779,7 @@ public class OnlineBookingAgentController implements Serializable {
         if(paidBill != null){
             createPayment(paidBill, paidToHospitalPaymentMethod, false);
         }
+        createBillItemForPaidToHospitalBill(paidBill);
         
         printBill = paidBill;
         JsfUtil.addSuccessMessage("Direct Fund is deposited successfully.");
