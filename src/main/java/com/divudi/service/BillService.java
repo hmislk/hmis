@@ -1404,7 +1404,8 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
                                                   WebUser webUser,
                                                   List<BillTypeAtomic> billTypeAtomics,
                                                   AdmissionType admissionType,
-                                                  PaymentScheme paymentScheme) {
+                                                  PaymentScheme paymentScheme,
+                                                  PaymentMethod paymentMethod) {
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -1469,6 +1470,12 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }
+
+        // Payment Method
+        if (paymentMethod != null) {
+            jpql += " and b.paymentMethod=:paymentMethod ";
+            params.put("paymentMethod", paymentMethod);
         }
 
         jpql += " order by b.createdAt desc";

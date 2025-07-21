@@ -7,6 +7,7 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
+      "Bash(git stash:*)",
       "Bash(git status:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
