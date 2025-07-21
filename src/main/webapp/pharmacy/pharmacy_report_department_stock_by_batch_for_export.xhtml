@@ -4,149 +4,129 @@
       xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
       xmlns:p="http://primefaces.org/ui"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core" >
-    <h:body>
-        <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
-            <ui:define name="subcontent">
-                <h:form id="frm">
-                    <p:panel header="Stock Report by Batch for Export" >
-                        <p:panelGrid columns="2"  class="w-100">
-                            <h:outputLabel value="Department" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" 
-                                            var="dept" itemLabel="#{dept.name}" itemValue="#{dept}" 
-                                            forceSelection="true" 
-                                            value="#{reportsStock.department}" 
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            >
-                            </p:autoComplete>
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+    <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
+        <ui:define name="subcontent">
+            <h:form id="frm">
+                <p:panel header="Stock Report by Batch for Export">
+                    <p:panelGrid columns="2" class="w-100">
+                        <h:outputLabel value="Department" />
+                        <p:autoComplete value="#{reportsStock.department}"
+                                        completeMethod="#{departmentController.completeDept}"
+                                        var="d" itemLabel="#{d.name}" itemValue="#{d}"
+                                        forceSelection="true"
+                                        class="w-100" inputStyleClass="w-100" />
 
-                            <h:outputLabel value="From Record" ></h:outputLabel>
-                            <p:inputText value="#{reportsStock.fromRecord}" 
-                                         onfocus="this.select()"
-                                         validatorMessage="Please enter a valid number"
-                                         placeholder="Enter starting record number (e.g. 0)">
-                                <f:validateLongRange minimum="0" />
-                                <p:tooltip value="Enter the starting record number (inclusive)" />
-                            </p:inputText>
-
-                            <h:outputLabel value="To Record" ></h:outputLabel>
-                            <p:inputText value="#{reportsStock.toRecord}"  
-                                         onfocus="this.select()"
-                                         validatorMessage="Please enter a valid number greater than From Record" 
-                                         placeholder="Enter ending record number (e.g. 1000)">
-                                <f:validateLongRange minimum="0" />
-                                <p:tooltip value="Enter the ending record number (inclusive)" />
-                            </p:inputText>
-
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Process"
-                                icon="fas fa-cogs"
-                                class="ui-button-warning"
-                                actionListener="#{reportsStock.fillDepartmentStocksForDownload()}" >
-                            </p:commandButton>
-                            <p:commandButton 
-                                icon="fas fa-file-excel"
-                                class="ui-button-success"
-                                value="Excel"
-                                ajax="false">
-                                <p:dataExporter 
-                                    type="xlsx" 
-                                    target="tbl" 
-                                    fileName="stock_by_batch_#{reportsStock.department.name}_#{reportsStock.fromRecord}_#{reportsStock.toRecord}" />
-                            </p:commandButton>
-
-                        </p:panelGrid>
-                        <p:dataTable 
-                            id="tbl"
-                            rowIndexVar="ii"
-                            value="#{reportsStock.stocks}"
-                            var="i"
-                            rows="#{reportsStock.rows}"
-                            paginator="#{reportsStock.paginator}"
-                            paginatorPosition="bottom"
-                            paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
-                            rowsPerPageTemplate="20, 50, 100">
-
-                            <p:column headerText="ID">
-                                <h:outputText value="#{i.id}" />
-                            </p:column>
-                            <p:column headerText="Category">
-                                <h:outputText value="#{empty i.itemBatch.item.category.name ? 'Other' : i.itemBatch.item.category.name}" />
-                            </p:column>
-                            <p:column headerText="Product">
-                                <h:outputText value="#{empty i.itemBatch.item.name ? 'No Name' : i.itemBatch.item.name}" />
-                            </p:column>
-                            <p:column headerText="Code">
-                                <h:outputText value="#{i.itemBatch.item.code}" />
-                            </p:column>
-                            <p:column headerText="Bar Code">
-                                <h:outputText value="#{i.itemBatch.item.barcode}" />
-                            </p:column>
-                            <p:column headerText="Generic Name">
-                                <h:outputText value="#{empty i.itemBatch.item.vmp.name ? 'Other' : i.itemBatch.item.vmp.name}" />
-                            </p:column>
-                            <p:column headerText="Strength">
-                                <h:outputText value="#{i.itemBatch.item.dblValue}" />
-                            </p:column>
-                            <p:column headerText="Strength Unit">
-                                <h:outputText value="#{empty i.itemBatch.item.measurementUnit.name 
-                                                       ? (empty i.itemBatch.item.category.name ? '#' : i.itemBatch.item.category.name) 
-                                                       : i.itemBatch.item.measurementUnit.name}" />
-                            </p:column>
-
-                            <p:column headerText="Pack Size">
-                                <h:outputText value="1" /> 
-                                <!--Packs are NOT Listed in this data table. So it will always be 1-->
-                            </p:column>
-                            <p:column headerText="Issue Unit">
-                                <h:outputText value="#{empty i.itemBatch.item.issueUnit.name ? (empty i.itemBatch.item.category.name ? '#' : i.itemBatch.item.category.name) : i.itemBatch.item.issueUnit.name}" />
-                            </p:column>
+                        <h:outputLabel value="Include Zero Stocks" />
+                        <p:commandButton 
+                            id="btnZeroStocks"
+                            value="#{reportsStock.includeZeroStock ? '✅ Included' : '❌ Excluded'}"
+                            action="#{reportsStock.toggleIncludeZeroStock}"
+                            process="btnZeroStocks"
+                            update="btnZeroStocks"
+                            icon="fas fa-toggle-on"
+                            styleClass="ui-button-secondary" />
 
 
-                            <p:column headerText="Pack Unit">
-                                <h:outputText value="#{empty i.itemBatch.item.packUnit.name ? 'Pack' : i.itemBatch.item.packUnit.name}" />
-                            </p:column>
-                            <p:column headerText="Distributor">
-                                <h:outputText value="#{i.itemBatch.item.institution.name}" />
-                            </p:column>
-                            <p:column headerText="Manufacturer">
-                                <h:outputText value="#{i.itemBatch.item.manufacturer.name}" />
-                            </p:column>
-                            <p:column headerText="Importer">
-                                <h:outputText value="#{i.itemBatch.item.importer.name}" />
-                            </p:column>
-                            <p:column headerText="Date of Expiry (M/d/yyyy)">
-                                <h:outputText value="#{i.itemBatch.dateOfExpire}">
-                                    <f:convertDateTime pattern="M/d/yyyy" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Batch">
-                                <h:outputText value="#{i.itemBatch.batchNo}" />
-                            </p:column>
-                            <p:column headerText="Quentity">
-                                <h:outputText value="#{i.stock}">
-                                    <f:convertNumber pattern="#,###" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Purchase Price">
-                                <h:outputText value="#{i.itemBatch.purcahseRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Sale Price">
-                                <h:outputText value="#{i.itemBatch.retailsaleRate}">
-                                    <f:convertNumber pattern="#,##0.00" />
-                                </h:outputText>
-                            </p:column>
+                    </p:panelGrid>
 
-                        </p:dataTable>
+                    <p:commandButton value="Process"
+                                     ajax="false"
+                                     icon="fas fa-sync"
+                                     class="ui-button-warning m-1"
+                                     action="#{reportsStock.fillDepartmentStocksForDownload}" />
+
+                    <p:commandButton value="Excel"
+                                     ajax="false"
+                                     icon="fas fa-file-excel"
+                                     class="ui-button-success m-1">
+                        <p:dataExporter type="xlsx"
+                                        target="tbl"
+                                        fileName="stock_by_batch_#{reportsStock.department.name}" />
+                    </p:commandButton>
 
 
-                    </p:panel>
-                </h:form>
-            </ui:define>
-        </ui:composition>
-    </h:body>
+                    <p:dataTable id="tbl"
+                                 value="#{reportsStock.stocks}"
+                                 var="s"
+                                 rowIndexVar="idx"
+                                 paginator="true"
+                                 rows="10"
+                                 rowsPerPageTemplate="20,50,100,200"
+                                 paginatorPosition="top"
+                                 paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}">
+
+
+                        <p:column headerText="Serial No">
+                            <h:outputText value="#{idx + 1}" />
+                        </p:column>
+                        <p:column headerText="Category">
+                            <h:outputText value="#{empty s.itemBatch.item.category.name ? 'Other' : s.itemBatch.item.category.name}" />
+                        </p:column>
+                        <p:column headerText="Product">
+                            <h:outputText value="#{empty s.itemBatch.item.name ? 'No Name' : s.itemBatch.item.name}" />
+                        </p:column>
+                        <p:column headerText="Code">
+                            <h:outputText value="#{empty s.itemBatch.item.code ? '-' : s.itemBatch.item.code}" />
+                        </p:column>
+
+                        <p:column headerText="Bar Code">
+                            <h:outputText value="#{empty s.itemBatch.item.barcode ? '-' : s.itemBatch.item.barcode}" />
+                        </p:column>
+                        <p:column headerText="Generic Name">
+                            <h:outputText value="#{empty s.itemBatch.item.vmp.name ? 'Other' : s.itemBatch.item.vmp.name}" />
+                        </p:column>
+                        <p:column headerText="Strength">
+                            <h:outputText value="#{s.itemBatch.item.dblValue}" />
+                        </p:column>
+                        <p:column headerText="Strength Unit">
+                            <h:outputText value="#{empty s.itemBatch.item.measurementUnit.name ? '#' : s.itemBatch.item.measurementUnit.name}" />
+                        </p:column>
+                        <p:column headerText="Pack Size">
+                            <h:outputText value="1" />
+                        </p:column>
+                        <p:column headerText="Issue Unit">
+                            <h:outputText value="#{empty s.itemBatch.item.issueUnit.name ? '#' : s.itemBatch.item.issueUnit.name}" />
+                        </p:column>
+                        <p:column headerText="Pack Unit">
+                            <h:outputText value="#{empty s.itemBatch.item.packUnit.name ? 'Pack' : s.itemBatch.item.packUnit.name}" />
+                        </p:column>
+                        <p:column headerText="Distributor">
+                            <h:outputText value="#{s.itemBatch.item.institution.name}" />
+                        </p:column>
+                        <p:column headerText="Manufacturer">
+                            <h:outputText value="#{s.itemBatch.item.manufacturer.name}" />
+                        </p:column>
+                        <p:column headerText="Importer">
+                            <h:outputText value="#{s.itemBatch.item.importer.name}" />
+                        </p:column>
+                        <p:column headerText="Date of Expiry (M/d/yyyy)">
+                            <h:outputText value="#{s.itemBatch.dateOfExpire}">
+                                <f:convertDateTime pattern="M/d/yyyy" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Batch">
+                            <h:outputText value="#{s.itemBatch.batchNo}" />
+                        </p:column>
+                        <p:column headerText="Quantity">
+                            <h:outputText value="#{s.stock}">
+                                <f:convertNumber pattern="#,###" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Purchase Price">
+                            <h:outputText value="#{s.itemBatch.purcahseRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Sale Price">
+                            <h:outputText value="#{s.itemBatch.retailsaleRate}">
+                                <f:convertNumber pattern="#,##0.00" />
+                            </h:outputText>
+                        </p:column>
+
+                    </p:dataTable>
+                </p:panel>
+            </h:form>
+        </ui:define>
+    </ui:composition>
 </html>

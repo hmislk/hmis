@@ -123,6 +123,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     private double saleValueAfterDisbursement;
     private double finalTotalPurchaseValue;
     private double finalTotalSaleValue;
+    private boolean includeZeroStock;
 
     private int fromRecord;
     private int toRecord;
@@ -191,9 +192,7 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
     public void fillDepartmentStocks() {
         List<DepartmentType> availableDepartmentTypes = sessionController.getAvailableDepartmentTypesForPharmacyTransactions();
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
             Map<String, Object> m = new HashMap<>();
             StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
 
@@ -212,15 +211,12 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             }
 
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
             stocks = getStockFacade().findByJpql(sql.toString(), m);
 
             Date afterJpql = new Date();
-            System.out.println("afterJpql = " + afterJpql);
             stocks.sort(Comparator.comparing(s -> s.getItemBatch().getItem().getName(), String.CASE_INSENSITIVE_ORDER));
 
             Date beforeCal = new Date();
-            System.out.println("beforeCal = " + beforeCal);
             stockPurchaseValue = stocks.stream()
                     .mapToDouble(s -> s.getItemBatch().getPurcahseRate() * s.getStock())
                     .sum();
@@ -236,31 +232,41 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                     })
                     .sum();
             Date afterCal = new Date();
-            System.out.println("afterCal = " + afterCal);
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
+    }
+
+    public void toggleIncludeZeroStock() {
+        includeZeroStock = !includeZeroStock;
     }
 
     public void fillDepartmentStocksForDownload() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("fillDepartmentStocks");
             Date startedAt = new Date();
-            System.out.println("startedAt = " + startedAt);
-            Map<String, Object> m = new HashMap<>();
-            StringBuilder sql = new StringBuilder("select s from Stock s where s.stock > 0");
-            if (department != null) {
-                sql.append(" and s.department=:d");
-                m.put("d", department);
-            } else if (site != null) {
-                sql.append(" and s.department.site=:site");
-                m.put("site", site);
-            } else if (institution != null) {
-                sql.append(" and s.department.institution=:ins");
-                m.put("ins", institution);
+
+            Map<String, Object> parameters = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT s FROM Stock s WHERE 1=1");
+
+            if (!includeZeroStock) {
+                jpql.append(" AND s.stock > 0");
             }
-            sql.append(" order by s.id");
+
+            if (department != null) {
+                jpql.append(" AND s.department = :dept");
+                parameters.put("dept", department);
+            } else if (site != null) {
+                jpql.append(" AND s.department.site = :site");
+                parameters.put("site", site);
+            } else if (institution != null) {
+                jpql.append(" AND s.department.institution = :ins");
+                parameters.put("ins", institution);
+            }
+
+            jpql.append(" ORDER BY s.id");
+
             Date beforeJpql = new Date();
-            System.out.println("beforeJpql = " + beforeJpql);
-            stocks = getStockFacade().findByJpql(sql.toString(), m, fromRecord, toRecord);
+
+            stocks = getStockFacade().findByJpql(jpql.toString(), parameters);
+
         }, PharmacyReports.STOCK_REPORT_BY_BATCH, sessionController.getLoggedUser());
     }
 
@@ -346,9 +352,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
             m.put("d", department);
             m.put("z", 0.0);
         }
-//        //////System.out.println("sql = " + sql);
-//        //////System.out.println("m = " + m);
-//        //////System.out.println("getStockFacade().findObjects(sql, m) = " + getStockFacade().findObjects(sql, m));
         List<PharmacyStockRow> lsts = (List) getStockFacade().findObjects(sql, m);
         stockPurchaseValue = 0.0;
         stockSaleValue = 0.0;
@@ -960,8 +963,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         }
         sql += " GROUP BY bi.item";
 
-        //System.out.println("sql = " + sql);
-        //System.out.println("m = " + m);
         Set<Item> bis = new HashSet<>(itemFacade.findByJpql(sql, m));
 
         sql = "SELECT s.itemBatch.item "
@@ -1327,7 +1328,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
                 + " group by s.itemBatch.item.category "
                 + " order by s.itemBatch.item.category.name";
         List<Object[]> objs = getStockFacade().findAggregates(sql, m);
-        ////System.out.println("sql = " + sql);
         totalPurchaseValue = 0.0;
         stockRecords = new ArrayList<>();
 
@@ -1359,7 +1359,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1370,7 +1369,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -1397,7 +1395,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
         stockSaleValue = 0.0;
         stockPurchaseValue = 0.0;
         for (Institution i : dealers) {
-            ////////System.out.println("i = " + i);
             m = new HashMap();
             m.put("ins", i);
             m.put("d", department);
@@ -1409,7 +1406,6 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
             if (objs[0] != null && (Double) objs[0] > 0) {
                 StockReportRecord r = new StockReportRecord();
-                ////////System.out.println("objs = " + objs);
                 r.setInstitution(i);
                 r.setQty((Double) objs[0]);
                 r.setPurchaseValue((Double) objs[1]);
@@ -2086,6 +2082,14 @@ public class ReportsStock implements Serializable, ControllerWithReportFilters {
 
     public void setReportViewTypes(List<ReportViewType> reportViewTypes) {
         this.reportViewTypes = reportViewTypes;
+    }
+
+    public boolean isIncludeZeroStock() {
+        return includeZeroStock;
+    }
+
+    public void setIncludeZeroStock(boolean includeZeroStock) {
+        this.includeZeroStock = includeZeroStock;
     }
 
 }

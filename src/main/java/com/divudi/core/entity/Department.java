@@ -52,7 +52,6 @@ public class Department implements Serializable {
 
     @ManyToOne
     Department superDepartment;
-    @Enumerated(EnumType.STRING)
     DepartmentType departmentType;
     @ManyToOne
 

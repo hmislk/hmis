@@ -330,13 +330,14 @@ public class DataUploadController implements Serializable {
     private List<PharmacyImportCol> itemNotPresent;
     private List<String> itemsWithDifferentGenericName;
     private List<String> itemsWithDifferentCode;
-    
-    
-    
+
     private List<ItemFee> uploadeditemFees;
     private List<ItemLight> rejecteditemFees;
 
     private int startRow = 1;
+
+    private boolean skipDepartmentTypeColumn;
+    private DepartmentType defaultDepartmentType = DepartmentType.Pharmacy;
 
     public String navigateToRouteUpload() {
         uploadComplete = false;
@@ -377,6 +378,26 @@ public class DataUploadController implements Serializable {
             JsfUtil.addErrorMessage("No File");
             return "";
         }
+        catCol = 1;                   // B
+        ampCol = 2;                   // C
+        codeCol = 3;                  // D
+        barcodeCol = 4;               // E
+        vtmCol = 5;                   // F
+        strengthOfIssueUnitCol = 6;  // G
+        strengthUnitCol = 7;         // H
+        issueUnitsPerPackCol = 8;    // I
+        issueUnitCol = 9;            // J
+        packUnitCol = 10;            // K
+        distributorCol = 11;         // L
+        manufacturerCol = 12;        // M
+        importerCol = 13;            // N
+        doeCol = 14;                 // O
+        batchCol = 15;               // P
+        stockQtyCol = 16;            // Q
+        pruchaseRateCol = 17;        // R
+        saleRateCol = 18;            // S
+
+        startRow = 1; // If header is on row 0
 
         String strCat;
         String strAmp;
@@ -705,6 +726,15 @@ public class DataUploadController implements Serializable {
                 strBarcode = getCellValueAsString(row.getCell(barcodeCol));
 
                 strDistributor = getCellValueAsString(row.getCell(distributorCol));
+                
+                DepartmentType deptType = null;
+                if (!skipDepartmentTypeColumn) {
+                    String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                    deptType = departmentController.findDepartmentType(strDepartmentType);
+                }
+                if (deptType == null) {
+                    deptType = defaultDepartmentType != null ? defaultDepartmentType : DepartmentType.Pharmacy;
+                }
 
                 Cell ampCell = row.getCell(ampCol);
                 strAmp = getCellValueAsString(ampCell);
@@ -722,6 +752,7 @@ public class DataUploadController implements Serializable {
                     amp.setDblValue(strengthUnitsPerIssueUnit);
                     amp.setCategory(cat);
                     amp.setVmp(vmp);
+                    amp.setDepartmentType(deptType);
                     getAmpFacade().create(amp);
                 } else {
                     amp.setRetired(false);
@@ -748,12 +779,6 @@ public class DataUploadController implements Serializable {
                 importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
                 amp.setImporter(importer);
 
-
-                String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
-                DepartmentType deptType = departmentController.findDepartmentType(strDepartmentType);
-                if (deptType == null) {
-                    deptType = DepartmentType.Pharmacy;
-                }
                 amp.setDepartmentType(deptType);
 
                 System.out.println("amp = " + amp);
@@ -794,6 +819,18 @@ public class DataUploadController implements Serializable {
             default:
                 return "";
         }
+    }
+
+    public String importFromExcelWithoutStockLab() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Lab;
+        return importFromExcelWithoutStock();
+    }
+
+    public String importFromExcelWithoutStockStore() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Store;
+        return importFromExcelWithoutStock();
     }
 
     private double parseDouble(String value) {
@@ -5478,7 +5515,7 @@ public class DataUploadController implements Serializable {
         Iterator<Row> rowIterator = sheet.rowIterator();
 
         itemFees = new ArrayList<>();
-        
+
         uploadeditemFees = new ArrayList<>();
         rejecteditemFees = new ArrayList<>();
 
@@ -5503,7 +5540,7 @@ public class DataUploadController implements Serializable {
             Double localFee = 0.0;
             Double foreignerFee = 0.0;
             String forInstitutionName = null;
-            
+
             ItemLight currentUploadItem = new ItemLight();
 
             Cell insCell = row.getCell(6);
@@ -5547,13 +5584,13 @@ public class DataUploadController implements Serializable {
             }
             if (itemCode != null) {
             }
-            
+
             // Column B: Item Name (Required)
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
-            
+
             if (itemCode == null || itemCode.trim().isEmpty()) {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
@@ -5576,13 +5613,13 @@ public class DataUploadController implements Serializable {
                 forInstitution = institutionController.findAndSaveInstitutionByName(forInstitutionName);
                 System.out.println("forInstitution = " + forInstitution);
             }
-            
+
             // Column D: Item Type 
             Cell itemTypeCell = row.getCell(3);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemTypeName = itemTypeCell.getStringCellValue();
             }
-            
+
             if (itemTypeName != null) {
                 switch (itemTypeName) {
                     case "Investigation":
@@ -5602,18 +5639,18 @@ public class DataUploadController implements Serializable {
             Cell localFeeCell = row.getCell(4);
             if (localFeeCell != null && localFeeCell.getCellType() == CellType.NUMERIC) {
                 localFee = localFeeCell.getNumericCellValue();
-            }else{
+            } else {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
                 rejecteditemFees.add(currentUploadItem);
                 continue;
             }
-            
+
             // Column E: Foreigner Fee Value
             Cell foreignerFeeCell = row.getCell(5);
             if (foreignerFeeCell != null && foreignerFeeCell.getCellType() == CellType.NUMERIC) {
                 foreignerFee = foreignerFeeCell.getNumericCellValue();
-            }else{
+            } else {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
                 rejecteditemFees.add(currentUploadItem);
@@ -5634,7 +5671,7 @@ public class DataUploadController implements Serializable {
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
             System.out.println("Create Fee = " + fee.getId());
-            
+
             uploadeditemFees.add(fee);
 
         }
@@ -5875,6 +5912,7 @@ public class DataUploadController implements Serializable {
             }
         }
     }
+
     public StreamedContent getTemplateForDepartmentUpload() {
         try {
             createTemplateForDepartmentUpload();
@@ -7478,7 +7516,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public StreamedContent getTemplateForItemFeeUploadToSite() {
         try {
             createTemplateForItemFeeUploadToSite();
@@ -7487,7 +7525,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public void createTemplateForItemFeeUploadToSite() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -8155,6 +8193,22 @@ public class DataUploadController implements Serializable {
 
     public void setRejecteditemFees(List<ItemLight> rejecteditemFees) {
         this.rejecteditemFees = rejecteditemFees;
+    }
+
+    public boolean isSkipDepartmentTypeColumn() {
+        return skipDepartmentTypeColumn;
+    }
+
+    public void setSkipDepartmentTypeColumn(boolean skipDepartmentTypeColumn) {
+        this.skipDepartmentTypeColumn = skipDepartmentTypeColumn;
+    }
+
+    public DepartmentType getDefaultDepartmentType() {
+        return defaultDepartmentType;
+    }
+
+    public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
+        this.defaultDepartmentType = defaultDepartmentType;
     }
 
 }
