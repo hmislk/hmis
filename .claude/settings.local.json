@@ -7,9 +7,13 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git checkout:*)",
       "Bash(git stash:*)",
-      "Bash(git status:*)"
+      "Bash(git status:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:github.com)"
     ],
     "deny": []
   }
