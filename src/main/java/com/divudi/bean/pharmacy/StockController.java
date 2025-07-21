@@ -469,7 +469,7 @@ public class StockController implements Serializable {
             return findDepartmentStock(department, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
-            return findStock(department, amps);
+            return findStock(department.getInstitution(), amps);
         } else {
             //TO Do for Ampp, Vmpp,
             return 0.0;
