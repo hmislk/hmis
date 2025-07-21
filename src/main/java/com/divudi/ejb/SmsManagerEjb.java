@@ -497,7 +497,7 @@ public class SmsManagerEjb {
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthenticationWithJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with JQON", false);
-        boolean sendSmsWithBasicAuthenticationWithSimpleJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with Simple JQON", false);
+        boolean sendSmsWithBasicAuthenticationWithSimpleJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with Simple JSON", false);
         boolean sendSmsViaESms = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using E -SMS Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
             return sendSmsByOauth2(sms);
@@ -583,14 +583,14 @@ public class SmsManagerEjb {
         try {
             // Prepare JSON payload
             JSONObject payload = new JSONObject();
-            payload.put("username", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple Json - Username"));
-            payload.put("password", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple Json - Password"));
-            payload.put("from", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple Json - User Alias"));
+            payload.put("username", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Username"));
+            payload.put("password", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Password"));
+            payload.put("from", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - User Alias"));
             payload.put("to", sms.getReceipientNumber()); // For multiple, use comma-separated
             payload.put("text", sms.getSendingMessage());
-            payload.put("mesageType", Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple Json - Additional parameter 1 value"))); // 0 or 1
+            payload.put("mesageType", Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value"))); // 0 or 1
 
-            String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple Json - URL");
+            String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - URL");
 
             // Send POST request
             URL url = new URL(smsUrl);
