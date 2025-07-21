@@ -466,7 +466,7 @@ public class OnlineBookingAgentController implements Serializable {
         Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
         paidBill.setCreater(getSessionController().getLoggedUser());
-        paidBill.setToInstitution(getSessionController().getInstitution());
+        paidBill.setToInstitution(institutionForBookings);
         paidBill.setToDepartment(getSessionController().getDepartment());
         paidBill.setDepartment(getSessionController().getDepartment());
         paidBill.setFromInstitution(agentForBookings);
@@ -567,7 +567,7 @@ public class OnlineBookingAgentController implements Serializable {
         bill.setCreatedAt(new Date());
         bill.setPaymentMethod(cancelPaymentMethod);
         bill.setCreater(getSessionController().getLoggedUser());
-        bill.setToInstitution(getSessionController().getInstitution());
+        bill.setToInstitution(printBill.getToInstitution());
         bill.setToDepartment(getSessionController().getDepartment());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setFromInstitution(printBill.getFromInstitution());
