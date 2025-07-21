@@ -644,6 +644,15 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void generateAllItemMovementReport() {
+        if (fromDate == null || toDate == null) {
+            JsfUtil.addErrorMessage("Please select both from and to dates");
+            return;
+        }
+        if (fromDate.after(toDate)) {
+            JsfUtil.addErrorMessage("From date must be before or equal to to date");
+            return;
+        }
+        
         HistoricalRecord hr = new HistoricalRecord();
         hr.setHistoricalRecordType(HistoricalRecordType.ASYNC_REPORT);
         hr.setVariableName("AllItemMovementSummary");
