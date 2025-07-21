@@ -41,15 +41,31 @@
                             </f:facet>
 
                             <div class="row">
+
+                                <div class="col-md-2">
+                                    <h:outputLabel value="Institution"/>
+                                </div>
+                                <div class="col-md-7">
+                                    <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
+                                        <f:selectItem itemLabel="Select Institution" ></f:selectItem>
+                                        <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
+                                        <p:ajax event="itemSelect" process="@this"/>
+                                    </p:selectOneMenu>
+                                 
+                                    </p:selectOneMenu>
+                                </div>
+                            </div>
+
+                            <div class="row">
                                 <div class="col-md-2">
                                     <p:outputLabel value="Agency" />
                                 </div>
                                 <div class="col-md-7">
                                     <p:selectOneMenu  id="lstSelect"
-                                                         value="#{onlineBookingAgentController.current}" 
-                                                         style="width: 100%"
-                                                         
-                                                         filter="true">
+                                                      value="#{onlineBookingAgentController.agentForBookings}" 
+                                                      style="width: 100%"
+
+                                                      filter="true">
                                         <f:selectItems  value="#{onlineBookingAgentController.allAgents}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" ></f:selectItems>
                                         <p:ajax process="lstSelect" >
                                         </p:ajax>
