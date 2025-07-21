@@ -86,6 +86,7 @@ import com.divudi.service.StockHistoryService;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import com.divudi.core.util.BigDecimalUtil;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
