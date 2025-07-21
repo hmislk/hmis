@@ -609,17 +609,14 @@ public class PharmacyCostingService {
             // Fallback: calculate grossTotal if missing or 0
             if (f.getGrossTotal() == null || f.getGrossTotal().compareTo(BigDecimal.ZERO) == 0) {
                 f.setGrossTotal(grossRate.multiply(qty));
-                System.out.println("Set GrossTotal = GrossRate × Qty = " + f.getGrossTotal());
             }
 
             // Fallback net values
             if (f.getNetTotal() == null || f.getNetTotal().compareTo(BigDecimal.ZERO) == 0) {
                 f.setNetTotal(f.getGrossTotal());
-                System.out.println("NetTotal set from GrossTotal: " + f.getNetTotal());
             }
             if (f.getLineNetTotal() == null || f.getLineNetTotal().compareTo(BigDecimal.ZERO) == 0) {
                 f.setLineNetTotal(f.getLineGrossTotal());
-                System.out.println("LineNetTotal set from LineGrossTotal: " + f.getLineNetTotal());
             }
 
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -690,7 +687,6 @@ public class PharmacyCostingService {
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
 
-        System.out.println("==== Finished calculateBillTotalsFromItemsForTransferOuts ====");
     }
 
 }

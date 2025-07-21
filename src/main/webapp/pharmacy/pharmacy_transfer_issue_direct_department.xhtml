@@ -35,7 +35,7 @@
                                             inputStyleClass="w-100"
                                             id="acStock"
                                             value="#{transferIssueController.tmpStock}"
-                                            completeMethod="#{stockController.completeAvailableStocks}"
+                                            completeMethod="#{stockController.completeAvailableStocksForAllowedDepartments}"
                                             var="i" 
                                             itemLabel="#{i.itemBatch.item.name}" 
                                             itemValue="#{i}"

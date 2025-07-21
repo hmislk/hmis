@@ -213,12 +213,10 @@ public class TransferReceiveController implements Serializable {
 
         List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
         for (BillItem issuedBillItem : issuedBillItems) {
-            System.out.println("issuedBillItem = " + issuedBillItem);
             double remainingQty = calculateRemainingQty(issuedBillItem);
             if (remainingQty <= 0) {
                 continue;
             }
-            System.out.println("remainingQty = " + remainingQty);
 
             BillItem newlyCreatedReceivedBillItem = new BillItem();
             newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
@@ -294,7 +292,6 @@ public class TransferReceiveController implements Serializable {
 
         saveBill();
         for (BillItem i : getReceivedBill().getBillItems()) {
-            System.out.println("i.getPharmaceuticalBillItem().getQty() = " + i.getPharmaceuticalBillItem().getQty());
             if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
@@ -358,21 +355,17 @@ public class TransferReceiveController implements Serializable {
 
         double netTotal = 0.0;
 
-        System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
 
         for (BillItem bi : inputBill.getBillItems()) {
-            System.out.println("Processing BillItem ID: " + (bi != null ? bi.getId() : "null"));
 
             BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
             PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
 
             if (bifd == null) {
-                System.out.println("  -> Skipped: FinanceDetails is null");
                 continue;
             }
 
             if (pbi.getStock() == null || pbi.getStock().getItemBatch() == null) {
-                System.out.println("  -> Skipped: Stock or ItemBatch is null");
                 continue;
             }
 
@@ -381,56 +374,38 @@ public class TransferReceiveController implements Serializable {
             double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * bifd.getUnitsPerPack().doubleValue();
             double costRate = pbi.getStock().getItemBatch().getCostRate() * bifd.getUnitsPerPack().doubleValue();
 
-            System.out.println("  fd.getQuantity() = " + bifd.getQuantity());
-            System.out.println("  fd.getFreeQuantity() = " + bifd.getFreeQuantity());
-            System.out.println("  fd.getTotalQuantity() = " + bifd.getTotalQuantity());
-            System.out.println("  purchaseRate = " + purchaseRate);
-            System.out.println("  retailRate = " + retailRate);
-            System.out.println("  wholesaleRate = " + wholesaleRate);
-            System.out.println("  costRate = " + costRate);
 
             billTotalAtCostRate += bifd.getTotalCost().doubleValue();
-            System.out.println("  Added to billTotalAtCostRate: " + bifd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
 
             double paidQty = pbi.getQty() / bifd.getUnitsPerPack().doubleValue();
             double freeQty = pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
 
-            System.out.println("  freeQty = " + freeQty);
-            System.out.println("  paidQty = " + paidQty);
 
             double tmp;
 
             tmp = freeQty * purchaseRate;
             purchaseFree += tmp;
-            System.out.println("  purchaseFree += " + tmp + " -> " + purchaseFree);
 
             tmp = paidQty * purchaseRate;
             purchaseNonFree += tmp;
-            System.out.println("  purchaseNonFree += " + tmp + " -> " + purchaseNonFree);
 
             tmp = freeQty * retailRate;
             retailFree += tmp;
-            System.out.println("  retailFree += " + tmp + " -> " + retailFree);
 
             tmp = paidQty * retailRate;
             retailNonFree += tmp;
-            System.out.println("  retailNonFree += " + tmp + " -> " + retailNonFree);
 
             tmp = freeQty * wholesaleRate;
             wholesaleFree += tmp;
-            System.out.println("  wholesaleFree += " + tmp + " -> " + wholesaleFree);
 
             tmp = paidQty * wholesaleRate;
             wholesaleNonFree += tmp;
-            System.out.println("  wholesaleNonFree += " + tmp + " -> " + wholesaleNonFree);
 
             tmp = freeQty * costRate;
             costFree += tmp;
-            System.out.println("  costFree += " + tmp + " -> " + costFree);
 
             tmp = paidQty * costRate;
             costNonFree += tmp;
-            System.out.println("  costNonFree += " + tmp + " -> " + costNonFree);
 
             BigDecimal grossTotal = bifd.getGrossTotal();
             if (grossTotal != null) {
@@ -476,15 +451,6 @@ public class TransferReceiveController implements Serializable {
 
         }
 
-        System.out.println("========= Final Aggregated Totals =========");
-        System.out.println("costFree = " + costFree);
-        System.out.println("costNonFree = " + costNonFree);
-        System.out.println("purchaseFree = " + purchaseFree);
-        System.out.println("purchaseNonFree = " + purchaseNonFree);
-        System.out.println("retailFree = " + retailFree);
-        System.out.println("retailNonFree = " + retailNonFree);
-        System.out.println("wholesaleFree = " + wholesaleFree);
-        System.out.println("wholesaleNonFree = " + wholesaleNonFree);
 
         inputBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
         inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
@@ -508,10 +474,7 @@ public class TransferReceiveController implements Serializable {
         inputBill.setGrantTotal(netTotal);
         inputBill.setTotal(netTotal);
 
-        System.out.println("inputBill.setSaleValue = " + inputBill.getSaleValue());
-        System.out.println("inputBill.setFreeValue = " + inputBill.getFreeValue());
 
-        System.out.println("========= End fillData =========");
     }
 
     public void saveRequest() {

@@ -157,7 +157,7 @@
                                         id="acItem"
                                         value="#{pharmacyPurchaseController.currentBillItem.item}"
                                         forceSelection="true"
-                                        completeMethod="#{itemController.completeAmpAndAmppItem}"
+                                        completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}"
                                         var="vt"
                                         maxResults="20"
                                         itemLabel="#{vt.name}"
@@ -294,7 +294,7 @@
                                     id="exItem"
                                     value="#{pharmacyPurchaseController.currentBillItem.item}"
                                     forceSelection="true"
-                                    completeMethod="#{itemController.completeAmpItem}"
+                                    completeMethod="#{itemController.completeAmpItemForLoggedDepartment}"
                                     var="vt"
                                     itemLabel="#{vt.name}"
                                     itemValue="#{vt}" >
