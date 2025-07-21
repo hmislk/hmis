@@ -46,7 +46,7 @@
                         <p:dialog
                             widgetVar="cancelPayementSettle" 
                             modal="true" 
-                            closable="false"
+                            closable="true"
                             id="billCancelDlg"
                             resizable="false" 
                             draggable="false" 
@@ -60,16 +60,17 @@
                                 <p:panelGrid columns="2" >
                                     <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
                                     <p:selectOneMenu   id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" 
+                                                       class="w-100"
                                                        required="true"  >
                                         <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                     </p:selectOneMenu>
                                     <p:outputLabel value="Comments" ></p:outputLabel>
-                                    <p:inputTextarea value="#{onlineBookingAgentController.comment}"/>  
+                                    <p:inputTextarea class="w-100" value="#{onlineBookingAgentController.comment}"/>  
                                     <p:spacer ></p:spacer>
                                     
                                     <p:commandButton
                                         styleClass="w-100 ui-button-warning"
-                                        ajax="false" value="Cancel" action="#{onlineBookingAgentController.cancelAgentDirectFundBill()}"
+                                        ajax="false" value="Cancel Bill" action="#{onlineBookingAgentController.cancelAgentDirectFundBill()}"
                                         onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
                                                     return false;"/>
                                 </p:panelGrid>

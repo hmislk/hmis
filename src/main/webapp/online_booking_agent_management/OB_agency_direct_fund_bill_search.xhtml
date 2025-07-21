@@ -58,7 +58,7 @@
                             </div>
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                                    <p:column headerText="Bill No" width="10em">
+                                    <p:column headerText="Bill No" width="10em" filterMatchMode="contains" filterBy="#{bill.deptId}">
                                         <h:commandLink action="/online_booking_agent_management/agency_direct_fund_bill_reprint?faces-redirect=true" value="#{bill.deptId}" style="font-weight: bold">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>
@@ -99,7 +99,7 @@
 
                                     </p:column>  
 
-                                    <p:column headerText="Agency Name" >
+                                    <p:column headerText="Agency Name" filterMatchMode="contains" filterBy="#{bill.fromInstitution.name}">
                                         <p:tag value="#{bill.fromInstitution.name}" severity="warning"></p:tag>
                                     </p:column>  
 
