@@ -1239,16 +1239,23 @@ public class ChannelService {
     public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
         System.out.println("started");
         String sql = "select bill from Bill bill where "
-                + " bill.billType = :bt "
+                + " bill.billType in :bt "
                 + " and bill.retired = false"
-                + " and bill.billTypeAtomic = :bta "
+                + " and bill.billTypeAtomic in :bta "
                 + " and bill.createdAt BETWEEN :fd AND :td";
 
         Map params = new HashMap();
         params.put("fd", fromDate);
         params.put("td", toDate);
-        params.put("bt", BillType.ChannelOnlineBookingAgentPaidToHospital);
-        params.put("bta", BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
+        List<BillType> btList = new ArrayList<>();
+        btList.add(BillType.ChannelOnlineBookingAgentPaidToHospital);
+        btList.add(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+        params.put("bt", btList);
+        
+        List<BillTypeAtomic> btaList = new ArrayList<>();
+        btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
+        btaList.add(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
+        params.put("bta", btaList);
 
         if (institution != null) {
             sql += " and bill.toInstitution = :ins ";

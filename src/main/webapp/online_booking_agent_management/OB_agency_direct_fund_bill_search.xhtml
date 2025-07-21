@@ -58,18 +58,20 @@
                             </div>
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
-                                    <p:column headerText="Bill No" width="16em">
+                                    <p:column headerText="Bill No" width="10em">
                                         <h:commandLink action="/online_booking_agent_management/agency_direct_fund_bill_reprint?faces-redirect=true" value="#{bill.deptId}" style="font-weight: bold">
                                             <h:outputLabel  ></h:outputLabel>
                                             <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>
                                         </h:commandLink>
+                                        <p:tag rendered="#{bill.cancelled eq true }" value="Cancelled - #{bill.cancelledBill.deptId}" style="color:white ; font-weight: bold; background-color: #8e44ad"></p:tag>
+                                        <p:tag rendered="#{bill.billType eq 'ChannelOnlineBookingAgentPaidToHospitalBillCancellation'}" value="Cancel Bill" style="color:white ; font-weight: bold; background-color: #c0392b"></p:tag>
                                     </p:column>                                            
                                     <p:column headerText="Billed at"  >
 
                                         <h:outputLabel value="#{bill.createdAt}" >
                                             <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
                                         </h:outputLabel>
-                                        
+
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -83,7 +85,7 @@
 
                                         <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
                                         </h:outputLabel>
-                                        
+
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -94,7 +96,7 @@
                                     <p:column headerText="Agency Code" >
 
                                         <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
-                                       
+
                                     </p:column>  
 
                                     <p:column headerText="Agency Name" >

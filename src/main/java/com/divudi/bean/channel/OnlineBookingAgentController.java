@@ -1,6 +1,8 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
@@ -21,23 +23,28 @@ import static com.divudi.core.data.PaymentMethod.Slip;
 import static com.divudi.core.data.PaymentMethod.Staff;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillNumber;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -107,12 +114,21 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethod cancelPaymentMethod;
     private Bill cancelBill;
     private String billStatus;
+    private String comment;
 
     @EJB
     private PaymentFacade paymentFacade;
 
     @Inject
     private DrawerController drawerController;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 
     public Bill getPaidToHospitalDirectFundBill() {
         if (paidToHospitalDirectFundBill == null) {
@@ -168,6 +184,153 @@ public class OnlineBookingAgentController implements Serializable {
             cancelBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
         }
         return cancelBill;
+    }
+    
+    private boolean errorCheck(Bill origianlBill) {
+        if (origianlBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (origianlBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Multiple Payment Methods are NOT allowed.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            JsfUtil.addErrorMessage("Credit Payment Methods are NOT allowed.");
+            return true;
+        }
+
+//        if (checkPaid(origianlBill)) {
+//            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
+//            return true;
+//        }
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+    
+    @EJB
+    private DrawerFacade drawerFacade;
+    
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    
+    @Inject
+    private BillBeanController billBeanController;
+    @EJB
+    private BillItemFacade billItemFacade;
+    
+    public void cancelAgentDirectFundBill(){
+        if(paidToHospitalPaymentMethod == null){
+            JsfUtil.addErrorMessage("Select Payment method to cancel");
+            return;
+        }
+        
+        if(printBill == null){
+            JsfUtil.addErrorMessage("No bill to cancel");
+            return;
+        }
+        
+        if(printBill instanceof CancelledBill){
+            JsfUtil.addErrorMessage("Cancelled Bill can't Cancel");
+            return;
+        }
+        
+        if(errorCheck(printBill)){
+            return;
+        }
+        
+        if (paidToHospitalPaymentMethod == PaymentMethod.Cash) {
+            Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
+            if (userDrawer.getCashInHandValue() < printBill.getNetTotal()) {
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
+                    return;
+                }
+            }
+        }
+        CancelledBill cancelBill = generateCancelBillForAgentDirectFundBill(printBill);
+        
+        printBill.setCancelled(true);
+        printBill.setCancelledBill(cancelBill);
+        getBillFacade().editAndCommit(printBill);
+        
+        List<Payment> payments = createPayment(printBill, paidToHospitalPaymentMethod, true);
+        
+        cancelBillItems(cancelBill, printBill);
+        
+        printBill = cancelBill;
+        printOriginal = true;
+        
+        JsfUtil.addSuccessMessage("Bill Cancellation is successful");
+ 
+    }
+    
+    private void cancelBillItems(CancelledBill cancelBill, Bill originalBill) {
+        List<BillItem> bis = billBeanController.fetchBillItems(originalBill);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem originalBillItem : bis) {
+            BillItem newBillItemForCancelBill = new BillItem();
+            newBillItemForCancelBill.setBill(cancelBill);
+            newBillItemForCancelBill.copy(originalBillItem);
+            newBillItemForCancelBill.invertValue();
+//            newBillItemForCancelBill.setNetValue(-originalBillItem.getNetValue());
+            newBillItemForCancelBill.setReferenceBill(originalBillItem.getReferenceBill());
+            newBillItemForCancelBill.setCatId(originalBillItem.getCatId());
+            newBillItemForCancelBill.setDeptId(originalBillItem.getDeptId());
+            newBillItemForCancelBill.setInsId(originalBillItem.getInsId());
+            newBillItemForCancelBill.setCreatedAt(new Date());
+            newBillItemForCancelBill.setCreater(getSessionController().getLoggedUser());
+            newBillItemForCancelBill.setReferanceBillItem(originalBillItem);
+            billItemFacade.create(newBillItemForCancelBill);
+
+        }
+    }
+
+    
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
+    
+    public CancelledBill generateCancelBillForAgentDirectFundBill(Bill paidBill) {
+        if (paidBill == null) {
+            return null;
+        }
+        CancelledBill cb = new CancelledBill();
+        cb.copy(paidBill);
+        cb.invertAndAssignValuesFromOtherBill(paidBill);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
+        cb.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
+        cb.setBilledBill(printBill);
+        cb.setPaymentMethod(paidToHospitalPaymentMethod);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(printBill.getInstitution());
+        cb.setToInstitution(printBill.getToInstitution());
+        cb.setFromInstitution(printBill.getFromInstitution());
+        cb.setComments(comment);
+        billFacade.create(cb);
+        return cb;
+        
     }
 
     public void setCancelBill(Bill cancelBill) {
@@ -709,9 +872,6 @@ public class OnlineBookingAgentController implements Serializable {
         bookinsToAgenHospitalPayementCancellation.remove(selected);
         prepareCancellationAgentPaidToHospitalBills();
     }
-    
-    @EJB
-    private BillItemFacade billItemFacade;
     
     public void createBillItemForPaidToHospitalBill(Bill bill) {
         BillItem bi = new BillItem();

@@ -27,11 +27,13 @@
                                     </p:commandButton>
                                     <p:commandButton 
                                         class="my-1 ml-5" 
-                                        ajax="false" 
+                                        ajax="true" 
                                         styleClass="ui-button-danger"
-                                        value="To Cancel" 
-                                        action="#{agentPaymentReceiveSearchController.navigateToCancelAgentBillView()}"
-                                        disabled="#{agentPaymentReceiveSearchController.bill.cancelled}" 
+                                        value="To Cancel"
+                                        oncomplete="PF('cancelPayementSettle').show()"
+                                        process="@this"
+                                        update="billCancelDlg"
+                                        disabled="#{onlineBookingAgentController.printBill.cancelled}" 
                                         icon="fa fa-times" >
                                     </p:commandButton>
                                 </div>
@@ -40,6 +42,39 @@
                             <p:spacer width="20" ></p:spacer>
 
                         </f:facet>
+                        
+                        <p:dialog
+                            widgetVar="cancelPayementSettle" 
+                            modal="true" 
+                            closable="false"
+                            id="billCancelDlg"
+                            resizable="false" 
+                            draggable="false" 
+                            height="400"
+                            width="800"
+                            >
+                            <p:panel  >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu   id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" 
+                                                       required="true"  >
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea value="#{onlineBookingAgentController.comment}"/>  
+                                    <p:spacer ></p:spacer>
+                                    
+                                    <p:commandButton
+                                        styleClass="w-100 ui-button-warning"
+                                        ajax="false" value="Cancel" action="#{onlineBookingAgentController.cancelAgentDirectFundBill()}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:dialog>
 
                         <div class="row">
                             <div class="col-md-4">
@@ -62,7 +97,7 @@
 
                             <div class="col-md-8">
                                 <h:panelGroup id="print">
-                                    <bi:cc_payment_receipt_bill billController ="#{agentPaymentReceiveSearchController}"  bill="#{agentPaymentReceiveSearchController.bill}" dup="true"/>  
+                                    <bi:cc_payment_receipt_bill billController ="#{onlineBookingAgentController}"  bill="#{onlineBookingAgentController.printBill}" dup="true"/>  
                                 </h:panelGroup>
                             </div>
 
