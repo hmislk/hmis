@@ -26,6 +26,7 @@
                                             icon="fas fa-cancel" 
                                             value="CANCEL" 
                                             ajax="false" 
+                                            onclick="return confirm('Are you sure you want to cancel this bill?');"
                                             action="#{pharmacyBillSearch.pharmacyRetailCancelBillWithStock()}" >
                                         </p:commandButton>
                                         <p:commandButton class="ui-button-secondary mx-2" icon="fas fa-arrow-left" value="Back" onclick="history.back(); return false;" >
