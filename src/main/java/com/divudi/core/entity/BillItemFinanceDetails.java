@@ -42,154 +42,154 @@ public class BillItemFinanceDetails implements Serializable {
     // ------------------ RATES ------------------
     // Base price before any deductions
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineGrossRate = BigDecimal.ZERO;
+    private BigDecimal lineGrossRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billGrossRate = BigDecimal.ZERO;
+    private BigDecimal billGrossRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal grossRate = BigDecimal.ZERO;
+    private BigDecimal grossRate;
 
     // Final rate after all discounts, expenses, and taxes
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineNetRate = BigDecimal.ZERO;
+    private BigDecimal lineNetRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billNetRate = BigDecimal.ZERO;
+    private BigDecimal billNetRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal netRate = BigDecimal.ZERO;
+    private BigDecimal netRate;
 
     // Discount percentages applied at line level, bill level, and total
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineDiscountRate = BigDecimal.ZERO;
+    private BigDecimal lineDiscountRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billDiscountRate = BigDecimal.ZERO;
+    private BigDecimal billDiscountRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalDiscountRate = BigDecimal.ZERO;
+    private BigDecimal totalDiscountRate;
 
     // Expense percentages applied at line level, bill level, and total
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineExpenseRate = BigDecimal.ZERO;
+    private BigDecimal lineExpenseRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billExpenseRate = BigDecimal.ZERO;
+    private BigDecimal billExpenseRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalExpenseRate = BigDecimal.ZERO;
+    private BigDecimal totalExpenseRate;
 
     // Tax percentages applied at bill, line, and total
     @Column(precision = 18, scale = 4)
-    private BigDecimal billTaxRate = BigDecimal.ZERO;
+    private BigDecimal billTaxRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineTaxRate = BigDecimal.ZERO;
+    private BigDecimal lineTaxRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalTaxRate = BigDecimal.ZERO;
+    private BigDecimal totalTaxRate;
 
     // Cost percentages applied at bill, line, and total
     @Column(precision = 18, scale = 4)
-    private BigDecimal billCostRate = BigDecimal.ZERO;
+    private BigDecimal billCostRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineCostRate = BigDecimal.ZERO;
+    private BigDecimal lineCostRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalCostRate = BigDecimal.ZERO;
+    private BigDecimal totalCostRate;
 
     // ------------------ TOTALS ------------------
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineGrossTotal = BigDecimal.ZERO;
+    private BigDecimal lineGrossTotal;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billGrossTotal = BigDecimal.ZERO;
+    private BigDecimal billGrossTotal;
     @Column(precision = 18, scale = 4)
-    private BigDecimal grossTotal = BigDecimal.ZERO;
+    private BigDecimal grossTotal;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineNetTotal = BigDecimal.ZERO;
+    private BigDecimal lineNetTotal;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billNetTotal = BigDecimal.ZERO;
+    private BigDecimal billNetTotal;
     @Column(precision = 18, scale = 4)
-    private BigDecimal netTotal = BigDecimal.ZERO;
+    private BigDecimal netTotal;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineDiscount = BigDecimal.ZERO;
+    private BigDecimal lineDiscount;
     @Column(precision = 18, scale = 4)
-    private BigDecimal billDiscount = BigDecimal.ZERO;
+    private BigDecimal billDiscount;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalDiscount = BigDecimal.ZERO;
+    private BigDecimal totalDiscount;
 
     // Retail and wholesale rates
     @Column(precision = 18, scale = 4)
-    private BigDecimal retailSaleRate = BigDecimal.ZERO;
+    private BigDecimal retailSaleRate;
     @Column(precision = 18, scale = 4)
-    private BigDecimal wholesaleRate = BigDecimal.ZERO;
+    private BigDecimal wholesaleRate;
 
     // Retail and wholesale rates per unit (based on unitsPerPack)
     @Column(precision = 18, scale = 4)
-    private BigDecimal retailSaleRatePerUnit = BigDecimal.ZERO;
+    private BigDecimal retailSaleRatePerUnit;
     @Column(precision = 18, scale = 4)
-    private BigDecimal wholesaleRatePerUnit = BigDecimal.ZERO;
+    private BigDecimal wholesaleRatePerUnit;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal valueAtRetailRate = BigDecimal.ZERO;
+    private BigDecimal valueAtRetailRate;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal valueAtPurchaseRate = BigDecimal.ZERO;
+    private BigDecimal valueAtPurchaseRate;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal valueAtCostRate = BigDecimal.ZERO;
+    private BigDecimal valueAtCostRate;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal valueAtWholesaleRate = BigDecimal.ZERO;
+    private BigDecimal valueAtWholesaleRate;
 
     // Absolute tax values
     @Column(precision = 18, scale = 4)
-    private BigDecimal billTax = BigDecimal.ZERO;
+    private BigDecimal billTax;
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineTax = BigDecimal.ZERO;
+    private BigDecimal lineTax;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalTax = BigDecimal.ZERO;
+    private BigDecimal totalTax;
 
     // Absolute expense values
     @Column(precision = 18, scale = 4)
-    private BigDecimal billExpense = BigDecimal.ZERO;
+    private BigDecimal billExpense;
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineExpense = BigDecimal.ZERO;
+    private BigDecimal lineExpense;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalExpense = BigDecimal.ZERO;
+    private BigDecimal totalExpense;
 
     // Absolute cost values
     @Column(precision = 18, scale = 4)
-    private BigDecimal billCost = BigDecimal.ZERO;
+    private BigDecimal billCost;
     @Column(precision = 18, scale = 4)
-    private BigDecimal lineCost = BigDecimal.ZERO;
+    private BigDecimal lineCost;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalCost = BigDecimal.ZERO;
+    private BigDecimal totalCost;
 
 
     // ------------------ QUANTITIES ------------------
     // Quantities as entered (in packs when item is an AMPP or in units if item is AMP)
     @Column(precision = 18, scale = 4)
-    private BigDecimal freeQuantity = BigDecimal.ZERO;
+    private BigDecimal freeQuantity;
     @Column(precision = 18, scale = 4)
-    private BigDecimal quantity = BigDecimal.ZERO;
+    private BigDecimal quantity;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalQuantity = BigDecimal.ZERO;
+    private BigDecimal totalQuantity;
 
     // Quantities converted to atomic units (e.g., tablets)
     @Column(precision = 18, scale = 4)
-    private BigDecimal freeQuantityByUnits = BigDecimal.ZERO;
+    private BigDecimal freeQuantityByUnits;
     @Column(precision = 18, scale = 4)
-    private BigDecimal quantityByUnits = BigDecimal.ZERO;
+    private BigDecimal quantityByUnits;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalQuantityByUnits = BigDecimal.ZERO;
+    private BigDecimal totalQuantityByUnits;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal returnQuantity = BigDecimal.ZERO;
+    private BigDecimal returnQuantity;
     @Column(precision = 18, scale = 4)
-    private BigDecimal returnFreeQuantity = BigDecimal.ZERO;
+    private BigDecimal returnFreeQuantity;
     @Column(precision = 18, scale = 4)
-    private BigDecimal totalReturnQuantity = BigDecimal.ZERO;
+    private BigDecimal totalReturnQuantity;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal returnGrossTotal = BigDecimal.ZERO;
+    private BigDecimal returnGrossTotal;
     @Column(precision = 18, scale = 4)
-    private BigDecimal returnNetTotal = BigDecimal.ZERO;
+    private BigDecimal returnNetTotal;
 
     @Column(precision = 18, scale = 4)
-    private BigDecimal profitMargin = BigDecimal.ZERO;
+    private BigDecimal profitMargin;
 
     @Override
     public BillItemFinanceDetails clone() {
