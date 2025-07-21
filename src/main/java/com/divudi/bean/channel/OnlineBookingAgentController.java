@@ -97,6 +97,7 @@ public class OnlineBookingAgentController implements Serializable {
 
     private PaymentMethod paidToHospitalPaymentMethod;
     private Bill paidToHospitalBill;
+    private Bill paidToHospitalDirectFundBill;
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
     private OnlineBookingStatus onlineBookingStatus;
@@ -110,6 +111,19 @@ public class OnlineBookingAgentController implements Serializable {
 
     @Inject
     private DrawerController drawerController;
+
+    public Bill getPaidToHospitalDirectFundBill() {
+        if(paidToHospitalDirectFundBill == null){
+            paidToHospitalDirectFundBill = new Bill();
+            paidToHospitalDirectFundBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+            paidToHospitalDirectFundBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
+        }
+        return paidToHospitalDirectFundBill;
+    }
+
+    public void setPaidToHospitalDirectFundBill(Bill paidToHospitalDirectFundBill) {
+        this.paidToHospitalDirectFundBill = paidToHospitalDirectFundBill;
+    }
 
     public String getBillStatus() {
         return billStatus;
@@ -608,7 +622,7 @@ public class OnlineBookingAgentController implements Serializable {
 
         if (paidBill != null) {
             List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod, false);
-            drawerController.updateDrawerForIns(payments);
+//            drawerController.updateDrawerForIns(payments);
         }
 
         if (paidBill != null) {
@@ -691,8 +705,16 @@ public class OnlineBookingAgentController implements Serializable {
         bookinsToAgenHospitalPayementCancellation.remove(selected);
         prepareCancellationAgentPaidToHospitalBills();
     }
+    
+    public void settleDirectFundBill(){
+        if(paidToHospitalPaymentMethod == null){
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
+            return;
+        }
+    }
 
     public void clearPreviousValues() {
+        paidToHospitalDirectFundBill = null;
         paidToHospitalBill = null;
         paidToHospitalPaymentMethod = null;
         paidToHospitalTotal = 0;
