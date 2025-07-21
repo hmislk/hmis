@@ -116,7 +116,7 @@ public class OnlineBookingAgentController implements Serializable {
 
     public Bill getPaidToHospitalDirectFundBill() {
         if (paidToHospitalDirectFundBill == null) {
-            paidToHospitalDirectFundBill = new Bill();
+            paidToHospitalDirectFundBill = new BilledBill();
             paidToHospitalDirectFundBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
             paidToHospitalDirectFundBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
         }
@@ -782,6 +782,7 @@ public class OnlineBookingAgentController implements Serializable {
         createBillItemForPaidToHospitalBill(paidBill);
         
         printBill = paidBill;
+        
         JsfUtil.addSuccessMessage("Direct Fund is deposited successfully.");
         
         

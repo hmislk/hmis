@@ -13,7 +13,7 @@
             <ui:define name="subcontent">
                 <h:form  >
                     <h:panelGroup >
-                        <p:panel rendered="#{!agentAndCcPaymentController.printPreview}" >
+                        <p:panel rendered="#{onlineBookingAgentController.printBill eq null}" >
                             <f:facet name="header" >
                                 <div class="d-flex justify-content-between">
                                     <h:outputLabel value="Online Booking Agency Direct Funds" class="mt-2"/>
@@ -23,7 +23,7 @@
                                             value="Settle" 
                                             class="ui-button-success"
                                             icon="fa fa-check"
-                                            action="#{agentAndCcPaymentController.agencyPaymentRecieveSettleBill}" 
+                                            action="#{onlineBookingAgentController.settleDirectFundBill()}" 
                                             ajax="false"  
                                             style="width: 150px; padding: 1px;border: 1px solid ; margin: auto;" >
                                         </p:commandButton> 
@@ -40,19 +40,18 @@
                                 </div>
                             </f:facet>
 
-                            <div class="row">
+                            <div class="row my-2">
 
                                 <div class="col-md-2">
                                     <h:outputLabel value="Institution"/>
                                 </div>
                                 <div class="col-md-7">
-                                    <p:selectOneMenu class="w-100 " value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
+                                    <p:selectOneMenu class="w-100" value="#{onlineBookingAgentController.institutionForBookings}" filter="true" >
                                         <f:selectItem itemLabel="Select Institution" ></f:selectItem>
                                         <f:selectItems value="#{onlineBookingAgentController.institutionForOnlineBookingManegement}" var="ins" itemLabel="#{ins.name}" itemValue="#{ins}" ></f:selectItems>
                                         <p:ajax event="itemSelect" process="@this"/>
                                     </p:selectOneMenu>
-                                 
-                                    </p:selectOneMenu>
+                                
                                 </div>
                             </div>
 
@@ -139,7 +138,7 @@
                     </h:panelGroup>
 
 
-                    <p:panel rendered="#{agentAndCcPaymentController.printPreview}" >     
+                    <p:panel rendered="#{onlineBookingAgentController.printBill ne null}" >     
                         <f:facet name="header">
                             <div class="d-flex justify-content-between">
                                 <h:outputText value="Agency Payment Bill"/> 

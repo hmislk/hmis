@@ -88,6 +88,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
+import com.divudi.service.ChannelService;
 import com.divudi.service.PatientInvestigationService;
 
 import java.io.InputStream;
@@ -12851,6 +12852,16 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
 
         createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
+
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public void creatAgentDirectFundPaymentTable() {
+        Date startTime = new Date();
+        
+        bills = channelService.fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, null);
 
     }
 
