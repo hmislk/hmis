@@ -292,14 +292,23 @@
                             </h:outputText>
                         </p:column>
                         
-                        <p:column style="text-align: center;" width="4em">
+                        <p:column style="text-align: center;" width="5em">
                             <f:facet name="header">
                                 <h:outputText value="Cashier"/>
                             </f:facet>
-                            <h:outputText value="#{row.bill.creater.name}">
+                            <h:outputText value="#{row.bill.creater.name}&nbsp;">
                             </h:outputText>
                             <h:outputText value="OB" style="color: #003157; font-weight: bold" rendered="#{row.bill.billTypeAtomic eq 'CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT' or row.bill.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING'}">
                             </h:outputText>
+                        </p:column>
+                        
+                        <p:column style="text-align: center;" width="5em">
+                            <f:facet name="header">
+                                <h:outputText value="Payment Method"/>
+                            </f:facet>
+                            <h:outputText value="#{row.bill.paymentMethod}&nbsp;">
+                            </h:outputText>
+                            
                         </p:column>
 
                         <p:column class="text-end">
