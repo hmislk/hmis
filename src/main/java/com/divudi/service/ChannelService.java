@@ -1237,7 +1237,7 @@ public class ChannelService {
     }
 
     public List<Bill> fetchAgentDirectFundBills(SearchKeyword searchKeyword, Date fromDate, Date toDate, Institution institution) {
-        System.out.println("started");
+
         String sql = "select bill from Bill bill where "
                 + " bill.billType in :bt "
                 + " and bill.retired = false"

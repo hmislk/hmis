@@ -12859,7 +12859,6 @@ public class SearchController implements Serializable {
     private ChannelService channelService;
     
     public void creatAgentDirectFundPaymentTable() {
-        Date startTime = new Date();
         
         bills = channelService.fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, null);
 

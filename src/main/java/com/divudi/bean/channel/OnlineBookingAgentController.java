@@ -209,10 +209,6 @@ public class OnlineBookingAgentController implements Serializable {
             return true;
         }
 
-//        if (checkPaid(origianlBill)) {
-//            JsfUtil.addErrorMessage("Doctor Payment Already Paid So Cant Cancel Bill");
-//            return true;
-//        }
         if (getComment() == null || getComment().trim().equals("")) {
             JsfUtil.addErrorMessage("Please enter a comment");
             return true;

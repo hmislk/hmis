@@ -170,7 +170,7 @@ public class ChannelReportController implements Serializable {
     private List<SessionInstance> sessioninstances;
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
-    
+
     private String reportStatus;
 
     @EJB
@@ -357,17 +357,17 @@ public class ChannelReportController implements Serializable {
     public void setServiceSessions(List<ServiceSession> serviceSessions) {
         this.serviceSessions = serviceSessions;
     }
-    
-    public String navigateToIncomeForScanning(){
+
+    public String navigateToIncomeForScanning() {
         makeNull();
         return "/channel/income_for_scanning_bookings?faces-redirect=true";
     }
-    
-    public String navigateToIncomeForAgentBookings(){
+
+    public String navigateToIncomeForAgentBookings() {
         makeNull();
         return "/channel/income_with_agent_bookings?faces-redirect=true";
     }
-    
+
     private List<Payment> paymentsFromCardAppoinments;
 
     public List<Payment> getPaymentsFromCardAppoinments() {
@@ -378,47 +378,52 @@ public class ChannelReportController implements Serializable {
         this.paymentsFromCardAppoinments = paymentsFromCardAppoinments;
     }
 
-    public List<Institution> getInstitutionForChannelReports(){
-        List<Institution> list =  institutionController.getItems();
-        
+    public List<Institution> getInstitutionForChannelReports() {
+        List<Institution> list = institutionController.getItems();
+
         list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
-        
+
         return list;
     }
-    
-    public void getPaymentsForChannelCardAppoinments(){
-        
-        if(institution == null){
+
+    public void getPaymentsForChannelCardAppoinments() {
+
+        if (institution == null) {
             JsfUtil.addErrorMessage("Please Select The Institution");
             return;
         }
-        
-        paymentsFromCardAppoinments =  channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
+
+        paymentsFromCardAppoinments = channelService.fetchCardPaymentsFromChannelIncome(fromDate, toDate, institution, reportStatus);
     }
-    
-    public double calculateTotalsFromPayment(List<Payment> payments, String type){
-        if(payments == null || payments.isEmpty()){
+
+    public double calculateTotalsFromPayment(List<Payment> payments, String type) {
+        if (payments == null || payments.isEmpty()) {
             return 0;
         }
+
+        if (type == null || type.trim().isEmpty()) {
+            return 0;
+        }
+
         double total = 0;
         switch (type) {
             case "TotalFee":
-                for(Payment p : payments){
-                    if(!p.getBill().isCancelled()){
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
                         total += p.getBill().getTotal();
                     }
                 }
                 return total;
-            case "HosFee": 
-                for(Payment p : payments){
-                    if(!p.getBill().isCancelled()){
+            case "HosFee":
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
                         total += p.getBill().getHospitalFee();
                     }
                 }
                 return total;
             case "StaffFee":
-                for(Payment p : payments){
-                    if(!p.getBill().isCancelled()){
+                for (Payment p : payments) {
+                    if (!p.getBill().isCancelled()) {
                         total += p.getBill().getStaffFee();
                     }
                 }
@@ -430,23 +435,23 @@ public class ChannelReportController implements Serializable {
 
     public void fetchScanningSessionForIncome() {
 //        List<BillSession> bsList = channelService.fetchScanningSessionBillSessions(fromDate, toDate, institution);
-        if(institution == null){
+        if (institution == null) {
             JsfUtil.addErrorMessage("Please Select The Institution");
             return;
         }
-        
+
         ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Scanning", reportStatus);
         dataBundle = bundle;
 
     }
 
     public void fetchAgentSessionIncome() {
-        
-        if(institution == null){
+
+        if (institution == null) {
             JsfUtil.addErrorMessage("Please Select The Institution");
             return;
         }
-        
+
         ReportTemplateRowBundle bundle = channelService.generateChannelIncomeSummeryForSessions(fromDate, toDate, institution, null, null, "Agent", reportStatus);
         dataBundle = bundle;
     }
