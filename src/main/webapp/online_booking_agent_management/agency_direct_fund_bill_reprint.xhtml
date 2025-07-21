@@ -8,7 +8,7 @@
       xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
 
     <h:body>
-        <ui:composition template="/agency_management/index.xhtml">
+        <ui:composition template="/online_booking_agent_management/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
                     <p:panel >
@@ -47,13 +47,13 @@
                                     <p:panel header="Bill Detail">
                                         <p:panelGrid columns="2">
                                             <h:outputLabel value="Agency Centre:" ></h:outputLabel>
-                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.fromInstitution.name}" rendered="#{agentPaymentReceiveSearchController.bill.fromInstitution ne null}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.fromInstitution.name}" rendered="#{onlineBookingAgentController.printBill.fromInstitution ne null}" ></h:outputLabel>                                        
                                             <h:outputLabel value="Bill No :" ></h:outputLabel>
-                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.deptId}" ></h:outputLabel>
                                             <h:outputLabel value="Payment Type : " ></h:outputLabel>
-                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.paymentMethod}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.paymentMethod}" ></h:outputLabel>                                        
                                             <h:outputLabel value="Paid Total :" ></h:outputLabel>
-                                            <h:outputLabel value="#{agentPaymentReceiveSearchController.bill.netTotal}" ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.netTotal}" ></h:outputLabel>
                                         </p:panelGrid>
                                     </p:panel>
                                 </p:panelGrid>

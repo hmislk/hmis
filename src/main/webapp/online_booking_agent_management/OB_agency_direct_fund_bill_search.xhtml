@@ -59,18 +59,17 @@
                             <div class="col-md-10">
                                 <p:dataTable id="tblBills" value="#{searchController.bills}" var="bill"  >
                                     <p:column headerText="Bill No" width="16em">
-                                        <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" value="#{bill.deptId}">
+                                        <h:commandLink action="/online_booking_agent_management/agency_direct_fund_bill_reprint?faces-redirect=true" value="#{bill.deptId}" style="font-weight: bold">
                                             <h:outputLabel  ></h:outputLabel>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
+                                            <f:setPropertyActionListener value="#{bill}" target="#{onlineBookingAgentController.printBill}"/>
                                         </h:commandLink>
                                     </p:column>                                            
                                     <p:column headerText="Billed at"  >
-                                        <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" >
-                                            <h:outputLabel value="#{bill.createdAt}" >
-                                                <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                        </h:commandLink>
+
+                                        <h:outputLabel value="#{bill.createdAt}" >
+                                            <f:convertDateTime  timeZone="Asia/Colombo" pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                                        </h:outputLabel>
+                                        
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -81,11 +80,10 @@
 
                                     </p:column>  
                                     <p:column headerText="Billed by" >
-                                        <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" >
-                                            <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
-                                            </h:outputLabel>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                        </h:commandLink>
+
+                                        <h:outputLabel value="#{bill.creater.webUserPerson.name}" >                                      
+                                        </h:outputLabel>
+                                        
                                         <br/>
                                         <h:panelGroup rendered="#{bill.cancelled}" >
                                             <h:outputLabel style="color: red;" value="Cancelled at " />
@@ -94,25 +92,17 @@
                                         </h:panelGroup>                               
                                     </p:column>    
                                     <p:column headerText="Agency Code" >
-                                        <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" >
-                                            <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                        </h:commandLink>
+
+                                        <h:outputLabel value="#{bill.fromInstitution.institutionCode}" ></h:outputLabel>
+                                       
                                     </p:column>  
 
                                     <p:column headerText="Agency Name" >
-                                        <h:commandLink action="/agency_management/agency_deposit_bill_reprint?faces-redirect=true" >
-                                            <h:outputLabel value="#{bill.fromInstitution.name}" ></h:outputLabel>
-                                            <f:setPropertyActionListener value="#{bill}" target="#{agentPaymentReceiveSearchController.bill}"/>
-                                        </h:commandLink>
+                                        <p:tag value="#{bill.fromInstitution.name}" severity="warning"></p:tag>
                                     </p:column>  
 
                                     <p:column headerText="Net Value" styleClass="averageNumericColumn">
-                                        <p:commandButton oncomplete="PF('payementSettle').show()"
-                                                         value="#{bill.netTotal}"
-                                                         >
-                                            
-                                        </p:commandButton>
+                                        <h:outputLabel value="#{bill.netTotal}" style="font-weight: bold"></h:outputLabel>
                                     </p:column>                          
                                     <p:column headerText="Comments" >
                                         <h:outputLabel rendered="#{bill.refundedBill eq null and bill.cancelledBill eq null}" value="#{bill.comments}" >
@@ -123,8 +113,8 @@
                                         </h:outputLabel>
                                     </p:column>
                                 </p:dataTable>
-                                
-                                 
+
+
                             </div>
                         </div>
                     </p:panel>
