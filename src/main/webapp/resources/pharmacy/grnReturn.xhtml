@@ -97,12 +97,13 @@
             </div>
 
             <div class="preparedBy">
-                <h:outputLabel value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
-
+                <h:outputLabel style="margin-right: 30%; margin-bottom: 2%" value="Prepared By : #{cc.attrs.bill.creater.webUserPerson.nameWithTitle}"/>
+                <h:outputLabel value="Prepared Date/Time : #{cc.attrs.bill.approveAt}"/>
             </div>
 
             <div >
                 <h:outputLabel value="Authorized By : "/>
+                <h:outputLabel value="Authorized Date/Time : "/>
             </div>
 
         </div>
