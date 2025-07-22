@@ -42,8 +42,8 @@ jobs:
       - name: Run Docker Container on Server
         env:
           SSH_KEY: ${{ secrets.QA_DOCKER_SSH_PRIVATE_KEY }}
-          SERVER_IP: ${{ secrets.QA_DOCKER_SERVER_IP }}
           SERVER_USER: ${{ secrets.QA_DOCKER_SERVER_USER }}
+          SERVER_IP: ${{ secrets.QA_DOCKER_SERVER_IP }}
           QA1_DB_USER: ${{ secrets.QA1_DOCKER_DB_USER }}
           QA1_DB_PASS: ${{ secrets.QA1_DOCKER_DB_PASS }}
           QA1_DB_HOST: ${{ secrets.QA1_DOCKER_DB_HOST }}
@@ -51,16 +51,16 @@ jobs:
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem $SERVER_USER@$SERVER_IP <<EOF
-            docker load -i /home/appuser/hims-qa1.tar
-            docker stop qa1-container || true
-            docker rm qa1-container || true
-            docker run -d --name qa1-container -p 8081:8080 \
-              -e CONTEXT_PATH=qa1 \
-              -e MYSQL_USER='"'"$QA1_DB_USER"'"' \
-              -e MYSQL_PASS='"'"$QA1_DB_PASS"'"' \
-              -e MYSQL_HOST='"'"$QA1_DB_HOST"'"' \
-              -e MYSQL_DB='"'"$QA1_DB_NAME"'"' \
-              hims-qa1:${{ github.sha }}
+          ssh -o StrictHostKeyChecking=no -i key.pem $SERVER_USER@$SERVER_IP '
+          docker load -i /home/appuser/hims-qa1.tar
+          docker stop qa1-container || true
+          docker rm qa1-container || true
+          docker run -d --name qa1-container -p 8081:8080 \
+          -e CONTEXT_PATH=qa1 \
+          -e MYSQL_USER='"'"$QA1_DB_USER"'"' \
+          -e MYSQL_PASS='"'"$QA1_DB_PASS"'"' \
+          -e MYSQL_HOST='"'"$QA1_DB_HOST"'"' \
+          -e MYSQL_DB='"'"$QA1_DB_NAME"'"' \
+          hims-qa1:${{ github.sha }}
           '
           rm key.pem
