@@ -736,6 +736,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
 
+    
+
     public void calculateAllRates() {
         for (BillItem tbi : getPreBill().getBillItems()) {
             calculateRates(tbi);
@@ -1715,6 +1717,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         fromOpdEncounter = false;
         opdEncounterComments = null;
         patientSearchTab = 0;
+        cashPaid=0.0;
         errorMessage = "";
         comment = null;
         token = null;
@@ -1729,9 +1732,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         stock = null;
         editingQty = null;
         errorMessage = "";
-        // paymentMethod = PaymentMethod.Cash; // Never do this. It shold be done in clear bill item
         paymentMethodData = null;
-        setCashPaid(0.0);
+        selectedStockDto=null;
         allergyListOfPatient = null;
     }
 
