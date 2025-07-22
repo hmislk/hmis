@@ -548,7 +548,6 @@ public class TransferRequestController implements Serializable {
         if (errorsPresent()) {
             return;
         }
-        System.out.println("1 = " + 1);
         saveTransferRequestPreBillAndBillItems();
         getTransferRequestBillPre().setEditedAt(new Date());
         getTransferRequestBillPre().setEditor(sessionController.getLoggedUser());
