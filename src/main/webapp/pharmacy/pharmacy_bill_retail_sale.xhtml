@@ -743,7 +743,7 @@
 
                                                                                     value="#{pharmacySaleController.patient.person.ageYearsComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
+    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -752,7 +752,7 @@
                                                                                     autocomplete="off" id="month" placeholder="Months"
                                                                                     value="#{pharmacySaleController.patient.person.ageMonthsComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
+    <f:ajax event="keyup" execute="@this"  render="dpDob"  listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -761,7 +761,7 @@
                                                                                     autocomplete="off" id="day" placeholder="Days"
                                                                                     value="#{pharmacySaleController.patient.person.ageDaysComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
+    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-6">

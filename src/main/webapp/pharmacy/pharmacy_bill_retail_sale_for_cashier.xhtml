@@ -348,7 +348,8 @@
                                 <div class="col-md-5">
                                     <common:patient_details
                                         editable="true"
-                                        controller="#{pharmacySaleController}">
+                                        controller="#{pharmacySaleController}"
+                                        ageListener="#{pharmacySaleController.calculateDobFromAge}">
                                     </common:patient_details>
 
                                     <p:panel class="m-1 w-100">
