@@ -101,11 +101,11 @@
                                                     class="w-100"
                                                     forceSelection="true"
                                                     converter="stockDtoConverter"
-                                                    value="#{pharmacyFastRetailSaleController.selectedStockId}"
+                                                    value="#{pharmacyFastRetailSaleController.selectedStockDto}"
                                                     completeMethod="#{pharmacyFastRetailSaleController.completeStockDtos}"
                                                     var="i"
                                                     itemLabel="#{i.itemName}"
-                                                    itemValue="#{i.id}">
+                                                    itemValue="#{i}">
                                                     <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
                                                             &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />

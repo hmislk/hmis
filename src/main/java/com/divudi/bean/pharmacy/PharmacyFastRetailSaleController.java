@@ -218,8 +218,13 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     /**
      * Lightweight stock DTO used for autocompletes.
      */
-    private StockDTO stockDto;
+    private StockDTO selectedStockDto;
     private Long selectedStockId;
+    /**
+     * Cached results from the most recent stock autocomplete query. Used by
+     * {@link StockDtoConverter} to resolve objects on postback.
+     */
+    private List<StockDTO> cachedStockDtos;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -627,7 +632,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
 
     public List<StockDTO> completeStockDtos(String qry) {
-        return stockSearchService.findStockDtos(qry, sessionController.getLoggedUser().getDepartment());
+        cachedStockDtos = stockSearchService.findStockDtos(qry, sessionController.getLoggedUser().getDepartment());
+        return cachedStockDtos;
     }
 
 
@@ -2220,12 +2226,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.billSettlingStarted = billSettlingStarted;
     }
 
-    public StockDTO getStockDto() {
-        return stockDto;
+    public StockDTO getSelectedStockDto() {
+        return selectedStockDto;
     }
 
-    public void setStockDto(StockDTO stockDto) {
-        this.stockDto = stockDto;
+    public void setSelectedStockDto(StockDTO stockDto) {
+        this.selectedStockDto = stockDto;
         // Also set the related properties for consistency
         if (stockDto != null && stockDto.getId() != null) {
             this.selectedStockId = stockDto.getId();
@@ -2237,6 +2243,10 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
     }
 
+    public List<StockDTO> getCachedStockDtos() {
+        return cachedStockDtos;
+    }
+
     public Long getSelectedStockId() {
         return selectedStockId;
     }
@@ -2246,9 +2256,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         // When the ID is set, load the corresponding stock
         if (selectedStockId != null) {
             stock = getStockFacade().find(selectedStockId);
-            // Also set stockDto for compatibility
+            // Also set selectedStockDto for compatibility
             if (stock != null && stock.getItemBatch() != null && stock.getItemBatch().getItem() != null) {
-                stockDto = new StockDTO(stock.getId(),
+                selectedStockDto = new StockDTO(stock.getId(),
                         stock.getItemBatch().getItem().getName(),
                         stock.getItemBatch().getItem().getCode(),
                         stock.getItemBatch().getItem().getVmp() != null ? stock.getItemBatch().getItem().getVmp().getName() : "",
@@ -2307,7 +2317,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     @FacesConverter("stockDtoConverter")
-    public static class StockDtoConverterSimple implements Converter {
+    public static class StockDtoConverter implements Converter {
 
         @Override
         public Object getAsObject(FacesContext facesContext, UIComponent component, String value) {
@@ -2316,7 +2326,15 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
             try {
                 Long id = Long.valueOf(value);
-                // Just create a minimal StockDTO with the ID - the full object will be loaded by the setter
+                PharmacyFastRetailSaleController controller = (PharmacyFastRetailSaleController) facesContext.getApplication().getELResolver()
+                        .getValue(facesContext.getELContext(), null, "pharmacyFastRetailSaleController");
+                if (controller != null && controller.getCachedStockDtos() != null) {
+                    for (StockDTO dto : controller.getCachedStockDtos()) {
+                        if (dto != null && id.equals(dto.getId())) {
+                            return dto;
+                        }
+                    }
+                }
                 StockDTO dto = new StockDTO();
                 dto.setId(id);
                 return dto;
