@@ -1,13 +1,15 @@
 FROM payara/server-full:5.2022.5
 
 ENV JVM_ARGS="-Xms6g -Xmx6g"
+ENV ADMIN_PASSWORD=""
+ENV CONTEXT_PATH=""
 
-# Copy WAR file to a neutral location (not auto-deployed)
+# Copy WAR to deploy later
 COPY target/*.war /opt/payara/app.war
 
-# Copy the entrypoint script
-COPY entrypoint.sh /opt/payara/entrypoint.sh
-RUN chmod +x /opt/payara/entrypoint.sh
+# Use a writable location for the script
+COPY entrypoint.sh /opt/scripts/entrypoint.sh
+RUN chmod +x /opt/scripts/entrypoint.sh
 
-# Use the script as the container entrypoint
-ENTRYPOINT ["/opt/payara/entrypoint.sh"]
+# Use custom entrypoint
+CMD ["/opt/scripts/entrypoint.sh"]

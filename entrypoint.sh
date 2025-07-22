@@ -1,23 +1,17 @@
 #!/bin/bash
 
-set -e
+# Create a temp password file for asadmin
+echo "AS_ADMIN_PASSWORD=$ADMIN_PASSWORD" > /tmp/password.txt
 
-echo "Starting Payara domain..."
+# Start Payara domain
 /opt/payara/appserver/bin/asadmin start-domain
 
-echo "Waiting for Payara to fully start..."
-sleep 20
+# Wait for it to come up
+echo "Waiting for domain startup..." && sleep 20
 
-echo "Creating temporary password file..."
-PASSWORD_FILE=/opt/payara/passwordfile
-echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" > $PASSWORD_FILE
+# Deploy WAR
+/opt/payara/appserver/bin/asadmin --user admin --passwordfile /tmp/password.txt \
+  deploy --contextroot=${CONTEXT_PATH} --force=true /opt/payara/app.war
 
-echo "Changing admin password and enabling secure admin..."
-/opt/payara/appserver/bin/asadmin change-admin-password --user admin --passwordfile=$PASSWORD_FILE || true
-/opt/payara/appserver/bin/asadmin enable-secure-admin --user admin --passwordfile=$PASSWORD_FILE || true
-
-echo "Deploying application to context path: ${CONTEXT_PATH}"
-/opt/payara/appserver/bin/asadmin deploy --contextroot=${CONTEXT_PATH} --force=true --user admin --passwordfile=$PASSWORD_FILE /opt/payara/app.war
-
-echo "Tailing server log..."
+# Follow server log
 tail -f /opt/payara/appserver/glassfish/domains/domain1/logs/server.log
