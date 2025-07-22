@@ -230,14 +230,14 @@
                                     <f:setPropertyActionListener value="#{f.bill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-                            <p:column headerText="Refrance Doument No(Issue Doc No)">
+                            <p:column headerText="Reference Doument No(Issue Doc No)">
                                 <p:commandLink 
-                                    value="#{f.bill.referenceBill.deptId}"
+                                    value="#{empty f.bill.backwardReferenceBill ? f.bill.referenceBill.deptId : f.bill.backwardReferenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
                                     action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
                                     ajax="false">
-                                    <f:setPropertyActionListener value="#{f.bill.referenceBill}" target="#{billSearch.bill}" />
+                                    <f:setPropertyActionListener value="#{empty f.bill.backwardReferenceBill ? f.bill.referenceBill : f.bill.backwardReferenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Issue Department">

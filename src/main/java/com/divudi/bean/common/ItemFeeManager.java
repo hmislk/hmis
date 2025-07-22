@@ -1016,15 +1016,9 @@ public class ItemFeeManager implements Serializable {
 //                return;
 //            }
 //        }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Fees with a value of zero are allowed. Previous versions prevented
+        // saving such fees, but this validation has been removed to support
+        // zero-priced services.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         itemFeeFacade.create(itemFee);
@@ -1068,15 +1062,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Zero value fees are valid for collecting centres as well. Earlier
+        // the system rejected such entries. This check has been removed.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(collectingCentre);
@@ -1118,15 +1105,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Validation no longer rejects zero value fees for site specific
+        // settings.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(forSite);
@@ -1163,15 +1143,8 @@ public class ItemFeeManager implements Serializable {
             return;
         }
 
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Department level fees can also be zero. Previous checks preventing
+        // saving when the value was 0 have been removed.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForDepartment(forDepartment);
@@ -1214,15 +1187,8 @@ public class ItemFeeManager implements Serializable {
                 return;
             }
         }
-        if (itemFee.getFee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Local Fee Value");
-            return;
-        }
-
-        if (itemFee.getFfee() == 0.00) {
-            JsfUtil.addErrorMessage("Please Enter Foreign Fee Value");
-            return;
-        }
+        // Fee list entries may legitimately be zero. Validation allowing such
+        // values ensures the dialog can save fees without charges.
         getItemFee().setCreatedAt(new Date());
         getItemFee().setCreater(sessionController.getLoggedUser());
         getItemFee().setForInstitution(null);
