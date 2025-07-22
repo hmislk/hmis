@@ -7,9 +7,9 @@ ENV CONTEXT_PATH=""
 # Copy WAR to deploy later
 COPY target/*.war /opt/payara/app.war
 
-# Use a writable location for the script
-COPY entrypoint.sh /opt/scripts/entrypoint.sh
-RUN chmod +x /opt/scripts/entrypoint.sh
+# Use a writable directory like /home/scripts
+COPY entrypoint.sh /home/scripts/entrypoint.sh
+RUN chmod +x /home/scripts/entrypoint.sh
 
-# Use custom entrypoint
-CMD ["/opt/scripts/entrypoint.sh"]
+# Use the custom script to start Payara and deploy
+CMD ["/home/scripts/entrypoint.sh"]
