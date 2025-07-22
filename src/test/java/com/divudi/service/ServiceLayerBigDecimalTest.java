@@ -45,7 +45,7 @@ public class ServiceLayerBigDecimalTest {
             BigDecimal total = BigDecimalUtil.multiply(quantity, rate);
             
             // Result should be zero when quantity is null
-            assertEquals(BigDecimal.ZERO, total);
+            assertEquals(0, BigDecimal.ZERO.compareTo(total));
         }
         
         @Test
@@ -128,7 +128,7 @@ public class ServiceLayerBigDecimalTest {
                 grossTotal,
                 discountRate.divide(BigDecimal.valueOf(100))
             );
-            assertEquals(BigDecimal.ZERO, discountAmount);
+            assertEquals(0, BigDecimal.ZERO.compareTo(discountAmount));
             
             // Calculate tax (should work with valid rate)
             BigDecimal taxRate = BigDecimalUtil.valueOrZero(testBillItemFinanceDetails.getBillTaxRate());
@@ -153,14 +153,14 @@ public class ServiceLayerBigDecimalTest {
                 testBillItemFinanceDetails.getQuantity(),
                 testBillItemFinanceDetails.getLineGrossRate()
             );
-            assertEquals(new BigDecimal("200.00"), purchaseCost);
+            assertEquals(0, new BigDecimal("200.00").compareTo(purchaseCost));
             
             // Retail value calculation (should be zero when rate is null)
             BigDecimal retailValue = BigDecimalUtil.multiply(
                 testBillItemFinanceDetails.getQuantity(),
                 BigDecimalUtil.valueOrZero(testBillItemFinanceDetails.getRetailSaleRate())
             );
-            assertEquals(BigDecimal.ZERO, retailValue);
+            assertEquals(0, BigDecimal.ZERO.compareTo(retailValue));
             
             // Wholesale value calculation
             BigDecimal wholesaleValue = BigDecimalUtil.multiply(
@@ -277,7 +277,7 @@ public class ServiceLayerBigDecimalTest {
                 item.getNetTotal(),
                 BigDecimalUtil.valueOrZero(item.getReturnNetTotal())
             );
-            assertEquals(new BigDecimal("80.00"), remainingTotal);
+            assertEquals(0, new BigDecimal("80.00").compareTo(remainingTotal));
         }
     }
     

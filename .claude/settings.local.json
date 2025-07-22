@@ -21,7 +21,15 @@
       "Bash(git push:*)",
       "Bash(find:*)",
       "Bash(mvn compile:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(mvn test:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(dir)",
+      "Bash(where maven)",
+      "Bash(where mvn)",
+      "Bash(java:*)",
+      "Bash(del:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }

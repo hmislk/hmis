@@ -78,11 +78,11 @@ public class BigDecimalIntegrationTest {
         
         // Calculate gross total: quantity * rate
         BigDecimal grossTotal = BigDecimalUtil.multiply(quantity, rate);
-        assertEquals(new BigDecimal("255.00"), grossTotal);
+        assertEquals(0, new BigDecimal("255.00").compareTo(grossTotal));
         
         // Calculate discount amount (should be zero since discount rate is null)
         BigDecimal discountAmount = BigDecimalUtil.multiply(grossTotal, discount.divide(BigDecimal.valueOf(100)));
-        assertEquals(BigDecimal.ZERO, discountAmount);
+        assertEquals(0, BigDecimal.ZERO.compareTo(discountAmount));
         
         // Calculate net total after discount
         BigDecimal netTotal = BigDecimalUtil.subtract(grossTotal, discountAmount);
@@ -184,14 +184,14 @@ public class BigDecimalIntegrationTest {
             billItemFinanceDetails.getQuantity(),
             billItemFinanceDetails.getLineGrossRate()
         );
-        assertEquals(new BigDecimal("315.00"), grossTotal); // 20 * 15.75
+        assertEquals(0, new BigDecimal("315.00").compareTo(grossTotal)); // 20 * 15.75
         
         // Step 4: Apply discount
         BigDecimal discountAmount = BigDecimalUtil.multiply(
             grossTotal,
             billItemFinanceDetails.getLineDiscountRate().divide(BigDecimal.valueOf(100))
         );
-        assertEquals(new BigDecimal("15.75"), discountAmount); // 315 * 0.05
+        assertEquals(0, new BigDecimal("15.75").compareTo(discountAmount)); // 315 * 0.05
         
         BigDecimal netTotal = BigDecimalUtil.subtract(grossTotal, discountAmount);
         assertEquals(new BigDecimal("299.25"), netTotal); // 315 - 15.75

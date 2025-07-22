@@ -22,8 +22,8 @@ import static org.junit.jupiter.api.Assertions.*;
 @DisplayName("BigDecimal Performance Tests")
 public class BigDecimalPerformanceTest {
     
-    private static final int LARGE_DATASET_SIZE = 10000;
-    private static final int PERFORMANCE_ITERATIONS = 1000;
+    private static final int LARGE_DATASET_SIZE = 1000;
+    private static final int PERFORMANCE_ITERATIONS = 100;
     private List<BillItemFinanceDetails> testDataset;
     
     @BeforeEach

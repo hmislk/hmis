@@ -132,7 +132,7 @@ public class BigDecimalRegressionTest {
             BigDecimal grossTotal = BigDecimalUtil.multiply(
                 item.getQuantity(), item.getLineGrossRate()
             );
-            assertEquals(new BigDecimal("255.00"), grossTotal);
+            assertEquals(0, new BigDecimal("255.00").compareTo(grossTotal));
             
             BigDecimal discountAmount = BigDecimalUtil.multiply(
                 grossTotal, 
@@ -211,8 +211,8 @@ public class BigDecimalRegressionTest {
                     .divide(BigDecimal.valueOf(100), BigDecimal.ROUND_HALF_EVEN)
             );
             
-            assertEquals(BigDecimal.ZERO, discountAmount);
-            assertEquals(BigDecimal.ZERO, taxAmount);
+            assertEquals(0, BigDecimal.ZERO.compareTo(discountAmount));
+            assertEquals(0, BigDecimal.ZERO.compareTo(taxAmount));
         }
     }
     
@@ -321,7 +321,7 @@ public class BigDecimalRegressionTest {
         // Calculations using unitsPerPack should work reliably
         BigDecimal packQuantity = new BigDecimal("5.00");
         BigDecimal totalUnits = BigDecimalUtil.multiply(packQuantity, item.getUnitsPerPack());
-        assertEquals(new BigDecimal("60.00"), totalUnits);
+        assertEquals(0, new BigDecimal("60.00").compareTo(totalUnits));
     }
     
     @Test
