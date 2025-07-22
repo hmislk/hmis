@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          scp -i key.pem hims-qa1.tar $SERVER_USER@$SERVER_IP:/home/appuser/
+          scp -o StrictHostKeyChecking=no -i key.pem hims-qa1.tar $SERVER:/home/appuser/
           rm key.pem
 
       - name: Run Docker Container on Server
@@ -51,7 +51,7 @@ jobs:
         run: |
           echo "$SSH_KEY" > key.pem
           chmod 600 key.pem
-          ssh -o StrictHostKeyChecking=no -i key.pem $SERVER_USER@$SERVER_IP '
+          ssh -o StrictHostKeyChecking=no -i key.pem $SERVER <<EOF
             docker load -i /home/appuser/hims-qa1.tar
             docker stop qa1-container || true
             docker rm qa1-container || true
