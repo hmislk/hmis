@@ -477,6 +477,7 @@ public enum Privileges {
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
     PharmacySale("Pharmacy Sale"),
+    PharmacySaleQuick("Pharmacy Sale Quick"),
     PharmacySaleForCashier("Pharmacy Sale for Cashier"),
     PharmacySaleWithOutStock("Pharmacy Sale without Stock"),
     PharmacySearchSaleBill("Pharmacy Search Sale Bill"),
@@ -818,6 +819,7 @@ public enum Privileges {
             // Retail Transactions
             case PharmacyRetailTransaction:
             case PharmacySale:
+            case PharmacySaleQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
