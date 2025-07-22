@@ -442,4 +442,21 @@
         </repository>
         
     </repositories>
+
+    <profiles>
+        <profile>
+            <id>docker</id>
+            <build>
+                <resources>
+                    <resource>
+                        <directory>src/main/webapp/WEB-INF</directory>
+                        <includes>
+                            <include>glassfish-resources.xml</include>
+                        </includes>
+                        <targetPath>WEB-INF</targetPath>
+                    </resource>
+                </resources>
+            </build>
+        </profile>
+    </profiles>
 </project>
