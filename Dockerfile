@@ -4,12 +4,11 @@ ENV JVM_ARGS="-Xms6g -Xmx6g"
 ENV ADMIN_PASSWORD=""
 ENV CONTEXT_PATH=""
 
-# Copy WAR to deploy later
+# Copy WAR file
 COPY target/*.war /opt/payara/app.war
 
-# Use a writable directory like /home/scripts
-COPY entrypoint.sh /home/scripts/entrypoint.sh
-RUN chmod +x /home/scripts/entrypoint.sh
+# Copy entrypoint script (already executable from host)
+COPY entrypoint.sh /opt/scripts/entrypoint.sh
 
-# Use the custom script to start Payara and deploy
-CMD ["/home/scripts/entrypoint.sh"]
+# Use entrypoint
+ENTRYPOINT ["/opt/scripts/entrypoint.sh"]
