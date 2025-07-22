@@ -60,6 +60,7 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.entity.pharmacy.UserStock;
 import com.divudi.core.entity.pharmacy.UserStockContainer;
 import com.divudi.core.facade.BillFacade;
@@ -212,6 +213,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     Double qty;
     Integer intQty;
     Stock stock;
+    
+    /**
+     * Lightweight stock DTO used for autocompletes.
+     */
+    private StockDTO stockDto;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -669,9 +675,81 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         return getStockFacade().findByJpql(sql.toString(), parameters, 20);
     }
 
+    public List<StockDTO> completeStockDtos(String qry) {
+        if (qry == null || qry.trim().isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        qry = qry.replaceAll("[\n\r]", "").trim();
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
+        parameters.put("stockMin", 0.0);
+        parameters.put("query", "%" + qry + "%");
+
+        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by item code", true);
+        boolean searchByBarcode = qry.length() > 6
+                ? configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", true)
+                : configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by barcode", false);
+        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
+                "Enable search medicines by generic name(VMP)", false);
+
+        StringBuilder sql = new StringBuilder("SELECT new com.divudi.core.data.dto.StockDTO(")
+                .append("s.id, ")
+                .append("s.itemBatch.item.name, ")
+                .append("s.itemBatch.item.code, ")
+                .append("s.itemBatch.item.vmp.name, ")
+                .append("s.itemBatch.retailsaleRate, ")
+                .append("s.stock, ")
+                .append("s.itemBatch.dateOfExpire) ")
+                .append("FROM Stock s ")
+                .append("WHERE s.stock > :stockMin ")
+                .append("AND s.department = :department ")
+                .append("AND (");
+
+        sql.append("s.itemBatch.item.name LIKE :query ");
+
+        if (searchByItemCode) {
+            sql.append("OR s.itemBatch.item.code LIKE :query ");
+        }
+
+        if (searchByBarcode) {
+            sql.append("OR s.itemBatch.item.barcode = :query ");
+        }
+
+        if (searchByGeneric) {
+            sql.append("OR s.itemBatch.item.vmp.vtm.name LIKE :query ");
+        }
+
+        sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
+
+        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, javax.persistence.TemporalType.TIMESTAMP, 20);
+    }
+
 
     public void handleSelect(SelectEvent event) {
+        if (stockDto == null || stockDto.getId() == null) {
+            return;
+        }
+        stock = getStockFacade().find(stockDto.getId());
+        if (stock == null) {
+            return;
+        }
         handleSelectAction();
+    }
+
+    public void handleSelectAction() {
+        if (stock == null) {
+            return;
+        }
+        if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
+            return;
+        }
+        getBillItem().getPharmaceuticalBillItem().setStock(stock);
+        calculateRates(billItem);
+        pharmacyService.addBillItemInstructions(billItem);
     }
 
     //    public void calculateRates(BillItem bi) {
@@ -2772,6 +2850,14 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+
+    public StockDTO getStockDto() {
+        return stockDto;
+    }
+
+    public void setStockDto(StockDTO stockDto) {
+        this.stockDto = stockDto;
     }
 
 }
