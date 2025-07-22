@@ -88,6 +88,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
+import com.divudi.service.ChannelService;
 import com.divudi.service.PatientInvestigationService;
 
 import java.io.InputStream;
@@ -8719,6 +8720,8 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
@@ -12849,6 +12852,15 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
 
         createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
+
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public void creatAgentDirectFundPaymentTable() {
+        
+        bills = channelService.fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, null);
 
     }
 

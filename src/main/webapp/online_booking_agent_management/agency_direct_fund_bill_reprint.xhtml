@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:bi="http://xmlns.jcp.org/jsf/composite/bill">
+
+    <h:body>
+        <ui:composition template="/online_booking_agent_management/index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel >
+
+                        <f:facet name="header" >
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h:outputLabel value="Reprint" class="mr-5"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton class="ui-button-info mx-2"
+                                                     ajax="false"
+                                                     value="Print"
+                                                     icon="fas fa-print">
+                                        <p:printer target="print" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="my-1 ml-5" 
+                                        ajax="true" 
+                                        styleClass="ui-button-danger"
+                                        value="To Cancel"
+                                        oncomplete="PF('cancelPayementSettle').show()"
+                                        process="@this"
+                                        update="billCancelDlg"
+                                        disabled="#{onlineBookingAgentController.printBill.cancelled}" 
+                                        icon="fa fa-times" >
+                                    </p:commandButton>
+                                </div>
+                            </div>
+
+                            <p:spacer width="20" ></p:spacer>
+
+                        </f:facet>
+                        
+                        <p:dialog
+                            widgetVar="cancelPayementSettle" 
+                            modal="true" 
+                            closable="true"
+                            id="billCancelDlg"
+                            resizable="false" 
+                            draggable="false" 
+                            height="400"
+                            width="800"
+                            >
+                            <p:panel  >
+                                <f:facet name="header" >
+                                    <p:outputLabel value="Cancellation" ></p:outputLabel>
+                                </f:facet>
+                                <p:panelGrid columns="2" >
+                                    <p:outputLabel value="Cancel Payment Method" ></p:outputLabel>
+                                    <p:selectOneMenu   id="cmbPs" value="#{onlineBookingAgentController.paidToHospitalPaymentMethod}" 
+                                                       class="w-100"
+                                                       required="true"  >
+                                        <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                    </p:selectOneMenu>
+                                    <p:outputLabel value="Comments" ></p:outputLabel>
+                                    <p:inputTextarea class="w-100" value="#{onlineBookingAgentController.comment}"/>  
+                                    <p:spacer ></p:spacer>
+                                    
+                                    <p:commandButton
+                                        styleClass="w-100 ui-button-warning"
+                                        ajax="false" value="Cancel Bill" action="#{onlineBookingAgentController.cancelAgentDirectFundBill()}"
+                                        onclick="if (!confirm('Are you sure you want to Cancel This Bill ?'))
+                                                    return false;"/>
+                                </p:panelGrid>
+                            </p:panel>
+                        </p:dialog>
+
+                        <div class="row">
+                            <div class="col-md-4">
+                                <p:panelGrid columns="1" style="width: 100%;">
+                                    <p:panel header="Bill Detail">
+                                        <p:panelGrid columns="2">
+                                            <h:outputLabel value="Agency Centre:" ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.fromInstitution.name}" rendered="#{onlineBookingAgentController.printBill.fromInstitution ne null}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="Bill No :" ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.deptId}" ></h:outputLabel>
+                                            <h:outputLabel value="Payment Type : " ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.paymentMethod}" ></h:outputLabel>                                        
+                                            <h:outputLabel value="Paid Total :" ></h:outputLabel>
+                                            <h:outputLabel value="#{onlineBookingAgentController.printBill.netTotal}" ></h:outputLabel>
+                                        </p:panelGrid>
+                                    </p:panel>
+                                </p:panelGrid>
+
+                            </div>
+
+                            <div class="col-md-8">
+                                <h:panelGroup id="print">
+                                    <bi:cc_payment_receipt_bill billController ="#{onlineBookingAgentController}"  bill="#{onlineBookingAgentController.printBill}" dup="true"/>  
+                                </h:panelGroup>
+                            </div>
+
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>
