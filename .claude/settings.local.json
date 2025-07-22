@@ -14,7 +14,10 @@
       "Bash(git checkout:*)",
       "Bash(git branch:*)",
       "WebFetch(domain:github.com)",
-      "Bash(gh:*)"
+      "Bash(cp:*)",
+      "Bash(javac:*)",
+      "Bash(mvn compile:*)",
+      "Bash(./mvnw compile:*)"
     ],
     "deny": []
   }
