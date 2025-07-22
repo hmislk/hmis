@@ -2860,4 +2860,51 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.stockDto = stockDto;
     }
 
+    @Override
+    public void toggalePatientEditable() {
+        patientDetailsEditable = !patientDetailsEditable;
+    }
+
+    public void processBillItems() {
+        calculateAllRates();
+        calculateTotals();
+    }
+
+    public void calculateBillItemForEditing(BillItem bi) {
+        if (getPreBill() == null || bi == null || bi.getPharmaceuticalBillItem() == null || bi.getPharmaceuticalBillItem().getStock() == null) {
+            return;
+        }
+
+        Stock stock = bi.getPharmaceuticalBillItem().getStock();
+        
+        if (stock.getItemBatch() == null) {
+            return;
+        }
+
+        bi.setRate(stock.getItemBatch().getRetailsaleRate());
+        bi.setGrossValue(bi.getQty() * bi.getRate());
+        
+        // Calculate discounts and other values as needed
+        calculateTotals();
+    }
+
+    public void addBillItemMultipleBatches() {
+        editingQty = null;
+        errorMessage = null;
+        
+        if (getStock() == null) {
+            JsfUtil.addErrorMessage("Please select an item first");
+            return;
+        }
+
+        if (getQty() == null || getQty() <= 0) {
+            JsfUtil.addErrorMessage("Please enter a valid quantity");
+            return;
+        }
+
+        // Implementation for adding items from multiple batches
+        // This would need to be customized based on business logic
+        addBillItemSingleItem();
+    }
+
 }
