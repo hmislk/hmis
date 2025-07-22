@@ -21,7 +21,9 @@
       "Bash(wc:*)",
       "Bash(rg:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh issue list:*)"
     ],
     "deny": []
   }
