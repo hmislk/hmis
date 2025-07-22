@@ -505,8 +505,9 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 return true;
             }
 
-            if (calculatRemainForMultiplePaymentTotal() != 0) {
-                JsfUtil.addErrorMessage("MutiplePayment total is not equal to bill Total. Check the Balance");
+            double remain = Math.abs(calculatRemainForMultiplePaymentTotal());
+            if (remain > 1.0) {
+                JsfUtil.addErrorMessage("Mismatch in differences of multiple payment method total and bill total");
                 return true;
             }
         }
