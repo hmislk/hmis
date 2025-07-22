@@ -82,6 +82,9 @@ import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.pharmacy.PaymentProcessingService;
+import com.divudi.service.pharmacy.StockSearchService;
+import com.divudi.service.pharmacy.TokenService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -159,6 +162,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     TokenController tokenController;
     @Inject
     DrawerController drawerController;
+    @EJB
+    private PaymentProcessingService paymentProcessingService;
+    @EJB
+    private StockSearchService stockSearchService;
+    @EJB
+    private TokenService tokenService;
 
     ////////////////////////
     @EJB
@@ -631,101 +640,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
 
     public List<Stock> completeAvailableStockOptimized(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\\n\\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT i FROM Stock i ")
-                .append("WHERE i.stock > :stockMin ")
-                .append("AND i.department = :department ")
-                .append("AND (");
-
-        sql.append("i.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR i.itemBatch.item.code LIKE :query ");
-        }
-
-        if (searchByBarcode) {
-            sql.append("OR i.itemBatch.item.barcode = :query ");
-        }
-
-        if (searchByGeneric) {
-            sql.append("OR i.itemBatch.item.vmp.vtm.name LIKE :query ");
-        }
-
-        sql.append(") ORDER BY i.itemBatch.item.name, i.itemBatch.dateOfExpire");
-
-        return getStockFacade().findByJpql(sql.toString(), parameters, 20);
+        return stockSearchService.findAvailableStocks(qry, sessionController.getLoggedUser().getDepartment());
     }
 
     public List<StockDTO> completeStockDtos(String qry) {
-        if (qry == null || qry.trim().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        qry = qry.replaceAll("[\n\r]", "").trim();
-        Map<String, Object> parameters = new HashMap<>();
-        parameters.put("department", getSessionController().getLoggedUser().getDepartment());
-        parameters.put("stockMin", 0.0);
-        parameters.put("query", "%" + qry + "%");
-
-        boolean searchByItemCode = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by item code", true);
-        boolean searchByBarcode = qry.length() > 6
-                ? configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by barcode", true)
-                : configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by barcode", false);
-        boolean searchByGeneric = configOptionApplicationController.getBooleanValueByKey(
-                "Enable search medicines by generic name(VMP)", false);
-
-        StringBuilder sql = new StringBuilder("SELECT new com.divudi.core.data.dto.StockDTO(")
-                .append("s.id, ")
-                .append("s.itemBatch.item.name, ")
-                .append("s.itemBatch.item.code, ")
-                .append("s.itemBatch.item.vmp.name, ")
-                .append("s.itemBatch.retailsaleRate, ")
-                .append("s.stock, ")
-                .append("s.itemBatch.dateOfExpire) ")
-                .append("FROM Stock s ")
-                .append("WHERE s.stock > :stockMin ")
-                .append("AND s.department = :department ")
-                .append("AND (");
-
-        sql.append("s.itemBatch.item.name LIKE :query ");
-
-        if (searchByItemCode) {
-            sql.append("OR s.itemBatch.item.code LIKE :query ");
-        }
-
-        if (searchByBarcode) {
-            sql.append("OR s.itemBatch.item.barcode = :query ");
-        }
-
-        if (searchByGeneric) {
-            sql.append("OR s.itemBatch.item.vmp.vtm.name LIKE :query ");
-        }
-
-        sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
-
-        return (List<StockDTO>) getStockFacade().findLightsByJpql(sql.toString(), parameters, javax.persistence.TemporalType.TIMESTAMP, 20);
+        return stockSearchService.findStockDtos(qry, sessionController.getLoggedUser().getDepartment());
     }
 
 
@@ -1445,52 +1364,13 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void settlePharmacyToken(TokenType tokenType) {
-        currentToken = new Token();
-        currentToken.setTokenType(tokenType);
-        currentToken.setDepartment(sessionController.getDepartment());
-        currentToken.setFromDepartment(sessionController.getDepartment());
-        currentToken.setPatient(getPatient());
-        currentToken.setInstitution(sessionController.getInstitution());
-        currentToken.setFromInstitution(sessionController.getInstitution());
-        if (getCounter() == null) {
-            if (sessionController.getLoggableSubDepartments() != null
-                    && !sessionController.getLoggableSubDepartments().isEmpty()) {
-                counter = sessionController.getLoggableSubDepartments().get(0);
-            }
-        }
-        currentToken.setCounter(getCounter());
-        if (counter != null) {
-            currentToken.setToDepartment(counter.getSuperDepartment());
-            if (counter.getSuperDepartment() != null) {
-                currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
-            }
-        }
-        if (getPatient().getId() == null) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return;
-        } else if (getPatient().getPerson().getName() == null) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return;
-        } else if (getPatient().getPerson().getName().trim().isEmpty()) {
-            JsfUtil.addErrorMessage("Please select a patient");
-            return;
-        } else {
-            Patient pt = savePatient();
-            currentToken.setPatient(pt);
-        }
-        if (currentToken.getToDepartment() == null) {
-            currentToken.setToDepartment(sessionController.getDepartment());
-        }
-        if (currentToken.getToInstitution() == null) {
-            currentToken.setToInstitution(sessionController.getInstitution());
-        }
-        tokenFacade.create(currentToken);
-        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, tokenType));
-        currentToken.setCounter(counter);
-        currentToken.setTokenDate(new Date());
-        currentToken.setTokenAt(new Date());
-        currentToken.setBill(getPreBill());
-        tokenFacade.edit(currentToken);
+        Patient pt = savePatient();
+        currentToken = tokenService.settlePharmacyToken(tokenType,
+                sessionController.getDepartment(),
+                counter,
+                pt,
+                sessionController.getInstitution(),
+                getPreBill());
         setToken(currentToken);
     }
 
@@ -1622,29 +1502,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void markInprogress() {
-        Token t = getToken();
-        if (t == null) {
-            return;
-        }
-        t.setBill(getPreBill());
-        t.setCalled(false);
-        t.setCalledAt(null);
-        t.setInProgress(true);
-        t.setCompleted(false);
-        tokenController.save(t);
+        tokenService.markInprogress(getToken(), getPreBill());
     }
 
     public void markToken() {
-        Token t = getToken();
-        if (t == null) {
-            return;
-        }
-        t.setBill(getPreBill());
-        t.setCalled(true);
-        t.setCalledAt(new Date());
-        t.setInProgress(false);
-        t.setCompleted(false);
-        tokenController.save(t);
+        tokenService.markToken(getToken(), getPreBill());
     }
 
     @EJB
@@ -1744,93 +1606,20 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public List<Payment> createPaymentsForBill(Bill b) {
-        return createMultiplePayments(b, b.getPaymentMethod());
+        return paymentProcessingService.createPaymentsForBill(b,
+                b.getPaymentMethod(),
+                paymentMethodData,
+                sessionController.getInstitution(),
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
     }
 
     public List<Payment> createMultiplePayments(Bill bill, PaymentMethod pm) {
-        List<Payment> ps = new ArrayList<>();
-        if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
-            for (ComponentDetail cd : paymentMethodData.getPaymentMethodMultiple().getMultiplePaymentMethodComponentDetails()) {
-                Payment p = new Payment();
-                p.setBill(bill);
-                p.setInstitution(getSessionController().getInstitution());
-                p.setDepartment(getSessionController().getDepartment());
-                p.setCreatedAt(new Date());
-                p.setCreater(getSessionController().getLoggedUser());
-                p.setPaymentMethod(cd.getPaymentMethod());
-
-                switch (cd.getPaymentMethod()) {
-                    case Card:
-                        p.setBank(cd.getPaymentMethodData().getCreditCard().getInstitution());
-                        p.setCreditCardRefNo(cd.getPaymentMethodData().getCreditCard().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCreditCard().getTotalValue());
-                        break;
-                    case Cheque:
-                        p.setChequeDate(cd.getPaymentMethodData().getCheque().getDate());
-                        p.setChequeRefNo(cd.getPaymentMethodData().getCheque().getNo());
-                        p.setPaidValue(cd.getPaymentMethodData().getCheque().getTotalValue());
-                        break;
-                    case Cash:
-                        p.setPaidValue(cd.getPaymentMethodData().getCash().getTotalValue());
-                        break;
-                    case ewallet:
-
-                    case Agent:
-                    case Credit:
-                    case PatientDeposit:
-                    case Slip:
-                    case OnCall:
-                    case OnlineSettlement:
-                    case Staff:
-                    case YouOweMe:
-                    case MultiplePaymentMethods:
-                }
-
-                paymentFacade.create(p);
-                ps.add(p);
-            }
-        } else {
-            Payment p = new Payment();
-            p.setBill(bill);
-            p.setInstitution(getSessionController().getInstitution());
-            p.setDepartment(getSessionController().getDepartment());
-            p.setCreatedAt(new Date());
-            p.setCreater(getSessionController().getLoggedUser());
-            p.setPaymentMethod(pm);
-
-            switch (pm) {
-                case Card:
-                    p.setBank(paymentMethodData.getCreditCard().getInstitution());
-                    p.setCreditCardRefNo(paymentMethodData.getCreditCard().getNo());
-                    p.setPaidValue(paymentMethodData.getCreditCard().getTotalValue());
-                    break;
-                case Cheque:
-                    p.setChequeDate(paymentMethodData.getCheque().getDate());
-                    p.setChequeRefNo(paymentMethodData.getCheque().getNo());
-                    p.setPaidValue(paymentMethodData.getCheque().getTotalValue());
-                    break;
-                case Cash:
-                    p.setPaidValue(paymentMethodData.getCash().getTotalValue());
-                    break;
-                case ewallet:
-
-                case Agent:
-                case Credit:
-                case PatientDeposit:
-                case Slip:
-                case OnCall:
-                case OnlineSettlement:
-                case Staff:
-                case YouOweMe:
-                case MultiplePaymentMethods:
-            }
-
-            p.setPaidValue(p.getBill().getNetTotal());
-            paymentFacade.create(p);
-
-            ps.add(p);
-        }
-        return ps;
+        return paymentProcessingService.createMultiplePayments(bill, pm,
+                paymentMethodData,
+                sessionController.getInstitution(),
+                sessionController.getDepartment(),
+                sessionController.getLoggedUser());
     }
 
     public void settleBillWithPay() {
