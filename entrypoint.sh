@@ -3,45 +3,46 @@ set -e
 
 echo "Setting up Payara admin..."
 
-# Create admin password file
+ADMIN_DIR="/opt/payara/appserver/glassfish/domains/domain1/config"
+ADMIN_KEYFILE="${ADMIN_DIR}/admin-keyfile"
+WAR_PATH="/opt/payara/app.war"
+DOMAIN_NAME="domain1"
+LOG_PATH="/opt/payara/appserver/glassfish/domains/${DOMAIN_NAME}/logs/server.log"
+
+# Create temp password files
 echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" > /tmp/password.txt
-chmod 600 /tmp/password.txt
+echo "AS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/newpass.txt
+chmod 600 /tmp/password.txt /tmp/newpass.txt
 
-ADMIN_KEYFILE="/opt/payara/appserver/glassfish/domains/domain1/config/admin-keyfile"
-
-# If admin-keyfile exists and user is injecting password, reset it
-if [ -f "$ADMIN_KEYFILE" ]; then
-  echo "Existing admin-keyfile found. Deleting to reset password..."
-  rm -f "$ADMIN_KEYFILE"
-fi
-
-# Start the domain (fresh, without password)
-echo "Starting domain..."
+# Start domain first
+echo "Starting Payara domain..."
 /opt/payara/appserver/bin/asadmin start-domain
 echo "Waiting for domain startup..."
-sleep 15
+sleep 20
 
-# Set new admin password
-echo "AS_ADMIN_NEWPASSWORD=${ADMIN_PASSWORD}" > /tmp/newpass.txt
-chmod 600 /tmp/newpass.txt
+# If no admin user exists, set the password
+if [ ! -f "$ADMIN_KEYFILE" ]; then
+  echo "No admin-keyfile found. Setting initial admin password..."
+  echo "yes" | /opt/payara/appserver/bin/asadmin change-admin-password --user admin --passwordfile /tmp/newpass.txt
+else
+  echo "Admin user already exists. Skipping password setup."
+fi
 
-echo "Setting admin password..."
-echo "yes" | /opt/payara/appserver/bin/asadmin change-admin-password --user admin --passwordfile /tmp/newpass.txt
-
-# Enable secure admin
+# Enable secure admin (only if not already enabled)
 echo "Enabling secure admin..."
-/opt/payara/appserver/bin/asadmin enable-secure-admin --passwordfile /tmp/password.txt
+/opt/payara/appserver/bin/asadmin enable-secure-admin --passwordfile /tmp/password.txt || true
 
-# Restart domain
+# Restart domain to apply secure admin changes
 echo "Restarting domain..."
 /opt/payara/appserver/bin/asadmin stop-domain
 /opt/payara/appserver/bin/asadmin start-domain
-sleep 15
+sleep 20
 
-# Deploy
+# Deploy WAR
 echo "Deploying application..."
 /opt/payara/appserver/bin/asadmin --user admin --passwordfile /tmp/password.txt \
-  deploy --contextroot="${CONTEXT_PATH}" --force=true /opt/payara/app.war
+  deploy --contextroot="${CONTEXT_PATH}" --force=true "${WAR_PATH}"
 
-# Log tailing
-tail -f /opt/payara/appserver/glassfish/domains/domain1/logs/server.log
+# Tail logs
+echo "Deployment finished. Tailing logs..."
+tail -f "${LOG_PATH}"
