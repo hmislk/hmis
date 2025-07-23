@@ -756,6 +756,12 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            action="#{pharmacyFastRetailSaleController.navigateToPharmacyFastRetailSale()}"
+                            value="Sale (Fast)"
+                            icon="fas fa-bolt" >
+                        </p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
                             value="Sale for cashier"
                             icon="fas fa-cash-register"
