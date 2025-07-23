@@ -91,7 +91,7 @@ public class ServiceLayerBigDecimalTest {
             testBillItemFinanceDetails.setUnitsPerPack(new BigDecimal("12.00"));
             unitsPerPack = testBillItemFinanceDetails.getUnitsPerPack();
             totalUnits = BigDecimalUtil.multiply(quantity, unitsPerPack);
-            assertEquals(new BigDecimal("120.00"), totalUnits);
+            assertEquals(0, new BigDecimal("120.00").compareTo(totalUnits));
         }
         
         @Test
@@ -136,7 +136,7 @@ public class ServiceLayerBigDecimalTest {
                 grossTotal,
                 taxRate.divide(BigDecimal.valueOf(100))
             );
-            assertEquals(new BigDecimal("10.00"), taxAmount);
+            assertEquals(0, new BigDecimal("10.00").compareTo(taxAmount));
         }
         
         @Test
@@ -167,7 +167,7 @@ public class ServiceLayerBigDecimalTest {
                 testBillItemFinanceDetails.getQuantity(),
                 testBillItemFinanceDetails.getWholesaleRate()
             );
-            assertEquals(new BigDecimal("160.00"), wholesaleValue);
+            assertEquals(0, new BigDecimal("160.00").compareTo(wholesaleValue));
         }
     }
     

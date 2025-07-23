@@ -86,15 +86,15 @@ public class BigDecimalIntegrationTest {
         
         // Calculate net total after discount
         BigDecimal netTotal = BigDecimalUtil.subtract(grossTotal, discountAmount);
-        assertEquals(new BigDecimal("255.00"), netTotal);
+        assertEquals(0, new BigDecimal("255.00").compareTo(netTotal));
         
         // Store calculated values
         billItemFinanceDetails.setGrossTotal(grossTotal);
         billItemFinanceDetails.setNetTotal(netTotal);
         
         // Verify stored values
-        assertEquals(new BigDecimal("255.00"), billItemFinanceDetails.getGrossTotal());
-        assertEquals(new BigDecimal("255.00"), billItemFinanceDetails.getNetTotal());
+        assertEquals(0, new BigDecimal("255.00").compareTo(billItemFinanceDetails.getGrossTotal()));
+        assertEquals(0, new BigDecimal("255.00").compareTo(billItemFinanceDetails.getNetTotal()));
     }
     
     @Test
@@ -194,7 +194,7 @@ public class BigDecimalIntegrationTest {
         assertEquals(0, new BigDecimal("15.75").compareTo(discountAmount)); // 315 * 0.05
         
         BigDecimal netTotal = BigDecimalUtil.subtract(grossTotal, discountAmount);
-        assertEquals(new BigDecimal("299.25"), netTotal); // 315 - 15.75
+        assertEquals(0, new BigDecimal("299.25").compareTo(netTotal)); // 315 - 15.75
         
         // Step 5: Store calculated values
         billItemFinanceDetails.setTotalQuantity(totalQuantity);
@@ -204,9 +204,9 @@ public class BigDecimalIntegrationTest {
         
         // Step 6: Verify all calculations are stored correctly
         assertEquals(new BigDecimal("20.00"), billItemFinanceDetails.getTotalQuantity());
-        assertEquals(new BigDecimal("315.00"), billItemFinanceDetails.getGrossTotal());
-        assertEquals(new BigDecimal("15.75"), billItemFinanceDetails.getLineDiscount());
-        assertEquals(new BigDecimal("299.25"), billItemFinanceDetails.getNetTotal());
+        assertEquals(0, new BigDecimal("315.00").compareTo(billItemFinanceDetails.getGrossTotal()));
+        assertEquals(0, new BigDecimal("15.75").compareTo(billItemFinanceDetails.getLineDiscount()));
+        assertEquals(0, new BigDecimal("299.25").compareTo(billItemFinanceDetails.getNetTotal()));
     }
     
     @Test

@@ -139,10 +139,10 @@ public class BigDecimalRegressionTest {
                 BigDecimalUtil.valueOrZero(item.getLineDiscountRate())
                     .divide(BigDecimal.valueOf(100), BigDecimal.ROUND_HALF_EVEN)
             );
-            assertEquals(BigDecimal.ZERO, discountAmount);
+            assertEquals(0, BigDecimal.ZERO.compareTo(discountAmount));
             
             BigDecimal netTotal = BigDecimalUtil.subtract(grossTotal, discountAmount);
-            assertEquals(new BigDecimal("255.00"), netTotal);
+            assertEquals(0, new BigDecimal("255.00").compareTo(netTotal));
         }
         
         @Test

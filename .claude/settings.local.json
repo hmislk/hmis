@@ -29,7 +29,19 @@
       "Bash(where mvn)",
       "Bash(java:*)",
       "Bash(del:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(mvn test:*)",
+      "Bash(./mvnw test:*)",
+      "Bash(java:*)",
+      "Bash(where mvn)",
+      "Bash(where java)",
+      "Bash(set JAVA_HOME)",
+      "Bash(where netbeans)",
+      "Bash(\"C:\\Program Files\\OpenLogic\\jdk-11.0.24.8-hotspot\\bin\\java\" -version)",
+      "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" test -Dtest=\"*BigDecimal*\")",
+      "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" --version)",
+      "Bash(set JAVA_HOME=C:Program FilesOpenLogicjdk-11.0.24.8-hotspot)",
+      "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn\" test -Dtest=\"*BigDecimal*\")"
     ],
     "deny": []
   }
