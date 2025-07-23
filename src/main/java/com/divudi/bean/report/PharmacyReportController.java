@@ -1946,12 +1946,18 @@ public class PharmacyReportController implements Serializable {
                     + "WHERE bi.retired = false "
                     + "AND b.retired = false "
                     + "AND " + billTypeField + " IN :billTypes "
-                    + "AND b.paymentMethod IN :paymentMethod "
+//                    + "AND b.paymentMethod IN :paymentMethod "
                     + "AND b.createdAt BETWEEN :fromDate AND :toDate ");
 
+            jpql.append("AND (b.paymentMethod IN :pm ");
+            jpql.append("OR (b.paymentMethod = :multiPm AND EXISTS ("
+                    + "SELECT p FROM Payment p "
+                    + "WHERE p.bill = b AND p.paymentMethod IN :pm)) )");
+
             Map<String, Object> params = new HashMap<>();
+            params.put("pm", paymentMethod);
+            params.put("multiPm", PaymentMethod.MultiplePaymentMethods);
             params.put("billTypes", billTypeValue);
-            params.put("paymentMethod", paymentMethod);
             params.put("fromDate", fromDate);
             params.put("toDate", toDate);
 
