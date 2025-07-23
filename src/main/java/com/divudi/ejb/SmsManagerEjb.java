@@ -588,7 +588,7 @@ public class SmsManagerEjb {
             payload.put("from", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - User Alias"));
             payload.put("to", sms.getReceipientNumber()); // For multiple, use comma-separated
             payload.put("text", sms.getSendingMessage());
-            payload.put("mesageType", configOptionApplicationController.getIntegerValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value")); // 0 or 1
+            payload.put("mesageType", Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value (Only Numbers)"))); // 0 or 1
 
             String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - URL");
 
