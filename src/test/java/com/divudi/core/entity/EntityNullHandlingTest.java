@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * entities properly handle nullable BigDecimal fields after the BigDecimal
  * refactoring initiative.
  *
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("Entity Null Handling Tests")
@@ -248,7 +248,7 @@ public class EntityNullHandlingTest {
             BillItemFinanceDetails cloned = entity.clone();
             assertNull(cloned.getQuantity());
             assertNull(cloned.getLineGrossRate());
-            assertTrue(BigDecimal.ZERO.compareTo(cloned.getGrossTotal()) == 0,
+            assertEquals(BigDecimal.ZERO, cloned.getGrossTotal(),
                     "Expected: 0, but was: " + cloned.getGrossTotal());
             assertNull(cloned.getNetTotal());
         }

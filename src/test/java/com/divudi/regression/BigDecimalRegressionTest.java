@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * and that the migration from BigDecimal.ZERO initialization to nullable fields
  * doesn't break any existing business logic.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("BigDecimal Regression Tests")

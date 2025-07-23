@@ -16,7 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * These tests validate that the BigDecimal refactoring works correctly across
  * entity creation, financial calculations, and business logic operations.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("BigDecimal Refactoring Integration Tests")

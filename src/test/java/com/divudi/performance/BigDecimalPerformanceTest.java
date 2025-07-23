@@ -3,6 +3,7 @@ package com.divudi.performance;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.util.BigDecimalUtil;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -16,7 +17,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Ensures that the BigDecimalUtil methods and nullable field handling
  * do not introduce significant performance degradation.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("BigDecimal Performance Tests")
@@ -134,13 +135,13 @@ public class BigDecimalPerformanceTest {
             
             BigDecimal discountRate = BigDecimalUtil.valueOrZero(item.getLineDiscountRate());
             BigDecimal discountAmount = BigDecimalUtil.multiply(grossAmount, 
-                discountRate.divide(BigDecimal.valueOf(100), BigDecimal.ROUND_HALF_EVEN));
+                discountRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
             
             BigDecimal netAmount = BigDecimalUtil.subtract(grossAmount, discountAmount);
             
             BigDecimal taxRate = BigDecimalUtil.valueOrZero(item.getBillTaxRate());
             BigDecimal taxAmount = BigDecimalUtil.multiply(netAmount,
-                taxRate.divide(BigDecimal.valueOf(100), BigDecimal.ROUND_HALF_EVEN));
+                taxRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
             
             // Aggregate totals
             totalGrossAmount = BigDecimalUtil.add(totalGrossAmount, grossAmount);

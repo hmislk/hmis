@@ -9,7 +9,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Comprehensive tests for null-safe BigDecimal operations for issue #12437.
  * Provides 100% coverage of BigDecimalUtil methods including edge cases.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  */
 public class BigDecimalUtilTest {
 
@@ -135,14 +135,14 @@ public class BigDecimalUtilTest {
     public void testMultiply_WithFirstNull_ReturnsZero() {
         BigDecimal b = new BigDecimal("50.00");
         BigDecimal result = BigDecimalUtil.multiply(null, b);
-        assertEquals(0, result.compareTo(BigDecimal.ZERO));
+        assertEquals(BigDecimal.ZERO, result);
     }
 
     @Test
     public void testMultiply_WithSecondNull_ReturnsZero() {
         BigDecimal a = new BigDecimal("25.00");
         BigDecimal result = BigDecimalUtil.multiply(a, null);
-        assertEquals(0, result.compareTo(BigDecimal.ZERO));
+        assertEquals(BigDecimal.ZERO, result);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class BigDecimalUtilTest {
         BigDecimal b = new BigDecimal("10.00");
         BigDecimal expected = new BigDecimal("50.00");
         BigDecimal result = BigDecimalUtil.multiply(a, b);
-        assertEquals(0, expected.compareTo(result));
+        assertEquals(expected, result);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class BigDecimalUtilTest {
         
         assertEquals(value, BigDecimalUtil.add(zero, value));
         assertEquals(value.negate(), BigDecimalUtil.subtract(zero, value));
-        assertEquals(0, BigDecimalUtil.multiply(zero, value).compareTo(BigDecimal.ZERO));
+        assertEquals(BigDecimal.ZERO, BigDecimalUtil.multiply(zero, value));
     }
     
     @Test
@@ -252,7 +252,7 @@ public class BigDecimalUtilTest {
         BigDecimal step1 = BigDecimalUtil.add(a, b); // 10.00 + 0.00 = 10.00
         BigDecimal result = BigDecimalUtil.multiply(step1, c); // 10.00 * 5.00 = 50.00
         
-        assertEquals(0, new BigDecimal("50.00").compareTo(result));
+        assertEquals(new BigDecimal("50.00"), result);
     }
     
     @Test
