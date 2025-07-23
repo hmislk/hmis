@@ -588,31 +588,34 @@ public class SmsManagerEjb {
             payload.put("from", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - User Alias"));
             payload.put("to", sms.getReceipientNumber()); // For multiple, use comma-separated
             payload.put("text", sms.getSendingMessage());
-            payload.put("mesageType", Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value"))); // 0 or 1
+            payload.put("mesageType", configOptionApplicationController.getIntegerValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value")); // 0 or 1
 
             String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - URL");
 
             // Send POST request
             URL url = new URL(smsUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setDoOutput(true);
-
-            try (OutputStream os = conn.getOutputStream()) {
-                byte[] input = payload.toString().getBytes("utf-8");
-                os.write(input, 0, input.length);
-            }
-
-            // Read the response
-            int responseCode = conn.getResponseCode();
             StringBuilder response = new StringBuilder();
-            try (BufferedReader br = new BufferedReader(
-                    new InputStreamReader(conn.getInputStream(), "utf-8"))) {
-                String responseLine;
-                while ((responseLine = br.readLine()) != null) {
-                    response.append(responseLine.trim());
+            int responseCode;
+            try {
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = payload.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
                 }
+                // Read the response
+                responseCode = conn.getResponseCode();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                }
+            } finally {
+                conn.disconnect();
             }
 
             sms.setReceivedMessage(response.toString());
