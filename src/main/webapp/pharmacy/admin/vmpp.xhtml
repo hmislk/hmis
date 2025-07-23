@@ -97,6 +97,16 @@
                                     <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
+                                <h:outputText value="Type" />
+                                <p:selectOneMenu  
+                                    value="#{vmppController.current.departmentType}" 
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                </p:selectOneMenu>
+
                                 <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>
                                 <h:inputTextarea
                                     id="txtComments"
