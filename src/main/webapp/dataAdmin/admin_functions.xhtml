@@ -104,6 +104,26 @@
                                     </td>
                                 </tr>
 
+                                <tr>
+                                    <td><strong>Assign Pharmacy Department Type</strong></td>
+                                    <td>
+                                        Assigns the Pharmacy department type to all PharmaceuticalItem objects that currently have no department type assigned. This ensures proper categorization of pharmaceutical items within the system.
+                                    </td>
+                                    <td>
+                                        <h:form>
+                                            <p:commandButton 
+                                                action="#{dataAdministrationController.assignPharmacyDepartmentTypeToPharmaceuticalItems()}"
+                                                ajax="false"
+                                                value="Assign Pharmacy Department Type"
+                                                styleClass="ui-button-info m-1"
+                                                icon="pi pi-tag" />
+                                        </h:form>
+                                    </td>
+                                    <td>
+                                        #{dataAdministrationController.output}
+                                    </td>
+                                </tr>
+
 
 
                             </tbody>

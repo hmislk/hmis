@@ -413,6 +413,21 @@ public class DataAdministrationController implements Serializable {
         }
     }
 
+    public void assignPharmacyDepartmentTypeToPharmaceuticalItems() {
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT p FROM PharmaceuticalItem p WHERE p.departmentType IS NULL AND p.retired = false";
+        List<PharmaceuticalItem> items = pharmaceuticalItemFacade.findByJpql(jpql, params);
+        
+        int updatedCount = 0;
+        for (PharmaceuticalItem item : items) {
+            item.setDepartmentType(DepartmentType.Pharmacy);
+            pharmaceuticalItemFacade.edit(item);
+            updatedCount++;
+        }
+        
+        JsfUtil.addSuccessMessage("Updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
+    }
+
     public String getPayaraLogLocation() {
         return configOptionApplicationController.getLongTextValueByKey("Location of the Payara Log", "/opt/payara/logs/app/");
     }
