@@ -587,17 +587,17 @@ public class GrnCostingController implements Serializable {
             }
             
             // Safe calculation of value rates with null checks
-            BigDecimal lineGrossRate = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
-            BigDecimal retailSaleRate = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
-            BigDecimal totalCostRate = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
-            BigDecimal wholesaleRate = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
-            BigDecimal totalQuantity = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
-            BigDecimal unitsPerPack = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
+            BigDecimal lineGrossRateBD = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
+            BigDecimal retailSaleRateBD = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
+            BigDecimal totalCostRateBD = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
+            BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
+            BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
+            BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
             
-            bifd.setValueAtPurchaseRate(lineGrossRate.multiply(totalQuantity));
-            bifd.setValueAtRetailRate(retailSaleRate.multiply(totalQuantity));
-            bifd.setValueAtCostRate(totalCostRate.multiply(totalQuantity).multiply(unitsPerPack));
-            bifd.setValueAtWholesaleRate(wholesaleRate.multiply(totalQuantity));
+            bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtRetailRate(retailSaleRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
+            bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
             
         }
 
@@ -1801,6 +1801,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public SessionController getSessionController() {
+        if (sessionController == null) {
+            throw new IllegalStateException("SessionController is not properly injected");
+        }
         return sessionController;
     }
 
