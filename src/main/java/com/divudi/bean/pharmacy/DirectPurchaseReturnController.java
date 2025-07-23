@@ -180,11 +180,11 @@ public class DirectPurchaseReturnController implements Serializable {
             return;
         }
 
-        BigDecimal alreadyReturnQuentity = BigDecimal.ZERO;
-        BigDecimal alreadyReturnedFreeQuentity = BigDecimal.ZERO;
-        BigDecimal allreadyReturnedTotalQuentity = BigDecimal.ZERO;
+        BigDecimal alreadyReturnQuentity = BigDecimalUtil.getZero();
+        BigDecimal alreadyReturnedFreeQuentity = BigDecimalUtil.getZero();
+        BigDecimal allreadyReturnedTotalQuentity = BigDecimalUtil.getZero();
 
-        BigDecimal returningRate = BigDecimal.ZERO;
+        BigDecimal returningRate = BigDecimalUtil.getZero();
 
         String sql = "Select sum(b.billItemFinanceDetails.quantity), sum(b.billItemFinanceDetails.freeQuantity) "
                 + " from BillItem b "
@@ -200,9 +200,9 @@ public class DirectPurchaseReturnController implements Serializable {
         Object[] returnedValues = getBillItemFacade().findSingleAggregate(sql, params);
 
         if (returnedValues != null) {
-            alreadyReturnQuentity = returnedValues[0] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[0].toString());
-            alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[1].toString());
-            allreadyReturnedTotalQuentity = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
+            alreadyReturnQuentity = returnedValues[0] == null ? BigDecimalUtil.getZero() : new BigDecimal(returnedValues[0].toString());
+            alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimalUtil.getZero() : new BigDecimal(returnedValues[1].toString());
+            allreadyReturnedTotalQuentity = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
         }
 
         bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
@@ -213,16 +213,16 @@ public class DirectPurchaseReturnController implements Serializable {
             // The total return covers both original quantity and free quantity.
             // Here, free quantity being returned is considered zero.
             // Need to subtract already returned total (qty + free) from original total (qty + free)
-            BigDecimal originalTotal = bifdOriginal.getQuantity().add(bifdOriginal.getFreeQuantity());
-            BigDecimal returnedTotal = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
-            BigDecimal remaining = originalTotal.subtract(returnedTotal);
+            BigDecimal originalTotal = BigDecimalUtil.add(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()));
+            BigDecimal returnedTotal = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
+            BigDecimal remaining = BigDecimalUtil.subtract(originalTotal, returnedTotal);
             bifdReturning.setQuantity(remaining);
-            bifdReturning.setFreeQuantity(BigDecimal.ZERO);
+            bifdReturning.setFreeQuantity(BigDecimalUtil.getZero());
         } else {
             // Returning quantity and free quantity are managed separately.
             // Subtract already returned quantity and free quantity from respective originals.
-            bifdReturning.setQuantity(bifdOriginal.getQuantity().subtract(alreadyReturnQuentity));
-            bifdReturning.setFreeQuantity(bifdOriginal.getFreeQuantity().subtract(alreadyReturnedFreeQuentity));
+            bifdReturning.setQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), alreadyReturnQuentity));
+            bifdReturning.setFreeQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()), alreadyReturnedFreeQuentity));
         }
 
         returningRate = getReturnRate(originalBillItem);
@@ -304,7 +304,7 @@ public class DirectPurchaseReturnController implements Serializable {
     public BigDecimal getReturnRate(BillItem originalBillItem) {
         BillItemFinanceDetails fd = originalBillItem.getBillItemFinanceDetails();
         if (fd == null) {
-            return BigDecimal.ZERO;
+            return BigDecimalUtil.getZero();
         }
 
         BigDecimal rate = fd.getGrossRate();
@@ -317,9 +317,9 @@ public class DirectPurchaseReturnController implements Serializable {
         }
 
         if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
-            if (upp.compareTo(BigDecimal.ZERO) > 0) {
-                rate = rate.multiply(upp);
+            BigDecimal upp = BigDecimalUtil.valueOrOne(fd.getUnitsPerPack());
+            if (BigDecimalUtil.isPositive(upp)) {
+                rate = BigDecimalUtil.multiply(rate, upp);
             }
         }
 

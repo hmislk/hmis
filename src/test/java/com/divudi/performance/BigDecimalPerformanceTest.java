@@ -25,6 +25,8 @@ public class BigDecimalPerformanceTest {
     
     private static final int LARGE_DATASET_SIZE = 1000;
     private static final int PERFORMANCE_ITERATIONS = 100;
+    private static final int WARMUP_ITERATIONS = 20;
+    private static final long PERFORMANCE_THRESHOLD_MS = Long.parseLong(System.getProperty("perf.threshold.ms", "5000"));
     private List<BillItemFinanceDetails> testDataset;
     
     @BeforeEach
@@ -119,41 +121,22 @@ public class BigDecimalPerformanceTest {
     @DisplayName("Large Dataset Financial Calculations Performance")
     @Timeout(value = 15) // Should complete within 15 seconds
     public void testLargeDatasetCalculationsPerformance_ShouldScaleWell() {
-        long startTime = System.currentTimeMillis();
-        
-        // Simulate complex financial calculations on large dataset
-        BigDecimal totalGrossAmount = BigDecimal.ZERO;
-        BigDecimal totalNetAmount = BigDecimal.ZERO;
-        BigDecimal totalDiscounts = BigDecimal.ZERO;
-        BigDecimal totalTaxes = BigDecimal.ZERO;
-        
-        for (BillItemFinanceDetails item : testDataset) {
-            // Simulate financial calculations
-            BigDecimal quantity = BigDecimalUtil.valueOrZero(item.getQuantity());
-            BigDecimal rate = BigDecimalUtil.valueOrZero(item.getLineGrossRate());
-            BigDecimal grossAmount = BigDecimalUtil.multiply(quantity, rate);
-            
-            BigDecimal discountRate = BigDecimalUtil.valueOrZero(item.getLineDiscountRate());
-            BigDecimal discountAmount = BigDecimalUtil.multiply(grossAmount, 
-                discountRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
-            
-            BigDecimal netAmount = BigDecimalUtil.subtract(grossAmount, discountAmount);
-            
-            BigDecimal taxRate = BigDecimalUtil.valueOrZero(item.getBillTaxRate());
-            BigDecimal taxAmount = BigDecimalUtil.multiply(netAmount,
-                taxRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
-            
-            // Aggregate totals
-            totalGrossAmount = BigDecimalUtil.add(totalGrossAmount, grossAmount);
-            totalNetAmount = BigDecimalUtil.add(totalNetAmount, netAmount);
-            totalDiscounts = BigDecimalUtil.add(totalDiscounts, discountAmount);
-            totalTaxes = BigDecimalUtil.add(totalTaxes, taxAmount);
+        // JVM warm-up iterations
+        for (int i = 0; i < WARMUP_ITERATIONS; i++) {
+            performCalculations();
         }
         
+        long startTime = System.currentTimeMillis();
+        BigDecimal[] results = performCalculations();
         long endTime = System.currentTimeMillis();
         long executionTime = endTime - startTime;
         
         // Verify we got reasonable results
+        BigDecimal totalGrossAmount = results[0];
+        BigDecimal totalNetAmount = results[1];
+        BigDecimal totalDiscounts = results[2];
+        BigDecimal totalTaxes = results[3];
+        
         assertTrue(BigDecimalUtil.isPositive(totalGrossAmount) || BigDecimalUtil.isNullOrZero(totalGrossAmount));
         assertNotNull(totalNetAmount);
         assertNotNull(totalDiscounts);
@@ -164,8 +147,9 @@ public class BigDecimalPerformanceTest {
         System.out.printf("  Average time per item: %.2f ms%n", 
             (double) executionTime / testDataset.size());
         
-        // Should process large datasets efficiently
-        assertTrue(executionTime < 15000, "Large dataset processing too slow: " + executionTime + "ms");
+        // Should process large datasets efficiently (configurable threshold)
+        assertTrue(executionTime < PERFORMANCE_THRESHOLD_MS, 
+            String.format("Large dataset processing too slow: %dms (threshold: %dms)", executionTime, PERFORMANCE_THRESHOLD_MS));
         
         // Should process at least 100 items per second
         double itemsPerSecond = (testDataset.size() * 1000.0) / executionTime;
@@ -329,5 +313,41 @@ public class BigDecimalPerformanceTest {
     private long getUsedMemory() {
         Runtime runtime = Runtime.getRuntime();
         return runtime.totalMemory() - runtime.freeMemory();
+    }
+    
+    /**
+     * Performs financial calculations on the test dataset for performance measurement.
+     * @return Array containing [totalGrossAmount, totalNetAmount, totalDiscounts, totalTaxes]
+     */
+    private BigDecimal[] performCalculations() {
+        BigDecimal totalGrossAmount = BigDecimal.ZERO;
+        BigDecimal totalNetAmount = BigDecimal.ZERO;
+        BigDecimal totalDiscounts = BigDecimal.ZERO;
+        BigDecimal totalTaxes = BigDecimal.ZERO;
+        
+        for (BillItemFinanceDetails item : testDataset) {
+            // Simulate financial calculations
+            BigDecimal quantity = BigDecimalUtil.valueOrZero(item.getQuantity());
+            BigDecimal rate = BigDecimalUtil.valueOrZero(item.getLineGrossRate());
+            BigDecimal grossAmount = BigDecimalUtil.multiply(quantity, rate);
+            
+            BigDecimal discountRate = BigDecimalUtil.valueOrZero(item.getLineDiscountRate());
+            BigDecimal discountAmount = BigDecimalUtil.multiply(grossAmount, 
+                discountRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
+            
+            BigDecimal netAmount = BigDecimalUtil.subtract(grossAmount, discountAmount);
+            
+            BigDecimal taxRate = BigDecimalUtil.valueOrZero(item.getBillTaxRate());
+            BigDecimal taxAmount = BigDecimalUtil.multiply(netAmount,
+                taxRate.divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_EVEN));
+            
+            // Aggregate totals
+            totalGrossAmount = BigDecimalUtil.add(totalGrossAmount, grossAmount);
+            totalNetAmount = BigDecimalUtil.add(totalNetAmount, netAmount);
+            totalDiscounts = BigDecimalUtil.add(totalDiscounts, discountAmount);
+            totalTaxes = BigDecimalUtil.add(totalTaxes, taxAmount);
+        }
+        
+        return new BigDecimal[]{totalGrossAmount, totalNetAmount, totalDiscounts, totalTaxes};
     }
 }
