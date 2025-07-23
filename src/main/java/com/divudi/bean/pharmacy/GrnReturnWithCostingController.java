@@ -906,15 +906,20 @@ public class GrnReturnWithCostingController implements Serializable {
             double originalQtyInUnits = pbiOfBilledBill.getQty();
             double originalFreeQtyInUnits = pbiOfBilledBill.getFreeQty();
 
-            if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false)) {
+            boolean returnByTotalQuantity = configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return by Total Quantity", false);
+            
+            if (returnByTotalQuantity) {
                 double returnedTotal = getPharmacyRecieveBean().getQtyPlusFreeQtyInUnits(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-                newPharmaceuticalBillItemInReturnBill.setQty(Math.abs(originalQtyInUnits) + Math.abs(originalFreeQtyInUnits) - Math.abs(returnedTotal));
+                double availableToReturn = Math.abs(originalQtyInUnits) + Math.abs(originalFreeQtyInUnits) - Math.abs(returnedTotal);
+                newPharmaceuticalBillItemInReturnBill.setQty(availableToReturn);
                 newPharmaceuticalBillItemInReturnBill.setFreeQty(0.0);
             } else {
                 double returnedQty = getPharmacyRecieveBean().getTotalQty(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
                 double returnedFreeQty = getPharmacyRecieveBean().getTotalFreeQty(pbiOfBilledBill.getBillItem(), BillType.PharmacyGrnReturn, new BilledBill());
-                newPharmaceuticalBillItemInReturnBill.setQty(Math.abs(originalQtyInUnits) - Math.abs(returnedQty));
-                newPharmaceuticalBillItemInReturnBill.setFreeQty(Math.abs(originalFreeQtyInUnits) - Math.abs(returnedFreeQty));
+                double availableQty = Math.abs(originalQtyInUnits) - Math.abs(returnedQty);
+                double availableFreeQty = Math.abs(originalFreeQtyInUnits) - Math.abs(returnedFreeQty);
+                newPharmaceuticalBillItemInReturnBill.setQty(availableQty);
+                newPharmaceuticalBillItemInReturnBill.setFreeQty(availableFreeQty);
             }
             BillItemFinanceDetails newBillItemFinanceDetailsInReturnBill = new BillItemFinanceDetails();
             newBillItemFinanceDetailsInReturnBill.setBillItem(newBillItemInReturnBill);
@@ -923,9 +928,7 @@ public class GrnReturnWithCostingController implements Serializable {
             pharmacyCostingService.calculateUnitsPerPack(newBillItemFinanceDetailsInReturnBill);
             pharmacyCostingService.addBillItemFinanceDetailQuantitiesFromPharmaceuticalBillItem(newPharmaceuticalBillItemInReturnBill, newBillItemFinanceDetailsInReturnBill);
             BigDecimal lineGrossRateForAUnit = getReturnRateForUnits(pbiOfBilledBill.getBillItem());
-            System.out.println("lineGrossRateForAUnit = " + lineGrossRateForAUnit);
             BigDecimal unitsPerPack = newBillItemFinanceDetailsInReturnBill.getUnitsPerPack();
-            System.out.println("unitsPerPack = " + unitsPerPack);
             
             // Ensure both values are not null before multiplication
             if (lineGrossRateForAUnit == null) {
@@ -936,7 +939,6 @@ public class GrnReturnWithCostingController implements Serializable {
             }
             
             BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
-            System.out.println("lineGrossRateAsEntered = " + lineGrossRateAsEntered);
             newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
             calculateLineTotalByLineGrossRate(newBillItemInReturnBill);
             getBillItems().add(newBillItemInReturnBill);
