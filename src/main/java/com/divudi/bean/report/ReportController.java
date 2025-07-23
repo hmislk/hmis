@@ -1986,6 +1986,8 @@ public class ReportController implements Serializable, ControllerWithReportFilte
             m.put("td", toDate);
             m.put("ht", HistoryType.CollectingCentreBalanceUpdateBill);
 
+            jpql += " and ah.bill.retired = false ";
+
             if (collectingCentre != null) {
                 jpql += " and ah.agency = :cc ";
                 m.put("cc", collectingCentre);
@@ -2015,15 +2017,15 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 double transactionValue = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getTransactionValue());
                 double balanceAfter = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceAfterTransaction());
                 double expectedBalanceAfter = balanceBefore + transactionValue;
-                
+
                 double transactionDiff = Math.abs(expectedBalanceAfter - balanceAfter);
-                
+
                 if (transactionDiff > 0.01) { // Transaction calculation error
                     if (!errors.contains(current)) {
                         errors.add(current);
                     }
                 }
-                
+
                 // Check for balance continuation errors between transactions
                 if (previous != null) {
                     double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
@@ -2051,6 +2053,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select ah "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
                 + " order by ah.createdAt, ah.bill.id";
@@ -2078,6 +2081,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
         String jpql = "select distinct ah.agency "
                 + " from AgentHistory ah "
                 + " where ah.retired = false "
+                + " and ah.bill.retired = false "
                 + " and ah.agency is not null ";
 
         Map<String, Object> params = new HashMap<>();

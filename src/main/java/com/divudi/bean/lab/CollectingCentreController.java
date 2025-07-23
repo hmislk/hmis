@@ -207,6 +207,44 @@ public class CollectingCentreController implements Serializable {
         return navigateToEditNextCollectingCentreBalanceEntry(agentHistory);
     }
 
+    public String fixAllRemainingRecords() {
+        if (agentHistory == null) {
+            JsfUtil.addErrorMessage("Nothing selected");
+            return "";
+        }
+        
+        AgentHistory currentRecord = agentHistory;
+        int recordsProcessed = 0;
+        
+        while (currentRecord != null) {
+            // Set the current record for processing
+            this.agentHistory = currentRecord;
+            
+            // Step 1: Fix starting balance from last record
+            fixStartingBalanceFromLastEntry();
+            
+            // Step 2: Fix ending balance
+            fixEndingBalance();
+            
+            // Step 3: Save the current record
+            saveAgentHistory();
+            
+            recordsProcessed++;
+            
+            // Step 4: Get the next record
+            AgentHistory nextRecord = nextAgentHistory(currentRecord);
+            if (nextRecord == null) {
+                // No more records to process
+                break;
+            }
+            
+            currentRecord = nextRecord;
+        }
+        
+        JsfUtil.addSuccessMessage("Successfully processed " + recordsProcessed + " record(s)");
+        return "/reports/collectionCenterReports/collection_center_statement_report?faces-redirect=true";
+    }
+
     public AgentHistory nextAgentHistory(AgentHistory ahx) {
         if (ahx == null || ahx.getAgency() == null || ahx.getId() == null) {
             return null;
