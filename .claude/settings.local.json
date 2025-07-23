@@ -7,9 +7,21 @@
       "Bash(git push:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
+      "Bash(git stash:*)",
       "Bash(git status:*)",
       "Bash(git commit:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git branch:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(cp:*)",
+      "Bash(javac:*)",
+      "Bash(mvn compile:*)",
+      "Bash(./mvnw compile:*)",
+      "Bash(wc:*)",
+      "Bash(rg:*)",
+      "Bash(grep:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

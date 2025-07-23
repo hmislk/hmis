@@ -9,8 +9,9 @@
     <h:body>
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
-
-                <p:panel header="All Item Movement Summary" >
+                
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyReports') or webUserController.hasPrivilege('PharmacyAdministration')}">
+                    <p:panel header="All Item Movement Summary" >
 
                     <h:form >
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -211,6 +212,19 @@
                     </h:form>
 
                 </p:panel>
+                </h:panelGroup>
+                
+                <h:panelGroup rendered="#{not (webUserController.hasPrivilege('PharmacyReports') or webUserController.hasPrivilege('PharmacyAdministration'))}">
+                    <p:panel header="Access Denied">
+                        <p:messages autoUpdate="true" closable="true" />
+                        <div class="alert alert-warning" role="alert">
+                            <h4 class="alert-heading">Access Denied</h4>
+                            <p>You do not have sufficient privileges to access this report. Please contact your system administrator to request access.</p>
+                            <hr />
+                            <p class="mb-0">Required privileges: <strong>Pharmacy Reports</strong> or <strong>Pharmacy Administration</strong></p>
+                        </div>
+                    </p:panel>
+                </h:panelGroup>
 
             </ui:define>
         </ui:composition>

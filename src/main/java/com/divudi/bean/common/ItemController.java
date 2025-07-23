@@ -2224,6 +2224,12 @@ public class ItemController implements Serializable {
         return completeItem(query, classes, dts, 0);
     }
 
+    public List<Item> completeLabItemOnly(String query) {
+        DepartmentType[] dts = new DepartmentType[]{DepartmentType.Lab};
+        Class[] classes = new Class[]{Amp.class};
+        return completeItem(query, classes, dts, 0);
+    }
+
     public List<Item> completeItem(String query, Class[] itemClasses, DepartmentType[] departmentTypes) {
         return completeItem(query, itemClasses, departmentTypes, 0);
     }
@@ -2262,6 +2268,42 @@ public class ItemController implements Serializable {
             for (int i = 0; i < words.length; i++) {
                 tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
             }
+            suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
+        }
+        return suggestions;
+    }
+
+    public List<Item> completeAmpItemForLoggedDepartment(String query) {
+        List<Item> suggestions = new ArrayList<>();
+        if (query == null || query.trim().isEmpty()) {
+            return suggestions;
+        } else {
+            String[] words = query.split("\\s+");
+           String sql = "SELECT c FROM Item c WHERE c.retired = false AND type(c) = :amp AND c.departmentType in :dts AND (";
+
+            StringBuilder nameConditions = new StringBuilder();
+            for (int i = 0; i < words.length; i++) {
+                if (i > 0) {
+                    nameConditions.append(" AND ");
+                }
+                nameConditions.append("LOWER(c.name) LIKE :nameStr").append(i);
+            }
+
+            sql += "(" + nameConditions + ") OR LOWER(c.code) LIKE :codeStr "
+                    + "OR LOWER(c.barcode) LIKE :barcodeStr OR c.barcode = :exactBarcodeStr) "
+                    + "ORDER BY c.name";
+
+            HashMap<String, Object> tmpMap = new HashMap<>();
+            tmpMap.put("amp", Amp.class);
+            tmpMap.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+            tmpMap.put("codeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("barcodeStr", "%" + query.toLowerCase() + "%");
+            tmpMap.put("exactBarcodeStr", query);
+
+            for (int i = 0; i < words.length; i++) {
+                tmpMap.put("nameStr" + i, "%" + words[i].toLowerCase() + "%");
+            }
+
             suggestions = getFacade().findByJpql(sql, tmpMap, TemporalType.TIMESTAMP, 30);
         }
         return suggestions;
@@ -2551,6 +2593,56 @@ public class ItemController implements Serializable {
         parameters.put("ampp", Ampp.class);
         parameters.put("vmp", Vmp.class);
         parameters.put("vmpp", Vmpp.class);
+        parameters.put("q", "%" + q + "%");
+
+        results = getFacade().findByJpql(jpql, parameters, TemporalType.TIMESTAMP, maxResults);
+
+        return results;
+    }
+
+    public List<Item> completeAmpAmppVmpVmppItemsForLoggedDepartment(String query) {
+        List<Item> results;
+        String jpql;
+        Map<String, Object> parameters = new HashMap<>();
+
+        if (query == null || query.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String q = query.trim().toUpperCase();
+
+        int barcodeMinLength = 8; // fallback default
+        int maxResults = 30; // fallback default
+
+        try {
+            barcodeMinLength = configOptionApplicationController.getIntegerValueByKey("BarcodeMinLength", 8);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        try {
+            maxResults = configOptionApplicationController.getIntegerValueByKey("PharmaceuticalAutocompleteMaxResults", 30);
+        } catch (Exception e) {
+            // Use default
+        }
+
+        boolean includeBarcode = q.length() >= barcodeMinLength;
+
+        jpql = "SELECT i FROM Item i "
+                + "WHERE i.retired = false "
+                + "AND TYPE(i) IN (:amp, :ampp, :vmp, :vmpp) "
+                + "AND i.departmentType in :dts "
+                + "AND (UPPER(i.name) LIKE :q "
+                + "OR UPPER(i.code) LIKE :q "
+                + (includeBarcode ? "OR UPPER(i.barcode) LIKE :q " : "")
+                + ") "
+                + "ORDER BY i.name";
+
+        parameters.put("amp", Amp.class);
+        parameters.put("ampp", Ampp.class);
+        parameters.put("vmp", Vmp.class);
+        parameters.put("vmpp", Vmpp.class);
+        parameters.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
         parameters.put("q", "%" + q + "%");
 
         results = getFacade().findByJpql(jpql, parameters, TemporalType.TIMESTAMP, maxResults);
