@@ -37,6 +37,7 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -78,6 +79,8 @@ public class ReportsTransfer implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemFacade itemFacade;
+    @EJB
+    BillService billService;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -282,12 +285,9 @@ public class ReportsTransfer implements Serializable {
         } else {
             sql += "order by  SUM(bi.pharmaceuticalBillItem.stock.itemBatch.retailsaleRate * bi.pharmaceuticalBillItem.qty) asc";
         }
-        ////System.out.println("sql = " + sql);
-        ////System.out.println("m = " + m);
         List<Object[]> objs = getBillItemFacade().findAggregates(sql, m, TemporalType.TIMESTAMP);
         movementRecords = new ArrayList<>();
         if (objs == null) {
-            ////System.out.println("objs = " + objs);
             return;
         }
         for (Object[] obj : objs) {
@@ -490,9 +490,6 @@ public class ReportsTransfer implements Serializable {
                         + " and b.retired=false "
                         + " order by b.id";
             }
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
-            System.out.println("getBillFacade() = " + getBillFacade());
 
             transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
 
@@ -578,7 +575,18 @@ public class ReportsTransfer implements Serializable {
             discountsValue = 0.0;
             netTotalValues = 0.0;
             marginValue = 0;
+            netTotalPurchaseValues = 0.0;
             for (Bill b : transferBills) {
+                if (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue() == 0) {
+                    billService.createBillFinancialDetailsForPharmacyBill(b);
+                }
+                Double pv = (b.getBillFinanceDetails() == null
+                        || b.getBillFinanceDetails().getTotalPurchaseValue() == null)
+                        ? 0.0
+                        : b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+                netTotalPurchaseValues += pv;
                 totalsValue = totalsValue + (b.getTotal());
                 discountsValue = discountsValue + b.getDiscount();
                 marginValue += b.getMargin();
@@ -1273,7 +1281,6 @@ public class ReportsTransfer implements Serializable {
     public void fillItemCountsWithOutMargin(BillType bt) {
 
         List<Object[]> list = fetchBillItemWithOutMargin(bt);
-        ////System.out.println("list = " + list);
         if (list == null) {
             return;
         }
@@ -1798,7 +1805,6 @@ public class ReportsTransfer implements Serializable {
         for (Item i : fetchStockItems()) {
             ItemBHTIssueCountTrancerReciveCount count = new ItemBHTIssueCountTrancerReciveCount();
             count.setI(i);
-            //System.out.println("i.getName() = " + i.getName());
             List<Object[]> object = fetchItemDetails(i);
             double qty;
             try {

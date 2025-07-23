@@ -21,12 +21,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.convert.Converter;
 import javax.faces.convert.FacesConverter;
+import com.divudi.service.AuditService;
 
 /**
  *
@@ -45,12 +47,16 @@ public class ConfigOptionController implements Serializable {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
+    @EJB
+    AuditService auditService;
+
     private ConfigOption option;
     private Institution institution;
     private Department department;
     private WebUser webUser;
     private List<ConfigOption> options;
     private List<ConfigOption> filteredOptions;
+    private List<ConfigOptionDuplicateGroup> duplicateGroups;
 
     private String key;
     private String value;
@@ -98,11 +104,21 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing Selected");
             return;
         }
+        Map<String, Object> before = new HashMap<>();
+        before.put("optionKey", delo.getOptionKey());
+        before.put("optionValue", delo.getOptionValue());
+
         delo.setRetireComments("del");
         delo.setRetired(true);
         delo.setRetiredAt(new Date());
         delo.setRetirer(sessionController.getLoggedUser());
         saveOption(delo);
+
+        Map<String, Object> after = new HashMap<>();
+        after.put("optionKey", delo.getOptionKey());
+        after.put("retired", true);
+
+        auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), "Delete Config Option");
         configOptionApplicationController.loadApplicationOptions();
         JsfUtil.addSuccessMessage("Deleted");
     }
@@ -139,7 +155,18 @@ public class ConfigOptionController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to save");
             return;
         }
-        if (option.getId() == null) {
+        Map<String, Object> before = null;
+        boolean creating = option.getId() == null;
+        if (!creating) {
+            ConfigOption existing = optionFacade.find(option.getId());
+            if (existing != null) {
+                before = new HashMap<>();
+                before.put("optionKey", existing.getOptionKey());
+                before.put("optionValue", existing.getOptionValue());
+            }
+        }
+
+        if (creating) {
             option.setCreatedAt(new Date());
             option.setCreater(sessionController.getLoggedUser());
             optionFacade.create(option);
@@ -147,6 +174,13 @@ public class ConfigOptionController implements Serializable {
             optionFacade.edit(option);
         }
         configOptionApplicationController.loadApplicationOptions();
+
+        Map<String, Object> after = new HashMap<>();
+        after.put("optionKey", option.getOptionKey());
+        after.put("optionValue", option.getOptionValue());
+
+        String trigger = creating ? "Create Config Option" : "Update Config Option";
+        auditService.logAudit(before, after, sessionController.getLoggedUser(), ConfigOption.class.getSimpleName(), trigger);
     }
 
     public ConfigOption getOptionValueByKey(String key, OptionScope scope, Institution institution, Department department, WebUser webUser) {
@@ -574,6 +608,66 @@ public class ConfigOptionController implements Serializable {
 
     public void setFilteredOptions(List<ConfigOption> filteredOptions) {
         this.filteredOptions = filteredOptions;
+    }
+
+    public List<ConfigOptionDuplicateGroup> getDuplicateGroups() {
+        return duplicateGroups;
+    }
+
+    public String navigateToDuplicateOptions() {
+        detectDuplicateOptions();
+        return "/admin/institutions/config_option_duplicates?faces-redirect=true";
+    }
+
+    public void detectDuplicateOptions() {
+        String jpql = "SELECT o FROM ConfigOption o WHERE o.retired=false ORDER BY o.optionKey, o.scope, o.id";
+        List<ConfigOption> all = optionFacade.findByJpql(jpql);
+        Map<String, List<ConfigOption>> grouped = all.stream().collect(Collectors.groupingBy(o -> o.getOptionKey() + "|" + o.getScope() + "|" +
+                (o.getInstitution()==null?"null":o.getInstitution().getId()) + "|" +
+                (o.getDepartment()==null?"null":o.getDepartment().getId()) + "|" +
+                (o.getWebUser()==null?"null":o.getWebUser().getId())));
+        duplicateGroups = grouped.values().stream()
+                .filter(l -> l.size() > 1)
+                .map(l -> new ConfigOptionDuplicateGroup(l))
+                .collect(Collectors.toList());
+    }
+
+    public void retireDuplicateGroup(ConfigOptionDuplicateGroup g) {
+        if (g == null || g.getOptions() == null || g.getOptions().size() < 2) {
+            return;
+        }
+        g.getOptions().sort((a,b) -> a.getId().compareTo(b.getId()));
+        ConfigOption keep = g.getOptions().get(0);
+        for(int i=1;i<g.getOptions().size();i++){
+            ConfigOption o = g.getOptions().get(i);
+            o.setRetired(true);
+            o.setRetiredAt(new Date());
+            o.setRetirer(sessionController.getLoggedUser());
+            saveOption(o);
+        }
+        detectDuplicateOptions();
+        configOptionApplicationController.loadApplicationOptions();
+        JsfUtil.addSuccessMessage("Duplicates retired for " + keep.getOptionKey());
+    }
+
+    public static class ConfigOptionDuplicateGroup {
+        private List<ConfigOption> options;
+
+        public ConfigOptionDuplicateGroup(List<ConfigOption> options) {
+            this.options = options;
+        }
+
+        public List<ConfigOption> getOptions() {
+            return options;
+        }
+
+        public String getOptionKey() {
+            return options.get(0).getOptionKey();
+        }
+
+        public OptionScope getScope() {
+            return options.get(0).getScope();
+        }
     }
 
     @FacesConverter(forClass = ConfigOption.class)

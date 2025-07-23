@@ -48,6 +48,7 @@ import com.divudi.core.data.CollectingCentrePaymentMethod;
 import com.divudi.core.data.EncounterType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
@@ -320,21 +321,23 @@ public class DataUploadController implements Serializable {
     private int distributorCol = 11;
     private int manufacturerCol = 12;
     private int importerCol = 13;
-    private int doeCol = 14;
-    private int batchCol = 15;
-    private int stockQtyCol = 16;
+    private int departmentTypeCol = 14;
+    private int doeCol = 15;
+    private int batchCol = 16;
+    private int stockQtyCol = 17;
     private int pruchaseRateCol = 17;
     private int saleRateCol = 18;
     private List<PharmacyImportCol> itemNotPresent;
     private List<String> itemsWithDifferentGenericName;
     private List<String> itemsWithDifferentCode;
-    
-    
-    
+
     private List<ItemFee> uploadeditemFees;
     private List<ItemLight> rejecteditemFees;
 
     private int startRow = 1;
+
+    private boolean skipDepartmentTypeColumn;
+    private DepartmentType defaultDepartmentType = DepartmentType.Pharmacy;
 
     public String navigateToRouteUpload() {
         uploadComplete = false;
@@ -375,6 +378,26 @@ public class DataUploadController implements Serializable {
             JsfUtil.addErrorMessage("No File");
             return "";
         }
+        catCol = 1;                   // B
+        ampCol = 2;                   // C
+        codeCol = 3;                  // D
+        barcodeCol = 4;               // E
+        vtmCol = 5;                   // F
+        strengthOfIssueUnitCol = 6;  // G
+        strengthUnitCol = 7;         // H
+        issueUnitsPerPackCol = 8;    // I
+        issueUnitCol = 9;            // J
+        packUnitCol = 10;            // K
+        distributorCol = 11;         // L
+        manufacturerCol = 12;        // M
+        importerCol = 13;            // N
+        doeCol = 14;                 // O
+        batchCol = 15;               // P
+        stockQtyCol = 16;            // Q
+        pruchaseRateCol = 17;        // R
+        saleRateCol = 18;            // S
+
+        startRow = 1; // If header is on row 0
 
         String strCat;
         String strAmp;
@@ -584,6 +607,194 @@ public class DataUploadController implements Serializable {
         }
     }
 
+    public String importFromExcelWithoutStock() {
+        if (file == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+        if (file.getFileName() == null) {
+            JsfUtil.addErrorMessage("No File");
+            return "";
+        }
+
+        String strCat;
+        String strAmp;
+        String strCode;
+        String strBarcode;
+        String strGenericName;
+        String strStrength;
+        String strStrengthUnit;
+        String strPackSize;
+        String strIssueUnit;
+        String strPackUnit;
+        String strDistributor;
+        String strManufacturer;
+        String strImporter;
+
+        PharmaceuticalItemCategory cat;
+        PharmaceuticalItemType phType;
+        Vtm vtm;
+        Atm atm;
+        Vmp vmp;
+        Amp amp;
+        Ampp ampp;
+        Vmpp vmpp;
+        VirtualProductIngredient vtmsvmps;
+        MeasurementUnit issueUnit;
+        MeasurementUnit strengthUnit;
+        MeasurementUnit packUnit;
+        double strengthUnitsPerIssueUnit;
+        double issueUnitsPerPack;
+        Institution distributor;
+        Institution manufacturer;
+        Institution importer;
+
+        StringBuilder warningMessages = new StringBuilder();
+
+        int rowCount = 0;
+
+        try (InputStream in = file.getInputStream(); Workbook workbook = new XSSFWorkbook(in)) {
+            rowCount++;
+            System.out.println("rowCount at Start of a row= " + rowCount);
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            JsfUtil.addSuccessMessage(file.getFileName());
+
+            int rowIndex = 0;
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                if (rowIndex++ < startRow) {
+                    continue;
+                }
+
+                Map<String, Object> m = new HashMap<>();
+
+                Cell catCell = row.getCell(catCol);
+                strCat = getStringCellValue(catCell);
+                if (strCat == null || strCat.trim().isEmpty()) {
+                    continue;
+                }
+                cat = getPharmacyBean().getPharmaceuticalCategoryByName(strCat);
+                if (cat == null) {
+                    continue;
+                }
+                phType = getPharmacyBean().getPharmaceuticalItemTypeByName(strCat);
+
+                Cell strengthUnitCell = row.getCell(strengthUnitCol);
+                strStrengthUnit = getStringCellValue(strengthUnitCell);
+                strengthUnit = getPharmacyBean().getUnitByName(strStrengthUnit);
+                if (strengthUnit == null) {
+                    continue;
+                }
+
+                Cell packUnitCell = row.getCell(packUnitCol);
+                strPackUnit = getStringCellValue(packUnitCell);
+                packUnit = getPharmacyBean().getUnitByName(strPackUnit);
+                if (packUnit == null) {
+                    continue;
+                }
+
+                Cell issueUnitCell = row.getCell(issueUnitCol);
+                strIssueUnit = getStringCellValue(issueUnitCell);
+                issueUnit = getPharmacyBean().getUnitByName(strIssueUnit);
+                if (issueUnit == null) {
+                    continue;
+                }
+
+                Cell strengthCell = row.getCell(strengthOfIssueUnitCol);
+                strStrength = getCellValueAsString(strengthCell);
+                strengthUnitsPerIssueUnit = parseDouble(strStrength);
+
+                Cell packSizeCell = row.getCell(issueUnitsPerPackCol);
+                strPackSize = getCellValueAsString(packSizeCell);
+                issueUnitsPerPack = parseDouble(strPackSize);
+
+                Cell vtmCell = row.getCell(vtmCol);
+                strGenericName = getCellValueAsString(vtmCell);
+                vtm = !strGenericName.isEmpty() ? getPharmacyBean().getVtmByName(strGenericName) : null;
+
+                vmp = getPharmacyBean().getVmp(vtm, strengthUnitsPerIssueUnit, strengthUnit, cat);
+                if (vmp == null) {
+                    continue;
+                } else {
+                    vmp.setCategory(phType);
+                    getVmpFacade().edit(vmp);
+                }
+
+                strCode = getCellValueAsString(row.getCell(codeCol));
+                strBarcode = getCellValueAsString(row.getCell(barcodeCol));
+
+                strDistributor = getCellValueAsString(row.getCell(distributorCol));
+                
+                DepartmentType deptType = null;
+                if (!skipDepartmentTypeColumn) {
+                    String strDepartmentType = getCellValueAsString(row.getCell(departmentTypeCol));
+                    deptType = departmentController.findDepartmentType(strDepartmentType);
+                }
+                if (deptType == null) {
+                    deptType = defaultDepartmentType != null ? defaultDepartmentType : DepartmentType.Pharmacy;
+                }
+
+                Cell ampCell = row.getCell(ampCol);
+                strAmp = getCellValueAsString(ampCell);
+                m.put("v", vmp);
+                m.put("n", strAmp.toUpperCase());
+                amp = ampFacade.findFirstByJpql("SELECT c FROM Amp c Where c.retired=false and (c.name)=:n AND c.vmp=:v", m);
+                if (amp == null) {
+                    amp = new Amp();
+                    amp.setName(strAmp);
+                    amp.setCode(strCode);
+                    amp.setBarcode(strBarcode);
+                    amp.setMeasurementUnit(strengthUnit);
+                    amp.setIssueUnit(issueUnit);
+                    amp.setStrengthUnit(strengthUnit);
+                    amp.setDblValue(strengthUnitsPerIssueUnit);
+                    amp.setCategory(cat);
+                    amp.setVmp(vmp);
+                    amp.setDepartmentType(deptType);
+                    getAmpFacade().create(amp);
+                } else {
+                    amp.setRetired(false);
+                    getAmpFacade().edit(amp);
+                }
+
+                if (amp == null) {
+                    continue;
+                }
+
+                if (issueUnitsPerPack > 1.0) {
+                    ampp = getPharmacyBean().getAmpp(amp, issueUnitsPerPack, packUnit);
+                }
+                amp.setCode(strCode);
+                getAmpFacade().edit(amp);
+                amp.setBarcode(strBarcode);
+                getAmpFacade().edit(amp);
+
+                strManufacturer = getCellValueAsString(row.getCell(manufacturerCol));
+                manufacturer = getInstitutionController().getInstitutionByName(strManufacturer, InstitutionType.Manufacturer);
+                amp.setManufacturer(manufacturer);
+
+                strImporter = getCellValueAsString(row.getCell(importerCol));
+                importer = getInstitutionController().getInstitutionByName(strImporter, InstitutionType.Importer);
+                amp.setImporter(importer);
+
+                amp.setDepartmentType(deptType);
+
+                System.out.println("amp = " + amp);
+                System.out.println("rowCount at End of a row= " + rowCount);
+            }
+            if (warningMessages.length() > 0) {
+                JsfUtil.addErrorMessage(warningMessages.toString());
+            }
+            JsfUtil.addSuccessMessage("Successful. All the data in Excel File Imported to the database");
+            return "";
+        } catch (IOException e) {
+            JsfUtil.addErrorMessage(e.getMessage());
+            return "";
+        }
+    }
+
     private String getStringCellValue(Cell cell) {
         return (cell != null && cell.getCellType() == CellType.STRING) ? cell.getStringCellValue() : "";
     }
@@ -608,6 +819,18 @@ public class DataUploadController implements Serializable {
             default:
                 return "";
         }
+    }
+
+    public String importFromExcelWithoutStockLab() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Lab;
+        return importFromExcelWithoutStock();
+    }
+
+    public String importFromExcelWithoutStockStore() {
+        skipDepartmentTypeColumn = true;
+        defaultDepartmentType = DepartmentType.Store;
+        return importFromExcelWithoutStock();
     }
 
     private double parseDouble(String value) {
@@ -5292,7 +5515,7 @@ public class DataUploadController implements Serializable {
         Iterator<Row> rowIterator = sheet.rowIterator();
 
         itemFees = new ArrayList<>();
-        
+
         uploadeditemFees = new ArrayList<>();
         rejecteditemFees = new ArrayList<>();
 
@@ -5317,7 +5540,7 @@ public class DataUploadController implements Serializable {
             Double localFee = 0.0;
             Double foreignerFee = 0.0;
             String forInstitutionName = null;
-            
+
             ItemLight currentUploadItem = new ItemLight();
 
             Cell insCell = row.getCell(6);
@@ -5361,13 +5584,13 @@ public class DataUploadController implements Serializable {
             }
             if (itemCode != null) {
             }
-            
+
             // Column B: Item Name (Required)
             Cell itemNameCell = row.getCell(1);
             if (itemNameCell != null && itemNameCell.getCellType() == CellType.STRING) {
                 itemName = itemNameCell.getStringCellValue();
             }
-            
+
             if (itemCode == null || itemCode.trim().isEmpty()) {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
@@ -5390,13 +5613,13 @@ public class DataUploadController implements Serializable {
                 forInstitution = institutionController.findAndSaveInstitutionByName(forInstitutionName);
                 System.out.println("forInstitution = " + forInstitution);
             }
-            
+
             // Column D: Item Type 
             Cell itemTypeCell = row.getCell(3);
             if (itemTypeCell != null && itemTypeCell.getCellType() == CellType.STRING) {
                 itemTypeName = itemTypeCell.getStringCellValue();
             }
-            
+
             if (itemTypeName != null) {
                 switch (itemTypeName) {
                     case "Investigation":
@@ -5416,18 +5639,18 @@ public class DataUploadController implements Serializable {
             Cell localFeeCell = row.getCell(4);
             if (localFeeCell != null && localFeeCell.getCellType() == CellType.NUMERIC) {
                 localFee = localFeeCell.getNumericCellValue();
-            }else{
+            } else {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
                 rejecteditemFees.add(currentUploadItem);
                 continue;
             }
-            
+
             // Column E: Foreigner Fee Value
             Cell foreignerFeeCell = row.getCell(5);
             if (foreignerFeeCell != null && foreignerFeeCell.getCellType() == CellType.NUMERIC) {
                 foreignerFee = foreignerFeeCell.getNumericCellValue();
-            }else{
+            } else {
                 currentUploadItem.setCode(itemCode);
                 currentUploadItem.setName(itemName);
                 rejecteditemFees.add(currentUploadItem);
@@ -5448,7 +5671,7 @@ public class DataUploadController implements Serializable {
             fee.setFeeType(FeeType.OwnInstitution);
             itemFeeFacade.create(fee);
             System.out.println("Create Fee = " + fee.getId());
-            
+
             uploadeditemFees.add(fee);
 
         }
@@ -5689,6 +5912,7 @@ public class DataUploadController implements Serializable {
             }
         }
     }
+
     public StreamedContent getTemplateForDepartmentUpload() {
         try {
             createTemplateForDepartmentUpload();
@@ -7292,7 +7516,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public StreamedContent getTemplateForItemFeeUploadToSite() {
         try {
             createTemplateForItemFeeUploadToSite();
@@ -7301,7 +7525,7 @@ public class DataUploadController implements Serializable {
         }
         return templateForItemWithFeeUpload;
     }
-    
+
     public void createTemplateForItemFeeUploadToSite() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -7969,6 +8193,22 @@ public class DataUploadController implements Serializable {
 
     public void setRejecteditemFees(List<ItemLight> rejecteditemFees) {
         this.rejecteditemFees = rejecteditemFees;
+    }
+
+    public boolean isSkipDepartmentTypeColumn() {
+        return skipDepartmentTypeColumn;
+    }
+
+    public void setSkipDepartmentTypeColumn(boolean skipDepartmentTypeColumn) {
+        this.skipDepartmentTypeColumn = skipDepartmentTypeColumn;
+    }
+
+    public DepartmentType getDefaultDepartmentType() {
+        return defaultDepartmentType;
+    }
+
+    public void setDefaultDepartmentType(DepartmentType defaultDepartmentType) {
+        this.defaultDepartmentType = defaultDepartmentType;
     }
 
 }

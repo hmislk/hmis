@@ -265,13 +265,13 @@ public class InwardSearch implements Serializable {
 //        }
 //    }
     public void refreshFinalBillBackwordReferenceBills() {
+        withProfessionalFee = true;
         if (bill == null) {
             return;
         }
         for (Bill b : bill.getBackwardReferenceBills()) {
             //   ////// // System.out.println("b = " + b);
         }
-
     }
 
     public String fromBhtFinalBillSearchToBillReprint() {
@@ -1768,8 +1768,8 @@ public class InwardSearch implements Serializable {
     public void changeIsMade() {
         changed = true;
     }
-    
-    public void refreshBill(){
+
+    public void refreshBill() {
         changed = false;
     }
 

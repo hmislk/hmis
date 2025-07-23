@@ -133,6 +133,7 @@ public class ReportTemplateRow implements Serializable {
     private Double discount;
     private Double total;
     private Double tax;
+    private Double serviceCharge;
 
     private Double hospitalTotal;
     private Double staffTotal;
@@ -197,6 +198,19 @@ public class ReportTemplateRow implements Serializable {
         this.totalHospitalFee = totalHospitalFee;
         this.qty = qty;
     }
+    
+    public ReportTemplateRow(String itemName, double cashValue, double cardValue, long long1, double creditValue, long long2, long long3, Double total, Double discount, Double serviceCharge ) {
+        this.itemName = itemName;
+        this.cashValue = cashValue;
+        this.cardValue = cardValue;
+        this.long1 = long1;
+        this.creditValue = creditValue;
+        this.long3 = long3;
+        this.total = total;
+        this.discount = discount;
+        this.serviceCharge = serviceCharge;
+    }
+    
 
     // Getter for UUID (optional, depending on use case)
     public UUID getId() {
@@ -1418,6 +1432,14 @@ public class ReportTemplateRow implements Serializable {
 
     public void setNetCount(Long netCount) {
         this.netCount = netCount;
+    }
+
+    public Double getServiceCharge() {
+        return serviceCharge;
+    }
+
+    public void setServiceCharge(Double serviceCharge) {
+        this.serviceCharge = serviceCharge;
     }
     
     

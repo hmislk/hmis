@@ -132,13 +132,16 @@ public class PreReturnController implements Serializable {
         
         getReturnBill().copy(getBill());
         getReturnBill().setBilledBill(getBill());
-        double dbl = 0 - getReturnBill().getTotal();
-        
+        double total = 0 - getReturnBill().getTotal();
+        double netTotal = 0 - getReturnBill().getNetTotal();
+        double discount = 0 - getReturnBill().getDiscount();
+
         getReturnBill().setBillType(BillType.PharmacyPre);
         getReturnBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_ONLY);
-        getReturnBill().setTotal(dbl);
-        getReturnBill().setNetTotal(dbl);
-        
+        getReturnBill().setTotal(total);
+        getReturnBill().setNetTotal(netTotal);
+        getReturnBill().setDiscount(discount);
+
         getReturnBill().setCreater(getSessionController().getLoggedUser());
         getReturnBill().setCreatedAt(Calendar.getInstance().getTime());
         
@@ -251,14 +254,19 @@ public class PreReturnController implements Serializable {
     
     private void calTotal() {
         double grossTotal = 0.0;
+        double discountTotal = 0.0;
+        double netTotal = 0.0;
+
         
         for (BillItem p : getBillItems()) {
-            grossTotal += p.getNetRate() * p.getQty();
-            
+            grossTotal += p.getNetRate() * p.getQty() + (p.getDiscountRate() * p.getQty());
+            discountTotal += p.getDiscountRate() * p.getQty();
+            netTotal += p.getNetRate() * p.getQty();
         }
         
         getReturnBill().setTotal(grossTotal);
-        getReturnBill().setNetTotal(grossTotal);
+        getReturnBill().setNetTotal(netTotal);
+        getReturnBill().setDiscount(discountTotal);
 
         //  return grossTotal;
     }

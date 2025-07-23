@@ -37,7 +37,17 @@
                 </div>
 
                 <p:accordionPanel >
-
+                    <p:tab title="Admin">
+                        <div class="d-grid gap-2">
+                            <h:form>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Bill DeptId Editor"
+                                    action="#{billDeptIdEditorController.navigateToBillDeptIdEditor()}"
+                                    class="w-100 m-1" />
+                            </h:form>
+                        </div>
+                    </p:tab>
                     <p:tab title="Pharmacy" >
                         <table class="table table-sm table-bordered w-100">
                             <thead class="table-light">
@@ -67,16 +77,35 @@
                                         #{billController.output}
                                     </td>
                                 </tr>
-                                <!--                                <tr>
-                                                                    <td><strong>Another Correction Task</strong></td>
-                                                                    <td>Description for another correction goes here</td>
-                                                                    <td>
-                                                                        <p:commandButton value="Do This Fix"  />
-                                                                    </td>
-                                                                    <td>
-                                #{financialTransactionController.output}
-                            </td>
-                        </tr>-->
+
+
+
+                                <tr>
+                                    <td><strong>Add Data to Bill Finance Details</strong></td>
+                                    <td>
+                                        Bill Finance Details is a newly added entity. Sll its data are not fully added while trnasactions.. This method willadd those data. Once all transactions are settled, this can be removed.
+                                    </td>
+
+                                    <td>
+                                        <h:form>
+
+                                            <p:commandButton 
+                                                value="Calculate Bill Finance Details for Pharmacy Sale Bills" 
+                                                ajax="false"
+                                                styleClass="ui-button-warning m-1"
+                                                icon="pi pi-cog"
+                                                action="#{pharmacySummaryReportController.addFinancialDetailsForPharmacySaleBillsFromBillItemData}">
+                                            </p:commandButton>
+
+                                        </h:form>
+                                    </td>
+                                    <td>
+                                        #{billController.output}
+                                    </td>
+                                </tr>
+
+
+
                             </tbody>
                         </table>
 
@@ -374,15 +403,16 @@
                             </div>
 
                             <div class="col-12 col-md-4 col-lg-2 p-1">
-                                <p:commandButton 
-                                    ajax="false" 
+                                <p:commandButton
+                                    ajax="false"
                                     disabled="true"
-                                    action="#{staffShiftController.updateStaffShiftWithoutRoster()}" 
+                                    action="#{staffShiftController.updateStaffShiftWithoutRoster()}"
                                     value="12. Update Staff Shift Without Roster"/>
                             </div>
 
                         </div>
                     </p:tab>
+
 
                 </p:accordionPanel>
 

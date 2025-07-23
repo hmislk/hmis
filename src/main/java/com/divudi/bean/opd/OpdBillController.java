@@ -45,10 +45,13 @@ import com.divudi.core.facade.PersonFacade;
 import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.lab.PatientInvestigationController;
+import com.divudi.core.data.BillCategory;
 import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BooleanMessage;
 import com.divudi.core.data.OptionScope;
+import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
@@ -556,7 +559,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 + " where b.backwardReferenceBill.id=:id";
         m.put("id", batchBillId);
         bills = getFacade().findByJpql(jpql, m);
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     public String navigateToViewOpdBatchBill() {
@@ -605,6 +608,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         switch (batchBill.getBillTypeAtomic()) {
             case OPD_BATCH_BILL_WITH_PAYMENT:
+                billSearch.fetchPatientInvestigationsAllowBypassSampleProcess(batchBill);
                 return "/opd/opd_batch_bill_print?faces-redirect=true";
             case PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT:
                 return "/opd/opd_package_batch_bill_print?faces-redirect=true";
@@ -683,7 +687,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getBillBean().checkBillItemFeesInitiated(b);
         }
         duplicatePrint = true;
-        return "/opd/opd_batch_bill_print?faces-redirect=true;";
+        return "/opd/opd_batch_bill_print?faces-redirect=true";
     }
 
     /**
@@ -737,7 +741,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         opdBill = new BilledBill();
         opdPaymentCredit = 0.0;
         comment = null;
-        indication=null;
+        indication = null;
         searchController.createTableByKeywordToPayBills();
     }
 
@@ -1740,7 +1744,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         Map<Department, Set<Category>> billDeptCats = new HashMap<>();
         // Collecting unique Departments and Categories
         for (BillEntry e : lstBillEntries) {
-            Department dept =  departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
+            Department dept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), e.getBillItem().getItem());
             Category cat = e.getBillItem().getItem().getCategory();
             billDeptCats.computeIfAbsent(dept, k -> new HashSet<>()).add(cat);
         }
@@ -1757,7 +1761,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
                 // Adding BillItems to the Bill
                 for (BillEntry billEntry : lstBillEntries) {
-                    Department dept =  departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), billEntry.getBillItem().getItem());
+                    Department dept = departmentResolver.resolvePerformingDepartment(sessionController.getDepartment(), billEntry.getBillItem().getItem());
                     if (Objects.equals(dept.getId(), d.getId())
                             && Objects.equals(billEntry.getBillItem().getItem().getCategory().getId(), c.getId())) {
                         BillItem bi = getBillBean().saveBillItem(newlyCreatedIndividualBill, billEntry, getSessionController().getLoggedUser());
@@ -1847,7 +1851,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             JsfUtil.addErrorMessage(discountSchemeValidation.getMessage());
             return null;
         }
-        
+
         if (!executeSettleBillActions()) {
             auditEventController.failAuditEvent(audirEvent, "Execute Settle Bill Action Failed because of errors in user inputs.");
             billSettlingStarted = false;
@@ -1865,6 +1869,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (patientEncounter != null) {
             return "/inward/inward_service_batch_bill_print?faces-redirect=true";
         } else {
+            billSearch.fetchPatientInvestigationsAllowBypassSampleProcess(getBatchBill());
             return "/opd/opd_batch_bill_print?faces-redirect=true";
         }
     }
@@ -2066,35 +2071,27 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setIndication(indication);
         newBatchBill.setIpOpOrCc("OP");
         boolean billNumberByYear;
-        String insId;
+        String batchBillId;
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         if (billNumberByYear) {
-            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+            batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getInstitution(),
                     getSessionController().getDepartment(),
                     BillType.OpdBathcBill,
                     BillClassType.BilledBill);
+            newBatchBill.setInsId(batchBillId);
+            newBatchBill.setDeptId(batchBillId);
+
         } else {
-            insId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
+            batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                     getSessionController().getDepartment(),
                     BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+
+            newBatchBill.setInsId(batchBillId);
+            newBatchBill.setDeptId(batchBillId);
         }
 
-        newBatchBill.setInsId(insId);
-
-        String deptId;
-
-        if (billNumberByYear) {
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
-                    getSessionController().getInstitution(),
-                    getSessionController().getDepartment(),
-                    BillType.OpdBathcBill,
-                    BillClassType.BilledBill);
-        } else {
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-        }
-        newBatchBill.setDeptId(deptId);
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2115,7 +2112,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         for (Bill b : bills) {
             b.setBackwardReferenceBill(newBatchBill);
             if (billNumberByYear) {
-                b.setDeptId(deptId + "/" + String.format("%02d", billCount));
+                b.setDeptId(batchBillId + "/" + String.format("%02d", billCount));
             }
             billCount++;
             dbl += b.getNetTotal();
@@ -2211,8 +2208,23 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 newBill.setComments(comment);
             }
         }
+        String deptId;
 
-        String deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+        boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+
+        if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
+        } else {
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        }
+
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
         newBill.setPaymentMethod(paymentMethod);
@@ -2354,6 +2366,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             remainAmount = total - multiplePaymentMethodTotalValue;
             return total - multiplePaymentMethodTotalValue;
@@ -2390,7 +2403,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -2404,6 +2416,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     break;
                 case Staff:
                     pm.getPaymentMethodData().getStaffCredit().setTotalValue(remainAmount);
+                    break;
+                case OnlineSettlement:
+                    pm.getPaymentMethodData().getOnlineSettlement().setTotalValue(remainAmount);
                     break;
                 default:
                     throw new IllegalArgumentException("Unexpected value: " + pm.getPaymentMethod());
@@ -2654,6 +2669,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getStaffCredit().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);
@@ -2785,12 +2801,17 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         List<BillFee> allBillFees;
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
+        
+        
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
-            allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
+            allBillFees = getBillBean().forInstitutionBillFeesFromBillItem(bi, sessionController.getDepartment().getSite());
+        }  else if (departmentBasedBillFees) {
+            allBillFees = getBillBean().forDepartmentBillFeesFromBillItem(bi, sessionController.getDepartment());
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
@@ -2805,7 +2826,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         addingEntry.setLstBillSessions(getBillBean().billSessionsfromBillItem(bi));
         getLstBillEntries().add(addingEntry);
-        
+
         bi.setRate(getBillBean().billItemRate(addingEntry));
         bi.setNetValue(bi.getRate() * bi.getQty());
 
@@ -2817,11 +2838,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         calTotals();
 
-        if (bi.getNetValue() == 0.0) {
-            JsfUtil.addErrorMessage("Please enter the rate");
-            return;
-        }
-
+        // Previously the system blocked adding items with a zero value. This
+        // restriction prevented recording fees that intentionally have no
+        // charge. Issue #12544 requires allowing such entries, so the check for
+        // a zero net value is removed. Items with a value of 0 are now
+        // permitted and will be processed like any other item.
         clearBillItemValues();
         boolean clearItemAfterAddingToOpdBill = configOptionApplicationController.getBooleanValueByKey("Clear Item After Adding To Opd Bill", true);
         if (clearItemAfterAddingToOpdBill) {
@@ -3180,6 +3201,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     public String navigateToNewOpdBill() {
+        patientController.setQuickSearchPhoneNumber(null);
         if (sessionController.getOpdBillingAfterShiftStart()) {
             financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
             if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
@@ -3284,7 +3306,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         int maxResults = maxResultsLong.intValue();
 
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
 
         // Split the query into individual tokens (space-separated)
         String[] tokens = query.toLowerCase().split("\\s+");
@@ -3304,6 +3327,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (matchFound) {
                 if (siteBasedBillFees) {
                     FeeValue f = feeValueController.getSiteFeeValue(opdItem.getId(), sessionController.getLoggedSite());
+                    if (f != null) {
+                        opdItem.setTotal(f.getTotalValueForLocals());
+                        opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
+                    }
+                } else if(departmentBasedBillFees){
+                    FeeValue f = feeValueController.getDepartmentFeeValue(opdItem.getId(), sessionController.getDepartment());
                     if (f != null) {
                         opdItem.setTotal(f.getTotalValueForLocals());
                         opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
@@ -3372,7 +3401,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (bs.getBill().getPatient() == null) {
                 return null;
             }
-            
+
             patient = bs.getBill().getPatient();
         }
 
@@ -4640,6 +4669,5 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     public void setIndication(String indication) {
         this.indication = indication;
     }
-    
-    
+
 }

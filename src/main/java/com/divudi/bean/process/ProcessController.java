@@ -60,17 +60,17 @@ public class ProcessController implements Serializable {
     private Institution site;
 
     public String navigateToProcessIndex() {
-        return "/process/index?faces-redirect=true;";
+        return "/process/index?faces-redirect=true";
     }
 
     public String navigateToStartNewProcessInstance() {
         resetVariablesToStartProcessInstance();
         stage = "initiate_process";
-        return "/process/process?faces-redirect=true;";
+        return "/process/process?faces-redirect=true";
     }
 
     public String navigateToListProcesses() {
-        return "/process/processes?faces-redirect=true;";
+        return "/process/processes?faces-redirect=true";
     }
 
     public String listOngoingProcessInstances() {
