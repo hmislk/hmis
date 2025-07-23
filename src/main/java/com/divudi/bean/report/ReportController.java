@@ -2010,15 +2010,34 @@ public class ReportController implements Serializable, ControllerWithReportFilte
 
         if (histories != null) {
             for (AgentHistory current : histories) {
+                // Check for balance calculation errors within the current transaction
+                double balanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
+                double transactionValue = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getTransactionValue());
+                double balanceAfter = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceAfterTransaction());
+                double expectedBalanceAfter = balanceBefore + transactionValue;
+                
+                double transactionDiff = Math.abs(expectedBalanceAfter - balanceAfter);
+                
+                if (transactionDiff > 0.01) { // Transaction calculation error
+                    if (!errors.contains(current)) {
+                        errors.add(current);
+                    }
+                }
+                
+                // Check for balance continuation errors between transactions
                 if (previous != null) {
                     double expectedBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(previous.getBalanceAfterTransaction());
                     double actualBalanceBefore = CommonFunctions.roundToTwoDecimalsBigDecimal(current.getBalanceBeforeTransaction());
 
-                    double diff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
+                    double continuationDiff = Math.abs(expectedBalanceBefore - actualBalanceBefore);
 
-                    if (diff > 1.0) { // Significant error
-                        errors.add(previous);
-                        errors.add(current);
+                    if (continuationDiff > 0.01) { // Balance continuation error
+                        if (!errors.contains(previous)) {
+                            errors.add(previous);
+                        }
+                        if (!errors.contains(current)) {
+                            errors.add(current);
+                        }
                     }
                 }
                 previous = current;
@@ -2034,7 +2053,7 @@ public class ReportController implements Serializable, ControllerWithReportFilte
                 + " where ah.retired = false "
                 + " and ah.createdAt between :fd and :td "
                 + " and ah.agency = :cc "
-                + " order by ah.bill.id";
+                + " order by ah.createdAt, ah.bill.id";
 
         m.put("fd", fromDate);
         m.put("td", toDate);
