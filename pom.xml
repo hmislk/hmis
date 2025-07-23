@@ -334,7 +334,7 @@
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
-            <version>5.13.0-M3</version>
+            <version>5.13.4</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>

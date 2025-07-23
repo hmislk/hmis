@@ -1072,13 +1072,13 @@ public class PharmacySummaryReportController implements Serializable {
                 ? BigDecimal.valueOf(pbi.getFreeQtyPacks())
                 : BigDecimal.valueOf(pbi.getFreeQty());
 
-        // Total quantity = qty + free
-        BigDecimal totalQty = qty.add(freeQty);
+        // Total quantity = qty + free (using null-safe operations)
+        BigDecimal totalQty = BigDecimalUtil.add(qty, freeQty);
 
-        // Convert quantities to atomic units
-        BigDecimal qtyInUnits = qty.multiply(unitsPerPack);
-        BigDecimal freeQtyInUnits = freeQty.multiply(unitsPerPack);
-        BigDecimal totalQtyInUnits = qtyInUnits.add(freeQtyInUnits);
+        // Convert quantities to atomic units (using null-safe operations)
+        BigDecimal qtyInUnits = BigDecimalUtil.multiply(qty, unitsPerPack);
+        BigDecimal freeQtyInUnits = BigDecimalUtil.multiply(freeQty, unitsPerPack);
+        BigDecimal totalQtyInUnits = BigDecimalUtil.add(qtyInUnits, freeQtyInUnits);
 
         // Assign quantity values to bifd
         bifd.setUnitsPerPack(unitsPerPack);
@@ -1109,45 +1109,45 @@ public class PharmacySummaryReportController implements Serializable {
         bifd.setTotalCostRate(lineCostRate);
 
         // Assign cost values
-        bifd.setLineCost(lineCostRate.multiply(totalQtyInUnits));
+        bifd.setLineCost(BigDecimalUtil.multiply(lineCostRate, totalQtyInUnits));
         bifd.setBillCost(BigDecimal.ZERO);
         bifd.setTotalCost(bifd.getLineCost());
 
         // Assign gross rate (sale rate)
         BigDecimal lineGrossRate = BigDecimal.valueOf(bi.getRate());
         bifd.setRetailSaleRate(lineGrossRate);
-        bifd.setRetailSaleRatePerUnit(lineGrossRate.multiply(unitsPerPack));
+        bifd.setRetailSaleRatePerUnit(BigDecimalUtil.multiply(lineGrossRate, unitsPerPack));
 
         // Calculate discount, tax, and expense from bill using proportion
-        BigDecimal discountPortionFromBill = BigDecimal.valueOf(bill.getDiscount()).multiply(proportion);
-        BigDecimal taxPortionFromBill = BigDecimal.valueOf(bill.getTax()).multiply(proportion);
-        BigDecimal expensePortionFromBill = BigDecimal.valueOf(bill.getExpenseTotal()).multiply(proportion);
+        BigDecimal discountPortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getDiscount()), proportion);
+        BigDecimal taxPortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getTax()), proportion);
+        BigDecimal expensePortionFromBill = BigDecimalUtil.multiply(BigDecimal.valueOf(bill.getExpenseTotal()), proportion);
 
-        // Calculate the difference between gross and net as gap
-        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = taxPortionFromBill
-                .add(expensePortionFromBill)
-                .subtract(discountPortionFromBill);
+        // Calculate the difference between gross and net as gap (using null-safe operations)
+        BigDecimal gapPortionFromBillNetTotalFromBillGrossTotal = BigDecimalUtil.subtract(
+                BigDecimalUtil.add(taxPortionFromBill, expensePortionFromBill), 
+                discountPortionFromBill);
 
         // Assign gross and net totals
         BigDecimal lineGrossTotal = BigDecimal.valueOf(bi.getGrossValue());
         BigDecimal billGrossTotal = BigDecimal.ZERO;
-        BigDecimal grossTotal = lineGrossTotal.add(billGrossTotal);
+        BigDecimal grossTotal = BigDecimalUtil.add(lineGrossTotal, billGrossTotal);
 
         BigDecimal lineNetTotal = BigDecimal.valueOf(bi.getNetValue());
         BigDecimal billNetTotal = gapPortionFromBillNetTotalFromBillGrossTotal;
-        BigDecimal netTotal = lineNetTotal.add(billNetTotal);
+        BigDecimal netTotal = BigDecimalUtil.add(lineNetTotal, billNetTotal);
 
         BigDecimal lineDiscountTotal = BigDecimal.valueOf(bi.getDiscount());
         BigDecimal billDiscountTotal = discountPortionFromBill;
-        BigDecimal discountTotal = lineDiscountTotal.add(billDiscountTotal);
+        BigDecimal discountTotal = BigDecimalUtil.add(lineDiscountTotal, billDiscountTotal);
 
         BigDecimal lineExpenseTotal = BigDecimal.ZERO;
         BigDecimal billExpenseTotal = expensePortionFromBill;
-        BigDecimal expenseTotal = lineExpenseTotal.add(billExpenseTotal); // ✅ fixed typo
+        BigDecimal expenseTotal = BigDecimalUtil.add(lineExpenseTotal, billExpenseTotal);
 
         BigDecimal lineTaxTotal = BigDecimal.ZERO;
         BigDecimal billTaxTotal = taxPortionFromBill;
-        BigDecimal taxTotal = lineTaxTotal.add(billTaxTotal);
+        BigDecimal taxTotal = BigDecimalUtil.add(lineTaxTotal, billTaxTotal);
 
         // Assign gross totals
         bifd.setLineGrossTotal(lineGrossTotal);
