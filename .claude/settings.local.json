@@ -37,7 +37,8 @@
       "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" --version)",
       "Bash(set JAVA_HOME=C:Program FilesOpenLogicjdk-11.0.24.8-hotspot)",
       "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn\" test -Dtest=\"*BigDecimal*\")",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
