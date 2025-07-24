@@ -50,7 +50,8 @@
       "Bash(gh project list:*)",
       "Bash(gh auth:*)",
       "Bash(gh pr list:*)",
-      "Bash(gh pr view:*)"
+      "Bash(gh pr view:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
