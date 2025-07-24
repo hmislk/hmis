@@ -850,7 +850,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleReturnBill().getBillItems().add(sbi);
         }
@@ -1192,6 +1191,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        if (p == null) {
+            System.err.println("Payment object is null, cannot set payment method data");
+            return;
+        }
 
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
@@ -1199,10 +1202,21 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
 
-        p.setPaidValue(p.getBill().getNetTotal());
+        if (p.getBill() != null) {
+            p.setPaidValue(p.getBill().getNetTotal());
+        } else {
+            System.err.println("Bill is null for Payment, cannot set paid value");
+            p.setPaidValue(0.0);
+        }
 
         if (p.getId() == null) {
-            getPaymentFacade().create(p);
+            try {
+                getPaymentFacade().create(p);
+            } catch (Exception e) {
+                System.err.println("Error creating Payment: " + e.getMessage());
+                e.printStackTrace();
+                throw e;
+            }
         }
 
     }
