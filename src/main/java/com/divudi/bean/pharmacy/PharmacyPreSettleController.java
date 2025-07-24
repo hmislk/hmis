@@ -869,7 +869,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleReturnBill().getBillItems().add(sbi);
         }
-        getBillFacade().edit(getSaleReturnBill());
+        // getBillFacade().edit(getSaleReturnBill()); // Removed to avoid FK constraint violation with Payment cascade
     }
 
     public boolean errorCheckOnPaymentMethod() {
