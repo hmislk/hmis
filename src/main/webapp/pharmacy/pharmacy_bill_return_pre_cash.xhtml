@@ -92,7 +92,9 @@
                                         <p:outputLabel value="Payment Method" ></p:outputLabel>
                                         <p:selectOneMenu   
                                             id="cmbPs" 
-                                            value="#{pharmacyPreSettleController.preBill.paymentMethod}">
+                                            value="#{pharmacyPreSettleController.preBill.paymentMethod}"
+                                            required="true"
+                                            requiredMessage="Please select a payment method">
                                             <f:selectItem itemLabel="Select paymentMethod"/>
                                             <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
                                             <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
@@ -213,11 +215,11 @@
                                 </div>
                                 <div>
                                     <p:commandButton ajax="false" value="Search More Bills" 
-                                                   actionListener="#{pharmacyBillSearch.recreateModel()}" 
-                                                   action="pharmacy_search_pre_refund_bill_for_return_cash"
-                                                   class="ui-button-secondary mx-2"/>
+                                                     actionListener="#{pharmacyBillSearch.recreateModel()}" 
+                                                     action="pharmacy_search_pre_refund_bill_for_return_cash"
+                                                     class="ui-button-secondary mx-2"/>
                                     <p:commandButton ajax="false" value="Print Receipt"  
-                                                   styleClass="noPrintButton ui-button-info" >
+                                                     styleClass="noPrintButton ui-button-info" >
                                         <p:printer target="gpBillPreview" />
                                     </p:commandButton>
                                 </div>
