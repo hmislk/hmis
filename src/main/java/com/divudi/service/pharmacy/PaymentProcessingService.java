@@ -12,6 +12,8 @@ import com.divudi.core.facade.PaymentFacade;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+// Updated payment field population for various methods (refs #14152)
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 
@@ -50,6 +52,48 @@ public class PaymentProcessingService {
                 break;
             case Cash:
                 payment.setPaidValue(data.getCash().getTotalValue());
+                break;
+            case ewallet:
+                payment.setPaidValue(data.getEwallet().getTotalValue());
+                payment.setPolicyNo(data.getEwallet().getReferralNo());
+                payment.setComments(data.getEwallet().getComment());
+                payment.setReferenceNo(data.getEwallet().getReferenceNo());
+                payment.setCreditCompany(data.getEwallet().getInstitution());
+                break;
+            case Credit:
+                payment.setPaidValue(data.getCredit().getTotalValue());
+                payment.setPolicyNo(data.getCredit().getReferralNo());
+                payment.setComments(data.getCredit().getComment());
+                payment.setReferenceNo(data.getCredit().getReferenceNo());
+                payment.setCreditCompany(data.getCredit().getInstitution());
+                break;
+            case PatientDeposit:
+                payment.setPaidValue(data.getPatient_deposit().getTotalValue());
+                break;
+            case Slip:
+                payment.setPaidValue(data.getSlip().getTotalValue());
+                payment.setComments(data.getSlip().getComment());
+                payment.setBank(data.getSlip().getInstitution());
+                payment.setReferenceNo(data.getSlip().getReferenceNo());
+                payment.setRealizedAt(data.getSlip().getDate());
+                payment.setPaymentDate(data.getSlip().getDate());
+                payment.setChequeDate(data.getSlip().getDate());
+                payment.setRealizedAt(data.getSlip().getDate());
+                break;
+            case OnCall:
+            case Staff:
+                payment.setPaidValue(data.getStaffCredit().getTotalValue());
+                payment.setComments(data.getStaffCredit().getComment());
+                break;
+            case OnlineSettlement:
+                payment.setPaidValue(data.getOnlineSettlement().getTotalValue());
+                payment.setComments(data.getOnlineSettlement().getComment());
+                break;
+            case IOU:
+                payment.setReferenceNo(data.getIou().getReferenceNo());
+                payment.setChequeDate(data.getIou().getDate());
+                payment.setToStaff(data.getIou().getToStaff());
+                payment.setComments(data.getIou().getComment());
                 break;
             default:
                 payment.setPaidValue(payment.getBill().getNetTotal());
