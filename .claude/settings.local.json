@@ -18,8 +18,11 @@
       "Bash(javac:*)",
       "Bash(mvn compile:*)",
       "Bash(./mvnw compile:*)",
-      "Bash(wc:*)",
       "Bash(rg:*)",
+      "Bash(gh issue comment:*)",
+      "Bash(git pull:*)",
+      "Bash(gh pr view:*)",
+      "Bash(wc:*)",
       "Bash(grep:*)",
       "Bash(find:*)"
     ],
