@@ -1008,16 +1008,16 @@ public class PharmacySummaryReportController implements Serializable {
         System.out.println("DEBUG: Created IncomeBundle, calling generateRetailAndCostDetailsForPharmaceuticalBill()");
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
         
-        System.out.println("DEBUG: Bundle processing complete. IncomeRows count: " + 
+        System.out.println("DEBUG: Bundle processing complete. IncomeRows count: " +
                          (bundle.getRows() != null ? bundle.getRows().size() : "null"));
-        
-        if (bundle.getRows() != null && !bundle.getIncomeRows().isEmpty()) {
+
+        if (bundle.getRows() != null && !bundle.getRows().isEmpty()) {
             System.out.println("DEBUG: Sample IncomeRow data:");
-            for (int i = 0; i < Math.min(3, bundle.getIncomeRows().size()); i++) {
-                IncomeRow row = bundle.getIncomeRows().get(i);
-                System.out.println("  Row[" + i + "] Name: " + row.getName() + 
-                                 ", RetailValue: " + row.getRetailValue() + 
-                                 ", CostValue: " + row.getCostValue() + 
+            for (int i = 0; i < Math.min(3, bundle.getRows().size()); i++) {
+                IncomeRow row = bundle.getRows().get(i);
+                System.out.println("  Row[" + i + "] Bill ID: " + row.getBillId() +
+                                 ", RetailValue: " + row.getRetailValue() +
+                                 ", PurchaseValue: " + row.getPurchaseValue() +
                                  ", GrossProfit: " + row.getGrossProfit());
             }
         }
