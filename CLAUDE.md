@@ -147,6 +147,7 @@ Different development machines have Maven installed in different locations.
 #### Known Configurations:
 - **cclap** (Computer: `CARECODE-LAP`, User: `buddhika`):
   - Maven: `C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd`
+  - Payara Server: `C:\Users\buddhika\Payara_Server` (Domain 1)
 - **hiulap** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
 - **hiud** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_ 
 - **ccd** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_

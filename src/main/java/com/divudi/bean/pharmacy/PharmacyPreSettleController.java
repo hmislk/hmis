@@ -837,37 +837,49 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     private void saveSaleReturnBillItems(Payment p) {
-        for (BillItem tbi : getPreBill().getBillItems()) {
-
-            BillItem sbi = new BillItem();
-
-            sbi.copy(tbi);
-            // sbi.invertAndAssignValuesFromOtherBill(tbi);
-
-            sbi.setBill(getSaleReturnBill());
-            sbi.setReferanceBillItem(tbi);
-            sbi.setCreatedAt(Calendar.getInstance().getTime());
-            sbi.setCreater(getSessionController().getLoggedUser());
-
-            if (sbi.getId() == null) {
-                getBillItemFacade().create(sbi);
-            }
-
-            PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
-            ph.copy(tbi.getPharmaceuticalBillItem());
-
-            ph.setBillItem(sbi);
-
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
-            }
-
-            saveBillFee(sbi, p);
-
-            //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
-            getSaleReturnBill().getBillItems().add(sbi);
+        if (p == null) {
+            System.err.println("Payment is null, cannot save sale return bill items");
+            throw new IllegalArgumentException("Payment cannot be null");
         }
-        getBillFacade().edit(getSaleReturnBill());
+        
+        try {
+            for (BillItem tbi : getPreBill().getBillItems()) {
+
+                BillItem sbi = new BillItem();
+
+                sbi.copy(tbi);
+                // sbi.invertAndAssignValuesFromOtherBill(tbi);
+
+                sbi.setBill(getSaleReturnBill());
+                sbi.setReferanceBillItem(tbi);
+                sbi.setCreatedAt(Calendar.getInstance().getTime());
+                sbi.setCreater(getSessionController().getLoggedUser());
+
+                if (sbi.getId() == null) {
+                    getBillItemFacade().create(sbi);
+                }
+
+                PharmaceuticalBillItem ph = new PharmaceuticalBillItem();
+                ph.copy(tbi.getPharmaceuticalBillItem());
+
+                ph.setBillItem(sbi);
+
+                if (ph.getId() == null) {
+                    getPharmaceuticalBillItemFacade().create(ph);
+                }
+
+                saveBillFee(sbi, p);
+
+                //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
+                getSaleReturnBill().getBillItems().add(sbi);
+            }
+            getBillFacade().edit(getSaleReturnBill());
+        } catch (Exception e) {
+            System.err.println("Error saving sale return bill items with Payment ID: " + (p.getId() != null ? p.getId() : "null"));
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to trigger transaction rollback
+        }
     }
 
     public boolean errorCheckOnPaymentMethod() {
@@ -1231,6 +1243,10 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     }
 
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
+        if (p == null) {
+            System.err.println("Payment object is null, cannot set payment method data");
+            return;
+        }
 
         p.setInstitution(getSessionController().getInstitution());
         p.setDepartment(getSessionController().getDepartment());
@@ -1238,24 +1254,50 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         p.setCreater(getSessionController().getLoggedUser());
         p.setPaymentMethod(pm);
 
-        p.setPaidValue(p.getBill().getNetTotal());
+        if (p.getBill() != null) {
+            p.setPaidValue(p.getBill().getNetTotal());
+        } else {
+            System.err.println("Bill is null for Payment, cannot set paid value");
+            p.setPaidValue(0.0);
+        }
 
         if (p.getId() == null) {
-            getPaymentFacade().create(p);
+            try {
+                getPaymentFacade().create(p);
+            } catch (Exception e) {
+                System.err.println("Error creating Payment: " + e.getMessage());
+                e.printStackTrace();
+                throw e;
+            }
         }
 
     }
 
     public void createBillFeePaymentAndPayment(BillFee bf, Payment p) {
-        BillFeePayment bfp = new BillFeePayment();
-        bfp.setBillFee(bf);
-        bfp.setAmount(bf.getSettleValue());
-        bfp.setInstitution(p.getBill().getFromInstitution());
-        bfp.setDepartment(p.getBill().getFromDepartment());
-        bfp.setCreater(getSessionController().getLoggedUser());
-        bfp.setCreatedAt(new Date());
-        bfp.setPayment(p);
-        getBillFeePaymentFacade().create(bfp);
+        if (bf == null || p == null) {
+            System.err.println("BillFee or Payment is null, cannot create BillFeePayment");
+            return;
+        }
+        
+        try {
+            BillFeePayment bfp = new BillFeePayment();
+            bfp.setBillFee(bf);
+            bfp.setAmount(bf.getSettleValue());
+            bfp.setInstitution(p.getBill() != null ? p.getBill().getFromInstitution() : null);
+            bfp.setDepartment(p.getBill() != null ? p.getBill().getFromDepartment() : null);
+            bfp.setCreater(getSessionController().getLoggedUser());
+            bfp.setCreatedAt(new Date());
+            bfp.setPayment(p);
+            
+            getBillFeePaymentFacade().create(bfp);
+        } catch (Exception e) {
+            // Log the error with more details
+            System.err.println("Error creating BillFeePayment for Payment ID: " + (p.getId() != null ? p.getId() : "null") + 
+                               ", BillFee ID: " + (bf.getId() != null ? bf.getId() : "null"));
+            System.err.println("Error message: " + e.getMessage());
+            e.printStackTrace();
+            throw e; // Re-throw to maintain transaction integrity
+        }
     }
 
     @EJB

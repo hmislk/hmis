@@ -12,6 +12,7 @@ This document records the development environment setups used by team members to
 - **Maven Location**: `C:\Program Files\NetBeans-20\netbeans\java\maven`
 - **IDE**: NetBeans 20 (Maven bundled)
 - **OS**: Windows
+- **Payara Server**: `C:\Users\buddhika\Payara_Server` (Domain 1)
 
 #### hiulap (Reference Name)
 - **Actual Computer Name**: _[To be documented - run `hostname` command]_
