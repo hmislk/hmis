@@ -515,10 +515,10 @@ public class GrnCostingController implements Serializable {
                 continue;
             }
 
-            double purchaseRate = bifd.getLineNetRate().doubleValue();
-            double retailRate = bifd.getRetailSaleRate().doubleValue();
-            double wholesaleRate = bifd.getWholesaleRate().doubleValue();
-            double costRate = bifd.getTotalCostRate().doubleValue();
+            double purchaseRate = bifd.getLineNetRate() != null ? bifd.getLineNetRate().doubleValue() : 0.0;
+            double retailRate = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate().doubleValue() : 0.0;
+            double wholesaleRate = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate().doubleValue() : 0.0;
+            double costRate = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate().doubleValue() : 0.0;
 
             System.out.println("  fd.getQuantity() = " + bifd.getQuantity());
             System.out.println("  fd.getFreeQuantity() = " + bifd.getFreeQuantity());
@@ -528,11 +528,12 @@ public class GrnCostingController implements Serializable {
             System.out.println("  wholesaleRate = " + wholesaleRate);
             System.out.println("  costRate = " + costRate);
 
-            billTotalAtCostRate += bifd.getTotalCost().doubleValue();
-            System.out.println("  Added to billTotalAtCostRate: " + bifd.getTotalCost().doubleValue() + " -> Current Total: " + billTotalAtCostRate);
+            double totalCostValue = bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
+            billTotalAtCostRate += totalCostValue;
+            System.out.println("  Added to billTotalAtCostRate: " + totalCostValue + " -> Current Total: " + billTotalAtCostRate);
 
-            double freeQty = bifd.getFreeQuantityByUnits().doubleValue();
-            double paidQty = bifd.getQuantityByUnits().doubleValue();
+            double freeQty = bifd.getFreeQuantityByUnits() != null ? bifd.getFreeQuantityByUnits().doubleValue() : 0.0;
+            double paidQty = bifd.getQuantityByUnits() != null ? bifd.getQuantityByUnits().doubleValue() : 0.0;
 
             System.out.println("  freeQty = " + freeQty);
             System.out.println("  paidQty = " + paidQty);
@@ -585,10 +586,18 @@ public class GrnCostingController implements Serializable {
                 bifd.setNetRate(BigDecimal.ZERO);
             }
             
-            bifd.setValueAtPurchaseRate(bifd.getLineGrossRate().multiply(bifd.getTotalQuantity()));
-            bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity()));
-            bifd.setValueAtCostRate(bifd.getTotalCostRate().multiply(bifd.getTotalQuantity()).multiply(bifd.getUnitsPerPack()));
-            bifd.setValueAtWholesaleRate(bifd.getWholesaleRate().multiply(bifd.getTotalQuantity()));
+            // Safe calculation of value rates with null checks
+            BigDecimal lineGrossRateBD = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
+            BigDecimal retailSaleRateBD = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
+            BigDecimal totalCostRateBD = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
+            BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
+            BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
+            BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
+            
+            bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtRetailRate(retailSaleRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
+            bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
             
         }
 
@@ -1792,6 +1801,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public SessionController getSessionController() {
+        if (sessionController == null) {
+            throw new IllegalStateException("SessionController is not properly injected");
+        }
         return sessionController;
     }
 

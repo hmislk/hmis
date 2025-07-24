@@ -402,6 +402,8 @@ public class DataAdministrationController implements Serializable {
 
     @Inject
     InvestigationController investigationController;
+    @Inject
+    BillController billController;
 
     public void addInstitutionToInvestigationsWithoutInstitution() {
         List<Investigation> lst = investigationController.getItems();
@@ -411,6 +413,25 @@ public class DataAdministrationController implements Serializable {
                 itemFacade.edit(ix);
             }
         }
+    }
+
+    public void assignPharmacyDepartmentTypeToPharmaceuticalItems() {
+        billController.setOutput(""); // Reset output
+        
+        Map<String, Object> params = new HashMap<>();
+        String jpql = "SELECT p FROM PharmaceuticalItem p WHERE p.departmentType IS NULL AND p.retired = false";
+        List<PharmaceuticalItem> items = pharmaceuticalItemFacade.findByJpql(jpql, params);
+        
+        billController.setOutput("Found " + items.size() + " PharmaceuticalItem(s) without department type.\n");
+        
+        int updatedCount = 0;
+        for (PharmaceuticalItem item : items) {
+            item.setDepartmentType(DepartmentType.Pharmacy);
+            pharmaceuticalItemFacade.edit(item);
+            updatedCount++;
+        }
+        
+        billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
     }
 
     public String getPayaraLogLocation() {

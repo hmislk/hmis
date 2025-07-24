@@ -121,14 +121,25 @@
                                                 itemLabel="#{s.name}" 
                                                 itemValue="#{s}" ></f:selectItems>
                                         </p:selectOneMenu>
+
+                                        <h:outputText value="Type" />
+                                        <p:selectOneMenu  
+                                            value="#{amppController.current.departmentType}" 
+                                            class="w-100"
+                                            filter="true"
+                                            disabled="#{!amppController.editable}"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                        </p:selectOneMenu>
+
                                         <p:outputLabel 
                                             for="txtComments" 
                                             value="Description" 
                                             class="form-label"></p:outputLabel>
                                         <h:inputTextarea
                                             id="txtComments"
--value="#{ampController.current.comments}"
-+value="#{amppController.current.comments}"
+                                            value="#{amppController.current.comments}"
                                             required="false"
                                             class="form-control"
                                             disabled="#{!amppController.editable}" ></h:inputTextarea>

@@ -348,6 +348,10 @@ public class GrnReturnWithCostingController implements Serializable {
             return BigDecimal.ZERO;
         }
         BigDecimal rate = fd.getGrossRate();
+        if (rate == null) {
+            rate = BigDecimal.ZERO;
+        }
+        
         if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Line Cost Rate", false)
                 && fd.getLineCostRate() != null) {
             rate = fd.getLineCostRate();
@@ -357,16 +361,24 @@ public class GrnReturnWithCostingController implements Serializable {
         } else if (configOptionApplicationController.getBooleanValueByKey("Direct Purchase Return Based On Purchase Rate", false)
                 && fd.getLineGrossRate() != null) {
             if (originalBillItem.getItem() instanceof Ampp) {
-                rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
             } else if (originalBillItem.getItem() instanceof Vmpp) {
-                rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                if (fd.getUnitsPerPack() != null && fd.getUnitsPerPack().compareTo(BigDecimal.ZERO) != 0) {
+                    rate = fd.getLineGrossRate().divide(fd.getUnitsPerPack());
+                } else {
+                    rate = fd.getLineGrossRate();
+                }
             } else if (originalBillItem.getItem() instanceof Amp) {
                 rate = fd.getLineGrossRate();
             } else if (originalBillItem.getItem() instanceof Vmp) {
                 rate = fd.getLineGrossRate();
             }
         }
-        return rate;
+        return rate != null ? rate : BigDecimal.ZERO;
     }
 
     public BigDecimal getReturnRate(BillItem originalBillItem) {
@@ -914,6 +926,15 @@ public class GrnReturnWithCostingController implements Serializable {
             System.out.println("lineGrossRateForAUnit = " + lineGrossRateForAUnit);
             BigDecimal unitsPerPack = newBillItemFinanceDetailsInReturnBill.getUnitsPerPack();
             System.out.println("unitsPerPack = " + unitsPerPack);
+            
+            // Ensure both values are not null before multiplication
+            if (lineGrossRateForAUnit == null) {
+                lineGrossRateForAUnit = BigDecimal.ZERO;
+            }
+            if (unitsPerPack == null) {
+                unitsPerPack = BigDecimal.ONE;
+            }
+            
             BigDecimal lineGrossRateAsEntered = lineGrossRateForAUnit.multiply(unitsPerPack);
             System.out.println("lineGrossRateAsEntered = " + lineGrossRateAsEntered);
             newBillItemFinanceDetailsInReturnBill.setLineGrossRate(lineGrossRateAsEntered);
