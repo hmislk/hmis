@@ -140,10 +140,11 @@
                                         id="billItems"
                                         value="#{pharmacyPreSettleController.preBill.billItems}" 
                                         var="bip"
+                                        rowKey="#{bip.id}"
                                         styleClass="table table-sm">
 
                                         <p:column headerText="No" styleClass="text-center" width="50">
-                                            #{bip.rowKey}
+                                            #{bip.id}
                                         </p:column>
 
                                         <p:column headerText="Item">

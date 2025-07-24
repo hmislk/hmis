@@ -59,7 +59,9 @@
       "Bash(echo $COMPUTERNAME)",
       "Bash(chmod:*)",
       "Bash(./detect-maven.sh:*)",
-      "Bash(gh pr create:*)"
+      "Bash(gh pr create:*)",
+      "Bash(gh pr close:*)",
+      "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" compile -Dfile.encoding=UTF-8)"
     ],
     "deny": []
   }
