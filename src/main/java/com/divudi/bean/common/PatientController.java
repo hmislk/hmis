@@ -2984,6 +2984,29 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return str;
     }
 
+    /**
+     * Applies patient name capitalization based on configuration settings
+     * @param patient Patient whose name should be capitalized
+     */
+    private void applyPatientNameCapitalization(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        
+        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+        String personName = patient.getPerson().getName();
+        
+        if (personName != null) {
+            if (capitalizeAll) {
+                personName = personName.toUpperCase();
+            } else if (capitalizeEach) {
+                personName = CommonFunctions.capitalizeFirstLetter(personName);
+            }
+            patient.getPerson().setName(personName);
+        }
+    }
+
     public boolean saveSelected() {
         return saveSelected(current);
     }
@@ -3059,17 +3082,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             }
         }
 
-        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
-        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
-        String personName = p.getPerson().getName();
-        if (personName != null) {
-            if (capitalizeAll) {
-                personName = personName.toUpperCase();
-            } else if (capitalizeEach) {
-                personName = CommonFunctions.capitalizeFirstLetter(personName);
-            }
-            p.getPerson().setName(personName);
-        }
+        applyPatientNameCapitalization(p);
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3162,6 +3175,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
+        applyPatientNameCapitalization(p);
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3229,6 +3244,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
+        applyPatientNameCapitalization(getCurrent());
+        
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());
