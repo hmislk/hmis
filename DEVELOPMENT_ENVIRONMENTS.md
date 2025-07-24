@@ -40,7 +40,7 @@ This document records the development environment setups used by team members to
 For convenience, use these scripts that automatically detect your machine and use the correct Maven:
 
 ### Windows
-```bash
+```cmd
 # Run tests
 detect-maven.bat test
 
@@ -88,7 +88,7 @@ mvn test
 ### Maven Home Settings
 Add these to your system or user environment variables:
 
-```
+```cmd
 MAVEN_HOME=C:\Program Files\NetBeans-20\netbeans\java\maven
 PATH=%PATH%;%MAVEN_HOME%\bin
 ```
