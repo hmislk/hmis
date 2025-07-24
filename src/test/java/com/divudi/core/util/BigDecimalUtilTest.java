@@ -135,14 +135,14 @@ public class BigDecimalUtilTest {
     public void testMultiply_WithFirstNull_ReturnsZero() {
         BigDecimal b = new BigDecimal("50.00");
         BigDecimal result = BigDecimalUtil.multiply(null, b);
-        assertEquals(BigDecimal.ZERO, result);
+        assertEquals(BigDecimal.ZERO.compareTo(result), 0);
     }
 
     @Test
     public void testMultiply_WithSecondNull_ReturnsZero() {
         BigDecimal a = new BigDecimal("25.00");
         BigDecimal result = BigDecimalUtil.multiply(a, null);
-        assertEquals(BigDecimal.ZERO, result);
+        assertEquals(BigDecimal.ZERO.compareTo(result), 0);
     }
 
     @Test
@@ -151,7 +151,7 @@ public class BigDecimalUtilTest {
         BigDecimal b = new BigDecimal("10.00");
         BigDecimal expected = new BigDecimal("50.00");
         BigDecimal result = BigDecimalUtil.multiply(a, b);
-        assertEquals(expected, result);
+        assertEquals(expected.compareTo(result), 0);
     }
 
     @Test
@@ -228,7 +228,7 @@ public class BigDecimalUtilTest {
         
         assertEquals(value, BigDecimalUtil.add(zero, value));
         assertEquals(value.negate(), BigDecimalUtil.subtract(zero, value));
-        assertEquals(BigDecimal.ZERO, BigDecimalUtil.multiply(zero, value));
+        assertEquals(BigDecimal.ZERO.compareTo(BigDecimalUtil.multiply(zero, value)), 0);
     }
     
     @Test
@@ -252,7 +252,7 @@ public class BigDecimalUtilTest {
         BigDecimal step1 = BigDecimalUtil.add(a, b); // 10.00 + 0.00 = 10.00
         BigDecimal result = BigDecimalUtil.multiply(step1, c); // 10.00 * 5.00 = 50.00
         
-        assertEquals(new BigDecimal("50.00"), result);
+        assertEquals(new BigDecimal("50.00").compareTo(result), 0);
     }
     
     @Test
