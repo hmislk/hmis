@@ -36,10 +36,12 @@
                             <p:panel>
                                 <p:panelGrid id="gpDetail" columns="1" class="w-100">
                                     <p:panelGrid id="gpDetailText" columns="2" columnClasses="w-25 , w-75" class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <p:outputLabel for="txtName" class="form-label">Name</p:outputLabel>
                                         <h:inputText id="txtName" autocomplete="off" value="#{atmController.current.name}" required="true"
                                                      class="form-control" requiredMessage="Name is required"
                                                      disabled="#{!atmController.editable}" />
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <p:outputLabel for="acVtm" class="form-label">VTM</p:outputLabel>
                                         <p:autoComplete id="acVtm" class="w-100" inputStyleClass="w-100"
                                                         completeMethod="#{vtmController.completeVtm}" value="#{atmController.current.vtm}"
