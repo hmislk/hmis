@@ -51,7 +51,15 @@
       "Bash(gh auth:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr view:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh issue create:*)",
+      "Bash(./mvnw.cmd test:*)",
+      "Bash(ls:*)",
+      "Bash(hostname)",
+      "Bash(echo $COMPUTERNAME)",
+      "Bash(chmod:*)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(gh pr create:*)"
     ],
     "deny": []
   }
