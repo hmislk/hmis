@@ -1575,13 +1575,16 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
 
 
+    @Override
     public List<Payment> createPaymentsForBill(Bill b) {
-        return paymentProcessingService.createPaymentsForBill(b,
+        return paymentProcessingService.createPaymentsForBill(
+                b,
                 b.getPaymentMethod(),
                 paymentMethodData,
                 sessionController.getInstitution(),
                 sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+                sessionController.getLoggedUser()
+        );
     }
 
     //    public void calculateAllRates() {
