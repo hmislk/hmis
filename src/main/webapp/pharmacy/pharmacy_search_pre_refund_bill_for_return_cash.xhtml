@@ -63,6 +63,7 @@
                                              value="#{searchController.bills}"
                                              var="bill"
                                              paginator="true"
+                                             rowKey="#{bill.id}"
                                              paginatorPosition="bottom"
                                              class="my-4"
                                              paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
@@ -102,9 +103,11 @@
                                     </p:column>
 
                                     <p:column>
-                                        <p:commandButton ajax="false" value="Return Payment"
-                                                         action="#{pharmacyPreSettleController.toSettleReturn(bill)}"
-                                                         disabled="#{bill.cancelled eq true}" >
+                                        <p:commandButton 
+                                            ajax="false" 
+                                            value="Return Payment"
+                                            action="#{pharmacyPreSettleController.toSettleReturn(bill)}"
+                                            disabled="#{bill.cancelled eq true}" >
                                         </p:commandButton>
                                     </p:column>
 
