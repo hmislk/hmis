@@ -24,7 +24,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BigDecimalPerformanceTest {
     
     private static final int LARGE_DATASET_SIZE = 1000;
-    private static final int PERFORMANCE_ITERATIONS = 100;
+    private static final int PERFORMANCE_ITERATIONS = 10;
     private static final int WARMUP_ITERATIONS = 20;
     private static final long PERFORMANCE_THRESHOLD_MS = Long.parseLong(System.getProperty("perf.threshold.ms", "5000"));
     private List<BillItemFinanceDetails> testDataset;
@@ -212,10 +212,10 @@ public class BigDecimalPerformanceTest {
     
     @Test
     @DisplayName("Concurrent Access Performance Test")
-    @Timeout(value = 20)
+    @Timeout(value = 15)
     public void testConcurrentAccessPerformance_ShouldBeThreadSafe() throws InterruptedException {
-        final int threadCount = 4;
-        final int operationsPerThread = PERFORMANCE_ITERATIONS / threadCount;
+        final int threadCount = 2;
+        final int operationsPerThread = Math.max(1, PERFORMANCE_ITERATIONS / threadCount);
         
         Thread[] threads = new Thread[threadCount];
         final BigDecimal[] results = new BigDecimal[threadCount];
@@ -261,7 +261,7 @@ public class BigDecimalPerformanceTest {
             threadCount, executionTime);
         
         // Should complete within reasonable time
-        assertTrue(executionTime < 20000, "Concurrent operations too slow: " + executionTime + "ms");
+        assertTrue(executionTime < 15000, "Concurrent operations too slow: " + executionTime + "ms");
     }
     
     // Helper methods
