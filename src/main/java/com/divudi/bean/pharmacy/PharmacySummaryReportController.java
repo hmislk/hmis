@@ -980,12 +980,48 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
+        System.out.println("=== DEBUG: processPharmacyIncomeAndCostReportByBillDto START ===");
+        System.out.println("DEBUG: Date range: " + fromDate + " to " + toDate);
+        System.out.println("DEBUG: Institution: " + (institution != null ? institution.getName() : "ALL"));
+        System.out.println("DEBUG: Department: " + (department != null ? department.getName() : "ALL"));
+        
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        System.out.println("DEBUG: Bill types: " + billTypeAtomics);
+        
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        System.out.println("DEBUG: Fetched " + (dtos != null ? dtos.size() : "null") + " bill DTOs");
+        
+        if (dtos != null && !dtos.isEmpty()) {
+            System.out.println("DEBUG: Sample DTO data:");
+            for (int i = 0; i < Math.min(3, dtos.size()); i++) {
+                PharmacyIncomeBillDTO dto = dtos.get(i);
+                System.out.println("  Bill[" + i + "] ID: " + dto.getBillId() + 
+                                 ", NetTotal: " + dto.getNetTotal() + 
+                                 ", RetailValue: " + dto.getTotalRetailSaleValue() + 
+                                 ", CostValue: " + dto.getTotalPurchaseValue());
+            }
+        }
 
         bundle = new IncomeBundle(dtos);
+        System.out.println("DEBUG: Created IncomeBundle, calling generateRetailAndCostDetailsForPharmaceuticalBill()");
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+        
+        System.out.println("DEBUG: Bundle processing complete. IncomeRows count: " + 
+                         (bundle.getRows() != null ? bundle.getRows().size() : "null"));
+        
+        if (bundle.getRows() != null && !bundle.getIncomeRows().isEmpty()) {
+            System.out.println("DEBUG: Sample IncomeRow data:");
+            for (int i = 0; i < Math.min(3, bundle.getIncomeRows().size()); i++) {
+                IncomeRow row = bundle.getIncomeRows().get(i);
+                System.out.println("  Row[" + i + "] Name: " + row.getName() + 
+                                 ", RetailValue: " + row.getRetailValue() + 
+                                 ", CostValue: " + row.getCostValue() + 
+                                 ", GrossProfit: " + row.getGrossProfit());
+            }
+        }
+        System.out.println("=== DEBUG: processPharmacyIncomeAndCostReportByBillDto END ===");
     }
 
     /**
