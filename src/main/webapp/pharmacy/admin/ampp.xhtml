@@ -76,6 +76,7 @@
                                         columns="2" 
                                         columnClasses="w-25 , w-75"
                                         class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <h:outputText
                                             id="lblName" 
                                             value="Pack Name" ></h:outputText>
@@ -85,6 +86,7 @@
                                             value="#{amppController.current.name}"
                                             class="w-100"
                                             disabled="#{!amppController.editable}"></p:inputText>
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <h:outputText 
                                             value="Select AMP" ></h:outputText>
                                         <p:autoComplete
