@@ -80,6 +80,7 @@
                                         columns="2"
                                         columnClasses="w-25 , w-75"
                                         class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                         <h:outputText value="Name" />
                                         <p:inputText
                                             autocomplete="off"
@@ -89,6 +90,17 @@
                                             requiredMessage="Enter a name for VTM"
                                             class="w-100"
                                             disabled="#{!vtmController.editable}" />
+
+                                        <h:outputText value="Type" />
+                                        <p:selectOneMenu  
+                                            value="#{vtmController.current.departmentType}" 
+                                            class="w-100"
+                                            filter="true"
+                                            disabled="#{!vtmController.editable}"
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                        </p:selectOneMenu>
 
                                         <h:outputText value="Description" />
                                         <h:inputTextarea

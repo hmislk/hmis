@@ -11,3 +11,6 @@
 .vscode
 nb-configuration.xml
 *.stackdump
+
+# Temporary files
+/tmp/

@@ -1984,6 +1984,8 @@ public class PharmacyReportController implements Serializable {
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_INWARD_MEDICINE_RETURN,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_CANCELLATION,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN,
+                BillTypeAtomic.ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION,
                 BillTypeAtomic.DIRECT_ISSUE_THEATRE_MEDICINE_RETURN
         );
         retrieveBillItems("b.billTypeAtomic", billTypes);
