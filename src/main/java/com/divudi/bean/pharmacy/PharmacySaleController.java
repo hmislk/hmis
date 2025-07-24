@@ -3417,4 +3417,14 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.billSettlingStarted = billSettlingStarted;
     }
 
+    public void calculateDobFromAge() {
+        if (patient == null) {
+            return;
+        }
+        if (patient.getPerson() == null) {
+            return;
+        }
+        patient.getPerson().calDobFromAge();
+    }
+
 }

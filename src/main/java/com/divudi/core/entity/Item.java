@@ -25,6 +25,7 @@ import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -903,6 +904,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity {
     }
 
     public DepartmentType getDepartmentType() {
+        if (departmentType == null && this instanceof PharmaceuticalItem) {
+            return DepartmentType.Pharmacy;
+        }
         return departmentType;
     }
 

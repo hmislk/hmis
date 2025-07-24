@@ -20,7 +20,8 @@
             </f:facet>
 
             <!-- Patient Details -->
-            <p:outputLabel value="Patient Details" styleClass="font-weight-bold bg-light p-2" colspan="2" />
+            <p:outputLabel value="Patient Details" styleClass="font-weight-bold bg-light p-2"  />
+            <p:separator></p:separator>
 
             <p:outputLabel value="Bill ID" />
             <p:outputLabel value="#{cc.attrs.bill.id}" />
@@ -73,7 +74,15 @@
             <p:outputLabel value="#{cc.attrs.bill.localNumber}" rendered="#{!cc.attrs.editable}" />
 
             <!-- Amounts -->
-            <p:outputLabel value="Amounts" styleClass="font-weight-bold bg-light p-2" colspan="2" />
+            <p:outputLabel value="Amounts" styleClass="font-weight-bold bg-light p-2" />
+            <p:separator ></p:separator>
+
+            <p:outputLabel value="Total" />
+            <p:inputText value="#{cc.attrs.bill.total}" />
+
+            <p:outputLabel value="Net Total" />
+            <p:inputText value="#{cc.attrs.bill.netTotal}" />
+
 
             <p:outputLabel value="Bill Total" />
             <p:inputText value="#{cc.attrs.bill.billTotal}" />
@@ -142,7 +151,8 @@
             <p:inputText value="#{cc.attrs.bill.totalStaffFee}" />
 
             <!-- Status Flags -->
-            <p:outputLabel value="Status Flags" styleClass="font-weight-bold bg-light p-2" colspan="2" />
+            <p:outputLabel value="Status Flags" styleClass="font-weight-bold bg-light p-2" />
+            <p:separator ></p:separator>
 
             <p:outputLabel value="Paid" />
             <p:selectBooleanCheckbox value="#{cc.attrs.bill.paid}" />

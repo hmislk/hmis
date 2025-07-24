@@ -30,50 +30,7 @@
                         </i>
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
 
-                            <p:dialog
-
-                                header="Search Any Medicine..."
-                                widgetVar="findAMP"
-                                minHeight="300"
-                                width="1100"
-                                position="top"
-                                modal="true"
-
-                                closeOnEscape="true">
-                                <p:autoComplete
-                                    id="exItem"
-                                    forceSelection="true"
-                                    class="w-100 formgrid grid"
-                                    placeholder="Search Any Medicine..."
-                                    maxResults="20"
-                                    minQueryLength="3"
-                                    inputStyleClass="w-100"
-                                    completeMethod="#{itemController.completeAmpItem}"
-                                    var="vt"
-                                    onfocus="this.select()"
-                                    itemLabel="#{vt.name}"
-                                    itemValue="#{vt}" >
-                                    <p:column headerText="Code" style="padding: 6px;width: 4em;">
-                                        <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Item" style="width: 350px; padding: 6px;">
-                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
-                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
-
-                                    <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
-                                        <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>
-                            </p:dialog>
+                            <ui:include src="fragments/search_medicine_dialog.xhtml"/>
 
                         </h:panelGroup>
 
@@ -143,12 +100,12 @@
                                                     maxResults="10"
                                                     class="w-100"
                                                     forceSelection="true"
-                                                    converter="stockConverter"
-                                                    value="#{pharmacyFastRetailSaleController.stock}"
+                                                    converter="stockDtoConverter"
+                                                    value="#{pharmacyFastRetailSaleController.selectedStockDto}"
                                                     completeMethod="#{pharmacyFastRetailSaleController.completeStockDtos}"
                                                     var="i"
                                                     itemLabel="#{i.itemName}"
-                                                    itemValue="#{i.id}">
+                                                    itemValue="#{i}">
                                                     <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
                                                         <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
                                                             &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
@@ -280,51 +237,7 @@
                                                 <h:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}" />
                                                 <p:commandLink id="showDetails" type="button" value="&nbsp;(+)" oncomplete="PF('dlg').show();" process="showDetails" update="#{p:resolveFirstComponentWithId('panDoc',view).clientId}" />
 
-                                                <p:dialog
-                                                    id="panDoc"
-                                                    widgetVar="dlg"
-                                                    resizable="false"
-                                                    modal="true"
-                                                    onShow="$('.ui-dialog').addClass('custom-dialog')"
-                                                    class="w-50">
-                                                    <p:panelGrid
-                                                        columns="2"
-                                                        class="table table-striped"
-                                                        >
-                                                        <f:facet name="header" >
-                                                            <h:outputLabel value="Item Details" ></h:outputLabel>
-                                                        </f:facet>
-
-                                                        <p:outputLabel value="Code" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.code}"/>
-
-                                                        <p:outputLabel value="Name" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.name}"/>
-
-                                                        <p:outputLabel value="Type" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.class.simpleName}"/>
-
-                                                        <p:outputLabel value="Product" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.item.vmp.name}"/>
-
-
-                                                        <p:outputLabel value="Stock Quentity" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.stock.stock}"/>
-
-                                                        <p:outputLabel value="Expiry" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
-                                                            <f:convertDateTime  pattern="#{sessionController.applicationPreference.shortDateFormat}" />
-                                                        </p:outputLabel>
-
-                                                        <p:outputLabel value="Batch No" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.batchNo}"/>
-
-                                                        <p:outputLabel value="Sale Rate" style="font-weight: bold;"/>
-                                                        <p:outputLabel value="#{bi.pharmaceuticalBillItem.itemBatch.retailsaleRate}"/>
-                                                    </p:panelGrid>
-
-
-                                                </p:dialog>
+                                                <ui:include src="fragments/item_details_dialog.xhtml"/>
                                             </p:column>
 
                                             <p:column headerText="Instructions" style="text-align: center" rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}">

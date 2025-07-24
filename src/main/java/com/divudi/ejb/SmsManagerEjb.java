@@ -497,6 +497,7 @@ public class SmsManagerEjb {
         boolean sendSmsWithOAuth2 = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using OAuth 2.0 Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthentication = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway", false);
         boolean sendSmsWithBasicAuthenticationWithJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with JQON", false);
+        boolean sendSmsWithBasicAuthenticationWithSimpleJson = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using Basic Authentication Supported SMS Gateway with Simple JSON", false);
         boolean sendSmsViaESms = configOptionApplicationController.getBooleanValueByKey("SMS Sent Using E -SMS Supported SMS Gateway", false);
         if (sendSmsWithOAuth2) {
             return sendSmsByOauth2(sms);
@@ -506,6 +507,8 @@ public class SmsManagerEjb {
             return sendSmsWithJson(sms);
         } else if (sendSmsViaESms) {
             return sendSmsByESms(sms);
+        } else if (sendSmsWithBasicAuthenticationWithSimpleJson) {
+            return sendSmsWithSimpleJson(sms);
         }
         return false;
     }
@@ -567,6 +570,68 @@ public class SmsManagerEjb {
         } else {
             sms.setSentSuccessfully(false);
             sms.setReceivedMessage(response);
+            saveSms(sms);
+            return false;
+        }
+    }
+    
+    public boolean sendSmsWithSimpleJson(Sms sms) {
+        if (doNotSendAnySms) {
+            return false;
+        }
+
+        try {
+            // Prepare JSON payload
+            JSONObject payload = new JSONObject();
+            payload.put("username", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Username"));
+            payload.put("password", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Password"));
+            payload.put("from", configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - User Alias"));
+            payload.put("to", sms.getReceipientNumber()); // For multiple, use comma-separated
+            payload.put("text", sms.getSendingMessage());
+            payload.put("mesageType", Integer.parseInt(configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - Additional parameter 1 value (Only Numbers)"))); // 0 or 1
+
+            String smsUrl = configOptionApplicationController.getShortTextValueByKey("SMS Gateway with Simple JSON - URL");
+
+            // Send POST request
+            URL url = new URL(smsUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            StringBuilder response = new StringBuilder();
+            int responseCode;
+            try {
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    byte[] input = payload.toString().getBytes("utf-8");
+                    os.write(input, 0, input.length);
+                }
+                // Read the response
+                responseCode = conn.getResponseCode();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), "utf-8"))) {
+                    String responseLine;
+                    while ((responseLine = br.readLine()) != null) {
+                        response.append(responseLine.trim());
+                    }
+                }
+            } finally {
+                conn.disconnect();
+            }
+
+            sms.setReceivedMessage(response.toString());
+
+            if (responseCode == 200 && response.toString().toUpperCase().contains("200")) {
+                sms.setSentSuccessfully(true);
+            } else {
+                sms.setSentSuccessfully(false);
+            }
+
+            saveSms(sms);
+            return sms.getSentSuccessfully();
+
+        } catch (Exception e) {
+            sms.setSentSuccessfully(false);
+            sms.setReceivedMessage("Exception: " + e.getMessage());
             saveSms(sms);
             return false;
         }
