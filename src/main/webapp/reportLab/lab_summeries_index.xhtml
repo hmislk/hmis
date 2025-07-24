@@ -85,6 +85,11 @@
                                             <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" action="lab_daily_summary_by_department?faces-redirect=true" >
                                             </p:commandButton>
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Laboratary Card Income Report" 
+                                                action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
+                                            </p:commandButton>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily Inward Fee Summary" action="daily_inward_fee_summery?faces-redirect=true"/>
@@ -110,7 +115,7 @@
                                                 value="Laboratary Income Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
                                             </p:commandButton>
-
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Laboratory Order Report" 
