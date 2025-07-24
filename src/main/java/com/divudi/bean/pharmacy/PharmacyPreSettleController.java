@@ -858,7 +858,6 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
                 getPharmaceuticalBillItemFacade().create(ph);
             }
 
-            saveBillFee(sbi, p);
 
             //        getPharmacyBean().deductFromStock(tbi.getItem(), tbi.getQty(), tbi.getBill().getDepartment());
             getSaleReturnBill().getBillItems().add(sbi);
@@ -1225,6 +1224,26 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         return p;
     }
 
+    public Payment createPaymentForRefund(Bill bill, PaymentMethod pm) {
+        Payment p = new Payment();
+        p.setBill(bill);
+        p.setInstitution(getSessionController().getInstitution());
+        p.setDepartment(getSessionController().getDepartment());
+        p.setCreatedAt(new Date());
+        p.setCreater(getSessionController().getLoggedUser());
+        p.setPaymentMethod(pm);
+        
+        // For refunds, payment value should be negative
+        double valueToSet = 0 - Math.abs(bill.getNetTotal());
+        p.setPaidValue(valueToSet);
+        
+        if (p.getId() == null) {
+            getPaymentFacade().create(p);
+        }
+        
+        return p;
+    }
+
     public void setPaymentMethodData(Payment p, PaymentMethod pm) {
 
         p.setInstitution(getSessionController().getInstitution());
@@ -1266,7 +1285,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         saveSaleReturnBill();
 //        saveSaleReturnBillItems();
 
-        Payment p = createPayment(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod());
+        Payment p = createPaymentForRefund(getSaleReturnBill(), getSaleReturnBill().getPaymentMethod());
         saveSaleReturnBillItems(p);
 
 //        getPreBill().getReturnCashBills().add(getSaleReturnBill());
