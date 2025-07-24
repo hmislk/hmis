@@ -95,6 +95,7 @@
                                 columns="2" 
                                 styleClass="w-100 ui-panelgrid-blank">
 
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <p:outputLabel for="txtName" value="Name" styleClass="fw-bold"/>
                                 <p:inputText 
                                     id="txtName"
@@ -107,6 +108,7 @@
                                     maxlength="255"
                                     disabled="#{!vmpController.editable}"/>
 
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <p:outputLabel for="acVtm" value="Generic Name" styleClass="fw-bold"/>
                                 <p:autoComplete 
                                     id="acVtm"

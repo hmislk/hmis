@@ -30,6 +30,17 @@ public class BigDecimalUtil {
     }
     
     /**
+     * Returns the BigDecimal value or BigDecimal.ONE if the value is null.
+     * This is useful for division operations where null should be treated as 1.
+     * 
+     * @param value the BigDecimal value that may be null
+     * @return the original value if not null, or BigDecimal.ONE if null
+     */
+    public static BigDecimal valueOrOne(BigDecimal value) {
+        return value == null ? BigDecimal.ONE : value;
+    }
+    
+    /**
      * Returns null if the BigDecimal value is zero, otherwise returns the value.
      * This is useful when converting explicit zero values back to null for
      * storage optimization.

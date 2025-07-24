@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Validates that service layer methods correctly handle nullable BigDecimal fields
  * and use BigDecimalUtil for null-safe operations.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("Service Layer BigDecimal Tests")

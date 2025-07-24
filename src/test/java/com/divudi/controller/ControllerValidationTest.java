@@ -14,7 +14,7 @@ import static org.junit.jupiter.api.Assertions.*;
  * Validates that controllers properly validate nullable BigDecimal fields
  * and provide appropriate user feedback for invalid input.
  * 
- * @author Claude AI Assistant
+ * @author Dr M H B Ariyaratne
  * @since BigDecimal Refactoring Phase 6
  */
 @DisplayName("Controller Validation Tests")
