@@ -159,6 +159,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
     /////////////////////////
 //    private PaymentScheme paymentScheme;
     private PaymentMethodData paymentMethodData;
+    private String refundComment;
     double cashPaid;
     double netTotal;
     double balance;
@@ -1296,6 +1297,7 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
         searchedPatient = null;
         billItems = null;
         patientTabId = "tabNewPt";
+        refundComment = null;
         cashPaid = 0;
         netTotal = 0;
         balance = 0;
@@ -1585,6 +1587,14 @@ public class PharmacyPreSettleController implements Serializable, ControllerWith
 
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
+    }
+
+    public String getRefundComment() {
+        return refundComment;
+    }
+
+    public void setRefundComment(String refundComment) {
+        this.refundComment = refundComment;
     }
 
     public BillBeanController getBillBean() {

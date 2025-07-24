@@ -16,42 +16,26 @@
             <ui:define name="content">
                 <h:form>
                     <p:panel rendered="#{!pharmacyPreSettleController.billPreview}">
-                        <f:facet name="header" >
-                            <h:outputLabel value="Pharmacy Bill Accept Payment" ></h:outputLabel>   
-                            <p:commandButton ajax= "false"  value="Settle and Accept Payment"
-                                             class="ui-button-success mx-2"
-                                             icon="fa fa-check"
-                                             style="float: right;"
-                                             action="#{pharmacyPreSettleController.settleReturnBillWithPay()}" ></p:commandButton>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-pills"></h:outputText>
+                                    <h:outputLabel value="Pharmacy Bill Refund" class="mx-3"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <h:outputLabel value="Refunding Total " class="mx-3"></h:outputLabel>
+                                    <h:outputLabel value=" : "></h:outputLabel>
+                                    <h:outputLabel id="refundingAmount" value="#{pharmacyPreSettleController.preBill.netTotal}"  class="mx-3">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>
+                                </div>
+                            </div>
                         </f:facet>
 
-                        <h:panelGrid columns="20" class="my-1" >
-                            <h:outputLabel value="Pharmacy Retail Bill" />
-                            <h:outputLabel value="&nbsp;&nbsp;&nbsp;&nbsp;" style="min-width: 50px;" />
-                            <p:selectOneMenu   id="cmbPs" value="#{pharmacyPreSettleController.preBill.paymentMethod}" >                                                                     
-                                <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"  />
-                                <p:ajax process="cmbPs" 
-                                        update="creditCard cheque slip" event="change" />                              
-                            </p:selectOneMenu>
+                        <p:growl ></p:growl>
 
-                            <h:panelGroup id="creditCard" style="display: #{pharmacyPreSettleController.preBill.paymentMethod ne 'Card' ? 'none' : 'block'} ; ">
-                                <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="cheque" style="display: #{pharmacyPreSettleController.preBill.paymentMethod ne 'Cheque' ? 'none' : 'block'} ; " >
-                                <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup id="slip" style="display: #{pharmacyPreSettleController.preBill.paymentMethod ne 'Slip' ? 'none' : 'block'} ;">
-                                <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
-                            </h:panelGroup>
-
-
-
-
-                        </h:panelGrid>
-                        <div class="row">
-                            <div class="col-4">
+                        <div class="row" >
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
                                         <h:outputText styleClass="fas fa-id-card-alt"></h:outputText>
@@ -60,83 +44,184 @@
                                     <common:patient patient="#{pharmacyPreSettleController.preBill.patient}" class="w-100"/>
                                 </p:panel>
                             </div>
-                            <div class="col-4">
+                            <div class="col-md-4">
                                 <p:panel>
                                     <f:facet name="header">
-                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                                        <h:outputText styleClass="fas fa-list-alt"></h:outputText>
+                                        <h:outputLabel value="Bill Details" class="mx-2"></h:outputLabel>
                                     </f:facet>
                                     <p:panelGrid columns="2">
                                         <h:outputLabel value="Bill No :" ></h:outputLabel>
                                         <h:outputLabel value="#{pharmacyPreSettleController.preBill.deptId}" ></h:outputLabel>
+                                        <h:outputLabel value="Payment Method:" ></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.paymentMethod}" ></h:outputLabel>
                                         <h:outputLabel value="Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.total}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.total}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                         <h:outputLabel value="Discount :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.discount}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.discount}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                         <h:outputLabel value="Net Total :" ></h:outputLabel>
-                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.netTotal}" ><f:convertNumber pattern="#,##0.00"/></h:outputLabel>
+                                        <h:outputLabel value="#{pharmacyPreSettleController.preBill.netTotal}" >
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
                                     </p:panelGrid>
                                 </p:panel>
+
                             </div>
-                            <div class="col-4">
-                                <p:panel  id="pBillDetails"  >
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Bill Detail" class="mx-2"></h:outputLabel>
+                            <div class="col-md-4">
+                                <p:panel >
+                                    <f:facet name="header" >
+                                        <h:outputText value="Return Details" class="mt-2" ></h:outputText>
+                                        <p:commandButton
+                                            id="btnSave"
+                                            value="Refund"
+                                            ajax="false"
+                                            icon="fa fa-money-bill-wave"
+                                            style="float:right; width: 8em;"
+                                            class="ui-button-warning"
+                                            action="#{pharmacyPreSettleController.settleReturnBillWithPay()}">
+                                        </p:commandButton>
                                     </f:facet>
-                                    <p:panelGrid columns="2" columnClasses="numberCol, textCol"  >
-                                        <h:outputLabel value="Total" ></h:outputLabel>
-                                        <h:outputLabel id="total" value="#{pharmacyPreSettleController.preBill.total}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Discount" ></h:outputLabel>
-                                        <h:outputLabel id="dis" value="#{pharmacyPreSettleController.preBill.discount}" >
-                                            <f:convertNumber pattern="#,##0.00" />                                          
-                                        </h:outputLabel>
-                                        <h:outputLabel value="Net Total" ></h:outputLabel>
-                                        <h:outputLabel id="netTotal" value="#{pharmacyPreSettleController.preBill.netTotal}" >
-                                            <f:convertNumber pattern="#,##0.00" />
-                                        </h:outputLabel>                                        
+
+                                    <p:panelGrid columns="2" >
+                                        <p:outputLabel value="Return Comments" ></p:outputLabel>
+                                        <p:inputText value="#{pharmacyPreSettleController.refundComment}"  class="w-100"></p:inputText>
+                                        <p:outputLabel value="Payment Method" ></p:outputLabel>
+                                        <p:selectOneMenu   
+                                            id="cmbPs" 
+                                            value="#{pharmacyPreSettleController.preBill.paymentMethod}">
+                                            <f:selectItem itemLabel="Select paymentMethod"/>
+                                            <f:selectItems value="#{enumController.paymentMethodsWithoutCredit}"/>
+                                            <p:ajax process="cmbPs" update="paymentDetails" ></p:ajax>
+                                        </p:selectOneMenu>
                                     </p:panelGrid>
+
+                                    <h:panelGroup id="paymentDetails"  >
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block"  
+                                            id="creditCard" rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Card'}" >
+                                            <pa:creditCard paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="cheque"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Cheque'}" >
+                                            <pa:cheque paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup 
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="slip"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'Slip'}" >
+                                            <pa:slip paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                        <h:panelGroup 
+                                            class="row my-1"
+                                            layout="block" 
+                                            id="ewallet"  rendered="#{pharmacyPreSettleController.preBill.paymentMethod eq 'ewallet'}" >
+                                            <pa:ewallet paymentMethodData="#{pharmacyPreSettleController.paymentMethodData}"/>
+                                        </h:panelGroup>
+                                    </h:panelGroup>
+                                </p:panel>
+
+                            </div>
+                        </div>
+                        <div class="row" >
+                            <div class="col-md-12">
+                                <p:panel id="panelItems" class="mt-2">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fas fa-list-alt" class="mt-2"></h:outputText>
+                                        <h:outputLabel value="Returning Items" class="mx-2 mt-2"></h:outputLabel>
+                                    </f:facet>
+                                    <p:dataTable 
+                                        id="billItems"
+                                        value="#{pharmacyPreSettleController.preBill.billItems}" 
+                                        var="bip"
+                                        styleClass="table table-sm">
+
+                                        <p:column headerText="No" styleClass="text-center" width="50">
+                                            #{bip.rowKey}
+                                        </p:column>
+
+                                        <p:column headerText="Item">
+                                            <h:outputText value="#{bip.item.name}" />
+                                        </p:column>
+
+                                        <p:column headerText="Qty" styleClass="text-end">
+                                            <h:outputText value="#{bip.qty}" />
+                                        </p:column>
+
+                                        <p:column headerText="Rate" styleClass="text-end">
+                                            <h:outputText value="#{bip.rate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Discount %" styleClass="text-end">
+                                            <h:outputText value="#{bip.discountRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Rate" styleClass="text-end">
+                                            <h:outputText value="#{bip.netRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Gross Value" styleClass="text-end">
+                                            <h:outputText value="#{bip.grossValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Discount Value" styleClass="text-end">
+                                            <h:outputText value="#{bip.discount}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Net Value" styleClass="text-end">
+                                            <h:outputText value="#{bip.netValue}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column headerText="Status" styleClass="text-center">
+                                            <p:tag icon="pi pi-check" severity="success" value="To Return" />
+                                        </p:column>
+
+                                    </p:dataTable>
 
                                 </p:panel>
                             </div>
                         </div>
 
-
-                        <p:panel header="Bill Item Details">
-                            <p:dataTable rowIndexVar="rowIndex" value="#{pharmacyPreSettleController.preBill.billItems}" var="bip" >
-                                <p:column>
-                                    <f:facet name="header">No</f:facet>
-                                        #{rowIndex+1}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Item</f:facet>
-                                        #{bip.item.name}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Qty</f:facet>
-                                        #{bip.qty}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Rate</f:facet>
-                                        #{bip.rate}
-                                </p:column>
-                                <p:column>
-                                    <f:facet name="header">Value</f:facet>
-                                        #{bip.netValue}
-                                </p:column>
-                            </p:dataTable>
-                        </p:panel>
-
                     </p:panel>
 
 
                     <p:panel rendered="#{pharmacyPreSettleController.billPreview}">
-                        <p:commandButton ajax="false" value="Pre Bill Search" actionListener="#{pharmacyBillSearch.recreateModel()}" action="pharmacy_search_pre_bill"/>
-                        <p:commandButton ajax="false" value="Print"  styleClass="noPrintButton" >
-                            <p:printer target="gpBillPreview" />
-                        </p:commandButton>
+                        <f:facet name="header">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h:outputText styleClass="fas fa-check-circle text-success"></h:outputText>
+                                    <h:outputLabel value="Refund Completed Successfully" class="mx-3"></h:outputLabel>
+                                </div>
+                                <div>
+                                    <p:commandButton ajax="false" value="Search More Bills" 
+                                                   actionListener="#{pharmacyBillSearch.recreateModel()}" 
+                                                   action="pharmacy_search_pre_refund_bill_for_return_cash"
+                                                   class="ui-button-secondary mx-2"/>
+                                    <p:commandButton ajax="false" value="Print Receipt"  
+                                                   styleClass="noPrintButton ui-button-info" >
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+                                </div>
+                            </div>
+                        </f:facet>
                         <h:panelGroup id="gpBillPreview" >
                             <ph:saleBill bill="#{pharmacyPreSettleController.bill}"/>
                         </h:panelGroup>
