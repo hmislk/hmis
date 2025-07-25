@@ -78,6 +78,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PaymentProcessingService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.service.pharmacy.StockSearchService;
 import com.divudi.service.pharmacy.TokenService;
 
@@ -202,6 +203,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
@@ -1474,6 +1477,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
+
+        // Update BillFinanceDetails for retail sale to ensure proper report data
+        if (getSaleBill() != null) {
+            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            getBillFacade().edit(getSaleBill());
+        }
 
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
