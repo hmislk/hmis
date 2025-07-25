@@ -15,7 +15,9 @@ import com.divudi.core.data.inward.InwardChargeType;
 import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.ejb.PharmacyBean;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.PreBill;
@@ -34,6 +36,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -84,6 +87,8 @@ public class PharmacyAdjustmentController implements Serializable {
     BillNumberGenerator billNumberBean;
     @EJB
     ItemBatchFacade itemBatchFacade;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
 
 /////////////////////////
 //    Item selectedAlternative;
@@ -454,6 +459,13 @@ public class PharmacyAdjustmentController implements Serializable {
         getDeptAdjustmentPreBill().setFromDepartment(getSessionController().getLoggedUser().getDepartment());
         getDeptAdjustmentPreBill().setFromInstitution(getSessionController().getLoggedUser().getDepartment().getInstitution());
         getDeptAdjustmentPreBill().setComments(comment);
+        
+        // Create BillFinanceDetails for the adjustment
+        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+            BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
+            getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
+        }
+        
         if (getDeptAdjustmentPreBill().getId() == null) {
             getBillFacade().create(getDeptAdjustmentPreBill());
         } else {
@@ -638,43 +650,103 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
-    private void savePrAdjustmentBillItems() {
+    private void savePrAdjustmentBillItems(double oldPurchaseRate, double newPurchaseRate, 
+                                           double purchaseRateChange, double changeValue) {
         billItem = null;
         BillItem tbi = getBillItem();
         PharmaceuticalBillItem ph = getBillItem().getPharmaceuticalBillItem();
 
         ph.setBillItem(null);
         ItemBatch ib = itemBatchFacade.find(getStock().getItemBatch().getId());
-        ph.setPurchaseRate(ib.getPurcahseRate());
-        ph.setRetailRate(ib.getRetailsaleRate());
-        tbi.setItem(getStock().getItemBatch().getItem());
-        tbi.setRate(pr);
-        //pharmaceutical Bill Item
+        
+        // Record the adjustment values in PharmaceuticalBillItem
+        ph.setPurchaseRate(oldPurchaseRate); // Store old purchase rate for record
+        ph.setRetailRate(ib.getRetailsaleRate()); // Keep retail rate unchanged as per requirement
         ph.setStock(stock);
-        //Rates
-        //Values
-        tbi.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * getStock().getStock());
-        tbi.setNetValue(getStock().getStock() * tbi.getNetRate());
-        tbi.setDiscount(tbi.getGrossValue() - tbi.getNetValue());
+        
+        // Store batch details in PharmaceuticalBillItem
+        ph.setItemBatch(ib);
+        ph.setQtyInUnit(getStock().getStock());
+        ph.setQty(getStock().getStock());
+        
+        // Set adjustment-specific data - store new purchase rate in lastPurchaseRate field
+        ph.setLastPurchaseRate(newPurchaseRate); // New purchase rate stored for reference
+        ph.setFreeQty(purchaseRateChange); // Store rate change in freeQty field (repurposed)
+        
+        // Configure BillItem
+        tbi.setItem(getStock().getItemBatch().getItem());
+        tbi.setRate(newPurchaseRate); // New purchase rate
+        tbi.setQty(getStock().getStock()); // Stock quantity
+        
+        // Store the change value as the bill item value
+        tbi.setGrossValue(Math.abs(changeValue)); // Absolute change value
+        tbi.setNetValue(changeValue); // Signed change value (+ or -)
+        tbi.setDiscount(0.0); // No discount for adjustments
+        
+        // Create and populate BillItemFinanceDetails
+        BillItemFinanceDetails bifd = new BillItemFinanceDetails();
+        bifd.setBillItem(tbi);
+        bifd.setQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+        bifd.setFreeQuantity(java.math.BigDecimal.ZERO);
+        bifd.setLineGrossRate(java.math.BigDecimal.valueOf(newPurchaseRate));
+        bifd.setLineNetRate(java.math.BigDecimal.valueOf(newPurchaseRate));
+        bifd.setLineGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setLineNetTotal(java.math.BigDecimal.valueOf(changeValue));
+        bifd.setLineDiscount(java.math.BigDecimal.ZERO);
+        bifd.setLineCost(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setRetailSaleRate(java.math.BigDecimal.valueOf(ib.getRetailsaleRate()));
+        bifd.setCreatedAt(Calendar.getInstance().getTime());
+        bifd.setCreatedBy(getSessionController().getLoggedUser());
+        
+        tbi.setBillItemFinanceDetails(bifd);
+        
         tbi.setInwardChargeType(InwardChargeType.Medicine);
         tbi.setItem(getStock().getItemBatch().getItem());
         tbi.setBill(getDeptAdjustmentPreBill());
         tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
         tbi.setCreatedAt(Calendar.getInstance().getTime());
         tbi.setCreater(getSessionController().getLoggedUser());
+        
         if (ph.getId() == null) {
             getPharmaceuticalBillItemFacade().create(ph);
         }
         tbi.setPharmaceuticalBillItem(ph);
 
         if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
             getBillItemFacade().edit(tbi);
         }
 
         ph.setBillItem(tbi);
         getPharmaceuticalBillItemFacade().edit(ph);
-        getPharmaceuticalBillItemFacade().edit(tbi.getPharmaceuticalBillItem());
+        
         getDeptAdjustmentPreBill().getBillItems().add(tbi);
+        
+        // Update bill totals with the change value
+        Double currentTotalObj = getDeptAdjustmentPreBill().getTotal();
+        Double currentNetTotalObj = getDeptAdjustmentPreBill().getNetTotal();
+        double currentTotal = currentTotalObj != null ? currentTotalObj : 0.0;
+        double currentNetTotal = currentNetTotalObj != null ? currentNetTotalObj : 0.0;
+        
+        getDeptAdjustmentPreBill().setTotal(currentTotal + Math.abs(changeValue));
+        getDeptAdjustmentPreBill().setNetTotal(currentNetTotal + changeValue);
+        
+        // Update BillFinanceDetails using PharmacyCostingService for proper financial tracking
+        BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
+        if (bfd != null) {
+            // Set the purchase value change (only this should be recorded as per requirement)
+            bfd.setTotalPurchaseValue(java.math.BigDecimal.valueOf(changeValue));
+            bfd.setNetTotal(java.math.BigDecimal.valueOf(changeValue));
+            bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+            bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+            
+            // Ensure cost rate, retail rate, wholesale rate values are NOT recorded as per requirement
+            bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalRetailSaleValue(java.math.BigDecimal.ZERO);
+            bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
+        }
+        
         getBillFacade().edit(getDeptAdjustmentPreBill());
     }
 
@@ -1185,15 +1257,27 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
 
+        // Calculate purchase rate changes
+        double oldPurchaseRate = getStock().getItemBatch().getPurcahseRate();
+        double newPurchaseRate = pr;
+        double purchaseRateChange = newPurchaseRate - oldPurchaseRate;
+        double stockQuantity = getStock().getStock();
+        double changeValue = stockQuantity * purchaseRateChange;
+
         savePurchaseRateAdjustmentBill();
-        savePrAdjustmentBillItems();
+        savePrAdjustmentBillItems(oldPurchaseRate, newPurchaseRate, purchaseRateChange, changeValue);
+        
+        // Update the item batch with new purchase rate
         getStock().getItemBatch().setPurcahseRate(pr);
         getItemBatchFacade().edit(getStock().getItemBatch());
+        
         deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
 
         printPreview = true;
 
-        JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully..");
+        JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully. Change: " + 
+                                 (purchaseRateChange >= 0 ? "+" : "") + purchaseRateChange + 
+                                 ", Change Value: " + changeValue);
 
     }
 

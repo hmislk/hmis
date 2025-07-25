@@ -21,7 +21,9 @@
       "Bash(wc:*)",
       "Bash(rg:*)",
       "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(git remote:*)",
+      "Bash(gh issue create:*)"
     ],
     "deny": []
   }
