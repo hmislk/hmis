@@ -72,7 +72,10 @@
       "Bash(\"D:\\Payara_Server\\*\")",
       "Bash(detect-maven.bat:*)",
       "Bash(move pharmacy_adjustment_department.xhtml adjustments/)",
-      "Bash(mv:*)"
+      "Bash(mv:*)",
+      "Bash(gh:*)",
+      "Bash(git clone:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
