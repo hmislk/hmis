@@ -547,6 +547,14 @@ public class PharmacyCostingService {
         bfd.setTotalPurchaseValue(totalPurchase);
         bfd.setTotalRetailSaleValue(totalRetail);
         bfd.setTotalWholesaleValue(totalWholesale);
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
 
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
@@ -687,6 +695,81 @@ public class PharmacyCostingService {
         bfd.setLineGrossTotal(lineGrossTotal);
         bfd.setNetTotal(netTotal);
         bfd.setLineNetTotal(lineNetTotal);
+
+    }
+
+    /**
+     * Updates BillFinanceDetails for retail sales by calculating from existing bill items.
+     * This method does not alter existing calculation logic but creates new specific calculation for retail sales.
+     * @param bill The retail sale bill to update
+     */
+    public void updateBillFinanceDetailsForRetailSale(Bill bill) {
+        
+        if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
+            return;
+        }
+
+        // Initialize totals
+        BigDecimal totalRetailValue = BigDecimal.ZERO;
+        BigDecimal totalPurchaseValue = BigDecimal.ZERO;
+        BigDecimal totalCostValue = BigDecimal.ZERO;
+        BigDecimal totalQuantity = BigDecimal.ZERO;
+        BigDecimal totalFreeQuantity = BigDecimal.ZERO;
+
+        
+        // Calculate totals from bill items
+        for (BillItem billItem : bill.getBillItems()) {
+            if (billItem.isRetired()) {
+                continue;
+            }
+            
+            PharmaceuticalBillItem pbi = billItem.getPharmaceuticalBillItem();
+            if (pbi == null) {
+                continue;
+            }
+
+            // Get quantities
+            BigDecimal qty = BigDecimal.valueOf(billItem.getQty());
+            BigDecimal freeQty = BigDecimal.valueOf(pbi.getFreeQty());
+            BigDecimal totalQty = qty.add(freeQty);
+
+            // Get rates
+            BigDecimal retailRate = BigDecimal.valueOf(pbi.getRetailRate()) ;
+            BigDecimal purchaseRate = BigDecimal.valueOf(pbi.getPurchaseRate()) ;
+
+            // Calculate values
+            BigDecimal itemRetailValue = retailRate.multiply(totalQty);
+            BigDecimal itemPurchaseValue = purchaseRate.multiply(totalQty);
+            BigDecimal itemCostValue = purchaseRate.multiply(totalQty); // Using purchase rate as cost for retail sales
+
+            // Add to totals
+            totalRetailValue = totalRetailValue.add(itemRetailValue);
+            totalPurchaseValue = totalPurchaseValue.add(itemPurchaseValue);
+            totalCostValue = totalCostValue.add(itemCostValue);
+            totalQuantity = totalQuantity.add(qty);
+            totalFreeQuantity = totalFreeQuantity.add(freeQty);
+
+        }
+
+        // Ensure BillFinanceDetails exists
+        BillFinanceDetails bfd = bill.getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(bill);
+            bill.setBillFinanceDetails(bfd);
+        }
+
+        // Update the key values needed for reports
+        bfd.setTotalRetailSaleValue(totalRetailValue);
+        bfd.setTotalPurchaseValue(totalPurchaseValue);
+        bfd.setTotalCostValue(totalCostValue);
+        bfd.setTotalQuantity(totalQuantity);
+        bfd.setTotalFreeQuantity(totalFreeQuantity);
+
+        // Set basic totals from bill
+        BigDecimal netTotal = BigDecimal.valueOf(bill.getNetTotal());
+        BigDecimal grossTotal = BigDecimal.valueOf(bill.getTotal());
+        bfd.setNetTotal(netTotal);
+        bfd.setGrossTotal(grossTotal);
 
     }
 
