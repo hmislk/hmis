@@ -51,7 +51,20 @@
       "Bash(gh auth:*)",
       "Bash(gh pr list:*)",
       "Bash(gh pr view:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh issue create:*)",
+      "Bash(./mvnw.cmd test:*)",
+      "Bash(ls:*)",
+      "Bash(hostname)",
+      "Bash(echo $COMPUTERNAME)",
+      "Bash(chmod:*)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr close:*)",
+      "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" compile -Dfile.encoding=UTF-8)",
+      "Bash(\"D:\\Program Files\\NetBeans-18\\netbeans\\java\\maven\\bin\\mvn.cmd\":*)",
+      "Bash(\"D:\\Payara\\*\")",
+      "Bash(detect-maven.bat:*)"
     ],
     "deny": []
   }

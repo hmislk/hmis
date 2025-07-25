@@ -137,5 +137,55 @@ Claude should automatically:
 3. Move issues to "Reviewing & Merging" when PRs are created
 4. Include comprehensive test plans in PR descriptions for QA team
 
+## Maven Testing Commands
+
+### Environment-Specific Maven Locations
+Different development machines have Maven installed in different locations.
+
+**Machine Detection**: Use `hostname` and `whoami` commands to identify the current machine.
+
+#### Known Configurations:
+- **cclap** (Computer: `CARECODE-LAP`, User: `buddhika`):
+  - Maven: `C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd`
+  - Payara Server: `C:\Users\buddhika\Payara_Server` (Domain 1)
+- **hiulap** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
+- **hiud** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_ 
+- **ccd** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
+
+### Testing Commands to Try (in order of preference)
+When running tests, try these commands in order until one works:
+
+1. **Standard Maven** (if in PATH):
+   ```bash
+   mvn test
+   ```
+
+2. **NetBeans Bundled Maven** (cclap):
+   ```bash
+   "C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd" test
+   ```
+
+3. **Maven Wrapper** (if available):
+   ```bash
+   ./mvnw test        # Linux/Mac
+   ./mvnw.cmd test    # Windows
+   ```
+
+4. **Specific Test Classes**:
+   ```shell
+   mvn test -Dtest="*BigDecimal*Test"
+   ```
+
+### Note for Claude
+**PREFERRED APPROACH**: Use the auto-detection script:
+1. **First try**: `./detect-maven.sh test` (automatically detects machine and uses correct Maven)
+2. **If script fails**: Fall back to manual detection:
+   - Run `hostname` and `whoami` to identify machine
+   - Try standard `mvn test`
+   - If Maven not found, use machine-specific path based on hostname
+   - For `CARECODE-LAP`/`carecode-lap` (cclap): Use `"C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd" test`
+
+**The detect-maven.sh script handles all this automatically and should be the first choice.**
+
 ---
 This behavior should persist across all Claude Code sessions for this project.
