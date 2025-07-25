@@ -23,7 +23,10 @@
       "Bash(grep:*)",
       "Bash(find:*)",
       "Bash(git remote:*)",
-      "Bash(gh issue create:*)"
+      "Bash(gh issue create:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh issue list:*)",
+      "Bash(tail:*)"
     ],
     "deny": []
   }
