@@ -33,6 +33,7 @@ import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.core.util.BigDecimalUtil;
 import java.math.BigDecimal;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -201,7 +202,7 @@ public class DirectPurchaseReturnController implements Serializable {
         if (returnedValues != null) {
             alreadyReturnQuentity = returnedValues[0] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[0].toString());
             alreadyReturnedFreeQuentity = returnedValues[1] == null ? BigDecimal.ZERO : new BigDecimal(returnedValues[1].toString());
-            allreadyReturnedTotalQuentity = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
+            allreadyReturnedTotalQuentity = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
         }
 
         bifdOriginal.setReturnQuantity(alreadyReturnQuentity);
@@ -212,16 +213,16 @@ public class DirectPurchaseReturnController implements Serializable {
             // The total return covers both original quantity and free quantity.
             // Here, free quantity being returned is considered zero.
             // Need to subtract already returned total (qty + free) from original total (qty + free)
-            BigDecimal originalTotal = bifdOriginal.getQuantity().add(bifdOriginal.getFreeQuantity());
-            BigDecimal returnedTotal = alreadyReturnQuentity.add(alreadyReturnedFreeQuentity);
-            BigDecimal remaining = originalTotal.subtract(returnedTotal);
+            BigDecimal originalTotal = BigDecimalUtil.add(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()));
+            BigDecimal returnedTotal = BigDecimalUtil.add(alreadyReturnQuentity, alreadyReturnedFreeQuentity);
+            BigDecimal remaining = BigDecimalUtil.subtract(originalTotal, returnedTotal);
             bifdReturning.setQuantity(remaining);
             bifdReturning.setFreeQuantity(BigDecimal.ZERO);
         } else {
             // Returning quantity and free quantity are managed separately.
             // Subtract already returned quantity and free quantity from respective originals.
-            bifdReturning.setQuantity(bifdOriginal.getQuantity().subtract(alreadyReturnQuentity));
-            bifdReturning.setFreeQuantity(bifdOriginal.getFreeQuantity().subtract(alreadyReturnedFreeQuentity));
+            bifdReturning.setQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getQuantity()), alreadyReturnQuentity));
+            bifdReturning.setFreeQuantity(BigDecimalUtil.subtract(BigDecimalUtil.valueOrZero(bifdOriginal.getFreeQuantity()), alreadyReturnedFreeQuentity));
         }
 
         returningRate = getReturnRate(originalBillItem);
@@ -316,9 +317,9 @@ public class DirectPurchaseReturnController implements Serializable {
         }
 
         if (originalBillItem.getItem() instanceof Ampp) {
-            BigDecimal upp = Optional.ofNullable(fd.getUnitsPerPack()).orElse(BigDecimal.ONE);
-            if (upp.compareTo(BigDecimal.ZERO) > 0) {
-                rate = rate.multiply(upp);
+            BigDecimal upp = BigDecimalUtil.valueOrOne(fd.getUnitsPerPack());
+            if (BigDecimalUtil.isPositive(upp)) {
+                rate = BigDecimalUtil.multiply(rate, upp);
             }
         }
 

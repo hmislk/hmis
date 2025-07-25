@@ -81,6 +81,7 @@ import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -182,6 +183,8 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
@@ -2357,6 +2360,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
 
+        // Ensure BillFinanceDetails are populated for accurate reporting
+        if (getSaleBill() != null) {
+            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            getBillFacade().edit(getSaleBill());
+        }
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
@@ -2374,24 +2383,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
 
-//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-//            staffBean.updateStaffWelfare(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-//        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-//            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Credit Updated");
-//        }
-//
-//        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if (getPatient().getRunningBalance() != null) {
-//                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-//            } else {
-//                getPatient().setRunningBalance(0.0 - netTotal);
-//            }
-//            getPatientFacade().edit(getPatient());
-//            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-//            patientDepositController.updateBalance(getSaleBill(), pd);
-//        }
         paymentService.updateBalances(payments);
 
         resetAll();

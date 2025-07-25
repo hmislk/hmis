@@ -78,6 +78,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PaymentProcessingService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.service.pharmacy.StockSearchService;
 import com.divudi.service.pharmacy.TokenService;
 
@@ -202,6 +203,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
@@ -1475,6 +1478,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
 
+        // Update BillFinanceDetails for retail sale to ensure proper report data
+        if (getSaleBill() != null) {
+            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            getBillFacade().edit(getSaleBill());
+        }
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
@@ -1569,31 +1578,24 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
 
-    //    Checked
-
-
-
-
-
+    /**
+     * Create the Payment entities associated with the given bill using the
+     * configured {@link PaymentProcessingService}.
+     *
+     * @param b the bill to create payments for
+     * @return list of persisted payments
+     */
     public List<Payment> createPaymentsForBill(Bill b) {
-        return paymentProcessingService.createPaymentsForBill(b,
+        return paymentProcessingService.createPaymentsForBill(
+                b,
                 b.getPaymentMethod(),
                 paymentMethodData,
                 sessionController.getInstitution(),
                 sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+                sessionController.getLoggedUser()
+        );
     }
 
-    //    public void calculateAllRates() {
-//        //////System.out.println("calculating all rates");
-//        for (BillItem tbi : getPreBill().getBillItems()) {
-//            calculateDiscountRates(tbi);
-//            calculateBillItemForEditing(tbi);
-//        }
-//        calTotal();
-//    }
-
-    //    Checked
 
     @Inject
     PriceMatrixController priceMatrixController;
