@@ -1006,8 +1006,12 @@ public class PharmacyCalculation implements Serializable {
         double free = 0.0;
 
         for (BillItem i : b.getBillItems()) {
-            sale += (i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty()) * i.getPharmaceuticalBillItem().getRetailRate();
-            free += i.getPharmaceuticalBillItem().getFreeQty() * i.getPharmaceuticalBillItem().getPurchaseRate();
+            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            if (ph == null) {
+                continue;
+            }
+            sale += (ph.getQty() + ph.getFreeQty()) * ph.getRetailRate();
+            free += ph.getFreeQty() * ph.getPurchaseRate();
         }
         if (b.getBillType() == BillType.PharmacyGrnReturn || b.getBillType() == BillType.PurchaseReturn || b.getClass().equals(CancelledBill.class) || b.getClass().equals(RefundBill.class)) {
             b.setSaleValue(0.0 - Math.abs(sale));
@@ -1021,11 +1025,15 @@ public class PharmacyCalculation implements Serializable {
     public boolean checkItemBatch(List<BillItem> list) {
 
         for (BillItem i : list) {
-            if (i.getPharmaceuticalBillItem().getQty() != 0.0) {
-                if (i.getPharmaceuticalBillItem().getDoe() == null || i.getPharmaceuticalBillItem().getStringValue().trim().isEmpty()) {
+            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            if (ph == null) {
+                continue;
+            }
+            if (ph.getQty() != 0.0) {
+                if (ph.getDoe() == null || ph.getStringValue().trim().isEmpty()) {
                     return true;
                 }
-                if (i.getPharmaceuticalBillItem().getPurchaseRate() > i.getPharmaceuticalBillItem().getRetailRate()) {
+                if (ph.getPurchaseRate() > ph.getRetailRate()) {
                     return true;
                 }
 
