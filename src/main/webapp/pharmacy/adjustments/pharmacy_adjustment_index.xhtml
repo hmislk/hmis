@@ -7,18 +7,35 @@
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
-                <div class="row" >
-                    <div class="col-2" >
-                        <h:form>
-                            <p:panelGrid columns="2" >
+                <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
+                    <h1>Not Autherized</h1>
+                </h:panelGroup>
+                <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
+                    <div class="row" >
+                        <div class="col-2" >
+                            <h:form>
+                                <p:panelGrid columns="1">
+                                    <p:commandButton value="Department Stock (QTY)" icon="fas fa-boxes" action="/pharmacy/adjustments/pharmacy_adjustment_department?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Department Stock By Single Item (QTY)" icon="fas fa-box" action="/pharmacy/adjustments/pharmacy_adjustment_department_by_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Staff Stock Adjustment" icon="fas fa-user-check" action="/pharmacy/adjustments/pharmacy_adjustment_staff?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Purchase Rate" icon="fas fa-dollar-sign" action="/pharmacy/adjustments/pharmacy_adjustment_purchase_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Sale Rate" icon="fas fa-tags" action="/pharmacy/adjustments/pharmacy_adjustment_retail_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Wholesale Rate" icon="fas fa-money-bill-wave" action="/pharmacy/adjustments/pharmacy_adjustment_whole_sale_rate?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentWholeSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Expiry Date" icon="fas fa-calendar-times" action="/pharmacy/adjustments/pharmacy_adjustment_expiry_date?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}" styleClass="w-100"/>
+                                    <p:commandButton value="Search Adjustment Bills" icon="fas fa-search" action="/pharmacy/adjustments/pharmacy_search_adjustment_bill_item?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSearchAdjustmentBills')}" styleClass="w-100"/>
+                                    <p:commandButton value="Transfer All Stock" icon="fas fa-exchange-alt" action="/pharmacy/adjustments/pharmacy_adjustment_department_all?faces-redirect=true" ajax="false" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentTransferAllStock')}" styleClass="w-100"/>
+                                </p:panelGrid>
 
-                            </p:panelGrid>
-                        </h:form>
-                    </div>
-                    <div class="col-10" >
+                            </h:form>
+                        </div>
+                        <div class="col-10" >
+                            <ui:insert name="subcontent" >
 
+                            </ui:insert>
+                        </div>
                     </div>
-                </div>
+
+                </h:panelGroup>
             </ui:define>
         </ui:composition>
     </h:body>

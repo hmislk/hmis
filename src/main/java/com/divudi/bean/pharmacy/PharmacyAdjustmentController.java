@@ -25,6 +25,7 @@ import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -100,6 +101,7 @@ public class PharmacyAdjustmentController implements Serializable {
     BillItem editingBillItem;
 
     Stock stock;
+    StockDTO selectedStockDto;
     Item item;
     double total;
     boolean manualAdjust;
@@ -125,7 +127,7 @@ public class PharmacyAdjustmentController implements Serializable {
     List<Bill> bills;
 
     private Amp amp;
-    private List<Stock> ampStock;
+    private List<StockDTO> ampStock;
 
     private boolean printPreview;
 
@@ -139,26 +141,31 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void fillAmpStocks() {
-        List<Stock> items = new ArrayList<>();
         if (amp == null) {
-            ampStock = items;
+            ampStock = new ArrayList<>();
             return;
         }
-        String sql;
-        Map m = new HashMap();
-        sql = "select i "
-                + " from Stock i "
-                + " where i.department=:d "
-                + " and i.itemBatch.item=:amp "
-                + " order by i.stock desc";
-        m.put("d", sessionController.getDepartment());
-        m.put("amp", amp);
+        
+        String sql = "SELECT new com.divudi.core.data.dto.StockDTO("
+                + "s.id, "
+                + "s.itemBatch.item.name, "
+                + "s.itemBatch.item.code, "
+                + "s.itemBatch.retailsaleRate, "
+                + "s.stock, "
+                + "s.itemBatch.dateOfExpire, "
+                + "s.itemBatch.batchNo, "
+                + "s.itemBatch.purcahseRate, "
+                + "s.itemBatch.wholesaleRate) "
+                + "FROM Stock s "
+                + "WHERE s.department = :d "
+                + "AND s.itemBatch.item = :amp "
+                + "ORDER BY s.stock DESC";
+                
+        Map<String, Object> params = new HashMap<>();
+        params.put("d", sessionController.getDepartment());
+        params.put("amp", amp);
 
-        items = getStockFacade().findByJpql(sql, m);
-
-        if (items != null) {
-            ampStock = items;
-        }
+        ampStock = (List<StockDTO>) getStockFacade().findLightsByJpql(sql, params);
     }
 
     public List<BillItem> fetchBillItems(BillType bt) {
@@ -222,6 +229,18 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setStock(Stock stock) {
         this.stock = stock;
+    }
+
+    public StockDTO getSelectedStockDto() {
+        return selectedStockDto;
+    }
+
+    public void setSelectedStockDto(StockDTO selectedStockDto) {
+        this.selectedStockDto = selectedStockDto;
+        // When a DTO is selected, also load the corresponding Stock entity if needed
+        if (selectedStockDto != null) {
+            this.stock = getStockFacade().find(selectedStockDto.getId());
+        }
     }
 
     public String newSaleBill() {
@@ -1743,11 +1762,11 @@ public class PharmacyAdjustmentController implements Serializable {
         this.amp = amp;
     }
 
-    public List<Stock> getAmpStock() {
+    public List<StockDTO> getAmpStock() {
         return ampStock;
     }
 
-    public void setAmpStock(List<Stock> ampStock) {
+    public void setAmpStock(List<StockDTO> ampStock) {
         this.ampStock = ampStock;
     }
 

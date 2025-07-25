@@ -11,6 +11,9 @@ public class StockDTO implements Serializable {
     private Double retailRate;
     private Double stockQty;
     private Date dateOfExpire;
+    private String batchNo;
+    private Double purchaseRate;
+    private Double wholesaleRate;
 
     public StockDTO() {
     }
@@ -24,6 +27,20 @@ public class StockDTO implements Serializable {
         this.retailRate = retailRate;
         this.stockQty = stockQty;
         this.dateOfExpire = dateOfExpire;
+    }
+
+    // Constructor for pharmacy adjustment with all fields
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty, 
+                    Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate) {
+        this.id = id;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
     }
 
     public Long getId() {
@@ -80,5 +97,29 @@ public class StockDTO implements Serializable {
 
     public void setDateOfExpire(Date dateOfExpire) {
         this.dateOfExpire = dateOfExpire;
+    }
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String batchNo) {
+        this.batchNo = batchNo;
+    }
+
+    public Double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(Double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public Double getWholesaleRate() {
+        return wholesaleRate;
+    }
+
+    public void setWholesaleRate(Double wholesaleRate) {
+        this.wholesaleRate = wholesaleRate;
     }
 }

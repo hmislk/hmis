@@ -9,9 +9,9 @@
 
     <h:body>
 
-        <ui:composition template="/resources/template/template.xhtml">
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
 
-            <ui:define name="content">
+            <ui:define name="subcontent">
                 <h:form>
 
                     <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}">
@@ -25,7 +25,7 @@
                                         <h:outputText styleClass="fa-solid fa-syringe"></h:outputText>
                                         <h:outputLabel value="Select Item" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <p:panelGrid columns="1" class="w-100">
+                                    <p:panelGrid columns="3" class="w-100" columnClasses="w-25, w-50, w-25">
                                         <h:outputLabel value="Item" ></h:outputLabel>
                                         <p:autoComplete
                                             id="acAmp"
@@ -37,67 +37,101 @@
                                             itemValue="#{amp}"
                                             maxResults="10"
                                             minQueryLength="3"
-                                            value="#{pharmacyAdjustmentController.amp}"
-                                            >
-                                            <p:ajax
-                                                process="acAmp"
-                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                update="tblStocks" >
-                                            </p:ajax>
+                                            value="#{pharmacyAdjustmentController.amp}">
                                             <p:column headerText="Item"  style="padding: 3px;" >
                                                 <h:outputText value="#{amp.name}" ></h:outputText>
                                             </p:column>
                                             <p:column headerText="Code"  style="padding: 3px;" >
                                                 <h:outputText value="#{amp.code}" ></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Stock" style="padding: 3px; text-align: right; padding-right: 10px;">
-                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.getLoggedUser().getDepartment(),amp)}" >
-                                                    <f:convertNumber pattern="#,##0" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
                                         </p:autoComplete>
-
-                                        <h:outputLabel value="Batches" ></h:outputLabel>
-                                        <p:dataTable
-                                            id="tblStocks"
-                                            value="#{pharmacyAdjustmentController.ampStock}"
-                                            var="i"
-                                            rows="10"
-                                            selectionMode="single"
-                                            rowKey="#{i.id}"
-                                            selection="#{pharmacyAdjustmentController.stock}">
-                                            <p:column
-                                                sortBy="#{i.stock}"
-                                                headerText="Purchase Rate"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.purcahseRate}" >
-                                                    <f:convertNumber pattern="#,###.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-
-                                            <p:column
-                                                headerText="Rate"
-                                                sortBy="#{i.itemBatch.retailsaleRate}"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-
-                                            <p:column
-                                                headerText="Expiry"
-                                                sortBy="#{i.itemBatch.dateOfExpire}"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
-                                            <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
-                                        </p:dataTable>
-
+                                        <p:commandButton 
+                                            value="Load Stocks"
+                                            icon="fas fa-sync"
+                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                            ajax="false"
+                                            styleClass="w-100 m-1"/>
                                     </p:panelGrid>
+                                    <p:dataTable
+                                        id="tblStocks"
+                                        value="#{pharmacyAdjustmentController.ampStock}"
+                                        var="i"
+                                        rows="10"
+                                        paginator="true"
+                                        paginatorAlwaysVisible="false"
+                                        selectionMode="single"
+                                        rowKey="#{i.id}"
+                                        selection="#{pharmacyAdjustmentController.selectedStockDto}"
+                                        emptyMessage="No Stocks">
+
+                                        <f:facet name="header">
+                                            Batches
+                                        </f:facet>
+
+                                        <p:column
+                                            headerText="Expiry"
+                                            sortBy="#{i.dateOfExpire}"
+                                            styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.dateOfExpire}">
+                                                <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column
+                                            headerText="Batch No."
+                                            sortBy="#{i.batchNo}"
+                                            styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.batchNo}">
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column
+                                            sortBy="#{i.stockQty}"
+                                            headerText="Stock"
+                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.stockQty}" >
+                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column
+                                            headerText="Purchase Rate"
+                                            sortBy="#{i.purchaseRate}"
+                                            styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.purchaseRate}" styleClass="fw-bold">
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column
+                                            headerText="Cost Rate"
+                                            sortBy="#{i.retailRate}"
+                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.retailRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column
+                                            headerText="Retail Rate"
+                                            sortBy="#{i.retailRate}"
+                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.retailRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </p:column>
+
+                                        <p:column
+                                            headerText="Wholesale Rate"
+                                            sortBy="#{i.wholesaleRate}"
+                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                            <h:outputText value="#{i.wholesaleRate}" >
+                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                            </h:outputText>
+                                        </p:column>
+
+
+                                        <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                        <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                    </p:dataTable>
                                 </p:panel>
 
                             </div>
@@ -116,50 +150,50 @@
                                                 <h:outputLabel value=":"/>
                                             </div>
                                             <div class="col-md-7">
-                                                <h:outputLabel value="#{pharmacyAdjustmentController.stock.id}" ></h:outputLabel>
+                                                <h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.id}" ></h:outputLabel>
                                             </div>
                                         </div>
 
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Item ID"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.id}" ></h:outputLabel></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.id}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Name"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.name}" ></h:outputLabel></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.itemName}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Code"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.item.code}" ></h:outputLabel></div>
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.code}" ></h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.purcahseRate}" >
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.purchaseRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.retailsaleRate}" >
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.retailRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.wholesaleRate}" >
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.wholesaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.stock.stock}" >
+                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.stockQty}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputLabel></div>
                                         </div>
@@ -167,11 +201,11 @@
                                         <div class="row">
                                             <div class="col-md-3"> <h:outputLabel value="Expiry"/></div>
                                             <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.stock.itemBatch.dateOfExpire}" >
+                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.dateOfExpire}" >
                                                     <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired ':
-                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'Expired Soon':''}"
-                                                                 severity="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.stock.itemBatch.dateOfExpire ?'warning':''}" />
+                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'Expired ':
+                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'Expired Soon':''}"
+                                                                 severity="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'warning':''}" />
                                                 </h:outputLabel></div>
                                         </div>
                                     </div>

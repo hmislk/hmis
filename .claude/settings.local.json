@@ -70,7 +70,9 @@
       "Bash(\"D:\\Payara\\*\")",
       "Bash(\"C:\\Program Files\\NetBeans-16\\netbeans\\java\\maven\\bin\\mvn.cmd\":*)",
       "Bash(\"D:\\Payara_Server\\*\")",
-      "Bash(detect-maven.bat:*)"
+      "Bash(detect-maven.bat:*)",
+      "Bash(move pharmacy_adjustment_department.xhtml adjustments/)",
+      "Bash(mv:*)"
     ],
     "deny": []
   }
