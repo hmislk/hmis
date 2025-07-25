@@ -772,10 +772,20 @@ public class PharmacyAdjustmentController implements Serializable {
         }
         
         // Set the purchase value change (only this should be recorded as per requirement)
-        bfd.setTotalPurchaseValue(java.math.BigDecimal.valueOf(changeValue));
-        bfd.setNetTotal(java.math.BigDecimal.valueOf(changeValue));
+        java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
+        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldPurchaseRate * getStock().getStock());
+        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newPurchaseRate * getStock().getStock());
+
+        bfd.setTotalPurchaseValue(changeVal);
+        bfd.setNetTotal(changeVal);
         bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
         bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+
+        // Aggregate before/after totals
+        java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
+        java.math.BigDecimal prevAfter = bfd.getTotalAfterAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalAfterAdjustmentValue();
+        bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
+        bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
         
         // Ensure cost rate, retail rate, wholesale rate values are NOT recorded as per requirement
         bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
@@ -1814,6 +1824,42 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setAmpStock(List<StockDTO> ampStock) {
         this.ampStock = ampStock;
+    }
+
+    public double calculateTotalBefore(Bill bill) {
+        double total = 0.0;
+        if (bill != null && bill.getBillItems() != null) {
+            for (BillItem bi : bill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    double qty = bi.getQty() != null ? bi.getQty() : 0.0;
+                    total += bi.getPharmaceuticalBillItem().getPurchaseRate() * qty;
+                }
+            }
+        }
+        return total;
+    }
+
+    public double calculateTotalAfter(Bill bill) {
+        double total = 0.0;
+        if (bill != null && bill.getBillItems() != null) {
+            for (BillItem bi : bill.getBillItems()) {
+                if (bi.getPharmaceuticalBillItem() != null) {
+                    double qty = bi.getQty() != null ? bi.getQty() : 0.0;
+                    total += bi.getPharmaceuticalBillItem().getLastPurchaseRate() * qty;
+                }
+            }
+        }
+        return total;
+    }
+
+    public double calculateTotalChange(Bill bill) {
+        double total = 0.0;
+        if (bill != null && bill.getBillItems() != null) {
+            for (BillItem bi : bill.getBillItems()) {
+                total += bi.getNetValue();
+            }
+        }
+        return total;
     }
 
 }
