@@ -59,9 +59,6 @@
                                         rows="10"
                                         paginator="true"
                                         paginatorAlwaysVisible="false"
-                                        selectionMode="single"
-                                        rowKey="#{i.id}"
-                                        selection="#{pharmacyAdjustmentController.selectedStockDto}"
                                         emptyMessage="No Stocks">
 
                                         <f:facet name="header">
@@ -101,6 +98,9 @@
                                             </h:outputText>
                                         </p:column>
 
+                                        <p:column headerText="New Purchase Rate" styleClass="text-end">
+                                            <p:inputText value="#{i.newPurchaseRate}" styleClass="w-100"/>
+                                        </p:column>
                                         <p:column
                                             headerText="Cost Rate"
                                             sortBy="#{i.retailRate}"
@@ -129,104 +129,25 @@
                                         </p:column>
 
 
-                                        <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
-                                        <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
                                     </p:dataTable>
                                 </p:panel>
 
                             </div>
                             <div class="col-md-6">
-                                <p:panel class="w-100" id="det">
-                                    <f:facet name="header">
-                                        <h:outputText styleClass="fa-solid fa-file-invoice"></h:outputText>
-                                        <h:outputLabel value="Item Details" class="mx-4"></h:outputLabel>
-                                    </f:facet>
-                                    <div>
-                                        <div class="row">
-                                            <div class="col-md-3">
-                                                <h:outputLabel value="Stock ID"/>
-                                            </div>
-                                            <div class="col-md-2">
-                                                <h:outputLabel value=":"/>
-                                            </div>
-                                            <div class="col-md-7">
-                                                <h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.id}" ></h:outputLabel>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Item ID"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.id}" ></h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Name"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.itemName}" ></h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Code"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.code}" ></h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Purchase Rate"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.purchaseRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"> <h:outputLabel value="Retail Sale Rate"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.retailRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"> <h:outputLabel value="Wholesale Rate"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.wholesaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-3"><h:outputLabel value="Stocks"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.stockQty}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputLabel></div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-3"> <h:outputLabel value="Expiry"/></div>
-                                            <div class="col-md-2"><h:outputLabel value=":"/></div>
-                                            <div class="col-md-7 align-items-center"><h:outputLabel value="#{pharmacyAdjustmentController.selectedStockDto.dateOfExpire}" >
-                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                                    &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'Expired ':
-                                                                             commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'Expired Soon':''}"
-                                                                 severity="#{commonFunctionsProxy.currentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > pharmacyAdjustmentController.selectedStockDto.dateOfExpire ?'warning':''}" />
-                                                </h:outputLabel></div>
-                                        </div>
-                                    </div>
-
-                                </p:panel>
-                                <p:panel >
+                                <p:panel>
                                     <f:facet name="header" >
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="New Purchase Rate" ></h:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.pr}"  class="w-100"></p:inputText>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
                                     <p:commandButton
                                         id="btnAdjust"
-                                        value="Make Adjustment"
+                                        value="Adjust the Purchase Rates"
                                         ajax="false"
                                         class="mt-2 ui-button-warning"
                                         icon="fa-solid fa-sliders"
-                                        action="#{pharmacyAdjustmentController.adjustPurchaseRate()}" >
+                                        action="#{pharmacyAdjustmentController.adjustPurchaseRates()}" >
                                     </p:commandButton>
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>

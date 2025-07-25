@@ -14,6 +14,8 @@ public class StockDTO implements Serializable {
     private String batchNo;
     private Double purchaseRate;
     private Double wholesaleRate;
+    // Temporary holder for purchase rate adjustments on the UI
+    private Double newPurchaseRate;
 
     public StockDTO() {
     }
@@ -121,5 +123,13 @@ public class StockDTO implements Serializable {
 
     public void setWholesaleRate(Double wholesaleRate) {
         this.wholesaleRate = wholesaleRate;
+    }
+
+    public Double getNewPurchaseRate() {
+        return newPurchaseRate;
+    }
+
+    public void setNewPurchaseRate(Double newPurchaseRate) {
+        this.newPurchaseRate = newPurchaseRate;
     }
 }
