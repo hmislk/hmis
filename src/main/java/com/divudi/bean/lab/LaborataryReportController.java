@@ -784,9 +784,6 @@ public class LaborataryReportController implements Serializable {
         Bill individualBill = bill;
         Bill batchBill = bill.getBackwardReferenceBill();
 
-        System.out.println("batchBill = " + batchBill);
-        System.out.println("individualBill = " + individualBill);
-
         // Net totals for ratio calculation (if needed).
         double netTotalOfBatchBill = batchBill != null ? batchBill.getNetTotal() : 0.0;
         double netTotalOfIndividualBill = individualBill.getNetTotal();
@@ -833,9 +830,6 @@ public class LaborataryReportController implements Serializable {
     }
 
     public List<Bill> getLaboratoryBills(List<BillTypeAtomic> billTypeAtomics) {
-        System.out.println("billTypeAtomics = " + billTypeAtomics);
-        System.out.println("fromDate = " + fromDate);
-        System.out.println("toDate = " + toDate);
         List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, null, null, null, null, billTypeAtomics, null, null, null, null, DepartmentType.Lab, null);
         return incomeBills;
     }
