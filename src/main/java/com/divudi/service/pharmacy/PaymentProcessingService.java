@@ -78,7 +78,6 @@ public class PaymentProcessingService {
                 payment.setRealizedAt(data.getSlip().getDate());
                 payment.setPaymentDate(data.getSlip().getDate());
                 payment.setChequeDate(data.getSlip().getDate());
-                payment.setRealizedAt(data.getSlip().getDate());
                 break;
             case OnCall:
             case Staff:
