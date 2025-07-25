@@ -29,7 +29,7 @@ public class IncomeRow implements Serializable {
 
     private PaymentScheme paymentScheme;
     private AdmissionType admissionType;
-    
+
     private Category category;
     private Bill bill;
     private Bill batchBill;
@@ -54,7 +54,7 @@ public class IncomeRow implements Serializable {
     private boolean selected;
 
     private Item item;
-    
+
     private double retailValue;
     private double purchaseValue;
     private double grossProfit;
@@ -169,6 +169,10 @@ public class IncomeRow implements Serializable {
     private double hospitalTotal;
     private double staffTotal;
     private double ccTotal;
+
+    private double totalBillsRefund;
+    private double totalBillsCancel;
+    private double totalBillsDiscount;
 
     private double qty;
     private double retailRate;
@@ -1416,6 +1420,30 @@ public class IncomeRow implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public double getTotalBillsRefund() {
+        return totalBillsRefund;
+    }
+
+    public void setTotalBillsRefund(double totalBillsRefund) {
+        this.totalBillsRefund = totalBillsRefund;
+    }
+
+    public double getTotalBillsCancel() {
+        return totalBillsCancel;
+    }
+
+    public void setTotalBillsCancel(double totalBillsCancel) {
+        this.totalBillsCancel = totalBillsCancel;
+    }
+
+    public double getTotalBillsDiscount() {
+        return totalBillsDiscount;
+    }
+
+    public void setTotalBillsDiscount(double totalBillsDiscount) {
+        this.totalBillsDiscount = totalBillsDiscount;
     }
 
     public Long getBillId() {
