@@ -1578,31 +1578,24 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
 
-    //    Checked
-
-
-
-
-
+    /**
+     * Create the Payment entities associated with the given bill using the
+     * configured {@link PaymentProcessingService}.
+     *
+     * @param b the bill to create payments for
+     * @return list of persisted payments
+     */
     public List<Payment> createPaymentsForBill(Bill b) {
-        return paymentProcessingService.createPaymentsForBill(b,
+        return paymentProcessingService.createPaymentsForBill(
+                b,
                 b.getPaymentMethod(),
                 paymentMethodData,
                 sessionController.getInstitution(),
                 sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+                sessionController.getLoggedUser()
+        );
     }
 
-    //    public void calculateAllRates() {
-//        //////System.out.println("calculating all rates");
-//        for (BillItem tbi : getPreBill().getBillItems()) {
-//            calculateDiscountRates(tbi);
-//            calculateBillItemForEditing(tbi);
-//        }
-//        calTotal();
-//    }
-
-    //    Checked
 
     @Inject
     PriceMatrixController priceMatrixController;
