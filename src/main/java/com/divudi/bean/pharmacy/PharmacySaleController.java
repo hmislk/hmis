@@ -2383,24 +2383,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
 
-//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-//            staffBean.updateStaffWelfare(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-//        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-//            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Credit Updated");
-//        }
-//
-//        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if (getPatient().getRunningBalance() != null) {
-//                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-//            } else {
-//                getPatient().setRunningBalance(0.0 - netTotal);
-//            }
-//            getPatientFacade().edit(getPatient());
-//            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-//            patientDepositController.updateBalance(getSaleBill(), pd);
-//        }
         paymentService.updateBalances(payments);
 
         resetAll();
