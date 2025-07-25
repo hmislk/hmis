@@ -1578,11 +1578,13 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
 
-    //    Checked
-
-
-
-
+    /**
+     * Create the Payment entities associated with the given bill using the
+     * configured {@link PaymentProcessingService}.
+     *
+     * @param b the bill to create payments for
+     * @return list of persisted payments
+     */
     public List<Payment> createPaymentsForBill(Bill b) {
         return paymentProcessingService.createPaymentsForBill(
                 b,
