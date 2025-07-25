@@ -1599,7 +1599,7 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
             String visitType
     ) {
         String jpql;
-        Map params = new HashMap();
+        Map<String, Object> params = new HashMap<>();
 
         jpql = "select b "
                 + " from Bill b "
