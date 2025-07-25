@@ -1583,8 +1583,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
 
 
-
-    @Override
     public List<Payment> createPaymentsForBill(Bill b) {
         return paymentProcessingService.createPaymentsForBill(
                 b,
@@ -1596,16 +1594,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         );
     }
 
-    //    public void calculateAllRates() {
-//        //////System.out.println("calculating all rates");
-//        for (BillItem tbi : getPreBill().getBillItems()) {
-//            calculateDiscountRates(tbi);
-//            calculateBillItemForEditing(tbi);
-//        }
-//        calTotal();
-//    }
-
-    //    Checked
 
     @Inject
     PriceMatrixController priceMatrixController;
