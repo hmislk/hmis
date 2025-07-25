@@ -547,16 +547,14 @@ public class PharmacyCostingService {
         bfd.setTotalPurchaseValue(totalPurchase);
         bfd.setTotalRetailSaleValue(totalRetail);
         bfd.setTotalWholesaleValue(totalWholesale);
-        
         // DEBUG: Log the values being set in BillFinanceDetails
-        System.out.println("=== DEBUG: calculateBillTotalsFromItemsForPurchases - BillFinanceDetails VALUES ===");
-        System.out.println("DEBUG: Bill ID: " + (bill != null ? bill.getId() : "null"));
-        System.out.println("DEBUG: Setting totalPurchaseValue = " + totalPurchase);
-        System.out.println("DEBUG: Setting totalRetailSaleValue = " + totalRetail);
-        System.out.println("DEBUG: Setting totalWholesaleValue = " + totalWholesale);
-        System.out.println("DEBUG: Setting totalFreeItemValue = " + totalFreeItemValue);
-        System.out.println("DEBUG: BillItems processed: " + (billItems != null ? billItems.size() : "null"));
-        System.out.println("=== DEBUG: calculateBillTotalsFromItemsForPurchases END ===");
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
+        // DEBUG: Log the values being set in BillFinanceDetails
 
         bfd.setTotalQuantity(totalQty);
         bfd.setTotalFreeQuantity(totalFreeQty);
@@ -706,12 +704,8 @@ public class PharmacyCostingService {
      * @param bill The retail sale bill to update
      */
     public void updateBillFinanceDetailsForRetailSale(Bill bill) {
-        System.out.println("=== DEBUG: updateBillFinanceDetailsForRetailSale START ===");
-        System.out.println("DEBUG: Updating BillFinanceDetails for retail sale Bill ID: " + 
-                          (bill != null ? bill.getId() : "null"));
         
         if (bill == null || bill.getBillItems() == null || bill.getBillItems().isEmpty()) {
-            System.out.println("DEBUG: Bill or BillItems is null/empty, skipping update");
             return;
         }
 
@@ -722,7 +716,6 @@ public class PharmacyCostingService {
         BigDecimal totalQuantity = BigDecimal.ZERO;
         BigDecimal totalFreeQuantity = BigDecimal.ZERO;
 
-        System.out.println("DEBUG: Processing " + bill.getBillItems().size() + " bill items");
         
         // Calculate totals from bill items
         for (BillItem billItem : bill.getBillItems()) {
@@ -756,12 +749,6 @@ public class PharmacyCostingService {
             totalQuantity = totalQuantity.add(qty);
             totalFreeQuantity = totalFreeQuantity.add(freeQty);
 
-            System.out.println("DEBUG: Item " + (pbi.getStock() != null && pbi.getStock().getItemBatch() != null && 
-                             pbi.getStock().getItemBatch().getItem() != null ? 
-                             pbi.getStock().getItemBatch().getItem().getName() : "Unknown") + 
-                             " - Qty: " + totalQty + ", RetailRate: " + retailRate + 
-                             ", PurchaseRate: " + purchaseRate + ", RetailValue: " + itemRetailValue + 
-                             ", PurchaseValue: " + itemPurchaseValue);
         }
 
         // Ensure BillFinanceDetails exists
@@ -769,7 +756,6 @@ public class PharmacyCostingService {
         if (bfd == null) {
             bfd = new BillFinanceDetails(bill);
             bill.setBillFinanceDetails(bfd);
-            System.out.println("DEBUG: Created new BillFinanceDetails");
         }
 
         // Update the key values needed for reports
@@ -785,13 +771,6 @@ public class PharmacyCostingService {
         bfd.setNetTotal(netTotal);
         bfd.setGrossTotal(grossTotal);
 
-        System.out.println("DEBUG: Updated BillFinanceDetails:");
-        System.out.println("  totalRetailSaleValue = " + totalRetailValue);
-        System.out.println("  totalPurchaseValue = " + totalPurchaseValue);
-        System.out.println("  totalCostValue = " + totalCostValue);
-        System.out.println("  totalQuantity = " + totalQuantity);
-        System.out.println("  totalFreeQuantity = " + totalFreeQuantity);
-        System.out.println("=== DEBUG: updateBillFinanceDetailsForRetailSale END ===");
     }
 
 }

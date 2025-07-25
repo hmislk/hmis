@@ -980,48 +980,28 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
-        System.out.println("=== DEBUG: processPharmacyIncomeAndCostReportByBillDto START ===");
-        System.out.println("DEBUG: Date range: " + fromDate + " to " + toDate);
-        System.out.println("DEBUG: Institution: " + (institution != null ? institution.getName() : "ALL"));
-        System.out.println("DEBUG: Department: " + (department != null ? department.getName() : "ALL"));
         
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
-        System.out.println("DEBUG: Bill types: " + billTypeAtomics);
         
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
         
-        System.out.println("DEBUG: Fetched " + (dtos != null ? dtos.size() : "null") + " bill DTOs");
         
         if (dtos != null && !dtos.isEmpty()) {
-            System.out.println("DEBUG: Sample DTO data:");
             for (int i = 0; i < Math.min(3, dtos.size()); i++) {
                 PharmacyIncomeBillDTO dto = dtos.get(i);
-                System.out.println("  Bill[" + i + "] ID: " + dto.getBillId() + 
-                                 ", NetTotal: " + dto.getNetTotal() + 
-                                 ", RetailValue: " + dto.getTotalRetailSaleValue() + 
-                                 ", CostValue: " + dto.getTotalPurchaseValue());
             }
         }
 
         bundle = new IncomeBundle(dtos);
-        System.out.println("DEBUG: Created IncomeBundle, calling generateRetailAndCostDetailsForPharmaceuticalBill()");
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
         
-        System.out.println("DEBUG: Bundle processing complete. IncomeRows count: " +
-                         (bundle.getRows() != null ? bundle.getRows().size() : "null"));
 
         if (bundle.getRows() != null && !bundle.getRows().isEmpty()) {
-            System.out.println("DEBUG: Sample IncomeRow data:");
             for (int i = 0; i < Math.min(3, bundle.getRows().size()); i++) {
                 IncomeRow row = bundle.getRows().get(i);
-                System.out.println("  Row[" + i + "] Bill ID: " + row.getBillId() +
-                                 ", RetailValue: " + row.getRetailValue() +
-                                 ", PurchaseValue: " + row.getPurchaseValue() +
-                                 ", GrossProfit: " + row.getGrossProfit());
             }
         }
-        System.out.println("=== DEBUG: processPharmacyIncomeAndCostReportByBillDto END ===");
     }
 
     /**
@@ -1392,7 +1372,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
-                    System.out.println("Skipped BillItem: No PharmaceuticalBillItem.");
                     continue;
                 }
 
@@ -1403,7 +1382,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
-                    System.out.println("Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
                 }
 
                 double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
@@ -1416,19 +1394,17 @@ public class PharmacySummaryReportController implements Serializable {
                 saleValue += itemSaleValue;
                 purchaseValue += itemPurchaseValue;
                 costValue += itemCostValue;
-
                 // Print debug info
-                System.out.println("---- BillItem Debug ----");
-                System.out.println("Item: " + bi.getItem().getName());
-                System.out.println("Qty: " + qty);
-                System.out.println("Retail Rate: " + retailRate);
-                System.out.println("Purchase Rate: " + purchaseRate);
-                System.out.println("Cost Rate: " + cRate);
-                System.out.println("Factor: " + factor);
-                System.out.println("Item Sale Value: " + itemSaleValue);
-                System.out.println("Item Purchase Value: " + itemPurchaseValue);
-                System.out.println("Item Cost Value: " + itemCostValue);
-                System.out.println("------------------------");
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
