@@ -1323,6 +1323,52 @@ public class PharmacyAdjustmentController implements Serializable {
 
     }
 
+    public void adjustPurchaseRates() {
+        if (ampStock == null || ampStock.isEmpty()) {
+            JsfUtil.addErrorMessage("No Stocks");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().isEmpty())) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
+        savePurchaseRateAdjustmentBill();
+
+        boolean any = false;
+        for (StockDTO dto : ampStock) {
+            if (dto.getNewPurchaseRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getId());
+            if (s == null) {
+                continue;
+            }
+            stock = s;
+
+            double oldPurchaseRate = s.getItemBatch().getPurcahseRate();
+            double newPurchaseRate = dto.getNewPurchaseRate();
+            double purchaseRateChange = newPurchaseRate - oldPurchaseRate;
+            double changeValue = s.getStock() * purchaseRateChange;
+
+            savePrAdjustmentBillItems(oldPurchaseRate, newPurchaseRate, purchaseRateChange, changeValue);
+
+            s.getItemBatch().setPurcahseRate(newPurchaseRate);
+            itemBatchFacade.edit(s.getItemBatch());
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new purchase rate");
+            return;
+        }
+
+        deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully");
+    }
+
     public void adjustExDate() {
         if (errorCheck()) {
             return;
