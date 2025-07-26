@@ -28,7 +28,7 @@
                                                     itemLabel="#{amp.name}" itemValue="#{amp}"
                                                     maxResults="10" minQueryLength="3"
                                                     value="#{pharmacyAdjustmentController.amp}">
-                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks" />
+                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks,commentInput" />
                                         <p:column headerText="Item" style="padding: 3px;">
                                             <h:outputText value="#{amp.name}" />
                                         </p:column>
@@ -69,7 +69,7 @@
                                         <h:outputLabel value="Adjust" />
                                     </f:facet>
                                     <h:outputLabel value="Comment" />
-                                    <p:inputTextarea value="#{pharmacyAdjustmentController.comment}" class="w-100" />
+                                    <p:inputTextarea id="commentInput" value="#{pharmacyAdjustmentController.comment}" class="w-100" />
                                     <p:commandButton id="btnAdjust" value="Adjust the Cost Rates" ajax="false"
                                                      class="mt-2 ui-button-danger" icon="fa-solid fa-sliders"
                                                      action="#{pharmacyAdjustmentController.adjustCostRates()}" />

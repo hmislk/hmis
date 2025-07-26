@@ -175,6 +175,8 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
         costRateStockDtos = stockSearchService.findCostRateStockDtos(amp, sessionController.getLoggedUser().getDepartment());
+        // Clear comment field when new item is selected
+        comment = null;
     }
 
     private List<StockDTO> fetchAmpStocks(boolean onlyPositive) {
@@ -922,6 +924,7 @@ public class PharmacyAdjustmentController implements Serializable {
         ph.setItemBatch(ib);
         ph.setQtyInUnit(dto.getStockQty());
         ph.setQty(dto.getStockQty());
+        // Repurpose freeQty field to store cost rate change amount for audit and display purposes
         ph.setFreeQty(costRateChange);
 
         if (getDeptAdjustmentPreBill() == null) {

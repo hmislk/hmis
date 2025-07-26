@@ -53,19 +53,20 @@
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
-                        <f:facet name="header"><h:outputLabel value="Before Rate" style="font-weight: bold!important;" /></f:facet>
+                        <f:facet name="header"><h:outputLabel value="Before Cost Rate" style="font-weight: bold!important;" /></f:facet>
                         <h:outputLabel  value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
-                        <f:facet name="header"><h:outputLabel value="After Rate" style="font-weight: bold!important;" /></f:facet>
+                        <f:facet name="header"><h:outputLabel value="After Cost Rate" style="font-weight: bold!important;" /></f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
                         <f:facet name="header"><h:outputLabel value="Change" style="font-weight: bold!important;" /></f:facet>
+                        <!-- freeQty field repurposed to store cost rate change amount (difference between before and after rates) -->
                         <h:outputLabel style="color: #{bip.pharmaceuticalBillItem.freeQty gt 0 ? 'green' : bip.pharmaceuticalBillItem.freeQty lt 0 ? 'red' : 'black'};">
                             <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
                                 <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
