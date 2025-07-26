@@ -989,13 +989,13 @@ public class PharmacyAdjustmentController implements Serializable {
         }
 
         java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
-        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldCostRate * getStock().getStock());
-        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newCostRate * getStock().getStock());
+        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldCostRate * dto.getStockQty());
+        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newCostRate * dto.getStockQty());
 
         bfd.setTotalCostValue(changeVal);
         bfd.setNetTotal(changeVal);
         bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
-        bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+        bfd.setTotalQuantity(java.math.BigDecimal.valueOf(dto.getStockQty()));
 
         java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
         java.math.BigDecimal prevAfter = bfd.getTotalAfterAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalAfterAdjustmentValue();
