@@ -1891,14 +1891,4 @@ public class PharmacyAdjustmentController implements Serializable {
         return total;
     }
 
-    public double calculateTotalChange(Bill bill) {
-        double total = 0.0;
-        if (bill != null && bill.getBillItems() != null) {
-            for (BillItem bi : bill.getBillItems()) {
-                total += bi.getNetValue();
-            }
-        }
-        return total;
-    }
-
 }

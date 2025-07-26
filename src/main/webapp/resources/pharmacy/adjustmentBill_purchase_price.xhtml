@@ -158,10 +158,11 @@
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="Total Change:" style="font-weight: bold;"/>
+
                     <h:outputLabel
-                        style="font-weight: bold; color: #{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) gt 0 ? 'green' : pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) lt 0 ? 'red' : 'black'};"
+                        style="font-weight: bold; color: #{cc.attrs.bill.billFinanceDetails.totalAfterAdjustmentValue - cc.attrs.bill.billFinanceDetails.totalBeforeAdjustmentValue gt 0 ? 'green' : cc.attrs.bill.billFinanceDetails.totalAfterAdjustmentValue - cc.attrs.bill.billFinanceDetails.totalBeforeAdjustmentValue lt 0 ? 'red' : 'black'};"
                         styleClass="text-end">
-                        <h:outputText value="#{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill)}">
+                        <h:outputText value="#{cc.attrs.bill.billFinanceDetails.totalAfterAdjustmentValue - cc.attrs.bill.billFinanceDetails.totalBeforeAdjustmentValue}">
                             <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
                         </h:outputText>
                     </h:outputLabel>
