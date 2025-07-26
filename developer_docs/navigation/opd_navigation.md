@@ -32,4 +32,3 @@ This document lists all pages reachable from the **OPD** menu. Each entry shows 
 | **OPD → Lab Report Print** | `/faces/lab/report_for_opd_print.xhtml` | `OpdLabReportSearch` | |
 | **OPD → OPD Analytics** | `/faces/opd/analytics/index.xhtml` | `Opd` | |
 | **OPD → Financial Transaction Manager** | `/faces/cashier/index.xhtml` | `Opd` | Shown only when `applicationPreference.opdBillingAftershiftStart` is enabled |
-
