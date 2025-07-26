@@ -8,7 +8,7 @@
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
                 <h:panelGroup rendered="#{!webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
-                    <h1>Not Autherized</h1>
+                    <h1>Not Authorized</h1>
                 </h:panelGroup>
                 <h:panelGroup rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
                     <div class="row" >
