@@ -15,8 +15,7 @@ This document lists all pages reachable from the **OPD** menu. Each entry shows 
 | **OPD → Cashier → Scan Bills** | `/faces/cashier/scan_bill_by_barcode_scanner.xhtml` | `ScanBillsFromCashier` | |
 | **OPD → Cashier → Accept Payments for OPD Batch Bills** | `/faces/opd/opd_search_pre_bill.xhtml` | `AcceptPaymentForOpdBatchBills` | |
 | **OPD → Cashier → Accept Payments for Pharmacy Bills** | `/faces/pharmacy/pharmacy_search_pre_bill.xhtml` | `AcceptPaymentForPharmacyBills` | |
-| **OPD → Cashier → Refunds** | `/faces/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml` | `RefundFromCashier` | |
-| **OPD → Cashier → Refunds for OPD Bills** | `/faces/opd/opd_search_pre_refund_bill_for_return_cash.xhtml` | `RefundOpdBillsFromCashier` | |
+| **OPD → Cashier → Refunds for OPD Bills**    | `/faces/opd/opd_search_pre_refund_bill_for_return_cash.xhtml`    | `RefundOpdBillsFromCashier`    | |
 | **OPD → Cashier → Refunds for Pharmacy Bills** | `/faces/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash.xhtml` | `RefundPharmacyBillsFromCashier` | |
 | **OPD → Search → OPD Bill Search** | `/faces/opd/opd_bill_search.xhtml` | `OpdBillSearch` | |
 | **OPD → Search → OPD Bill Item Search** | `/faces/opd_search_billitem_own.xhtml` | `OpdBillItemSearch` | |
