@@ -226,6 +226,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     Double qty;
     Integer intQty;
     Stock stock;
+    
+    // Page parameter for handling navigation reset
+    private String resetAllParam;
 
     /**
      * Lightweight stock DTO used for autocompletes.
@@ -630,6 +633,23 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         // Invalidate all caches for performance optimization
         invalidateAllCaches();
     }
+    
+    // Handle page load and navigation reset
+    public void handlePageLoad() {
+        if ("true".equals(resetAllParam)) {
+            resetAll();
+        }
+        // Ensure BillItem is initialized regardless of navigation method
+        getBillItem();
+    }
+    
+    public String getResetAllParam() {
+        return resetAllParam;
+    }
+    
+    public void setResetAllParam(String resetAllParam) {
+        this.resetAllParam = resetAllParam;
+    }
 
     public List<StockDTO> completeStockDtos(String qry) {
         // Performance optimization: Only search if query is meaningful
@@ -653,9 +673,15 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         // Set stock using lazy loading (will be loaded when getStock() is called)
         getBillItem().getPharmaceuticalBillItem().setStock(getStock());
         
+        // Initialize quantity to 1 if not set (fixes first-time selection issue)
+        if (intQty == null || intQty == 0) {
+            setIntQty(1);
+        }
+        
         // Only perform heavy operations if stock was successfully loaded
         if (stock != null) {
             calculateRates(billItem);
+            calculateBillItem(); // Ensure calculation is triggered with the quantity
             pharmacyService.addBillItemInstructions(billItem);
         }
     }

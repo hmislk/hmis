@@ -26,6 +26,9 @@
                             document.getElementById("acStock").focus();
                         };
                     </script>
+                    <f:metadata>
+                        <f:event type="preRenderView" listener="#{pharmacyFastRetailSaleController.getBillItem()}" />
+                    </f:metadata>
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacyFastRetailSaleController.billPreview}">
@@ -150,7 +153,7 @@
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleSelect}" update="txtRate txtItemInstructions" oncomplete="setTimeout(function(){document.getElementById('txtQty').focus();}, 50);" ></p:ajax>
+                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleSelect}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal txtItemInstructions" oncomplete="setTimeout(function(){var qtyField = document.getElementById('txtQty'); if(qtyField) { qtyField.focus(); qtyField.select(); }}, 150);" ></p:ajax>
                                                 </p:autoComplete>
 
 
