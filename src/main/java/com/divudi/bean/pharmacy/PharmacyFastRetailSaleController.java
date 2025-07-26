@@ -707,25 +707,27 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         if (getQty() == null) {
             qty = 0.0;
         }
-        if (getQty() > getStock().getStock()) {
+        Stock currentStock = getStock();
+        ItemBatch itemBatch = currentStock.getItemBatch();
+        if (getQty() > currentStock.getStock()) {
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return;
         }
 
         //Bill Item
 //        billItem.setInwardChargeType(InwardChargeType.Medicine);
-        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setItem(itemBatch.getItem());
         billItem.setQty(qty);
 
         //pharmaceutical Bill Item
-        billItem.getPharmaceuticalBillItem().setDoe(getStock().getItemBatch().getDateOfExpire());
+        billItem.getPharmaceuticalBillItem().setDoe(itemBatch.getDateOfExpire());
         billItem.getPharmaceuticalBillItem().setFreeQty(0.0f);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+        billItem.getPharmaceuticalBillItem().setItemBatch(itemBatch);
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
 
         //Rates
         //Values
-        billItem.setGrossValue(getStock().getItemBatch().getRetailsaleRate() * qty);
+        billItem.setGrossValue(itemBatch.getRetailsaleRate() * qty);
         billItem.setNetValue(qty * billItem.getNetRate());
         billItem.setDiscount(billItem.getGrossValue() - billItem.getNetValue());
 
@@ -820,7 +822,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             JsfUtil.addErrorMessage("Quentity Zero?");
             return addedQty;
         }
-        if (getQty() > getStock().getStock()) {
+        Stock currentStock = getStock();
+        ItemBatch itemBatch = currentStock.getItemBatch();
+        if (getQty() > currentStock.getStock()) {
             errorMessage = "No sufficient stocks.";
             JsfUtil.addErrorMessage("No Sufficient Stocks?");
             return addedQty;
@@ -860,12 +864,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         addedQty = qty;
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+        billItem.getPharmaceuticalBillItem().setItemBatch(itemBatch);
         calculateBillItem();
         ////System.out.println("Rate*****" + billItem.getRate());
         billItem.setInwardChargeType(InwardChargeType.Medicine);
 
-        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setItem(itemBatch.getItem());
         billItem.setBill(getPreBill());
 
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
@@ -887,12 +891,13 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
 
     private void addSingleStock() {
+        ItemBatch itemBatch = stock.getItemBatch();
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
         billItem.getPharmaceuticalBillItem().setStock(stock);
-        billItem.getPharmaceuticalBillItem().setItemBatch(getStock().getItemBatch());
+        billItem.getPharmaceuticalBillItem().setItemBatch(itemBatch);
         calculateBillItem();
         billItem.setInwardChargeType(InwardChargeType.Medicine);
-        billItem.setItem(getStock().getItemBatch().getItem());
+        billItem.setItem(itemBatch.getItem());
         billItem.setBill(getPreBill());
         billItem.setSearialNo(getPreBill().getBillItems().size() + 1);
         getPreBill().getBillItems().add(billItem);
