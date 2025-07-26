@@ -137,7 +137,9 @@ public class PharmacyAdjustmentController implements Serializable {
     private Amp amp;
     private List<StockDTO> ampStock;
     private List<StockDTO> retailRateStockDtos;
+    private List<StockDTO> costRateStockDtos;
     private StockDTO selectedRetailRateStockDto;
+    private StockDTO selectedCostRateStockDto;
 
     private boolean printPreview;
 
@@ -164,6 +166,15 @@ public class PharmacyAdjustmentController implements Serializable {
             return;
         }
         retailRateStockDtos = stockSearchService.findRetailRateStockDtos(amp, sessionController.getLoggedUser().getDepartment());
+    }
+
+    public void fillCostRateStockDtos() {
+        if (amp == null) {
+            JsfUtil.addErrorMessage("No Item Selected");
+            costRateStockDtos = new ArrayList<>();
+            return;
+        }
+        costRateStockDtos = stockSearchService.findCostRateStockDtos(amp, sessionController.getLoggedUser().getDepartment());
     }
 
     private List<StockDTO> fetchAmpStocks(boolean onlyPositive) {
@@ -529,6 +540,36 @@ public class PharmacyAdjustmentController implements Serializable {
         }
     }
 
+    private void saveCostRateAdjustmentBill() {
+        getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getDeptAdjustmentPreBill().setCreater(getSessionController().getLoggedUser());
+        String deptId = getBillNumberBean().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDeptId(deptId);
+        getDeptAdjustmentPreBill().setInsId(deptId);
+        getDeptAdjustmentPreBill().setBillType(BillType.PharmacyAdjustmentCostRate);
+        getDeptAdjustmentPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_COST_RATE_ADJUSTMENT);
+        getDeptAdjustmentPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setToDepartment(null);
+        getDeptAdjustmentPreBill().setToInstitution(null);
+        getDeptAdjustmentPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        getDeptAdjustmentPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getDeptAdjustmentPreBill().setComments(comment);
+
+        if (getDeptAdjustmentPreBill().getBillFinanceDetails() == null) {
+            BillFinanceDetails bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
+            getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+    }
+
     private void saveSaleRateAdjustmentBill() {
         getDeptAdjustmentPreBill().setBillDate(Calendar.getInstance().getTime());
         getDeptAdjustmentPreBill().setBillTime(Calendar.getInstance().getTime());
@@ -826,6 +867,136 @@ public class PharmacyAdjustmentController implements Serializable {
 
         // Ensure cost rate, retail rate, wholesale rate values are NOT recorded as per requirement
         bfd.setTotalCostValue(java.math.BigDecimal.ZERO);
+        bfd.setTotalRetailSaleValue(java.math.BigDecimal.ZERO);
+        bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
+
+        if (tbi.getId() == null) {
+            getBillItemFacade().create(tbi);
+        } else {
+            getBillItemFacade().edit(tbi);
+        }
+    }
+
+    private double calculateCostRateChange(StockDTO dto) {
+        if (dto.getNewCostRate() == null || dto.getPurchaseRate() == null) {
+            return 0.0;
+        }
+        return dto.getNewCostRate() - dto.getPurchaseRate();
+    }
+
+    private boolean validateCostRateAdjustment(StockDTO dto) {
+        if (dto.getNewCostRate() == null) {
+            return false;
+        }
+        if (dto.getNewCostRate() < 0) {
+            JsfUtil.addErrorMessage("Cost rate must be positive");
+            return false;
+        }
+        return true;
+    }
+
+    private void saveCrAdjustmentBillItems(StockDTO dto, double oldCostRate, double newCostRate,
+            double costRateChange, double changeValue) {
+        BillItem tbi = new BillItem();
+        tbi.setBill(getDeptAdjustmentPreBill());
+        PharmaceuticalBillItem ph = tbi.getPharmaceuticalBillItem();
+
+        if (dto.getStockId() == null || dto.getItemBatchId() == null) {
+            throw new RuntimeException("StockDTO stockId or itemBatchId is null");
+        }
+
+        Stock stockEntity = stockFacade.find(dto.getStockId());
+        if (stockEntity == null) {
+            throw new RuntimeException("Stock not found with ID: " + dto.getStockId());
+        }
+
+        ItemBatch ib = itemBatchFacade.find(dto.getItemBatchId());
+        if (ib == null) {
+            throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
+        }
+
+        ph.setPurchaseRate(ib.getPurcahseRate());
+        ph.setBeforeAdjustmentValue(oldCostRate);
+        ph.setAfterAdjustmentValue(newCostRate);
+        ph.setStock(stockEntity);
+        ph.setItemBatch(ib);
+        ph.setQtyInUnit(dto.getStockQty());
+        ph.setQty(dto.getStockQty());
+        ph.setFreeQty(costRateChange);
+
+        if (getDeptAdjustmentPreBill() == null) {
+            throw new RuntimeException("DeptAdjustmentPreBill is null");
+        }
+
+        tbi.setItem(ib.getItem());
+        tbi.setRate(newCostRate);
+        tbi.setQty(dto.getStockQty());
+        tbi.setGrossValue(Math.abs(changeValue));
+        tbi.setNetValue(changeValue);
+        tbi.setDiscount(0.0);
+
+        BillItemFinanceDetails bifd = new BillItemFinanceDetails();
+        bifd.setBillItem(tbi);
+        bifd.setQuantity(java.math.BigDecimal.valueOf(dto.getStockQty()));
+        bifd.setFreeQuantity(java.math.BigDecimal.ZERO);
+        bifd.setLineGrossRate(java.math.BigDecimal.valueOf(newCostRate));
+        bifd.setLineNetRate(java.math.BigDecimal.valueOf(newCostRate));
+        bifd.setLineGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setLineNetTotal(java.math.BigDecimal.valueOf(changeValue));
+        bifd.setLineDiscount(java.math.BigDecimal.ZERO);
+        bifd.setLineCost(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bifd.setRetailSaleRate(java.math.BigDecimal.valueOf(dto.getRetailRate()));
+        bifd.setCreatedAt(Calendar.getInstance().getTime());
+        bifd.setCreatedBy(getSessionController().getLoggedUser());
+
+        tbi.setBillItemFinanceDetails(bifd);
+
+        tbi.setInwardChargeType(InwardChargeType.Medicine);
+        tbi.setBill(getDeptAdjustmentPreBill());
+        tbi.setSearialNo(getDeptAdjustmentPreBill().getBillItems().size() + 1);
+        tbi.setCreatedAt(Calendar.getInstance().getTime());
+        tbi.setCreater(getSessionController().getLoggedUser());
+
+        try {
+            if (tbi.getId() == null) {
+                getBillItemFacade().create(tbi);
+            } else {
+                getBillItemFacade().edit(tbi);
+            }
+        } catch (javax.persistence.PersistenceException e) {
+            Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to save cost rate adjustment bill items", e);
+            throw new RuntimeException("Failed to save cost rate adjustment bill items", e);
+        }
+
+        Double currentTotalObj = getDeptAdjustmentPreBill().getTotal();
+        Double currentNetTotalObj = getDeptAdjustmentPreBill().getNetTotal();
+        double currentTotal = currentTotalObj != null ? currentTotalObj : 0.0;
+        double currentNetTotal = currentNetTotalObj != null ? currentNetTotalObj : 0.0;
+
+        getDeptAdjustmentPreBill().setTotal(currentTotal + Math.abs(changeValue));
+        getDeptAdjustmentPreBill().setNetTotal(currentNetTotal + changeValue);
+
+        BillFinanceDetails bfd = getDeptAdjustmentPreBill().getBillFinanceDetails();
+        if (bfd == null) {
+            bfd = new BillFinanceDetails(getDeptAdjustmentPreBill());
+            getDeptAdjustmentPreBill().setBillFinanceDetails(bfd);
+        }
+
+        java.math.BigDecimal changeVal = java.math.BigDecimal.valueOf(changeValue);
+        java.math.BigDecimal beforeVal = java.math.BigDecimal.valueOf(oldCostRate * getStock().getStock());
+        java.math.BigDecimal afterVal = java.math.BigDecimal.valueOf(newCostRate * getStock().getStock());
+
+        bfd.setTotalCostValue(changeVal);
+        bfd.setNetTotal(changeVal);
+        bfd.setGrossTotal(java.math.BigDecimal.valueOf(Math.abs(changeValue)));
+        bfd.setTotalQuantity(java.math.BigDecimal.valueOf(getStock().getStock()));
+
+        java.math.BigDecimal prevBefore = bfd.getTotalBeforeAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalBeforeAdjustmentValue();
+        java.math.BigDecimal prevAfter = bfd.getTotalAfterAdjustmentValue() == null ? java.math.BigDecimal.ZERO : bfd.getTotalAfterAdjustmentValue();
+        bfd.setTotalBeforeAdjustmentValue(prevBefore.add(beforeVal));
+        bfd.setTotalAfterAdjustmentValue(prevAfter.add(afterVal));
+
+        bfd.setTotalPurchaseValue(java.math.BigDecimal.ZERO);
         bfd.setTotalRetailSaleValue(java.math.BigDecimal.ZERO);
         bfd.setTotalWholesaleValue(java.math.BigDecimal.ZERO);
 
@@ -1434,6 +1605,58 @@ public class PharmacyAdjustmentController implements Serializable {
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully");
     }
 
+    public void adjustCostRates() {
+        if (costRateStockDtos == null || costRateStockDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No Stocks");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().isEmpty())) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
+        saveCostRateAdjustmentBill();
+
+        boolean any = false;
+        for (StockDTO dto : costRateStockDtos) {
+            if (dto.getNewCostRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getStockId());
+            if (s == null) {
+                continue;
+            }
+            stock = s;
+
+            double oldCostRate = s.getItemBatch().getCostRate() != null ? s.getItemBatch().getCostRate() : 0.0;
+            double newCostRate = dto.getNewCostRate();
+            double costRateChange = newCostRate - oldCostRate;
+            double changeValue = dto.getStockQty() * costRateChange;
+
+            saveCrAdjustmentBillItems(dto, oldCostRate, newCostRate, costRateChange, changeValue);
+
+            s.getItemBatch().setCostRate(newCostRate);
+            itemBatchFacade.edit(s.getItemBatch());
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new cost rate");
+            return;
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Cost Rate Adjustment Successfully");
+    }
+
     public void adjustRetailRates() {
         if (retailRateStockDtos == null || retailRateStockDtos.isEmpty()) {
             JsfUtil.addErrorMessage("No Stocks");
@@ -1944,6 +2167,22 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setSelectedRetailRateStockDto(StockDTO selectedRetailRateStockDto) {
         this.selectedRetailRateStockDto = selectedRetailRateStockDto;
+    }
+
+    public List<StockDTO> getCostRateStockDtos() {
+        return costRateStockDtos;
+    }
+
+    public void setCostRateStockDtos(List<StockDTO> costRateStockDtos) {
+        this.costRateStockDtos = costRateStockDtos;
+    }
+
+    public StockDTO getSelectedCostRateStockDto() {
+        return selectedCostRateStockDto;
+    }
+
+    public void setSelectedCostRateStockDto(StockDTO selectedCostRateStockDto) {
+        this.selectedCostRateStockDto = selectedCostRateStockDto;
     }
 
     public double calculateTotalBefore(Bill bill) {
