@@ -41,6 +41,7 @@ import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.service.pharmacy.StockSearchService;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -95,6 +96,8 @@ public class PharmacyAdjustmentController implements Serializable {
     private PharmacyCostingService pharmacyCostingService;
     @Inject
     private BillService billService;
+    @Inject
+    private StockSearchService stockSearchService;
 
 /////////////////////////
 //    Item selectedAlternative;
@@ -133,6 +136,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private Amp amp;
     private List<StockDTO> ampStock;
+    private List<StockDTO> retailRateStockDtos;
+    private StockDTO selectedRetailRateStockDto;
 
     private boolean printPreview;
 
@@ -150,6 +155,15 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void fillAmpStocksWithPositiveQty() {
         ampStock = fetchAmpStocks(true);
+    }
+
+    public void fillRetailRateStockDtos() {
+        if (amp == null) {
+            JsfUtil.addErrorMessage("No Item Selected");
+            retailRateStockDtos = new ArrayList<>();
+            return;
+        }
+        retailRateStockDtos = stockSearchService.findRetailRateStockDtos(amp, sessionController.getLoggedUser().getDepartment());
     }
 
     private List<StockDTO> fetchAmpStocks(boolean onlyPositive) {
@@ -229,6 +243,8 @@ public class PharmacyAdjustmentController implements Serializable {
     public void makeNull() {
         printPreview = false;
         ampStock = new ArrayList<>();
+        retailRateStockDtos = new ArrayList<>();
+        selectedRetailRateStockDto = null;
         amp = null;
         clearBill();
         clearBillItem();
@@ -1418,6 +1434,55 @@ public class PharmacyAdjustmentController implements Serializable {
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully");
     }
 
+    public void adjustRetailRates() {
+        if (retailRateStockDtos == null || retailRateStockDtos.isEmpty()) {
+            JsfUtil.addErrorMessage("No Stocks");
+            return;
+        }
+
+        if ((comment == null) || (comment.trim().isEmpty())) {
+            JsfUtil.addErrorMessage("Add the Comment..");
+            return;
+        }
+
+        saveSaleRateAdjustmentBill();
+
+        boolean any = false;
+        for (StockDTO dto : retailRateStockDtos) {
+            if (dto.getNewRetailRate() == null) {
+                continue;
+            }
+            any = true;
+            Stock s = stockFacade.find(dto.getStockId());
+            if (s == null) {
+                continue;
+            }
+            stock = s;
+            rsr = dto.getNewRetailRate();
+
+            deductBeforeAdjustmentItemFromStock();
+            saveRsrAdjustmentBillItems();
+
+            s.getItemBatch().setRetailsaleRate(rsr);
+            itemBatchFacade.edit(s.getItemBatch());
+        }
+
+        if (!any) {
+            JsfUtil.addErrorMessage("Enter at least one new retail rate");
+            return;
+        }
+
+        if (getDeptAdjustmentPreBill().getId() == null) {
+            getBillFacade().create(getDeptAdjustmentPreBill());
+        } else {
+            getBillFacade().edit(getDeptAdjustmentPreBill());
+        }
+
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
+        printPreview = true;
+        JsfUtil.addSuccessMessage("Retail Sale Rate Adjustment Successfully");
+    }
+
     public void adjustExDate() {
         if (errorCheck()) {
             return;
@@ -1863,6 +1928,22 @@ public class PharmacyAdjustmentController implements Serializable {
 
     public void setAmpStock(List<StockDTO> ampStock) {
         this.ampStock = ampStock;
+    }
+
+    public List<StockDTO> getRetailRateStockDtos() {
+        return retailRateStockDtos;
+    }
+
+    public void setRetailRateStockDtos(List<StockDTO> retailRateStockDtos) {
+        this.retailRateStockDtos = retailRateStockDtos;
+    }
+
+    public StockDTO getSelectedRetailRateStockDto() {
+        return selectedRetailRateStockDto;
+    }
+
+    public void setSelectedRetailRateStockDto(StockDTO selectedRetailRateStockDto) {
+        this.selectedRetailRateStockDto = selectedRetailRateStockDto;
     }
 
     public double calculateTotalBefore(Bill bill) {

@@ -25,69 +25,56 @@
                                     </f:facet>
                                     <p:panelGrid columns="1" class="w-100">
                                         <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete
-                                            id="acAmp"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{ampController.completeAmp}"
-                                            var="amp"
-                                            itemLabel="#{amp.name}"
-                                            itemValue="#{amp}"
-                                            value="#{pharmacyAdjustmentController.amp}"
-                                            maxResults="10"
-                                            minQueryLength="3"
-                                            >
-                                            <p:ajax
-                                                process="acAmp"
-                                                listener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                update="tblStocks" ></p:ajax>
-                                            <p:column headerText="Item"  style="padding: 3px;" >
-                                                <h:outputText value="#{amp.name}" ></h:outputText>
+                                        <p:autoComplete id="acAmp" class="w-100" inputStyleClass="w-100"
+                                                       completeMethod="#{ampController.completeAmp}"
+                                                       var="amp" itemLabel="#{amp.name}" itemValue="#{amp}"
+                                                       value="#{pharmacyAdjustmentController.amp}"
+                                                       maxResults="10" minQueryLength="3">
+                                            <p:ajax process="acAmp"
+                                                    listener="#{pharmacyAdjustmentController.fillRetailRateStockDtos}"
+                                                    update="tblStocks" />
+                                            <p:column headerText="Item" style="padding: 3px;">
+                                                <h:outputText value="#{amp.name}" />
                                             </p:column>
-                                            <p:column headerText="Code"  style="padding: 3px;" >
-                                                <h:outputText value="#{amp.code}" ></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Stock" style="padding: 3px;" >
-                                                <h:outputText value="#{stockController.departmentItemStock(sessionController.getLoggedUser().getDepartment(), amp)}" ></h:outputText>
+                                            <p:column headerText="Code" style="padding: 3px;">
+                                                <h:outputText value="#{amp.code}" />
                                             </p:column>
                                         </p:autoComplete>
 
-                                        <h:outputLabel value="Batches" ></h:outputLabel>
-                                        <p:dataTable
-                                            id="tblStocks"
-                                            value="#{pharmacyAdjustmentController.ampStock}"
-                                            var="i"
-                                            rows="10"
-                                            selectionMode="single"
-                                            rowKey="#{i.id}"
-                                            selection="#{pharmacyAdjustmentController.stock}">
-                                            <p:column
-                                                headerText="Rate"
-                                                sortBy="#{i.itemBatch.retailsaleRate}"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.retailsaleRate}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column
-                                                sortBy="#{i.stock}"
-                                                headerText="Stocks"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.stock}" >
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </h:outputText>
-                                            </p:column>
-                                            <p:column
-                                                headerText="Expiry"
-                                                sortBy="#{i.itemBatch.dateOfExpire}"
-                                                styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
-                                                <h:outputText value="#{i.itemBatch.dateOfExpire}" style="width: 100px!important;" >
-                                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                        <p:dataTable id="tblStocks"
+                                                     value="#{pharmacyAdjustmentController.retailRateStockDtos}"
+                                                     var="i" rows="10"
+                                                     paginator="true" paginatorAlwaysVisible="false"
+                                                     emptyMessage="No Stocks">
+                                            <f:facet name="header">
+                                                Batches
+                                            </f:facet>
 
+                                            <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}"
+                                                      styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.dateOfExpire}">
+                                                    <f:convertDateTime pattern="MMM yyyy" />
                                                 </h:outputText>
                                             </p:column>
-                                            <p:ajax event="rowSelect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
-                                            <p:ajax event="rowUnselect" update=":#{p:resolveFirstComponentWithId('det',view).clientId}" />
+                                            <p:column headerText="Batch No." sortBy="#{i.batchNo}"
+                                                      styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.batchNo}"/>
+                                            </p:column>
+                                            <p:column sortBy="#{i.stockQty}" headerText="Stock"
+                                                      styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.stockQty}">
+                                                    <f:convertNumber pattern="#,###" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="Current Retail Rate" sortBy="#{i.retailRate}"
+                                                      styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                                <h:outputText value="#{i.retailRate}" styleClass="fw-bold">
+                                                    <f:convertNumber pattern="#,##0.00" />
+                                                </h:outputText>
+                                            </p:column>
+                                            <p:column headerText="New Retail Rate" styleClass="text-end">
+                                                <p:inputText value="#{i.newRetailRate}" styleClass="w-100"/>
+                                            </p:column>
                                         </p:dataTable>
 
                                     </p:panelGrid>
@@ -177,13 +164,11 @@
                                     <f:facet name="header" >
                                         <h:outputLabel value="Adjust" ></h:outputLabel>
                                     </f:facet>
-                                    <h:outputLabel value="New Sale Rate" ></h:outputLabel>
-                                    <p:inputText autocomplete="off" value="#{pharmacyAdjustmentController.rsr}" rendered="true" requiredMessage="Enter New Sale Rate" class="w-100"></p:inputText>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
 
-                                    <p:commandButton id="btnAdjust" value="Make Adjustment" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
-                                                     action="#{pharmacyAdjustmentController.adjustRetailRate()}" ></p:commandButton>
+                                    <p:commandButton id="btnAdjust" value="Adjust the Retail Rates" ajax="false"  class="mt-2 ui-button-warning" icon="fa-solid fa-sliders"
+                                                     action="#{pharmacyAdjustmentController.adjustRetailRates()}" ></p:commandButton>
                                     <p:defaultCommand target="btnAdjust"/>
                                 </p:panel>
                             </div>
