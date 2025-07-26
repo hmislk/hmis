@@ -4,8 +4,7 @@
       xmlns:cc="http://xmlns.jcp.org/jsf/composite"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
       xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+      xmlns:p="http://primefaces.org/ui">
 
     <!-- INTERFACE -->
     <cc:interface>
@@ -24,7 +23,7 @@
                       value="#{configOptionApplicationController.getPharmacyBillHeaderWithFallback('Pharmacy Adjustment Purchase Rate Header')}"/>
 
 
-        
+
         <div class="receipt-container">
             <div class="receipt-header">
                 <div class="receipt-institution-name">
@@ -126,24 +125,28 @@
                         <f:facet name="header">
                             <h:outputLabel value="Change" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty gt 0 ? '+' : ''}#{bip.pharmaceuticalBillItem.freeQty}"
-                                     style="color: #{bip.pharmaceuticalBillItem.freeQty gt 0 ? 'green' : bip.pharmaceuticalBillItem.freeQty lt 0 ? 'red' : 'black'};">
-                            <f:convertNumber pattern="#,##0.00"/>
+                        <h:outputLabel style="color: #{bip.pharmaceuticalBillItem.freeQty gt 0 ? 'green' : bip.pharmaceuticalBillItem.freeQty lt 0 ? 'red' : 'black'};">
+                            <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
+                                <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                            </h:outputText>
                         </h:outputLabel>
                     </p:column>
+
 
                     <p:column styleClass="text-end">
                         <f:facet name="header">
                             <h:outputLabel value="Change Value" style="font-weight: bold!important;" />
                         </f:facet>
-                        <h:outputLabel value="#{bip.netValue gt 0 ? '+' : ''}#{bip.netValue}"
-                                     style="color: #{bip.netValue gt 0 ? 'green' : bip.netValue lt 0 ? 'red' : 'black'};">
-                            <f:convertNumber pattern="#,##0.00"/>
+                        <h:outputLabel style="color: #{bip.netValue gt 0 ? 'green' : bip.netValue lt 0 ? 'red' : 'black'};">
+                            <h:outputText value="#{bip.netValue}" >
+                                <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                            </h:outputText>
                         </h:outputLabel>
                     </p:column>
 
+
                 </p:dataTable>
-                
+
                 <p:spacer height="10px"/>
                 <h:panelGrid columns="6" style="width: 100%;">
                     <h:outputLabel value="Total Before:" style="font-weight: bold;"/>
@@ -155,11 +158,14 @@
                         <f:convertNumber pattern="#,##0.00"/>
                     </h:outputLabel>
                     <h:outputLabel value="Total Change:" style="font-weight: bold;"/>
-                    <h:outputLabel value="#{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) gt 0 ? '+' : ''}#{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill)}"
-                                 style="font-weight: bold; color: #{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) gt 0 ? 'green' : pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) lt 0 ? 'red' : 'black'};"
-                                 styleClass="text-end">
-                        <f:convertNumber pattern="#,##0.00"/>
+                    <h:outputLabel
+                        style="font-weight: bold; color: #{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) gt 0 ? 'green' : pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill) lt 0 ? 'red' : 'black'};"
+                        styleClass="text-end">
+                        <h:outputText value="#{pharmacyAdjustmentController.calculateTotalChange(cc.attrs.bill)}">
+                            <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>
+                        </h:outputText>
                     </h:outputLabel>
+
                 </h:panelGrid>
             </div>
 

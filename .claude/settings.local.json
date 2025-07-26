@@ -75,7 +75,13 @@
       "Bash(mv:*)",
       "Bash(gh:*)",
       "Bash(git clone:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(javac:*)",
+      "Bash(curl:*)",
+      "Bash(cp:*)",
+      "Bash(git -C \"../hmis_wiki_temp\" add How-to-Create-a-Printing-Page.md)",
+      "Bash(git -C \"../hmis_wiki_temp\" commit -m \"Update printing page guide with flexible configuration system\n\n- Add documentation for new common default configurations\n- Explain specific bill type configurations with automatic fallback\n- Include implementation examples for ConfigOptionApplicationController\n- Document new fallback helper methods\n- Show updated composite component patterns\n- Explain benefits of the new scalable system\")",
+      "Bash(git -C \"../hmis_wiki_temp\" push)"
     ],
     "deny": []
   }
