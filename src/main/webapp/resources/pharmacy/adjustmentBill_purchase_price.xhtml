@@ -69,7 +69,7 @@
                 <p:spacer height="15px"/>
                 <p:dataTable rowIndexVar="rowIndex" styleClass="noBorder normalFont"
                              value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">
-                    <p:column headerText="#" styleClass="text-end">
+                    <p:column width="2em" headerText="#" styleClass="text-end">
                         <h:outputLabel value="#{rowIndex + 1}" />
                     </p:column>
                     <p:column>
