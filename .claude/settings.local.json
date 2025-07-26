@@ -21,6 +21,9 @@
       "Bash(gh pr view:*)",
       "Bash(wc:*)",
       "Bash(grep:*)",
+      "Bash(find:*)",
+      "Bash(git remote:*)",
+      "Bash(gh issue create:*)"
       "Bash(mvn test:*)",
       "Bash(./mvnw test:*)",
       "Bash(dir)",

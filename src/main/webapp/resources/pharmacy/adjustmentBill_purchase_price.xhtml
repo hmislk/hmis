@@ -51,13 +51,27 @@
                             <h:outputLabel value="Item" style="font-weight: bold!important; " />
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
+                        <br/>
+                        <h:outputLabel value="Batch: #{bip.pharmaceuticalBillItem.itemBatch.batchNo}" style="font-size: 10px; color: #666;"/>
+                        <br/>
+                        <h:outputLabel value="Exp: " style="font-size: 10px; color: #666;"/>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}" style="font-size: 10px; color: #666;">
+                            <f:convertDateTime pattern="MMM yyyy" />
+                        </h:outputLabel>
                     </p:column>
-                    <p:column style="width: 8px;text-align: right!important;" >
-                    </p:column>                                  
+                    
+                    <p:column style="text-align: right!important;"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Stock Qty" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.qty}" >
+                            <f:convertNumber pattern="#,##0"/>
+                        </h:outputLabel>
+                    </p:column>
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Before Purchase Rate" style="font-weight: bold!important;" />
+                            <h:outputLabel value="Before Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel  value="#{bip.pharmaceuticalBillItem.purchaseRate}" >
                             <f:convertNumber pattern="#,##0.00"/>
@@ -66,24 +80,43 @@
 
                     <p:column style="text-align: right!important;"> 
                         <f:facet name="header">                           
-                            <h:outputLabel value="Rate Difference" style="font-weight: bold!important;" />
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.purcahseRate - bip.pharmaceuticalBillItem.purchaseRate}">
-                            <f:convertNumber pattern="#,##0.00"/>
-                        </h:outputLabel>
-                    </p:column>  
-
-
-                    <p:column style="text-align: right!important;"> 
-                        <f:facet name="header">                           
-                            <h:outputLabel value="Purchase Rate" style="font-weight: bold!important;" />
+                            <h:outputLabel value="After Rate" style="font-weight: bold!important;" />
                         </f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.stock.itemBatch.purcahseRate}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
-                    </p:column>                  
+                    </p:column>
+
+                    <p:column style="text-align: right!important;"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Change" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.freeQty gt 0 ? '+' : ''}#{bip.pharmaceuticalBillItem.freeQty}" 
+                                     style="color: #{bip.pharmaceuticalBillItem.freeQty gt 0 ? 'green' : bip.pharmaceuticalBillItem.freeQty lt 0 ? 'red' : 'black'};">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column style="text-align: right!important;"> 
+                        <f:facet name="header">                           
+                            <h:outputLabel value="Change Value" style="font-weight: bold!important;" />
+                        </f:facet>
+                        <h:outputLabel value="#{bip.netValue gt 0 ? '+' : ''}#{bip.netValue}" 
+                                     style="color: #{bip.netValue gt 0 ? 'green' : bip.netValue lt 0 ? 'red' : 'black'};">
+                            <f:convertNumber pattern="#,##0.00"/>
+                        </h:outputLabel>
+                    </p:column>
 
                 </p:dataTable>
+                
+                <p:spacer height="10px"/>
+                <h:panelGrid columns="2" style="width: 100%;">
+                    <h:outputLabel value="Total Change Value:" style="font-weight: bold;"/>
+                    <h:outputLabel value="#{cc.attrs.bill.netTotal gt 0 ? '+' : ''}#{cc.attrs.bill.netTotal}" 
+                                 style="font-weight: bold; color: #{cc.attrs.bill.netTotal gt 0 ? 'green' : cc.attrs.bill.netTotal lt 0 ? 'red' : 'black'};">
+                        <f:convertNumber pattern="#,##0.00"/>
+                    </h:outputLabel>
+                </h:panelGrid>
             </div>
 
             <h:panelGrid columns="2" style="min-width: 100%;">
