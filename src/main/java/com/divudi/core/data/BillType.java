@@ -102,6 +102,7 @@ public enum BillType {
     PharmacyAdjustmentSaleRate,
     PharmacyAdjustmentWholeSaleRate,
     PharmacyAdjustmentPurchaseRate,
+    PharmacyAdjustmentCostRate,
     PharmacyAdjustmentExpiryDate,
     PharmacyAddtoStock,
     DrawerAdjustment,
