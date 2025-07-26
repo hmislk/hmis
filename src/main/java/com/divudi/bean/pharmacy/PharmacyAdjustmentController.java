@@ -919,7 +919,7 @@ public class PharmacyAdjustmentController implements Serializable {
             throw new RuntimeException("ItemBatch not found with ID: " + dto.getItemBatchId());
         }
 
-        ph.setPurchaseRate(ib.getPurcahseRate());
+        ph.setPurchaseRate(ib.getCostRate() != null ? ib.getCostRate() : 0.0);
         ph.setBeforeAdjustmentValue(oldCostRate);
         ph.setAfterAdjustmentValue(newCostRate);
         ph.setStock(stockEntity);
