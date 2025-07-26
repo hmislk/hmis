@@ -1095,6 +1095,12 @@ public class BillService {
                                                                           List<BillTypeAtomic> billTypeAtomics,
                                                                           AdmissionType admissionType,
                                                                           PaymentScheme paymentScheme) {
+        System.out.println("=== DEBUG: fetchBillsAsPharmacyIncomeBillDTOs START ===");
+        System.out.println("DEBUG: Parameters - FromDate: " + fromDate + ", ToDate: " + toDate);
+        System.out.println("DEBUG: Institution: " + (institution != null ? institution.getName() : "ALL"));
+        System.out.println("DEBUG: Department: " + (department != null ? department.getName() : "ALL"));
+        System.out.println("DEBUG: BillTypeAtomics: " + billTypeAtomics);
+        
         String jpql;
         Map params = new HashMap();
 
@@ -1147,7 +1153,28 @@ public class BillService {
         }
 
         jpql += " order by b.createdAt desc  ";
-        return (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("DEBUG: Final JPQL: " + jpql);
+        System.out.println("DEBUG: JPQL Parameters: " + params);
+        
+        List<PharmacyIncomeBillDTO> results = (List<PharmacyIncomeBillDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("DEBUG: Query returned " + (results != null ? results.size() : "null") + " results");
+        
+        if (results != null && !results.isEmpty()) {
+            System.out.println("DEBUG: Sample query result analysis:");
+            for (int i = 0; i < Math.min(5, results.size()); i++) {
+                PharmacyIncomeBillDTO dto = results.get(i);
+                System.out.println("  Bill[" + i + "] ID: " + dto.getBillId() + 
+                                 ", NetTotal: " + dto.getNetTotal() + 
+                                 ", TotalRetailSaleValue: " + dto.getTotalRetailSaleValue() + 
+                                 ", TotalPurchaseValue: " + dto.getTotalPurchaseValue() +
+                                 ", BillType: " + dto.getBillTypeAtomic());
+            }
+        }
+        
+        System.out.println("=== DEBUG: fetchBillsAsPharmacyIncomeBillDTOs END ===");
+        return results;
     }
 
     public List<BillItem> fetchBillItems(Date fromDate,
@@ -1404,7 +1431,8 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
                                                   WebUser webUser,
                                                   List<BillTypeAtomic> billTypeAtomics,
                                                   AdmissionType admissionType,
-                                                  PaymentScheme paymentScheme) {
+                                                  PaymentScheme paymentScheme,
+                                                  PaymentMethod paymentMethod) {
         String jpql = "select b "
                 + " from Bill b "
                 + " where b.retired=:ret "
@@ -1469,6 +1497,12 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
         if (paymentScheme != null) {
             jpql += " and b.paymentScheme=:paymentScheme ";
             params.put("paymentScheme", paymentScheme);
+        }
+
+        // Payment Method
+        if (paymentMethod != null) {
+            jpql += " and b.paymentMethod=:paymentMethod ";
+            params.put("paymentMethod", paymentMethod);
         }
 
         jpql += " order by b.createdAt desc";

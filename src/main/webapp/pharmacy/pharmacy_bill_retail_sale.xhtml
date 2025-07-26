@@ -28,58 +28,53 @@
                             onclick="PF('findAMP').show()"
                             style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
                         </i>
-                        <p:panel>
-                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_bill_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController1.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_bill_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController2.pharmacyRetailSale()}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_bill_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacySaleController3.pharmacyRetailSale()}" />
 
-                            <p:dialog
-                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
-                                header="Search Any Medicine..."
-                                widgetVar="findAMP"
-                                minHeight="300"
-                                width="1100"
-                                position="top"
-                                modal="true"
+                        <p:dialog
+                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}"
+                            header="Search Any Medicine..."
+                            widgetVar="findAMP"
+                            minHeight="300"
+                            width="1100"
+                            position="top"
+                            modal="true"
 
-                                closeOnEscape="true">
-                                <p:autoComplete
-                                    id="exItem"
-                                    forceSelection="true"
-                                    class="w-100 formgrid grid"
-                                    placeholder="Search Any Medicine..."
-                                    maxResults="20"
-                                    minQueryLength="3"
-                                    inputStyleClass="w-100"
-                                    completeMethod="#{itemController.completeAmpItem}"
-                                    var="vt"
-                                    onfocus="this.select()"
-                                    itemLabel="#{vt.name}"
-                                    itemValue="#{vt}" >
-                                    <p:column headerText="Code" style="padding: 6px;width: 4em;">
-                                        <h:outputLabel value="#{vt.code}"></h:outputLabel>
-                                    </p:column>
+                            closeOnEscape="true">
+                            <p:autoComplete
+                                id="exItem"
+                                forceSelection="true"
+                                class="w-100 formgrid grid"
+                                placeholder="Search Any Medicine..."
+                                maxResults="20"
+                                minQueryLength="3"
+                                inputStyleClass="w-100"
+                                completeMethod="#{itemController.completeAmpItem}"
+                                var="vt"
+                                onfocus="this.select()"
+                                itemLabel="#{vt.name}"
+                                itemValue="#{vt}" >
+                                <p:column headerText="Code" style="padding: 6px;width: 4em;">
+                                    <h:outputLabel value="#{vt.code}"></h:outputLabel>
+                                </p:column>
 
-                                    <p:column headerText="Item" style="width: 350px; padding: 6px;">
-                                        <h:outputLabel value="#{vt.name}"></h:outputLabel>
-                                    </p:column>
+                                <p:column headerText="Item" style="width: 350px; padding: 6px;">
+                                    <h:outputLabel value="#{vt.name}"></h:outputLabel>
+                                </p:column>
 
-                                    <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
-                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
+                                <p:column headerText="Dept. Stock" style="padding: 6px; text-align: center;width: 5em;">
+                                    <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                                        <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
 
-                                    <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
-                                        <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
-                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                        </p:outputLabel>
-                                    </p:column>
-                                </p:autoComplete>
-                            </p:dialog>
+                                <p:column headerText="Price" style="padding: 6px; text-align: right;width: 6em;">
+                                    <p:outputLabel value="#{pharmacyPurchaseController.findLastRetailRate(vt)}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </p:outputLabel>
+                                </p:column>
+                            </p:autoComplete>
+                        </p:dialog>
 
-                        </p:panel>
+
 
 
                         <p:panel class="w-100">
@@ -183,8 +178,8 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
-                                                        <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
+                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
+                                                        <p:ajax event="query" process="acStock"></p:ajax>
                                                     </p:autoComplete>
                                                     <p:autoComplete
                                                         accesskey="i"
@@ -231,8 +226,8 @@
                                                             </h:outputLabel>
                                                         </p:column>
                                                         <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions :#{p:resolveFirstComponentWithId('lstReplaceableBatch',view).clientId}" ></p:ajax>
-                                                        <p:ajax event="query" update=":#{p:resolveFirstComponentWithId('tabI',view).clientId}" process="acStock"></p:ajax>
+                                                        <p:ajax event="itemSelect" listener="#{pharmacySaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
+                                                        <p:ajax event="query" process="acStock"></p:ajax>
                                                     </p:autoComplete>
                                                 </h:panelGroup>
 
@@ -266,7 +261,7 @@
                                                             styleClass="ui-button-success"
                                                             action="#{pharmacySaleController.addBillItem()}"
                                                             process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('tabI',view).clientId} :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
                                                         </p:commandButton>
 
                                                     </div>
@@ -597,55 +592,6 @@
 
                                         </p:dataTable>
                                     </p:panel>
-                                    <p:panel id="tabI" class="my-1 ">
-                                        <f:facet name="header" >
-                                            <h:outputText styleClass="fas fa-check-circle" />
-                                            <h:outputLabel value="Alternatives" class="mx-4"></h:outputLabel>
-                                        </f:facet>
-                                        <p:dataTable
-                                            class="w-100"
-                                            id="lstReplaceableBatch"
-                                            selection="#{pharmacySaleController.replacableStock}"
-                                            value="#{pharmacySaleController.replaceableStocks}"
-                                            var="ri"
-                                            selectionMode="single"
-                                            rowKey="#{ri.id}"
-                                            emptyMessage="System can not detect suitable replacements.">
-                                            <p:ajax event="rowSelect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySaleController.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:ajax event="rowUnselect" process="@this" update=":#{p:resolveFirstComponentWithId('acStock',view).clientId}" listener="#{pharmacySaleController.makeStockAsBillItemStock()}" ></p:ajax>
-                                            <p:column headerText="Item">
-                                                #{ri.itemBatch.item.name}
-                                            </p:column>
-                                            <p:column headerText="Code">
-                                                #{ri.itemBatch.item.code}
-                                            </p:column>
-                                            <p:column headerText="Rate"  style="text-align: right;">
-                                                <p:outputLabel value="#{ri.itemBatch.retailsaleRate}">
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                </p:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Stocks" style="text-align: right;">
-                                                <p:outputLabel value="#{ri.stock}"  style="width: 50px!important;">
-                                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                </p:outputLabel>
-                                            </p:column>
-                                            <p:column headerText="Expiry">
-                                                <h:panelGroup rendered="#{commonFunctionsProxy.currentDateTime > ri.itemBatch.dateOfExpire}" >
-                                                    <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" styleClass="ui-messages-fatal"  >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </p:outputLabel>
-                                                </h:panelGroup>
-                                                <h:panelGroup rendered="#{ri.itemBatch.dateOfExpire > commonFunctionsProxy.currentDateTime}" >
-                                                    <p:outputLabel value="#{ri.itemBatch.dateOfExpire}" >
-                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                    </p:outputLabel>
-                                                </h:panelGroup>
-                                            </p:column>
-                                        </p:dataTable>
-
-
-
-                                    </p:panel>
 
 
 
@@ -797,7 +743,7 @@
 
                                                                                     value="#{pharmacySaleController.patient.person.ageYearsComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this" render="dpDob" />
+    <f:ajax event="keyup" execute="@this" render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -806,7 +752,7 @@
                                                                                     autocomplete="off" id="month" placeholder="Months"
                                                                                     value="#{pharmacySaleController.patient.person.ageMonthsComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob"  />
+    <f:ajax event="keyup" execute="@this"  render="dpDob"  listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-2">
@@ -815,7 +761,7 @@
                                                                                     autocomplete="off" id="day" placeholder="Days"
                                                                                     value="#{pharmacySaleController.patient.person.ageDaysComponent}"
                                                                                     class="form-control">
-                                                                                    <f:ajax event="keyup" execute="@this"  render="dpDob" />
+    <f:ajax event="keyup" execute="@this"  render="dpDob" listener="#{pharmacySaleController.calculateDobFromAge}" />
                                                                                 </p:inputText>
                                                                             </div>
                                                                             <div class="col-md-6">

@@ -244,6 +244,25 @@ public class StockController implements Serializable {
         return new ArrayList<>(stockSet);
     }
 
+    public List<Stock> completeAvailableStocksForAllowedDepartments(String qry) {
+        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
+        List<Stock> initialStocks = completeAvailableStocksStartsWithForAllowedDepartments(qry);
+        if (initialStocks != null) {
+            stockSet.addAll(initialStocks);
+        }
+
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
+            List<Stock> additionalStocks = completeAvailableStocksContainsForAllowedDepartments(qry);
+            if (additionalStocks != null) {
+                stockSet.addAll(additionalStocks);
+            }
+        }
+
+        return new ArrayList<>(stockSet);
+    }
+
     public void addItemStockToStocks(Set<Stock> inputStocks) {
         if (inputStocks == null || inputStocks.isEmpty()) {
             return;
@@ -351,6 +370,42 @@ public class StockController implements Serializable {
         stockList = getStockFacade().findByJpql(sql, m, 20);
 //        itemsWithoutStocks = completeRetailSaleItems(qry);
         //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
+        return stockList;
+    }
+
+    public List<Stock> completeAvailableStocksStartsWithForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+        return stockList;
+    }
+
+    public List<Stock> completeAvailableStocksContainsForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
         return stockList;
     }
 

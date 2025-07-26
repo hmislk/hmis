@@ -698,6 +698,7 @@ public class BillPackageController implements Serializable, ControllerWithPatien
                         "You have no Privilege to Cancel Package Bills. Please Contact System Administrator.");
                 return false;
             }
+            // Bill is processed in lab but user has special privilege - no error message needed
         } else {
             if (!getWebUserController().hasPrivilege("OpdCancel")) {
                 JsfUtil.addErrorMessage(

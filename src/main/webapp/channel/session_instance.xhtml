@@ -244,7 +244,8 @@
                                                 <div class="d-flex">
                                                     <p:commandButton 
                                                         ajax="true" 
-                                                        disabled="#{bs.absent or bs.bill.cancelled or bs.completed}"
+                                                        disabled="#{(bs.absent or bs.bill.cancelled or bs.completed)}"
+                                                        rendered="#{bookingControllerViewScope.selectedSessionInstance.started}"
                                                         process="@this"
                                                         title="Call Patient"
                                                         update="acBookings"
@@ -256,7 +257,8 @@
                                                         ajax="true" 
                                                         process="@this"
                                                         title="Complete Appoinment"
-                                                        disabled="#{bs.absent or bs.bill.cancelled or bs.completed}"
+                                                        rendered="#{bookingControllerViewScope.selectedSessionInstance.started}"
+                                                        disabled="#{(bs.absent or bs.bill.cancelled or bs.completed)}"
                                                         update="acBookings msg"
                                                         icon="fa-solid fa-circle-check"
                                                         action="#{bookingControllerViewScope.completeAppoinmentFromSessionInstance(bs)}" 
@@ -266,7 +268,8 @@
                                                     <p:commandButton 
                                                         ajax="true" 
                                                         process="@this"
-                                                        disabled="#{bs.absent or bs.bill.cancelled}"
+                                                        disabled="#{(bs.absent or bs.bill.cancelled)}"
+                                                        rendered="#{bookingControllerViewScope.selectedSessionInstance.started}"
                                                         update="acBookings"
                                                         title="Cancel Completion"
                                                         icon="fa-solid fa-xmark"

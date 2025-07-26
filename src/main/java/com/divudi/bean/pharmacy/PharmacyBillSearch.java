@@ -2121,14 +2121,24 @@ public class PharmacyBillSearch implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    
+    private boolean cancellationStarted;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
+        if(cancellationStarted){
+            JsfUtil.addErrorMessage("Cancellation already started");
+            return;
+        }
+        cancellationStarted = true;
+        
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
+                cancellationStarted = false;
                 return;
             }
 
             if (getBill().getReferenceBill() == null) {
+                cancellationStarted = false;
                 return;
             }
             if (!webUserController.hasPrivilege("Admin")) {
@@ -2138,6 +2148,7 @@ public class PharmacyBillSearch implements Serializable {
                     Date today = formatter.parse(formatter.format(new Date()));
                     if (!createdDate.equals(today)) {
                         JsfUtil.addErrorMessage("Settled bills cancelled can be done only within settled day.");
+                        cancellationStarted = false;
                         return;
                     }
 
@@ -2145,10 +2156,12 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             if (getBill().getReferenceBill().getBillType() != BillType.PharmacyPre && getBill().getReferenceBill().getBillType() != BillType.PharmacyWholesalePre) {
+                cancellationStarted = false;
                 return;
             }
 
             if (checkDepartment(getBill())) {
+                cancellationStarted = false;
                 return;
             }
 
@@ -2196,8 +2209,10 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             printPreview = true;
+            cancellationStarted = false;
 
         } else {
+            cancellationStarted = false;
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
