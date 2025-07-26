@@ -66,6 +66,7 @@
       "Bash(./detect-maven.sh:*)",
       "Bash(gh pr close:*)",
       "Bash(\"C:\\Program Files\\NetBeans-20\\netbeans\\java\\maven\\bin\\mvn.cmd\" compile -Dfile.encoding=UTF-8)",
+      "Bash(gh api:*)"
       "Bash(\"D:\\Program Files\\NetBeans-18\\netbeans\\java\\maven\\bin\\mvn.cmd\":*)",
       "Bash(\"D:\\Payara\\*\")",
       "Bash(\"C:\\Program Files\\NetBeans-16\\netbeans\\java\\maven\\bin\\mvn.cmd\":*)",
