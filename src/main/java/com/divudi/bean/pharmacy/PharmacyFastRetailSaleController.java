@@ -74,6 +74,7 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
+import com.divudi.ejb.OptimizedPharmacyBean;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
@@ -175,6 +176,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     StockFacade stockFacade;
     @EJB
     PharmacyBean pharmacyBean;
+    @EJB
+    OptimizedPharmacyBean optimizedPharmacyBean;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -1207,8 +1210,20 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
             //Deduct Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+            boolean returnFlag;
+            if (useOptimizedStockDeduction()) {
+                returnFlag = optimizedPharmacyBean.deductFromStockOptimized(
+                        tbi.getPharmaceuticalBillItem().getStock(),
+                        Math.abs(qtyL),
+                        tbi.getPharmaceuticalBillItem(),
+                        getPreBill().getDepartment());
+            } else {
+                returnFlag = getPharmacyBean().deductFromStock(
+                        tbi.getPharmaceuticalBillItem().getStock(),
+                        Math.abs(qtyL),
+                        tbi.getPharmaceuticalBillItem(),
+                        getPreBill().getDepartment());
+            }
 
             if (!returnFlag) {
                 tbi.setTmpQty(0);
@@ -1806,6 +1821,21 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
+    }
+
+    public OptimizedPharmacyBean getOptimizedPharmacyBean() {
+        return optimizedPharmacyBean;
+    }
+
+    public void setOptimizedPharmacyBean(OptimizedPharmacyBean optimizedPharmacyBean) {
+        this.optimizedPharmacyBean = optimizedPharmacyBean;
+    }
+
+    private boolean useOptimizedStockDeduction() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Enable Optimized Pharmacy Fast Sale Stock Deduction",
+                false
+        );
     }
 
     @Override
