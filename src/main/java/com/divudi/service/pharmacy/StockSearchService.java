@@ -129,4 +129,31 @@ public class StockSearchService {
                 "ORDER BY s.stock DESC";
         return (List<StockDTO>) stockFacade.findLightsByJpql(sql, params);
     }
+
+    public List<StockDTO> findCostRateStockDtos(Amp amp, Department department) {
+        if (amp == null || department == null) {
+            return Collections.emptyList();
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("d", department);
+        params.put("amp", amp);
+        String sql = "SELECT new com.divudi.core.data.dto.StockDTO(" +
+                "s.id, " +
+                "s.id, " +
+                "s.itemBatch.id, " +
+                "s.itemBatch.item.name, " +
+                "s.itemBatch.item.code, " +
+                "s.itemBatch.costRate, " +
+                "s.stock, " +
+                "s.itemBatch.dateOfExpire, " +
+                "s.itemBatch.batchNo, " +
+                "s.itemBatch.purcahseRate, " +
+                "s.itemBatch.wholesaleRate, " +
+                "s.itemBatch.costRate) " +
+                "FROM Stock s " +
+                "WHERE s.department = :d " +
+                "AND s.itemBatch.item = :amp " +
+                "ORDER BY s.stock DESC";
+        return (List<StockDTO>) stockFacade.findLightsByJpql(sql, params);
+    }
 }

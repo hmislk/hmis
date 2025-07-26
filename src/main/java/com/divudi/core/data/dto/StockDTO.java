@@ -23,6 +23,10 @@ public class StockDTO implements Serializable {
     private Double newRetailRate;
     private Double retailRateChange;
     private Double beforeRetailAdjustmentValue;
+    // Fields for cost rate adjustment
+    private Double newCostRate;
+    private Double costRateChange;
+    private Double beforeCostAdjustmentValue;
 
     public StockDTO() {
     }
@@ -203,5 +207,29 @@ public class StockDTO implements Serializable {
 
     public void setBeforeRetailAdjustmentValue(Double beforeRetailAdjustmentValue) {
         this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    }
+
+    public Double getNewCostRate() {
+        return newCostRate;
+    }
+
+    public void setNewCostRate(Double newCostRate) {
+        this.newCostRate = newCostRate;
+    }
+
+    public Double getCostRateChange() {
+        return costRateChange;
+    }
+
+    public void setCostRateChange(Double costRateChange) {
+        this.costRateChange = costRateChange;
+    }
+
+    public Double getBeforeCostAdjustmentValue() {
+        return beforeCostAdjustmentValue;
+    }
+
+    public void setBeforeCostAdjustmentValue(Double beforeCostAdjustmentValue) {
+        this.beforeCostAdjustmentValue = beforeCostAdjustmentValue;
     }
 }
