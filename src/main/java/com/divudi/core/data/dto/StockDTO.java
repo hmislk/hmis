@@ -19,6 +19,10 @@ public class StockDTO implements Serializable {
     private Double wholesaleRate;
     // Temporary holder for purchase rate adjustments on the UI
     private Double newPurchaseRate;
+    // Fields for retail rate adjustment
+    private Double newRetailRate;
+    private Double retailRateChange;
+    private Double beforeRetailAdjustmentValue;
 
     public StockDTO() {
     }
@@ -49,8 +53,8 @@ public class StockDTO implements Serializable {
     }
 
     // Constructor for pharmacy adjustment with Stock ID and ItemBatch ID
-    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code, 
-                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo, 
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
                     Double purchaseRate, Double wholesaleRate) {
         this.id = id;
         this.stockId = stockId;
@@ -63,6 +67,14 @@ public class StockDTO implements Serializable {
         this.batchNo = batchNo;
         this.purchaseRate = purchaseRate;
         this.wholesaleRate = wholesaleRate;
+    }
+
+    // Constructor including field for retail rate adjustments
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
     }
 
     public Long getId() {
@@ -167,5 +179,29 @@ public class StockDTO implements Serializable {
 
     public void setNewPurchaseRate(Double newPurchaseRate) {
         this.newPurchaseRate = newPurchaseRate;
+    }
+
+    public Double getNewRetailRate() {
+        return newRetailRate;
+    }
+
+    public void setNewRetailRate(Double newRetailRate) {
+        this.newRetailRate = newRetailRate;
+    }
+
+    public Double getRetailRateChange() {
+        return retailRateChange;
+    }
+
+    public void setRetailRateChange(Double retailRateChange) {
+        this.retailRateChange = retailRateChange;
+    }
+
+    public Double getBeforeRetailAdjustmentValue() {
+        return beforeRetailAdjustmentValue;
+    }
+
+    public void setBeforeRetailAdjustmentValue(Double beforeRetailAdjustmentValue) {
+        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
     }
 }

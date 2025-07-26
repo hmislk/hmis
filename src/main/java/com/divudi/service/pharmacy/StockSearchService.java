@@ -3,6 +3,7 @@ package com.divudi.service.pharmacy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.data.dto.StockDTO;
 import com.divudi.core.facade.StockFacade;
 import java.util.Collections;
@@ -100,5 +101,32 @@ public class StockSearchService {
         }
         sql.append(") ORDER BY s.itemBatch.item.name, s.itemBatch.dateOfExpire");
         return (List<StockDTO>) stockFacade.findLightsByJpql(sql.toString(), params, javax.persistence.TemporalType.TIMESTAMP, 20);
+    }
+
+    public List<StockDTO> findRetailRateStockDtos(Amp amp, Department department) {
+        if (amp == null || department == null) {
+            return Collections.emptyList();
+        }
+        Map<String, Object> params = new HashMap<>();
+        params.put("d", department);
+        params.put("amp", amp);
+        String sql = "SELECT new com.divudi.core.data.dto.StockDTO(" +
+                "s.id, " +
+                "s.id, " +
+                "s.itemBatch.id, " +
+                "s.itemBatch.item.name, " +
+                "s.itemBatch.item.code, " +
+                "s.itemBatch.retailsaleRate, " +
+                "s.stock, " +
+                "s.itemBatch.dateOfExpire, " +
+                "s.itemBatch.batchNo, " +
+                "s.itemBatch.purcahseRate, " +
+                "s.itemBatch.wholesaleRate, " +
+                "s.itemBatch.retailsaleRate) " +
+                "FROM Stock s " +
+                "WHERE s.department = :d " +
+                "AND s.itemBatch.item = :amp " +
+                "ORDER BY s.stock DESC";
+        return (List<StockDTO>) stockFacade.findLightsByJpql(sql, params);
     }
 }
