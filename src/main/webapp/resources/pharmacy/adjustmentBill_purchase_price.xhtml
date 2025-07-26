@@ -19,6 +19,8 @@
         <h:outputText escape="false"
                       value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Issue Receipt Header')}"/>
 
+        <h1>#{cc.attrs.bill.id}</h1>
+        
         <div class="receipt-container">
             <div class="receipt-header">
                 <div class="receipt-institution-name">
@@ -71,6 +73,7 @@
                              value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">
                     <p:column width="2em" headerText="#" styleClass="text-end">
                         <h:outputLabel value="#{rowIndex + 1}" />
+                        <h1>#{cc.attrs.bill.id}</h1>
                     </p:column>
                     <p:column>
                         <f:facet name="header">

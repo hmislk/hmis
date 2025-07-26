@@ -37,6 +37,7 @@ import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -66,18 +67,18 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     @Inject
-    SessionController sessionController;
+    private SessionController sessionController;
 ////////////////////////
     @EJB
     private BillFacade billFacade;
     @EJB
     private BillItemFacade billItemFacade;
     @EJB
-    ItemFacade itemFacade;
+    private ItemFacade itemFacade;
     @EJB
-    StockFacade stockFacade;
+    private StockFacade stockFacade;
     @EJB
-    PharmacyBean pharmacyBean;
+    private PharmacyBean pharmacyBean;
     @EJB
     private PersonFacade personFacade;
     @EJB
@@ -85,11 +86,13 @@ public class PharmacyAdjustmentController implements Serializable {
     @EJB
     private PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
     @EJB
-    BillNumberGenerator billNumberBean;
+    private BillNumberGenerator billNumberBean;
     @EJB
-    ItemBatchFacade itemBatchFacade;
+    private ItemBatchFacade itemBatchFacade;
     @EJB
     private PharmacyCostingService pharmacyCostingService;
+    @Inject
+    private BillService billService;
 
 /////////////////////////
 //    Item selectedAlternative;
@@ -136,7 +139,6 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void fillDepartmentAdjustmentByBillItem() {
-        Date startTime = new Date();
         billItems = fetchBillItems(BillType.PharmacyAdjustment);
     }
 
@@ -150,6 +152,7 @@ public class PharmacyAdjustmentController implements Serializable {
 
     private List<StockDTO> fetchAmpStocks(boolean onlyPositive) {
         if (amp == null) {
+            JsfUtil.addErrorMessage("No Item Selected");
             return new ArrayList<>();
         }
 
@@ -766,7 +769,6 @@ public class PharmacyAdjustmentController implements Serializable {
                 getBillItemFacade().edit(tbi);
             }
         } catch (Exception e) {
-            System.err.println("Error saving bill items: " + e.getMessage());
             e.printStackTrace();
             throw new RuntimeException("Failed to save purchase rate adjustment bill items", e);
         }
@@ -1036,7 +1038,7 @@ public class PharmacyAdjustmentController implements Serializable {
     }
 
     public void transferAllDepartmentStockAsAdjustment() {
-        Date startTime = new Date();
+
         Date fromDate = null;
         Date toDate = null;
 
@@ -1355,7 +1357,6 @@ public class PharmacyAdjustmentController implements Serializable {
                     + (purchaseRateChange >= 0 ? "+" : "") + purchaseRateChange
                     + ", Change Value: " + changeValue);
         } catch (Exception e) {
-            System.err.println("Error in adjustPurchaseRate: " + e.getMessage());
             e.printStackTrace();
             JsfUtil.addErrorMessage("Failed to adjust purchase rate: " + e.getMessage());
             return;
@@ -1410,7 +1411,7 @@ public class PharmacyAdjustmentController implements Serializable {
             getBillFacade().edit(getDeptAdjustmentPreBill());
         }
 
-        deptAdjustmentPreBill = billFacade.find(getDeptAdjustmentPreBill().getId());
+        deptAdjustmentPreBill = billService.reloadBill(getDeptAdjustmentPreBill());
         printPreview = true;
         JsfUtil.addSuccessMessage("Purchase Rate Adjustment Successfully");
     }

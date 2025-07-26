@@ -25,124 +25,40 @@
                                         <h:outputText styleClass="fa-solid fa-syringe"></h:outputText>
                                         <h:outputLabel value="Select Item" class="mx-4"></h:outputLabel>
                                     </f:facet>
-                                    <p:panelGrid columns="3" class="w-100" columnClasses="w-25, w-50, w-25">
-                                        <h:outputLabel value="Item" ></h:outputLabel>
-                                        <p:autoComplete
-                                            id="acAmp"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{ampController.completeAmp}"
-                                            var="amp"
-                                            itemLabel="#{amp.name}"
-                                            itemValue="#{amp}"
-                                            maxResults="10"
-                                            minQueryLength="3"
-                                            value="#{pharmacyAdjustmentController.amp}">
-                                            <p:column headerText="Item"  style="padding: 3px;" >
-                                                <h:outputText value="#{amp.name}" ></h:outputText>
-                                            </p:column>
-                                            <p:column headerText="Code"  style="padding: 3px;" >
-                                                <h:outputText value="#{amp.code}" ></h:outputText>
-                                            </p:column>
-                                        </p:autoComplete>
-                                        <h:panelGroup >
-                                            <p:commandButton 
-                                                value="All Stocks"
-                                                icon="fas fa-boxes"
-                                                actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                                ajax="false"
-                                                styleClass="m-1 btn btn-outline-secondary" />
-
-                                            <p:commandButton 
-                                                value="In Stock Batches"
-                                                icon="fas fa-box"
-                                                actionListener="#{pharmacyAdjustmentController.fillAmpStocksWithPositiveQty}"
-                                                ajax="false"
-                                                styleClass="m-1 btn btn-outline-success" />
-
-                                        </h:panelGroup>
-
-                                    </p:panelGrid>
-                                    <p:dataTable
-                                        id="tblStocks"
-                                        value="#{pharmacyAdjustmentController.ampStock}"
-                                        var="i"
-                                        rows="10"
-                                        paginator="true"
-                                        paginatorAlwaysVisible="false"
-                                        emptyMessage="No Stocks">
-
-                                        <f:facet name="header">
-                                            Batches
-                                        </f:facet>
-
-                                        <p:column
-                                            headerText="Expiry"
-                                            sortBy="#{i.dateOfExpire}"
-                                            styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.dateOfExpire}">
-                                                <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
-                                            </h:outputText>
+                                    <h:outputLabel value="Item" ></h:outputLabel>
+                                    <p:autoComplete
+                                        id="acAmp"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{ampController.completeAmp}"
+                                        var="amp"
+                                        itemLabel="#{amp.name}"
+                                        itemValue="#{amp}"
+                                        maxResults="10"
+                                        minQueryLength="3"
+                                        value="#{pharmacyAdjustmentController.amp}">
+                                        <p:column headerText="Item"  style="padding: 3px;" >
+                                            <h:outputText value="#{amp.name}" ></h:outputText>
                                         </p:column>
-                                        <p:column
-                                            headerText="Batch No."
-                                            sortBy="#{i.batchNo}"
-                                            styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.batchNo}">
-                                            </h:outputText>
+                                        <p:column headerText="Code"  style="padding: 3px;" >
+                                            <h:outputText value="#{amp.code}" ></h:outputText>
                                         </p:column>
-                                        <p:column
-                                            sortBy="#{i.stockQty}"
-                                            headerText="Stock"
-                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.stockQty}" >
-                                                <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                            </h:outputText>
-                                        </p:column>
-
-                                        <p:column
-                                            headerText="Purchase Rate"
-                                            sortBy="#{i.purchaseRate}"
-                                            styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.purchaseRate}" styleClass="fw-bold">
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </p:column>
-
-                                        <p:column headerText="New Purchase Rate" styleClass="text-end">
-                                            <p:inputText value="#{i.newPurchaseRate}" styleClass="w-100"/>
-                                        </p:column>
-                                        <p:column
-                                            headerText="Cost Rate"
-                                            sortBy="#{i.retailRate}"
-                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.retailRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </p:column>
-
-                                        <p:column
-                                            headerText="Retail Rate"
-                                            sortBy="#{i.retailRate}"
-                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.retailRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </p:column>
-
-                                        <p:column
-                                            headerText="Wholesale Rate"
-                                            sortBy="#{i.wholesaleRate}"
-                                            styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                            <h:outputText value="#{i.wholesaleRate}" >
-                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                            </h:outputText>
-                                        </p:column>
-
-
-                                    </p:dataTable>
+                                    </p:autoComplete>
+                                    <h:panelGroup >
+                                        <p:commandButton 
+                                            value="List All Batches"
+                                            icon="fas fa-boxes"
+                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                            ajax="false"
+                                            styleClass="m-1 ui-button-warning" />
+                                        <p:commandButton 
+                                            value="List Current Stock"
+                                            icon="fas fa-box"
+                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocksWithPositiveQty}"
+                                            ajax="false"
+                                            styleClass="m-1 ui-button-success" />
+                                    </h:panelGroup>
                                 </p:panel>
-
                             </div>
                             <div class="col-md-6">
                                 <p:panel>
@@ -151,12 +67,11 @@
                                     </f:facet>
                                     <h:outputLabel value="Comment" ></h:outputLabel>
                                     <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
-
                                     <p:commandButton
                                         id="btnAdjust"
                                         value="Adjust the Purchase Rates"
                                         ajax="false"
-                                        class="mt-2 ui-button-warning"
+                                        class="mt-2 ui-button-danger"
                                         icon="fa-solid fa-sliders"
                                         action="#{pharmacyAdjustmentController.adjustPurchaseRates()}" >
                                     </p:commandButton>
@@ -164,6 +79,85 @@
                                 </p:panel>
                             </div>
                         </div>
+
+                        <p:dataTable
+                            id="tblStocks"
+                            value="#{pharmacyAdjustmentController.ampStock}"
+                            var="i"
+                            rows="10"
+                            paginator="true"
+                            paginatorAlwaysVisible="false"
+                            emptyMessage="No Stocks">
+
+                            <f:facet name="header">
+                                Batches
+                            </f:facet>
+
+                            <p:column
+                                headerText="Expiry"
+                                sortBy="#{i.dateOfExpire}"
+                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.dateOfExpire}">
+                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column
+                                headerText="Batch No."
+                                sortBy="#{i.batchNo}"
+                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.batchNo}">
+                                </h:outputText>
+                            </p:column>
+                            <p:column
+                                sortBy="#{i.stockQty}"
+                                headerText="Stock"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.stockQty}" >
+                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Current Purchase Rate"
+                                sortBy="#{i.purchaseRate}"
+                                styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.purchaseRate}" styleClass="fw-bold">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="New Purchase Rate" styleClass="text-end">
+                                <p:inputText value="#{i.newPurchaseRate}" styleClass="w-100"/>
+                            </p:column>
+                            <p:column
+                                headerText="Cost Rate"
+                                sortBy="#{i.retailRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Retail Rate"
+                                sortBy="#{i.retailRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Wholesale Rate"
+                                sortBy="#{i.wholesaleRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.wholesaleRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+
+                        </p:dataTable>
 
                     </p:panel>
 
@@ -185,6 +179,8 @@
                         </div>
 
                         <h:panelGroup id="print">
+                            #{pharmacyAdjustmentController.deptAdjustmentPreBill.id}
+                            #{pharmacyAdjustmentController.deptAdjustmentPreBill.billItems}
                             <ph:adjustmentBill_purchase_price  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
                         </h:panelGroup>
 
