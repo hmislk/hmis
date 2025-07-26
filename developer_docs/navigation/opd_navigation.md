@@ -26,7 +26,7 @@ This guide summarises how to reach each OPD-related page from the main menu and 
 - **Billing for Cashier** (`#{opdPreBillController.navigateToBillingForCashierFromMenu()}`)
   - Path: `/opd/opd_pre_bill`
   - Privilege: `Privileges.OpdPreBilling`
-- **Collecting Centre Billing** (`#{collectingCentreBillController.navigateToCollectingCenterBillingromMenu()}`)
+- **Collecting Centre Billing** (`#{collectingCentreBillController.navigateToCollectingCenterBillingFromMenu()}`)
   - Path: `/collecting_centre/bill`
   - Privilege: `Privileges.OpdCollectingCentreBilling`
 - **Package Billing**
@@ -43,9 +43,6 @@ This guide summarises how to reach each OPD-related page from the main menu and 
 - **Accept Payments for Pharmacy Bills**
   - Path: `/pharmacy/pharmacy_search_pre_bill`
   - Privilege: `Privileges.AcceptPaymentForPharmacyBills`
-- **Refunds**
-  - Path: `/pharmacy/pharmacy_search_pre_refund_bill_for_return_cash`
-  - Privilege: `Privileges.RefundFromCashier`
 - **Refunds for OPD Bills**
   - Path: `/opd/opd_search_pre_refund_bill_for_return_cash`
   - Privilege: `Privileges.RefundOpdBillsFromCashier`
