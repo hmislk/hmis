@@ -74,10 +74,12 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.facade.TokenFacade;
 import com.divudi.core.facade.UserStockContainerFacade;
 import com.divudi.core.facade.UserStockFacade;
+import com.divudi.ejb.OptimizedPharmacyBean;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PaymentProcessingService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import com.divudi.service.pharmacy.StockSearchService;
 import com.divudi.service.pharmacy.TokenService;
 
@@ -175,6 +177,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     @EJB
     PharmacyBean pharmacyBean;
     @EJB
+    OptimizedPharmacyBean optimizedPharmacyBean;
+    @EJB
     private PersonFacade personFacade;
     @EJB
     private PatientFacade patientFacade;
@@ -202,6 +206,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
@@ -1204,8 +1210,20 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
 
             //Deduct Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(),
-                    Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+            boolean returnFlag;
+            if (useOptimizedStockDeduction()) {
+                returnFlag = optimizedPharmacyBean.deductFromStockOptimized(
+                        tbi.getPharmaceuticalBillItem().getStock(),
+                        Math.abs(qtyL),
+                        tbi.getPharmaceuticalBillItem(),
+                        getPreBill().getDepartment());
+            } else {
+                returnFlag = getPharmacyBean().deductFromStock(
+                        tbi.getPharmaceuticalBillItem().getStock(),
+                        Math.abs(qtyL),
+                        tbi.getPharmaceuticalBillItem(),
+                        getPreBill().getDepartment());
+            }
 
             if (!returnFlag) {
                 tbi.setTmpQty(0);
@@ -1475,6 +1493,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
 
+        // Update BillFinanceDetails for retail sale to ensure proper report data
+        if (getSaleBill() != null) {
+            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            getBillFacade().edit(getSaleBill());
+        }
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
@@ -1569,31 +1593,24 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
 
-    //    Checked
-
-
-
-
-
+    /**
+     * Create the Payment entities associated with the given bill using the
+     * configured {@link PaymentProcessingService}.
+     *
+     * @param b the bill to create payments for
+     * @return list of persisted payments
+     */
     public List<Payment> createPaymentsForBill(Bill b) {
-        return paymentProcessingService.createPaymentsForBill(b,
+        return paymentProcessingService.createPaymentsForBill(
+                b,
                 b.getPaymentMethod(),
                 paymentMethodData,
                 sessionController.getInstitution(),
                 sessionController.getDepartment(),
-                sessionController.getLoggedUser());
+                sessionController.getLoggedUser()
+        );
     }
 
-    //    public void calculateAllRates() {
-//        //////System.out.println("calculating all rates");
-//        for (BillItem tbi : getPreBill().getBillItems()) {
-//            calculateDiscountRates(tbi);
-//            calculateBillItemForEditing(tbi);
-//        }
-//        calTotal();
-//    }
-
-    //    Checked
 
     @Inject
     PriceMatrixController priceMatrixController;
@@ -1804,6 +1821,21 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     public void setPharmacyBean(PharmacyBean pharmacyBean) {
         this.pharmacyBean = pharmacyBean;
+    }
+
+    public OptimizedPharmacyBean getOptimizedPharmacyBean() {
+        return optimizedPharmacyBean;
+    }
+
+    public void setOptimizedPharmacyBean(OptimizedPharmacyBean optimizedPharmacyBean) {
+        this.optimizedPharmacyBean = optimizedPharmacyBean;
+    }
+
+    private boolean useOptimizedStockDeduction() {
+        return configOptionApplicationController.getBooleanValueByKey(
+                "Enable Optimized Pharmacy Fast Sale Stock Deduction",
+                false
+        );
     }
 
     @Override

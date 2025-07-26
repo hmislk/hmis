@@ -384,11 +384,34 @@
                                     listener="#{grnCostingController.discountChangedLitener()}"/>
                                 <f:convertNumber pattern="#,##0.00" />
                             </p:inputText>
+
+                            <p:outputLabel value="Bill Tax"/>
+                            <p:inputText
+                                autocomplete="off"
+                                id="txtBillTax"
+                                class="text-end w-100"
+                                onfocus="this.select()"
+                                value="#{grnCostingController.grnBill.tax}" >
+                                <p:ajax
+                                    process="@this"
+                                    update=":#{p:resolveFirstComponentWithId('txtBillNetTotal', view).clientId} :#{p:resolveFirstComponentWithId('diff', view).clientId} :#{p:resolveFirstComponentWithId('txtBillTotalDiscount', view).clientId} :#{p:resolveFirstComponentWithId('billFinanceDetails', view).clientId}"
+                                    event="keyup"
+                                    listener="#{grnCostingController.discountChangedLitener()}"/>
+                                <f:convertNumber pattern="#,##0.00" />
+                            </p:inputText>
+
                             <p:outputLabel value="Sum of Line Discounts"/>
                             <p:outputLabel
                                 id="txtLineDiscountTotal"
                                 class="text-end w-100"
                                 value="#{grnCostingController.grnBill.billFinanceDetails.lineDiscount}" >
+                            </p:outputLabel>
+
+                            <p:outputLabel value="Sum of Expenses"/>
+                            <p:outputLabel
+                                id="txtBillExpenses"
+                                class="text-end w-100"
+                                value="#{grnCostingController.grnBill.expenseTotal}" >
                             </p:outputLabel>
 
                             <p:outputLabel value="Total Discount"/>

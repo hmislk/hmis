@@ -4,13 +4,29 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class StockDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
+    private Long stockId;
+    private Long itemBatchId;
     private String itemName;
     private String code;
     private String genericName;
     private Double retailRate;
     private Double stockQty;
     private Date dateOfExpire;
+    private String batchNo;
+    private Double purchaseRate;
+    private Double wholesaleRate;
+    // Temporary holder for purchase rate adjustments on the UI
+    private Double newPurchaseRate;
+    // Fields for retail rate adjustment
+    private Double newRetailRate;
+    private Double retailRateChange;
+    private Double beforeRetailAdjustmentValue;
+    // Fields for cost rate adjustment
+    private Double newCostRate;
+    private Double costRateChange;
+    private Double beforeCostAdjustmentValue;
 
     public StockDTO() {
     }
@@ -26,12 +42,67 @@ public class StockDTO implements Serializable {
         this.dateOfExpire = dateOfExpire;
     }
 
+    // Constructor for pharmacy adjustment with all fields
+    public StockDTO(Long id, String itemName, String code, Double retailRate, Double stockQty, 
+                    Date dateOfExpire, String batchNo, Double purchaseRate, Double wholesaleRate) {
+        this.id = id;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    // Constructor for pharmacy adjustment with Stock ID and ItemBatch ID
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate) {
+        this.id = id;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    // Constructor including field for retail rate adjustments
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code,
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo,
+                    Double purchaseRate, Double wholesaleRate, Double beforeRetailAdjustmentValue) {
+        this(id, stockId, itemBatchId, itemName, code, retailRate, stockQty, dateOfExpire, batchNo, purchaseRate, wholesaleRate);
+        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getStockId() {
+        return stockId;
+    }
+
+    public void setStockId(Long stockId) {
+        this.stockId = stockId;
+    }
+
+    public Long getItemBatchId() {
+        return itemBatchId;
+    }
+
+    public void setItemBatchId(Long itemBatchId) {
+        this.itemBatchId = itemBatchId;
     }
 
     public String getItemName() {
@@ -80,5 +151,85 @@ public class StockDTO implements Serializable {
 
     public void setDateOfExpire(Date dateOfExpire) {
         this.dateOfExpire = dateOfExpire;
+    }
+
+    public String getBatchNo() {
+        return batchNo;
+    }
+
+    public void setBatchNo(String batchNo) {
+        this.batchNo = batchNo;
+    }
+
+    public Double getPurchaseRate() {
+        return purchaseRate;
+    }
+
+    public void setPurchaseRate(Double purchaseRate) {
+        this.purchaseRate = purchaseRate;
+    }
+
+    public Double getWholesaleRate() {
+        return wholesaleRate;
+    }
+
+    public void setWholesaleRate(Double wholesaleRate) {
+        this.wholesaleRate = wholesaleRate;
+    }
+
+    public Double getNewPurchaseRate() {
+        return newPurchaseRate;
+    }
+
+    public void setNewPurchaseRate(Double newPurchaseRate) {
+        this.newPurchaseRate = newPurchaseRate;
+    }
+
+    public Double getNewRetailRate() {
+        return newRetailRate;
+    }
+
+    public void setNewRetailRate(Double newRetailRate) {
+        this.newRetailRate = newRetailRate;
+    }
+
+    public Double getRetailRateChange() {
+        return retailRateChange;
+    }
+
+    public void setRetailRateChange(Double retailRateChange) {
+        this.retailRateChange = retailRateChange;
+    }
+
+    public Double getBeforeRetailAdjustmentValue() {
+        return beforeRetailAdjustmentValue;
+    }
+
+    public void setBeforeRetailAdjustmentValue(Double beforeRetailAdjustmentValue) {
+        this.beforeRetailAdjustmentValue = beforeRetailAdjustmentValue;
+    }
+
+    public Double getNewCostRate() {
+        return newCostRate;
+    }
+
+    public void setNewCostRate(Double newCostRate) {
+        this.newCostRate = newCostRate;
+    }
+
+    public Double getCostRateChange() {
+        return costRateChange;
+    }
+
+    public void setCostRateChange(Double costRateChange) {
+        this.costRateChange = costRateChange;
+    }
+
+    public Double getBeforeCostAdjustmentValue() {
+        return beforeCostAdjustmentValue;
+    }
+
+    public void setBeforeCostAdjustmentValue(Double beforeCostAdjustmentValue) {
+        this.beforeCostAdjustmentValue = beforeCostAdjustmentValue;
     }
 }
