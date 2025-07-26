@@ -28,6 +28,7 @@ import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Person;
 import com.divudi.core.entity.PreBill;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.UserStock;
@@ -41,12 +42,15 @@ import com.divudi.core.facade.StockHistoryFacade;
 import com.divudi.core.util.JsfUtil;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.faces.event.AjaxBehaviorEvent;
@@ -445,7 +449,7 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
             PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
             tbi.setPharmaceuticalBillItem(null);
-            
+
             if (tbi.getId() == null) {
                 getBillItemFacade().create(tbi);
             }
@@ -549,7 +553,6 @@ public class PharmacyReturnwithouttresing implements Serializable {
             //   ////System.out.println("Error for sale bill");
             return;
         }
-        
 
         calculateAllRates();
 
@@ -561,6 +564,11 @@ public class PharmacyReturnwithouttresing implements Serializable {
         savePreBillFinally();
         savePreBillItemsFinally(tmpBillItems);
         getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETURN_WITHOUT_TREASING);
+        List<Bill> purchaseBills = findReturnItemPurchaseBills(tmpBillItems);
+        if (!purchaseBills.isEmpty()) {
+            getPreBill().setReferenceBill(purchaseBills.get(0));
+            getPreBill().setBackwardReferenceBills(purchaseBills);
+        }
         getBillFacade().edit(getPreBill());
 
         setPrintBill(getBillFacade().find(getPreBill().getId()));
@@ -570,6 +578,38 @@ public class PharmacyReturnwithouttresing implements Serializable {
 
         billPreview = true;
 
+    }
+
+    private List<Bill> findReturnItemPurchaseBills(List<BillItem> tmpBillItems) {
+        if (tmpBillItems == null || tmpBillItems.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        Set<ItemBatch> itemBatches = tmpBillItems.stream()
+                .filter(bi -> bi.getPharmaceuticalBillItem() != null && bi.getPharmaceuticalBillItem().getItemBatch() != null)
+                .map(bi -> bi.getPharmaceuticalBillItem().getItemBatch())
+                .collect(Collectors.toSet());
+
+        if (itemBatches.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<BillTypeAtomic> billTypes = Arrays.asList(BillTypeAtomic.PHARMACY_GRN, BillTypeAtomic.PHARMACY_DIRECT_PURCHASE);
+
+        String jpql = "SELECT DISTINCT b FROM Bill b "
+                + "JOIN b.billItems bi "
+                + "JOIN bi.pharmaceuticalBillItem pbi "
+                + "WHERE b.retired = false "
+                + "AND bi.retired = false "
+                + "AND b.billTypeAtomic IN :billTypes "
+                + "AND pbi.itemBatch IN :itemBatches";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("billTypes", billTypes);
+        params.put("itemBatches", itemBatches);
+
+        List<Bill> purchaseBills = billFacade.findByJpql(jpql, params);
+        return purchaseBills != null ? purchaseBills : new ArrayList<>();
     }
 
     private boolean checkItemBatch() {
