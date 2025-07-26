@@ -1996,8 +1996,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void setNetTotal(double netTotal) {
         balance = cashPaid - netTotal;
         this.netTotal = netTotal;
-        // Update payment method data with the new total
-        listnerForPaymentMethodChange();
     }
 
     public BillNumberGenerator getBillNumberBean() {
@@ -2257,7 +2255,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
 
         }
-        processBillItems();
+        // Don't call processBillItems() here to avoid circular calls
     }
 
     public Prescription getPrescription() {
@@ -2338,6 +2336,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void processBillItems() {
         calculateAllRates();
         calculateTotals();
+        // Update payment method data after calculations are complete
+        listnerForPaymentMethodChange();
     }
 
     public void calculateBillItemForEditing(BillItem bi) {
