@@ -26,6 +26,8 @@ import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.dto.StockDTO;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemBatchFacade;
@@ -768,8 +770,8 @@ public class PharmacyAdjustmentController implements Serializable {
             } else {
                 getBillItemFacade().edit(tbi);
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (javax.persistence.PersistenceException e) {
+            Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to save purchase rate adjustment bill items", e);
             throw new RuntimeException("Failed to save purchase rate adjustment bill items", e);
         }
 
@@ -1357,7 +1359,7 @@ public class PharmacyAdjustmentController implements Serializable {
                     + (purchaseRateChange >= 0 ? "+" : "") + purchaseRateChange
                     + ", Change Value: " + changeValue);
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.getLogger(PharmacyAdjustmentController.class.getName()).log(Level.SEVERE, "Failed to adjust purchase rate", e);
             JsfUtil.addErrorMessage("Failed to adjust purchase rate: " + e.getMessage());
             return;
         }

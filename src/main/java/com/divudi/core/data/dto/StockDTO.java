@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class StockDTO implements Serializable {
+    private static final long serialVersionUID = 1L;
     private Long id;
     private Long stockId;
     private Long itemBatchId;

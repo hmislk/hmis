@@ -145,9 +145,9 @@ Different development machines have Maven installed in different locations.
 **Machine Detection**: Use `hostname` and `whoami` commands to identify the current machine.
 
 #### Known Configurations:
-- **cclap** (Computer: `CARECODE-LAP`, User: `buddhika`):
-  - Maven: `C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd`
-  - Payara Server: `C:\Users\buddhika\Payara_Server` (Domain 1)
+- **cclap** (Computer: `<HOSTNAME>`, User: `<USERNAME>`):
+  - Maven: `<NB_MAVEN_PATH>`
+  - Payara Server: `<PAYARA_SERVER_PATH>` (Domain 1)
 - **hiulap** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
 - **hiud** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_ 
 - **ccd** (Computer: `_[TBD]_`, User: `_[TBD]_`): _[To be documented]_
@@ -162,7 +162,7 @@ When running tests, try these commands in order until one works:
 
 2. **NetBeans Bundled Maven** (cclap):
    ```bash
-   "C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd" test
+   "<NB_MAVEN_PATH>" test
    ```
 
 3. **Maven Wrapper** (if available):
@@ -183,7 +183,7 @@ When running tests, try these commands in order until one works:
    - Run `hostname` and `whoami` to identify machine
    - Try standard `mvn test`
    - If Maven not found, use machine-specific path based on hostname
-   - For `CARECODE-LAP`/`carecode-lap` (cclap): Use `"C:\Program Files\NetBeans-20\netbeans\java\maven\bin\mvn.cmd" test`
+   - For `<HOSTNAME>` (cclap): Use `"<NB_MAVEN_PATH>" test`
 
 **The detect-maven.sh script handles all this automatically and should be the first choice.**
 
