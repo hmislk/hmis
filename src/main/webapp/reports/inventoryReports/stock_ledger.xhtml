@@ -331,6 +331,9 @@
                             <p:column headerText="To Store" width="5em">
                                 <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
                             </p:column>
+                            <p:column headerText="Consumption Department" width="5em">
+                                <h:outputText value="#{not empty f.pbItem.billItem.bill.toDepartment.name ? f.pbItem.billItem.bill.toDepartment.name : f.pbItem.billItem.bill.department.name }" />
+                            </p:column>
                             <p:column headerText="Document Type" width="5em">
                                 <h:outputText 
                                     value="#{not empty f.pbItem.billItem.bill.billTypeAtomic ? 
