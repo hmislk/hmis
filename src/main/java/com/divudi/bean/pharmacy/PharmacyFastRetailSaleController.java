@@ -1996,6 +1996,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void setNetTotal(double netTotal) {
         balance = cashPaid - netTotal;
         this.netTotal = netTotal;
+        // Update payment method data with the new total
+        listnerForPaymentMethodChange();
     }
 
     public BillNumberGenerator getBillNumberBean() {
@@ -2213,7 +2215,9 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     @Override
     public void listnerForPaymentMethodChange() {
-        if (paymentMethod == PaymentMethod.PatientDeposit) {
+        if (paymentMethod == PaymentMethod.Cash) {
+            getPaymentMethodData().getCash().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.PatientDeposit) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(netTotal);
             PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
@@ -2223,6 +2227,18 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
             }
         } else if (paymentMethod == PaymentMethod.Card) {
             getPaymentMethodData().getCreditCard().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Credit) {
+            getPaymentMethodData().getCredit().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Cheque) {
+            getPaymentMethodData().getCheque().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Slip) {
+            getPaymentMethodData().getSlip().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.ewallet) {
+            getPaymentMethodData().getEwallet().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.Staff) {
+            getPaymentMethodData().getStaffCredit().setTotalValue(netTotal);
+        } else if (paymentMethod == PaymentMethod.OnlineSettlement) {
+            getPaymentMethodData().getOnlineSettlement().setTotalValue(netTotal);
         } else if (paymentMethod == PaymentMethod.MultiplePaymentMethods) {
             getPaymentMethodData().getPatient_deposit().setPatient(patient);
             getPaymentMethodData().getPatient_deposit().setTotalValue(calculatRemainForMultiplePaymentTotal());
