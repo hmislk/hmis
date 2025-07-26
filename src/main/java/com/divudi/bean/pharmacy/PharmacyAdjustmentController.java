@@ -782,6 +782,8 @@ public class PharmacyAdjustmentController implements Serializable {
 
         // Set adjustment-specific data - store new purchase rate in lastPurchaseRate field
         ph.setLastPurchaseRate(newPurchaseRate); // New purchase rate stored for reference
+        // REPURPOSED FIELD: freeQty is temporarily used to store the purchase rate change amount
+        // This allows tracking of the adjustment value for audit and display purposes
         ph.setFreeQty(purchaseRateChange); // Store rate change in freeQty field (repurposed)
 
         // Validate getDeptAdjustmentPreBill
@@ -924,7 +926,8 @@ public class PharmacyAdjustmentController implements Serializable {
         ph.setItemBatch(ib);
         ph.setQtyInUnit(dto.getStockQty());
         ph.setQty(dto.getStockQty());
-        // Repurpose freeQty field to store cost rate change amount for audit and display purposes
+        // REPURPOSED FIELD: freeQty is temporarily used to store the cost rate change amount
+        // This field is repurposed for cost rate adjustments to track the difference for audit and display
         ph.setFreeQty(costRateChange);
 
         if (getDeptAdjustmentPreBill() == null) {

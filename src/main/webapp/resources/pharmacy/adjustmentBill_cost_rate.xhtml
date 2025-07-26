@@ -53,20 +53,24 @@
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
-                        <f:facet name="header"><h:outputLabel value="Before Cost Rate" style="font-weight: bold!important;" /></f:facet>
+                        <f:facet name="header"><h:outputLabel value="Previous Cost Rate" style="font-weight: bold!important;" /></f:facet>
                         <h:outputLabel  value="#{bip.pharmaceuticalBillItem.beforeAdjustmentValue}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
-                        <f:facet name="header"><h:outputLabel value="After Cost Rate" style="font-weight: bold!important;" /></f:facet>
+                        <f:facet name="header"><h:outputLabel value="New Cost Rate" style="font-weight: bold!important;" /></f:facet>
                         <h:outputLabel value="#{bip.pharmaceuticalBillItem.afterAdjustmentValue}" >
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
                     <p:column styleClass="text-end">
-                        <f:facet name="header"><h:outputLabel value="Change" style="font-weight: bold!important;" /></f:facet>
-                        <!-- freeQty field repurposed to store cost rate change amount (difference between before and after rates) -->
+                        <f:facet name="header"><h:outputLabel value="Rate Change (+/-)" style="font-weight: bold!important;" /></f:facet>
+                        <!-- 
+                        FIELD REPURPOSING NOTE: The freeQty field is temporarily repurposed to store the cost rate change amount.
+                        This field normally stores free quantity values but has been adapted for cost rate adjustments 
+                        to track the difference between before and after rates for audit and display purposes.
+                        -->
                         <h:outputLabel style="color: #{bip.pharmaceuticalBillItem.freeQty gt 0 ? 'green' : bip.pharmaceuticalBillItem.freeQty lt 0 ? 'red' : 'black'};">
                             <h:outputText value="#{bip.pharmaceuticalBillItem.freeQty}">
                                 <f:convertNumber pattern="+#,##0.00;-#,##0.00"/>

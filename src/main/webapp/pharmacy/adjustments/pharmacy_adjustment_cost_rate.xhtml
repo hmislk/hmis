@@ -28,7 +28,7 @@
                                                     itemLabel="#{amp.name}" itemValue="#{amp}"
                                                     maxResults="10" minQueryLength="3"
                                                     value="#{pharmacyAdjustmentController.amp}">
-                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks,commentInput" />
+                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks" />
                                         <p:column headerText="Item" style="padding: 3px;">
                                             <h:outputText value="#{amp.name}" />
                                         </p:column>
@@ -69,6 +69,13 @@
                                         <h:outputLabel value="Adjust" />
                                     </f:facet>
                                     <h:outputLabel value="Comment" />
+                                    <!-- 
+                                    COMMENT FIELD BEHAVIOR:
+                                    - This comment field applies to the entire cost rate adjustment session
+                                    - The comment is shared across all items being adjusted in this batch
+                                    - The comment value persists when new items are selected to maintain continuity
+                                    - This allows users to provide a single explanation for the batch adjustment
+                                    -->
                                     <p:inputTextarea id="commentInput" value="#{pharmacyAdjustmentController.comment}" class="w-100" />
                                     <p:commandButton id="btnAdjust" value="Adjust the Cost Rates" ajax="false"
                                                      class="mt-2 ui-button-danger" icon="fa-solid fa-sliders"
