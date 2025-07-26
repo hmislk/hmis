@@ -14,12 +14,16 @@
 
     <!-- IMPLEMENTATION -->
     <cc:implementation>
-        <h:outputStylesheet library="css" name="pharmacyA4.css"/>
+
+        <style>
+            <h:outputText escape="false"
+            value="#{configOptionApplicationController.getPharmacyBillCSSWithFallback('Pharmacy Adjustment Purchase Rate CSS')}"/>
+        </style>
 
         <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Issue Receipt Header')}"/>
+                      value="#{configOptionApplicationController.getPharmacyBillHeaderWithFallback('Pharmacy Adjustment Purchase Rate Header')}"/>
 
-        <h1>#{cc.attrs.bill.id}</h1>
+
         
         <div class="receipt-container">
             <div class="receipt-header">
@@ -73,7 +77,6 @@
                              value="#{cc.attrs.bill.billItems}" var="bip" style=" text-align: center;">
                     <p:column width="2em" headerText="#" styleClass="text-end">
                         <h:outputLabel value="#{rowIndex + 1}" />
-                        <h1>#{cc.attrs.bill.id}</h1>
                     </p:column>
                     <p:column>
                         <f:facet name="header">
@@ -168,6 +171,6 @@
         </div>
 
         <h:outputText escape="false"
-                      value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Issue Receipt Footer')}"/>
+                      value="#{configOptionApplicationController.getPharmacyBillFooterWithFallback('Pharmacy Adjustment Purchase Rate Footer')}"/>
     </cc:implementation>
 </html>
