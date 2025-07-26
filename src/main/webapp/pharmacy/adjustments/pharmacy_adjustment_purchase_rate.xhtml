@@ -45,12 +45,23 @@
                                                 <h:outputText value="#{amp.code}" ></h:outputText>
                                             </p:column>
                                         </p:autoComplete>
-                                        <p:commandButton 
-                                            value="Load Stocks"
-                                            icon="fas fa-sync"
-                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
-                                            ajax="false"
-                                            styleClass="w-100 m-1"/>
+                                        <h:panelGroup >
+                                            <p:commandButton 
+                                                value="All Stocks"
+                                                icon="fas fa-boxes"
+                                                actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                                ajax="false"
+                                                styleClass="m-1 btn btn-outline-secondary" />
+
+                                            <p:commandButton 
+                                                value="In Stock Batches"
+                                                icon="fas fa-box"
+                                                actionListener="#{pharmacyAdjustmentController.fillAmpStocksWithPositiveQty}"
+                                                ajax="false"
+                                                styleClass="m-1 btn btn-outline-success" />
+
+                                        </h:panelGroup>
+
                                     </p:panelGrid>
                                     <p:dataTable
                                         id="tblStocks"

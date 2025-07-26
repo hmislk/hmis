@@ -5,6 +5,8 @@ import java.util.Date;
 
 public class StockDTO implements Serializable {
     private Long id;
+    private Long stockId;
+    private Long itemBatchId;
     private String itemName;
     private String code;
     private String genericName;
@@ -45,12 +47,45 @@ public class StockDTO implements Serializable {
         this.wholesaleRate = wholesaleRate;
     }
 
+    // Constructor for pharmacy adjustment with Stock ID and ItemBatch ID
+    public StockDTO(Long id, Long stockId, Long itemBatchId, String itemName, String code, 
+                    Double retailRate, Double stockQty, Date dateOfExpire, String batchNo, 
+                    Double purchaseRate, Double wholesaleRate) {
+        this.id = id;
+        this.stockId = stockId;
+        this.itemBatchId = itemBatchId;
+        this.itemName = itemName;
+        this.code = code;
+        this.retailRate = retailRate;
+        this.stockQty = stockQty;
+        this.dateOfExpire = dateOfExpire;
+        this.batchNo = batchNo;
+        this.purchaseRate = purchaseRate;
+        this.wholesaleRate = wholesaleRate;
+    }
+
     public Long getId() {
         return id;
     }
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public Long getStockId() {
+        return stockId;
+    }
+
+    public void setStockId(Long stockId) {
+        this.stockId = stockId;
+    }
+
+    public Long getItemBatchId() {
+        return itemBatchId;
+    }
+
+    public void setItemBatchId(Long itemBatchId) {
+        this.itemBatchId = itemBatchId;
     }
 
     public String getItemName() {
