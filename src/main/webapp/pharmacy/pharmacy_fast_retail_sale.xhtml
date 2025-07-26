@@ -143,7 +143,7 @@
                                                         </h:outputLabel>
                                                     </p:column>
                                                     <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
+                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleSelect}" update="txtRate txtItemInstructions" oncomplete="setTimeout(function(){document.getElementById('txtQty').focus();}, 50);" ></p:ajax>
                                                 </p:autoComplete>
 
 
@@ -177,7 +177,8 @@
                                                             styleClass="ui-button-success"
                                                             action="#{pharmacyFastRetailSaleController.addBillItem()}"
                                                             process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
+                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions"
+                                                            oncomplete="setTimeout(function(){document.getElementById('acStock').focus();}, 100);" >
                                                         </p:commandButton>
 
                                                     </div>
@@ -218,7 +219,6 @@
                                                 </h:panelGroup>
                                             </div>
                                         </div>
-                                        <p:focus id="focusQty" for="txtQty"></p:focus>
                                         <p:focus id="focusItem" for="acStock"></p:focus>
                                     </p:panel>
 

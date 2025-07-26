@@ -558,6 +558,10 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public Stock getStock() {
+        // Lazy loading: Load stock entity only when actually needed
+        if (stock == null && selectedStockId != null) {
+            stock = getStockFacade().find(selectedStockId);
+        }
         return stock;
     }
 
@@ -638,16 +642,22 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public void handleSelect(SelectEvent event) {
-        // Stock is now automatically loaded in setSelectedStockId
-        if (stock == null) {
+        // Validate prerequisites first without loading heavy entities
+        if (selectedStockDto == null || selectedStockDto.getId() == null) {
             return;
         }
         if (getBillItem() == null || getBillItem().getPharmaceuticalBillItem() == null) {
             return;
         }
-        getBillItem().getPharmaceuticalBillItem().setStock(stock);
-        calculateRates(billItem);
-        pharmacyService.addBillItemInstructions(billItem);
+        
+        // Set stock using lazy loading (will be loaded when getStock() is called)
+        getBillItem().getPharmaceuticalBillItem().setStock(getStock());
+        
+        // Only perform heavy operations if stock was successfully loaded
+        if (stock != null) {
+            calculateRates(billItem);
+            pharmacyService.addBillItemInstructions(billItem);
+        }
     }
 
     //    public void calculateRates(BillItem bi) {
@@ -2267,11 +2277,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     public void setSelectedStockDto(StockDTO stockDto) {
         this.selectedStockDto = stockDto;
-        // Also set the related properties for consistency
+        // Set the ID for lazy loading but don't load the full entity yet
         if (stockDto != null && stockDto.getId() != null) {
             this.selectedStockId = stockDto.getId();
-            // Load the full Stock entity
-            stock = getStockFacade().find(stockDto.getId());
+            // Clear any existing stock to force lazy loading when needed
+            this.stock = null;
         } else {
             this.selectedStockId = null;
             this.stock = null;
