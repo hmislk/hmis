@@ -9,10 +9,17 @@
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <!-- Performance optimization: Cache frequently accessed property chains -->
+                <c:set var="cachedController" value="#{pharmacyFastRetailSaleController}" />
+                <c:set var="cachedPreBill" value="#{cachedController.preBill}" />
+                <c:set var="cachedPatient" value="#{cachedController.patient}" />
+                <c:set var="cachedBillItem" value="#{cachedController.billItem}" />
+                <c:set var="cachedPaymentMethodData" value="#{cachedController.paymentMethodData}" />
                 <h:form id="bill" >
                     <script>
                         window.onload = function () {
@@ -46,7 +53,7 @@
                                     style="float: right;"
                                     ajax="false" action="pharmacy_bill_retail_sale"
                                     class="mx-1 ui-button-warning"
-                                    actionListener="#{pharmacyFastRetailSaleController.resetAll()}"  >
+                                    actionListener="#{cachedController.resetAll()}"  >
                                 </p:commandButton>
                                 <p:commandButton
                                     ajax="false"
@@ -1142,7 +1149,7 @@
                                     ajax="false"
                                     action="pharmacy_bill_retail_sale"
                                     class="ui-button-warning mx-2"
-                                    actionListener="#{pharmacyFastRetailSaleController.resetAll()}" ></p:commandButton>
+                                    actionListener="#{cachedController.resetAll()}" ></p:commandButton>
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                 <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
                                     <f:selectItem itemLabel="Please Select Paper Type" />

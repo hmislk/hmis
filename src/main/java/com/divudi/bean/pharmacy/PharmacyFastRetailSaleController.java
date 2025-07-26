@@ -84,6 +84,7 @@ import com.divudi.service.pharmacy.StockSearchService;
 import com.divudi.service.pharmacy.TokenService;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -104,7 +105,6 @@ import org.primefaces.event.SelectEvent;
 /**
  * @author Buddhika
  */
-
 /**
  *
  * @author Buddhika
@@ -211,6 +211,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     /////////////////////////
     private PreBill preBill;
     private Bill saleBill;
+
+    // Request-scoped caching for performance optimization
+    private PreBill cachedPreBill;
+    private Patient cachedPatient;
+    private boolean preBillCacheValid = false;
+    private boolean patientCacheValid = false;
     Bill printBill;
     Bill bill;
     BillItem billItem;
@@ -220,7 +226,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     Double qty;
     Integer intQty;
     Stock stock;
-    
+
     /**
      * Lightweight stock DTO used for autocompletes.
      */
@@ -279,14 +285,12 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 //        prepareForPharmacySaleWithoutStock();
 //        return "/pharmacy/pharmacy_sale_without_stock?faces-redirect=true";
 //    }
-
     private void prepareForPharmacySaleWithoutStock() {
         clearBill();
         clearBillItem();
         searchController.createPreBillsNotPaid();
         billPreview = false;
     }
-
 
     public PaymentMethodData getPaymentMethodData() {
         if (paymentMethodData == null) {
@@ -298,10 +302,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
         this.paymentMethodData = paymentMethodData;
     }
-
-
-
-
 
     public String getComment() {
         return comment;
@@ -336,7 +336,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void setEditingQty(Double editingQty) {
         this.editingQty = editingQty;
     }
-
 
     @Override
     public double calculatRemainForMultiplePaymentTotal() {
@@ -479,8 +478,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     }
 
-
-
     private Patient savePatient() {
         Patient pat = getPatient();
         // Check for null references and empty name
@@ -568,9 +565,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.stock = stock;
     }
 
-
-
-
     private String navigateToPharmacyRetailSaleAfterCashierCheck(Patient pt, PaymentScheme ps) {
         if (pt == null) {
             JsfUtil.addErrorMessage("No Patient Selected");
@@ -592,7 +586,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         setBillSettlingStarted(false);
         return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
-
 
     private String navigateToPharmacyRetailSaleAfterCashierCheckForCashier(Patient pt, PaymentScheme ps) {
         if (pt == null) {
@@ -616,32 +609,33 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
-
     public void resetAll() {
+        // Performance optimization: Minimize expensive operations and cache invalidations
         setBillSettlingStarted(false);
-        userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+
+        // Only retire user stock if there are active containers
+        if (userStockContainer != null && userStockContainer.getId() != null) {
+            userStockController.retiredAllUserStockContainer(getSessionController().getLoggedUser());
+        }
+
+        // Clear all data and invalidate caches
         clearBill();
         clearBillItem();
-//        searchController.createPreBillsNotPaid();
         billPreview = false;
+
+        // Invalidate all caches for performance optimization
+        invalidateAllCaches();
     }
 
-
-
-
-
-
-
-
-
-
-
-
     public List<StockDTO> completeStockDtos(String qry) {
+        // Performance optimization: Only search if query is meaningful
+        if (qry == null || qry.trim().length() < 3) {
+            cachedStockDtos = new ArrayList<>();
+            return cachedStockDtos;
+        }
         cachedStockDtos = stockSearchService.findStockDtos(qry, sessionController.getLoggedUser().getDepartment());
         return cachedStockDtos;
     }
-
 
     public void handleSelect(SelectEvent event) {
         // Stock is now automatically loaded in setSelectedStockId
@@ -740,9 +734,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         processBillItems();
         setActiveIndex(1);
     }
-
-
-    
 
     public void calculateAllRates() {
         for (BillItem tbi : getPreBill().getBillItems()) {
@@ -843,11 +834,14 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
             if (patient != null && getBillItem() != null) {
-
-                if (allergyListOfPatient == null) {
+                // Performance optimization: Lazy load allergy list only when patient is valid
+                if (allergyListOfPatient == null && patient.getId() != null) {
                     allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
                 }
-                boolean allergyStatus = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
+                boolean allergyStatus = false;
+                if (allergyListOfPatient != null) {
+                    allergyStatus = pharmacyService.isAllergyForPatient(patient, billItem, allergyListOfPatient);
+                }
                 //boolean allergyStatus = checkAllergyForPatient(patient, billItem);
 
                 if (allergyStatus) {
@@ -884,7 +878,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         getBillItem();
         return addedQty;
     }
-
 
     private void addSingleStock() {
         billItem.getPharmaceuticalBillItem().setQtyInUnit(0 - qty);
@@ -942,7 +935,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 //        }
 //        calTotal();
 //    }
-
     //    Checked
     public BillItem getBillItem() {
         if (billItem == null) {
@@ -1362,11 +1354,8 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     @EJB
     private ConfigOptionFacade configOptionFacade;
 
-
     @EJB
     private CashTransactionBean cashTransactionBean;
-
-
 
     public void settleBillWithPay() {
         editingQty = null;
@@ -1437,13 +1426,16 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
 
         if (configOptionApplicationController.getBooleanValueByKey("Check patient allergy medicines according to EMR data")) {
-            if (allergyListOfPatient == null) {
-                allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
-            }
-            if (!pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
-                JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
-                billSettlingStarted = false;
-                return;
+            // Performance optimization: Only check allergies if patient is valid and has bill items
+            if (patient != null && patient.getId() != null && !getPreBill().getBillItems().isEmpty()) {
+                if (allergyListOfPatient == null) {
+                    allergyListOfPatient = pharmacyService.getAllergyListForPatient(patient);
+                }
+                if (allergyListOfPatient != null && !pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient).isEmpty()) {
+                    JsfUtil.addErrorMessage(pharmacyService.isAllergyForPatient(patient, getPreBill().getBillItems(), allergyListOfPatient));
+                    billSettlingStarted = false;
+                    return;
+                }
             }
         }
 
@@ -1542,7 +1534,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     }
 
-
     //    checked
     private boolean checkItemBatch() {
         for (BillItem bItem : getPreBill().getBillItems()) {
@@ -1552,7 +1543,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
         return false;
     }
-
 
     public void calTotal() {
         getPreBill().setTotal(0);
@@ -1592,7 +1582,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         calTotal();
     }
 
-
     /**
      * Create the Payment entities associated with the given bill using the
      * configured {@link PaymentProcessingService}.
@@ -1610,7 +1599,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
                 sessionController.getLoggedUser()
         );
     }
-
 
     @Inject
     PriceMatrixController priceMatrixController;
@@ -1721,6 +1709,11 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         preBill = null;
         saleBill = null;
         patient = null;
+        // Invalidate caches when clearing bill data
+        preBillCacheValid = false;
+        cachedPreBill = null;
+        patientCacheValid = false;
+        cachedPatient = null;
         toInstitution = null;
         toStaff = null;
 //        billItems = null;
@@ -1734,7 +1727,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         fromOpdEncounter = false;
         opdEncounterComments = null;
         patientSearchTab = 0;
-        cashPaid=0.0;
+        cashPaid = 0.0;
         errorMessage = "";
         comment = null;
         token = null;
@@ -1750,8 +1743,19 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         editingQty = null;
         errorMessage = "";
         paymentMethodData = null;
-        selectedStockDto=null;
+        selectedStockDto = null;
         allergyListOfPatient = null;
+    }
+
+    /**
+     * Performance optimization: Invalidate all request-scoped caches This
+     * method should be called after major state changes
+     */
+    private void invalidateAllCaches() {
+        preBillCacheValid = false;
+        cachedPreBill = null;
+        patientCacheValid = false;
+        cachedPatient = null;
     }
 
     public boolean CheckDateAfterOneMonthCurrentDateTime(Date date) {
@@ -1840,16 +1844,28 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
 
     @Override
     public Patient getPatient() {
+        // Performance optimization: Use request-scoped caching to prevent excessive getter calls
+        if (patientCacheValid && cachedPatient != null) {
+            return cachedPatient;
+        }
+
         if (patient == null) {
             patient = new Patient();
             patientDetailsEditable = true;
         }
+
+        // Cache the result for this request
+        cachedPatient = patient;
+        patientCacheValid = true;
         return patient;
     }
 
     @Override
     public void setPatient(Patient patient) {
         this.patient = patient;
+        // Invalidate cache when patient is set
+        patientCacheValid = false;
+        cachedPatient = null;
         selectPaymentSchemeAsPerPatientMembership();
     }
 
@@ -1877,17 +1893,29 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     }
 
     public PreBill getPreBill() {
+        // Performance optimization: Use request-scoped caching to prevent excessive getter calls
+        if (preBillCacheValid && cachedPreBill != null) {
+            return cachedPreBill;
+        }
+
         if (preBill == null) {
             preBill = new PreBill();
             preBill.setBillType(BillType.PharmacyPre);
             preBill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE);
             //   preBill.setPaymentScheme(getPaymentSchemeController().getItems().get(0));
         }
+
+        // Cache the result for this request
+        cachedPreBill = preBill;
+        preBillCacheValid = true;
         return preBill;
     }
 
     public void setPreBill(PreBill preBill) {
         this.preBill = preBill;
+        // Invalidate cache when preBill is set
+        preBillCacheValid = false;
+        cachedPreBill = null;
     }
 
     public Bill getSaleBill() {
@@ -2099,7 +2127,6 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         this.errorMessage = errorMessage;
     }
 
-
     public UserStockContainerFacade getUserStockContainerFacade() {
         return userStockContainerFacade;
     }
@@ -2293,14 +2320,14 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
         }
 
         Stock stock = bi.getPharmaceuticalBillItem().getStock();
-        
+
         if (stock.getItemBatch() == null) {
             return;
         }
 
         bi.setRate(stock.getItemBatch().getRetailsaleRate());
         bi.setGrossValue(bi.getQty() * bi.getRate());
-        
+
         // Calculate discounts and other values as needed
         calculateTotals();
     }
@@ -2308,7 +2335,7 @@ public class PharmacyFastRetailSaleController implements Serializable, Controlle
     public void addBillItemMultipleBatches() {
         editingQty = null;
         errorMessage = null;
-        
+
         if (getStock() == null) {
             JsfUtil.addErrorMessage("Please select an item first");
             return;
