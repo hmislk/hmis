@@ -94,6 +94,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void init() {
         loadApplicationOptions();
         loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -745,6 +746,12 @@ public class ConfigOptionApplicationController implements Serializable {
         );
 
         buttonOptions.forEach(k -> getBooleanValueByKey(k, true));
+    }
+
+    private void loadReportMethodConfigurationDefaults() {
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
     }
 
     public ConfigOption getApplicationOption(String key) {

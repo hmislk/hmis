@@ -1419,6 +1419,66 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
     return (List<PharmacyIncomeBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
 }
 
+    public List<OpdSaleSummaryDTO> fetchOpdSaleSummaryDTOs(Date fromDate,
+                                                          Date toDate,
+                                                          Institution institution,
+                                                          Institution site,
+                                                          Department department,
+                                                          Category category,
+                                                          Item item) {
+
+        List<BillTypeAtomic> billTypeAtomics = BillTypeAtomic.findByServiceType(ServiceType.OPD);
+
+        String jpql = "select new com.divudi.core.data.dto.OpdSaleSummaryDTO(" +
+                " coalesce(bi.item.category.name, 'No Category')," +
+                " coalesce(bi.item.name, 'No Item')," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -1 else 1 end)," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -bi.hospitalFee else bi.hospitalFee end)," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -bi.staffFee else bi.staffFee end)," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -bi.grossValue else bi.grossValue end)," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -bi.discount else bi.discount end)," +
+                " sum(case when b.billClassType in (:cancel, :refund) then -bi.netValue else bi.netValue end)" +
+                ") " +
+                " from BillItem bi join bi.bill b " +
+                " where b.retired=:ret " +
+                " and b.billTypeAtomic in :bts " +
+                " and b.createdAt between :fd and :td ";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("ret", false);
+        params.put("bts", billTypeAtomics);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("cancel", BillClassType.CancelledBill);
+        params.put("refund", BillClassType.RefundBill);
+
+        if (institution != null) {
+            jpql += " and b.department.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+        if (category != null) {
+            jpql += " and bi.item.category=:cat";
+            params.put("cat", category);
+        }
+        if (item != null) {
+            jpql += " and bi.item=:itm";
+            params.put("itm", item);
+        }
+
+        jpql += " group by bi.item.category.name, bi.item.name" +
+                " order by bi.item.category.name, bi.item.name";
+
+        return (List<OpdSaleSummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
 
     public List<Bill> fetchBillsWithToInstitution(Date fromDate,
                                                   Date toDate,
