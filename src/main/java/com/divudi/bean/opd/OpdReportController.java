@@ -54,6 +54,7 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
+import com.divudi.core.data.dto.LabDailySummaryDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -215,6 +216,7 @@ public class OpdReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
+    private List<LabDailySummaryDTO> labDailySummaryDtos;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -766,6 +768,40 @@ public class OpdReportController implements Serializable {
         //calculate Deducations Totals
         calculateTotalsFromRows(bundle.getRows(), false);
 
+    }
+
+    public void generateDailyLabSummaryByDepartmentDto() {
+        if (!configOptionApplicationController.getBooleanValueByKey("Lab Daily Summary Report - Optimized Method")) {
+            generateDailyLabSummaryByDepartment();
+            return;
+        }
+
+        labDailySummaryDtos = billService.fetchLabDailySummaryDtos(fromDate, toDate, institution, site, department);
+        bundle = new IncomeBundle();
+
+        totalAdditionCashValue = 0;
+        totalAdditionCardValue = 0;
+        totalAdditionFundTransferValue = 0;
+        totalAdditionCreditValue = 0;
+        totalAdditionInwardCreditValue = 0;
+        totalAdditionOtherValue = 0;
+        totalAdditionTotalValue = 0;
+        totalAdditionDiscountValue = 0;
+        totalAdditionServiceChargeValue = 0;
+
+        if (labDailySummaryDtos != null) {
+            for (LabDailySummaryDTO dto : labDailySummaryDtos) {
+                totalAdditionCashValue += dto.getCashValue() != null ? dto.getCashValue() : 0;
+                totalAdditionCardValue += dto.getCardValue() != null ? dto.getCardValue() : 0;
+                totalAdditionFundTransferValue += dto.getOnlineSettlementValue() != null ? dto.getOnlineSettlementValue() : 0;
+                totalAdditionCreditValue += dto.getCreditValue() != null ? dto.getCreditValue() : 0;
+                totalAdditionInwardCreditValue += dto.getInwardCreditValue() != null ? dto.getInwardCreditValue() : 0;
+                totalAdditionOtherValue += dto.getOtherValue() != null ? dto.getOtherValue() : 0;
+                totalAdditionTotalValue += dto.getTotal() != null ? dto.getTotal() : 0;
+                totalAdditionDiscountValue += dto.getDiscount() != null ? dto.getDiscount() : 0;
+                totalAdditionServiceChargeValue += dto.getServiceCharge() != null ? dto.getServiceCharge() : 0;
+            }
+        }
     }
 
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
@@ -2238,6 +2274,14 @@ public class OpdReportController implements Serializable {
 
     public void setTotalDeductionServiceChargeValue(double totalDeductionServiceChargeValue) {
         this.totalDeductionServiceChargeValue = totalDeductionServiceChargeValue;
+    }
+
+    public List<LabDailySummaryDTO> getLabDailySummaryDtos() {
+        return labDailySummaryDtos;
+    }
+
+    public void setLabDailySummaryDtos(List<LabDailySummaryDTO> labDailySummaryDtos) {
+        this.labDailySummaryDtos = labDailySummaryDtos;
     }
 
 }
