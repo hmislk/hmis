@@ -1,27 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git branch:*)",
+      "Bash(git checkout:*)",
       "Bash(git fetch:*)",
-      "Bash(git merge:*)",
-      "Bash(git push:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh issue view:*)",
+      "Bash(cp:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git stash:*)",
-      "Bash(git status:*)",
-      "Bash(git commit:*)",
       "Bash(git push:*)",
-      "Bash(git checkout:*)",
-      "Bash(git branch:*)",
-      "WebFetch(domain:github.com)",
-      "Bash(cp:*)",
-      "Bash(javac:*)",
-      "Bash(mvn compile:*)",
-      "Bash(./mvnw compile:*)",
-      "Bash(wc:*)",
-      "Bash(rg:*)",
-      "Bash(grep:*)",
-      "Bash(find:*)"
+      "Bash(gh pr create:*)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": []
   }

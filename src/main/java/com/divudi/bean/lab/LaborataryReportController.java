@@ -21,6 +21,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
@@ -29,6 +30,7 @@ import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
+import com.divudi.service.PaymentService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -69,6 +71,8 @@ public class LaborataryReportController implements Serializable {
     private BillService billService;
     @EJB
     BillItemFacade billItemFacade;
+    @EJB
+    PaymentService paymentService;
 
     // </editor-fold>
 
@@ -161,6 +165,8 @@ public class LaborataryReportController implements Serializable {
     private double totalProFee;
     private double totalHosFee;
     private double totalCount;
+    
+    private List<Payment> payments;
 
 // </editor-fold>
 
@@ -177,6 +183,13 @@ public class LaborataryReportController implements Serializable {
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report?faces-redirect=true";
+    }
+    
+    public String navigateToLaborataryCardIncomeReportFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/laboratary_card_income_report?faces-redirect=true";
     }
 
     public String navigateToLaboratarySummaryFromLabAnalytics() {
@@ -244,6 +257,44 @@ public class LaborataryReportController implements Serializable {
         totalHosFee = 0.0;
         totalCount = 0.0;
 
+    }
+    
+    public void processLaboratoryCardIncomeReport() {
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        payments = new ArrayList<>();
+
+        //Add All OPD BillTypes
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
+         billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+
+        //Add All Inward BillTypes
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        //Add All Package BillTypes
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
+        //Add All CC BillTypes
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+        
+        List<Payment> allPayments = paymentService.fetchPayments(fromDate, toDate, institution, site, department, null, billTypeAtomics, null, null, null, null, visitType);
+        
+        payments = allPayments.stream().filter(p -> p.getPaymentMethod() == PaymentMethod.Card).collect(Collectors.toList());
+        totalNetTotal = allPayments.stream().filter(p -> p.getPaymentMethod() == PaymentMethod.Card).mapToDouble(Payment::getPaidValue).sum();
     }
 
     public void processLaboratoryIncomeReport() {
@@ -1034,5 +1085,13 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
+
+    public List<Payment> getPayments() {
+        return payments;
+    }
+
+    public void setPayments(List<Payment> payments) {
+        this.payments = payments;
+    }
 
 }

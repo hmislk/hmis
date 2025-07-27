@@ -95,7 +95,8 @@
                                 columns="2" 
                                 styleClass="w-100 ui-panelgrid-blank">
 
-                                <p:outputLabel for="txtName" value="Name *" styleClass="fw-bold"/>
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                <p:outputLabel for="txtName" value="Name" styleClass="fw-bold"/>
                                 <p:inputText 
                                     id="txtName"
                                     value="#{vmpController.current.name}" 
@@ -107,7 +108,8 @@
                                     maxlength="255"
                                     disabled="#{!vmpController.editable}"/>
 
-                                <p:outputLabel for="acVtm" value="Generic Name *" styleClass="fw-bold"/>
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                <p:outputLabel for="acVtm" value="Generic Name" styleClass="fw-bold"/>
                                 <p:autoComplete 
                                     id="acVtm"
                                     value="#{vmpController.current.vtm}" 
@@ -123,7 +125,7 @@
                                     placeholder="Search and select generic name"
                                     disabled="#{!vmpController.editable}"/>
 
-                                <p:outputLabel for="selDosageForm" value="Dosage Form *" styleClass="fw-bold"/>
+                                <p:outputLabel for="selDosageForm" value="Dosage Form" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
                                     id="selDosageForm"
                                     value="#{vmpController.current.dosageForm}" 
@@ -140,7 +142,7 @@
                                         itemLabel="#{df.name}"/>
                                 </p:selectOneMenu>
 
-                                <p:outputLabel for="selCategory" value="Category *" styleClass="fw-bold"/>
+                                <p:outputLabel for="selCategory" value="Category" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
                                     id="selCategory"
                                     value="#{vmpController.current.category}" 
@@ -166,7 +168,7 @@
                                     placeholder="Enter strength value"
                                     disabled="#{!vmpController.editable}"/>
 
-                                <p:outputLabel for="selStrengthUnit" value="Strength Unit *" styleClass="fw-bold"/>
+                                <p:outputLabel for="selStrengthUnit" value="Strength Unit" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
                                     id="selStrengthUnit"
                                     value="#{vmpController.current.strengthUnit}"
@@ -183,7 +185,7 @@
                                         itemLabel="#{m.name}"/>
                                 </p:selectOneMenu>
 
-                                <p:outputLabel for="selIssueUnit" value="Dispensing Unit *" styleClass="fw-bold"/>
+                                <p:outputLabel for="selIssueUnit" value="Dispensing Unit" styleClass="fw-bold"/>
                                 <p:selectOneMenu 
                                     id="selIssueUnit"
                                     value="#{vmpController.current.issueUnit}"
@@ -198,6 +200,18 @@
                                         var="m" 
                                         itemValue="#{m}" 
                                         itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
+
+                                <p:outputLabel for="selectDepartmentType" value="Type" styleClass="fw-bold"/>
+                                <p:selectOneMenu  
+                                    id="selectDepartmentType"
+                                    value="#{vmpController.current.departmentType}" 
+                                    styleClass="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    disabled="#{!vmpController.editable}">
+                                    <f:selectItem itemLabel="-- Select Department Type --" itemValue="#{null}"/>
+                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
 
                                 <p:outputLabel for="txtDescription" value="Description" styleClass="fw-bold"/>

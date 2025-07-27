@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+            <ui:define name="subcontent">
+                <h:form>
+                    <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Department Stock Adjustment : Cost Rate" />
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel class="w-100">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-syringe" />
+                                        <h:outputLabel value="Select Item" class="mx-4" />
+                                    </f:facet>
+                                    <h:outputLabel value="Item" />
+                                    <p:autoComplete id="acAmp" class="w-100" inputStyleClass="w-100"
+                                                    completeMethod="#{ampController.completeAmp}" var="amp"
+                                                    itemLabel="#{amp.name}" itemValue="#{amp}"
+                                                    maxResults="10" minQueryLength="3"
+                                                    value="#{pharmacyAdjustmentController.amp}">
+                                        <p:ajax process="acAmp" listener="#{pharmacyAdjustmentController.fillCostRateStockDtos}" update="tblStocks" />
+                                        <p:column headerText="Item" style="padding: 3px;">
+                                            <h:outputText value="#{amp.name}" />
+                                        </p:column>
+                                        <p:column headerText="Code" style="padding: 3px;">
+                                            <h:outputText value="#{amp.code}" />
+                                        </p:column>
+                                    </p:autoComplete>
+                                    <p:dataTable id="tblStocks" value="#{pharmacyAdjustmentController.costRateStockDtos}" var="i" rows="10"
+                                                 paginator="true" paginatorAlwaysVisible="false" emptyMessage="No Stocks">
+                                        <f:facet name="header">Batches</f:facet>
+                                        <p:column headerText="Expiry" sortBy="#{i.dateOfExpire}">
+                                            <h:outputText value="#{i.dateOfExpire}">
+                                                <f:convertDateTime pattern="MMM yyyy" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Batch No." sortBy="#{i.batchNo}">
+                                            <h:outputText value="#{i.batchNo}" />
+                                        </p:column>
+                                        <p:column headerText="Stock" sortBy="#{i.stockQty}" styleClass="text-end">
+                                            <h:outputText value="#{i.stockQty}">
+                                                <f:convertNumber pattern="#,###" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Current Cost Rate" sortBy="#{i.purchaseRate}" styleClass="text-end">
+                                            <h:outputText value="#{i.purchaseRate}">
+                                                <f:convertNumber pattern="#,##0.00" />
+                                            </h:outputText>
+                                        </p:column>
+                                        <p:column headerText="New Cost Rate" styleClass="text-end">
+                                            <p:inputText value="#{i.newCostRate}" styleClass="w-100"/>
+                                        </p:column>
+                                    </p:dataTable>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Adjust" />
+                                    </f:facet>
+                                    <h:outputLabel value="Comment" />
+                                    <!-- 
+                                    COMMENT FIELD BEHAVIOR:
+                                    - This comment field applies to the entire cost rate adjustment session
+                                    - The comment is shared across all items being adjusted in this batch
+                                    - The comment value persists when new items are selected to maintain continuity
+                                    - This allows users to provide a single explanation for the batch adjustment
+                                    -->
+                                    <p:inputTextarea id="commentInput" value="#{pharmacyAdjustmentController.comment}" class="w-100" />
+                                    <p:commandButton id="btnAdjust" value="Adjust the Cost Rates" ajax="false"
+                                                     class="mt-2 ui-button-danger" icon="fa-solid fa-sliders"
+                                                     action="#{pharmacyAdjustmentController.adjustCostRates()}" />
+                                    <p:defaultCommand target="btnAdjust" />
+                                </p:panel>
+                            </div>
+                        </div>
+                    </p:panel>
+                    <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton ajax="false" icon="fa fa-plus" class="ui-button-success"
+                                             action="#{pharmacyAdjustmentController.makeNull()}" value="New Adjustment" />
+                            <p:commandButton class="ui-button-info" icon="fa fa-print" ajax="false" value="Print">
+                                <p:printer target="print" />
+                            </p:commandButton>
+                        </div>
+                        <h:panelGroup id="print">
+                            <ph:adjustmentBill_cost_rate bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                        </h:panelGroup>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+    </h:body>
+</html>

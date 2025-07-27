@@ -9,25 +9,41 @@
       xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
       xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod"
       xmlns:pat="http://xmlns.jcp.org/jsf/composite/patient"
-      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common">
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
             <ui:define name="content">
+                <!-- Performance optimization: Cache frequently accessed property chains -->
+                <c:set var="cachedController" value="#{pharmacyFastRetailSaleController}" />
+                <c:set var="cachedPreBill" value="#{cachedController.preBill}" />
+                <c:set var="cachedPatient" value="#{cachedController.patient}" />
+                <c:set var="cachedBillItem" value="#{cachedController.billItem}" />
+                <c:set var="cachedPaymentMethodData" value="#{cachedController.paymentMethodData}" />
                 <h:form id="bill" >
                     <script>
                         window.onload = function () {
-                            document.getElementById("acStock").focus();
+                            document.getElementById("acAmp").focus();
                         };
                     </script>
+                    <f:metadata>
+                        <f:event type="preRenderView" listener="#{pharmacyFastRetailSaleController.initIfNeeded()}" />
+                    </f:metadata>
                     <p:growl id="panelError" />
                     <p:defaultCommand  target="btnAdd" />
                     <p:panel rendered="#{!pharmacyFastRetailSaleController.billPreview}">
                         <i
                             type="button"
                             class="fas fa-shopping-cart rounded-circle shadow-lg"
-                            onclick="PF('findAMP').show()"
                             style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
                         </i>
+                        <p:panel>
+                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                        </p:panel>
+
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
 
                             <ui:include src="fragments/search_medicine_dialog.xhtml"/>
@@ -46,7 +62,7 @@
                                     style="float: right;"
                                     ajax="false" action="pharmacy_bill_retail_sale"
                                     class="mx-1 ui-button-warning"
-                                    actionListener="#{pharmacyFastRetailSaleController.resetAll()}"  >
+                                    actionListener="#{cachedController.resetAll()}"  >
                                 </p:commandButton>
                                 <p:commandButton
                                     ajax="false"
@@ -87,56 +103,36 @@
                                         </f:facet>
                                         <div class="row w-100 m-1 p-1 boder-1">
                                             <div class="col-md-5">
-                                                <p:focus id="focusForAcIx" for="acStock" ></p:focus>
+                                                <p:focus id="focusForAcIx" for="acAmp" ></p:focus>
                                                 <p:outputLabel
                                                     class="w-100"
-                                                    for="acStock">Medicines or Devices</p:outputLabel>
+                                                    for="acAmp">Medicines or Devices</p:outputLabel>
 
                                                 <p:autoComplete
                                                     accesskey="i"
-                                                    id="acStock"
+                                                    id="acAmp"
                                                     inputStyleClass="w-100"
                                                     minQueryLength="3"
                                                     maxResults="10"
                                                     class="w-100"
                                                     forceSelection="true"
-                                                    converter="stockDtoConverter"
-                                                    value="#{pharmacyFastRetailSaleController.selectedStockDto}"
-                                                    completeMethod="#{pharmacyFastRetailSaleController.completeStockDtos}"
-                                                    var="i"
-                                                    itemLabel="#{i.itemName}"
-                                                    itemValue="#{i}">
-                                                    <p:column headerText="Item" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputText value="#{i.itemName}"  style="width: 300px!important;">
-                                                            &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'Expired ': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'Expired Soon':''}" severity="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'danger': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'warning':''}" />
-                                                        </h:outputText>
+                                                    value="#{pharmacyFastRetailSaleController.selectedAmp}"
+                                                    completeMethod="#{pharmacyFastRetailSaleController.completeAmp}"
+                                                    var="amp"
+                                                    itemLabel="#{amp.name}"
+                                                    itemValue="#{amp}">
+                                                    <p:column headerText="Medicine Name" style="padding: 8px;">
+                                                        <h:outputText value="#{amp.name}" style="width: 300px!important;" />
                                                     </p:column>
                                                     <p:column
                                                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Medicine Identification Codes Used',true)}"
-                                                        headerText="Code" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputText value="#{i.code}" style="width: 50px!important;"></h:outputText>
+                                                        headerText="Code" style="padding: 8px;">
+                                                        <h:outputText value="#{amp.code}" style="width: 50px!important;" />
                                                     </p:column>
-                                                    <p:column headerText="Generic" style="padding: 8px;" styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputText value="#{i.genericName}" style="width: 150px!important;"></h:outputText>
+                                                    <p:column headerText="VMP" style="padding: 8px;">
+                                                        <h:outputText value="#{amp.vmp.name}" style="width: 150px!important;" />
                                                     </p:column>
-                                                    <p:column
-                                                        headerText="Rate" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.retailRate}" style="width: 80px!important;">
-                                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Stocks" style="padding: 8px;" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.stockQty}" >
-                                                            <f:convertNumber pattern="#,###" ></f:convertNumber>
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:column headerText="Expiry" style="padding: 8px;" class="w-100" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
-                                                        <h:outputLabel value="#{i.dateOfExpire}" style="width: 100px!important;" >
-                                                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
-                                                        </h:outputLabel>
-                                                    </p:column>
-                                                    <p:ajax event="focus" process="acStock :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}"  ></p:ajax>
-                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleSelect}" update="txtQty txtRate focusQty txtItemInstructions" ></p:ajax>
+                                                    <p:ajax event="itemSelect" listener="#{pharmacyFastRetailSaleController.handleAmpSelect}" process="@this" update="txtQty focusQty" ></p:ajax>
                                                 </p:autoComplete>
 
 
@@ -151,56 +147,25 @@
                                                     accesskey="q"
                                                     autocomplete="off"
                                                     class="w-100"
+                                                    onfocus="this.select()"
                                                     style="text-align: right;"
                                                     value="#{pharmacyFastRetailSaleController.intQty}">
-                                                    <p:ajax event="keyup" listener="#{pharmacyFastRetailSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
-                                                    <p:ajax event="blur" listener="#{pharmacyFastRetailSaleController.calculateBillItemListner}" process="acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId}" update="txtRate txtVal"></p:ajax>
                                                 </p:inputText>
+                                                <p:focus id="focusQty" for="txtQty" />
 
                                             </div>
                                             <div class="col-md-5">
-                                                <div class="row" >
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel value="&nbsp;" class="w-100" ></p:outputLabel>
-                                                        <p:commandButton
-                                                            id="btnAdd"
-                                                            accesskey="a"
-                                                            icon="fa fa-plus"
-                                                            value="Add"
-                                                            styleClass="ui-button-success"
-                                                            action="#{pharmacyFastRetailSaleController.addBillItem()}"
-                                                            process="@this acStock txtQty :#{p:resolveFirstComponentWithId('cmbPs',view).clientId} :#{p:resolveFirstComponentWithId('cmbPaymentScheme',view).clientId} focusForAcIx"
-                                                            update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} txtRate txtQty acStock focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId} txtItemInstructions" >
-                                                        </p:commandButton>
-
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel class="w-100" for="txtRate">Rate</p:outputLabel>
-                                                        <p:inputText
-                                                            id="txtRate"
-                                                            style="text-align: right;"
-                                                            class="w-100"
-                                                            readonly="true"
-                                                            value="#{pharmacyFastRetailSaleController.billItem.netRate}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </p:inputText>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <p:outputLabel
-                                                            class="w-100"
-                                                            value="Value"
-                                                            for="txtVal">
-                                                        </p:outputLabel>
-                                                        <p:inputText
-                                                            readonly="true"
-                                                            id="txtVal"
-                                                            class="w-100"
-                                                            style="text-align: right;"
-                                                            value="#{pharmacyFastRetailSaleController.billItem.netValue}">
-                                                            <f:convertNumber pattern="#,##0.00" />
-                                                        </p:inputText>
-                                                    </div>
-                                                </div>
+                                                <p:outputLabel value="&nbsp;" class="w-100" ></p:outputLabel>
+                                                <p:commandButton
+                                                    id="btnAdd"
+                                                    accesskey="a"
+                                                    icon="fa fa-plus"
+                                                    value="Add"
+                                                    styleClass="ui-button-success"
+                                                    action="#{pharmacyFastRetailSaleController.addBillItemMultipleBatches()}"
+                                                    process="@this acAmp txtQty"
+                                                    update=":#{p:resolveFirstComponentWithId('netTotal',view).clientId} :#{p:resolveFirstComponentWithId('dis',view).clientId} :#{p:resolveFirstComponentWithId('total',view).clientId} :#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId} :#{p:resolveFirstComponentWithId('tblBillItem',view).clientId} acAmp txtQty focusItem :#{p:resolveFirstComponentWithId('panelError',view).clientId}"
+                                                    oncomplete="setTimeout(function(){document.getElementById('acAmp').focus();}, 100);" />
                                             </div>
                                         </div>
                                         <div class="row w-100 m-1 p-1 boder-1">
@@ -211,8 +176,7 @@
                                                 </h:panelGroup>
                                             </div>
                                         </div>
-                                        <p:focus id="focusQty" for="txtQty"></p:focus>
-                                        <p:focus id="focusItem" for="acStock"></p:focus>
+                                        <p:focus id="focusItem" for="acAmp"></p:focus>
                                     </p:panel>
 
                                     <p:panel id="pBis">
@@ -1072,12 +1036,16 @@
 
                     <p:panel  rendered="#{pharmacyFastRetailSaleController.billPreview}" >
 
-                        <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
-                        <!--<p:defaultCommand  target="btnPrint" />-->
-
-                        <div   >
-                            <div>
+                        <div class="row">
+                            <div class="col-6">
+                                <p:panel>
+                                    <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                </p:panel>
+                            </div>
+                            <div class="col-6">
                                 <p:commandButton
                                     accesskey="p"
                                     id="btnPrint"
@@ -1142,7 +1110,7 @@
                                     ajax="false"
                                     action="pharmacy_bill_retail_sale"
                                     class="ui-button-warning mx-2"
-                                    actionListener="#{pharmacyFastRetailSaleController.resetAll()}" ></p:commandButton>
+                                    actionListener="#{cachedController.resetAll()}" ></p:commandButton>
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
                                 <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
                                     <f:selectItem itemLabel="Please Select Paper Type" />
@@ -1150,7 +1118,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                                 <p:spacer width="20em" ></p:spacer>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" actionListener="#{pharmacyFastRetailSaleController.navigateToPharmacyFastRetailSale()}" />
+                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
 
                             </div>
 

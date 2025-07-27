@@ -362,18 +362,25 @@
                                 <h:outputLabel value="Purchase Order Request" class="mt-2"/>
                             </div>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Print" 
-                                    icon="fas fa-print" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print"
                                     class="ui-button-info">
                                     <p:printer target="printPaper" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="New Order" 
-                                    action="#{purchaseOrderRequestController.resetBillValues}" 
-                                    icon="fas fa-plus" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Send Email"
+                                    icon="fas fa-envelope"
+                                    action="#{purchaseOrderRequestController.sendPurchaseOrderEmail}"
+                                    styleClass="ui-button-secondary"
+                                    disabled="#{empty purchaseOrderRequestController.currentBill.toInstitution.email}"/>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="New Order"
+                                    action="#{purchaseOrderRequestController.resetBillValues}"
+                                    icon="fas fa-plus"
                                     styleClass="ui-button-success"/>
                             </div>
                         </div>
