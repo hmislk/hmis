@@ -55,6 +55,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
 import com.divudi.core.data.dto.LabDailySummaryDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -217,6 +218,7 @@ public class OpdReportController implements Serializable {
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
     private List<LabDailySummaryDTO> labDailySummaryDtos;
+    private List<OpdIncomeReportDTO> opdIncomeReportDtos;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -252,7 +254,18 @@ public class OpdReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToOpdIncomeReport() {
+        if (configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method", false)) {
+            return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
+        }
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
+    }
+
+    public String navigateToOptimizedOpdIncomeReport() {
+        return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToLegacyOpdIncomeReport() {
+        return "/opd/analytics/summary_reports/opd_income_report.xhtml?faces-redirect=true";
     }
 
     public String navigateToOpdIncomeDailySummary() {
@@ -527,6 +540,27 @@ public class OpdReportController implements Serializable {
                 r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
             }
         }
+        bundle.generatePaymentDetailsForBillsAndBatchBills();
+    }
+
+    public void generateOpdIncomeReportDto() {
+        if (!configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method")) {
+            processOpdIncomeReport();
+            return;
+        }
+
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+
+        opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
+                fromDate, toDate, institution, site, department, webUser,
+                billTypeAtomics, admissionType, paymentScheme);
+
+        bundle = new IncomeBundle(opdIncomeReportDtos);
         bundle.generatePaymentDetailsForBillsAndBatchBills();
     }
 
@@ -2320,6 +2354,14 @@ public class OpdReportController implements Serializable {
 
     public void setLabDailySummaryDtos(List<LabDailySummaryDTO> labDailySummaryDtos) {
         this.labDailySummaryDtos = labDailySummaryDtos;
+    }
+
+    public List<OpdIncomeReportDTO> getOpdIncomeReportDtos() {
+        return opdIncomeReportDtos;
+    }
+
+    public void setOpdIncomeReportDtos(List<OpdIncomeReportDTO> opdIncomeReportDtos) {
+        this.opdIncomeReportDtos = opdIncomeReportDtos;
     }
 
 }
