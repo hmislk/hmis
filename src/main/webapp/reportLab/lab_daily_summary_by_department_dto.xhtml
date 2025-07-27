@@ -22,7 +22,7 @@
                             </div>
                         </f:facet>
 
-                        <h:panelGrid columns="8" class="w-100">
+                        <div class="d-flex flex-wrap align-items-end gap-2 w-100">
                             <h:outputLabel value="From"/>
                             <p:calendar
                                 class="w-100 "
@@ -31,8 +31,6 @@
                                 value="#{opdReportController.fromDate}"
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:calendar>
-
-                            <p:spacer width="20"></p:spacer>
 
                             <h:outputLabel value="To"/>
                             <p:calendar
@@ -44,9 +42,6 @@
                                 pattern="#{sessionController.applicationPreference.longDateTimeFormat}">
                             </p:calendar>
 
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
-                            <p:spacer></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2"/> <!-- FontAwesome building icon -->
@@ -56,14 +51,14 @@
                                 id="cmbIns"
                                 styleClass="w-100 form-control"
                                 value="#{opdReportController.institution}"
-                                filter="true">
+                                filter="true"
+                                required="true">
                                 <f:selectItem itemLabel="All Institutions"/>
                                 <f:selectItems value="#{institutionController.companies}" var="ins" itemLabel="#{ins.name}"
                                                itemValue="#{ins}"/>
                                 <p:ajax process="cmbIns" update="cmbDept"/>
                             </p:selectOneMenu>
 
-                            <p:spacer></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf3c5;" styleClass="fa mr-2"/> <!-- FontAwesome map marker icon -->
@@ -73,14 +68,14 @@
                                 id="siteMenu"
                                 styleClass="w-100 form-control"
                                 value="#{opdReportController.site}"
-                                filter="true">
+                                filter="true"
+                                required="true">
                                 <f:selectItem itemLabel="All Sites"/>
                                 <f:selectItems value="#{institutionController.sites}" var="site" itemLabel="#{site.name}"
                                                itemValue="#{site}"/>
                                 <p:ajax process="siteMenu" update="cmbDept"/>
                             </p:selectOneMenu>
 
-                            <p:spacer></p:spacer>
 
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/> <!-- FontAwesome sitemap icon -->
@@ -154,10 +149,9 @@
                                 </p:selectOneMenu>
                             </h:panelGroup>
 
-                            <p:spacer></p:spacer>
 
 
-                        </h:panelGrid>
+                        </div>
 
                         <p:commandButton
                             value="Process"
