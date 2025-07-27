@@ -11,13 +11,13 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Laboratary Test Wise Count Report - Legacy Method" styleClass="w-100">
+                    <p:panel header="Laboratary Test Wise Count Report - Optimized Method" styleClass="w-100">
                         <p:panel styleClass="mb-3 text-center">
                             <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
-                            <p:commandButton value="Legacy Method" styleClass="ui-button-success" disabled="true"/>
-                            <p:commandButton value="Optimized Method" styleClass="ui-button-secondary ml-2"
-                                             action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}"
+                            <p:commandButton value="Legacy Method" styleClass="ui-button-secondary mr-2"
+                                             action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}"
                                              immediate="true"/>
+                            <p:commandButton value="Optimized Method" styleClass="ui-button-success" disabled="true"/>
                         </p:panel>
 
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
@@ -259,7 +259,7 @@
                                     style="width: 150px"
                                     icon="fas fa-cogs"
                                     class="mx-2 ui-button-warning m-1"
-                                    action="#{laborataryReportController.processLabTestWiseCountReport()}" >
+                                    action="#{laborataryReportController.processLabTestWiseCountReportDto()}" >
                                 </p:commandButton>
 
                                 <p:commandButton 
@@ -292,8 +292,8 @@
                             </p:commandButton>
                         </div>
 
-                        <p:dataTable 
-                            value="#{laborataryReportController.testWiseCounts}" 
+                        <p:dataTable
+                            value="#{laborataryReportController.testWiseCountDtos}"
                             id="tblExport" 
                             var="c" 
                             rowIndexVar="rowIndex">
