@@ -39,10 +39,10 @@
                             style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
                         </i>
                         <p:panel>
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyFastRetailSaleController.resetAll()}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" disabled="true" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyFastRetailSaleController1.resetAll()}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyFastRetailSaleController2.resetAll()}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" actionListener="#{pharmacyFastRetailSaleController3.resetAll()}" />
+                            <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" disabled="true" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
                         </p:panel>
 
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
@@ -1034,12 +1034,16 @@
 
                     <p:panel  rendered="#{pharmacyFastRetailSaleController1.billPreview}" >
 
-                        <p:commandButton id="nullButton3" value="No Action"
-                                         action="#" style="display: none;" ></p:commandButton>
-                        <!--<p:defaultCommand  target="btnPrint" />-->
-
-                        <div   >
-                            <div>
+                        <div class="row">
+                            <div class="col-6">
+                                <p:panel>
+                                    <p:commandButton icon="fas fa-file-invoice" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" disabled="true" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                    <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                                </p:panel>
+                            </div>
+                            <div class="col-6">
                                 <p:commandButton
                                     accesskey="p"
                                     id="btnPrint"
@@ -1051,7 +1055,6 @@
                                     <p:printer target="gpBillPreview" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton
-
                                     id="btnLabelPrint"
                                     value="Print Labels"
                                     style="width: 10em;"
@@ -1059,9 +1062,7 @@
                                     class="ui-button-info mx-3"
                                     rendered="#{configOptionApplicationController.getBooleanValueByKey('Enable label printing for pharmacy medicines', false)}"
                                     >
-
                                 </p:commandButton>
-
                                 <p:dialog
                                     id="PrintLableSectionAfterSettleBill"
                                     widgetVar="PrintLables"
@@ -1096,7 +1097,6 @@
 
                                     </p:commandButton>
                                 </p:dialog>
-
                                 <p:commandButton
                                     accesskey="n"
                                     value="New Bill"
@@ -1112,8 +1112,7 @@
                                 </p:selectOneMenu>
                                 <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
                                 <p:spacer width="20em" ></p:spacer>
-                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 2"  action="pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" actionListener="#{pharmacyFastRetailSaleController1.navigateToPharmacyFastRetailSale()}" />
-
+                                <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 2"  action="pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
                             </div>
 
                             <div>
