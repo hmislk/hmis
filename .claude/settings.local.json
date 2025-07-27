@@ -8,9 +8,14 @@
       "Bash(cp:*)",
       "Bash(git add:*)",
       "Bash(gh api:*)"
+      "Bash(gh issue create:*)",
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh workflow:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
       "Bash(./detect-maven.sh:*)",
       "Bash(mvn compile:*)"
     ],
