@@ -11478,7 +11478,7 @@ public class SearchController implements Serializable {
 
         if (site != null) {
             params.put("site", site);
-            jpql.append(" and b.department = :site ");
+            jpql.append(" and b.department.site = :site ");
         }
 
         if (webUser != null) {
