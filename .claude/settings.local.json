@@ -8,6 +8,11 @@
       "Bash(cp:*)",
       "Bash(git add:*)",
       "Bash(gh issue create:*)"
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(./detect-maven.sh:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": []
   }
