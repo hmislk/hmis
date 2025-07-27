@@ -28,6 +28,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.ItemMovementSummaryDTO;
+import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
@@ -1706,6 +1707,52 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
         jpql += " order by b.createdAt, bi.id ";
         List<BillItem> fetchedBillItems = billItemFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
         return fetchedBillItems;
+    }
+
+    public List<LabDailySummaryDTO> fetchLabDailySummaryDtos(Date fromDate,
+                                                             Date toDate,
+                                                             Institution institution,
+                                                             Institution site,
+                                                             Department department) {
+        String jpql = "select new com.divudi.core.data.dto.LabDailySummaryDTO(" +
+                " concat('', b.paymentMethod)," +
+                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Cash then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Card then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Credit then bi.netValue else 0 end)," +
+                " sum(case when b.patientEncounter is not null and b.paymentMethod = com.divudi.core.data.PaymentMethod.Credit then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod not in (com.divudi.core.data.PaymentMethod.Cash, com.divudi.core.data.PaymentMethod.Card, com.divudi.core.data.PaymentMethod.OnlineSettlement, com.divudi.core.data.PaymentMethod.Credit) then bi.netValue else 0 end)," +
+                " sum(bi.netValue)," +
+                " sum(bi.discount)," +
+                " sum(bi.marginValue))" +
+                " from BillItem bi" +
+                " join bi.bill b" +
+                " join bi.item i" +
+                " where (b.retired=false or b.retired is null)" +
+                " and (bi.retired=false or bi.retired is null)" +
+                " and type(i) = com.divudi.core.entity.lab.Investigation" +
+                " and b.createdAt between :fromDate and :toDate";
+
+        Map<String, Object> params = new HashMap<>();
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+
+        jpql += " group by b.paymentMethod";
+
+        return (List<LabDailySummaryDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
     public List<Bill> fetchReturnBills(Bill inputBill) {
