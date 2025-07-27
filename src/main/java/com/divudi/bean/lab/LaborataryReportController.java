@@ -28,7 +28,6 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.data.dto.LabIncomeReportDTO;
@@ -79,8 +78,7 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     PaymentService paymentService;
-    @Inject
-    ConfigOptionApplicationController configController;
+
 
     // </editor-fold>
 
