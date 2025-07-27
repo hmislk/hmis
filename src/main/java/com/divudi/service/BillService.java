@@ -28,6 +28,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.data.dto.ItemMovementSummaryDTO;
+import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
@@ -2335,5 +2336,58 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
         b.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseValue));
         billFacade.editAndCommit(b);
     }
+    public LabDailySummaryDTO fetchDailyLabSummaryDto(Date fromDate,
+                                                      Date toDate,
+                                                      Institution institution,
+                                                      Institution site,
+                                                      Department department,
+                                                      List<BillTypeAtomic> billTypes,
+                                                      PaymentScheme paymentScheme,
+                                                      AdmissionType admissionType) {
+        String jpql = "select new com.divudi.core.data.dto.LabDailySummaryDTO("+
+                " sum(case when p.paymentMethod = com.divudi.core.data.PaymentMethod.Cash then p.paidValue else 0 end),"+
+                " sum(case when p.paymentMethod = com.divudi.core.data.PaymentMethod.Card then p.paidValue else 0 end),"+
+                " sum(case when p.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement then p.paidValue else 0 end),"+
+                " sum(case when p.paymentMethod = com.divudi.core.data.PaymentMethod.Credit then p.paidValue else 0 end),"+
+                " 0.0,"+
+                " sum(case when p.paymentMethod not in (com.divudi.core.data.PaymentMethod.Cash, com.divudi.core.data.PaymentMethod.Card, com.divudi.core.data.PaymentMethod.OnlineSettlement, com.divudi.core.data.PaymentMethod.Credit) then p.paidValue else 0 end),"+
+                " sum(p.paidValue),"+
+                " sum(coalesce(b.discount,0)),"+
+                " sum(coalesce(b.margin,0)))"+
+                " from Payment p join p.bill b"+
+                " where b.retired=false"+
+                " and b.billTypeAtomic in :btas"+
+                " and b.createdAt between :fd and :td";
+        Map<String,Object> params = new HashMap<>();
+        params.put("btas", billTypes);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        if(institution!=null){
+            jpql += " and b.institution=:ins";
+            params.put("ins", institution);
+        }
+        if(site!=null){
+            jpql += " and b.department.site=:site";
+            params.put("site", site);
+        }
+        if(department!=null){
+            jpql += " and b.department=:dep";
+            params.put("dep", department);
+        }
+        if(paymentScheme!=null){
+            jpql += " and b.paymentScheme=:ps";
+            params.put("ps", paymentScheme);
+        }
+        if(admissionType!=null){
+            jpql += " and b.patientEncounter.admissionType=:ad";
+            params.put("ad", admissionType);
+        }
+        List<LabDailySummaryDTO> list = (List<LabDailySummaryDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        if(list==null || list.isEmpty()){
+            return new LabDailySummaryDTO(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+        }
+        return list.get(0);
+    }
+
 
 }

@@ -175,7 +175,7 @@
                         <p:commandButton
                             value="Process"
                             ajax="false"
-                            action="#{opdReportController.generateDailyLabSummaryByDepartment}"
+                            action="#{opdReportController.useDtoMode ? opdReportController.generateDailyLabSummaryByDepartmentDto : opdReportController.generateDailyLabSummaryByDepartment}"
                             class="ui-button-warning my-2" icon="fas fa-cogs">
                         </p:commandButton>
                         <p:commandButton
@@ -262,7 +262,21 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <ui:repeat value="#{opdReportController.bundleReport.reportTemplateRows}" var="row">
+                                    <ui:repeat value="#{opdReportController.labSummaryAdditionDtos}" var="row" rendered="#{opdReportController.useDtoMode}">
+                                        <tr style="font-size: 12px;">
+                                            <td>#{row.itemName}</td>
+                                            <td class="text-end"><h:outputLabel value="#{row.cashValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.cardValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.onlineSettlementValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.creditValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.inwardCreditValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.otherValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.total}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.discount}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{row.serviceCharge}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                        </tr>
+                                    </ui:repeat>
+                                    <ui:repeat value="#{opdReportController.bundleReport.reportTemplateRows}" var="row" rendered="#{!opdReportController.useDtoMode}">
                                         <tr style="font-size: 12px;">
                                             <td>#{row.itemName}</td>
                                             <td class="text-end"><h:outputLabel value="#{row.cashValue}">
@@ -345,7 +359,21 @@
                                     <tr style="font-weight: 700; font-size: 12px;">
                                         <td colspan="10" >(-) Deductions</td>  
                                     </tr>
-                                    <ui:repeat value="#{opdReportController.bundle.rows}" var="rows">
+                                    <ui:repeat value="#{opdReportController.labSummaryDeductionDtos}" var="rows" rendered="#{opdReportController.useDtoMode}">
+                                        <tr style="font-size: 12px;">
+                                            <td>#{rows.itemName}</td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.cashValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.cardValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.onlineSettlementValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.creditValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.inwardCreditValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.otherValue}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.total}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.discount}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                            <td class="text-end"><h:outputLabel value="#{rows.serviceCharge}"><f:convertNumber pattern="#,##0.00" /></h:outputLabel></td>
+                                        </tr>
+                                    </ui:repeat>
+                                    <ui:repeat value="#{opdReportController.bundle.rows}" var="rows" rendered="#{!opdReportController.useDtoMode}">
                                         <tr style="font-size: 12px;">
                                             <td>#{rows.itemName}</td>
                                             <td class="text-end"><h:outputLabel value="#{rows.cashValue}">

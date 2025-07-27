@@ -33,6 +33,7 @@ import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
+import com.divudi.core.data.dto.LabDailySummaryDTO;
 import static com.divudi.core.data.PaymentMethod.Card;
 import static com.divudi.core.data.PaymentMethod.Cash;
 import static com.divudi.core.data.PaymentMethod.Credit;
@@ -215,6 +216,9 @@ public class OpdReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
+    private boolean useDtoMode;
+    private List<LabDailySummaryDTO> labSummaryAdditionDtos;
+    private List<LabDailySummaryDTO> labSummaryDeductionDtos;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -659,6 +663,7 @@ public class OpdReportController implements Serializable {
         return inwardBillTypeAtomics;
     }
 
+    @Deprecated
     public void generateDailyLabSummaryByDepartment() {
 
         bundleReport = new ReportTemplateRowBundle();
@@ -766,6 +771,64 @@ public class OpdReportController implements Serializable {
         //calculate Deducations Totals
         calculateTotalsFromRows(bundle.getRows(), false);
 
+    }
+
+    public void generateDailyLabSummaryByDepartmentDto() {
+        labSummaryAdditionDtos = new ArrayList<>();
+        labSummaryDeductionDtos = new ArrayList<>();
+
+        LabDailySummaryDTO normal = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, getOpdAndPackageBillTypeAtomics(), null, null);
+        normal.setItemName("Normal Income");
+        labSummaryAdditionDtos.add(normal);
+
+        List<PaymentScheme> pss = paymentSchemeController.getPaymentSchemesForOPD();
+        for (PaymentScheme ps : pss) {
+            LabDailySummaryDTO dto = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, getOpdAndPackageBillTypeAtomics(), ps, null);
+            dto.setItemName(ps.getName() + " Income");
+            labSummaryAdditionDtos.add(dto);
+        }
+
+        List<AdmissionType> ats = admissionTypeController.getItems();
+        for (AdmissionType at : ats) {
+            LabDailySummaryDTO dto = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, getInwardBillTypeAtomics(), null, at);
+            dto.setItemName(at + " Income");
+            labSummaryAdditionDtos.add(dto);
+        }
+
+        LabDailySummaryDTO out = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, getOutPatientBillTypeAtomics(), null, null);
+        out.setItemName("Outpatient Income");
+        labSummaryAdditionDtos.add(out);
+
+        List<BillTypeAtomic> otherTypes = new ArrayList<>();
+        otherTypes.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL);
+        otherTypes.add(BillTypeAtomic.FUND_TRANSFER_RECEIVED_BILL_CANCELLED);
+        LabDailySummaryDTO floatRec = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, otherTypes, null, null);
+        floatRec.setItemName("Float Receive");
+        labSummaryAdditionDtos.add(floatRec);
+
+        LabDailySummaryDTO otherIncome = new LabDailySummaryDTO(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+        otherIncome.setItemName("Other Income");
+        labSummaryAdditionDtos.add(otherIncome);
+
+        calculateTotalsFromRows(labSummaryAdditionDtos, true);
+
+        List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+
+        LabDailySummaryDTO floatTrans = billService.fetchDailyLabSummaryDto(fromDate, toDate, institution, site, department, voucherDeductionBillTypeAtomics, null, null);
+        floatTrans.setItemName("Float Transfer");
+        labSummaryDeductionDtos.add(floatTrans);
+
+        LabDailySummaryDTO voucher = new LabDailySummaryDTO(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+        voucher.setItemName("Voucher");
+        labSummaryDeductionDtos.add(voucher);
+
+        LabDailySummaryDTO otherDed = new LabDailySummaryDTO(0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0);
+        otherDed.setItemName("Other");
+        labSummaryDeductionDtos.add(otherDed);
+
+        calculateTotalsFromRows(labSummaryDeductionDtos, false);
     }
 
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
@@ -1049,6 +1112,17 @@ public class OpdReportController implements Serializable {
                 totalValue += ir.getNetTotal();
                 discountValue += ir.getDiscount();
                 serviceChargeValue += ir.getServiceCharge();
+            } else if (row instanceof LabDailySummaryDTO) {
+                LabDailySummaryDTO dto = (LabDailySummaryDTO) row;
+                cashValue += dto.getCashValue();
+                cardValue += dto.getCardValue();
+                fundTransferValue += dto.getOnlineSettlementValue();
+                creditValue += dto.getCreditValue();
+                inwardCreditValue += dto.getInwardCreditValue();
+                otherValue += dto.getOtherValue();
+                totalValue += dto.getTotal();
+                discountValue += dto.getDiscount();
+                serviceChargeValue += dto.getServiceCharge();
             }
         }
 
@@ -2238,6 +2312,30 @@ public class OpdReportController implements Serializable {
 
     public void setTotalDeductionServiceChargeValue(double totalDeductionServiceChargeValue) {
         this.totalDeductionServiceChargeValue = totalDeductionServiceChargeValue;
+    }
+
+    public boolean isUseDtoMode() {
+        return useDtoMode;
+    }
+
+    public void setUseDtoMode(boolean useDtoMode) {
+        this.useDtoMode = useDtoMode;
+    }
+
+    public List<LabDailySummaryDTO> getLabSummaryAdditionDtos() {
+        return labSummaryAdditionDtos;
+    }
+
+    public void setLabSummaryAdditionDtos(List<LabDailySummaryDTO> labSummaryAdditionDtos) {
+        this.labSummaryAdditionDtos = labSummaryAdditionDtos;
+    }
+
+    public List<LabDailySummaryDTO> getLabSummaryDeductionDtos() {
+        return labSummaryDeductionDtos;
+    }
+
+    public void setLabSummaryDeductionDtos(List<LabDailySummaryDTO> labSummaryDeductionDtos) {
+        this.labSummaryDeductionDtos = labSummaryDeductionDtos;
     }
 
 }
