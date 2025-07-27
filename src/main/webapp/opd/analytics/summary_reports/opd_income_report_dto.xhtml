@@ -285,8 +285,7 @@
                             id="cmbAdmissionType"
                             class="w-100"
                             autoWidth="false"
-                            value="#{opdReportController.admissionType}" 
-                            rendered="#{mdInwardReportController.reportKeyWord.string eq '0'}">
+                            value="#{opdReportController.admissionType}" >
                             <f:selectItem itemLabel="All Admission Type"/>
                             <f:selectItems  value="#{inwardReportController.admissionty}" var="myItem" 
                                             itemValue="#{myItem}" itemLabel="#{myItem.name}"></f:selectItems>
