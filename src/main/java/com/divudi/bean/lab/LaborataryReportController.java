@@ -28,9 +28,10 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
-import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.data.dto.LabIncomeReportDTO;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.service.PaymentService;
 import javax.enterprise.context.SessionScoped;
@@ -77,6 +78,7 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
     @EJB
     PaymentService paymentService;
+
 
     // </editor-fold>
 
@@ -147,6 +149,7 @@ public class LaborataryReportController implements Serializable {
 
     private StreamedContent downloadingExcel;
     private UploadedFile file;
+    private List<LabIncomeReportDTO> labIncomeReportDtos;
 
     // Numeric variables
     private int maxResult = 50;
@@ -211,6 +214,23 @@ public class LaborataryReportController implements Serializable {
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
 
+
+    public String navigateToOptimizedLaboratoryIncomeReport() {
+        return "/reportLab/laboratary_income_report_dto.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToLegacyLaboratoryIncomeReport() {
+        return "/reportLab/laboratary_income_report.xhtml?faces-redirect=true";
+    }
+
+    public boolean isOptimizedMethodEnabled() {
+        return configController.getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+    }
+
+    public boolean isLegacyMethodEnabled() {
+        return configController.getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+    }
+  
     public String navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
@@ -353,6 +373,36 @@ public class LaborataryReportController implements Serializable {
             }
         }
         bundle.generatePaymentDetailsForBills();
+    }
+
+    public void processLaboratoryIncomeReportDto() {
+        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL_REFUND);
+
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_REFUND);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_TO_COLLECT_PAYMENT_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT);
+
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
+        billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
+
+        labIncomeReportDtos = billService.fetchBillsAsLabIncomeReportDTOs(fromDate,
+                toDate, institution, site, department, webUser, billTypeAtomics,
+                admissionType, paymentScheme, toInstitution, toDepartment, visitType);
     }
 
     public void processLaboratoryOrderReport() {
@@ -1194,6 +1244,14 @@ public class LaborataryReportController implements Serializable {
 
     public void setPayments(List<Payment> payments) {
         this.payments = payments;
+    }
+
+    public List<LabIncomeReportDTO> getLabIncomeReportDtos() {
+        return labIncomeReportDtos;
+    }
+
+    public void setLabIncomeReportDtos(List<LabIncomeReportDTO> labIncomeReportDtos) {
+        this.labIncomeReportDtos = labIncomeReportDtos;
     }
 
 }
