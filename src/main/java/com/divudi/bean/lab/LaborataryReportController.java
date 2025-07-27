@@ -13,6 +13,7 @@ import com.divudi.core.data.TestWiseCountReport;
 import com.divudi.core.data.dataStructure.SearchKeyword;
 import com.divudi.core.data.hr.ReportKeyWord;
 import com.divudi.core.data.pharmacy.DailyStockBalanceReport;
+import com.divudi.core.data.dto.TestCountDTO;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Category;
@@ -27,6 +28,7 @@ import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.Investigation;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
@@ -64,6 +66,8 @@ public class LaborataryReportController implements Serializable {
     SessionController sessionController;
     @Inject
     OpdReportController opdReportController;
+    @Inject
+    ConfigOptionApplicationController configController;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -159,6 +163,7 @@ public class LaborataryReportController implements Serializable {
     private int activeIndex;
 
     private List<TestWiseCountReport> testWiseCounts;
+    private List<TestCountDTO> testWiseCountDtos;
     private double totalNetHosFee;
     private double totalAdditionalFee;
     private double totalCCFee;
@@ -204,6 +209,13 @@ public class LaborataryReportController implements Serializable {
         setToInstitution(sessionController.getInstitution());
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/test_wise_count?faces-redirect=true";
+    }
+
+    public String navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics() {
+        resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/test_wise_count_dto?faces-redirect=true";
     }
 
     // </editor-fold>
@@ -576,6 +588,80 @@ public class LaborataryReportController implements Serializable {
 
         testWiseCounts = alphabetList(testWiseCount);
 
+    }
+
+    public void processLabTestWiseCountReportDto() {
+        Map<String, Object> params = new HashMap<>();
+
+        String jpql = "select new com.divudi.core.data.dto.TestCountDTO("+
+                "bi.item.id, bi.item.code, bi.item.name, "+
+                "count(bi), "+
+                "sum(bi.hospitalFee), "+
+                "sum(bi.collectingCentreFee), "+
+                "sum(bi.staffFee), "+
+                "sum(bi.reagentFee), "+
+                "sum(bi.otherFee), "+
+                "sum(bi.discount), "+
+                "sum(bi.netValue)) "+
+                " from BillItem bi "+
+                " where bi.retired = :ret "+
+                " and bi.bill.createdAt between :fd and :td "+
+                " and bi.bill.billTypeAtomic IN :bType "+
+                " and type(bi.item) = :invType ";
+
+        if (institution != null) {
+            jpql += " and bi.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+        if (department != null) {
+            jpql += " and bi.bill.department=:dep ";
+            params.put("dep", department);
+        }
+        if (site != null) {
+            jpql += " and bi.bill.department.site=:site ";
+            params.put("site", site);
+        }
+
+        jpql += " group by bi.item.id, bi.item.code, bi.item.name";
+
+        params.put("ret", false);
+        params.put("fd", fromDate);
+        params.put("td", toDate);
+        params.put("invType", Investigation.class);
+
+        List<BillTypeAtomic> bTypes = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL);
+        params.put("bType", bTypes);
+
+        testWiseCountDtos = (List<TestCountDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        totalCount = 0.0;
+        totalHosFee = 0.0;
+        totalCCFee = 0.0;
+        totalProFee = 0.0;
+        totalReagentFee = 0.0;
+        totalAdditionalFee = 0.0;
+        totalNetTotal = 0.0;
+        totalDiscount = 0.0;
+        totalNetHosFee = 0.0;
+
+        if (testWiseCountDtos != null) {
+            for (TestCountDTO dto : testWiseCountDtos) {
+                totalCount += dto.getCount();
+                totalHosFee += dto.getHosFee();
+                totalCCFee += dto.getCcFee();
+                totalProFee += dto.getProFee();
+                totalReagentFee += dto.getReagentFee();
+                totalAdditionalFee += dto.getOtherFee();
+                totalNetTotal += dto.getTotal();
+                totalDiscount += dto.getDiscount();
+                totalNetHosFee += dto.getHosFee() - dto.getDiscount();
+            }
+        }
     }
 
     public List <TestWiseCountReport> alphabetList(List <TestWiseCountReport> testWiseCounts) {
@@ -1034,6 +1120,22 @@ public class LaborataryReportController implements Serializable {
 
     public void setTestWiseCounts(List<TestWiseCountReport> testWiseCounts) {
         this.testWiseCounts = testWiseCounts;
+    }
+
+    public List<TestCountDTO> getTestWiseCountDtos() {
+        return testWiseCountDtos;
+    }
+
+    public void setTestWiseCountDtos(List<TestCountDTO> testWiseCountDtos) {
+        this.testWiseCountDtos = testWiseCountDtos;
+    }
+
+    public boolean isTestWiseCountOptimizedEnabled() {
+        return configController.getBooleanValueByKey("Test Wise Count Report - Optimized Method", false);
+    }
+
+    public boolean isTestWiseCountLegacyEnabled() {
+        return configController.getBooleanValueByKey("Test Wise Count Report - Legacy Method", true);
     }
 
     public double getTotalNetHosFee() {
