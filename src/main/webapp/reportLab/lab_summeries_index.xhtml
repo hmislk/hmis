@@ -110,11 +110,17 @@
                                     <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton
-                                                class="w-100"  
-                                                ajax="false" 
-                                                value="Test Wise Count Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" >
-                                            </p:commandButton>
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Test Wise Count Report"
+                                                rendered="#{laborataryReportController.testWiseCountLegacyEnabled}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
+                                            <p:commandButton
+                                                class="w-100 ui-button-secondary mt-1"
+                                                ajax="false"
+                                                value="Test Wise Count Report - Optimized"
+                                                rendered="#{laborataryReportController.testWiseCountOptimizedEnabled}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
 
                                             <p:commandButton
                                                 ajax="false" 
