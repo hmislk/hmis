@@ -1,6 +1,5 @@
 # Pharmacy Navigation Guide
 
-
 This document lists key pages reachable from the **Pharmacy** menu. Each entry shows how to navigate from the main screen, the page path, required privilege and any relevant configuration keys.
 
 | Menu steps | Page path | Privilege | Configuration notes |
