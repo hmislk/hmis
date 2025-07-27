@@ -749,9 +749,11 @@ public class ConfigOptionApplicationController implements Serializable {
     }
 
     private void loadReportMethodConfigurationDefaults() {
-
         getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
         getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
 
         // Lab Reports
         getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
@@ -798,15 +800,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public List<Denomination> getDenominations() {
-//        if (denominations == null) {
-//            initializeDenominations();
-//        }
-//        for (Denomination d : denominations) {
-//            d.setCount(0);
-//        }
-//        return denominations;
-//    }
+
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -814,15 +808,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public ConfigOption getOptionValueByKey(String key) {
-//        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("key", key);
-//        params.put("scope", OptionScope.APPLICATION);
-//        jpql.append(" AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL");
-//        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-//        return option;
-//    }
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
