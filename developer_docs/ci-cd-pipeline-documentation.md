@@ -35,15 +35,15 @@ The HMIS (Health Management Information System) project utilizes an extensive Gi
 ## Deployment Environments
 
 ### Server Infrastructure
-- **Development Server**: 4.240.39.63
+- **Development Server**: <DEV_SERVER_IP>
 - **QA Servers**: 
-  - QA1: 4.240.43.211
+  - QA1: <QA1_IP>
   - Multiple QA environments (QA1, QA2, QA3)
 - **Shared Servers**:
-  - Shared01: 52.172.158.159
-  - Shared02: 20.204.129.229
+  - Shared01: <SHARED01_IP>
+  - Shared02: <SHARED02_IP>
 - **Dedicated Servers**: 
-  - D01: 4.213.180.217
+  - D01: <D01_IP>
 
 ### Application Stack
 - **Application Server**: Payara 5
@@ -95,11 +95,11 @@ The HMIS (Health Management Information System) project utilizes an extensive Gi
 - **Trigger**: Manual dispatch only (`workflow_dispatch`)
 - **Selective Restart**: Allows exclusion of specific servers
 - **Server Options**:
-  - Development (4.240.39.63)
-  - QA (4.240.43.211)
-  - Shared01 (52.172.158.159)
-  - Shared02 (20.204.129.229)
-  - D01 (4.213.180.217)
+  - Development (<DEV_SERVER_IP>)
+  - QA (<QA1_IP>)
+  - Shared01 (<SHARED01_IP>)
+  - Shared02 (<SHARED02_IP>)
+  - D01 (<D01_IP>)
 - **Remote Execution**: Calls `/home/azureuser/utils/server_utils/restart_all_servers.sh`
 
 ### Restart Individual Servers Workflow
