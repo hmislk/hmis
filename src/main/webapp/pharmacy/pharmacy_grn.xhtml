@@ -163,6 +163,7 @@
                         headerText="Purchase Rate"
                         styleClass="text-end #{bi.item.category.profitMargin > ((bi.pharmaceuticalBillItem.retailRate - bi.pharmaceuticalBillItem.purchaseRate) / bi.pharmaceuticalBillItem.purchaseRate)*100 ? 'ui-messages-fatal' : ''}">  
                         <p:inputText 
+                            disabled="#{!configOptionApplicationController.getBooleanValueByKey('GRN Purchase Rate is Editable', true)}"
                             autocomplete="off" 
                             class="text-end text-primary w-100"
                             value="#{bi.pharmaceuticalBillItem.purchaseRate}" 

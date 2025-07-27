@@ -83,7 +83,18 @@
                                             <p:commandButton ajax="false" value="Investigation Summary Fee Type With Credit" action="report_investigation_summery_by_feetype_with_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Investigation Summary Regent Fee With Credit" action="report_investigation_summery_by_regent_fee_with_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Investigation Summary Regent Fee By Payment Method" action="report_investigation_summery_by_regent_fee_by_pay_method?faces-redirect=true"/>
-                                            <p:commandButton ajax="false" value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}" action="lab_daily_summary_by_department?faces-redirect=true" >
+                                            <p:commandButton ajax="false"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Legacy Method')}"
+                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')}"
+                                                            action="lab_daily_summary_by_department?faces-redirect=true" />
+                                            <p:commandButton ajax="false"
+                                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Lab Daily Summary Report - Optimized Method')}"
+                                                            value="#{configOptionApplicationController.getLongTextValueByKey('Daily Lab Summmary By Department Report Menu Name','Daily Lab Summmary By Department')} (DTO)"
+                                                            action="lab_daily_summary_by_department_dto?faces-redirect=true" />
+                                            <p:commandButton
+                                                ajax="false" 
+                                                value="Laboratary Card Income Report" 
+                                                action="#{laborataryReportController.navigateToLaborataryCardIncomeReportFromLabAnalytics()}">
                                             </p:commandButton>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary" action="report_lab_by_date_summery_cash_credit?faces-redirect=true"/>
                                             <p:commandButton ajax="false" value="Daily OPD Fee Summary with Counts" action="report_lab_by_date_summery_cash_credit_counts?faces-redirect=true"/>
@@ -99,18 +110,24 @@
                                     <h:form>
                                         <div class="d-grid gap-2">
                                             <p:commandButton
-                                                class="w-100"  
-                                                ajax="false" 
-                                                value="Test Wise Count Report" 
-                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" >
-                                            </p:commandButton>
+                                                class="w-100"
+                                                ajax="false"
+                                                value="Test Wise Count Report"
+                                                rendered="#{laborataryReportController.testWiseCountLegacyEnabled}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}" />
+                                            <p:commandButton
+                                                class="w-100 ui-button-secondary mt-1"
+                                                ajax="false"
+                                                value="Test Wise Count Report - Optimized"
+                                                rendered="#{laborataryReportController.testWiseCountOptimizedEnabled}"
+                                                action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics()}" />
 
                                             <p:commandButton
                                                 ajax="false" 
                                                 value="Laboratary Income Report" 
                                                 action="#{laborataryReportController.navigateToLaborataryIncomeReportFromLabAnalytics()}">
                                             </p:commandButton>
-
+                                            
                                             <p:commandButton 
                                                 ajax="false" 
                                                 value="Laboratory Order Report" 
