@@ -63,9 +63,9 @@ The HMIS (Health Management Information System) project utilizes an extensive Gi
    - Replaces environment variables in `persistence.xml`
    - Maps `${JDBC_DATASOURCE}` to client-specific JNDI names
    - Example: `jdbc/ruhunu` for Ruhunu client
-5. **Build Execution**: `mvn clean package -DskipTests`
+5. **Build Execution**: `mvn clean verify`
+   - Use `-DskipTests` only for emergency deployments; see “Troubleshooting → Build Failures”.
 6. **Artifact Storage**: Uploads WAR files as build artifacts
-
 ### Deployment Process
 1. **Artifact Download**: Retrieves WAR file from build job
 2. **SSH Key Setup**: Configures private key for server access
