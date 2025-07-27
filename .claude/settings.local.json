@@ -10,7 +10,8 @@
       "Bash(git commit:*)",
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
-      "Bash(./detect-maven.sh:*)"
+      "Bash(./detect-maven.sh:*)",
+      "Bash(mvn compile:*)"
     ],
     "deny": []
   }
