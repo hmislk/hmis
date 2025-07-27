@@ -751,16 +751,16 @@
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
-                            value="Pharmacy Retail Sale - Legacy Method"
+                            value="Sale by Batch"
                             icon="fas fa-shopping-cart"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Batch Search', true)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"
                             actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
-                            value="Pharmacy Retail Sale - Optimized Method"
+                            value="Sale by Item"
                             icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" >
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true)}" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
