@@ -4,5 +4,10 @@ This directory contains technical guides for developers working on the HMIS proj
 
 ## Available Navigation Guides
 
-- [OPD Navigation Guide](navigation/opd_navigation.md)
-- [Channelling Navigation Guide](navigation/channelling_navigation.md)
+This directory contains resources to help developers understand and work with the HMIS codebase.
+It includes workflow explanations, navigation references and other technical guides.
+
+## Navigation guides
+
+- [OPD Navigation](navigation/opd_navigation.md)
+- [Channelling Navigation](navigation/channelling_navigation.md)
