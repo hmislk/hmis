@@ -215,6 +215,11 @@
                                 <h:outputText value="#{ob.agency.name}">
                                 </h:outputText>
                             </p:column>
+                            
+                            <p:column headerText="Remark/Comment">
+                                <h:outputText value="#{ob.comment}">
+                                </h:outputText>
+                            </p:column>
 
                             <p:column headerText="Paid to Hospital">
                                 <h:outputText value="#{ob.paidToHospital ? 'Paid': 'Not Paid'}" style="color: #{ob.paidToHospital ? 'black':'red'}; font-weight: bold">

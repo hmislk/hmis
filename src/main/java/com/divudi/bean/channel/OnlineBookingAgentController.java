@@ -762,6 +762,30 @@ public class OnlineBookingAgentController implements Serializable {
 
         return bill;
     }
+    
+    public void markCompletePaidToHospitalOnlineBookings(){
+        if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {
+            JsfUtil.addErrorMessage("No Bookings are selected to proceed");
+            return;
+        }
+        
+        if (agentForBookings == null) {
+            JsfUtil.addErrorMessage("No agent is selected.");
+            return;
+        }
+        
+        for (OnlineBooking ob : paidToHospitalList) {
+                if (!ob.isPaidToHospital()) {
+                    ob.setPaidToHospital(true);
+                    ob.setPaidToHospitalDate(new Date());
+                    ob.setPaidToHospitalProcessedBy(getSessionController().getLoggedUser());
+                    ob.setComment(ob.getComment() != null ? ob.getComment()+"Direct Marked completion by "+getSessionController().getLoggedUser() :
+                            "Direct Marked completion by "+getSessionController().getLoggedUser());
+                    getOnlineBookingFacade().edit(ob);
+                }
+            }
+        
+    }
 
     public String createPaymentForHospital() {
         if (paidToHospitalList == null || paidToHospitalList.isEmpty()) {

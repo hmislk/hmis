@@ -84,6 +84,13 @@
                                 actionListener="#{onlineBookingAgentController.createTotalAmountToPay()}"
                                 class="ui-button-success" icon="fas fa-cogs">
                             </p:commandButton>
+                            
+                            <p:commandButton  
+                                value="Mark Complete" 
+                                ajax="false"
+                                action="#{onlineBookingAgentController.markCompletePaidToHospitalOnlineBookings}"
+                                class="ui-button-success" icon="fas fa-cogs">
+                            </p:commandButton>
 
                             <!--                            <p:commandButton  
                                                             value="Print" 
