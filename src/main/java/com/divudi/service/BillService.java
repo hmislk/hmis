@@ -1714,14 +1714,20 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
                                                              Institution institution,
                                                              Institution site,
                                                              Department department) {
+        if (fromDate == null || toDate == null) {
+            throw new IllegalArgumentException("fromDate and toDate cannot be null");
+        }
+        if (fromDate.after(toDate)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
         String jpql = "select new com.divudi.core.data.dto.LabDailySummaryDTO(" +
                 " concat('', b.paymentMethod)," +
-                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Cash then bi.netValue else 0 end)," +
-                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Card then bi.netValue else 0 end)," +
-                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.OnlineSettlement then bi.netValue else 0 end)," +
-                " sum(case when b.paymentMethod = com.divudi.core.data.PaymentMethod.Credit then bi.netValue else 0 end)," +
-                " sum(case when b.patientEncounter is not null and b.paymentMethod = com.divudi.core.data.PaymentMethod.Credit then bi.netValue else 0 end)," +
-                " sum(case when b.paymentMethod not in (com.divudi.core.data.PaymentMethod.Cash, com.divudi.core.data.PaymentMethod.Card, com.divudi.core.data.PaymentMethod.OnlineSettlement, com.divudi.core.data.PaymentMethod.Credit) then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = :cashMethod then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = :cardMethod then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = :onlineMethod then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod = :creditMethod then bi.netValue else 0 end)," +
+                " sum(case when b.patientEncounter is not null and b.paymentMethod = :creditMethod then bi.netValue else 0 end)," +
+                " sum(case when b.paymentMethod not in (:cashMethod, :cardMethod, :onlineMethod, :creditMethod) then bi.netValue else 0 end)," +
                 " sum(bi.netValue)," +
                 " sum(bi.discount)," +
                 " sum(bi.marginValue))" +
@@ -1736,6 +1742,10 @@ public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemDTOs(Date from
         Map<String, Object> params = new HashMap<>();
         params.put("fromDate", fromDate);
         params.put("toDate", toDate);
+        params.put("cashMethod", PaymentMethod.Cash);
+        params.put("cardMethod", PaymentMethod.Card);
+        params.put("onlineMethod", PaymentMethod.OnlineSettlement);
+        params.put("creditMethod", PaymentMethod.Credit);
 
         if (institution != null) {
             jpql += " and b.institution=:ins";

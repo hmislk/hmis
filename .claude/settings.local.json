@@ -6,7 +6,8 @@
       "WebFetch(domain:github.com)",
       "Bash(gh issue view:*)",
       "Bash(cp:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(gh api:*)"
     ],
     "deny": []
   }

@@ -152,19 +152,6 @@
                                         itemLabel="#{d.name}"
                                         itemValue="#{d}"/>
                                 </p:selectOneMenu>
-
-                                <p:selectOneMenu
-                                    rendered="false"
-                                    styleClass="w-100 form-control"
-                                    value="#{opdReportController.department}"
-                                    filter="true">
-                                    <f:selectItem itemLabel="All Departments"/>
-                                    <f:selectItems
-                                        value="#{departmentController.getDepartmentsOfInstitutionAndSite(opdReportController.institution, opdReportController.site)}"
-                                        var="d"
-                                        itemLabel="#{d.name}"
-                                        itemValue="#{d}"/>
-                                </p:selectOneMenu>
                             </h:panelGroup>
 
                             <p:spacer></p:spacer>
@@ -175,7 +162,7 @@
                         <p:commandButton
                             value="Process"
                             ajax="false"
-                            action="#{opdReportController.generateDailyLabSummaryByDepartment}"
+                            action="#{opdReportController.generateDailyLabSummaryByDepartmentDto}"
                             class="ui-button-warning my-2" icon="fas fa-cogs">
                         </p:commandButton>
                         <p:commandButton

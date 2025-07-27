@@ -35,13 +35,50 @@ public class BillServiceLabSummaryTest {
         f.setAccessible(true);
         f.set(service, facade);
 
+        // Test with realistic entity parameters
+        Institution fromInstitution = new Institution();
+        fromInstitution.setId(1L);
+        Institution toInstitution = new Institution(); 
+        toInstitution.setId(2L);
+        Department department = new Department();
+        department.setId(3L);
+
         Date from = new Date(0);
         Date to = new Date();
-        service.fetchLabDailySummaryDtos(from, to, new Institution(), new Institution(), new Department());
+        service.fetchLabDailySummaryDtos(from, to, fromInstitution, toInstitution, department);
 
         assertNotNull(facade.jpql);
         assertTrue(facade.jpql.contains("group by b.paymentMethod"));
+        // Verify additional expected query elements
+        assertTrue(facade.jpql.contains("type(i) = com.divudi.core.entity.lab.Investigation"));
+        assertTrue(facade.jpql.contains("b.createdAt between :fromDate and :toDate"));
+        
         assertEquals(from, facade.params.get("fromDate"));
         assertEquals(to, facade.params.get("toDate"));
+        assertEquals(fromInstitution, facade.params.get("ins"));
+        assertEquals(toInstitution, facade.params.get("site"));
+        assertEquals(department, facade.params.get("dep"));
+    }
+
+    @Test
+    public void testNullParameterValidation() {
+        BillService service = new BillService();
+        
+        // Test null fromDate
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.fetchLabDailySummaryDtos(null, new Date(), null, null, null);
+        });
+        
+        // Test null toDate
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.fetchLabDailySummaryDtos(new Date(), null, null, null, null);
+        });
+        
+        // Test fromDate after toDate
+        Date from = new Date(System.currentTimeMillis() + 86400000); // tomorrow
+        Date to = new Date(); // today
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.fetchLabDailySummaryDtos(from, to, null, null, null);
+        });
     }
 }

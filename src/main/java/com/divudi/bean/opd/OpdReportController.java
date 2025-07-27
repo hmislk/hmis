@@ -802,6 +802,44 @@ public class OpdReportController implements Serializable {
                 totalAdditionServiceChargeValue += dto.getServiceCharge() != null ? dto.getServiceCharge() : 0;
             }
         }
+
+        // Initialize deduction totals
+        totalDeductionCashValue = 0;
+        totalDeductionCardValue = 0;
+        totalDeductionFundTransferValue = 0;
+        totalDeductionCreditValue = 0;
+        totalDeductionInwardCreditValue = 0;
+        totalDeductionOtherValue = 0;
+        totalDeductionTotalValue = 0;
+        totalDeductionDiscountValue = 0;
+        totalDeductionServiceChargeValue = 0;
+
+        // Add deduction logic similar to legacy method
+        List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+
+        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
+        IncomeRow floatTransferDeductionRow = new IncomeRow();
+        floatTransferDeductionRow.setItemName("Float Transfer");
+        initializeDeductionRows(floatTransferDeductionRow);
+        floatTransferDeductionRow = genarateDeductionRowBundleOther(fetchedBills, floatTransferDeductionRow);
+        bundle.getRows().add(floatTransferDeductionRow);
+
+        // Deductions Voucher
+        IncomeRow voucherDeductionRow = new IncomeRow();
+        voucherDeductionRow.setItemName("Voucher");
+        initializeDeductionRows(voucherDeductionRow);
+        bundle.getRows().add(voucherDeductionRow);
+
+        // Deductions Other
+        IncomeRow otherDeductionRow = new IncomeRow();
+        otherDeductionRow.setItemName("Other");
+        initializeDeductionRows(otherDeductionRow);
+        bundle.getRows().add(otherDeductionRow);
+
+        // Calculate deduction totals
+        calculateTotalsFromRows(bundle.getRows(), false);
     }
 
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
