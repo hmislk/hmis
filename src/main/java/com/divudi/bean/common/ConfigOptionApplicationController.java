@@ -94,6 +94,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void init() {
         loadApplicationOptions();
         loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -745,6 +746,11 @@ public class ConfigOptionApplicationController implements Serializable {
         );
 
         buttonOptions.forEach(k -> getBooleanValueByKey(k, true));
+    }
+
+    private void loadReportMethodConfigurationDefaults() {
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
     }
 
     public ConfigOption getApplicationOption(String key) {
