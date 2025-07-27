@@ -248,7 +248,7 @@ public class EntityNullHandlingTest {
             BillItemFinanceDetails cloned = entity.clone();
             assertNull(cloned.getQuantity());
             assertNull(cloned.getLineGrossRate());
-            assertEquals(BigDecimal.ZERO, cloned.getGrossTotal(),
+            assertEquals(BigDecimal.ZERO.compareTo(cloned.getGrossTotal()), 0,
                     "Expected: 0, but was: " + cloned.getGrossTotal());
             assertNull(cloned.getNetTotal());
         }

@@ -512,6 +512,7 @@ public enum Privileges {
     PharmacyAdjustmentDepartmentStockBySingleItemQTY("Pharmacy Adjustment Department Stock by Single Item Quantity"),
     PharmacyAdjustmentStaffStockAdjustment("Pharmacy Adjustment Staff Stock Adjustment"),
     PharmacyAdjustmentPurchaseRate("Pharmacy Adjustment Purchase Rate"),
+    PharmacyAdjustmentCostRate("Pharmacy Adjustment Cost Rate"),
     PharmacyAdjustmentSaleRate("Pharmacy Adjustment Sale Rate"),
     PharmacyAdjustmentWholeSaleRate("Pharmacy Adjustment Wholesale Rate"),
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
@@ -853,6 +854,7 @@ public enum Privileges {
             case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
             case PharmacyAdjustmentStaffStockAdjustment:
             case PharmacyAdjustmentPurchaseRate:
+            case PharmacyAdjustmentCostRate:
             case PharmacyAdjustmentSaleRate:
             case PharmacyAdjustmentWholeSaleRate:
             case PharmacyAdjustmentExpiryDate:

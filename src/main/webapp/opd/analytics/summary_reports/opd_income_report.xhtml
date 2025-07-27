@@ -9,8 +9,20 @@
     <h:body>
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
+                <p:panel header="OPD Income Report - Legacy Method">
+                    <h:form>
+                        <!-- Navigation Toggle Buttons -->
+                        <p:panel styleClass="mb-3 text-center">
+                            <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
+                            <p:commandButton value="Legacy Method"
+                                             styleClass="ui-button-success"
+                                             disabled="true"/>
+                            <p:commandButton value="Optimized Method"
+                                             styleClass="ui-button-secondary ml-2"
+                                             action="#{opdReportController.navigateToOptimizedOpdIncomeReport()}"
+                                             immediate="true"/>
+                        </p:panel>
 
-                <h:form >
                     <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                         <h:panelGroup layout="block" styleClass="form-group">
                             <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -518,6 +530,7 @@
                             </p:commandLink>
                         </p:column>
                     </p:dataTable>
+                    </p:panel>
                 </h:form>
             </ui:define>
         </ui:composition>

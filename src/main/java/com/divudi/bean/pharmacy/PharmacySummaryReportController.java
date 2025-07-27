@@ -436,7 +436,7 @@ public class PharmacySummaryReportController implements Serializable {
 
             if (site != null) {
                 params.put("site", site);
-                jpql.append(" and b.department = :site ");
+                jpql.append(" and b.department.site = :site ");
             }
 
             if (webUser != null) {
@@ -980,12 +980,28 @@ public class PharmacySummaryReportController implements Serializable {
     }
 
     public void processPharmacyIncomeAndCostReportByBillDto() {
+        
         List<BillTypeAtomic> billTypeAtomics = getPharmacyIncomeBillTypes();
+        
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
+        
+        
+        if (dtos != null && !dtos.isEmpty()) {
+            for (int i = 0; i < Math.min(3, dtos.size()); i++) {
+                PharmacyIncomeBillDTO dto = dtos.get(i);
+            }
+        }
 
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
+        
+
+        if (bundle.getRows() != null && !bundle.getRows().isEmpty()) {
+            for (int i = 0; i < Math.min(3, bundle.getRows().size()); i++) {
+                IncomeRow row = bundle.getRows().get(i);
+            }
+        }
     }
 
     /**
@@ -1356,7 +1372,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
                 if (pbi == null) {
-                    System.out.println("Skipped BillItem: No PharmaceuticalBillItem.");
                     continue;
                 }
 
@@ -1367,7 +1382,6 @@ public class PharmacySummaryReportController implements Serializable {
 
                 if (bta == BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS) {
                     retailRate = Math.abs(bi.getNetRate());
-                    System.out.println("Using NetRate instead of RetailRate due to return: NetRate = " + retailRate);
                 }
 
                 double factor = (bc == BillCategory.CANCELLATION || bc == BillCategory.REFUND) ? -1 : 1;
@@ -1380,19 +1394,17 @@ public class PharmacySummaryReportController implements Serializable {
                 saleValue += itemSaleValue;
                 purchaseValue += itemPurchaseValue;
                 costValue += itemCostValue;
-
                 // Print debug info
-                System.out.println("---- BillItem Debug ----");
-                System.out.println("Item: " + bi.getItem().getName());
-                System.out.println("Qty: " + qty);
-                System.out.println("Retail Rate: " + retailRate);
-                System.out.println("Purchase Rate: " + purchaseRate);
-                System.out.println("Cost Rate: " + cRate);
-                System.out.println("Factor: " + factor);
-                System.out.println("Item Sale Value: " + itemSaleValue);
-                System.out.println("Item Purchase Value: " + itemPurchaseValue);
-                System.out.println("Item Cost Value: " + itemCostValue);
-                System.out.println("------------------------");
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
+                // Print debug info
             }
 
             BillFinanceDetails bfd = b.getBillFinanceDetails();
