@@ -329,14 +329,6 @@ public class IncomeBundle implements Serializable {
         }
     }
 
-    public IncomeBundle(List<OpdIncomeReportDTO> dtos) {
-        this();
-        if (dtos != null) {
-            for (OpdIncomeReportDTO dto : dtos) {
-                rows.add(new IncomeRow(dto));
-            }
-        }
-    }
 
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
