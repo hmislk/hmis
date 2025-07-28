@@ -56,6 +56,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
 import com.divudi.core.data.dto.LabDailySummaryDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.reports.CommonReports;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -150,6 +151,8 @@ public class OpdReportController implements Serializable {
     private DrawerController drawerController;
     @Inject
     private EnumController enumController;
+    @Inject
+    private ReportTimerController reportTimerController;
     @Inject
     AdmissionTypeController admissionTypeController;
     @Inject
@@ -486,83 +489,87 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeReport() {
-        System.out.println("processOpdIncomeReport");
-        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        reportTimerController.trackReportExecution(() -> {
+            System.out.println("processOpdIncomeReport");
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-        List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
-                fromDate,
-                toDate,
-                institution,
-                site,
-                department,
-                toInstitution,
-                toDepartment,
-                toSite,
-                webUser,
-                billTypeAtomics,
-                admissionType,
-                paymentScheme,
-                paymentMethod
-        );
+            List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
+                    fromDate,
+                    toDate,
+                    institution,
+                    site,
+                    department,
+                    toInstitution,
+                    toDepartment,
+                    toSite,
+                    webUser,
+                    billTypeAtomics,
+                    admissionType,
+                    paymentScheme,
+                    paymentMethod
+            );
 
-        bundle = new IncomeBundle(incomeBills);
-        for (IncomeRow r : bundle.getRows()) {
-            if (r.getBill() == null) {
-                continue;
-            }
-            if (r.getBill().getBillTypeAtomic() == null) {
-                continue;
-            }
-            Bill batchBill = null;
-            switch (r.getBill().getBillTypeAtomic()) {
-                case OPD_BILL_WITH_PAYMENT:
-                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
-                    r.setBatchBill(batchBill);
-                case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
-                    r.setBatchBill(batchBill);
-                    r.setReferanceBill(r.getBill().getReferenceBill());
-                case OPD_BILL_CANCELLATION:
-                case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                case OPD_BILL_REFUND:
+            bundle = new IncomeBundle(incomeBills);
+            for (IncomeRow r : bundle.getRows()) {
+                if (r.getBill() == null) {
+                    continue;
+                }
+                if (r.getBill().getBillTypeAtomic() == null) {
+                    continue;
+                }
+                Bill batchBill = null;
+                switch (r.getBill().getBillTypeAtomic()) {
+                    case OPD_BILL_WITH_PAYMENT:
+                        batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                        r.setBatchBill(batchBill);
+                    case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                        batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                        r.setBatchBill(batchBill);
+                        r.setReferanceBill(r.getBill().getReferenceBill());
+                    case OPD_BILL_CANCELLATION:
+                    case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                    case OPD_BILL_REFUND:
 
-            }
+                }
 
-            if (r.getBill().getPaymentMethod() == null) {
-                continue;
-            }
+                if (r.getBill().getPaymentMethod() == null) {
+                    continue;
+                }
 
-            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
+                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
+                }
             }
-        }
-        bundle.generatePaymentDetailsForBillsAndBatchBills();
+            bundle.generatePaymentDetailsForBillsAndBatchBills();
+        }, CommonReports.LAB_DASHBOARD, "OpdReportController.processOpdIncomeReport", sessionController.getLoggedUser());
     }
 
     public void generateOpdIncomeReportDto() {
-        if (!configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method")) {
-            processOpdIncomeReport();
-            return;
-        }
+        reportTimerController.trackReportExecution(() -> {
+            if (!configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method")) {
+                processOpdIncomeReport();
+                return;
+            }
 
-        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-        opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
-                fromDate, toDate, institution, site, department, webUser,
-                billTypeAtomics, admissionType, paymentScheme);
+            opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
+                    fromDate, toDate, institution, site, department, webUser,
+                    billTypeAtomics, admissionType, paymentScheme);
 
-        bundle = new IncomeBundle(opdIncomeReportDtos);
-        bundle.generatePaymentDetailsForBillsAndBatchBills();
+            bundle = new IncomeBundle(opdIncomeReportDtos);
+            bundle.generatePaymentDetailsForBillsAndBatchBills();
+        }, CommonReports.LAB_DASHBOARD, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
     }
 
     public void processOpdIncomeSummaryByDate() {
