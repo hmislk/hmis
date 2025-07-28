@@ -527,7 +527,7 @@ public class ReportsTransfer implements Serializable {
             .append("b.id, ")
             .append("b.deptId, ")
             .append("b.createdAt, ")
-            .append("b.fromDepartment.name, ")
+            .append("b.department.name, ")
             .append("b.toDepartment.name, ")
             .append("COALESCE(b.toStaff.person.name, ''), ")
             .append("b.cancelled, ")
@@ -549,7 +549,7 @@ public class ReportsTransfer implements Serializable {
         params.put("bt", BillType.PharmacyTransferIssue);
         
         if (fromDepartment != null) {
-            jpql.append("AND b.fromDepartment = :fdept ");
+            jpql.append("AND b.department = :fdept ");
             params.put("fdept", fromDepartment);
         }
         
@@ -558,7 +558,7 @@ public class ReportsTransfer implements Serializable {
             params.put("tdept", toDepartment);
         }
         
-        jpql.append("GROUP BY b.id, b.deptId, b.createdAt, b.fromDepartment.name, ")
+        jpql.append("GROUP BY b.id, b.deptId, b.createdAt, b.department.name, ")
             .append("b.toDepartment.name, b.toStaff.person.name, ")
             .append("b.cancelled, b.refunded, b.cancelledBill.deptId, b.comments ")
             .append("ORDER BY b.id");
