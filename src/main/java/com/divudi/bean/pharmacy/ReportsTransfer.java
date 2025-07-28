@@ -499,11 +499,9 @@ public class ReportsTransfer implements Serializable {
      * This is the recommended approach for better performance
      */
     public void fillDepartmentTransfersIssueByBillDto() {
-        System.out.println("DEBUG: fillDepartmentTransfersIssueByBillDto method called");
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsDtoDirectly();
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL, sessionController.getLoggedUser());
-        System.out.println("DEBUG: fillDepartmentTransfersIssueByBillDto method completed");
     }
 
     /**
@@ -524,12 +522,6 @@ public class ReportsTransfer implements Serializable {
      * This is the primary method that should be used for report display
      */
     private void fillTransferIssueBillsDtoDirectly() {
-        System.out.println("DEBUG: Starting fillTransferIssueBillsDtoDirectly method");
-        System.out.println("DEBUG: fromDate=" + fromDate);
-        System.out.println("DEBUG: toDate=" + toDate);
-        System.out.println("DEBUG: fromDepartment=" + (fromDepartment != null ? fromDepartment.getName() : "null"));
-        System.out.println("DEBUG: toDepartment=" + (toDepartment != null ? toDepartment.getName() : "null"));
-        
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         
@@ -573,9 +565,7 @@ public class ReportsTransfer implements Serializable {
         // Execute the DTO query
         try {
             transferIssueDtos = (List<PharmacyTransferIssueDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-            System.out.println("SUCCESS: DTO query returned " + (transferIssueDtos != null ? transferIssueDtos.size() : 0) + " results");
         } catch (Exception e) {
-            System.out.println("ERROR: DTO query failed - " + e.getMessage());
             transferIssueDtos = new ArrayList<>();
         }
         
@@ -583,11 +573,7 @@ public class ReportsTransfer implements Serializable {
         totalsValue = 0.0;
         netTotalValues = 0.0;
         if (transferIssueDtos != null) {
-            System.out.println("DEBUG: Starting total calculations");
             for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
-                System.out.println("DEBUG: Processing DTO - deptId: " + dto.getDeptId() + 
-                                 ", saleValue: " + dto.getSaleValue() + 
-                                 ", transferValue: " + dto.getTransferValue());
                 if (dto.getSaleValue() != null) {
                     totalsValue += dto.getSaleValue().doubleValue();
                 }
@@ -595,10 +581,9 @@ public class ReportsTransfer implements Serializable {
                     netTotalValues += dto.getTransferValue().doubleValue();
                 }
             }
-            System.out.println("DEBUG: Final totals - totalsValue: " + totalsValue + ", netTotalValues: " + netTotalValues);
         }
-        System.out.println("DEBUG: fillTransferIssueBillsDtoDirectly method completed");
     }
+    
 
     /**
      * Legacy method for backward compatibility - will be removed in future version
@@ -647,17 +632,7 @@ public class ReportsTransfer implements Serializable {
                     + " order by b.id";
         }
 
-        System.out.println("DEBUG ENTITY: Final JPQL query: " + jpql);
-        System.out.println("DEBUG ENTITY: Query parameters: " + params);
-        
         transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
-        
-        System.out.println("DEBUG ENTITY: Query executed successfully");
-        System.out.println("DEBUG ENTITY: transferBills is null: " + (transferBills == null));
-        if (transferBills != null) {
-            System.out.println("DEBUG ENTITY: transferBills size: " + transferBills.size());
-        }
-        System.out.println("DEBUG ENTITY: fillTransferIssueBillsLegacy method completed");
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {

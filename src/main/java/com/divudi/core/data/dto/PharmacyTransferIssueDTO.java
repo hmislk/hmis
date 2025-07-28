@@ -56,8 +56,22 @@ public class PharmacyTransferIssueDTO implements Serializable {
         this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
         this.toDepartmentName = toDepartmentName != null ? toDepartmentName.toString() : "";
         this.transporterName = transporterName != null ? transporterName.toString() : "";
-        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
-        this.refunded = refunded != null ? (Boolean) refunded : false;
+        // Handle both Boolean and numeric (0/1) boolean values from database
+        if (cancelled instanceof Boolean) {
+            this.cancelled = (Boolean) cancelled;
+        } else if (cancelled instanceof Number) {
+            this.cancelled = ((Number) cancelled).intValue() != 0;
+        } else {
+            this.cancelled = false;
+        }
+        
+        if (refunded instanceof Boolean) {
+            this.refunded = (Boolean) refunded;
+        } else if (refunded instanceof Number) {
+            this.refunded = ((Number) refunded).intValue() != 0;
+        } else {
+            this.refunded = false;
+        }
         this.comments = comments != null ? comments.toString() : "";
         
         // Handle BigDecimal conversion for financial values
@@ -77,6 +91,7 @@ public class PharmacyTransferIssueDTO implements Serializable {
             this.saleValue = BigDecimal.ZERO;
         }
     }
+    
 
     // Getters and Setters
     public Long getBillId() {
