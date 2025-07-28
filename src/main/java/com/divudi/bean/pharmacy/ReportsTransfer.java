@@ -385,7 +385,14 @@ public class ReportsTransfer implements Serializable {
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
-            purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            // Use the actual transfer rate that was stored when the bill was created
+            // This respects the configured transfer rate option (purchase/cost/retail)
+            if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineNetTotal() != null) {
+                purchaseValue += ts.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
+            } else {
+                // Fallback to purchase rate if financial details are missing
+                purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            }
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
@@ -398,7 +405,14 @@ public class ReportsTransfer implements Serializable {
         purchaseValue = 0.0;
         saleValue = 0.0;
         for (BillItem ts : transferItems) {
-            purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            // Use the actual transfer rate that was stored when the bill was created
+            // This respects the configured transfer rate option (purchase/cost/retail)
+            if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineNetTotal() != null) {
+                purchaseValue += ts.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
+            } else {
+                // Fallback to purchase rate if financial details are missing
+                purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            }
             saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
         }
 
@@ -510,16 +524,34 @@ public class ReportsTransfer implements Serializable {
         if (billList == null) {
             return;
         }
+        // Reset totals before accumulating stored values
+        totalsValue = 0.0;
+        netTotalValues = 0.0;
+        
         for (Bill b : billList) {
             double saleValue = 0.0;
             double purchaseValue = 0.0;
+            
             for (BillItem bi : b.getBillItems()) {
-                saleValue += bi.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * bi.getPharmaceuticalBillItem().getQty();
-                purchaseValue += bi.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * bi.getPharmaceuticalBillItem().getQty();
+                // Use stored financial data - no calculations during report viewing
+                if (bi.getBillItemFinanceDetails() != null) {
+                    // Sale value from stored retail value
+                    if (bi.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
+                        saleValue += bi.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
+                    }
+                    
+                    // Purchase value from stored transfer value (lineNetTotal contains the transfer rate value)
+                    if (bi.getBillItemFinanceDetails().getLineNetTotal() != null) {
+                        purchaseValue += bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
+                    }
+                }
             }
+            
             b.setSaleValue(saleValue);
             b.setPaidAmount(purchaseValue);
+            b.setNetTotal(purchaseValue); // Show transfer value in "Purchase Value" column
             totalsValue += saleValue;
+            netTotalValues += purchaseValue; // Accumulate transfer values for "Purchase Value" total
         }
     }
 

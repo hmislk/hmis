@@ -47,7 +47,8 @@ This document lists all pages reachable from the **Lab** menu. Each entry shows 
 | **Lab → Lab Analytics → Income → Investigation Summary Fee Type With Credit** | `/faces/reportLab/report_investigation_summery_by_feetype_with_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Investigation Summary Regent Fee With Credit** | `/faces/reportLab/report_investigation_summery_by_regent_fee_with_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Investigation Summary Regent Fee By Payment Method** | `/faces/reportLab/report_investigation_summery_by_regent_fee_by_pay_method.xhtml` | `LabSummeries` | |
-| **Lab → Lab Analytics → Income → Daily Lab Summary By Department** | `/faces/reportLab/lab_daily_summary_by_department.xhtml` | `LabSummeries` | |
+| **Lab → Lab Analytics → Income → Daily Lab Summary By Department** | `/faces/reportLab/lab_daily_summary_by_department.xhtml` | `LabSummeries` | Visible when `Lab Daily Summary Report - Legacy Method` is true |
+| **Lab → Lab Analytics → Income → Daily Lab Summary By Department (DTO)** | `/faces/reportLab/lab_daily_summary_by_department_dto.xhtml` | `LabSummeries` | Visible when `Lab Daily Summary Report - Optimized Method` is true |
 | **Lab → Lab Analytics → Income → Laboratary Card Income Report** | `/faces/reportLab/laboratary_card_income_report.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily OPD Fee Summary** | `/faces/reportLab/report_lab_by_date_summery_cash_credit.xhtml` | `LabSummeries` | |
 | **Lab → Lab Analytics → Income → Daily OPD Fee Summary with Counts** | `/faces/reportLab/report_lab_by_date_summery_cash_credit_counts.xhtml` | `LabSummeries` | |
