@@ -561,12 +561,14 @@ public class ReportsTransfer implements Serializable {
         jpql.append("ORDER BY b.id");
         
         // Execute the DTO query
+        // Execute the DTO query
         try {
             transferIssueDtos = (List<PharmacyTransferIssueDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
         } catch (Exception e) {
+            // Log the exception for debugging
+            // logger.error("Failed to fetch transfer issue DTOs", e);
             transferIssueDtos = new ArrayList<>();
         }
-        
         // Calculate totals from DTOs 
         totalsValue = 0.0;
         netTotalValues = 0.0;
