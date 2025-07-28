@@ -11,7 +11,11 @@
       "Bash(git push:*)",
       "Bash(gh pr create:*)",
       "Bash(./detect-maven.sh:*)",
-      "Bash(mvn compile:*)"
+      "Bash(mvn compile:*)",
+      "Bash(gh workflow list:*)",
+      "Bash(gh pr merge:*)",
+      "Bash(gh run list:*)",
+      "Bash(gh run view:*)"
     ],
     "deny": []
   }
