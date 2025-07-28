@@ -770,6 +770,13 @@
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
+                            action="/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true"
+                            actionListener="#{pharmacyFastRetailSaleForCashierController.resetAll()}"
+                            value="Sale for Cashier - By Item"
+                            icon="fas fa-bolt"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
                             action="#{pharmacySaleWithoutStockController.navigateToPharmacySaleWithoutStocks()}"
                             value="Sale without Stocks"
                             icon="fas fa-store-slash"
