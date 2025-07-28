@@ -1,6 +1,7 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.ClinicalEntityController;
+import com.divudi.core.entity.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
 import org.apache.poi.xssf.usermodel.XSSFDataValidation;
@@ -52,20 +53,6 @@ import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.Sex;
 import com.divudi.core.data.Title;
 import com.divudi.core.data.inward.InwardChargeType;
-import com.divudi.core.entity.Area;
-import com.divudi.core.entity.Category;
-import com.divudi.core.entity.Consultant;
-import com.divudi.core.entity.Department;
-import com.divudi.core.entity.DoctorSpeciality;
-import com.divudi.core.entity.Institution;
-import com.divudi.core.entity.Item;
-import com.divudi.core.entity.ItemFee;
-import com.divudi.core.entity.Patient;
-import com.divudi.core.entity.PatientEncounter;
-import com.divudi.core.entity.Route;
-import com.divudi.core.entity.Service;
-import com.divudi.core.entity.Speciality;
-import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.clinical.ClinicalEntity;
 import com.divudi.core.entity.lab.Investigation;
 import com.divudi.core.entity.lab.InvestigationTube;
@@ -90,10 +77,6 @@ import com.divudi.core.data.SymanticHyrachi;
 import com.divudi.core.data.SymanticType;
 import com.divudi.core.data.dataStructure.PharmacyImportCol;
 import com.divudi.ejb.PharmacyBean;
-import com.divudi.core.entity.Doctor;
-import com.divudi.core.entity.Family;
-import com.divudi.core.entity.FamilyMember;
-import com.divudi.core.entity.Relation;
 import com.divudi.core.entity.inward.InwardService;
 import com.divudi.core.entity.membership.MembershipScheme;
 import com.divudi.core.entity.pharmacy.Ampp;
@@ -367,6 +350,11 @@ public class DataUploadController implements Serializable {
     public String navigateToSupplierUpload() {
         uploadComplete = false;
         return "/admin/institutions/supplier_upload?faces-redirect=true";
+    }
+
+    public String navigateToSupplierUploadExtended() {
+        uploadComplete = false;
+        return "/admin/institutions/supplier_upload_extended?faces-redirect=true";
     }
 
     public String importToExcelWithStock() {
@@ -4888,6 +4876,22 @@ public class DataUploadController implements Serializable {
         JsfUtil.addSuccessMessage("Successfully Uploaded");
     }
 
+    public void uploadSuppliersExtended() {
+        suppliers = new ArrayList<>();
+        if (file != null) {
+            try (InputStream inputStream = file.getInputStream()) {
+                System.out.println("inputStream = " + inputStream);
+                suppliers = readSuppliersExtendedFromExcel(inputStream);
+            } catch (IOException e) {
+                e.printStackTrace();
+                uploadComplete = false;
+                JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
+            }
+        }
+        uploadComplete = true;
+        JsfUtil.addSuccessMessage("Successfully Uploaded");
+    }
+
     public void uploadDepartments() {
         departments = new ArrayList<>();
         if (file != null) {
@@ -5360,6 +5364,215 @@ public class DataUploadController implements Serializable {
             supplier.setEmail(email);
             supplier.setOwnerName(ownerName);
             supplier.setAddress(address);
+            supplier.setInstitutionType(InstitutionType.Dealer);
+            institutionController.save(supplier);
+            suppliersList.add(supplier);
+        }
+
+        return suppliersList;
+    }
+
+    private List<Institution> readSuppliersExtendedFromExcel(InputStream inputStream) throws IOException {
+        Workbook workbook = new XSSFWorkbook(inputStream);
+        Sheet sheet = workbook.getSheetAt(0);
+        Iterator<Row> rowIterator = sheet.rowIterator();
+
+        List<Institution> suppliersList = new ArrayList<>();
+        Institution supplier;
+
+        // Assuming the first row contains headers, skip it
+        if (rowIterator.hasNext()) {
+            rowIterator.next();
+        }
+        while (rowIterator.hasNext()) {
+            Row row = rowIterator.next();
+
+            if (isRowEmpty(row)) {
+                continue;
+            }
+
+            supplier = null;
+            String code = null;
+            String supplierName = null;
+            String qbSupplierName = null;
+            Boolean active = null;
+            String contactPersonName = null;
+            String address = null;
+            String phone = null;
+            String fax = null;
+            String email = null;
+            String web = null;
+            String mobilenumber = null;
+            String paymentCompanyName = null;
+            String bankName = null;
+            String branchName = null;
+            String accountNo = null;
+            String legalCompany = null;
+//            String supplierPrintingName = null;
+//            String ownerName = null;
+
+
+            Cell faxCell = row.getCell(7);
+            if (faxCell != null && (faxCell.getCellType() == CellType.STRING || faxCell.getCellType() == CellType.NUMERIC)) {
+                fax = faxCell.getStringCellValue();
+            }
+
+            Cell emailCell = row.getCell(8);
+            if (emailCell != null && emailCell.getCellType() == CellType.STRING) {
+                email = emailCell.getStringCellValue();
+            }
+
+            Cell webCell = row.getCell(9);
+            if (webCell != null && webCell.getCellType() == CellType.STRING) {
+                web = webCell.getStringCellValue();
+            }
+
+            Cell mobCell = row.getCell(10);
+            if (mobCell != null) {
+                if (mobCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    mobilenumber = decimalFormat.format(mobCell.getNumericCellValue());
+
+                } else if (mobCell.getCellType() == CellType.STRING) {
+                    mobilenumber = mobCell.getStringCellValue();
+                }
+            }
+            if (mobilenumber == null || mobilenumber.trim().isEmpty()) {
+                mobilenumber = null;
+            }
+
+            Cell codeCell = row.getCell(0);
+            if (codeCell != null) {
+                if (codeCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    code = decimalFormat.format(codeCell.getNumericCellValue());
+
+                } else if (codeCell.getCellType() == CellType.STRING) {
+                    code = codeCell.getStringCellValue();
+                }
+            }
+            if (code == null || code.trim().isEmpty()) {
+                code = null;
+            }
+
+            //    Item masterItem = itemController.findMasterItemByName(code);
+            Cell agentNameCell = row.getCell(1);
+            if (agentNameCell != null && agentNameCell.getCellType() == CellType.STRING) {
+                supplierName = agentNameCell.getStringCellValue();
+            }
+
+            Cell activeCell = row.getCell(3);
+            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
+                active = activeCell.getBooleanCellValue();
+            }
+            if (active == null) {
+                active = false;
+            }
+
+            Cell contactNumberCell = row.getCell(6);
+            if (contactNumberCell != null) {
+                if (contactNumberCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    phone = decimalFormat.format(contactNumberCell.getNumericCellValue());
+
+                } else if (contactNumberCell.getCellType() == CellType.STRING) {
+                    phone = contactNumberCell.getStringCellValue();
+                }
+            }
+            if (phone == null || phone.trim().isEmpty()) {
+                phone = null;
+            }
+
+            Cell addressCell = row.getCell(5);
+            if (addressCell != null && addressCell.getCellType() == CellType.STRING) {
+                address = addressCell.getStringCellValue();
+            }
+            if (address == null || address.trim().isEmpty()) {
+                address = null;
+            }
+
+            Cell contactPersonNameCell = row.getCell(4);
+            if (contactPersonNameCell != null && contactPersonNameCell.getCellType() == CellType.STRING) {
+                contactPersonName = contactPersonNameCell.getStringCellValue();
+            }
+            if (contactPersonName == null || contactPersonName.trim().isEmpty()) {
+                contactPersonName = null;
+            }
+
+            Cell qbSupplierNameCell = row.getCell(2);
+            if (qbSupplierNameCell != null && qbSupplierNameCell.getCellType() == CellType.STRING) {
+                qbSupplierName = qbSupplierNameCell.getStringCellValue();
+            }
+            if (qbSupplierName == null || qbSupplierName.trim().isEmpty()) {
+                qbSupplierName = null;
+            }
+
+            Cell paymentCompanyNameCell = row.getCell(11);
+            if (paymentCompanyNameCell != null && paymentCompanyNameCell.getCellType() == CellType.STRING) {
+                paymentCompanyName = paymentCompanyNameCell.getStringCellValue();
+            }
+            if (paymentCompanyName == null || paymentCompanyName.trim().isEmpty()) {
+                paymentCompanyName = null;
+            }
+
+            Cell bankNameCell = row.getCell(12);
+            if (bankNameCell != null && bankNameCell.getCellType() == CellType.STRING) {
+                bankName = bankNameCell.getStringCellValue();
+            }
+            if (bankName == null || bankName.trim().isEmpty()) {
+                bankName = null;
+            }
+
+            Cell branchNameCell = row.getCell(13);
+            if (branchNameCell != null && branchNameCell.getCellType() == CellType.STRING) {
+                branchName = branchNameCell.getStringCellValue();
+            }
+            if (branchName == null || branchName.trim().isEmpty()) {
+                branchName = null;
+            }
+
+            Cell accountNoCell = row.getCell(14);
+            if (accountNoCell != null && accountNoCell.getCellType() == CellType.STRING) {
+                accountNo = accountNoCell.getStringCellValue();
+            }
+            if (accountNo == null || accountNo.trim().isEmpty()) {
+                accountNo = null;
+            }
+
+            Cell legalCompanyCell = row.getCell(15);
+            if (legalCompanyCell != null && legalCompanyCell.getCellType() == CellType.STRING) {
+                legalCompany = legalCompanyCell.getStringCellValue();
+            }
+            if (legalCompany == null || legalCompany.trim().isEmpty()) {
+                legalCompany = null;
+            }
+
+            supplier = institutionController.findAndSaveInstitutionByCode(code);
+
+            if (supplier == null) {
+                supplier = new Institution();
+            }
+
+            supplier.setCode(code);
+            supplier.setInstitutionCode(code);
+            supplier.setName(supplierName);
+            supplier.setInactive(active);
+            supplier.setMobile(mobilenumber);
+            supplier.setFax(fax);
+            supplier.setPhone(phone);
+            supplier.setEmail(email);
+//            supplier.setChequePrintingName(supplierPrintingName);
+//            supplier.setOwnerName(ownerName);
+            supplier.setAddress(address);
+            supplier.setWeb(web);
+            supplier.setAccountNo(accountNo);
+            supplier.setQbSupplierName(qbSupplierName);
+            supplier.setContactPersonName(contactPersonName);
+            supplier.setPaymentCompanyName(paymentCompanyName);
+            supplier.setBankName(bankName);
+            supplier.getBankBranch().setBranchName(branchName);
+            supplier.setLegalCompany(legalCompany);
+
             supplier.setInstitutionType(InstitutionType.Dealer);
             institutionController.save(supplier);
             suppliersList.add(supplier);
@@ -7847,6 +8060,15 @@ public class DataUploadController implements Serializable {
         return templateForsupplierUpload;
     }
 
+    public StreamedContent getTemplateForSupplierExtendedUpload() {
+        try {
+            createTemplateForSupplierExtendedUpload();
+        } catch (IOException e) {
+            // Handle IOException
+        }
+        return templateForsupplierUpload;
+    }
+
     public void createTemplateForCollectingCentreUpload() throws IOException {
         XSSFWorkbook workbook = new XSSFWorkbook();
 
@@ -7910,6 +8132,41 @@ public class DataUploadController implements Serializable {
         // Set the downloading file
         templateForsupplierUpload = DefaultStreamedContent.builder()
                 .name("template_for_supplier_upload.xlsx")
+                .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+                .stream(() -> inputStream)
+                .build();
+    }
+
+    public void createTemplateForSupplierExtendedUpload() throws IOException {
+        XSSFWorkbook workbook = new XSSFWorkbook();
+
+        // Creating the first sheet for data entry
+        XSSFSheet dataSheet = workbook.createSheet("Suppliers");
+
+        // Create header row in data sheet
+        Row headerRow = dataSheet.createRow(0);
+        String[] columnHeaders = {"Code", "Supplier Name", "QB Supplier Name", "Active", "Contact Person Name", "Address",
+                "Telephone", "Fax", "E Mail", "Web", "Mobile No.", "Payment Company Name", "Bank Name", "Branch Name", "Acc No", "Legal Company"};
+        for (int i = 0; i < columnHeaders.length; i++) {
+            Cell cell = headerRow.createCell(i);
+            cell.setCellValue(columnHeaders[i]);
+        }
+
+        // Auto-size columns for aesthetics
+        for (int i = 0; i < columnHeaders.length; i++) {
+            dataSheet.autoSizeColumn(i);
+        }
+
+        // Write the output to a byte array
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        workbook.write(outputStream);
+        workbook.close();
+
+        InputStream inputStream = new ByteArrayInputStream(outputStream.toByteArray());
+
+        // Set the downloading file
+        templateForsupplierUpload = DefaultStreamedContent.builder()
+                .name("template_for_supplier_upload_extended.xlsx")
                 .contentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
                 .stream(() -> inputStream)
                 .build();
