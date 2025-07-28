@@ -747,9 +747,18 @@
                                             <div class="col">
                                                 <p:panel id="panelPayment"  class="w-100">
                                                     <f:facet name="header" >
-                                                        <h:outputText styleClass="fas fa-money-bill-wave" />
-                                                        <h:outputLabel value="Payment Details" class="mx-4"></h:outputLabel>
+                                                        <h:outputText styleClass="fas fa-info-circle" />
+                                                        <h:outputLabel value="Payment Collection (Handled at Cashier)" class="mx-4"></h:outputLabel>
                                                     </f:facet>
+                                                    <div class="row">
+                                                        <div class="col-12">
+                                                            <div class="alert alert-info" role="alert">
+                                                                <h:outputText styleClass="fas fa-info-circle" />
+                                                                <strong> Note:</strong> Payment collection will be handled separately at the cashier. 
+                                                                Only stock deduction is performed here.
+                                                            </div>
+                                                        </div>
+                                                    </div>
                                                     <div class="row" >
                                                         <div class="col-md-5" >
                                                             <p:selectOneMenu   id="pay"
@@ -771,190 +780,6 @@
                                                             </p:selectOneMenu>
                                                         </div>
                                                     </div>
-                                                    <div class="row" >
-                                                        <div class="my-1">
-                                                            <h:panelGroup id="panelPaymentDetails" class="row">
-                                                                <div class="col" >
-                                                                    <h:panelGroup
-                                                                        class="row"
-                                                                        layout="block"
-                                                                        rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Credit'}" >
-                                                                        <div class="my-1" id="credit">
-                                                                            <div class="row">
-                                                                                <div class="col-12 d-flex ">
-                                                                                    <p:autoComplete
-                                                                                        id="creditCompany"
-                                                                                        class="w-100 -mx-2"
-                                                                                        inputStyleClass="form-control"
-                                                                                        forceSelection="true"
-                                                                                        value="#{pharmacyFastRetailSaleForCashierController.toInstitution}"
-                                                                                        completeMethod="#{institutionController.completeCreditCompany}"
-                                                                                        var="ix"
-                                                                                        minQueryLength="2"
-                                                                                        placeholder="Company (Type at least 4 letters to search)"
-                                                                                        itemLabel="#{ix.name}"
-                                                                                        itemValue="#{ix}"
-                                                                                        size="10"  >
-
-                                                                                        <f:ajax
-                                                                                            event="itemSelect"
-                                                                                            listener="#{pharmacyFastRetailSaleForCashierController.calTotal()}"
-                                                                                            execute="@this"
-                                                                                            render=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"/>
-                                                                                    </p:autoComplete>
-                                                                                    <p:commandLink
-                                                                                        id="btnAddNewCreditCom"
-                                                                                        value="(+)"
-                                                                                        class="mx-3 mt-1"
-                                                                                        title="Add New Credit Company"
-                                                                                        ajax="false"
-                                                                                        action="#{navigationController.navigateToCreditCompany()}"
-                                                                                        actionListener="#{creditCompanyController.prepareAdd()}" />
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </h:panelGroup>
-                                                                    <h:panelGroup
-                                                                        class="row"
-                                                                        layout="block"
-                                                                        rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Staff'}" >
-                                                                        <div class="my-1" id="staffCredit">
-                                                                            <div class="row mt-1">
-                                                                                <div class="col-12">
-                                                                                    <p:autoComplete
-                                                                                        minQueryLength="2"
-                                                                                        forceSelection="true"
-                                                                                        value="#{pharmacyFastRetailSaleForCashierController.toStaff}"
-                                                                                        id="creditStaff"
-                                                                                        completeMethod="#{staffController.completeStaff}"
-                                                                                        var="mys"
-                                                                                        class="w-100"
-                                                                                        placeholder="Staff (Type at least 4 letters to search)"
-                                                                                        inputStyleClass="form-control"
-                                                                                        itemLabel="#{mys.person.name}"
-                                                                                        itemValue="#{mys}"
-                                                                                        size="10">
-                                                                                        <p:column headerText="Name" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column headerText="EPF" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column headerText="Credit Entitlement" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.creditLimitQualified}" >
-                                                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                                            </h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column  headerText="Credit Utilized" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.currentCreditValue}" >
-                                                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                                            </h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:ajax process="@this"
-                                                                                                update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"
-                                                                                                event="itemSelect"
-                                                                                                listener="#{pharmacyFastRetailSaleForCashierController.calTotal()}" />
-                                                                                    </p:autoComplete>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </h:panelGroup>
-                                                                    <h:panelGroup
-                                                                        class="row"
-                                                                        layout="block"
-                                                                        rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Staff_Welfare'}" >
-                                                                        <div class="my-1" id="credit">
-                                                                            <div class="row mt-1">
-                                                                                <div class="col-12">
-                                                                                    <p:autoComplete
-                                                                                        minQueryLength="1"
-                                                                                        forceSelection="true"
-                                                                                        value="#{pharmacyFastRetailSaleForCashierController.toStaff}"
-                                                                                        id="welfareStaff"
-                                                                                        completeMethod="#{staffController.completeStaff}"
-                                                                                        var="mys"
-                                                                                        class="w-100"
-                                                                                        placeholder="Staff (Type Name, Code or EPF No to search)"
-                                                                                        inputStyleClass="form-control"
-                                                                                        itemLabel="#{mys.person.name}"
-                                                                                        itemValue="#{mys}"
-                                                                                        size="10">
-                                                                                        <p:column headerText="Name" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.person.nameWithTitle}" ></h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column headerText="Code" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.staffCode}" ></h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column headerText="EPF" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.epfNo}" ></h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column headerText="Welfare Entitlement" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.annualWelfareQualified}" >
-                                                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                                            </h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:column  headerText="Welfare Utilized" style="padding: 2px;">
-                                                                                            <h:outputText value="#{mys.annualWelfareUtilized}" >
-                                                                                                <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                                                                            </h:outputText>
-                                                                                        </p:column>
-                                                                                        <p:ajax process="@this"
-                                                                                                update=":#{p:resolveFirstComponentWithId('panelBillDetails',view).clientId}"
-                                                                                                event="itemSelect"
-                                                                                                listener="#{pharmacyFastRetailSaleForCashierController.calTotal()}" />
-                                                                                    </p:autoComplete>
-                                                                                </div>
-                                                                            </div>
-                                                                        </div>
-                                                                    </h:panelGroup>
-                                                                    <h:panelGroup id="creditCard" rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Card'}">
-                                                                        <pa:creditCard paymentMethodData="#{pharmacyFastRetailSaleForCashierController.paymentMethodData}"/>
-                                                                    </h:panelGroup>
-
-                                                                    <h:panelGroup id="ptdeposit" rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'PatientDeposit'}">
-                                                                        <pa:patient_deposit paymentMethodData="#{pharmacyFastRetailSaleForCashierController.paymentMethodData}"/>
-                                                                    </h:panelGroup>
-
-                                                                    <h:panelGroup id="ewallet" rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'ewallet'}" >
-                                                                        <pa:ewallet paymentMethodData="#{pharmacyFastRetailSaleForCashierController.paymentMethodData}"/>
-                                                                    </h:panelGroup>
-
-
-                                                                    <h:panelGroup id="cheque" rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Cheque'}" >
-                                                                        <pa:cheque paymentMethodData="#{pharmacyFastRetailSaleForCashierController.paymentMethodData}"/>
-                                                                    </h:panelGroup>
-
-                                                                    <h:panelGroup id="slip" rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'Slip'}">
-                                                                        <pa:slip paymentMethodData="#{pharmacyFastRetailSaleForCashierController.paymentMethodData}"/>
-                                                                    </h:panelGroup>
-
-
-                                                                    <h:panelGroup
-                                                                        class="row my-1 w-100"
-                                                                        layout="block"
-                                                                        id="multiplePaymentMethods"  rendered="#{pharmacyFastRetailSaleForCashierController.paymentMethod eq 'MultiplePaymentMethods'}"
-                                                                        >
-                                                                        <pa:multiple_payment_methods class="w-100" controller="#{pharmacyFastRetailSaleForCashierController}" paymentMethods="#{enumController.paymentMethodsForMultiplePaymentMethod}"/>
-
-                                                                    </h:panelGroup>
-
-                                                                </div>
-
-                                                            </h:panelGroup>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="col-5">
-                                                        <p:selectOneMenu   id="cmbPs" value="#{pharmacyFastRetailSaleForCashierController.paymentScheme}" rendered="#{sessionController.loggedPreference.checkPaymentSchemeValidation eq false}" class="my-1">
-                                                            <f:selectItem itemLabel="Discount Scheme"/>
-                                                            <f:selectItems value="#{paymentSchemeController.paymentSchemesForPharmacy}" var="i" itemLabel="#{i.name}" itemValue="#{i}"/>
-                                                            <p:ajax process="@this pay "
-                                                                    update="panelBillDetails panelPaymentDetails"
-                                                                    event="change"
-                                                                    listener="#{pharmacyFastRetailSaleForCashierController.listnerForPaymentMethodChange()}"/>
-                                                        </p:selectOneMenu>
-                                                    </div>
-
                                                     <h:panelGrid columns="2" class="my-2">
                                                         <p:outputLabel value="Referring Doctor" ></p:outputLabel>
                                                         <p:autoComplete forceSelection="true" id="cmbDoc" value="#{pharmacyFastRetailSaleForCashierController.preBill.referredBy}"
@@ -966,11 +791,27 @@
                                                         </p:autoComplete>
                                                         <p:outputLabel value="Comments" ></p:outputLabel>
                                                         <p:inputTextarea class="w-100 mx-4" value="#{pharmacyFastRetailSaleForCashierController.comment}" id="comment"/>
-
-
-
                                                     </h:panelGrid>
 
+                                                </p:panel>
+
+                                                <p:panel rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier')}">
+                                                    <f:facet name="header">
+                                                        <h:outputText styleClass="fas fa-ticket-alt" />
+                                                        <h:outputLabel value="Token Management" class="mx-4"></h:outputLabel>
+                                                    </f:facet>
+                                                    <h:panelGroup class="mx-4">
+                                                        <p:outputLabel value="Counter" ></p:outputLabel>
+                                                        <p:selectOneMenu class="mx-2" value="#{pharmacyFastRetailSaleForCashierController.counter}" >
+                                                            <f:selectItem itemLabel="Any" ></f:selectItem>
+                                                            <f:selectItems
+                                                                value="#{sessionController.loggableSubDepartments}"
+                                                                var="c"
+                                                                itemLabel="#{c.name}"
+                                                                itemValue="#{c}" >
+                                                            </f:selectItems>
+                                                        </p:selectOneMenu>
+                                                    </h:panelGroup>
                                                 </p:panel>
 
                                                 <p:panel  id="panelBillDetails" class="my-1">
@@ -1046,15 +887,46 @@
                                 </p:panel>
                             </div>
                             <div class="col-6">
+                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
+                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
+                                    <f:selectItem itemLabel="Please Select Paper Type" />
+                                    <f:selectItems value="#{enumController.paperTypes}" />
+                                </p:selectOneMenu>
+                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
+
                                 <p:commandButton
                                     accesskey="p"
                                     id="btnPrint"
                                     value="Print Bill"
-                                    style="width: 10em;"
-                                    class="ui-button-info"
+                                    ajax="false"
+                                    icon="fa fa-print"
                                     rendered="#{!configOptionApplicationController.getBooleanValueByKey('Pharmacy Bill Support for Native Printers')}"
-                                    ajax="false"  >
+                                    class="ui-button-info m-1"
+                                    action="#" >
                                     <p:printer target="gpBillPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    accesskey="a"
+                                    id="btnPrintToken"
+                                    value="Print Token"
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false)}"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    class="ui-button-info m-1"
+                                    action="#" >
+                                    <p:printer target="TokenPreview" ></p:printer>
+                                </p:commandButton>
+
+                                <p:commandButton
+                                    accesskey="a"
+                                    id="btnPrintTokenBill"
+                                    value="Print Bill &amp; Token"
+                                    ajax="false"
+                                    icon="fa fa-print"
+                                    class="ui-button-info m-1"
+                                    action="#" >
+                                    <p:printer target="gpBillPreviewTokenAndBill" ></p:printer>
                                 </p:commandButton>
                                 <p:commandButton
 
@@ -1111,13 +983,6 @@
                                     action="pharmacy_bill_retail_sale"
                                     class="ui-button-warning mx-2"
                                     actionListener="#{cachedController.resetAll()}" ></p:commandButton>
-                                <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>
-                                <p:selectOneMenu value="#{sessionController.departmentPreference.pharmacyBillPaperType}" class="m-1" id='ph' style="width: 13em;">
-                                    <f:selectItem itemLabel="Please Select Paper Type" />
-                                    <f:selectItems value="#{enumController.paperTypes}" />
-                                </p:selectOneMenu>
-                                <p:commandButton ajax="false" icon="fa fa-sync-alt" class="ui-button" title="Redraw Bill"></p:commandButton>
-                                <p:spacer width="20em" ></p:spacer>
                                 <p:commandButton class="m-1" icon="fas fa-file-invoice" disabled="true" value="Sale 1"  action="pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
 
                             </div>
@@ -1129,36 +994,57 @@
                             </div>
                         </div>
 
-                        <h:panelGroup id="gpBillPreview" >
-                            <h:panelGroup   id="gpBillWithOutItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper',true)}">
-                                <div style="page-break-inside: avoid;">
-                                    <phi:saleBill_without_item bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_without_item>
-                                </div>
-                                <br/>
-                                <div style="page-break-inside: avoid;">
-                                    <phi:saleBill bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill>
-                                </div>
+                        <h:panelGroup id="gpBillPreviewTokenAndBill">
+                            <h:panelGroup  rendered="#{pharmacyFastRetailSaleForCashierController.printBill ne null and (configOptionApplicationController.getBooleanValueByKey('Create Token At Pharmacy Sale For Cashier') or configOptionApplicationController.getBooleanValueByKey('Enable token system in sale for cashier', false))}"  id="TokenPreview" class="m-2">
+                                <h:panelGroup id="gpBillPreviewFiveFiveToken" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                            <phi:saleBill_five_five_token id="saleBillTokenFiveFive" bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_five_five_token>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
+
+                                <h:panelGroup id="gpBillPreviewFiveFiveToken2" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Token Bill is Pos paper',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                            <phi:saleBillToken id="saleBillTokenPos" bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBillToken>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
                             </h:panelGroup>
 
-                            <h:panelGroup   id="gpBillWithItem" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill with Items is PosPaper',true)}">
-                                <div style="page-break-inside: avoid;">
-                                    <phi:saleBill bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill>
-                                </div>
-                            </h:panelGroup>
+                            <h:panelGroup styleClass="billPrint"   id="gpBillPreview">
+                                <h:panelGroup id="gpBillPreviewPos" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'PosPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for Cahier Bill is Pos paper',false)}">
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}">
+                                            <phi:saleBill_for_Cashier bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_for_Cashier>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewDouble" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosPaper(prabodha)',true)}">
-                                <phi:saleBill_prabodha bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_prabodha>
-                            </h:panelGroup>
+                                <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{sessionController.departmentPreference.pharmacyBillPaperType eq 'FiveFivePaper'}">
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                            <phi:saleBill_five_five_for_Cashier bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_five_five_for_Cashier>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewFiveFive" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFivePaper',true)}">
-                                <phi:saleBill_five_five bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_five_five>
-                            </h:panelGroup>
+                                <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosHeaderPaper' or configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}" >
+                                    <div >
+                                        <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPrabodha eq false}" >
+                                            <phi:saleBill_Header bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_Header>
+                                        </h:panelGroup>
+                                    </div>
+                                </h:panelGroup>
 
-                            <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is PosHeaderPaper',true)}">
-                                <phi:saleBill_Header bill="#{pharmacyFastRetailSaleForCashierController.printBill}"></phi:saleBill_Header>
-                            </h:panelGroup>
-                            <h:panelGroup id="gpBillPreviewFiveFiveCustom3" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Bill is FiveFiveCustom3',true)}">
-                                <phi:sale_bill_five_five_custom_3 bill="#{pharmacyFastRetailSaleForCashierController.printBill}"/>
+                                <h:panelGroup 
+                                    id="gpBillPreviewFiveFiveCustom3" 
+                                    rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Sale for cashier Bill is FiveFiveCustom3',false) or sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFiveCustom3'}">
+                                    <div>
+                                        <phi:sale_bill_five_five_custom_3 bill="#{pharmacyFastRetailSaleForCashierController.printBill}"/>
+                                    </div>
+                                </h:panelGroup>
                             </h:panelGroup>
                         </h:panelGroup>
                     </p:panel>

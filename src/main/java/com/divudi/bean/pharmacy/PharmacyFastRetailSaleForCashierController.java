@@ -1,6 +1,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.TokenType;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.Payment;
@@ -10,6 +11,8 @@ import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.dataStructure.PaymentMethodData;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.entity.Institution;
@@ -24,6 +27,8 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.TokenFacade;
+import com.divudi.core.facade.PersonFacade;
+import com.divudi.core.facade.PatientFacade;
 import com.divudi.ejb.OptimizedPharmacyBean;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.service.PaymentService;
@@ -37,6 +42,8 @@ import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.bean.common.SearchController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.common.TokenController;
+import com.divudi.bean.pharmacy.UserStockController;
+import com.divudi.bean.common.BillBeanController;
 import com.divudi.service.pharmacy.StockSearchService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -92,6 +99,14 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     PharmacyCostingService pharmacyCostingService;
     @EJB
     StockSearchService stockSearchService;
+    @EJB
+    private PersonFacade personFacade;
+    @EJB
+    private PatientFacade patientFacade;
+    @Inject
+    UserStockController userStockController;
+    @Inject
+    BillBeanController billBeanController;
 
     private boolean billSettlingStarted;
     private UserStockContainer userStockContainer;
@@ -102,6 +117,8 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
     private double balance;
     private double netTotal;
     private PaymentMethod paymentMethod;
+    private PaymentScheme paymentScheme;
+    private PaymentMethodData paymentMethodData;
     private Token currentToken;
     private String comment;
 
@@ -271,6 +288,153 @@ public class PharmacyFastRetailSaleForCashierController extends PharmacyFastReta
         t.setInProgress(false);
         t.setCompleted(false);
         tokenController.save(t);
+    }
+
+    private void setZeroToQty(BillItem tmp) {
+        tmp.setQty(0.0);
+        tmp.getPharmaceuticalBillItem().setQtyInUnit(0.0f);
+        userStockController.updateUserStock(tmp.getTransUserStock(), 0);
+    }
+
+    private Patient savePatient() {
+        Patient pat = getPatient();
+        // Check for null references and empty name
+        if (pat == null
+                || pat.getPerson() == null
+                || pat.getPerson().getName() == null
+                || pat.getPerson().getName().trim().isEmpty()) {
+            return null;
+        }
+
+        pat.setCreater(sessionController.getLoggedUser());
+        pat.setCreatedAt(new Date());
+        pat.getPerson().setCreater(sessionController.getLoggedUser());
+        pat.getPerson().setCreatedAt(new Date());
+
+        if (pat.getPerson().getId() == null) {
+            personFacade.create(pat.getPerson());
+        }
+        if (pat.getId() == null) {
+            patientFacade.create(pat);
+        }
+        return pat;
+    }
+
+    public void settlePharmacyToken(TokenType tokenType) {
+        currentToken = new Token();
+        currentToken.setTokenType(tokenType);
+        currentToken.setDepartment(sessionController.getLoggedUser().getDepartment());
+        currentToken.setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        currentToken.setPatient(getPatient());
+        currentToken.setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        currentToken.setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        if (getCounter() == null) {
+            if (sessionController.getLoggableSubDepartments() != null
+                    && !sessionController.getLoggableSubDepartments().isEmpty()) {
+                counter = sessionController.getLoggableSubDepartments().get(0);
+            }
+        }
+        currentToken.setCounter(getCounter());
+        if (counter != null) {
+            currentToken.setToDepartment(counter.getSuperDepartment());
+            if (counter.getSuperDepartment() != null) {
+                currentToken.setToInstitution(counter.getSuperDepartment().getInstitution());
+            }
+        }
+        tokenFacade.create(currentToken);
+        currentToken.setTokenNumber(billNumberBean.generateDailyTokenNumber(currentToken.getFromDepartment(), null, null, tokenType));
+        currentToken.setTokenDate(new Date());
+        currentToken.setTokenAt(new Date());
+        currentToken.setCreatedAt(new Date());
+        currentToken.setCreatedBy(sessionController.getLoggedUser());
+        tokenFacade.edit(currentToken);
+    }
+
+    public Token getToken() {
+        return currentToken;
+    }
+
+    public void setToken(Token token) {
+        this.currentToken = token;
+    }
+
+    public Department getCounter() {
+        return counter;
+    }
+
+    public void setCounter(Department counter) {
+        this.counter = counter;
+    }
+
+    /**
+     * Initialize controller state on first access to prevent NPEs.
+     * This method is called by the preRenderView event in the XHTML.
+     */
+    public void initIfNeeded() {
+        // Ensure all necessary objects are initialized
+        if (getPreBill() == null) {
+            // Initialization will be handled by the parent class getter
+        }
+        if (getBillItem() == null) {
+            // Initialization will be handled by the parent class getter  
+        }
+        if (getPaymentMethodData() == null) {
+            // Initialization will be handled by the parent class getter
+        }
+    }
+
+    /**
+     * Payment method handling for sale for cashier - minimal implementation.
+     * Note: As per issue #14268, no payment data is preserved in sale for cashier.
+     */
+    public PaymentMethod getPaymentMethod() {
+        if (paymentMethod == null) {
+            paymentMethod = PaymentMethod.Cash; // Default to cash for display purposes
+        }
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(PaymentMethod paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public PaymentScheme getPaymentScheme() {
+        return paymentScheme;
+    }
+
+    public void setPaymentScheme(PaymentScheme paymentScheme) {
+        this.paymentScheme = paymentScheme;
+    }
+
+    public PaymentMethodData getPaymentMethodData() {
+        if (paymentMethodData == null) {
+            paymentMethodData = new PaymentMethodData();
+        }
+        return paymentMethodData;
+    }
+
+    public void setPaymentMethodData(PaymentMethodData paymentMethodData) {
+        this.paymentMethodData = paymentMethodData;
+    }
+
+    public BillBeanController getBillBean() {
+        return billBeanController;
+    }
+
+    /**
+     * Payment method change listener - minimal implementation for sale for cashier.
+     * Note: As per issue #14268, no actual payment data is preserved.
+     */
+    public void listnerForPaymentMethodChange() {
+        // Minimal implementation to prevent NPEs
+        // No actual payment data processing needed for sale for cashier
+        if (getPaymentMethodData() != null && getPreBill() != null) {
+            // Set minimal data to prevent NPEs during form rendering
+            double netTotal = getPreBill().getNetTotal();
+            if (paymentMethod == PaymentMethod.Cash) {
+                getPaymentMethodData().getCash().setTotalValue(netTotal);
+            }
+        }
     }
 }
 
