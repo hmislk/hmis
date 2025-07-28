@@ -1,17 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout:*)",
-      "Bash(git fetch:*)",
       "WebFetch(domain:github.com)",
-      "Bash(gh issue view:*)",
-      "Bash(cp:*)",
-      "Bash(git add:*)",
-      "Bash(git commit:*)",
-      "Bash(git push:*)",
-      "Bash(gh pr create:*)",
+      "Bash(find:*)",
       "Bash(./detect-maven.sh:*)",
-      "Bash(mvn compile:*)"
+      "Bash(grep:*)",
+      "Bash(git add:*)",
+      "Bash(git push:*)"
     ],
     "deny": []
   }

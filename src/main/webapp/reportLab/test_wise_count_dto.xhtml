@@ -11,15 +11,15 @@
             <ui:define name="subcontent">
 
                 <h:form >
-                    <p:panel header="Laboratory Income Report - Legacy Method">
+                    <p:panel header="Laboratary Test Wise Count Report - Optimized Method" styleClass="w-100">
                         <p:panel styleClass="mb-3 text-center">
                             <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
-                            <p:commandButton value="Legacy Method" styleClass="ui-button-success" disabled="true"/>
-                            <p:commandButton value="Optimized Method"
-                                             styleClass="ui-button-secondary ml-2"
-                                             action="#{laborataryReportController.navigateToOptimizedLaboratoryIncomeReport()}"
+                            <p:commandButton value="Legacy Method" styleClass="ui-button-secondary mr-2"
+                                             action="#{laborataryReportController.navigateToLaborataryTestWiseCountReportFromLabAnalytics()}"
                                              immediate="true"/>
+                            <p:commandButton value="Optimized Method" styleClass="ui-button-success" disabled="true"/>
                         </p:panel>
+
                         <h:panelGrid columns="8" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">
                             <h:panelGroup layout="block" styleClass="form-group">
                                 <h:outputText value="&#xf073;" styleClass="fa ml-5" /> <!-- FontAwesome calendar icon -->
@@ -254,28 +254,33 @@
                         <div class="d-flex justify-content-between gap-2 mt-3 mb-2">
                             <div class="d-flex gap-2">
                                 <p:commandButton 
+                                    ajax="false" 
                                     value="Process" 
+                                    style="width: 150px"
+                                    icon="fas fa-cogs"
+                                    class="mx-2 ui-button-warning m-1"
+                                    action="#{laborataryReportController.processLabTestWiseCountReportDto()}" >
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    icon="fa-solid fa-print"
+                                    class="mx-2 ui-button-info m-1"
+                                    style="width: 150px"
                                     ajax="false"
-                                    action="#{laborataryReportController.processLaboratoryIncomeReport()}" 
-                                    styleClass="ui-button-success m-1" 
-                                    icon="pi pi-cog">
+                                    action="test_wise_count_print?faces-redirect=true"
+                                    value="To Print">
                                 </p:commandButton>
 
                                 <p:commandButton 
                                     value="Download" 
                                     ajax="false"
-                                    styleClass="ui-button-info m-1"
+                                    style="width: 150px"
+                                    class="ui-button-success m-1"
                                     icon="pi pi-download">
-                                    <p:dataExporter fileName="laboratary_income_report.xlsx" target="tbl" type="xlsx" />
+                                    <p:dataExporter fileName="laboratary_income_report.xlsx" target="tblExport" type="xlsx" />
                                 </p:commandButton>
 
-                                <p:commandButton 
-                                    value="To Print" 
-                                    ajax="false"
-                                    styleClass="ui-button-warning m-1"
-                                    action="laboratary_income_report_print?faces-redirect=true"
-                                    icon="pi pi-print">
-                                </p:commandButton>
+
                             </div>
                             <p:commandButton 
                                 value="Clear" 
@@ -287,18 +292,11 @@
                             </p:commandButton>
                         </div>
 
-
-
                         <p:dataTable
-                            id="tbl"
-                            style="padding: 2px!important; margin-top: 10px!important; margin: 0px!important; font-size: #{laborataryReportController.fontSizeForScreen}!important; zoom: 1.6;" 
-                            styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                            value="#{laborataryReportController.bundle.rows}" 
-                            var="row"
-                            paginator="true" 
-                            rows="20"
-                            rowsPerPageTemplate="20,50,100,500,1000,2000,5000,10000"
-                            paginatorPosition="bottom">
+                            value="#{laborataryReportController.testWiseCountDtos}"
+                            id="tblExport" 
+                            var="c" 
+                            rowIndexVar="rowIndex">
 
                             <f:facet name="header"  >
                                 <div style="padding: 3px!important; margin: 0px!important;">
@@ -306,7 +304,7 @@
                                         <h:outputText value="#{sessionController.institution.name}"/>
                                     </div>
                                     <div class="d-flex justify-content-center text-5 gap-2" style="font-weight: 700; font-size: 18px;">
-                                        <h:outputText value="All Sales Report"/>
+                                        <h:outputText value="Laboratary Test Count"/>
                                         <h:panelGroup  rendered="#{laborataryReportController.department ne null}">
                                             <div class="d-flex gap-2">
                                                 <h:outputText value="-" style="width: 1em!important;" class="text-center"/>
@@ -353,146 +351,152 @@
                                 </div>
                             </f:facet>
 
-                            <p:column headerText="Bill No" width="12em" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.deptId}"  style="padding: 2px!important; margin: 0px!important;" />
+                            <p:column headerText="No" width="2em" style="padding: 5px!important;">
+                                <h:outputText value="#{rowIndex + 1}" />
+                            </p:column>
+                            <p:column headerText="Test Name" styleClass="wide-column" style="padding: 5px!important;">
+                                <h:outputText value="#{c.testName}" />
+                            </p:column> 
+                            <p:column headerText="Count"  width="3em" styleClass="text-end" style="padding: 5px!important;">
+                                <h:outputText value="#{c.count}" ></h:outputText>
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalCount}" >
+                                        <f:convertNumber pattern="#,##0" />
+                                    </h:outputText>
+                                </f:facet>
                             </p:column>
 
-                            <p:column headerText="Patient"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.patient.person.nameWithTitle}"  style="padding: 2px!important; margin: 0px!important;" />
-                            </p:column>
-
-                            <p:column headerText="Date"   width="8em" style="padding: 2px!important; margin: 0px!important;">
-                                <h:outputText value="#{row.bill.createdAt}"  style="padding: 2px!important; margin: 0px!important;" >
-                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateTimeFormat}" />
-                                </h:outputText>
-                            </p:column>
-
-                            <p:column headerText="Net Total"  width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.bill.netTotal}">
+                            <p:column 
+                                headerText="Hos. Fee"  
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end" 
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Hospital Fee Column',true)}">
+                                <h:outputText value="#{c.hosFee}">
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
+
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalHosFee}">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Cash"   width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.cashValue}">
+                            <p:column 
+                                headerText="Professional Fee"  
+                                style="padding: 5px!important;"
+                                width="7em" 
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Professional Fee Column',true)}">
+                                <h:outputText value="#{c.proFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.cashValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalProFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Card"   width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.cardValue}">
+                            <p:column 
+                                headerText="Reagent Fee"  
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Reagent Fee Column',false)}">
+                                <h:outputText value="#{c.reagentFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.cardValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalReagentFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="IP Credit" width="8em" class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.inpatientCreditValue}">
+                            <p:column 
+                                headerText="CC Fee" 
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show CC Fee Column',false)}">
+                                <h:outputText value="#{c.ccFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.inpatientCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalCCFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="OP Credit" width="8em"  class="text-end light-grey-background" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.opdCreditValue}">
+                            <p:column 
+                                headerText="Other Fee" 
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Other Fee Column',false)}">
+                                <h:outputText value="#{c.otherFee}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.opdCreditValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalAdditionalFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Staff Credit" width="8em"  class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.staffValue}">
+                            <p:column 
+                                headerText="Net Hos. Fee"  
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Net Hospital Fee Column',true)}">
+                                <h:outputText value="#{c.hosFee - c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.staffValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalNetHosFee}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Agent Credit"   width="8em"  class="text-end light-grey-background"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.agentValue}">
+                            <p:column 
+                                headerText="Discount"  
+                                width="7em" 
+                                style="padding: 5px!important;"
+                                styleClass="text-end"
+                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Test Wise Count - Show Discount Column',true)}">
+                                <h:outputText value="#{c.discount}" >
                                     <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.agentValue}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalDiscount}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
                             </p:column>
 
-                            <p:column headerText="Discount" width="8em"  class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.discount}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                            <p:column headerText="Total Amount" width="7em" styleClass="text-end" style="padding: 5px!important;">
+                                <h:outputText value="#{c.total}" >
+                                    <f:convertNumber pattern="#,##0.00" />
                                 </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.discount}" style="padding: 2px!important; margin: 0px!important;" >
+                                <f:facet name="footer">
+                                    <h:outputText value="#{laborataryReportController.totalNetTotal}" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputText>
                                 </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Service Charge" width="8em"   class="text-end"  style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.serviceCharge}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.serviceCharge}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Actual Total" width="8em" class="text-end" style="padding: 2px!important; margin: 0px!important;" >
-                                <h:outputText value="#{row.netTotal}" >
-                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                </h:outputText>
-                                <f:facet name="footer" >
-                                    <h:outputText value="#{laborataryReportController.bundle.summaryRow.netTotal}" style="padding: 2px!important; margin: 0px!important;" >
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputText>
-                                </f:facet>
-                            </p:column>
-
-                            <p:column headerText="Actions" exportable="false" width="5em" style="padding: 2px!important; margin: 0px!important;">
-                                <p:commandLink 
-                                    value="View" 
-                                    style="font-size: #{laborataryReportController.fontSizeForScreen}!important;" 
-                                    class="mx-1"
-                                    action="#{billSearch.navigateToViewBillByAtomicBillType()}" 
-                                    ajax="false">
-                                    <f:setPropertyActionListener value="#{row.bill}" target="#{billSearch.bill}" />
-                                </p:commandLink>
                             </p:column>
 
                         </p:dataTable>
+
                     </p:panel>
                 </h:form>
 
             </ui:define>
         </ui:composition>
+
     </h:body>
 </html>

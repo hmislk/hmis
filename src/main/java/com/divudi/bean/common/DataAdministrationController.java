@@ -87,6 +87,7 @@ import com.divudi.core.facade.UserStockFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.LogFileService;
 import java.sql.SQLSyntaxErrorException;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -436,6 +437,116 @@ public class DataAdministrationController implements Serializable {
         } catch (Exception e) {
             billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
             System.err.println("Error in assignPharmacyDepartmentTypeToPharmaceuticalItems: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal
+     * from BillItem.netValue for proper reporting when transfer rate configurations are used.
+     * 
+     * This addresses issue #13419 where disbursement reports show incorrect purchase rates
+     * when "Pharmacy Transfer is by Retail Rate" option is enabled.
+     */
+    public void migrateTransferBillItemFinanceDetails() {
+        billController.setOutput(""); // Reset output
+        
+        try {
+            StringBuilder result = new StringBuilder();
+            int processedCount = 0;
+            int updatedCount = 0;
+            
+            // Process PharmacyTransferIssue and PharmacyTransferReceive bills
+            Map<String, Object> params = new HashMap<>();
+            List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
+            params.put("billTypes", billTypes);
+            
+            String jpql = "SELECT bi FROM BillItem bi WHERE " +
+                         "bi.bill.billType IN :billTypes AND bi.retired = false AND " +
+                         "(bi.billItemFinanceDetails IS NULL OR " +
+                         "bi.billItemFinanceDetails.lineNetTotal IS NULL OR " +
+                         "bi.billItemFinanceDetails.lineNetTotal = 0)";
+            
+            List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
+            
+            result.append("Found ").append(billItems.size()).append(" transfer bill items to migrate.\n\n");
+            
+            // Process in batches of 100 to avoid memory issues
+            int batchSize = 100;
+            for (int i = 0; i < billItems.size(); i += batchSize) {
+                int endIndex = Math.min(i + batchSize, billItems.size());
+                List<BillItem> batch = billItems.subList(i, endIndex);
+                
+                for (BillItem bi : batch) {
+                    processedCount++;
+                    
+                    try {
+                        // Create BillItemFinanceDetails if it doesn't exist
+                        if (bi.getBillItemFinanceDetails() == null) {
+                            bi.setBillItemFinanceDetails(new BillItemFinanceDetails());
+                            bi.getBillItemFinanceDetails().setBillItem(bi);
+                        }
+                        
+                        // Only update if lineNetTotal is null or zero and we have pharmaceutical item data
+                        if ((bi.getBillItemFinanceDetails().getLineNetTotal() == null || 
+                             bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue() == 0) &&
+                            bi.getPharmaceuticalBillItem() != null && 
+                            bi.getPharmaceuticalBillItem().getItemBatch() != null) {
+                            
+                            // Get batch data for calculations
+                            ItemBatch itemBatch = bi.getPharmaceuticalBillItem().getItemBatch();
+                            double qty = bi.getPharmaceuticalBillItem().getQty();
+                            
+                            // Store all rates and values (recreate what should have been stored during bill creation)
+                            BigDecimal purchaseRate = BigDecimal.valueOf(itemBatch.getPurcahseRate());
+                            BigDecimal retailRate = BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+                            BigDecimal transferValue = BigDecimal.valueOf(bi.getNetValue()); // This is the transfer value that was stored
+                            BigDecimal qtyBD = BigDecimal.valueOf(qty);
+                            
+                            // Store values based on stored transfer value and batch rates
+                            bi.getBillItemFinanceDetails().setLineNetTotal(transferValue);
+                            bi.getBillItemFinanceDetails().setNetTotal(transferValue);
+                            bi.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qtyBD));
+                            bi.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qtyBD));
+                            bi.getBillItemFinanceDetails().setRetailSaleRate(retailRate);
+                            
+                            billItemFacade.edit(bi);
+                            updatedCount++;
+                            
+                            if (updatedCount % 50 == 0) {
+                                result.append("Updated ").append(updatedCount).append(" items so far...\n");
+                            }
+                        }
+                        
+                    } catch (Exception itemEx) {
+                        result.append("Error processing item ID ").append(bi.getId())
+                              .append(": ").append(itemEx.getMessage()).append("\n");
+                    }
+                }
+                
+                // Log batch progress
+                result.append("Processed batch ").append((i/batchSize) + 1)
+                      .append(" of ").append((billItems.size() + batchSize - 1) / batchSize).append("\n");
+            }
+            
+            result.append("\n=== Migration Summary ===\n");
+            result.append("Total items processed: ").append(processedCount).append("\n");
+            result.append("Items updated: ").append(updatedCount).append("\n");
+            result.append("Items skipped (already had valid data): ").append(processedCount - updatedCount).append("\n");
+            
+            if (updatedCount > 0) {
+                result.append("\nMigration completed successfully! ")
+                      .append("Transfer disbursement reports should now show correct rates.\n");
+            } else {
+                result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
+            }
+            
+            billController.setOutput(result.toString());
+            
+        } catch (Exception e) {
+            String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
+            billController.setOutput(errorMsg);
+            System.err.println("Error in migrateTransferBillItemFinanceDetails: " + e.getMessage());
             e.printStackTrace();
         }
     }

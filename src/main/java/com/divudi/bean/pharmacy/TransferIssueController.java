@@ -352,22 +352,38 @@ public class TransferIssueController implements Serializable {
 
                 newlyCreatedBillItemInIssueBill.setPharmaceuticalBillItem(phItem);
 
-                // Financials
+                // Financials - Store all rates and values during bill creation
                 BigDecimal qty = BigDecimal.valueOf(phItem.getQty() / packSize);
-                BigDecimal rate = determineTransferRate(phItem.getItemBatch());
+                BigDecimal transferRate = determineTransferRate(phItem.getItemBatch());
+                BigDecimal purchaseRate = BigDecimal.valueOf(phItem.getItemBatch().getPurcahseRate());
+                BigDecimal retailRate = BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate());
+                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
+                BigDecimal packSizeBD = BigDecimal.valueOf(packSize);
 
+                // Quantities
                 newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setQuantity(qty);
                 newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalQuantity(qty);
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossRate(rate.multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetRate(rate.multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossTotal(rate.multiply(qty).multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetTotal(rate.multiply(qty).multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setNetTotal(rate.multiply(qty).multiply(BigDecimal.valueOf(packSize)));
-                BigDecimal costRate = BigDecimal.valueOf(phItem.getItemBatch().getCostRate());
+
+                // Transfer rates and values (net values - what the transfer is priced at)
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossRate(transferRate.multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetRate(transferRate.multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineGrossTotal(transferRate.multiply(qty).multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setNetTotal(transferRate.multiply(qty).multiply(packSizeBD));
+
+                // Purchase rate and value (for purchase value reporting)
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtPurchaseRate(purchaseRate.multiply(qty).multiply(packSizeBD));
+
+                // Retail rate and value (for sale value reporting)
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setRetailSaleRate(retailRate.multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtRetailRate(retailRate.multiply(qty).multiply(packSizeBD));
+
+                // Cost rate and value
                 newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineCostRate(costRate);
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty).multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty).multiply(BigDecimal.valueOf(packSize)));
-                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(phItem.getItemBatch().getRetailsaleRate()).multiply(BigDecimal.valueOf(packSize)));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setLineCost(costRate.multiply(qty).multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalCost(costRate.multiply(qty).multiply(packSizeBD));
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setTotalCostRate(costRate);
+                newlyCreatedBillItemInIssueBill.getBillItemFinanceDetails().setValueAtCostRate(costRate.multiply(qty).multiply(packSizeBD));
 
                 // Link stock issuance
                 UserStock us = userStockController.saveUserStock(newlyCreatedBillItemInIssueBill, getSessionController().getLoggedUser(), usc);
@@ -866,6 +882,7 @@ public class TransferIssueController implements Serializable {
         billItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
         billItem.getBillItemFinanceDetails().setLineCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
         billItem.getBillItemFinanceDetails().setTotalCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
 
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
 
