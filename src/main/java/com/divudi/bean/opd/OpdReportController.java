@@ -254,10 +254,11 @@ public class OpdReportController implements Serializable {
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToOpdIncomeReport() {
-        if (configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method", false)) {
-            return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
-        }
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
+    }
+
+    public String navigateToOpdIncomeReportDto() {
+        return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
     }
 
     public String navigateToOptimizedOpdIncomeReport() {
@@ -941,7 +942,7 @@ public class OpdReportController implements Serializable {
             if (!(bi.getItem() instanceof Investigation)) {
                 continue;
             }
-            row.setLong2(row.getLong2() + Math.round( bi.getNetValue()));
+            row.setLong2(row.getLong2() + Math.round(bi.getNetValue()));
             row.setTotal(row.getTotal() + bi.getNetValue());
             row.setDiscount(row.getDiscount() + bi.getDiscount());
             row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -1007,7 +1008,7 @@ public class OpdReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + Math.round( p.getPaidValue()));
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
