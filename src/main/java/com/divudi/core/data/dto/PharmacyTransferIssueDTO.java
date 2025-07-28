@@ -31,8 +31,7 @@ public class PharmacyTransferIssueDTO implements Serializable {
     public PharmacyTransferIssueDTO(Long billId, String deptId, Date createdAt, 
                                     String fromDepartmentName, String toDepartmentName, 
                                     String transporterName, Boolean cancelled, Boolean refunded,
-                                    String cancelledBillDeptId, String comments,
-                                    BigDecimal transferValue, BigDecimal saleValue) {
+                                    String comments, BigDecimal transferValue, BigDecimal saleValue) {
         this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
@@ -41,10 +40,42 @@ public class PharmacyTransferIssueDTO implements Serializable {
         this.transporterName = transporterName;
         this.cancelled = cancelled;
         this.refunded = refunded;
-        this.cancelledBillDeptId = cancelledBillDeptId;
         this.comments = comments;
         this.transferValue = transferValue;
         this.saleValue = saleValue;
+    }
+    
+    // Constructor for JPQL queries with COALESCE (handles Object types from COALESCE)
+    public PharmacyTransferIssueDTO(Long billId, Object deptId, Date createdAt, 
+                                    Object fromDepartmentName, Object toDepartmentName, 
+                                    Object transporterName, Object cancelled, Object refunded,
+                                    Object comments, Object transferValue, Object saleValue) {
+        this.billId = billId;
+        this.deptId = deptId != null ? deptId.toString() : "";
+        this.createdAt = createdAt;
+        this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
+        this.toDepartmentName = toDepartmentName != null ? toDepartmentName.toString() : "";
+        this.transporterName = transporterName != null ? transporterName.toString() : "";
+        this.cancelled = cancelled != null ? (Boolean) cancelled : false;
+        this.refunded = refunded != null ? (Boolean) refunded : false;
+        this.comments = comments != null ? comments.toString() : "";
+        
+        // Handle BigDecimal conversion for financial values
+        if (transferValue instanceof BigDecimal) {
+            this.transferValue = (BigDecimal) transferValue;
+        } else if (transferValue instanceof Double) {
+            this.transferValue = BigDecimal.valueOf((Double) transferValue);
+        } else {
+            this.transferValue = BigDecimal.ZERO;
+        }
+        
+        if (saleValue instanceof BigDecimal) {
+            this.saleValue = (BigDecimal) saleValue;
+        } else if (saleValue instanceof Double) {
+            this.saleValue = BigDecimal.valueOf((Double) saleValue);
+        } else {
+            this.saleValue = BigDecimal.ZERO;
+        }
     }
 
     // Getters and Setters
@@ -188,14 +219,15 @@ public class PharmacyTransferIssueDTO implements Serializable {
     }
     
     public static class ToStaff {
-        private String personNameWithTitle;
-        public ToStaff(String personNameWithTitle) { this.personNameWithTitle = personNameWithTitle; }
-        public Person getPerson() { return new Person(personNameWithTitle); }
+        private String personName;
+        public ToStaff(String personName) { this.personName = personName; }
+        public Person getPerson() { return new Person(personName); }
         
         public static class Person {
-            private String nameWithTitle;
-            public Person(String nameWithTitle) { this.nameWithTitle = nameWithTitle; }
-            public String getNameWithTitle() { return nameWithTitle; }
+            private String name;
+            public Person(String name) { this.name = name; }
+            public String getName() { return name; }
+            public String getNameWithTitle() { return name; } // For backward compatibility
         }
     }
     

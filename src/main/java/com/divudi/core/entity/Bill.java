@@ -41,6 +41,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -445,7 +446,9 @@ public class Bill implements Serializable, RetirableEntity {
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
     private StockBill stockBill;
 
+    // Mapping corrected with ChatGPT assistance to match DB schema (BILLFINANCEDETAILS_ID FK in bill table)
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID")
     private BillFinanceDetails billFinanceDetails;
 
     @Transient

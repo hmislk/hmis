@@ -499,9 +499,11 @@ public class ReportsTransfer implements Serializable {
      * This is the recommended approach for better performance
      */
     public void fillDepartmentTransfersIssueByBillDto() {
+        System.out.println("DEBUG: fillDepartmentTransfersIssueByBillDto method called");
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsDtoDirectly();
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL, sessionController.getLoggedUser());
+        System.out.println("DEBUG: fillDepartmentTransfersIssueByBillDto method completed");
     }
 
     /**
@@ -509,10 +511,12 @@ public class ReportsTransfer implements Serializable {
      * Uses the traditional method with iterative calculations
      */
     public void fillDepartmentTransfersIssueByBillEntity() {
+        System.out.println("DEBUG ENTITY: fillDepartmentTransfersIssueByBillEntity method called");
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsLegacy();
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL, sessionController.getLoggedUser());
+        System.out.println("DEBUG ENTITY: fillDepartmentTransfersIssueByBillEntity method completed");
     }
 
     /**
@@ -520,26 +524,32 @@ public class ReportsTransfer implements Serializable {
      * This is the primary method that should be used for report display
      */
     private void fillTransferIssueBillsDtoDirectly() {
+        System.out.println("DEBUG: Starting fillTransferIssueBillsDtoDirectly method");
+        System.out.println("DEBUG: fromDate=" + fromDate);
+        System.out.println("DEBUG: toDate=" + toDate);
+        System.out.println("DEBUG: fromDepartment=" + (fromDepartment != null ? fromDepartment.getName() : "null"));
+        System.out.println("DEBUG: toDepartment=" + (toDepartment != null ? toDepartment.getName() : "null"));
+        
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
         
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueDTO(")
             .append("b.id, ")
-            .append("b.deptId, ")
+            .append("COALESCE(b.deptId, ''), ")
             .append("b.createdAt, ")
-            .append("b.department.name, ")
-            .append("b.toDepartment.name, ")
-            .append("COALESCE(b.toStaff.person.name, ''), ")
-            .append("b.cancelled, ")
-            .append("b.refunded, ")
-            .append("COALESCE(b.cancelledBill.deptId, ''), ")
+            .append("COALESCE(b.department.name, ''), ")
+            .append("COALESCE(b.toDepartment.name, ''), ")
+            .append("COALESCE(p.name, ''), ")
+            .append("COALESCE(b.cancelled, false), ")
+            .append("COALESCE(b.refunded, false), ")
             .append("COALESCE(b.comments, ''), ")
-            .append("COALESCE(SUM(bifd.lineNetTotal), 0), ")  // Transfer value from stored data
-            .append("COALESCE(SUM(bifd.valueAtRetailRate), 0)") // Sale value from stored data
+            .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
+            .append("COALESCE(bfd.totalRetailSaleValue, 0.0)") 
             .append(") ")
             .append("FROM Bill b ")
-            .append("LEFT JOIN b.billItems bi ")
-            .append("LEFT JOIN bi.billItemFinanceDetails bifd ")
+            .append("LEFT JOIN b.billFinanceDetails bfd ")
+            .append("LEFT JOIN b.toStaff ts ")
+            .append("LEFT JOIN ts.person p ")
             .append("WHERE b.billType = :bt ")
             .append("AND b.retired = false ")
             .append("AND b.createdAt BETWEEN :fd AND :td ");
@@ -558,18 +568,26 @@ public class ReportsTransfer implements Serializable {
             params.put("tdept", toDepartment);
         }
         
-        jpql.append("GROUP BY b.id, b.deptId, b.createdAt, b.department.name, ")
-            .append("b.toDepartment.name, b.toStaff.person.name, ")
-            .append("b.cancelled, b.refunded, b.cancelledBill.deptId, b.comments ")
-            .append("ORDER BY b.id");
+        jpql.append("ORDER BY b.id");
         
-        transferIssueDtos = (List<PharmacyTransferIssueDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        // Execute the DTO query
+        try {
+            transferIssueDtos = (List<PharmacyTransferIssueDTO>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+            System.out.println("SUCCESS: DTO query returned " + (transferIssueDtos != null ? transferIssueDtos.size() : 0) + " results");
+        } catch (Exception e) {
+            System.out.println("ERROR: DTO query failed - " + e.getMessage());
+            transferIssueDtos = new ArrayList<>();
+        }
         
         // Calculate totals from DTOs 
         totalsValue = 0.0;
         netTotalValues = 0.0;
         if (transferIssueDtos != null) {
+            System.out.println("DEBUG: Starting total calculations");
             for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
+                System.out.println("DEBUG: Processing DTO - deptId: " + dto.getDeptId() + 
+                                 ", saleValue: " + dto.getSaleValue() + 
+                                 ", transferValue: " + dto.getTransferValue());
                 if (dto.getSaleValue() != null) {
                     totalsValue += dto.getSaleValue().doubleValue();
                 }
@@ -577,7 +595,9 @@ public class ReportsTransfer implements Serializable {
                     netTotalValues += dto.getTransferValue().doubleValue();
                 }
             }
+            System.out.println("DEBUG: Final totals - totalsValue: " + totalsValue + ", netTotalValues: " + netTotalValues);
         }
+        System.out.println("DEBUG: fillTransferIssueBillsDtoDirectly method completed");
     }
 
     /**
@@ -586,6 +606,12 @@ public class ReportsTransfer implements Serializable {
      */
     @Deprecated
     private void fillTransferIssueBillsLegacy() {
+        System.out.println("DEBUG ENTITY: Starting fillTransferIssueBillsLegacy method");
+        System.out.println("DEBUG ENTITY: fromDate=" + fromDate);
+        System.out.println("DEBUG ENTITY: toDate=" + toDate);
+        System.out.println("DEBUG ENTITY: fromDepartment=" + (fromDepartment != null ? fromDepartment.getName() : "null"));
+        System.out.println("DEBUG ENTITY: toDepartment=" + (toDepartment != null ? toDepartment.getName() : "null"));
+        
         Map params = new HashMap();
         String jpql;
         params.put("fd", fromDate);
@@ -621,18 +647,34 @@ public class ReportsTransfer implements Serializable {
                     + " order by b.id";
         }
 
+        System.out.println("DEBUG ENTITY: Final JPQL query: " + jpql);
+        System.out.println("DEBUG ENTITY: Query parameters: " + params);
+        
         transferBills = getBillFacade().findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        
+        System.out.println("DEBUG ENTITY: Query executed successfully");
+        System.out.println("DEBUG ENTITY: transferBills is null: " + (transferBills == null));
+        if (transferBills != null) {
+            System.out.println("DEBUG ENTITY: transferBills size: " + transferBills.size());
+        }
+        System.out.println("DEBUG ENTITY: fillTransferIssueBillsLegacy method completed");
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
+        System.out.println("DEBUG ENTITY: Starting calculatePurachaseValuesOfBillItemsInBill");
+        System.out.println("DEBUG ENTITY: billList is null: " + (billList == null));
         if (billList == null) {
+            System.out.println("DEBUG ENTITY: billList is null, returning");
             return;
         }
+        System.out.println("DEBUG ENTITY: billList size: " + billList.size());
+        
         // Reset totals before accumulating stored values
         totalsValue = 0.0;
         netTotalValues = 0.0;
         
         for (Bill b : billList) {
+            System.out.println("DEBUG ENTITY: Processing bill - deptId: " + b.getDeptId() + ", id: " + b.getId());
             double saleValue = 0.0;
             double purchaseValue = 0.0;
             
@@ -651,12 +693,17 @@ public class ReportsTransfer implements Serializable {
                 }
             }
             
+            System.out.println("DEBUG ENTITY: Bill " + b.getDeptId() + " - saleValue: " + saleValue + ", purchaseValue: " + purchaseValue);
+            
             b.setSaleValue(saleValue);
             b.setPaidAmount(purchaseValue);
             b.setNetTotal(purchaseValue); // Show transfer value in "Purchase Value" column
             totalsValue += saleValue;
             netTotalValues += purchaseValue; // Accumulate transfer values for "Purchase Value" total
         }
+        
+        System.out.println("DEBUG ENTITY: Final totals - totalsValue: " + totalsValue + ", netTotalValues: " + netTotalValues);
+        System.out.println("DEBUG ENTITY: calculatePurachaseValuesOfBillItemsInBill method completed");
     }
 
     public void fillDepartmentBHTIssueByBill() {
