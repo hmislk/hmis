@@ -1,0 +1,276 @@
+package com.divudi.bean.pharmacy;
+
+import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.Patient;
+import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PreBill;
+import com.divudi.core.entity.Token;
+import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.data.PaymentMethod;
+import com.divudi.core.data.dataStructure.ComponentDetail;
+import com.divudi.core.data.BillClassType;
+import com.divudi.core.data.BillNumberSuffix;
+import com.divudi.core.entity.Institution;
+import com.divudi.core.entity.Staff;
+import com.divudi.core.entity.Department;
+import com.divudi.core.data.inward.InwardChargeType;
+import com.divudi.core.data.dto.StockDTO;
+import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.UserStockContainer;
+import com.divudi.ejb.BillNumberGenerator;
+import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.TokenFacade;
+import com.divudi.ejb.OptimizedPharmacyBean;
+import com.divudi.core.util.JsfUtil;
+import com.divudi.service.PaymentService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.service.pharmacy.TokenService;
+import com.divudi.ejb.PharmacyService;
+import com.divudi.service.StaffService;
+import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.cashTransaction.FinancialTransactionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.SearchController;
+import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.TokenController;
+import com.divudi.service.pharmacy.StockSearchService;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import javax.ejb.EJB;
+import javax.enterprise.context.SessionScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
+
+/**
+ * Fast retail sale optimized for settlement at cashier. Stocks are deducted but
+ * payments are collected later at the cashier.
+ */
+@Named
+@SessionScoped
+public class PharmacyFastRetailSaleForCashierController extends PharmacyFastRetailSaleController implements Serializable {
+
+    @Inject
+    SessionController sessionController;
+    @Inject
+    FinancialTransactionController financialTransactionController;
+    @Inject
+    DrawerController drawerController;
+    @Inject
+    SearchController searchController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    TokenController tokenController;
+    @EJB
+    TokenService tokenService;
+    @EJB
+    BillFacade billFacade;
+    @EJB
+    BillItemFacade billItemFacade;
+    @EJB
+    PharmaceuticalBillItemFacade pharmaceuticalBillItemFacade;
+    @EJB
+    BillNumberGenerator billNumberBean;
+    @EJB
+    TokenFacade tokenFacade;
+    @EJB
+    PaymentService paymentService;
+    @EJB
+    OptimizedPharmacyBean optimizedPharmacyBean;
+    @EJB
+    StaffService staffBean;
+    @EJB
+    PharmacyService pharmacyService;
+    @EJB
+    PharmacyCostingService pharmacyCostingService;
+    @EJB
+    StockSearchService stockSearchService;
+
+    private boolean billSettlingStarted;
+    private UserStockContainer userStockContainer;
+    private Staff toStaff;
+    private Institution toInstitution;
+    private Department counter;
+    private double cashPaid;
+    private double balance;
+    private double netTotal;
+    private PaymentMethod paymentMethod;
+    private Token currentToken;
+    private String comment;
+
+    public PharmacyFastRetailSaleForCashierController() {
+    }
+
+    /**
+     * Navigate to fast sale for cashier page with shift checks.
+     */
+    public String navigateToPharmacyFastRetailSaleForCashier() {
+        if (sessionController.getPharmacyBillingAfterShiftStart()) {
+            financialTransactionController.findNonClosedShiftStartFundBillIsAvailable();
+            if (financialTransactionController.getNonClosedShiftStartFundBill() != null) {
+                resetAll();
+                setBillSettlingStarted(false);
+                return "/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true";
+            } else {
+                JsfUtil.addErrorMessage("Please start the shift first");
+                return "";
+            }
+        } else {
+            resetAll();
+            setBillSettlingStarted(false);
+            return "/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true";
+        }
+    }
+
+    /**
+     * Finalize pre-bill, deduct stock and generate token. Payment will be collected later at cashier.
+     */
+    public void settlePreBill() {
+        if (getPreBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("No Items added to bill to sale");
+            return;
+        }
+        for (BillItem bi : getPreBill().getBillItems()) {
+            if (!userStockController.isStockAvailable(bi.getPharmaceuticalBillItem().getStock(), bi.getQty(), sessionController.getLoggedUser())) {
+                setZeroToQty(bi);
+                JsfUtil.addErrorMessage("Another User On Change Bill Item Qty value is resetted");
+                return;
+            }
+            if (bi.getQty() <= 0.0) {
+                JsfUtil.addErrorMessage("Some BillItem Quntity is Zero or less than Zero");
+                return;
+            }
+        }
+        Patient pt = savePatient();
+        calculateAllRates();
+        List<BillItem> tmpBillItems = new ArrayList<>(getPreBill().getBillItems());
+        getPreBill().setBillItems(null);
+        getPreBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER);
+        savePreBillFinallyForRetailSaleForCashier(pt);
+        savePreBillItemsFinally(tmpBillItems);
+        setPrintBill(billFacade.find(getPreBill().getId()));
+        if (configOptionApplicationController.getBooleanValueByKey("Create Token At Pharmacy Sale For Cashier") ||
+                configOptionApplicationController.getBooleanValueByKey("Enable token system in sale for cashier", false)) {
+            if (getPatient() != null) {
+                Token t = tokenController.findPharmacyTokens(getPreBill());
+                if (t == null) {
+                    settlePharmacyToken(TokenType.PHARMACY_TOKEN_SALE_FOR_CASHIER);
+                    markInprogress();
+                } else {
+                    markToken();
+                }
+            }
+        }
+        if (currentToken != null) {
+            currentToken.setBill(getPreBill());
+            tokenFacade.edit(currentToken);
+        }
+        resetAll();
+        billSettlingStarted = false;
+        billPreview = true;
+    }
+
+    private void savePreBillFinallyForRetailSaleForCashier(Patient pt) {
+        if (getPreBill().getId() == null) {
+            billFacade.create(getPreBill());
+        }
+        getPreBill().setDepartment(sessionController.getLoggedUser().getDepartment());
+        getPreBill().setInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setCreatedAt(Calendar.getInstance().getTime());
+        getPreBill().setCreater(sessionController.getLoggedUser());
+        getPreBill().setPatient(pt);
+        getPreBill().setToStaff(toStaff);
+        getPreBill().setToInstitution(toInstitution);
+        getPreBill().setComments(comment);
+        getPreBill().setCashPaid(cashPaid);
+        getPreBill().setBalance(balance);
+        getPreBill().setBillDate(new Date());
+        getPreBill().setBillTime(new Date());
+        getPreBill().setFromDepartment(sessionController.getLoggedUser().getDepartment());
+        getPreBill().setFromInstitution(sessionController.getLoggedUser().getDepartment().getInstitution());
+        getPreBill().setPaymentMethod(paymentMethod);
+        getPreBill().setPaymentScheme(getPaymentScheme());
+        getBillBean().setPaymentMethodData(getPreBill(), paymentMethod, getPaymentMethodData());
+        String insId = billNumberBean.institutionBillNumberGenerator(getPreBill().getInstitution(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setInsId(insId);
+        String deptId = billNumberBean.departmentBillNumberGenerator(getPreBill().getDepartment(), getPreBill().getBillType(), BillClassType.PreBill, BillNumberSuffix.SALE);
+        getPreBill().setDeptId(deptId);
+        getPreBill().setInvoiceNumber(billNumberBean.fetchPaymentSchemeCount(getPreBill().getPaymentScheme(), getPreBill().getBillType(), getPreBill().getInstitution()));
+    }
+
+    private void savePreBillItemsFinally(List<BillItem> list) {
+        for (BillItem tbi : list) {
+            if (onEdit(tbi)) {
+                continue;
+            }
+            tbi.setInwardChargeType(InwardChargeType.Medicine);
+            tbi.setBill(getPreBill());
+            tbi.setCreatedAt(Calendar.getInstance().getTime());
+            tbi.setCreater(sessionController.getLoggedUser());
+            PharmaceuticalBillItem tmpPh = tbi.getPharmaceuticalBillItem();
+            tbi.setPharmaceuticalBillItem(null);
+            if (tbi.getId() == null) {
+                billItemFacade.create(tbi);
+            }
+            if (tmpPh.getId() == null) {
+                pharmaceuticalBillItemFacade.create(tmpPh);
+            }
+            tbi.setPharmaceuticalBillItem(tmpPh);
+            billItemFacade.edit(tbi);
+            double qtyL = tbi.getPharmaceuticalBillItem().getQtyInUnit() + tbi.getPharmaceuticalBillItem().getFreeQtyInUnit();
+            boolean returnFlag;
+            if (useOptimizedStockDeduction()) {
+                returnFlag = optimizedPharmacyBean.deductFromStockOptimized(tbi.getPharmaceuticalBillItem().getStock(), Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+            } else {
+                returnFlag = getPharmacyBean().deductFromStock(tbi.getPharmaceuticalBillItem().getStock(), Math.abs(qtyL), tbi.getPharmaceuticalBillItem(), getPreBill().getDepartment());
+            }
+            if (!returnFlag) {
+                tbi.setTmpQty(0);
+                pharmaceuticalBillItemFacade.edit(tbi.getPharmaceuticalBillItem());
+                billItemFacade.edit(tbi);
+            }
+            getPreBill().getBillItems().add(tbi);
+        }
+        userStockController.retiredAllUserStockContainer(sessionController.getLoggedUser());
+        calculateAllRates();
+        billFacade.edit(getPreBill());
+    }
+
+    private boolean useOptimizedStockDeduction() {
+        return configOptionApplicationController.getBooleanValueByKey("Enable Optimized Pharmacy Fast Sale Stock Deduction", false);
+    }
+
+    public void markInprogress() {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        t.setCalled(false);
+        t.setCalledAt(null);
+        t.setInProgress(true);
+        t.setCompleted(false);
+        tokenController.save(t);
+    }
+
+    public void markToken() {
+        Token t = getToken();
+        if (t == null) {
+            return;
+        }
+        t.setBill(getPreBill());
+        t.setCalled(true);
+        t.setCalledAt(new Date());
+        t.setInProgress(false);
+        t.setCompleted(false);
+        tokenController.save(t);
+    }
+}
+
