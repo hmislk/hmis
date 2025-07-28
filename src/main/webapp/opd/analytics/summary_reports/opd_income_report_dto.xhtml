@@ -318,9 +318,10 @@
                         <p:commandButton 
                             value="Download" 
                             ajax="false"
+                            action="#{opdReportController.prepareDataForDownload()}"
                             styleClass="ui-button-info m-1"
                             icon="pi pi-download">
-                            <p:dataExporter fileName="pharmacy_income_report.xlsx" target="tbl" type="xlsx" />
+                            <p:dataExporter fileName="opd_income_report_dto.xlsx" target="tbl" type="xlsx" />
                         </p:commandButton>
 
                         <p:commandButton 

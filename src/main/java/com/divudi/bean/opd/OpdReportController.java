@@ -360,8 +360,6 @@ public class OpdReportController implements Serializable {
 
         jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
 
-        // System.out.println("jpql.toString() = " + jpql.toString());
-        // System.out.println("params = " + params);
         // Execute the query
         List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -490,7 +488,6 @@ public class OpdReportController implements Serializable {
 
     public void processOpdIncomeReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processOpdIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -573,7 +570,6 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeSummaryByDate() {
-        System.out.println("processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
