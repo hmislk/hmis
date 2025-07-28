@@ -124,6 +124,27 @@
                                     </td>
                                 </tr>
 
+                                <tr>
+                                    <td><strong>Migrate Transfer Bill Finance Details</strong></td>
+                                    <td>
+                                        Fixes issue #13419: Migrates existing pharmacy transfer bills to populate BillItemFinanceDetails.lineNetTotal from BillItem.netValue. This ensures disbursement reports show correct transfer rates when "Pharmacy Transfer is by Retail Rate" option is enabled. Only affects bills missing proper financial details - safe to run multiple times.
+                                    </td>
+                                    <td>
+                                        <h:form>
+                                            <p:commandButton 
+                                                action="#{dataAdministrationController.migrateTransferBillItemFinanceDetails()}"
+                                                ajax="false"
+                                                value="Migrate Transfer Finance Details"
+                                                styleClass="ui-button-success m-1"
+                                                icon="pi pi-database"
+                                                onclick="return confirm('This will migrate financial details for existing transfer bills. Proceed?');" />
+                                        </h:form>
+                                    </td>
+                                    <td>
+                                        #{billController.output}
+                                    </td>
+                                </tr>
+
 
 
                             </tbody>
