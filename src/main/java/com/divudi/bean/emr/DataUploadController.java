@@ -4880,10 +4880,9 @@ public class DataUploadController implements Serializable {
         suppliers = new ArrayList<>();
         if (file != null) {
             try (InputStream inputStream = file.getInputStream()) {
-                System.out.println("inputStream = " + inputStream);
                 suppliers = readSuppliersExtendedFromExcel(inputStream);
             } catch (IOException e) {
-                e.printStackTrace();
+                Logger.getLogger(DataUploadController.class.getName()).log(Level.SEVERE, "Error uploading suppliers", e);
                 uploadComplete = false;
                 JsfUtil.addErrorMessage("Error in Uploading. " + e.getMessage());
             }
@@ -5413,8 +5412,17 @@ public class DataUploadController implements Serializable {
 
 
             Cell faxCell = row.getCell(7);
-            if (faxCell != null && (faxCell.getCellType() == CellType.STRING || faxCell.getCellType() == CellType.NUMERIC)) {
-                fax = faxCell.getStringCellValue();
+            if (faxCell != null) {
+                if (faxCell.getCellType() == CellType.NUMERIC) {
+                    DecimalFormat decimalFormat = new DecimalFormat("#");
+                    fax = decimalFormat.format(faxCell.getNumericCellValue());
+
+                } else if (faxCell.getCellType() == CellType.STRING) {
+                    fax = faxCell.getStringCellValue();
+                }
+            }
+            if (fax == null || fax.trim().isEmpty()) {
+                fax = null;
             }
 
             Cell emailCell = row.getCell(8);
@@ -5570,7 +5578,7 @@ public class DataUploadController implements Serializable {
             supplier.setContactPersonName(contactPersonName);
             supplier.setPaymentCompanyName(paymentCompanyName);
             supplier.setBankName(bankName);
-            supplier.getBankBranch().setBranchName(branchName);
+            supplier.setBranchName(branchName);
             supplier.setLegalCompany(legalCompany);
 
             supplier.setInstitutionType(InstitutionType.Dealer);
@@ -5578,6 +5586,7 @@ public class DataUploadController implements Serializable {
             suppliersList.add(supplier);
         }
 
+        suppliers = new ArrayList<>(suppliersList);
         return suppliersList;
     }
 
@@ -8064,7 +8073,8 @@ public class DataUploadController implements Serializable {
         try {
             createTemplateForSupplierExtendedUpload();
         } catch (IOException e) {
-            // Handle IOException
+            Logger.getLogger(DataUploadController.class.getName()).log(Level.SEVERE, "Error creating supplier template", e);
+            JsfUtil.addErrorMessage("Error creating template: " + e.getMessage());
         }
         return templateForsupplierUpload;
     }
