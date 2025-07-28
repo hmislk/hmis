@@ -546,7 +546,7 @@ public class OpdReportController implements Serializable {
                 }
             }
             bundle.generatePaymentDetailsForBillsAndBatchBills();
-        }, CommonReports.LAB_DASHBOARD, "OpdReportController.processOpdIncomeReport", sessionController.getLoggedUser());
+        }, CommonReports.LAB_REPORTS, "OpdReportController.processOpdIncomeReport", sessionController.getLoggedUser());
     }
 
     public void generateOpdIncomeReportDto() {
@@ -569,7 +569,7 @@ public class OpdReportController implements Serializable {
 
             bundle = new IncomeBundle(opdIncomeReportDtos);
             bundle.generatePaymentDetailsForBillsAndBatchBills();
-        }, CommonReports.LAB_DASHBOARD, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
+        }, CommonReports.LAB_REPORTS, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
     }
 
     public void processOpdIncomeSummaryByDate() {
