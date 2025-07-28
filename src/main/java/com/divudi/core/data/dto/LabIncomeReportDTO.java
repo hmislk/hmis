@@ -75,7 +75,6 @@ public class LabIncomeReportDTO implements Serializable {
         this.paymentScheme = paymentScheme;
     }
 
-    // ChatGPT contribution
     public LabIncomeReportDTO(Long billId,
             String billNumber,
             Date billDate,

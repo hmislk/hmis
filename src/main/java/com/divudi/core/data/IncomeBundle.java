@@ -252,10 +252,8 @@ public class IncomeBundle implements Serializable {
 
     public IncomeBundle(Collection<?> entries) {
         this(); // Initialize id and rows list
-        System.out.println("DEBUG: IncomeBundle constructor called with collection size = " + (entries != null ? entries.size() : "null"));
         if (entries != null && !entries.isEmpty()) {
             Object firstElement = entries.iterator().next();
-            System.out.println("DEBUG: First element type = " + firstElement.getClass().getSimpleName());
             if (firstElement instanceof Bill) {
                 // Process list as Bills
                 for (Object obj : entries) {
@@ -312,17 +310,15 @@ public class IncomeBundle implements Serializable {
                 }
             } else if (firstElement instanceof LabIncomeReportDTO) {
                 // Process list as IncomeRows for Laboratory reports
-                System.out.println("DEBUG: IncomeBundle processing LabIncomeReportDTO list, size = " + entries.size());
                 for (Object obj : entries) {
                     if (obj instanceof LabIncomeReportDTO) {
                         LabIncomeReportDTO dto = (LabIncomeReportDTO) obj;
-                        System.out.println("DEBUG: Processing LabIncomeReportDTO with billId = " + dto.getBillId());
-                        IncomeRow ir = new IncomeRow(dto);
-                        rows.add(ir);
-                        System.out.println("DEBUG: Added IncomeRow, total rows now = " + rows.size());
+                        if (dto != null) {
+                            IncomeRow ir = new IncomeRow(dto);
+                            rows.add(ir);
+                        }
                     }
                 }
-                System.out.println("DEBUG: IncomeBundle finished processing LabIncomeReportDTO list, final rows = " + rows.size());
             } else if (firstElement instanceof PharmacyIncomeBillItemDTO) {
                 // Process list as IncomeRows
                 for (Object obj : entries) {

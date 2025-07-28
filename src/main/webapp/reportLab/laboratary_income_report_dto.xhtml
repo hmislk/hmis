@@ -257,6 +257,7 @@
                                 <p:commandButton 
                                     value="Download" 
                                     ajax="false"
+                                    action="#{laborataryReportController.prepareDataForDownload()}"
                                     styleClass="ui-button-info m-1"
                                     icon="pi pi-download">
                                     <p:dataExporter fileName="laboratary_income_report_dto.xlsx" target="tbl" type="xlsx" />
