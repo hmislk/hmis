@@ -751,14 +751,16 @@
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
-                            value="Sale"
+                            value="Pharmacy Retail Sale - Legacy Method"
                             icon="fas fa-shopping-cart"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale')}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
-                            action="#{pharmacyFastRetailSaleController.navigateToPharmacyFastRetailSale()}"
-                            value="Sale (Fast)"
-                            icon="fas fa-bolt" >
+                            action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"
+                            actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
+                            value="Pharmacy Retail Sale - Optimized Method"
+                            icon="fas fa-bolt"
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -1039,17 +1041,13 @@
                             icon="fas fa-file-alt"></p:menuitem>
                     </p:submenu>
 
-                    <p:submenu label="Adjustments" icon="fas fa-sliders-h" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}">
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department?faces-redirect=true"  value="Department Stock (QTY)" icon="fas fa-boxes" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_by_item?faces-redirect=true"  value="Department Stock By Single Item (QTY)" icon="fas fa-box" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentDepartmentStockBySingleItemQTY')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_staff?faces-redirect=true"  value="Staff Stock Adjustment" icon="fas fa-user-check" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentStaffStockAdjustment')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_purchase_rate?faces-redirect=true"  value="Purchase Rate" icon="fas fa-dollar-sign" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentPurchaseRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_retail_sale_rate?faces-redirect=true"  value="Sale Rate" icon="fas fa-tags" actionListener="#{pharmacyAdjustmentController.makeNull()}" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSaleRate')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_whole_sale_rate?faces-redirect=true"  value="Wholesale Rate" icon="fas fa-money-bill-wave" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentWholeSaleRate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_expiry_date?faces-redirect=true"  value="Expiry Date" icon="fas fa-calendar-times" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentExpiryDate')}" actionListener="#{pharmacyAdjustmentController.makeNull()}"></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_search_adjustment_bill_item?faces-redirect=true"  value="Search Adjustment Bills" icon="fas fa-search" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentSearchAdjustmentBills')}" ></p:menuitem>
-                        <p:menuitem  ajax="false" action="/pharmacy/pharmacy_adjustment_department_all?faces-redirect=true"  value="Transfer All Stock" icon="fas fa-exchange-alt" rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentTransferAllStock')}" ></p:menuitem>
-                    </p:submenu>
+                    <p:menuitem 
+                            ajax="false"
+                            action="/pharmacy/adjustments/pharmacy_adjustment_index?faces-redirect=true"  
+                            value="Adjustments" 
+                            rendered="#{webUserController.hasPrivilege('PharmacyAdjustmentMenue')}" 
+                            icon="fas fa-file-alt"></p:menuitem>
+                    
 
 
                     <p:menuitem 
