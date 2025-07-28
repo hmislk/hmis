@@ -14,7 +14,7 @@
             <ui:define name="subcontent">
                 <h:form>
 
-                    <p:panel header="Pharmacy Transfer Issue Bills" >
+                    <p:panel header="Pharmacy Transfer Issue Bills (DTO - Optimized)" >
 
                         <p:panelGrid columns="5" class="w-100" layout="tabular">
                             <h:outputLabel value="From" ></h:outputLabel>
@@ -54,23 +54,23 @@
                             <p:commandButton 
                                 ajax="false" 
                                 value="Fill" 
-                                icon="fas fa-fill"
-                                class="ui-button-warning"
-                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBillEntity}" >
+                                icon="fas fa-rocket"
+                                class="ui-button-success"
+                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBillDto}" >
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fas fa-file-excel"
-                                class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_Entity"   />
+                                class="ui-button-warning mx-2">
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_DTO"   />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
                                 ajax="false"
                                 icon="fas fa-print"
                                 class="ui-button-info"
-                                action="pharmacy_report_transfer_issue_bill_print?faces-redirect=true" >
+                                action="pharmacy_report_transfer_issue_bill_dto_print?faces-redirect=true" >
                             </p:commandButton>
 
                         </h:panelGrid>
@@ -83,10 +83,10 @@
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
                                 scrollable="true"
                                 scrollWidth="100%"
-                                value="#{reportsTransfer.transferBills}"
+                                value="#{reportsTransfer.transferIssueDtos}"
                                 var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List  From "/>&nbsp;
+                                    <h:outputLabel value="Transfer List (DTO Mode) - From "/>&nbsp;
                                     <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment.name}"/>
                                     <h:outputLabel value="To "/>&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/> 
@@ -107,7 +107,6 @@
                                     </f:facet>
                                     <h:outputLabel value="#{i.deptId}"  style="padding: 0px!important; margin: 0px!important;"/>
                                 </p:column>
-
 
                                 <p:column headerText="Date"  style="padding: 0px!important; margin: 0px!important;" >
                                     <f:facet name="header">
@@ -141,7 +140,6 @@
                                     <h:outputLabel value="#{i.toStaff.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;"  >
                                     </h:outputLabel>
                                 </p:column>
-
 
                                 <p:column >
                                     <f:facet name="header">
@@ -204,8 +202,8 @@
                                         value="View"
                                         icon="pi pi-eye"
                                         styleClass="ui-button-secondary"
-                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssue()}">
-                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.bill}" value="#{i}" />
+                                        action="#{pharmacyBillSearch.navigateToReprintPharmacyTransferIssueById()}">
+                                        <f:setPropertyActionListener target="#{pharmacyBillSearch.billId}" value="#{i.billId}" />
                                     </p:commandButton>
                                 </p:column>
 
@@ -218,10 +216,10 @@
                                 id="tblPrinting" 
                                 style="padding: 0px!important; margin: 0px!important;" 
                                 styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
-                                value="#{reportsTransfer.transferBills}"
+                                value="#{reportsTransfer.transferIssueDtos}"
                                 var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer List  From "/>&nbsp;
+                                    <h:outputLabel value="Transfer List (DTO Mode) - From "/>&nbsp;
                                     <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment.name}"/>
                                     <h:outputLabel value="To "/>&nbsp;
                                     <h:outputLabel value="#{reportsTransfer.toDepartment.name}"/> 
@@ -243,7 +241,6 @@
                                     <h:outputLabel value="#{i.deptId}"  style="padding: 0px!important; margin: 0px!important;" ></h:outputLabel>                                    
                                 </p:column>
 
-
                                 <p:column headerText="Date"  style="padding: 0px!important; margin: 0px!important;" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Date &amp; Time"  style="padding: 0px!important; margin: 0px!important;" />
@@ -261,8 +258,6 @@
                                     </h:outputLabel>
                                 </p:column>
 
-
-
                                 <p:column  style="padding: 0px!important; margin: 0px!important;" >
                                     <f:facet name="header">
                                         <h:outputLabel value="To be Received by"/>
@@ -278,7 +273,6 @@
                                     <h:outputLabel value="#{i.toStaff.person.nameWithTitle}"  style="padding: 0px!important; margin: 0px!important;"  >
                                     </h:outputLabel>
                                 </p:column>
-
 
                                 <p:column >
                                     <f:facet name="header">
@@ -329,7 +323,6 @@
                                         style="display: block; max-height: 60px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; padding: 0px!important; margin: 0px!important;"
                                         value="#{i.comments}" />
                                 </p:column>
-
 
                             </p:dataTable>
                         </h:panelGroup>
