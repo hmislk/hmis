@@ -215,14 +215,6 @@ public class LaborataryReportController implements Serializable {
     }
 
 
-    public String navigateToOptimizedLaboratoryIncomeReport() {
-        return "/reportLab/laboratary_income_report_dto.xhtml?faces-redirect=true";
-    }
-
-    public String navigateToLegacyLaboratoryIncomeReport() {
-        return "/reportLab/laboratary_income_report.xhtml?faces-redirect=true";
-    }
-
     public boolean isOptimizedMethodEnabled() {
         return configController.getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
     }
