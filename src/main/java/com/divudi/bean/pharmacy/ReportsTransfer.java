@@ -509,12 +509,10 @@ public class ReportsTransfer implements Serializable {
      * Uses the traditional method with iterative calculations
      */
     public void fillDepartmentTransfersIssueByBillEntity() {
-        System.out.println("DEBUG ENTITY: fillDepartmentTransfersIssueByBillEntity method called");
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsLegacy();
             calculatePurachaseValuesOfBillItemsInBill(transferBills);
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL, sessionController.getLoggedUser());
-        System.out.println("DEBUG ENTITY: fillDepartmentTransfersIssueByBillEntity method completed");
     }
 
     /**
