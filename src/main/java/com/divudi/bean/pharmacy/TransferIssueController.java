@@ -863,6 +863,9 @@ public class TransferIssueController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQty(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
+        
+        // IMPORTANT: Set the purchase rate from item batch for proper costing
+        billItem.getPharmaceuticalBillItem().setPurchaseRate(getTmpStock().getItemBatch().getPurcahseRate());
 
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
@@ -879,10 +882,13 @@ public class TransferIssueController implements Serializable {
 
         billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
 
-        billItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
-        billItem.getBillItemFinanceDetails().setLineCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
+        // IMPORTANT FIX: Use purchase rate for cost calculations instead of cost rate
+        // This ensures correct purchase value calculation in summary reports
+        BigDecimal purchaseRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getPurchaseRate());
+        billItem.getBillItemFinanceDetails().setLineCostRate(purchaseRate);
+        billItem.getBillItemFinanceDetails().setLineCost(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCost(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCostRate(purchaseRate);
 
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
 

@@ -533,7 +533,7 @@ public class ReportsTransfer implements Serializable {
             .append("COALESCE(b.cancelled, false), ")
             .append("COALESCE(b.refunded, false), ")
             .append("COALESCE(b.comments, ''), ")
-            .append("COALESCE(bfd.totalPurchaseValue, 0.0), ")
+            .append("COALESCE(bfd.totalCostValue, 0.0), ")
             .append("COALESCE(bfd.totalRetailSaleValue, 0.0)") 
             .append(") ")
             .append("FROM Bill b ")
