@@ -64,8 +64,8 @@
 
 
                         <h:panelGroup id="gpBillPreview">
-                            <p:dataTable id="tbl" styleClass="noBorder normalFont" 
-                                         value="#{reportsTransfer.transferItems}" var="i"  
+                            <p:dataTable id="tbl" styleClass="noBorder normalFont"
+                                         value="#{reportsTransfer.transferIssueBillItemDtos}" var="i"
                                          >
                                 <f:facet name="header">
                                     <h:outputLabel value="Transfer List From "/>&nbsp;
@@ -214,15 +214,30 @@
 
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="5"/>
-                                        <p:column style="text-align: right;" >
+                                        <p:column colspan="6"/>
+                                        <p:column style="text-align: right;">
                                             <f:facet name="footer">
-                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
-                                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                                <h:outputLabel value="#{reportsTransfer.costValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column colspan="6"/>
+                                        <p:column colspan="3"/>
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsTransfer.purchaseValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column colspan="1"/>
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsTransfer.transferValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
                                     </p:row>
                                 </p:columnGroup>
 
