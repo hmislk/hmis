@@ -114,6 +114,8 @@ public class ReportsTransfer implements Serializable {
     private double netTotalSaleValues;
     private double netTotalPurchaseValues;
     private double retailValue;
+    private double costValue;
+    private double transferValue;
     private Category category;
 
     private List<BillItem> transferItems;
@@ -144,7 +146,7 @@ public class ReportsTransfer implements Serializable {
     private double totalBHTIssueQty;
     private double totalIssueValue;
     private double totalBHTIssueValue;
-    private int pharmacyDisbursementReportIndex = 8;
+    private int pharmacyDisbursementReportIndex = 9;
     private AdmissionType admissionType;
     private Bill previewBill;
 
@@ -156,6 +158,11 @@ public class ReportsTransfer implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Functions">
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
+    
+    
+    
+    
+    
     // </editor-fold>
     public String navigateToTransferIssueByBillItem() {
         transferBills = null;
@@ -419,16 +426,36 @@ public class ReportsTransfer implements Serializable {
         transferItems = fetchBillItems(BillType.PharmacyTransferIssue);
         purchaseValue = 0.0;
         saleValue = 0.0;
+        retailValue = 0.0;
+        costValue = 0.0;
+        transferValue = 0.0;
+        
         for (BillItem ts : transferItems) {
-            // Use the actual transfer rate that was stored when the bill was created
-            // This respects the configured transfer rate option (purchase/cost/retail)
+            double qty = ts.getPharmaceuticalBillItem().getQtyInUnit();
+            ItemBatch itemBatch = ts.getPharmaceuticalBillItem().getItemBatch();
+            
+            // Purchase Value calculation
             if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineNetTotal() != null) {
                 purchaseValue += ts.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
             } else {
                 // Fallback to purchase rate if financial details are missing
-                purchaseValue += (ts.getPharmaceuticalBillItem().getItemBatch().getPurcahseRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+                purchaseValue += (itemBatch.getPurcahseRate() * qty);
             }
-            saleValue += (ts.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate() * ts.getPharmaceuticalBillItem().getQtyInUnit());
+            
+            // Retail Value calculation
+            saleValue += (itemBatch.getRetailsaleRate() * qty);
+            retailValue += (itemBatch.getRetailsaleRate() * qty);
+            
+            // Cost Value calculation
+            costValue += (itemBatch.getCostRate() * qty);
+            
+            // Transfer Value calculation (from BillItemFinanceDetails)
+            if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineGrossTotal() != null) {
+                transferValue += ts.getBillItemFinanceDetails().getLineGrossTotal().doubleValue();
+            } else {
+                // Fallback to purchase rate if financial details are missing
+                transferValue += (itemBatch.getPurcahseRate() * qty);
+            }
         }
 
     }
@@ -2099,6 +2126,22 @@ public class ReportsTransfer implements Serializable {
 
     public void setNetTotalPurchaseValues(double netTotalPurchaseValues) {
         this.netTotalPurchaseValues = netTotalPurchaseValues;
+    }
+
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
+
+    public double getTransferValue() {
+        return transferValue;
+    }
+
+    public void setTransferValue(double transferValue) {
+        this.transferValue = transferValue;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {

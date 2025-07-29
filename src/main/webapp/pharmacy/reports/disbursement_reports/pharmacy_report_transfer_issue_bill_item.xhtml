@@ -109,9 +109,12 @@
                                     </h:outputLabel>
                                 </p:column>
 
-                                <p:column headerText="Item Descreption">
+                                <p:column headerText="Item"
+                                          sortBy="#{i.item.name}"
+                                          filterBy="#{i.item.name}"
+                                          filterMatchMode="contains">
                                     <f:facet name="header">
-                                        <h:outputLabel value="Item Description"/>
+                                        <h:outputLabel value="Item"/>
                                     </f:facet>
                                     <h:outputLabel value="#{i.item.name}"  >                                      
                                     </h:outputLabel>
@@ -121,7 +124,6 @@
                                           sortBy="#{i.item.code}"
                                           filterBy="#{i.item.code}"
                                           filterMatchMode="contains"
-
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
@@ -156,16 +158,71 @@
                                     </h:outputLabel>                                  
                                 </p:column>
 
+                                <p:column headerText="Retail Rate" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Retail Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Retail Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Purchase Rate" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Purchase Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Purchase Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Transfer Rate" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Rate"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.billItemFinanceDetails.lineGrossRate}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
+                                <p:column headerText="Transfer Value" style="text-align: right;">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Value"/>
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.billItemFinanceDetails.lineGrossTotal}">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>                                  
+                                </p:column>
+
                                 <p:columnGroup type="footer">
                                     <p:row>
-                                        <p:column colspan="6"/>
+                                        <p:column colspan="5"/>
                                         <p:column style="text-align: right;" >
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsTransfer.purchaseValue}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </f:facet>
-                                        </p:column>                                        
+                                        </p:column>
+                                        <p:column colspan="6"/>
                                     </p:row>
                                 </p:columnGroup>
 
