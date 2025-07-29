@@ -18,8 +18,8 @@
 ##########################################################
 
 CONFIG_FILE="/home/azureuser/utils/secrets/server_config.json"
-VM_LIST=("D01(4.213.180.217)")
-RECIPIENTS=("imeshranawella00@gmail.com" "buddhika.ari@gmail.com" "chinthakaprasad30@gmail.com" "hkddrajapaksha@gmail.com" "lawan.chaamindu1234@gmail.com" "ramathmanjitha@gmail.com" "pwathsara@gmail.com")
+VM_LIST=("VM_NAME_AS_IN_CONFIG")
+RECIPIENTS=("email1@gmail.com" "email2@gmail.com")
 
 TIMESTAMP=$(TZ='Asia/Kolkata' date '+%Y-%m-%d %H:%M:%S IST')
 
@@ -27,16 +27,18 @@ send_email() {
     local SUBJECT=$1
     local BODY=$2
     shift 2
-    local RECIPIENTS_JSON
-    RECIPIENTS_JSON=$(printf '[%s]' "$(printf '"%s",' "$@" | sed 's/,$//')")
-    curl -s -X POST "http://localhost:8081/messenger/api/email/send" \
-         -H "Content-Type: application/json" \
-         -d '{
-                "subject": "'"$SUBJECT"'",
-                "body": "'"$BODY"'",
-                "recipients": '"$RECIPIENTS_JSON"',
-                "isHtml": false
-             }'
+    local JSON
+        JSON=$(jq -n \
+            --arg subject "$SUBJECT" \
+            --arg body "$BODY" \
+            --argjson recipients "$(printf '%s\n' "$@" | jq -R . | jq -s .)" \
+            --argjson isHtml false \
+            '{subject: $subject, body: $body, recipients: $recipients, isHtml: $isHtml}'
+        )
+
+        curl -s -X POST "http://localhost:8081/messenger/api/email/send" \
+             -H "Content-Type: application/json" \
+             -d "$JSON"
 }
 
 # -----------------------
