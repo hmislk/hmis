@@ -481,9 +481,159 @@ public class GrnCostingController implements Serializable {
         }
         saveGrnBill();
         distributeValuesToItems();
+        fillData(getGrnBill());
         processBillItems();
         finalizeSettle();
         createAndPersistPayment();
+    }
+
+    private void fillData(Bill inputBill) {
+        double billTotalAtCostRate = 0.0;
+
+        double purchaseFree = 0.0;
+        double purchaseNonFree = 0.0;
+
+        double retailFree = 0.0;
+        double retailNonFree = 0.0;
+
+        double wholesaleFree = 0.0;
+        double wholesaleNonFree = 0.0;
+
+        double costFree = 0.0;
+        double costNonFree = 0.0;
+
+        System.out.println("========= Start fillData for Bill ID: " + (inputBill != null ? inputBill.getId() : "null") + " =========");
+
+        for (BillItem bi : getBillItems()) {
+            System.out.println("Processing BillItem ID: " + (bi != null ? bi.getId() : "null"));
+
+            BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+            if (bifd == null) {
+                System.out.println("  -> Skipped: FinanceDetails is null");
+                continue;
+            }
+
+            double purchaseRate = bifd.getLineNetRate() != null ? bifd.getLineNetRate().doubleValue() : 0.0;
+            double retailRate = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate().doubleValue() : 0.0;
+            double wholesaleRate = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate().doubleValue() : 0.0;
+            double costRate = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate().doubleValue() : 0.0;
+
+            System.out.println("  fd.getQuantity() = " + bifd.getQuantity());
+            System.out.println("  fd.getFreeQuantity() = " + bifd.getFreeQuantity());
+            System.out.println("  fd.getTotalQuantity() = " + bifd.getTotalQuantity());
+            System.out.println("  purchaseRate = " + purchaseRate);
+            System.out.println("  retailRate = " + retailRate);
+            System.out.println("  wholesaleRate = " + wholesaleRate);
+            System.out.println("  costRate = " + costRate);
+
+            double totalCostValue = bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
+            billTotalAtCostRate += totalCostValue;
+            System.out.println("  Added to billTotalAtCostRate: " + totalCostValue + " -> Current Total: " + billTotalAtCostRate);
+
+            double freeQty = bifd.getFreeQuantityByUnits() != null ? bifd.getFreeQuantityByUnits().doubleValue() : 0.0;
+            double paidQty = bifd.getQuantityByUnits() != null ? bifd.getQuantityByUnits().doubleValue() : 0.0;
+
+            System.out.println("  freeQty = " + freeQty);
+            System.out.println("  paidQty = " + paidQty);
+
+            double tmp;
+
+            tmp = freeQty * purchaseRate;
+            purchaseFree += tmp;
+            System.out.println("  purchaseFree += " + tmp + " -> " + purchaseFree);
+
+            tmp = paidQty * purchaseRate;
+            purchaseNonFree += tmp;
+            System.out.println("  purchaseNonFree += " + tmp + " -> " + purchaseNonFree);
+
+            tmp = freeQty * retailRate;
+            retailFree += tmp;
+            System.out.println("  retailFree += " + tmp + " -> " + retailFree);
+
+            tmp = paidQty * retailRate;
+            retailNonFree += tmp;
+            System.out.println("  retailNonFree += " + tmp + " -> " + retailNonFree);
+
+            tmp = freeQty * wholesaleRate;
+            wholesaleFree += tmp;
+            System.out.println("  wholesaleFree += " + tmp + " -> " + wholesaleFree);
+
+            tmp = paidQty * wholesaleRate;
+            wholesaleNonFree += tmp;
+            System.out.println("  wholesaleNonFree += " + tmp + " -> " + wholesaleNonFree);
+
+            tmp = freeQty * costRate;
+            costFree += tmp;
+            System.out.println("  costFree += " + tmp + " -> " + costFree);
+
+            tmp = paidQty * costRate;
+            costNonFree += tmp;
+            System.out.println("  costNonFree += " + tmp + " -> " + costNonFree);
+
+            BigDecimal grossTotal = bifd.getGrossTotal();
+            if (grossTotal != null) {
+                bifd.setGrossRate(grossTotal.abs().negate());
+            } else {
+                bifd.setGrossRate(BigDecimal.ZERO);
+            }
+
+            BigDecimal netTotal = bifd.getNetTotal();
+            if (netTotal != null) {
+                bifd.setNetRate(netTotal.abs().negate());
+            } else {
+                bifd.setNetRate(BigDecimal.ZERO);
+            }
+            
+            // Safe calculation of value rates with null checks
+            BigDecimal lineGrossRateBD = bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO;
+            BigDecimal retailSaleRateBD = bifd.getRetailSaleRate() != null ? bifd.getRetailSaleRate() : BigDecimal.ZERO;
+            BigDecimal totalCostRateBD = bifd.getTotalCostRate() != null ? bifd.getTotalCostRate() : BigDecimal.ZERO;
+            BigDecimal wholesaleRateBD = bifd.getWholesaleRate() != null ? bifd.getWholesaleRate() : BigDecimal.ZERO;
+            BigDecimal totalQuantityBD = bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO;
+            BigDecimal unitsPerPackBD = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE;
+            
+            bifd.setValueAtPurchaseRate(lineGrossRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtRetailRate(retailSaleRateBD.multiply(totalQuantityBD));
+            bifd.setValueAtCostRate(totalCostRateBD.multiply(totalQuantityBD).multiply(unitsPerPackBD));
+            bifd.setValueAtWholesaleRate(wholesaleRateBD.multiply(totalQuantityBD));
+            
+        }
+
+        System.out.println("========= Final Aggregated Totals =========");
+        System.out.println("costFree = " + costFree);
+        System.out.println("costNonFree = " + costNonFree);
+        System.out.println("purchaseFree = " + purchaseFree);
+        System.out.println("purchaseNonFree = " + purchaseNonFree);
+        System.out.println("retailFree = " + retailFree);
+        System.out.println("retailNonFree = " + retailNonFree);
+        System.out.println("wholesaleFree = " + wholesaleFree);
+        System.out.println("wholesaleNonFree = " + wholesaleNonFree);
+
+        inputBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
+        inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
+        inputBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
+        inputBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
+        inputBill.getBillFinanceDetails().setTotalPurchaseValueNonFree(BigDecimal.valueOf(purchaseNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(retailFree + retailNonFree));
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValueFree(BigDecimal.valueOf(retailFree));
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValueNonFree(BigDecimal.valueOf(retailNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
+        inputBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
+        inputBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
+
+        inputBill.setSaleValue(retailFree + retailNonFree);
+        inputBill.setFreeValue(retailFree);
+
+        System.out.println("inputBill.setSaleValue = " + inputBill.getSaleValue());
+        System.out.println("inputBill.setFreeValue = " + inputBill.getFreeValue());
+
+        System.out.println("========= End fillData =========");
     }
 
     private boolean validateInputs() {
@@ -574,7 +724,7 @@ public class GrnCostingController implements Serializable {
     private void processBillItems() {
         for (BillItem i : getBillItems()) {
             applyFinanceDetailsToPharmaceutical(i);
-            PharmaceuticalBillItem ph = i.getPharmaceuticalBillItem();
+            PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(new Date());
             i.setCreater(getSessionController().getLoggedUser());
@@ -582,13 +732,22 @@ public class GrnCostingController implements Serializable {
             if (i.getId() == null) {
                 getBillItemFacade().create(i);
             }
-            if (ph.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(ph);
+            if (pbi.getId() == null) {
+                getPharmaceuticalBillItemFacade().create(pbi);
             }
-            i.setPharmaceuticalBillItem(ph);
+            i.setPharmaceuticalBillItem(pbi);
             getBillItemFacade().edit(i);
             updateStockAndBatches(i);
             getPharmacyCalculation().editBillItem(i.getPharmaceuticalBillItem(), getSessionController().getLoggedUser());
+            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
+            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+
+            System.out.println("Retail Rate: " + pbi.getRetailRate());
+            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
+            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+
+            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
+            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
             saveBillFee(i);
             getGrnBill().getBillItems().add(i);
         }
@@ -1642,6 +1801,9 @@ public class GrnCostingController implements Serializable {
     }
 
     public SessionController getSessionController() {
+        if (sessionController == null) {
+            throw new IllegalStateException("SessionController is not properly injected");
+        }
         return sessionController;
     }
 

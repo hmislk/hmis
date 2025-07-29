@@ -125,7 +125,7 @@
                                             forceSelection="true"
                                             class="w-100"
                                             inputStyleClass="w-100"
-                                            completeMethod="#{itemController.completeAmpAmppVmpVmppItems}"
+                                            completeMethod="#{itemController.completeAmpAmppVmpVmppItemsForLoggedDepartment}"
                                             var="vt"
                                             itemLabel="#{vt.name}"
                                             itemValue="#{vt}"
@@ -320,7 +320,7 @@
                     <p:printer target="gpBillPreview"></p:printer>
                 </p:commandButton>
                 <h:panelGroup id="gpBillPreview">
-                    <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
+                      <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
                 </h:panelGroup>
             </p:panel>
 

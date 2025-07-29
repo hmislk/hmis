@@ -20,20 +20,15 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillFee;
-import com.divudi.core.entity.BillFeePayment;
 import com.divudi.core.entity.BillFinanceDetails;
 import com.divudi.core.entity.BillItem;
 import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BillNumber;
 import com.divudi.core.entity.BilledBill;
-import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Payment;
-import com.divudi.core.entity.RefundBill;
-import com.divudi.core.entity.WebUser;
-import com.divudi.core.entity.pharmacy.Amp;
 import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -41,31 +36,27 @@ import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.facade.AmpFacade;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
-import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.PaymentService;
 import com.divudi.service.pharmacy.PharmacyCostingService;
+import com.divudi.core.util.BigDecimalUtil;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
 import javax.inject.Named;
-import javax.persistence.TemporalType;
 import org.primefaces.event.SelectEvent;
 
 /**
@@ -130,18 +121,18 @@ public class PharmacyDirectPurchaseController implements Serializable {
         }
         System.out.println("2");
 
-        if (f.getQuantity() == null || f.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+        if (BigDecimalUtil.isNullOrZero(f.getQuantity()) || BigDecimalUtil.isNegative(f.getQuantity())) {
             JsfUtil.addErrorMessage("Please enter quantity");
             return;
         }
         System.out.println("3");
 
-        if (f.getLineGrossRate() == null || f.getLineGrossRate().compareTo(BigDecimal.ZERO) <= 0) {
+        if (BigDecimalUtil.isNullOrZero(f.getLineGrossRate()) || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
             JsfUtil.addErrorMessage("Please enter the purchase rate");
             return;
         }
 
-        if (f.getRetailSaleRatePerUnit() == null || f.getRetailSaleRatePerUnit().compareTo(BigDecimal.ZERO) <= 0) {
+        if (BigDecimalUtil.isNullOrZero(f.getRetailSaleRatePerUnit()) || BigDecimalUtil.isNegative(f.getRetailSaleRatePerUnit())) {
             JsfUtil.addErrorMessage("Please enter the sale rate");
             return;
         }
@@ -164,47 +155,47 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
         System.out.println("5");
-        BigDecimal qty = f.getQuantity() != null ? f.getQuantity() : BigDecimal.ZERO;
-        BigDecimal freeQty = f.getFreeQuantity() != null ? f.getFreeQuantity() : BigDecimal.ZERO;
+        BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
+        BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
         if (item instanceof Ampp) {
             System.out.println("ampp");
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
                     .orElse(BigDecimal.ONE);
-            BigDecimal qtyUnits = f.getQuantity().multiply(unitsPerPack);
-            BigDecimal freeQtyUnits = f.getFreeQuantity().multiply(unitsPerPack);
+            BigDecimal qtyUnits = BigDecimalUtil.multiply(f.getQuantity(), unitsPerPack);
+            BigDecimal freeQtyUnits = BigDecimalUtil.multiply(f.getFreeQuantity(), unitsPerPack);
 
             pbi.setQty(qtyUnits.doubleValue());
-            pbi.setQtyPacks(f.getQuantity().doubleValue());
+            pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantity()).doubleValue());
 
             pbi.setFreeQty(freeQtyUnits.doubleValue());
-            pbi.setFreeQtyPacks(f.getFreeQuantity().doubleValue());
+            pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantity()).doubleValue());
 
-            pbi.setPurchaseRate(f.getNetRate().doubleValue());
-            pbi.setPurchaseRatePack(f.getNetRate().doubleValue());
+            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
 
-            pbi.setRetailRate(f.getRetailSaleRate().doubleValue());
-            pbi.setRetailRatePack(f.getRetailSaleRate().doubleValue());
-            pbi.setRetailRateInUnit(f.getRetailSaleRatePerUnit().doubleValue());
+            pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+            pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRate()).doubleValue());
+            pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
         } else {
             System.out.println("not ampp");
             // AMP: no packs; assign both units and packs as same
-            pbi.setQty(f.getQuantityByUnits().doubleValue());
-            pbi.setQtyPacks(f.getQuantityByUnits().doubleValue());
+            pbi.setQty(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
+            pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
 
-            pbi.setFreeQty(f.getFreeQuantityByUnits().doubleValue());
-            pbi.setFreeQtyPacks(f.getFreeQuantityByUnits().doubleValue());
+            pbi.setFreeQty(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
+            pbi.setFreeQtyPacks(BigDecimalUtil.valueOrZero(f.getFreeQuantityByUnits()).doubleValue());
 
-            pbi.setPurchaseRate(f.getNetRate().doubleValue());
-            pbi.setPurchaseRatePack(f.getNetRate().doubleValue());
+            pbi.setPurchaseRate(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
+            pbi.setPurchaseRatePack(BigDecimalUtil.valueOrZero(f.getNetRate()).doubleValue());
 
             // User Records f.getRetailSaleRatePerUnit(). It will be same same for all retail rates
             f.setRetailSaleRate(f.getRetailSaleRatePerUnit()); // User gives 
 
-            pbi.setRetailRate(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
-            pbi.setRetailRatePack(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
-            pbi.setRetailRateInUnit(Optional.ofNullable(f.getRetailSaleRatePerUnit()).orElse(BigDecimal.ZERO).doubleValue());
+            pbi.setRetailRate(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+            pbi.setRetailRatePack(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
+            pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
         }
         System.out.println("8");
@@ -395,7 +386,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
                 pr = (lineGrossRate != null) ? lineGrossRate.doubleValue() : 0.0;
                 rr = (lastRetailRate != null) ? lastRetailRate.doubleValue() : 0.0;
-                packRate = lastRetailRate != null ? lastRetailRate : BigDecimal.ZERO;
+                packRate = BigDecimalUtil.valueOrZero(lastRetailRate);
 
             }
         }
@@ -654,6 +645,17 @@ public class PharmacyDirectPurchaseController implements Serializable {
             billItemsTotalQty = billItemsTotalQty + i.getPharmaceuticalBillItem().getQty() + i.getPharmaceuticalBillItem().getFreeQty();
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
+
+            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
+            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
+
+            System.out.println("Retail Rate: " + pbi.getRetailRate());
+            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
+            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
+
+            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
+            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
+
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
             i.setCreater(getSessionController().getLoggedUser());
@@ -678,7 +680,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             ItemBatch itemBatch = getPharmacyBillBean().saveItemBatchWithCosting(i);
 
-            double addingQty = i.getBillItemFinanceDetails().getTotalQuantityByUnits().doubleValue();
+            double addingQty = BigDecimalUtil.valueOrZero(i.getBillItemFinanceDetails().getTotalQuantityByUnits()).doubleValue();
 
             pbi.setItemBatch(itemBatch);
 

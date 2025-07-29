@@ -102,6 +102,7 @@
                                     width="6em">  
                                     <h:panelGroup id="price">
                                         <p:inputText
+                                            id="txtRetailRate"
                                             onfocus="this.select()"
                                             autocomplete="off" 
                                             style="padding: 0;" 
@@ -120,6 +121,7 @@
                                     width="6em">  
                                     <h:panelGroup id="total">
                                         <h:outputText 
+                                            id="lblTotal"
                                             value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -322,7 +324,7 @@
                                     scrollHeight="600"
                                     minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
-                                    completeMethod="#{itemController.completeAmpAndAmppItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
@@ -360,18 +362,25 @@
                                 <h:outputLabel value="Purchase Order Request" class="mt-2"/>
                             </div>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Print" 
-                                    icon="fas fa-print" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print"
                                     class="ui-button-info">
                                     <p:printer target="printPaper" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="New Order" 
-                                    action="#{purchaseOrderRequestController.resetBillValues}" 
-                                    icon="fas fa-plus" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Send Email"
+                                    icon="fas fa-envelope"
+                                    action="#{purchaseOrderRequestController.sendPurchaseOrderEmail}"
+                                    styleClass="ui-button-secondary"
+                                    disabled="#{empty purchaseOrderRequestController.currentBill.toInstitution.email}"/>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="New Order"
+                                    action="#{purchaseOrderRequestController.resetBillValues}"
+                                    icon="fas fa-plus"
                                     styleClass="ui-button-success"/>
                             </div>
                         </div>

@@ -1,6 +1,9 @@
 package com.divudi.bean.channel;
 
 import com.divudi.bean.cashTransaction.DrawerController;
+import com.divudi.bean.common.BillBeanController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.bean.common.InstitutionController;
 import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -20,21 +23,28 @@ import static com.divudi.core.data.PaymentMethod.Slip;
 import static com.divudi.core.data.PaymentMethod.Staff;
 import static com.divudi.core.data.PaymentMethod.YouOweMe;
 import static com.divudi.core.data.PaymentMethod.ewallet;
+import com.divudi.core.data.PaymentType;
 import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
+import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillNumber;
 import com.divudi.core.entity.BilledBill;
 import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.OnlineBooking;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.cashTransaction.Drawer;
 import com.divudi.core.facade.BillFacade;
+import com.divudi.core.facade.BillItemFacade;
+import com.divudi.core.facade.DrawerFacade;
 import com.divudi.core.facade.InstitutionFacade;
 import com.divudi.core.facade.OnlineBookingFacade;
 import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.ejb.BillNumberGenerator;
 import com.divudi.service.ChannelService;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -96,6 +106,7 @@ public class OnlineBookingAgentController implements Serializable {
 
     private PaymentMethod paidToHospitalPaymentMethod;
     private Bill paidToHospitalBill;
+    private Bill paidToHospitalDirectFundBill;
     private PaymentMethodData paymentMethodData;
     private double paidToHospitalTotal;
     private OnlineBookingStatus onlineBookingStatus;
@@ -103,12 +114,34 @@ public class OnlineBookingAgentController implements Serializable {
     private PaymentMethod cancelPaymentMethod;
     private Bill cancelBill;
     private String billStatus;
+    private String comment;
 
     @EJB
     private PaymentFacade paymentFacade;
 
     @Inject
     private DrawerController drawerController;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
+    public Bill getPaidToHospitalDirectFundBill() {
+        if (paidToHospitalDirectFundBill == null) {
+            paidToHospitalDirectFundBill = new BilledBill();
+            paidToHospitalDirectFundBill.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospital);
+            paidToHospitalDirectFundBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL);
+        }
+        return paidToHospitalDirectFundBill;
+    }
+
+    public void setPaidToHospitalDirectFundBill(Bill paidToHospitalDirectFundBill) {
+        this.paidToHospitalDirectFundBill = paidToHospitalDirectFundBill;
+    }
 
     public String getBillStatus() {
         return billStatus;
@@ -133,6 +166,17 @@ public class OnlineBookingAgentController implements Serializable {
         return cancelPaymentMethod;
     }
 
+    @Inject
+    private InstitutionController institutionController;
+
+    public List<Institution> getInstitutionForOnlineBookingManegement() {
+        List<Institution> list = institutionController.getItems();
+
+        list = list.stream().filter(ins -> ins.getInstitutionType() == InstitutionType.Company).collect(Collectors.toList());
+
+        return list;
+    }
+
     public Bill getCancelBill() {
         if (cancelBill == null) {
             cancelBill = new CancelledBill();
@@ -140,6 +184,149 @@ public class OnlineBookingAgentController implements Serializable {
             cancelBill.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
         }
         return cancelBill;
+    }
+    
+    private boolean errorCheck(Bill origianlBill) {
+        if (origianlBill.isCancelled()) {
+            JsfUtil.addErrorMessage("Already Cancelled. Can not cancel again");
+            return true;
+        }
+
+        if (origianlBill.isRefunded()) {
+            JsfUtil.addErrorMessage("Already Returned. Can not cancel.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod == null) {
+            JsfUtil.addErrorMessage("Please select a payment method.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod == PaymentMethod.MultiplePaymentMethods) {
+            JsfUtil.addErrorMessage("Multiple Payment Methods are NOT allowed.");
+            return true;
+        }
+        if (paidToHospitalPaymentMethod.getPaymentType() == PaymentType.CREDIT) {
+            JsfUtil.addErrorMessage("Credit Payment Methods are NOT allowed.");
+            return true;
+        }
+
+        if (getComment() == null || getComment().trim().equals("")) {
+            JsfUtil.addErrorMessage("Please enter a comment");
+            return true;
+        }
+
+        return false;
+    }
+    
+    @EJB
+    private DrawerFacade drawerFacade;
+    
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
+    
+    @Inject
+    private BillBeanController billBeanController;
+    @EJB
+    private BillItemFacade billItemFacade;
+    
+    public void cancelAgentDirectFundBill(){
+        if(paidToHospitalPaymentMethod == null){
+            JsfUtil.addErrorMessage("Select Payment method to cancel");
+            return;
+        }
+        
+        if(printBill == null){
+            JsfUtil.addErrorMessage("No bill to cancel");
+            return;
+        }
+        
+        if(printBill instanceof CancelledBill){
+            JsfUtil.addErrorMessage("Cancelled Bill can't Cancel");
+            return;
+        }
+        
+        if(errorCheck(printBill)){
+            return;
+        }
+        
+        if (paidToHospitalPaymentMethod == PaymentMethod.Cash) {
+            Drawer userDrawer = drawerFacade.find(sessionController.getLoggedUserDrawer().getId());
+            if (userDrawer.getCashInHandValue() < printBill.getNetTotal()) {
+                if (configOptionApplicationController.getBooleanValueByKey("Enable Drawer Manegment", true)) {
+                    JsfUtil.addErrorMessage("Drawer cash in hand value is not enough to cancel the bill");
+                    return;
+                }
+            }
+        }
+        CancelledBill cancelBill = generateCancelBillForAgentDirectFundBill(printBill);
+        
+        printBill.setCancelled(true);
+        printBill.setCancelledBill(cancelBill);
+        getBillFacade().editAndCommit(printBill);
+        
+        List<Payment> payments = createPayment(printBill, paidToHospitalPaymentMethod, true);
+        
+        cancelBillItems(cancelBill, printBill);
+        
+        printBill = cancelBill;
+        printOriginal = true;
+        
+        JsfUtil.addSuccessMessage("Bill Cancellation is successful");
+ 
+    }
+    
+    private void cancelBillItems(CancelledBill cancelBill, Bill originalBill) {
+        List<BillItem> bis = billBeanController.fetchBillItems(originalBill);
+        if (bis == null) {
+            return;
+        }
+        for (BillItem originalBillItem : bis) {
+            BillItem newBillItemForCancelBill = new BillItem();
+            newBillItemForCancelBill.setBill(cancelBill);
+            newBillItemForCancelBill.copy(originalBillItem);
+            newBillItemForCancelBill.invertValue();
+//            newBillItemForCancelBill.setNetValue(-originalBillItem.getNetValue());
+            newBillItemForCancelBill.setReferenceBill(originalBillItem.getReferenceBill());
+            newBillItemForCancelBill.setCatId(originalBillItem.getCatId());
+            newBillItemForCancelBill.setDeptId(originalBillItem.getDeptId());
+            newBillItemForCancelBill.setInsId(originalBillItem.getInsId());
+            newBillItemForCancelBill.setCreatedAt(new Date());
+            newBillItemForCancelBill.setCreater(getSessionController().getLoggedUser());
+            newBillItemForCancelBill.setReferanceBillItem(originalBillItem);
+            billItemFacade.create(newBillItemForCancelBill);
+
+        }
+    }
+
+    
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
+    
+    public CancelledBill generateCancelBillForAgentDirectFundBill(Bill paidBill) {
+        if (paidBill == null) {
+            return null;
+        }
+        CancelledBill cb = new CancelledBill();
+        cb.copy(paidBill);
+        cb.invertAndAssignValuesFromOtherBill(paidBill);
+        String deptId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL);
+        cb.setDeptId(deptId);
+        cb.setInsId(deptId);
+        cb.setBillType(BillType.ChannelOnlineBookingAgentPaidToHospitalBillCancellation);
+        cb.setBillTypeAtomic(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_DIRECT_FUND_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
+        cb.setBilledBill(printBill);
+        cb.setPaymentMethod(paidToHospitalPaymentMethod);
+        cb.setBillDate(new Date());
+        cb.setBillTime(new Date());
+        cb.setCreatedAt(new Date());
+        cb.setCreater(getSessionController().getLoggedUser());
+        cb.setDepartment(getSessionController().getDepartment());
+        cb.setInstitution(printBill.getInstitution());
+        cb.setToInstitution(printBill.getToInstitution());
+        cb.setFromInstitution(printBill.getFromInstitution());
+        cb.setComments(comment);
+        billFacade.create(cb);
+        return cb;
+        
     }
 
     public void setCancelBill(Bill cancelBill) {
@@ -454,7 +641,7 @@ public class OnlineBookingAgentController implements Serializable {
         Bill paidBill = getPaidToHospitalBill();
         paidBill.setCreatedAt(new Date());
         paidBill.setCreater(getSessionController().getLoggedUser());
-        paidBill.setToInstitution(getSessionController().getInstitution());
+        paidBill.setToInstitution(institutionForBookings);
         paidBill.setToDepartment(getSessionController().getDepartment());
         paidBill.setDepartment(getSessionController().getDepartment());
         paidBill.setFromInstitution(agentForBookings);
@@ -555,7 +742,7 @@ public class OnlineBookingAgentController implements Serializable {
         bill.setCreatedAt(new Date());
         bill.setPaymentMethod(cancelPaymentMethod);
         bill.setCreater(getSessionController().getLoggedUser());
-        bill.setToInstitution(getSessionController().getInstitution());
+        bill.setToInstitution(printBill.getToInstitution());
         bill.setToDepartment(getSessionController().getDepartment());
         bill.setDepartment(getSessionController().getDepartment());
         bill.setFromInstitution(printBill.getFromInstitution());
@@ -596,9 +783,11 @@ public class OnlineBookingAgentController implements Serializable {
 
         if (paidBill != null) {
             List<Payment> payments = createPayment(paidBill, paidToHospitalPaymentMethod, false);
-            drawerController.updateDrawerForIns(payments);
+//            drawerController.updateDrawerForIns(payments);
         }
-
+        
+        createBillItemForPaidToHospitalBill(paidBill);
+        
         if (paidBill != null) {
             for (OnlineBooking ob : paidToHospitalList) {
                 if (!ob.isPaidToHospital()) {
@@ -679,8 +868,116 @@ public class OnlineBookingAgentController implements Serializable {
         bookinsToAgenHospitalPayementCancellation.remove(selected);
         prepareCancellationAgentPaidToHospitalBills();
     }
+    
+    public void createBillItemForPaidToHospitalBill(Bill bill) {
+        BillItem bi = new BillItem();
+        bi.setNetValue(bill.getNetTotal());
+        bi.setGrossValue(bill.getNetTotal());
+        bi.setBillSession(null);
+        bi.setDiscount(0.0);
+        bi.setItem(null);
+        bi.setQty(1.0);
+        bi.setRate(bill.getNetTotal());
+        bi.setBill(bill);
+        
+        billItemFacade.create(bi);
+        
+    }
+
+    public void settleDirectFundBill() {
+        if (paidToHospitalPaymentMethod == null) {
+            JsfUtil.addErrorMessage("Please Select a Payment Method");
+            return;
+        }
+        
+        if (agentForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select a Booking Agent");
+            return;
+        }
+        
+        if (institutionForBookings == null) {
+            JsfUtil.addErrorMessage("Please Select a Institution");
+            return;
+        }
+        
+        double total = 0;
+        try {
+            switch (paidToHospitalPaymentMethod) {
+                case Cash:
+                    total = paidToHospitalDirectFundBill.getNetTotal();
+                    break;
+
+                case Card:
+                    total = getPaymentMethodData().getCreditCard().getTotalValue();
+                    break;
+
+                case Cheque:
+                    total = getPaymentMethodData().getCheque().getTotalValue();
+                    break;
+
+                case Slip:
+                    total = getPaymentMethodData().getSlip().getTotalValue();
+                    break;
+                default:
+                    throw new AssertionError();
+            }
+            if (total <= 0) {
+                JsfUtil.addErrorMessage("Please add valid amount to pay.");
+                return;
+            }
+        } catch (Exception e) {
+            JsfUtil.addErrorMessage("Please add valid amount to pay.");
+            return;
+        }
+        
+        Bill paidBill = createHospitalPaymentDirectFundBill(total);
+        
+        if(paidBill != null){
+            createPayment(paidBill, paidToHospitalPaymentMethod, false);
+        }
+        createBillItemForPaidToHospitalBill(paidBill);
+        
+        printBill = paidBill;
+        
+        JsfUtil.addSuccessMessage("Direct Fund is deposited successfully.");
+        
+        
+    }
+    
+    public Bill createHospitalPaymentDirectFundBill(double total) {
+        Bill paidBill = getPaidToHospitalDirectFundBill();
+        paidBill.setCreatedAt(new Date());
+        paidBill.setCreater(getSessionController().getLoggedUser());
+        paidBill.setToInstitution(institutionForBookings);
+        paidBill.setToDepartment(getSessionController().getDepartment());
+        paidBill.setDepartment(getSessionController().getDepartment());
+        paidBill.setFromInstitution(agentForBookings);
+        paidBill.setCreditCompany(agentForBookings);
+        paidBill.setTotal(total);
+        paidBill.setBalance(0d);
+        paidBill.setBillDate(new Date());
+        paidBill.setBillTime(new Date());
+        paidBill.setPaymentMethod(paidToHospitalPaymentMethod);
+
+        String billNo = bookingControllerViewScope.generateBillNumberInsId(paidBill);
+
+        if (billNo != null && !billNo.isEmpty()) {
+            paidBill.setDeptId(billNo);
+        }
+
+        if (paidBill.getId() == null) {
+            getBillFacade().create(paidBill);
+        } else {
+            getBillFacade().edit(paidBill);
+        }
+
+        return paidBill;
+
+    }
 
     public void clearPreviousValues() {
+        institutionForBookings = null;
+        paidToHospitalDirectFundBill = null;
         paidToHospitalBill = null;
         paidToHospitalPaymentMethod = null;
         paidToHospitalTotal = 0;
@@ -839,7 +1136,11 @@ public class OnlineBookingAgentController implements Serializable {
             JsfUtil.addErrorMessage("Please Select the Agent.");
             return;
         }
-        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, OnlineBookingStatus.COMPLETED);
+        List<OnlineBookingStatus> status = new ArrayList<>();
+        status.add(OnlineBookingStatus.COMPLETED);
+        status.add(OnlineBookingStatus.DOCTOR_CANCELED);
+
+        List<OnlineBooking> bookingList = channelService.fetchOnlineBookings(fromDate, toDate, agentForBookings, institutionForBookings, false, status);
 
         if (bookingList != null) {
             onlineBookingList = bookingList;

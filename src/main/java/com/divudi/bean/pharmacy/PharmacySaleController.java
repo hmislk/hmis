@@ -81,6 +81,7 @@ import com.divudi.core.facade.UserStockFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DiscountSchemeValidationService;
 import com.divudi.service.PaymentService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -182,9 +183,9 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     private PharmacyService pharmacyService;
     @EJB
     BillService billService;
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
     /////////////////////////
-    Item selectedAvailableAmp;
-    Item selectedAlternative;
     private PreBill preBill;
     private Bill saleBill;
     Bill printBill;
@@ -196,7 +197,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Double qty;
     Integer intQty;
     Stock stock;
-    Stock replacableStock;
     private List<ClinicalFindingValue> allergyListOfPatient;
     private boolean billSettlingStarted;
 
@@ -218,11 +218,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     Institution toInstitution;
     String errorMessage = "";
 
-    /////////////////
-    List<Stock> replaceableStocks;
-    //List<BillItem> billItems;
-    List<Item> itemsWithoutStocks;
-    /////////////////////////
     double cashPaid;
     double netTotal;
     double balance;
@@ -311,7 +306,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void clearForNewBill() {
-        selectedAlternative = null;
         preBill = null;
         saleBill = null;
         printBill = null;
@@ -328,8 +322,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patientTabId = "tabPt";
         strTenderedValue = "";
         billPreview = false;
-        replaceableStocks = null;
-        itemsWithoutStocks = null;
         paymentMethodData = null;
         cashPaid = 0;
         netTotal = 0;
@@ -339,7 +331,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     public void clearNewBillForMembers() {
-        selectedAlternative = null;
         preBill = null;
         saleBill = null;
         printBill = null;
@@ -357,8 +348,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         patientSearchTab = 1;
         strTenderedValue = "";
         billPreview = false;
-        replaceableStocks = null;
-        itemsWithoutStocks = null;
         paymentMethodData = null;
         cashPaid = 0;
         netTotal = 0;
@@ -645,10 +634,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         return Sex.values();
     }
 
-    public List<Stock> getReplaceableStocks() {
-        return replaceableStocks;
-    }
-
     public Integer getIntQty() {
         if (qty == null) {
             return null;
@@ -679,42 +664,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setStock(Stock stock) {
         this.stock = stock;
-    }
-
-    public void setReplaceableStocks(List<Stock> replaceableStocks) {
-        this.replaceableStocks = replaceableStocks;
-    }
-
-    public Item getSelectedAlternative() {
-        return selectedAlternative;
-    }
-
-    public void setSelectedAlternative(Item selectedAlternative) {
-        this.selectedAlternative = selectedAlternative;
-    }
-
-    public void selectReplaceableStocks() {
-        if (selectedAlternative == null || !(selectedAlternative instanceof Amp)) {
-            replaceableStocks = new ArrayList<>();
-            return;
-        }
-        String sql;
-        Map m = new HashMap();
-        double d = 0.0;
-        Amp amp = (Amp) selectedAlternative;
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("s", d);
-        m.put("vmp", amp.getVmp());
-        sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp where i.stock >:s and i.department=:d and amp.vmp=:vmp order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findByJpql(sql, m);
-    }
-
-    public List<Item> getItemsWithoutStocks() {
-        return itemsWithoutStocks;
-    }
-
-    public void setItemsWithoutStocks(List<Item> itemsWithoutStocks) {
-        this.itemsWithoutStocks = itemsWithoutStocks;
     }
 
     public String newSaleBillWithoutReduceStock() {
@@ -901,8 +850,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
-//        itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
     }
 
@@ -921,8 +868,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
             sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
         }
         stockList = getStockFacade().findByJpql(sql, m, 20);
-//        itemsWithoutStocks = completeRetailSaleItems(qry);
-        //////System.out.println("selectedSaleitems = " + itemsWithoutStocks);
         return stockList;
     }
 
@@ -951,8 +896,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         if (qry.length() > 5 && items.size() == 1) {
             stock = items.get(0);
             handleSelectAction();
-        } else if (!qry.trim().isEmpty() && qry.length() > 4) {
-            itemsWithoutStocks = completeRetailSaleItemsWithoutStocks(qry);
         }
         return items;
     }
@@ -1068,53 +1011,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         calculateRates(billItem);
         pharmacyService.addBillItemInstructions(billItem);
 
-        boolean findAlternatives = configOptionApplicationController.getBooleanValueByKey("Show alternative medicines available during retail sale", false);
-        if (findAlternatives) {
-            if (stock != null && stock.getItemBatch() != null) {
-                fillReplaceableStocksForAmp((Amp) stock.getItemBatch().getItem());
-            }
-        }
-    }
-
-    public List<Item> completeRetailSaleItemsWithoutStocks(String qry) {
-        Map m = new HashMap<>();
-        List<Item> items;
-        String sql;
-
-        if (qry.length() > 4) {
-            sql = "select i from Amp i "
-                    + "where i.retired=false and "
-                    + "((i.name) like :n or (i.code) like :n  or (i.barcode) like :n  or (i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n  or (ibs.itemBatch.item.barcode) like :n  or (ibs.itemBatch.item.vmp.name) like :n )  ) "
-                    + "order by i.name ";
-
-        } else {
-
-            sql = "select i from Amp i "
-                    + "where i.retired=false and "
-                    + "((i.name) like :n or (i.code) like :n or (i.vmp.name) like :n) and "
-                    + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ((ibs.itemBatch.item.name) like :n or (ibs.itemBatch.item.code) like :n or (ibs.itemBatch.item.vmp.name) like :n )  ) "
-                    + "order by i.name ";
-
-        }
-
-//        if (qry.length() > 4) {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n or (i.itemBatch.item.vmp.name) like :n) order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-//        } else {
-//            sql = "select i from Stock i where i.stock >:s and i.department=:d and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.vmp.name) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
-//        }
-//
-//        sql = "select i from Amp i "
-//                + "where i.retired=false and "
-//                + "(i.name) like :n and "
-//                + "i.id not in(select ibs.itemBatch.item.id from Stock ibs where ibs.stock >:s and ibs.department=:d and ibs.itemBatch.item.name like :n) "
-//                + "order by i.name ";
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("n", "%" + qry + "%");
-        double s = 0.0;
-        m.put("s", s);
-        items = getItemFacade().findByJpql(sql, m, 10);
-        return items;
     }
 
     public void handleSelect(SelectEvent event) {
@@ -1149,38 +1045,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 //        bi.setNetRate(bi.getRate() - bi.getDiscount());
 //        //  ////System.err.println("Net "+bi.getNetRate());
 //    }
-    public void fillReplaceableStocksForAmp(Amp ampIn) {
-        String sql;
-        Map m = new HashMap();
-        double d = 0.0;
-        Amp amp = ampIn;
-        m.put("d", getSessionController().getLoggedUser().getDepartment());
-        m.put("s", d);
-        m.put("vmp", amp.getVmp());
-        m.put("a", amp);
-        sql = "select i from Stock i join treat(i.itemBatch.item as Amp) amp "
-                + "where i.stock >:s and "
-                + "i.department=:d and "
-                + "amp.vmp=:vmp "
-                + "and amp<>:a "
-                + "order by i.itemBatch.item.name";
-        replaceableStocks = getStockFacade().findByJpql(sql, m);
-    }
-
-    public void makeStockAsBillItemStock() {
-        ////System.out.println("replacableStock = " + replacableStock);
-        setStock(replacableStock);
-        ////System.out.println("getStock() = " + getStock());
-    }
-
-    public void selectReplaceableStocksNew() {
-        if (selectedAvailableAmp == null || !(selectedAvailableAmp instanceof Amp)) {
-            replaceableStocks = new ArrayList<>();
-            return;
-        }
-        fillReplaceableStocksForAmp((Amp) selectedAvailableAmp);
-    }
-
     public void calculateBillItemListner(AjaxBehaviorEvent event) {
         calculateBillItem();
     }
@@ -2496,6 +2360,12 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         setPrintBill(getBillFacade().find(getSaleBill().getId()));
 
+        // Ensure BillFinanceDetails are populated for accurate reporting
+        if (getSaleBill() != null) {
+            pharmacyCostingService.updateBillFinanceDetailsForRetailSale(getSaleBill());
+            getBillFacade().edit(getSaleBill());
+        }
+
         if (toStaff != null && getPaymentMethod() == PaymentMethod.Credit) {
             getStaffBean().updateStaffCredit(toStaff, netTotal);
             JsfUtil.addSuccessMessage("User Credit Updated");
@@ -2513,24 +2383,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
         }
 
-//        if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff_Welfare) {
-//            staffBean.updateStaffWelfare(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Welfare Balance Updated");
-//        } else if (toStaff != null && getPaymentMethod() == PaymentMethod.Staff) {
-//            staffBean.updateStaffCredit(toStaff, netTotal);
-//            JsfUtil.addSuccessMessage("Staff Credit Updated");
-//        }
-//
-//        if (paymentMethod == PaymentMethod.PatientDeposit) {
-//            if (getPatient().getRunningBalance() != null) {
-//                getPatient().setRunningBalance(getPatient().getRunningBalance() - netTotal);
-//            } else {
-//                getPatient().setRunningBalance(0.0 - netTotal);
-//            }
-//            getPatientFacade().edit(getPatient());
-//            PatientDeposit pd = patientDepositController.getDepositOfThePatient(getPatient(), sessionController.getDepartment());
-//            patientDepositController.updateBalance(getSaleBill(), pd);
-//        }
         paymentService.updateBalances(payments);
 
         resetAll();
@@ -3069,7 +2921,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
     }
 
     private void clearBillItem() {
-        replaceableStocks = null;
         billItem = null;
         editingBillItem = null;
         qty = null;
@@ -3417,21 +3268,6 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
         this.errorMessage = errorMessage;
     }
 
-    public Stock getReplacableStock() {
-        return replacableStock;
-    }
-
-    public void setReplacableStock(Stock replacableStock) {
-        this.replacableStock = replacableStock;
-    }
-
-    public Item getSelectedAvailableAmp() {
-        return selectedAvailableAmp;
-    }
-
-    public void setSelectedAvailableAmp(Item selectedAvailableAmp) {
-        this.selectedAvailableAmp = selectedAvailableAmp;
-    }
 
     public UserStockContainerFacade getUserStockContainerFacade() {
         return userStockContainerFacade;
@@ -3570,6 +3406,16 @@ public class PharmacySaleController implements Serializable, ControllerWithPatie
 
     public void setBillSettlingStarted(boolean billSettlingStarted) {
         this.billSettlingStarted = billSettlingStarted;
+    }
+
+    public void calculateDobFromAge() {
+        if (patient == null) {
+            return;
+        }
+        if (patient.getPerson() == null) {
+            return;
+        }
+        patient.getPerson().calDobFromAge();
     }
 
 }

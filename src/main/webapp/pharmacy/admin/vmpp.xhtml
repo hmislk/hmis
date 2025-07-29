@@ -59,12 +59,14 @@
                         <p:panel id="gpDetail" header="VMPPs Details" >
                             <h:panelGrid columns="2" styleClass="alignTop" class="w-100" id="gridDetails" >
 
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <h:outputLabel value="Name" ></h:outputLabel>
                                 <p:inputText class="w-100"
                                              required="true"
                                              requiredMessage="Name Required" 
                                              autocomplete="off" value="#{vmppController.current.name}" ></p:inputText>
 
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <h:outputLabel value="VMP" style="white-space: nowrap;" ></h:outputLabel>
                                 <p:autoComplete class="w-100"
                                                 required="true"
@@ -84,6 +86,7 @@
                                     <f:convertNumber pattern="#" ></f:convertNumber>
                                 </p:inputText>
 
+                                <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
                                 <h:outputLabel value="Pack Unit" >
                                 </h:outputLabel>
                                 <p:selectOneMenu
@@ -95,6 +98,17 @@
                                     value="#{vmppController.current.strengthUnit}">
                                     <f:selectItem itemLabel="Select Strength Unit" ></f:selectItem>
                                     <f:selectItems value="#{measurementUnitController.items}" var="m" itemValue="#{m}" itemLabel="#{m.name}"/>
+                                </p:selectOneMenu>
+
+                                <h:outputText value="Type" />
+                                <p:selectOneMenu  
+                                    value="#{vmppController.current.departmentType}" 
+                                    class="w-100"
+                                    filter="true"
+                                    filterMatchMode="contains"
+                                    disabled="#{!vmppController.editable}">
+                                    <f:selectItem itemLabel="Select" ></f:selectItem>
+                                    <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
                                 </p:selectOneMenu>
 
                                 <p:outputLabel for="txtComments" value="Description" class="form-label"></p:outputLabel>

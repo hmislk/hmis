@@ -71,6 +71,7 @@ import com.divudi.core.data.ReportTemplateRowBundle;
 import com.divudi.core.data.ServiceType;
 import com.divudi.core.data.TokenType;
 import com.divudi.core.data.analytics.ReportTemplateType;
+import com.divudi.core.data.dto.OpdSaleSummaryDTO;
 import com.divudi.core.entity.AgentHistory;
 import com.divudi.core.entity.Category;
 import com.divudi.core.entity.Payment;
@@ -88,6 +89,7 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.core.light.common.BillLight;
 import com.divudi.core.light.common.BillSummaryRow;
 import com.divudi.service.BillService;
+import com.divudi.service.ChannelService;
 import com.divudi.service.PatientInvestigationService;
 
 import java.io.InputStream;
@@ -378,6 +380,7 @@ public class SearchController implements Serializable {
 
     private ReportTemplateRowBundle bundle;
     private ReportTemplateRowBundle bundleBillItems;
+    private List<OpdSaleSummaryDTO> opdSaleSummaryDtos;
 
     private List<CashBookEntry> cashBookEntries;
     private Institution site;
@@ -581,6 +584,7 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
 //        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
@@ -732,6 +736,7 @@ public class SearchController implements Serializable {
         billTypeAtomic.add(BillTypeAtomic.CC_BILL_REFUND);
         //Pharmacy Types
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
 //        billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_CANCELLED);
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS);
         billTypeAtomic.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_REFUND);
@@ -2464,6 +2469,14 @@ public class SearchController implements Serializable {
 
     public void setBundleBillItems(ReportTemplateRowBundle bundleBillItems) {
         this.bundleBillItems = bundleBillItems;
+    }
+
+    public List<OpdSaleSummaryDTO> getOpdSaleSummaryDtos() {
+        return opdSaleSummaryDtos;
+    }
+
+    public void setOpdSaleSummaryDtos(List<OpdSaleSummaryDTO> opdSaleSummaryDtos) {
+        this.opdSaleSummaryDtos = opdSaleSummaryDtos;
     }
 
     public int getOpdAnalyticsIndex() {
@@ -7636,12 +7649,28 @@ public class SearchController implements Serializable {
         return "/opd/analytics/itemized_sale_summary?faces-redirect=true";
     }
 
+    public String navigateToOptimizedItemizedSaleSummary() {
+        return "/opd/analytics/itemized_sale_summary_dto.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToLegacyItemizedSaleSummary() {
+        return "/opd/analytics/itemized_sale_summary.xhtml?faces-redirect=true";
+    }
+
     public String navigateToItemizedSaleReportOpd() {
         return "/opd/analytics/itemized_sale_report?faces-redirect=true";
     }
 
     public String navigateToIncomeBreakdownByCategoryOpd() {
         return "/opd/analytics/income_breakdown_by_category?faces-redirect=true";
+    }
+
+    public boolean isOptimizedItemizedSaleSummaryEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+    }
+
+    public boolean isLegacyItemizedSaleSummaryEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
     }
 
     public List<Payment> getPaymentDetals(Bill bill) {
@@ -8719,6 +8748,8 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
         List<BillTypeAtomic> billTypesAtomics = new ArrayList<>();
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITHOUT_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
+        billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_BOOKING_WITH_PAYMENT_ONLINE);
         billTypesAtomics.add(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_FOR_CREDIT_SETTLED_BOOKINGS);
@@ -9684,6 +9715,11 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  b.deptId like :billNo";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+            sql += " and  b.patient.code like :code";
+            temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -11447,7 +11483,7 @@ public class SearchController implements Serializable {
 
         if (site != null) {
             params.put("site", site);
-            jpql.append(" and b.department = :site ");
+            jpql.append(" and b.department.site = :site ");
         }
 
         if (webUser != null) {
@@ -12849,6 +12885,15 @@ public class SearchController implements Serializable {
         Date startTime = new Date();
 
         createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
+
+    }
+    
+    @EJB
+    private ChannelService channelService;
+    
+    public void creatAgentDirectFundPaymentTable() {
+        
+        bills = channelService.fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, null);
 
     }
 
@@ -14329,6 +14374,10 @@ public class SearchController implements Serializable {
         bundle = generateItemizedSalesSummary();
     }
 
+    public void createItemizedSalesSummaryDto() {
+        opdSaleSummaryDtos = generateItemizedSalesSummaryDto();
+    }
+
     public void createItemizedSalesReport() {
         bundle = generateItemizedSalesReport();
         if (withProfessionalFee) {
@@ -14799,7 +14848,11 @@ public class SearchController implements Serializable {
             collectionForTheDay += getSafeTotal(opdServiceRefundsCredit);
 
             // Generate Pharmacy Collection and add to the main bundle
-            List<BillTypeAtomic> pharmacyCollectionBillTypes = BillTypeAtomic.findByServiceTypeAndFinanceType(ServiceType.PHARMACY, BillFinanceType.CASH_IN);
+            List<BillTypeAtomic> pharmacyCollectionBillTypes = new ArrayList<>();
+            pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
+            pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
+            pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_SALE_WITHOUT_STOCK);
             ReportTemplateRowBundle pharmacyCollection = generateTotalPaymentColumnByDepartment(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyCollection");
             pharmacyCollection.setName("Pharmacy Collection");
@@ -15149,6 +15202,7 @@ public class SearchController implements Serializable {
             // Generate Pharmacy Bills and add to the main bundle
             List<BillTypeAtomic> pharmacyCollectionBillTypes = new ArrayList<>();
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+            pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
             pharmacyCollectionBillTypes.add(BillTypeAtomic.PHARMACY_WHOLESALE);
             ReportTemplateRowBundle pharmacyCollection = generatePaymentMethodColumnsByBills(pharmacyCollectionBillTypes, nonCreditPaymentMethods);
             pharmacyCollection.setBundleType("pharmacyNonCreditBills");
@@ -15828,6 +15882,11 @@ public class SearchController implements Serializable {
                 });
 
         return oiBundle;
+    }
+
+    public List<OpdSaleSummaryDTO> generateItemizedSalesSummaryDto() {
+        return billService.fetchOpdSaleSummaryDTOs(fromDate, toDate, institution, site,
+                department, category, item);
     }
 
     public void billItemsToItamizedSaleSummary(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
@@ -17019,6 +17078,7 @@ public class SearchController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
 
         ap = reportTemplateController.generateBillReport(
                 btas,
@@ -17043,6 +17103,7 @@ public class SearchController implements Serializable {
         btas.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
         btas.add(BillTypeAtomic.OPD_BILL_REFUND);
         btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE);
+        btas.add(BillTypeAtomic.PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER);
         ap = reportTemplateController.generateBillReportWithoutProfessionalFees(
                 btas,
                 fromDate,
@@ -17841,6 +17902,10 @@ public class SearchController implements Serializable {
                 case "System Bookings":
                     bts.remove(BillTypeAtomic.CHANNEL_BOOKING_FOR_PAYMENT_ONLINE_COMPLETED_PAYMENT);
                     bts.remove(BillTypeAtomic.CHANNEL_CANCELLATION_WITH_PAYMENT_ONLINE_BOOKING);
+                    bts.remove(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL);
+                    bts.remove(BillTypeAtomic.CHANNEL_AGENT_PAID_TO_HOSPITAL_FOR_ONLINE_BOOKINGS_BILL_CANCELLATION);
+                    bts.remove(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN);
+                    bts.remove(BillTypeAtomic.PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_SESSION);
                     break;
                 case "Online Bookings":
                     bts = new ArrayList<BillTypeAtomic>();
@@ -17902,6 +17967,7 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
+        
     }
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {

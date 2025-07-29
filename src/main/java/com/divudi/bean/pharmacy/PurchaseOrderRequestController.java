@@ -25,7 +25,12 @@ import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemFacade;
 import com.divudi.core.facade.ItemsDistributorsFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.EmailFacade;
 import com.divudi.core.util.JsfUtil;
+import com.divudi.core.util.CommonFunctions;
+import com.divudi.ejb.EmailManagerEjb;
+import com.divudi.core.entity.AppEmail;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import java.io.Serializable;
@@ -62,6 +67,10 @@ public class PurchaseOrderRequestController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private ItemsDistributorsFacade itemsDistributorsFacade;
+    @EJB
+    private EmailFacade emailFacade;
+    @EJB
+    private EmailManagerEjb emailManagerEjb;
 
     @Inject
     private SessionController sessionController;
@@ -209,14 +218,9 @@ public class PurchaseOrderRequestController implements Serializable {
     @Inject
     private PharmacyController pharmacyController;
 
-    public void onFocus(BillItem bi) {
-        getPharmacyController().setPharmacyItem(bi.getItem());
-    }
-
     public void onEdit(BillItem bi) {
         bi.getPharmaceuticalBillItem().setQty(bi.getQty());
         bi.setNetValue(bi.getPharmaceuticalBillItem().getQty() * bi.getPharmaceuticalBillItem().getPurchaseRate());
-        getPharmacyController().setPharmacyItem(bi.getItem());
         calTotal();
     }
 
@@ -463,6 +467,82 @@ public class PurchaseOrderRequestController implements Serializable {
         printPreview = true;
     }
 
+    public void sendPurchaseOrderEmail() {
+        if (currentBill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        if (currentBill.getToInstitution() == null || currentBill.getToInstitution().getEmail() == null) {
+            JsfUtil.addErrorMessage("Supplier Email not available");
+            return;
+        }
+
+        String recipient = currentBill.getToInstitution().getEmail();
+        if (!CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Supplier Email is invalid");
+            return;
+        }
+
+        String body = generatePurchaseOrderHtml();
+        if (body == null) {
+            JsfUtil.addErrorMessage("Could not generate email body");
+            return;
+        }
+
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject("Purchase Order Request");
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setBill(currentBill);
+        email.setMessageType(MessageType.Marketing);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    java.util.Collections.singletonList(recipient),
+                    body,
+                    "Purchase Order Request",
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
+    }
+
+    private String generatePurchaseOrderHtml() {
+        try {
+            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+            javax.faces.component.UIComponent comp = fc.getViewRoot().findComponent("printPaper");
+            if (comp == null) {
+                return null;
+            }
+            java.io.StringWriter sw = new java.io.StringWriter();
+            javax.faces.context.ResponseWriter original = fc.getResponseWriter();
+            javax.faces.context.ResponseWriter rw = fc.getRenderKit().createResponseWriter(sw, null, "UTF-8");
+            fc.setResponseWriter(rw);
+            comp.encodeAll(fc);
+            fc.setResponseWriter(original);
+            return sw.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     // Extracted magic number for clarity
     private static final double MIN_PURCHASE_RATE = 0.00001;
 
@@ -663,6 +743,22 @@ public class PurchaseOrderRequestController implements Serializable {
 
     public void setTotalBillItemsCount(double totalBillItemsCount) {
         this.totalBillItemsCount = totalBillItemsCount;
+    }
+
+    public EmailFacade getEmailFacade() {
+        return emailFacade;
+    }
+
+    public void setEmailFacade(EmailFacade emailFacade) {
+        this.emailFacade = emailFacade;
+    }
+
+    public EmailManagerEjb getEmailManagerEjb() {
+        return emailManagerEjb;
+    }
+
+    public void setEmailManagerEjb(EmailManagerEjb emailManagerEjb) {
+        this.emailManagerEjb = emailManagerEjb;
     }
 
 }

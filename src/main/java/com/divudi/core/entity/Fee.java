@@ -47,6 +47,8 @@ public class Fee implements Serializable {
     @ManyToOne
     private Category forCategory;
     @ManyToOne
+    private Department forDepartment;
+    @ManyToOne
     Institution institution;
     @ManyToOne
     Department department;
@@ -55,7 +57,6 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff staff;
     @ManyToOne
-
     ServiceSession serviceSession;
     private boolean booleanValue;
     //Created Properties
@@ -83,10 +84,9 @@ public class Fee implements Serializable {
 
     Item packege;  //Ceylinco, LEC ,
     @ManyToOne
-
     Department fromDepartment;
-    @ManyToOne
 
+    @ManyToOne
     Department toDepartment;
 
     @ManyToOne
@@ -98,13 +98,10 @@ public class Fee implements Serializable {
     @ManyToOne
     Staff fromStaff;
     @ManyToOne
-
     Staff toStaff;
     @ManyToOne
-
     Speciality fromSpeciality;
     @ManyToOne
-
     Speciality toSpaciality;
     private boolean discountAllowed;
 
@@ -459,5 +456,14 @@ public class Fee implements Serializable {
         this.forCategory = forCategory;
     }
 
+    public Department getForDepartment() {
+        return forDepartment;
+    }
+
+    public void setForDepartment(Department forDepartment) {
+        this.forDepartment = forDepartment;
+    }
+
+    
 
 }

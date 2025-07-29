@@ -48,7 +48,7 @@
                                                 maxResults="10"
                                                 minQueryLength="3"
                                                 value="#{pharmacyIssueController.stock}"
-                                                completeMethod="#{stockController.completeAvailableStocks}"
+                                                completeMethod="#{stockController.completeAvailableStocksForAllowedDepartments}"
                                                 var="i"
                                                 itemLabel="#{i.itemBatch.item.name}"
                                                 itemValue="#{i}" >
