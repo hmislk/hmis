@@ -34,6 +34,7 @@ public class ReportLogController implements Serializable {
     // Analytics data
     private List<Object[]> mostUsedReports;
     private List<Object[]> heaviestReports;
+    private List<Object[]> failedReports;
     private List<Object[]> usageSummary;
 
     public void fillReportLogs() {
@@ -90,6 +91,26 @@ public class ReportLogController implements Serializable {
         hm.put("td", getToDate());
         mostUsedReports = reportLogFacade.findObjectArrayByJpql(jpql, hm, TemporalType.TIMESTAMP);
     }
+
+    /**
+     * Get failed reports with execution counts
+     */
+    public void fillFailedReports() {
+        String jpql = "SELECT rl.reportName, " +
+                "COUNT(rl), " +
+                "SUM(CASE WHEN rl.executionTimeInMillis IS NULL THEN 1 ELSE 0 END), " +
+                "MAX(rl.startTime) " +
+                "FROM ReportLog rl " +
+                "WHERE rl.startTime BETWEEN :fd AND :td " +
+                "GROUP BY rl.reportName " +
+                "HAVING SUM(CASE WHEN rl.executionTimeInMillis IS NULL THEN 1 ELSE 0 END) >= 1 " +
+                "ORDER BY COUNT(rl) DESC";
+
+        Map<String, Object> hm = new HashMap<>();
+        hm.put("fd", getFromDate());
+        hm.put("td", getToDate());
+        failedReports = reportLogFacade.findObjectArrayByJpql(jpql, hm, TemporalType.TIMESTAMP);
+    }
     
     /**
      * Get heaviest reports by average execution time
@@ -135,6 +156,7 @@ public class ReportLogController implements Serializable {
         fillMostUsedReports();
         fillHeaviestReports();
         fillUsageSummary();
+        fillFailedReports();
     }
 
     // Getters and setters for analytics data
@@ -147,6 +169,14 @@ public class ReportLogController implements Serializable {
 
     public void setMostUsedReports(List<Object[]> mostUsedReports) {
         this.mostUsedReports = mostUsedReports;
+    }
+
+    public List<Object[]> getFailedReports() {
+        return failedReports;
+    }
+
+    public void setFailedReports(List<Object[]> failedReports) {
+        this.failedReports = failedReports;
     }
 
     public List<Object[]> getHeaviestReports() {
