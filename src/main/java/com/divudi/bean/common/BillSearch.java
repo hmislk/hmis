@@ -3893,6 +3893,7 @@ public class BillSearch implements Serializable {
 
             case DIRECT_ISSUE_INWARD_MEDICINE:
                 return navigateToViewPharmacyDirectIssueForInpatientBill();
+            case ISSUE_MEDICINE_ON_REQUEST_INWARD_RETURN:
             case DIRECT_ISSUE_INWARD_MEDICINE_RETURN:
                 return navigateToViewPharmacyDirectIssueReturnForInpatientBill();
 
@@ -4014,7 +4015,9 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyBhtIssueBillPreview();
             case REQUEST_MEDICINE_INWARD:
                 return navigateToPharmacyBhtRequestBillPreview();
-
+            case ISSUE_MEDICINE_ON_REQUEST_INWARD_CANCELLATION:
+                return navigateToPharmacyBhtIssueCancellationBillView();
+                
         }
 
         return "";
@@ -4274,6 +4277,11 @@ public class BillSearch implements Serializable {
     public String navigateToPharmacyGrnCancellationBillView() {
         prepareToPharmacyCancellationBill();
         return "/pharmacy/pharmacy_cancel_grn";
+    }
+
+    public String navigateToPharmacyBhtIssueCancellationBillView() {
+        prepareToPharmacyCancellationBill();
+        return "/inward/bht_bill_cancel";
     }
 
     public String navigateToPharmacyGrnReturnBillView() {
