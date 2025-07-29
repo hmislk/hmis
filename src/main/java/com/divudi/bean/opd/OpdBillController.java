@@ -1808,11 +1808,11 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                 error = true;
             }
-            if (getPaymentMethodData().getCreditCard().getNo().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard No is Mandatory",true)) {
+            if ((getPaymentMethodData().getCreditCard().getNo() == null || getPaymentMethodData().getCreditCard().getNo().trim().equals("")) && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard No is Mandatory",true)) {
                 JsfUtil.addErrorMessage("Please Enter a Credit Card No.");
                 error = true;
             }
-            if (getPaymentMethodData().getCreditCard().getNo().length() < 4  && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Last 4 number of Credit Card is Mandatory.", true)) {
+            if (getPaymentMethodData().getCreditCard().getNo() != null && getPaymentMethodData().getCreditCard().getNo().length() < 4  && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Last 4 number of Credit Card is Mandatory.", true)) {
                 JsfUtil.addErrorMessage("Please Enter Last 4 number of Credit Card.");
                 error = true;
             }
