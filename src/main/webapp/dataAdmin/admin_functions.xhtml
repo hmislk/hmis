@@ -18,7 +18,7 @@
                                 <h:outputLabel value="From Date" />
                                 <p:calendar id="calFrom" 
                                             navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            value="#{billController.fromDate}">
+                                            value="#{dataAdministrationController.fromDate}">
                                     <p:ajax event="dateSelect" process="calFrom" />
                                 </p:calendar>
 
@@ -27,7 +27,7 @@
                                 <h:outputLabel value="To Date" />
                                 <p:calendar id="calTo"
                                             navigator="false" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
-                                            value="#{billController.toDate}">
+                                            value="#{dataAdministrationController.toDate}">
                                     <p:ajax event="dateSelect" process="calTo" />
                                 </p:calendar>
                             </p:panelGrid>
@@ -141,7 +141,7 @@
                                         </h:form>
                                     </td>
                                     <td>
-                                        #{billController.output}
+                                        #{dataAdministrationController.executionFeedback}
                                     </td>
                                 </tr>
 

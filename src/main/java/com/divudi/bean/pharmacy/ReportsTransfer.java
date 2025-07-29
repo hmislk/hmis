@@ -124,10 +124,10 @@ public class ReportsTransfer implements Serializable {
     private List<PharmacyTransferIssueDTO> transferIssueDtos; // DTO for efficient display
     private List<PharmacyTransferIssueBillItemDTO> transferIssueBillItemDtos; // DTO for item level display
     private List<ItemBHTIssueCountTrancerReciveCount> itemBHTIssueCountTrancerReciveCounts;
-    
+
     // Configuration for DTO vs Entity approach - true by default for better performance
     private boolean useDtoApproach = true;
-    
+
     /**
      * Determines if DTO version of reports should be available in navigation
      * This method can be used in navigation to conditionally show DTO buttons
@@ -160,11 +160,6 @@ public class ReportsTransfer implements Serializable {
     // <editor-fold defaultstate="collapsed" desc="Functions">
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
-    
-    
-    
-    
-    
     // </editor-fold>
     public String navigateToTransferIssueByBillItem() {
         transferBills = null;
@@ -423,13 +418,10 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void fillDepartmentTransfersIssueByBillItem() {
-        if (useDtoApproach) {
-            fillDepartmentTransfersIssueByBillItemDto();
-        } else {
-            fillDepartmentTransfersIssueByBillItemEntity();
-        }
+        fillDepartmentTransfersIssueByBillItemDto();
     }
 
+    @Deprecated // Need to remove if QAs are fine with fillDepartmentTransfersIssueByBillItemDto
     private void fillDepartmentTransfersIssueByBillItemEntity() {
         Date startTime = new Date();
 
@@ -439,11 +431,11 @@ public class ReportsTransfer implements Serializable {
         retailValue = 0.0;
         costValue = 0.0;
         transferValue = 0.0;
-        
+
         for (BillItem ts : transferItems) {
             double qty = ts.getPharmaceuticalBillItem().getQtyInUnit();
             ItemBatch itemBatch = ts.getPharmaceuticalBillItem().getItemBatch();
-            
+
             // Purchase Value calculation
             if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineNetTotal() != null) {
                 purchaseValue += ts.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
@@ -451,14 +443,14 @@ public class ReportsTransfer implements Serializable {
                 // Fallback to purchase rate if financial details are missing
                 purchaseValue += (itemBatch.getPurcahseRate() * qty);
             }
-            
+
             // Retail Value calculation
             saleValue += (itemBatch.getRetailsaleRate() * qty);
             retailValue += (itemBatch.getRetailsaleRate() * qty);
-            
+
             // Cost Value calculation
             costValue += (itemBatch.getCostRate() * qty);
-            
+
             // Transfer Value calculation (from BillItemFinanceDetails)
             if (ts.getBillItemFinanceDetails() != null && ts.getBillItemFinanceDetails().getLineGrossTotal() != null) {
                 transferValue += ts.getBillItemFinanceDetails().getLineGrossTotal().doubleValue();
@@ -521,28 +513,39 @@ public class ReportsTransfer implements Serializable {
     }
 
     private void fillDepartmentTransfersIssueByBillItemDto() {
+        System.out.println("=== DEBUG: Starting fillDepartmentTransfersIssueByBillItemDto ===");
+
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
-            .append("b.deptId, b.createdAt, it.name, it.code,")
-            .append(" p.qty, ib.costRate, (ib.costRate * p.qty),")
-            .append(" ib.retailsaleRate, (ib.retailsaleRate * p.qty),")
-            .append(" ib.purcahseRate, (ib.purcahseRate * p.qty),")
-            .append(" coalesce(bfd.lineGrossRate,0.0), coalesce(bfd.lineGrossTotal,0.0))")
-            .append(" from BillItem bi")
-            .append(" join bi.bill b")
-            .append(" join bi.pharmaceuticalBillItem p")
-            .append(" join p.itemBatch ib")
-            .append(" left join bi.billItemFinanceDetails bfd")
-            .append(" join bi.item it")
-            .append(" where b.billType=:bt")
-            .append(" and b.retired=false and bi.retired=false")
-            .append(" and b.createdAt between :fd and :td ");
+                .append("b.deptId, b.createdAt, it.name, it.code,")
+                .append(" p.qty, p.purchaseRate, bfd.valueAtPurchaseRate,")
+                .append(" p.retailRate, bfd.valueAtRetailRate,")
+                .append(" p.purchaseRate, bfd.valueAtPurchaseRate,")
+                .append(" bfd.lineGrossRate, bfd.lineGrossTotal)")
+                .append(" from BillItem bi")
+                .append(" join bi.bill b")
+                .append(" join bi.pharmaceuticalBillItem p")
+                .append(" join p.itemBatch ib")
+                .append(" left join bi.billItemFinanceDetails bfd")
+                .append(" join bi.item it")
+                .append(" where b.billType=:bt")
+                .append(" and b.retired=false and bi.retired=false")
+                .append(" and b.createdAt between :fd and :td ");
+
+        System.out.println("DEBUG: Initial JPQL query: " + jpql.toString());
 
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bt", BillType.PharmacyTransferIssue);
+
+        System.out.println("DEBUG: Parameters set:");
+        System.out.println("  - fromDate (fd): " + fromDate);
+        System.out.println("  - toDate (td): " + toDate);
+        System.out.println("  - billType (bt): " + BillType.PharmacyTransferIssue);
+        System.out.println("  - fromDepartment: " + (fromDepartment != null ? fromDepartment.getName() : "null"));
+        System.out.println("  - toDepartment: " + (toDepartment != null ? toDepartment.getName() : "null"));
 
         if (fromDepartment != null) {
             jpql.append(" and b.department=:fdept");
@@ -556,30 +559,59 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by bi.id");
 
-        transferIssueBillItemDtos = (List<PharmacyTransferIssueBillItemDTO>) getBillItemFacade()
-                .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+        System.out.println("DEBUG: Final JPQL query: " + jpql.toString());
+        System.out.println("DEBUG: Final parameters: " + params);
+
+        try {
+            transferIssueBillItemDtos = (List<PharmacyTransferIssueBillItemDTO>) getBillItemFacade()
+                    .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
+
+            if (transferIssueBillItemDtos != null && !transferIssueBillItemDtos.isEmpty()) {
+                for (int i = 0; i < Math.min(3, transferIssueBillItemDtos.size()); i++) {
+                    PharmacyTransferIssueBillItemDTO dto = transferIssueBillItemDtos.get(i);
+                }
+            } else {
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         purchaseValue = 0.0;
+        saleValue = 0.0;
+        retailValue = 0.0;
         costValue = 0.0;
         transferValue = 0.0;
 
+        System.out.println("DEBUG: Starting total calculations...");
+
         if (transferIssueBillItemDtos != null) {
             for (PharmacyTransferIssueBillItemDTO d : transferIssueBillItemDtos) {
+
                 if (d.getPurchaseValue() != null) {
                     purchaseValue += d.getPurchaseValue();
                 }
                 if (d.getCostValue() != null) {
                     costValue += d.getCostValue();
                 }
+                if (d.getRetailValue() != null) {
+                    retailValue += d.getRetailValue();
+                    saleValue += d.getRetailValue();
+                }
                 if (d.getTransferValue() != null) {
                     transferValue += d.getTransferValue();
                 }
             }
+        } else {
         }
+
+        System.out.println("DEBUG: Final calculated totals:");
+        System.out.println("  - purchaseValue: " + purchaseValue);
     }
 
     /**
-     * Main method that delegates to either DTO or Entity approach based on configuration
+     * Main method that delegates to either DTO or Entity approach based on
+     * configuration
      */
     public void fillDepartmentTransfersIssueByBill() {
         if (useDtoApproach) {
@@ -600,8 +632,8 @@ public class ReportsTransfer implements Serializable {
     }
 
     /**
-     * Entity-based approach for backward compatibility
-     * Uses the traditional method with iterative calculations
+     * Entity-based approach for backward compatibility Uses the traditional
+     * method with iterative calculations
      */
     public void fillDepartmentTransfersIssueByBillEntity() {
         reportTimerController.trackReportExecution(() -> {
@@ -611,50 +643,51 @@ public class ReportsTransfer implements Serializable {
     }
 
     /**
-     * Direct DTO query with aggregated financial data - follows DTO implementation guidelines
-     * This is the primary method that should be used for report display
+     * Direct DTO query with aggregated financial data - follows DTO
+     * implementation guidelines This is the primary method that should be used
+     * for report display
      */
     private void fillTransferIssueBillsDtoDirectly() {
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
-        
+
         jpql.append("SELECT new com.divudi.core.data.dto.PharmacyTransferIssueDTO(")
-            .append("b.id, ")
-            .append("COALESCE(b.deptId, ''), ")
-            .append("b.createdAt, ")
-            .append("COALESCE(b.department.name, ''), ")
-            .append("COALESCE(b.toDepartment.name, ''), ")
-            .append("COALESCE(p.name, ''), ")
-            .append("COALESCE(b.cancelled, false), ")
-            .append("COALESCE(b.refunded, false), ")
-            .append("COALESCE(b.comments, ''), ")
-            .append("COALESCE(bfd.totalCostValue, 0.0), ")
-            .append("COALESCE(bfd.totalRetailSaleValue, 0.0)") 
-            .append(") ")
-            .append("FROM Bill b ")
-            .append("LEFT JOIN b.billFinanceDetails bfd ")
-            .append("LEFT JOIN b.toStaff ts ")
-            .append("LEFT JOIN ts.person p ")
-            .append("WHERE b.billType = :bt ")
-            .append("AND b.retired = false ")
-            .append("AND b.createdAt BETWEEN :fd AND :td ");
-        
+                .append("b.id, ")
+                .append("COALESCE(b.deptId, ''), ")
+                .append("b.createdAt, ")
+                .append("COALESCE(b.department.name, ''), ")
+                .append("COALESCE(b.toDepartment.name, ''), ")
+                .append("COALESCE(p.name, ''), ")
+                .append("COALESCE(b.cancelled, false), ")
+                .append("COALESCE(b.refunded, false), ")
+                .append("COALESCE(b.comments, ''), ")
+                .append("COALESCE(bfd.totalCostValue, 0.0), ")
+                .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
+                .append(") ")
+                .append("FROM Bill b ")
+                .append("LEFT JOIN b.billFinanceDetails bfd ")
+                .append("LEFT JOIN b.toStaff ts ")
+                .append("LEFT JOIN ts.person p ")
+                .append("WHERE b.billType = :bt ")
+                .append("AND b.retired = false ")
+                .append("AND b.createdAt BETWEEN :fd AND :td ");
+
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bt", BillType.PharmacyTransferIssue);
-        
+
         if (fromDepartment != null) {
             jpql.append("AND b.department = :fdept ");
             params.put("fdept", fromDepartment);
         }
-        
+
         if (toDepartment != null) {
             jpql.append("AND b.toDepartment = :tdept ");
             params.put("tdept", toDepartment);
         }
-        
+
         jpql.append("ORDER BY b.id");
-        
+
         // Execute the DTO query
         // Execute the DTO query
         try {
@@ -678,20 +711,16 @@ public class ReportsTransfer implements Serializable {
             }
         }
     }
-    
 
     /**
-     * Legacy method for backward compatibility - will be removed in future version
+     * Legacy method for backward compatibility - will be removed in future
+     * version
+     *
      * @deprecated Use fillTransferIssueBillsDtoDirectly() instead
      */
     @Deprecated
     private void fillTransferIssueBillsLegacy() {
-        System.out.println("DEBUG ENTITY: Starting fillTransferIssueBillsLegacy method");
-        System.out.println("DEBUG ENTITY: fromDate=" + fromDate);
-        System.out.println("DEBUG ENTITY: toDate=" + toDate);
-        System.out.println("DEBUG ENTITY: fromDepartment=" + (fromDepartment != null ? fromDepartment.getName() : "null"));
-        System.out.println("DEBUG ENTITY: toDepartment=" + (toDepartment != null ? toDepartment.getName() : "null"));
-        
+
         Map params = new HashMap();
         String jpql;
         params.put("fd", fromDate);
@@ -731,23 +760,18 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void calculatePurachaseValuesOfBillItemsInBill(List<Bill> billList) {
-        System.out.println("DEBUG ENTITY: Starting calculatePurachaseValuesOfBillItemsInBill");
-        System.out.println("DEBUG ENTITY: billList is null: " + (billList == null));
         if (billList == null) {
-            System.out.println("DEBUG ENTITY: billList is null, returning");
             return;
         }
-        System.out.println("DEBUG ENTITY: billList size: " + billList.size());
-        
+
         // Reset totals before accumulating stored values
         totalsValue = 0.0;
         netTotalValues = 0.0;
-        
+
         for (Bill b : billList) {
-            System.out.println("DEBUG ENTITY: Processing bill - deptId: " + b.getDeptId() + ", id: " + b.getId());
             double saleValue = 0.0;
             double purchaseValue = 0.0;
-            
+
             for (BillItem bi : b.getBillItems()) {
                 // Use stored financial data - no calculations during report viewing
                 if (bi.getBillItemFinanceDetails() != null) {
@@ -755,25 +779,21 @@ public class ReportsTransfer implements Serializable {
                     if (bi.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
                         saleValue += bi.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
                     }
-                    
+
                     // Purchase value from stored transfer value (lineNetTotal contains the transfer rate value)
                     if (bi.getBillItemFinanceDetails().getLineNetTotal() != null) {
                         purchaseValue += bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
                     }
                 }
             }
-            
-            System.out.println("DEBUG ENTITY: Bill " + b.getDeptId() + " - saleValue: " + saleValue + ", purchaseValue: " + purchaseValue);
-            
+
             b.setSaleValue(saleValue);
             b.setPaidAmount(purchaseValue);
             b.setNetTotal(purchaseValue); // Show transfer value in "Purchase Value" column
             totalsValue += saleValue;
             netTotalValues += purchaseValue; // Accumulate transfer values for "Purchase Value" total
         }
-        
-        System.out.println("DEBUG ENTITY: Final totals - totalsValue: " + totalsValue + ", netTotalValues: " + netTotalValues);
-        System.out.println("DEBUG ENTITY: calculatePurachaseValuesOfBillItemsInBill method completed");
+
     }
 
     public void fillDepartmentBHTIssueByBill() {
@@ -1048,7 +1068,7 @@ public class ReportsTransfer implements Serializable {
             netTotalValues += dbl;
             netTotalSaleValues += db2;
             netTotalPurchaseValues += db3;
-            
+
         }
 
     }

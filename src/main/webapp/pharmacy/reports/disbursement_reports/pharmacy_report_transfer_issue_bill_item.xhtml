@@ -85,57 +85,57 @@
                                 </f:facet>
 
                                 <p:column headerText="Bill No"
-                                          sortBy="#{i.bill.deptId}"
-                                          filterBy="#{i.bill.deptId}"
+                                          sortBy="#{i.deptId}"
+                                          filterBy="#{i.deptId}"
                                           filterMatchMode="contains"
 
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Bill No"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.bill.deptId}" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.deptId}" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Date"
-                                          sortBy="#{i.bill.createdAt}"
-                                          filterBy="#{i.bill.createdAt}"
+                                          sortBy="#{i.createdAt}"
+                                          filterBy="#{i.createdAt}"
                                           filterMatchMode="contains"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Date"/>
                                     </f:facet>                                    
-                                    <h:outputLabel value="#{i.bill.createdAt}"  >
+                                    <h:outputLabel value="#{i.createdAt}"  >
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                     </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Item"
-                                          sortBy="#{i.item.name}"
-                                          filterBy="#{i.item.name}"
+                                          sortBy="#{i.itemName}"
+                                          filterBy="#{i.itemName}"
                                           filterMatchMode="contains">
                                     <f:facet name="header">
                                         <h:outputLabel value="Item"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.item.name}"  >                                      
+                                    <h:outputLabel value="#{i.itemName}"  >                                      
                                     </h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Code"
-                                          sortBy="#{i.item.code}"
-                                          filterBy="#{i.item.code}"
+                                          sortBy="#{i.itemCode}"
+                                          filterBy="#{i.itemCode}"
                                           filterMatchMode="contains"
                                           >
                                     <f:facet name="header">
                                         <h:outputLabel value="Code"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.item.code}" style="width: 100px!important;" ></h:outputLabel>
+                                    <h:outputLabel value="#{i.itemCode}" style="width: 100px!important;" ></h:outputLabel>
                                 </p:column>
 
                                 <p:column headerText="Quantity" style="text-align: right;">
                                     <f:facet name="header">
                                         <h:outputLabel value="Quantity"/>
                                     </f:facet> 
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.qty}" >
+                                    <h:outputLabel value="#{i.qty}" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>
                                 </p:column>
@@ -144,7 +144,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Rate"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}"  >
+                                    <h:outputLabel value="#{i.costRate}"  >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -153,7 +153,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Cost Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
+                                    <h:outputLabel value="#{i.costValue}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -162,7 +162,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Rate"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                                    <h:outputLabel value="#{i.retailRate}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -171,7 +171,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Retail Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.retailsaleRate * i.pharmaceuticalBillItem.qty}">
+                                    <h:outputLabel value="#{i.retailValue}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -180,7 +180,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Rate"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                                    <h:outputLabel value="#{i.purchaseRate}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -189,7 +189,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}">
+                                    <h:outputLabel value="#{i.purchaseValue}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -198,7 +198,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Transfer Rate"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.billItemFinanceDetails.lineGrossRate}">
+                                    <h:outputLabel value="#{i.transferRate}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -207,7 +207,7 @@
                                     <f:facet name="header">
                                         <h:outputLabel value="Transfer Value"/>
                                     </f:facet>
-                                    <h:outputLabel value="#{i.billItemFinanceDetails.lineGrossTotal}">
+                                    <h:outputLabel value="#{i.transferValue}">
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                     </h:outputLabel>                                  
                                 </p:column>
@@ -222,7 +222,15 @@
                                                 </h:outputLabel>
                                             </f:facet>
                                         </p:column>
-                                        <p:column colspan="3"/>
+                                        <p:column colspan="1"/>
+                                        <p:column style="text-align: right;">
+                                            <f:facet name="footer">
+                                                <h:outputLabel value="#{reportsTransfer.retailValue}">
+                                                    <f:convertNumber pattern="#,##0.00"/>
+                                                </h:outputLabel>
+                                            </f:facet>
+                                        </p:column>
+                                        <p:column colspan="1"/>
                                         <p:column style="text-align: right;">
                                             <f:facet name="footer">
                                                 <h:outputLabel value="#{reportsTransfer.purchaseValue}">
