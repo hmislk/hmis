@@ -27,6 +27,7 @@ public class BillFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // Inverse side of the relationship - Bill entity owns the FK BILLFINANCEDETAILS_ID
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 

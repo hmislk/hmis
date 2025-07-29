@@ -79,9 +79,7 @@ public class LaborataryReportController implements Serializable {
     @EJB
     PaymentService paymentService;
 
-
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -164,6 +162,7 @@ public class LaborataryReportController implements Serializable {
     private double totalServiceCharge;
 
     private int activeIndex;
+    private String strActiveIndex = "0";
 
     private List<TestWiseCountReport> testWiseCounts;
     private List<TestCountDTO> testWiseCountDtos;
@@ -173,11 +172,10 @@ public class LaborataryReportController implements Serializable {
     private double totalProFee;
     private double totalHosFee;
     private double totalCount;
-    
+
     private List<Payment> payments;
 
 // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -192,7 +190,14 @@ public class LaborataryReportController implements Serializable {
         setToDepartment(sessionController.getDepartment());
         return "/reportLab/laboratary_income_report?faces-redirect=true";
     }
-    
+
+    public String navigateToLaborataryIncomeReportFromLabAnalyticsDto() {
+        resetAllFiltersExceptDateRange();
+        setToInstitution(sessionController.getInstitution());
+        setToDepartment(sessionController.getDepartment());
+        return "/reportLab/laboratary_income_report_dto?faces-redirect=true";
+    }
+
     public String navigateToLaborataryCardIncomeReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
@@ -214,15 +219,6 @@ public class LaborataryReportController implements Serializable {
         return "/reportLab/test_wise_count?faces-redirect=true";
     }
 
-
-    public String navigateToOptimizedLaboratoryIncomeReport() {
-        return "/reportLab/laboratary_income_report_dto.xhtml?faces-redirect=true";
-    }
-
-    public String navigateToLegacyLaboratoryIncomeReport() {
-        return "/reportLab/laboratary_income_report.xhtml?faces-redirect=true";
-    }
-
     public boolean isOptimizedMethodEnabled() {
         return configController.getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
     }
@@ -230,7 +226,7 @@ public class LaborataryReportController implements Serializable {
     public boolean isLegacyMethodEnabled() {
         return configController.getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
     }
-  
+
     public String navigateToLaborataryTestWiseCountReportDtoFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
         setToInstitution(sessionController.getInstitution());
@@ -239,8 +235,9 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Functions">
+    // Simple tab persistence - no complex event handling needed
+    // The activeIndex binding handles persistence automatically
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
         setInstitution(null);
@@ -290,7 +287,7 @@ public class LaborataryReportController implements Serializable {
         totalCount = 0.0;
 
     }
-    
+
     public void processLaboratoryCardIncomeReport() {
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         payments = new ArrayList<>();
@@ -302,7 +299,7 @@ public class LaborataryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
-         billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        billTypeAtomics.add(BillTypeAtomic.OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
 
         //Add All Inward BillTypes
         billTypeAtomics.add(BillTypeAtomic.INWARD_SERVICE_BILL);
@@ -322,9 +319,9 @@ public class LaborataryReportController implements Serializable {
         billTypeAtomics.add(BillTypeAtomic.CC_BILL);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_CANCELLATION);
         billTypeAtomics.add(BillTypeAtomic.CC_BILL_REFUND);
-        
+
         List<Payment> allPayments = paymentService.fetchPayments(fromDate, toDate, institution, site, department, null, billTypeAtomics, null, null, null, null, visitType);
-        
+
         payments = allPayments.stream().filter(p -> p.getPaymentMethod() == PaymentMethod.Card).collect(Collectors.toList());
         totalNetTotal = allPayments.stream().filter(p -> p.getPaymentMethod() == PaymentMethod.Card).mapToDouble(Payment::getPaidValue).sum();
     }
@@ -403,6 +400,21 @@ public class LaborataryReportController implements Serializable {
         labIncomeReportDtos = billService.fetchBillsAsLabIncomeReportDTOs(fromDate,
                 toDate, institution, site, department, webUser, billTypeAtomics,
                 admissionType, paymentScheme, toInstitution, toDepartment, visitType);
+        
+        // Create IncomeBundle from DTOs to calculate payment breakdowns
+        bundle = new IncomeBundle(labIncomeReportDtos);
+        for (IncomeRow r : bundle.getRows()) {
+            if (r.getBill() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod() == null) {
+                continue;
+            }
+            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                r.setPayments(billService.fetchBillPayments(r.getBill()));
+            }
+        }
+        bundle.generatePaymentDetailsForBills();
     }
 
     public void processLaboratoryOrderReport() {
@@ -500,7 +512,6 @@ public class LaborataryReportController implements Serializable {
                 + " and type(bi.item) = :invType ";
 
         // Adding filters for institution, department, site
-
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
             params.put("ins", institution);
@@ -541,7 +552,6 @@ public class LaborataryReportController implements Serializable {
             params.put("type", visitType.trim());
         }
         jpql += " group by bi.item.name ";
-
 
         params.put("ret", false);
         params.put("fd", fromDate);
@@ -643,21 +653,21 @@ public class LaborataryReportController implements Serializable {
     public void processLabTestWiseCountReportDto() {
         Map<String, Object> params = new HashMap<>();
 
-        String jpql = "select new com.divudi.core.data.dto.TestCountDTO("+
-                "bi.item.id, bi.item.code, bi.item.name, "+
-                "count(bi), "+
-                "sum(bi.hospitalFee), "+
-                "sum(bi.collectingCentreFee), "+
-                "sum(bi.staffFee), "+
-                "sum(bi.reagentFee), "+
-                "sum(bi.otherFee), "+
-                "sum(bi.discount), "+
-                "sum(bi.netValue)) "+
-                " from BillItem bi "+
-                " where bi.retired = :ret "+
-                " and bi.bill.createdAt between :fd and :td "+
-                " and bi.bill.billTypeAtomic IN :bType "+
-                " and type(bi.item) = :invType ";
+        String jpql = "select new com.divudi.core.data.dto.TestCountDTO("
+                + "bi.item.id, bi.item.code, bi.item.name, "
+                + "count(bi), "
+                + "sum(bi.hospitalFee), "
+                + "sum(bi.collectingCentreFee), "
+                + "sum(bi.staffFee), "
+                + "sum(bi.reagentFee), "
+                + "sum(bi.otherFee), "
+                + "sum(bi.discount), "
+                + "sum(bi.netValue)) "
+                + " from BillItem bi "
+                + " where bi.retired = :ret "
+                + " and bi.bill.createdAt between :fd and :td "
+                + " and bi.bill.billTypeAtomic IN :bType "
+                + " and type(bi.item) = :invType ";
 
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
@@ -714,7 +724,7 @@ public class LaborataryReportController implements Serializable {
         }
     }
 
-    public List <TestWiseCountReport> alphabetList(List <TestWiseCountReport> testWiseCounts) {
+    public List<TestWiseCountReport> alphabetList(List<TestWiseCountReport> testWiseCounts) {
 
         List<TestWiseCountReport> reportList = testWiseCounts.stream()
                 .sorted(Comparator.comparing(TestWiseCountReport::getTestName))
@@ -724,7 +734,6 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -1237,7 +1246,6 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-
     public List<Payment> getPayments() {
         return payments;
     }
@@ -1252,6 +1260,14 @@ public class LaborataryReportController implements Serializable {
 
     public void setLabIncomeReportDtos(List<LabIncomeReportDTO> labIncomeReportDtos) {
         this.labIncomeReportDtos = labIncomeReportDtos;
+    }
+
+    public String getStrActiveIndex() {
+        return strActiveIndex;
+    }
+
+    public void setStrActiveIndex(String strActiveIndex) {
+        this.strActiveIndex = strActiveIndex;
     }
 
 }
