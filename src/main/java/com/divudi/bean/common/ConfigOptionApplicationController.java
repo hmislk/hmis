@@ -94,6 +94,7 @@ public class ConfigOptionApplicationController implements Serializable {
     public void init() {
         loadApplicationOptions();
         loadPharmacyAnalyticsConfigurationDefaults();
+        loadReportMethodConfigurationDefaults();
     }
 
     public void loadApplicationOptions() {
@@ -109,6 +110,8 @@ public class ConfigOptionApplicationController implements Serializable {
         loadPharmacyTransferReceiveReceiptConfigurationDefaults();
         loadPharmacyTransferRequestReceiptConfigurationDefaults();
         loadPharmacyDirectPurchaseWithoutCostingConfigurationDefaults();
+        loadPharmacyCommonBillConfigurationDefaults();
+        loadPharmacyAdjustmentReceiptConfigurationDefaults();
         loadPatientNameConfigurationDefaults();
     }
 
@@ -500,6 +503,104 @@ public class ConfigOptionApplicationController implements Serializable {
         );
     }
 
+    private void loadPharmacyCommonBillConfigurationDefaults() {
+        getLongTextValueByKey("Pharmacy Common Bill CSS",
+                ".receipt-container {\n"
+                + "    font-family: Verdana, sans-serif;\n"
+                + "    font-size: 12px;\n"
+                + "    color: #000;\n"
+                + "    width: 21cm;\n"
+                + "    margin: auto;\n"
+                + "    page-break-inside: avoid;\n"
+                + "}\n"
+                + ".receipt-header {\n"
+                + "    margin-bottom: 15px;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".receipt-institution-name {\n"
+                + "    font-weight: bold;\n"
+                + "    font-size: 18px;\n"
+                + "    margin-bottom: 5px;\n"
+                + "}\n"
+                + ".receipt-institution-contact {\n"
+                + "    font-size: 10px;\n"
+                + "    margin-bottom: 10px;\n"
+                + "}\n"
+                + ".receipt-title {\n"
+                + "    text-align: center;\n"
+                + "    font-size: 16px;\n"
+                + "    font-weight: bold;\n"
+                + "    margin: 15px 0;\n"
+                + "    text-decoration: underline;\n"
+                + "}\n"
+                + ".receipt-separator {\n"
+                + "    margin: 10px 0;\n"
+                + "    border-top: 1px solid #333;\n"
+                + "}\n"
+                + ".receipt-details-table {\n"
+                + "    width: 100%;\n"
+                + "    margin-bottom: 15px;\n"
+                + "    border-collapse: collapse;\n"
+                + "}\n"
+                + ".receipt-details-table td {\n"
+                + "    padding: 3px 5px;\n"
+                + "    vertical-align: top;\n"
+                + "}\n"
+                + ".receipt-details-table td:first-child {\n"
+                + "    font-weight: bold;\n"
+                + "    width: 20%;\n"
+                + "}\n"
+                + ".receipt-details-table td:nth-child(2) {\n"
+                + "    width: 5%;\n"
+                + "    text-align: center;\n"
+                + "}\n"
+                + ".noBorder, .noBorder td, .noBorder th {\n"
+                + "    border: none !important;\n"
+                + "}\n"
+                + ".normalFont {\n"
+                + "    font-size: 12px;\n"
+                + "}\n"
+                + ".text-end {\n"
+                + "    text-align: right;\n"
+                + "}\n"
+                + "@media print {\n"
+                + "    .receipt-container {\n"
+                + "        margin: 0;\n"
+                + "        page-break-after: always;\n"
+                + "    }\n"
+                + "}\n"
+        );
+        getLongTextValueByKey("Pharmacy Common Bill Header", "");
+        getLongTextValueByKey("Pharmacy Common Bill Footer", "");
+    }
+
+    private void loadPharmacyAdjustmentReceiptConfigurationDefaults() {
+        // Purchase Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Purchase Rate Footer", "");
+        
+        // Cost Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Cost Rate Footer", "");
+        
+        // Retail Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Retail Rate Footer", "");
+        
+        // Stock Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Stock CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Stock Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Stock Footer", "");
+        
+        // Wholesale Rate Adjustment specific configurations
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate CSS", "");
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Header", "");
+        getLongTextValueByKey("Pharmacy Adjustment Wholesale Rate Footer", "");
+    }
+
     private void loadPatientNameConfigurationDefaults() {
         getBooleanValueByKey("Capitalize Entire Patient Name", false);
         getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
@@ -647,6 +748,37 @@ public class ConfigOptionApplicationController implements Serializable {
         buttonOptions.forEach(k -> getBooleanValueByKey(k, true));
     }
 
+    private void loadReportMethodConfigurationDefaults() {
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+
+        // Lab Reports
+        getBooleanValueByKey("Lab Daily Summary Report - Legacy Method", true);
+        getBooleanValueByKey("Lab Daily Summary Report - Optimized Method", false);
+        getBooleanValueByKey("Test Wise Count Report - Legacy Method", true);
+        getBooleanValueByKey("Test Wise Count Report - Optimized Method", false);
+        getBooleanValueByKey("Laboratory Income Report - Legacy Method", true);
+        getBooleanValueByKey("Laboratory Income Report - Optimized Method", false);
+
+        // OPD Reports
+        getBooleanValueByKey("OPD Itemized Sale Summary - Legacy Method", true);
+        getBooleanValueByKey("OPD Itemized Sale Summary - Optimized Method", false);
+        getBooleanValueByKey("OPD Income Report - Legacy Method", true);
+        getBooleanValueByKey("OPD Income Report - Optimized Method", false);
+
+        // Pharmacy Reports
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Transfer Issue Bill Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Income Report - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Income Report - Optimized Method", false);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Legacy Method", true);
+        getBooleanValueByKey("Pharmacy Search Sale Bill - Optimized Method", false);
+
+    }
+
     public ConfigOption getApplicationOption(String key) {
         if (applicationOptions == null) {
             loadApplicationOptions();
@@ -668,15 +800,7 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public List<Denomination> getDenominations() {
-//        if (denominations == null) {
-//            initializeDenominations();
-//        }
-//        for (Denomination d : denominations) {
-//            d.setCount(0);
-//        }
-//        return denominations;
-//    }
+
     public void saveShortTextOption(String key, String value) {
         ConfigOption option = getApplicationOption(key);
         if (option == null) {
@@ -684,15 +808,6 @@ public class ConfigOptionApplicationController implements Serializable {
         }
     }
 
-//    public ConfigOption getOptionValueByKey(String key) {
-//        StringBuilder jpql = new StringBuilder("SELECT o FROM ConfigOption o WHERE o.optionKey = :key AND o.scope = :scope");
-//        Map<String, Object> params = new HashMap<>();
-//        params.put("key", key);
-//        params.put("scope", OptionScope.APPLICATION);
-//        jpql.append(" AND o.department IS NULL AND o.institution IS NULL AND o.webUser IS NULL");
-//        ConfigOption option = optionFacade.findFirstByJpql(jpql.toString(), params);
-//        return option;
-//    }
     public <E extends Enum<E>> E getEnumValue(ConfigOption option, Class<E> enumClass) {
         if (option.getEnumType() == null || option.getEnumValue() == null) {
             return null; // Or throw an exception if appropriate
@@ -778,6 +893,30 @@ public class ConfigOptionApplicationController implements Serializable {
             option = createApplicationOptionIfAbsent(key, OptionValueType.LONG_TEXT, defaultValue);
         }
         return option.getOptionValue();
+    }
+
+    public String getPharmacyBillCSSWithFallback(String specificKey) {
+        String specificCSS = getLongTextValueByKey(specificKey);
+        if (specificCSS != null && !specificCSS.trim().isEmpty()) {
+            return specificCSS;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill CSS");
+    }
+
+    public String getPharmacyBillHeaderWithFallback(String specificKey) {
+        String specificHeader = getLongTextValueByKey(specificKey);
+        if (specificHeader != null && !specificHeader.trim().isEmpty()) {
+            return specificHeader;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill Header");
+    }
+
+    public String getPharmacyBillFooterWithFallback(String specificKey) {
+        String specificFooter = getLongTextValueByKey(specificKey);
+        if (specificFooter != null && !specificFooter.trim().isEmpty()) {
+            return specificFooter;
+        }
+        return getLongTextValueByKey("Pharmacy Common Bill Footer");
     }
 
     public void setLongTextValueByKey(String key, String value) {

@@ -3,6 +3,8 @@ package com.divudi.core.data;
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -286,6 +288,66 @@ public class IncomeRow implements Serializable {
         bill.setBillFinanceDetails(billFinanceDetails);
 
         this.bill = bill;
+    }
+
+    public IncomeRow(OpdIncomeReportDTO dto) {
+        this();
+
+        Bill bill = new Bill();
+        bill.setId(dto.getBillId());
+        bill.setDeptId(dto.getDeptId());
+        if (dto.getPatientName() != null) {
+            Patient patient = new Patient();
+            Person person = new Person();
+            person.setName(dto.getPatientName());
+            patient.setPerson(person);
+            bill.setPatient(patient);
+        }
+        bill.setBillTypeAtomic(dto.getBillTypeAtomic());
+        bill.setCreatedAt(dto.getCreatedAt());
+        bill.setNetTotal(dto.getNetTotal());
+        bill.setPaymentMethod(dto.getPaymentMethod());
+        bill.setTotal(dto.getTotal());
+        bill.setPatientEncounter(dto.getPatientEncounter());
+        bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+        bill.setMargin(dto.getMargin() != null ? dto.getMargin() : 0.0);
+        bill.setServiceCharge(dto.getServiceCharge() != null ? dto.getServiceCharge() : 0.0);
+        bill.setPaymentScheme(dto.getPaymentScheme());
+
+        this.bill = bill;
+    }
+
+    public IncomeRow(LabIncomeReportDTO dto) {
+        this();
+        
+        System.out.println("DEBUG: Creating IncomeRow from LabIncomeReportDTO");
+        System.out.println("  - DTO billId: " + dto.getBillId());
+        System.out.println("  - DTO billNumber: " + dto.getBillNumber());
+        System.out.println("  - DTO billTypeAtomic: " + dto.getBillTypeAtomic());
+        System.out.println("  - DTO paymentMethod: " + dto.getPaymentMethod());
+
+        Bill bill = new Bill();
+        bill.setId(dto.getBillId());
+        bill.setDeptId(dto.getBillNumber());
+        if (dto.getPatientName() != null) {
+            Patient patient = new Patient();
+            Person person = new Person();
+            person.setName(dto.getPatientName());
+            patient.setPerson(person);
+            bill.setPatient(patient);
+        }
+        bill.setBillTypeAtomic(dto.getBillTypeAtomic());
+        bill.setCreatedAt(dto.getBillDate());
+        bill.setNetTotal(dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0);
+        bill.setPaymentMethod(dto.getPaymentMethod());
+        bill.setTotal(dto.getTotal() != null ? dto.getTotal().doubleValue() : 0.0);
+        bill.setPatientEncounter(dto.getPatientEncounter());
+        bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+        bill.setServiceCharge(dto.getServiceCharge() != null ? dto.getServiceCharge() : 0.0);
+        bill.setPaymentScheme(dto.getPaymentScheme());
+
+        this.bill = bill;
+        System.out.println("  - Created Bill with id: " + bill.getId() + ", paymentMethod: " + bill.getPaymentMethod());
     }
 
     public IncomeRow(PharmacyIncomeBillItemDTO dto) {

@@ -27,6 +27,7 @@ public class BillFinanceDetails implements Serializable {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
+    // Inverse side of the relationship - Bill entity owns the FK BILLFINANCEDETAILS_ID
     @OneToOne(mappedBy = "billFinanceDetails", cascade = CascadeType.ALL)
     private Bill bill;
 
@@ -130,6 +131,13 @@ public class BillFinanceDetails implements Serializable {
     @Column(precision = 18, scale = 4, nullable = true)
     private BigDecimal totalWholesaleValueNonFree;
 
+    // Totals for purchase rate adjustments
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalBeforeAdjustmentValue;
+
+    @Column(precision = 18, scale = 4, nullable = true)
+    private BigDecimal totalAfterAdjustmentValue;
+
     // ------------------ QUANTITIES ------------------
     // Total quantity of all BillItems (excluding free)
     @Column(precision = 18, scale = 4, nullable = true)
@@ -230,6 +238,8 @@ public class BillFinanceDetails implements Serializable {
         clone.setTotalWholesaleValue(this.totalWholesaleValue);
         clone.setTotalWholesaleValueFree(this.totalWholesaleValueFree);
         clone.setTotalWholesaleValueNonFree(this.totalWholesaleValueNonFree);
+        clone.setTotalBeforeAdjustmentValue(this.totalBeforeAdjustmentValue);
+        clone.setTotalAfterAdjustmentValue(this.totalAfterAdjustmentValue);
 
         // ------------------ QUANTITIES ------------------
         clone.setTotalQuantity(this.totalQuantity);
@@ -492,6 +502,22 @@ public class BillFinanceDetails implements Serializable {
 
     public void setTotalWholesaleValueNonFree(BigDecimal totalWholesaleValueNonFree) {
         this.totalWholesaleValueNonFree = totalWholesaleValueNonFree;
+    }
+
+    public BigDecimal getTotalBeforeAdjustmentValue() {
+        return totalBeforeAdjustmentValue;
+    }
+
+    public void setTotalBeforeAdjustmentValue(BigDecimal totalBeforeAdjustmentValue) {
+        this.totalBeforeAdjustmentValue = totalBeforeAdjustmentValue;
+    }
+
+    public BigDecimal getTotalAfterAdjustmentValue() {
+        return totalAfterAdjustmentValue;
+    }
+
+    public void setTotalAfterAdjustmentValue(BigDecimal totalAfterAdjustmentValue) {
+        this.totalAfterAdjustmentValue = totalAfterAdjustmentValue;
     }
 
     public BigDecimal getTotalQuantityInAtomicUnitOfMeasurement() {

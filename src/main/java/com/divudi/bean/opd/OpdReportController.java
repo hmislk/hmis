@@ -54,6 +54,9 @@ import com.divudi.core.facade.PaymentFacade;
 import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import com.divudi.service.StockHistoryService;
+import com.divudi.core.data.dto.LabDailySummaryDTO;
+import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.reports.CommonReports;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -149,6 +152,8 @@ public class OpdReportController implements Serializable {
     @Inject
     private EnumController enumController;
     @Inject
+    private ReportTimerController reportTimerController;
+    @Inject
     AdmissionTypeController admissionTypeController;
     @Inject
     PaymentSchemeController paymentSchemeController;
@@ -215,6 +220,8 @@ public class OpdReportController implements Serializable {
     private ReportKeyWord reportKeyWord;
     private IncomeBundle bundle;
     private ReportTemplateRowBundle bundleReport;
+    private List<LabDailySummaryDTO> labDailySummaryDtos;
+    private List<OpdIncomeReportDTO> opdIncomeReportDtos;
 
     private DailyStockBalanceReport dailyStockBalanceReport;
 
@@ -251,6 +258,18 @@ public class OpdReportController implements Serializable {
 // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToOpdIncomeReport() {
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
+    }
+
+    public String navigateToOpdIncomeReportDto() {
+        return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToOptimizedOpdIncomeReport() {
+        return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
+    }
+
+    public String navigateToLegacyOpdIncomeReport() {
+        return "/opd/analytics/summary_reports/opd_income_report.xhtml?faces-redirect=true";
     }
 
     public String navigateToOpdIncomeDailySummary() {
@@ -331,7 +350,7 @@ public class OpdReportController implements Serializable {
 
         if (site != null) {
             params.put("site", site);
-            jpql.append(" and b.department = :site ");
+            jpql.append(" and b.department.site = :site ");
         }
 
         if (webUser != null) {
@@ -341,8 +360,6 @@ public class OpdReportController implements Serializable {
 
         jpql.append(" group by b.billType, b.billClassType, b.billTypeAtomic ");
 
-        // System.out.println("jpql.toString() = " + jpql.toString());
-        // System.out.println("params = " + params);
         // Execute the query
         List<ReportTemplateRow> rows = (List<ReportTemplateRow>) getBillFacade().findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
 
@@ -470,66 +487,89 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeReport() {
-        System.out.println("processOpdIncomeReport");
-        List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
-        billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
+        reportTimerController.trackReportExecution(() -> {
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-        List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
-                fromDate,
-                toDate,
-                institution,
-                site,
-                department,
-                toInstitution,
-                toDepartment,
-                toSite,
-                webUser,
-                billTypeAtomics,
-                admissionType,
-                paymentScheme,
-                paymentMethod
-        );
+            List<Bill> incomeBills = billService.fetchBillsWithToInstitution(
+                    fromDate,
+                    toDate,
+                    institution,
+                    site,
+                    department,
+                    toInstitution,
+                    toDepartment,
+                    toSite,
+                    webUser,
+                    billTypeAtomics,
+                    admissionType,
+                    paymentScheme,
+                    paymentMethod
+            );
 
-        bundle = new IncomeBundle(incomeBills);
-        for (IncomeRow r : bundle.getRows()) {
-            if (r.getBill() == null) {
-                continue;
-            }
-            if (r.getBill().getBillTypeAtomic() == null) {
-                continue;
-            }
-            Bill batchBill = null;
-            switch (r.getBill().getBillTypeAtomic()) {
-                case OPD_BILL_WITH_PAYMENT:
-                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
-                    r.setBatchBill(batchBill);
-                case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
-                    batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
-                    r.setBatchBill(batchBill);
-                    r.setReferanceBill(r.getBill().getReferenceBill());
-                case OPD_BILL_CANCELLATION:
-                case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
-                case OPD_BILL_REFUND:
+            bundle = new IncomeBundle(incomeBills);
+            for (IncomeRow r : bundle.getRows()) {
+                if (r.getBill() == null) {
+                    continue;
+                }
+                if (r.getBill().getBillTypeAtomic() == null) {
+                    continue;
+                }
+                Bill batchBill = null;
+                switch (r.getBill().getBillTypeAtomic()) {
+                    case OPD_BILL_WITH_PAYMENT:
+                        batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                        r.setBatchBill(batchBill);
+                    case OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER:
+                        batchBill = billService.fetchBatchBillOfIndividualBill(r.getBill());
+                        r.setBatchBill(batchBill);
+                        r.setReferanceBill(r.getBill().getReferenceBill());
+                    case OPD_BILL_CANCELLATION:
+                    case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                    case OPD_BILL_REFUND:
 
+                }
+
+                if (r.getBill().getPaymentMethod() == null) {
+                    continue;
+                }
+
+                if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
+                    r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
+                }
+            }
+            bundle.generatePaymentDetailsForBillsAndBatchBills();
+        }, CommonReports.LAB_REPORTS, "OpdReportController.processOpdIncomeReport", sessionController.getLoggedUser());
+    }
+
+    public void generateOpdIncomeReportDto() {
+        reportTimerController.trackReportExecution(() -> {
+            if (!configOptionApplicationController.getBooleanValueByKey("OPD Income Report - Optimized Method")) {
+                processOpdIncomeReport();
+                return;
             }
 
-            if (r.getBill().getPaymentMethod() == null) {
-                continue;
-            }
+            List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION);
+            billTypeAtomics.add(BillTypeAtomic.OPD_BILL_REFUND);
 
-            if (r.getBill().getPaymentMethod().equals(PaymentMethod.MultiplePaymentMethods)) {
-                r.setPayments(billService.fetchBillPayments(r.getBill(), r.getBatchBill()));
-            }
-        }
-        bundle.generatePaymentDetailsForBillsAndBatchBills();
+            opdIncomeReportDtos = billService.fetchOpdIncomeReportDTOs(
+                    fromDate, toDate, institution, site, department, webUser,
+                    billTypeAtomics, admissionType, paymentScheme);
+
+            bundle = new IncomeBundle(opdIncomeReportDtos);
+            bundle.generatePaymentDetailsForBillsAndBatchBills();
+        }, CommonReports.LAB_REPORTS, "OpdReportController.generateOpdIncomeReportDto", sessionController.getLoggedUser());
     }
 
     public void processOpdIncomeSummaryByDate() {
-        System.out.println("processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
@@ -768,6 +808,78 @@ public class OpdReportController implements Serializable {
 
     }
 
+    public void generateDailyLabSummaryByDepartmentDto() {
+        if (!configOptionApplicationController.getBooleanValueByKey("Lab Daily Summary Report - Optimized Method")) {
+            generateDailyLabSummaryByDepartment();
+            return;
+        }
+
+        labDailySummaryDtos = billService.fetchLabDailySummaryDtos(fromDate, toDate, institution, site, department);
+        bundle = new IncomeBundle();
+
+        totalAdditionCashValue = 0;
+        totalAdditionCardValue = 0;
+        totalAdditionFundTransferValue = 0;
+        totalAdditionCreditValue = 0;
+        totalAdditionInwardCreditValue = 0;
+        totalAdditionOtherValue = 0;
+        totalAdditionTotalValue = 0;
+        totalAdditionDiscountValue = 0;
+        totalAdditionServiceChargeValue = 0;
+
+        if (labDailySummaryDtos != null) {
+            for (LabDailySummaryDTO dto : labDailySummaryDtos) {
+                totalAdditionCashValue += dto.getCashValue() != null ? dto.getCashValue() : 0;
+                totalAdditionCardValue += dto.getCardValue() != null ? dto.getCardValue() : 0;
+                totalAdditionFundTransferValue += dto.getOnlineSettlementValue() != null ? dto.getOnlineSettlementValue() : 0;
+                totalAdditionCreditValue += dto.getCreditValue() != null ? dto.getCreditValue() : 0;
+                totalAdditionInwardCreditValue += dto.getInwardCreditValue() != null ? dto.getInwardCreditValue() : 0;
+                totalAdditionOtherValue += dto.getOtherValue() != null ? dto.getOtherValue() : 0;
+                totalAdditionTotalValue += dto.getTotal() != null ? dto.getTotal() : 0;
+                totalAdditionDiscountValue += dto.getDiscount() != null ? dto.getDiscount() : 0;
+                totalAdditionServiceChargeValue += dto.getServiceCharge() != null ? dto.getServiceCharge() : 0;
+            }
+        }
+
+        // Initialize deduction totals
+        totalDeductionCashValue = 0;
+        totalDeductionCardValue = 0;
+        totalDeductionFundTransferValue = 0;
+        totalDeductionCreditValue = 0;
+        totalDeductionInwardCreditValue = 0;
+        totalDeductionOtherValue = 0;
+        totalDeductionTotalValue = 0;
+        totalDeductionDiscountValue = 0;
+        totalDeductionServiceChargeValue = 0;
+
+        // Add deduction logic similar to legacy method
+        List<BillTypeAtomic> voucherDeductionBillTypeAtomics = new ArrayList<>();
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL);
+        voucherDeductionBillTypeAtomics.add(BillTypeAtomic.FUND_TRANSFER_BILL_CANCELLED);
+
+        List<Bill> fetchedBills = billService.fetchBills(fromDate, toDate, institution, site, department, null, voucherDeductionBillTypeAtomics, null, null, null, null, null);
+        IncomeRow floatTransferDeductionRow = new IncomeRow();
+        floatTransferDeductionRow.setItemName("Float Transfer");
+        initializeDeductionRows(floatTransferDeductionRow);
+        floatTransferDeductionRow = genarateDeductionRowBundleOther(fetchedBills, floatTransferDeductionRow);
+        bundle.getRows().add(floatTransferDeductionRow);
+
+        // Deductions Voucher
+        IncomeRow voucherDeductionRow = new IncomeRow();
+        voucherDeductionRow.setItemName("Voucher");
+        initializeDeductionRows(voucherDeductionRow);
+        bundle.getRows().add(voucherDeductionRow);
+
+        // Deductions Other
+        IncomeRow otherDeductionRow = new IncomeRow();
+        otherDeductionRow.setItemName("Other");
+        initializeDeductionRows(otherDeductionRow);
+        bundle.getRows().add(otherDeductionRow);
+
+        // Calculate deduction totals
+        calculateTotalsFromRows(bundle.getRows(), false);
+    }
+
     public ReportTemplateRow genarateRowBundle(List<Bill> bills, ReportTemplateRow row) {
         List<BillItem> billItems = new ArrayList<>();
         Set<Bill> processedMultipleBills = new HashSet<>();
@@ -833,7 +945,7 @@ public class OpdReportController implements Serializable {
             if (!(bi.getItem() instanceof Investigation)) {
                 continue;
             }
-            row.setLong2(row.getLong2() + Math.round( bi.getNetValue()));
+            row.setLong2(row.getLong2() + Math.round(bi.getNetValue()));
             row.setTotal(row.getTotal() + bi.getNetValue());
             row.setDiscount(row.getDiscount() + bi.getDiscount());
             row.setServiceCharge(row.getServiceCharge() + bi.getMarginValue());
@@ -899,7 +1011,7 @@ public class OpdReportController implements Serializable {
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         case OnlineSettlement:
-                            row.setLong1(row.getLong1() + Math.round( p.getPaidValue()));
+                            row.setLong1(row.getLong1() + Math.round(p.getPaidValue()));
                             row.setNetTotal(row.getNetTotal() + p.getPaidValue());
                             break;
                         default:
@@ -2238,6 +2350,22 @@ public class OpdReportController implements Serializable {
 
     public void setTotalDeductionServiceChargeValue(double totalDeductionServiceChargeValue) {
         this.totalDeductionServiceChargeValue = totalDeductionServiceChargeValue;
+    }
+
+    public List<LabDailySummaryDTO> getLabDailySummaryDtos() {
+        return labDailySummaryDtos;
+    }
+
+    public void setLabDailySummaryDtos(List<LabDailySummaryDTO> labDailySummaryDtos) {
+        this.labDailySummaryDtos = labDailySummaryDtos;
+    }
+
+    public List<OpdIncomeReportDTO> getOpdIncomeReportDtos() {
+        return opdIncomeReportDtos;
+    }
+
+    public void setOpdIncomeReportDtos(List<OpdIncomeReportDTO> opdIncomeReportDtos) {
+        this.opdIncomeReportDtos = opdIncomeReportDtos;
     }
 
 }
