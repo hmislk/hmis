@@ -110,6 +110,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
+import com.divudi.bean.pharmacy.PharmacyRequestForBhtController;
 import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.core.facade.PatientInvestigationFacade;
 
@@ -263,6 +264,8 @@ public class BillSearch implements Serializable {
     TransferRequestController transferRequestController;
     @Inject
     SaleReturnController saleReturnController;
+    @Inject
+    PharmacyRequestForBhtController pharmacyRequestForBhtController;
     /**
      * Class Variables
      */
@@ -4007,6 +4010,10 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyAddToStockBillPreview();
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
                 return navigateToPharmacyRetailSaleReturnBillPreview();
+            case ISSUE_MEDICINE_ON_REQUEST_INWARD:
+                return navigateToPharmacyBhtIssueBillPreview();
+            case REQUEST_MEDICINE_INWARD:
+                return navigateToPharmacyBhtRequestBillPreview();
 
         }
 
@@ -4381,6 +4388,7 @@ public class BillSearch implements Serializable {
         searchController.setBill(bill);
         return "/pharmacy/pharmacy_search_pre_bill_not_paid";
     }
+
     public String navigateToPharmacyRetailSaleReturnBillPreview() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -4390,6 +4398,30 @@ public class BillSearch implements Serializable {
         saleReturnController.setPrintPreview(true);
         saleReturnController.setReturnBill(bill);
         return "/pharmacy/pharmacy_bill_return_retail";
+    }
+
+    public String navigateToPharmacyBhtIssueBillPreview() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacySaleBhtController.setBillPreview(true);
+        pharmacySaleBhtController.setPrintBill(bill);
+        pharmacySaleBhtController.setPatientEncounter(bill.getPatientEncounter());
+        return "/ward/ward_pharmacy_bht_issue";
+    }
+
+    public String navigateToPharmacyBhtRequestBillPreview() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        pharmacyRequestForBhtController.setBillPreview(true);
+        pharmacyRequestForBhtController.setPrintBill(bill);
+        pharmacyRequestForBhtController.setPatientEncounter(bill.getPatientEncounter());
+        return "/ward/ward_pharmacy_bht_issue_request_bill";
     }
 
     public String navigateToViewPharmacyDirectIssueForInpatientBill() {
