@@ -343,16 +343,16 @@ public class BillSearch implements Serializable {
     private List<BillFee> viewingBillFees;
     private List<BillComponent> viewingBillComponents;
     private List<Payment> viewingBillPayments;
-    private boolean duplicate ;
+    private boolean duplicate;
 
     private Payment payment;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
     }
-    
+
     public String navigateToCancelBillView() {
-         if (bill != null) {
+        if (bill != null) {
             JsfUtil.addErrorMessage("Bill is Missing..");
             return "";
         }
@@ -3922,7 +3922,6 @@ public class BillSearch implements Serializable {
             case PHARMACY_SALE_WITHOUT_STOCK_PRE:
             case PHARMACY_SALE_WITHOUT_STOCK_CANCELLED:
             case PHARMACY_SALE_WITHOUT_STOCK_REFUND:
-            case PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK:
             case PHARMACY_WHOLESALE:
             case PHARMACY_WHOLESALE_PRE:
             case PHARMACY_WHOLESALE_CANCELLED:
@@ -4002,6 +4001,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyGrnCancellationBillView();
             case PHARMACY_TRANSFER_REQUEST:
                 return navigateToPharmacyTransferRequestBillView();
+            case PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK:
+                return navigateToPharmacyAddToStockBillPreview();
 
         }
 
@@ -4314,6 +4315,7 @@ public class BillSearch implements Serializable {
         pharmacyPurchaseController.setBill(bb);
         return "/pharmacy/pharmacy_purchase";
     }
+
     public String navigateToPharmacyTransferRequestBillView() {
         if (bill == null) {
             JsfUtil.addErrorMessage("No Bill is Selected");
@@ -4363,6 +4365,17 @@ public class BillSearch implements Serializable {
         pharmacyReturnwithouttresing.setBillPreview(true);
         pharmacyReturnwithouttresing.setPrintBill(bill);
         return "/pharmacy/pharmacy_return_withouttresing";
+    }
+
+    public String navigateToPharmacyAddToStockBillPreview() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        searchController.setPrintPreview(true);
+        searchController.setBill(bill);
+        return "/pharmacy/pharmacy_search_pre_bill_not_paid";
     }
 
     public String navigateToViewPharmacyDirectIssueForInpatientBill() {
@@ -5444,7 +5457,7 @@ public class BillSearch implements Serializable {
     public Institution getInstitution() {
         return institution;
     }
-    
+
     public List<PatientInvestigation> fetchPatientInvestigationsAllowBypassSampleProcess(Bill batchBill) {
         if (batchBill == null) {
             return new ArrayList<>();
@@ -5463,7 +5476,6 @@ public class BillSearch implements Serializable {
         viewingPatientInvestigations = patientInvestigationFacade.findByJpql(jpql, params);
         return viewingPatientInvestigations;
     }
-
 
     public void calculateTotalForBillSummaries() {
         cashTotal = 0;
@@ -5821,10 +5833,10 @@ public class BillSearch implements Serializable {
         viewingReferanceBills = billService.fetchAllReferanceBills(bill);
     }
 
-    public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill){
+    public List<PatientInvestigation> fetchPatientInvestigations(Bill batchBill) {
         return billService.fetchPatientInvestigationsOfBatchBill(batchBill);
     }
-    
+
     public Bill getViewingBill() {
         return viewingBill;
     }
