@@ -46,6 +46,7 @@
                  font-size: 18px!important;
                  font-weight: bold;">
             <h:outputLabel value="PURCHASE BILL"/>
+            <h:outputLabel rendered="#{cc.attrs.bill.cancelled eq true}" styleClass="text-danger fw-bold ms-1" value="**Cancelled**"/>
         </div>
 
         <div style="margin-left: 3%; margin-right: 3%; margin-top: 6px;">

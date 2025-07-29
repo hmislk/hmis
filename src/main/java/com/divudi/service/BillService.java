@@ -1042,9 +1042,18 @@ public class BillService {
             Department toDepartment,
             String visitType) {
 
+
         String jpql = "select new com.divudi.core.data.dto.LabIncomeReportDTO("
-                + " b.id, b.deptId, b.createdAt, b.department.name, b.institution.name,"
-                + " coalesce(b.netTotal,0.0), coalesce(b.total,0.0)) "
+                + " b.id, "
+                + " b.deptId, "
+                + " b.createdAt, "
+                + " coalesce(b.netTotal,0.0), "
+                + " coalesce(b.total,0.0), "
+                + " b.billTypeAtomic, "
+                + " b.paymentMethod, "
+                + " coalesce(b.discount,0.0), "
+                + " coalesce(b.serviceCharge,0.0), "
+                + " b.paymentScheme) "
                 + " from Bill b "
                 + " where b.retired=:ret "
                 + " and b.billTypeAtomic in :billTypesAtomics "
@@ -1103,7 +1112,8 @@ public class BillService {
 
         jpql += " order by b.createdAt desc";
 
-        return (List<LabIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        List<LabIncomeReportDTO> results = (List<LabIncomeReportDTO>) billFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return results;
     }
 
     public List<PharmacyIncomeCostBillDTO> fetchBillIncomeCostDtos(Date fromDate,

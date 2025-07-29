@@ -369,16 +369,17 @@ public class TransferReceiveController implements Serializable {
                 continue;
             }
 
-            double purchaseRate = pbi.getStock().getItemBatch().getPurcahseRate() * bifd.getUnitsPerPack().doubleValue();
-            double retailRate = pbi.getStock().getItemBatch().getRetailsaleRate() * bifd.getUnitsPerPack().doubleValue();
-            double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * bifd.getUnitsPerPack().doubleValue();
-            double costRate = pbi.getStock().getItemBatch().getCostRate() * bifd.getUnitsPerPack().doubleValue();
+            double unitsPerPackValue = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack().doubleValue() : 1.0;
+            double purchaseRate = pbi.getStock().getItemBatch().getPurcahseRate() * unitsPerPackValue;
+            double retailRate = pbi.getStock().getItemBatch().getRetailsaleRate() * unitsPerPackValue;
+            double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * unitsPerPackValue;
+            double costRate = pbi.getStock().getItemBatch().getCostRate() * unitsPerPackValue;
 
 
-            billTotalAtCostRate += bifd.getTotalCost().doubleValue();
+            billTotalAtCostRate += bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
 
-            double paidQty = pbi.getQty() / bifd.getUnitsPerPack().doubleValue();
-            double freeQty = pbi.getFreeQty() / bifd.getUnitsPerPack().doubleValue();
+            double paidQty = pbi.getQty() / unitsPerPackValue;
+            double freeQty = pbi.getFreeQty() / unitsPerPackValue;
 
 
             double tmp;
@@ -415,12 +416,7 @@ public class TransferReceiveController implements Serializable {
             }
 
             BigDecimal biNetTotal = bifd.getNetTotal();
-            netTotal += biNetTotal.doubleValue();
-
-            bifd.setValueAtPurchaseRate(bifd.getLineGrossRate().multiply(bifd.getTotalQuantity()));
-            bifd.setValueAtRetailRate(bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity()));
-            bifd.setValueAtCostRate(bifd.getTotalCostRate().multiply(bifd.getTotalQuantity()).multiply(bifd.getUnitsPerPack()));
-            bifd.setValueAtWholesaleRate(bifd.getWholesaleRate().multiply(bifd.getTotalQuantity()));
+            netTotal += biNetTotal != null ? biNetTotal.doubleValue() : 0.0;
 
             if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
                 bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
@@ -437,6 +433,16 @@ public class TransferReceiveController implements Serializable {
             } else {
                 bifd.setTotalCostRate(BigDecimal.ZERO);
             }
+
+            // Set value calculations after all rates are properly set
+            bifd.setValueAtPurchaseRate(bifd.getLineGrossRate() != null ? 
+                bifd.getLineGrossRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
+            bifd.setValueAtRetailRate(bifd.getRetailSaleRate() != null ? 
+                bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
+            bifd.setValueAtCostRate(bifd.getTotalCostRate() != null ? 
+                bifd.getTotalCostRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO).multiply(bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE) : BigDecimal.ZERO);
+            bifd.setValueAtWholesaleRate(bifd.getWholesaleRate() != null ? 
+                bifd.getWholesaleRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
 
             bifd.setProfitMargin(BigDecimal.ZERO);
 
