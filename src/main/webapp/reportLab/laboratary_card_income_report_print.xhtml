@@ -207,16 +207,14 @@
                                                     </td>
                                                     <td style="text-align: left;">
                                                         <h:outputText value="#{p.createdAt}" style="margin-left: 1mm;">
-                                                            <f:convertDateTime pattern="dd/MM/YY hh:mm:ss a" />
+                                                            <f:convertDateTime pattern="dd/MM/yyyy hh:mm:ss a" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="text-align: left;">
-                                                        <h:outputText value="#{p.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;">
-                                                        </h:outputText>
+                                                        <h:outputText value="#{p.bill.patient.person.nameWithTitle}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="text-align: left;">
-                                                        <h:outputText value="#{p.creditCardRefNo}" style="margin-left: 1mm;">
-                                                        </h:outputText>
+                                                        <h:outputText value="#{p.creditCardRefNo}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="text-align: right;">
                                                         <h:outputText value="#{p.paidValue}" style="margin-right: 1mm;">
