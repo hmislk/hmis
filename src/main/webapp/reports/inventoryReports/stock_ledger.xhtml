@@ -350,7 +350,9 @@
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
                             <p:column headerText="Cost Rate" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.billItemFinanceDetails.totalCostRate / f.pbItem.billItem.billItemFinanceDetails.unitsPerPack}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                <h:outputText value="#{f.itemBatch.costRate}">
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             
                             <p:column headerText="Closing Stock Value" width="15em">
@@ -368,10 +370,14 @@
                                 <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
                             </p:column>
                             <p:column headerText="Expiry Date" width="5em">
-                                <h:outputText value="#{f.pbItem.doe}" />
+                                <h:outputText value="#{f.itemBatch.dateOfExpire}">
+                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.createdAt}" />
+                                <h:outputText value="#{f.pbItem.billItem.createdAt}">
+                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="UserName" width="5em">
                                 <h:outputText value="#{f.pbItem.billItem.bill.creater.name}" />
