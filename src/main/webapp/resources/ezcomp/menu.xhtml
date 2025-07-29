@@ -1016,7 +1016,7 @@
                                     action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
                                     value="Approve Requests"
                                     actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
