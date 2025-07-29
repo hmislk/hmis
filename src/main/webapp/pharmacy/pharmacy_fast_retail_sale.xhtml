@@ -13,7 +13,7 @@
       xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
     <h:body>
         <ui:composition template="/resources/template/template.xhtml">
-            <ui:define name="content">
+            <ui:define name="content" rendered="#{webUserController.hasPrivilege('PharmacySale')}">
                 <!-- Performance optimization: Cache frequently accessed property chains -->
                 <c:set var="cachedController" value="#{pharmacyFastRetailSaleController}" />
                 <c:set var="cachedPreBill" value="#{cachedController.preBill}" />
@@ -38,10 +38,10 @@
                             style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
                         </i>
                         <p:panel>
-                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
-                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
-                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySale')}" />
+                            <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"  />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true"  />
+                            <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" />
+                            <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" />
                         </p:panel>
 
                         <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Find Last Sale Rate of Medicines in Retail Sale',false)}">
@@ -60,7 +60,7 @@
                                     icon="fa fa-plus"
                                     value="New Bill"
                                     style="float: right;"
-                                    ajax="false" action="pharmacy_bill_retail_sale"
+                                    ajax="false" action="pharmacy_fast_retail_sale"
                                     class="mx-1 ui-button-warning"
                                     actionListener="#{cachedController.resetAll()}"  >
                                 </p:commandButton>
@@ -1108,7 +1108,7 @@
                                     value="New Bill"
                                     icon="fa fa-plus"
                                     ajax="false"
-                                    action="pharmacy_bill_retail_sale"
+                                    action="pharmacy_fast_retail_sale"
                                     class="ui-button-warning mx-2"
                                     actionListener="#{cachedController.resetAll()}" ></p:commandButton>
                                 <p:outputLabel value="Paper Type" class="m-2"></p:outputLabel>

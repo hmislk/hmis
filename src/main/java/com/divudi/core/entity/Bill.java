@@ -41,6 +41,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -446,6 +447,7 @@ public class Bill implements Serializable, RetirableEntity {
     private StockBill stockBill;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
     private BillFinanceDetails billFinanceDetails;
 
     @Transient

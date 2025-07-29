@@ -4,6 +4,7 @@ import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
@@ -30,7 +31,7 @@ public class IncomeRow implements Serializable {
 
     private PaymentScheme paymentScheme;
     private AdmissionType admissionType;
-    
+
     private Category category;
     private Bill bill;
     private Bill batchBill;
@@ -55,7 +56,7 @@ public class IncomeRow implements Serializable {
     private boolean selected;
 
     private Item item;
-    
+
     private double retailValue;
     private double purchaseValue;
     private double grossProfit;
@@ -170,6 +171,10 @@ public class IncomeRow implements Serializable {
     private double hospitalTotal;
     private double staffTotal;
     private double ccTotal;
+
+    private double totalBillsRefund;
+    private double totalBillsCancel;
+    private double totalBillsDiscount;
 
     private double qty;
     private double retailRate;
@@ -310,6 +315,39 @@ public class IncomeRow implements Serializable {
         bill.setPaymentScheme(dto.getPaymentScheme());
 
         this.bill = bill;
+    }
+
+    public IncomeRow(LabIncomeReportDTO dto) {
+        this();
+        
+        System.out.println("DEBUG: Creating IncomeRow from LabIncomeReportDTO");
+        System.out.println("  - DTO billId: " + dto.getBillId());
+        System.out.println("  - DTO billNumber: " + dto.getBillNumber());
+        System.out.println("  - DTO billTypeAtomic: " + dto.getBillTypeAtomic());
+        System.out.println("  - DTO paymentMethod: " + dto.getPaymentMethod());
+
+        Bill bill = new Bill();
+        bill.setId(dto.getBillId());
+        bill.setDeptId(dto.getBillNumber());
+        if (dto.getPatientName() != null) {
+            Patient patient = new Patient();
+            Person person = new Person();
+            person.setName(dto.getPatientName());
+            patient.setPerson(person);
+            bill.setPatient(patient);
+        }
+        bill.setBillTypeAtomic(dto.getBillTypeAtomic());
+        bill.setCreatedAt(dto.getBillDate());
+        bill.setNetTotal(dto.getNetTotal() != null ? dto.getNetTotal().doubleValue() : 0.0);
+        bill.setPaymentMethod(dto.getPaymentMethod());
+        bill.setTotal(dto.getTotal() != null ? dto.getTotal().doubleValue() : 0.0);
+        bill.setPatientEncounter(dto.getPatientEncounter());
+        bill.setDiscount(dto.getDiscount() != null ? dto.getDiscount() : 0.0);
+        bill.setServiceCharge(dto.getServiceCharge() != null ? dto.getServiceCharge() : 0.0);
+        bill.setPaymentScheme(dto.getPaymentScheme());
+
+        this.bill = bill;
+        System.out.println("  - Created Bill with id: " + bill.getId() + ", paymentMethod: " + bill.getPaymentMethod());
     }
 
     public IncomeRow(PharmacyIncomeBillItemDTO dto) {
@@ -1444,6 +1482,30 @@ public class IncomeRow implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public double getTotalBillsRefund() {
+        return totalBillsRefund;
+    }
+
+    public void setTotalBillsRefund(double totalBillsRefund) {
+        this.totalBillsRefund = totalBillsRefund;
+    }
+
+    public double getTotalBillsCancel() {
+        return totalBillsCancel;
+    }
+
+    public void setTotalBillsCancel(double totalBillsCancel) {
+        this.totalBillsCancel = totalBillsCancel;
+    }
+
+    public double getTotalBillsDiscount() {
+        return totalBillsDiscount;
+    }
+
+    public void setTotalBillsDiscount(double totalBillsDiscount) {
+        this.totalBillsDiscount = totalBillsDiscount;
     }
 
     public Long getBillId() {

@@ -751,22 +751,29 @@
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyRetailSale()}"
-                            value="Pharmacy Retail Sale - Legacy Method"
+                            value="Sale by Batch"
                             icon="fas fa-shopping-cart"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and !configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" ></p:menuitem>
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Batch Search', true)}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true"
                             actionListener="#{pharmacyFastRetailSaleController.resetAll()}"
-                            value="Pharmacy Retail Sale - Optimized Method"
+                            value="Sale by Item"
                             icon="fas fa-bolt"
-                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale Optimized', true)}" >
+                            rendered="#{webUserController.hasPrivilege('PharmacySale') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Retail Sale - By Item Search', true)}" >
                         </p:menuitem>
                         <p:menuitem
                             ajax="false"
                             action="#{pharmacySaleController.navigateToPharmacyBillForCashier()}"
                             value="Sale for cashier"
                             icon="fas fa-cash-register"
+                            rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
+                        <p:menuitem
+                            ajax="false"
+                            action="/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true"
+                            actionListener="#{pharmacyFastRetailSaleForCashierController.resetAll()}"
+                            value="Sale for Cashier - By Item"
+                            icon="fas fa-bolt"
                             rendered="#{webUserController.hasPrivilege('PharmacySaleForCashier')}" ></p:menuitem>
                         <p:menuitem
                             ajax="false"
@@ -1003,13 +1010,13 @@
                                     action="#{searchController.navigateToTransferRequestFinalize}"
                                     value="To Finalize Transfer Requests"
                                     actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
                                     value="Approve Requests"
                                     actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequestApproval') and configOptionApplicationController.getBooleanValueByKey('Pharmacy Transer Request With Approval')}"
                                     icon="fas fa-hand-holding-medical"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="#{transferIssueController.navigateToListPharmacyIssueRequests}"  
