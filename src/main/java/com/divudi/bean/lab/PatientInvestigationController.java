@@ -1969,6 +1969,12 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
+        
+        if (sampleRejectionComment == null || sampleRejectionComment.equalsIgnoreCase("")) {
+            JsfUtil.addErrorMessage("Samples reject reason is Missing..");
+            return;
+        }
+        
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
