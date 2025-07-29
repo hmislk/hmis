@@ -110,6 +110,7 @@ import javax.persistence.TemporalType;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import com.divudi.bean.pharmacy.DirectPurchaseReturnController;
+import com.divudi.bean.pharmacy.SaleReturnController;
 import com.divudi.core.facade.PatientInvestigationFacade;
 
 import org.primefaces.event.RowEditEvent;
@@ -260,6 +261,8 @@ public class BillSearch implements Serializable {
     private ReportTimerController reportTimerController;
     @Inject
     TransferRequestController transferRequestController;
+    @Inject
+    SaleReturnController saleReturnController;
     /**
      * Class Variables
      */
@@ -3912,7 +3915,6 @@ public class BillSearch implements Serializable {
             case PROFESSIONAL_PAYMENT_FOR_STAFF_FOR_CHANNELING_SERVICE_RETURN:
 
             case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS:
-            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
             case PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER:
             case PHARMACY_RETAIL_SALE_REFUND:
@@ -4003,6 +4005,8 @@ public class BillSearch implements Serializable {
                 return navigateToPharmacyTransferRequestBillView();
             case PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK:
                 return navigateToPharmacyAddToStockBillPreview();
+            case PHARMACY_RETAIL_SALE_RETURN_ITEMS_AND_PAYMENTS_PREBILL:
+                return navigateToPharmacyRetailSaleReturnBillPreview();
 
         }
 
@@ -4376,6 +4380,16 @@ public class BillSearch implements Serializable {
         searchController.setPrintPreview(true);
         searchController.setBill(bill);
         return "/pharmacy/pharmacy_search_pre_bill_not_paid";
+    }
+    public String navigateToPharmacyRetailSaleReturnBillPreview() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill is Selected");
+            return null;
+        }
+        loadBillDetails(bill);
+        saleReturnController.setPrintPreview(true);
+        saleReturnController.setReturnBill(bill);
+        return "/pharmacy/pharmacy_bill_return_retail";
     }
 
     public String navigateToViewPharmacyDirectIssueForInpatientBill() {
