@@ -1010,7 +1010,7 @@
                                     action="#{searchController.navigateToTransferRequestFinalize}"
                                     value="To Finalize Transfer Requests"
                                     actionListener="#{searchController.makeListNull()}"
-                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementRequest')}"
+                                    rendered="#{webUserController.hasPrivilege('PharmacyDisbursementFinalizeRequest')}"
                                     icon="fas fa-tasks"></p:menuitem>
                         <p:menuitem ajax="false" 
                                     action="/pharmacy/pharmacy_transfer_request_list_search_for_approval?faces-redirect=true"
