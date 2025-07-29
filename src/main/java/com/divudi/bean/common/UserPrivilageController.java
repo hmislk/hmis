@@ -622,12 +622,13 @@ public class UserPrivilageController implements Serializable {
         TreeNode disbursementNode = new DefaultTreeNode("Pharmacy Disbursement", pharmacyNode);
         TreeNode disbursementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisburesementMenu, "Pharmacy Disburesement Menu"), disbursementNode);
         TreeNode disbursementRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequest, "Request"), disbursementNode);
+        TreeNode disbursementFinalizeRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementFinalizeRequest, "Finalize Transfer Request"), disbursementNode);
+        TreeNode PharmacyDisbursementApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequestApproval, "Pharmacy Disbursement Request Approval"), disbursementNode);
         TreeNode disbursementIssueForRequest = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementIssurForRequest, "Issue for Request"), disbursementNode);
         TreeNode disbursementDirectIssue = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementDirectIssue, "Direct Issue"), disbursementNode);
         TreeNode disbursementRecieve = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRecieve, "Recieve"), disbursementNode);
         TreeNode TransferReciveApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.TransferReciveApproval, "Recieve Approval"), disbursementNode);
         TreeNode PharmacyDisbursementReports = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementReports, "Pharmacy Disbursement Reports"), disbursementNode);
-        TreeNode PharmacyDisbursementApproval = new DefaultTreeNode(new PrivilegeHolder(Privileges.PharmacyDisbursementRequestApproval, "Pharmacy Disbursement Request Approval"), disbursementNode);
 
         TreeNode InpatientMedicationManagementNode = new DefaultTreeNode("Inpatient medication Management", pharmacyNode);
         TreeNode InpatientMedicationManagementMenue = new DefaultTreeNode(new PrivilegeHolder(Privileges.InpatientMedicationManagementMenue, "Procurement Menu"), InpatientMedicationManagementNode);
