@@ -1,10 +1,12 @@
 package com.divudi.bean.lab;
 
+import com.divudi.bean.common.BillSearch;
 import com.divudi.bean.common.SessionController;
 import com.divudi.bean.opd.OpdReportController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.IncomeBundle;
 import com.divudi.core.data.IncomeRow;
 import com.divudi.core.data.PaymentMethod;
@@ -21,6 +23,7 @@ import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientEncounter;
+import com.divudi.core.entity.Payment;
 import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
@@ -31,11 +34,13 @@ import com.divudi.core.util.CommonFunctions;
 import com.divudi.service.BillService;
 import javax.enterprise.context.SessionScoped;
 import java.io.Serializable;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -62,6 +67,8 @@ public class LaborataryReportController implements Serializable {
     SessionController sessionController;
     @Inject
     OpdReportController opdReportController;
+    @Inject
+    private BillSearch billSearch;
     // </editor-fold>
 
     // <editor-fold defaultstate="collapsed" desc="EJBs">
@@ -71,7 +78,6 @@ public class LaborataryReportController implements Serializable {
     BillItemFacade billItemFacade;
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Class Variables">
     // Basic types
     private String visitType;
@@ -163,7 +169,6 @@ public class LaborataryReportController implements Serializable {
     private double totalCount;
 
 // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Navigators">
     public String navigateToLaborataryInwardOrderReportFromLabAnalytics() {
         resetAllFiltersExceptDateRange();
@@ -194,7 +199,6 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-
     // <editor-fold defaultstate="collapsed" desc="Functions">
     public void resetAllFiltersExceptDateRange() {
         setViewTemplate(null);
@@ -387,7 +391,6 @@ public class LaborataryReportController implements Serializable {
                 + " and type(bi.item) = :invType ";
 
         // Adding filters for institution, department, site
-
         if (institution != null) {
             jpql += " and bi.bill.institution=:ins ";
             params.put("ins", institution);
@@ -428,7 +431,6 @@ public class LaborataryReportController implements Serializable {
             params.put("type", visitType.trim());
         }
         jpql += " group by bi.item.name ";
-
 
         params.put("ret", false);
         params.put("fd", fromDate);
@@ -527,7 +529,7 @@ public class LaborataryReportController implements Serializable {
 
     }
 
-    public List <TestWiseCountReport> alphabetList(List <TestWiseCountReport> testWiseCounts) {
+    public List<TestWiseCountReport> alphabetList(List<TestWiseCountReport> testWiseCounts) {
 
         List<TestWiseCountReport> reportList = testWiseCounts.stream()
                 .sorted(Comparator.comparing(TestWiseCountReport::getTestName))
@@ -536,8 +538,258 @@ public class LaborataryReportController implements Serializable {
         return reportList;
     }
 
-    // </editor-fold>
+    private void processPayment(Bill b, IncomeRow incomeRow) {
+        switch (b.getPaymentMethod()) {
+            case Cash:
+                incomeRow.setCashValue(incomeRow.getCashValue() + b.getNetTotal());
+                break;
+            case Card:
+                incomeRow.setCardValue(incomeRow.getCardValue() + b.getNetTotal());
+                break;
+            case Agent:
+                incomeRow.setAgentValue(incomeRow.getAgentValue() + b.getNetTotal());
+                break;
+            case OnlineSettlement:
+                incomeRow.setOnlineSettlementValue(incomeRow.getOnlineSettlementValue() + b.getNetTotal());
+                break;
+            case Credit:
+                incomeRow.setCreditValue(incomeRow.getCreditValue() + b.getNetTotal());
+                break;
+            case MultiplePaymentMethods:
+                calculateBillAndBatchBillPaymentValuesFromPayments(b, incomeRow);
+                break;
+        }
+        incomeRow.setTotalBillsDiscount(incomeRow.getTotalBillsDiscount() + b.getDiscount());
+        incomeRow.setGrossTotal(incomeRow.getGrossTotal() + b.getNetTotal());
+    }
 
+    public void processLaboratoryAllIncomeSummary() {
+        // 1. Initialize bill types
+        List<BillTypeAtomic> billTypeAtomics = Arrays.asList(
+                BillTypeAtomic.OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.PACKAGE_OPD_BILL_WITH_PAYMENT,
+                BillTypeAtomic.INWARD_SERVICE_BILL,
+                BillTypeAtomic.CC_BILL,
+                BillTypeAtomic.OPD_BILL_REFUND,
+                BillTypeAtomic.OPD_BILL_CANCELLATION,
+                BillTypeAtomic.OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_REFUND,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION,
+                BillTypeAtomic.INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION,
+                BillTypeAtomic.CC_BILL_REFUND,
+                BillTypeAtomic.CC_BILL_CANCELLATION
+        );
+
+        // 2. Fetch bills
+        List<Bill> incomeBills = getLaboratoryBills(billTypeAtomics);
+        if (incomeBills == null || incomeBills.isEmpty()) {
+            return;
+        }
+
+        // 3. Initialize income categories
+        bundle = new IncomeBundle();
+        Map<String, IncomeRow> incomeRows = initializeIncomeCategories();
+
+        // 4. Process each bill
+        processAllBills(incomeBills, incomeRows);
+
+        // 5. Add rows to bundle
+        addRowsToBundle(incomeRows);
+
+        // 6. Calculate net totals for each category
+        calculateNetTotals();
+
+        // 7. Calculate and add summary row
+        addSummaryRow();
+
+    }
+
+// Helper methods:
+    private Map<String, IncomeRow> initializeIncomeCategories() {
+        Map<String, IncomeRow> incomeRows = new LinkedHashMap<>();
+
+        String[] categories = {"OPD", "Inpatient", "Home Visit", "Collection", "Total"};
+
+        for (String category : categories) {
+            IncomeRow row = new IncomeRow();
+            row.setCategoryName(category);
+            incomeRows.put(category, row);
+        }
+
+        return incomeRows;
+    }
+
+    private void processAllBills(List<Bill> incomeBills, Map<String, IncomeRow> incomeRows) {
+        for (Bill bill : incomeBills) {
+            switch (bill.getBillTypeAtomic()) {
+                // OPD Section
+                case OPD_BILL_WITH_PAYMENT:
+                case PACKAGE_OPD_BILL_WITH_PAYMENT:
+                    processPayment(bill, incomeRows.get("OPD"));
+                    break;
+
+                case OPD_BILL_CANCELLATION:
+                case OPD_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                    addToCancellation(incomeRows.get("OPD"), bill.getNetTotal());
+                    break;
+
+                case OPD_BILL_REFUND:
+                    addToRefund(incomeRows.get("OPD"), bill.getNetTotal());
+                    break;
+
+                // CC Section    
+                case CC_BILL:
+                    addToAgentValue(incomeRows.get("Collection"), bill.getNetTotal());
+                    break;
+
+                case CC_BILL_REFUND:
+                    addToRefund(incomeRows.get("Collection"), bill.getNetTotal());
+                    break;
+
+                case CC_BILL_CANCELLATION:
+                    addToCancellation(incomeRows.get("Collection"), bill.getNetTotal());
+                    break;
+
+                // Inward Section
+                case INWARD_SERVICE_BILL:
+                    addToCreditValue(incomeRows.get("Inpatient"), bill.getNetTotal());
+                    break;
+
+                case INWARD_SERVICE_BILL_REFUND:
+                    addToRefund(incomeRows.get("Inpatient"), bill.getNetTotal());
+                    break;
+
+                case INWARD_SERVICE_BILL_CANCELLATION:
+                case INWARD_SERVICE_BILL_CANCELLATION_DURING_BATCH_BILL_CANCELLATION:
+                    addToCancellation(incomeRows.get("Inpatient"), bill.getNetTotal());
+                    break;
+            }
+        }
+    }
+
+    private void addRowsToBundle(Map<String, IncomeRow> incomeRows) {
+        // Add all rows except "Total" to bundle
+        incomeRows.entrySet().stream()
+                .filter(entry -> !entry.getKey().equals("Total"))
+                .forEach(entry -> bundle.getRows().add(entry.getValue()));
+    }
+
+    private void calculateNetTotals() {
+        bundle.getRows().forEach(row -> {
+            double totalDeduction = Math.abs(
+                    row.getTotalBillsRefund()
+                    + row.getTotalBillsCancel()
+            );
+            row.setNetTotal(row.getGrossTotal() - totalDeduction);
+        });
+    }
+
+    private void addSummaryRow() {
+        IncomeRow totalRow = new IncomeRow();
+        totalRow.setCategoryName("Total");
+
+        bundle.getRows().forEach(row -> {
+            totalRow.setCashValue(totalRow.getCashValue() + row.getCashValue());
+            totalRow.setCardValue(totalRow.getCardValue() + row.getCardValue());
+            totalRow.setAgentValue(totalRow.getAgentValue() + row.getAgentValue());
+            totalRow.setOnlineSettlementValue(totalRow.getOnlineSettlementValue() + row.getOnlineSettlementValue());
+            totalRow.setCreditValue(totalRow.getCreditValue() + row.getCreditValue());
+            totalRow.setGrossTotal(totalRow.getGrossTotal() + row.getGrossTotal());
+            totalRow.setTotalBillsRefund(totalRow.getTotalBillsRefund() + row.getTotalBillsRefund());
+            totalRow.setTotalBillsCancel(totalRow.getTotalBillsCancel() + row.getTotalBillsCancel());
+            totalRow.setTotalBillsDiscount(totalRow.getTotalBillsDiscount() + row.getTotalBillsDiscount());
+            totalRow.setNetTotal(totalRow.getNetTotal() + row.getNetTotal());
+        });
+
+        bundle.getRows().add(totalRow);
+    }
+
+
+// Small helper methods for specific operations
+    private void addToAgentValue(IncomeRow row, double amount) {
+        row.setAgentValue(row.getAgentValue() + amount);
+        row.setGrossTotal(row.getGrossTotal() + amount);
+    }
+
+    private void addToCreditValue(IncomeRow row, double amount) {
+        row.setCreditValue(row.getCreditValue() + amount);
+        row.setGrossTotal(row.getGrossTotal() + amount);
+    }
+
+    private void addToRefund(IncomeRow row, double amount) {
+        row.setTotalBillsRefund(row.getTotalBillsRefund() + amount);
+    }
+
+    private void addToCancellation(IncomeRow row, double amount) {
+        row.setTotalBillsCancel(row.getTotalBillsCancel() + amount);
+    }
+
+    private void calculateBillAndBatchBillPaymentValuesFromPayments(Bill bill, IncomeRow incomeRow) {
+        if (bill == null || bill.getPaymentMethod() == null || bill.getPaymentMethod() != PaymentMethod.MultiplePaymentMethods) {
+            return;
+        }
+
+        // Identify the batch bill and the individual bill.
+        Bill individualBill = bill;
+        Bill batchBill = bill.getBackwardReferenceBill();
+
+        System.out.println("batchBill = " + batchBill);
+        System.out.println("individualBill = " + individualBill);
+
+        // Net totals for ratio calculation (if needed).
+        double netTotalOfBatchBill = batchBill != null ? batchBill.getNetTotal() : 0.0;
+        double netTotalOfIndividualBill = individualBill.getNetTotal();
+
+        // Determine the ratio for allocating batch-bill payments to the individual bill.
+        // If there's no batch bill or the batch bill total is zero, we use a ratio of 1.0 (i.e., full amount).
+        double ratio = 1.0;
+        if (batchBill != null && netTotalOfBatchBill != 0.0) {
+            ratio = netTotalOfIndividualBill / netTotalOfBatchBill;
+        }
+
+        List<Payment> payments = billSearch.fetchBillPayments(batchBill);
+        if (payments == null || payments.isEmpty()) {
+            return;
+        }
+
+        for (Payment p : payments) {
+
+            double allocatedValue = p.getPaidValue() * ratio;
+
+            switch (p.getPaymentMethod()) {
+                case Cash:
+                    double cash = incomeRow.getCashValue() + allocatedValue;
+                    incomeRow.setCashValue(cash);
+                    break;
+                case Card:
+                    double card = incomeRow.getCardValue() + allocatedValue;
+                    incomeRow.setCardValue(card);
+                    break;
+                case Agent:
+                    double agent = incomeRow.getAgentValue() + allocatedValue;
+                    incomeRow.setAgentValue(agent);
+                    break;
+                case OnlineSettlement:
+                    double online = incomeRow.getOnlineSettlementValue() + allocatedValue;
+                    incomeRow.setOnlineSettlementValue(online);
+                    break;
+                case Credit:
+                    double credit = incomeRow.getCreditValue() + allocatedValue;
+                    incomeRow.setCreditValue(credit);
+                    break;
+            }
+        }
+    }
+
+    public List<Bill> getLaboratoryBills(List<BillTypeAtomic> billTypeAtomics) {
+        System.out.println("billTypeAtomics = " + billTypeAtomics);
+        System.out.println("fromDate = " + fromDate);
+        System.out.println("toDate = " + toDate);
+        List<Bill> incomeBills = billService.fetchBills(fromDate, toDate, null, null, null, null, billTypeAtomics, null, null, null, null, DepartmentType.Lab, null);
+        return incomeBills;
+    }
+
+    // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Getters and Setters">
     public Long getRowsPerPageForScreen() {
         return rowsPerPageForScreen;
@@ -1034,5 +1286,4 @@ public class LaborataryReportController implements Serializable {
     }
 
     // </editor-fold>
-
 }
