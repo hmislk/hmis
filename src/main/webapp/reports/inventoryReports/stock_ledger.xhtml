@@ -310,7 +310,7 @@
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
-                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                                    rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.referenceBill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER'}"
                                     value="#{f.pbItem.billItem.bill.referenceBill.deptId}"
                                     class="m-1 ui-button-info"
                                     style="width: 100px;"
@@ -319,9 +319,9 @@
                                     <f:setPropertyActionListener value="#{f.pbItem.billItem.bill.referenceBill}" target="#{billSearch.bill}" />
                                 </p:commandLink>
                             </p:column>
-
+                            
                             <p:column headerText="Ref Doc Date" width="5em">
-                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE'}"
+                                <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.referenceBill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PREBILL_SETTLED_AT_CASHIER'}"
                                               value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
 
                             </p:column>
@@ -367,7 +367,9 @@
                                 <h:outputText value="#{f.itemBatch.batchNo}" />
                             </p:column>
                             <p:column headerText="MRP" width="5em">
-                                <h:outputText value="#{f.pbItem.retailRate}" ><f:convertNumber pattern="#,##0.00" /></h:outputText>
+                                <h:outputText value="#{f.pbItem.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" />
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Expiry Date" width="5em">
                                 <h:outputText value="#{f.itemBatch.dateOfExpire}">
