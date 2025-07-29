@@ -3,6 +3,7 @@ package com.divudi.core.data;
 import com.divudi.core.data.dto.PharmacyIncomeBillDTO;
 import com.divudi.core.data.dto.PharmacyIncomeBillItemDTO;
 import com.divudi.core.data.dto.OpdIncomeReportDTO;
+import com.divudi.core.data.dto.LabIncomeReportDTO;
 import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
@@ -305,6 +306,17 @@ public class IncomeBundle implements Serializable {
                         OpdIncomeReportDTO dto = (OpdIncomeReportDTO) obj;
                         IncomeRow ir = new IncomeRow(dto);
                         rows.add(ir);
+                    }
+                }
+            } else if (firstElement instanceof LabIncomeReportDTO) {
+                // Process list as IncomeRows for Laboratory reports
+                for (Object obj : entries) {
+                    if (obj instanceof LabIncomeReportDTO) {
+                        LabIncomeReportDTO dto = (LabIncomeReportDTO) obj;
+                        if (dto != null) {
+                            IncomeRow ir = new IncomeRow(dto);
+                            rows.add(ir);
+                        }
                     }
                 }
             } else if (firstElement instanceof PharmacyIncomeBillItemDTO) {
