@@ -7631,7 +7631,7 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
-    public String navigateToPharmcyBillSearch() {
+    public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
