@@ -131,7 +131,7 @@
                         </f:facet>
                         <h:outputLabel value="#{bip.item.name}"/>
                         <f:facet name="footer">
-                            <h:outputLabel value="Total"/>
+                            <h:outputLabel value="Totals"/>
                         </f:facet>
                     </p:column>
 
@@ -142,68 +142,6 @@
                             <h:outputLabel value="Code"/>
                         </f:facet>
                         <h:outputLabel value="#{bip.item.code}"/>
-                    </p:column>
-
-                    <p:column  width="3em" style="margin: 0px; padding: 0px;">
-                        <f:facet name="header">
-                            <h:outputLabel value="QTY"/>
-                        </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
-                    </p:column>
-
-                    <p:column  
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
-                        width="4em" 
-                        style="margin: 0px; padding: 0px;text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Purchase Rate"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
-                            <f:convertNumber pattern="#0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column  
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Purchase Value"/>
-                        </f:facet>
-                        <h:outputLabel value="#{0 - (bip.pharmaceuticalBillItem.itemBatch.purcahseRate * bip.pharmaceuticalBillItem.qty)}">
-                            <f:convertNumber pattern="#0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </f:facet>
-                    </p:column>
-
-                    <p:column  
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale Rate"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
-                            <f:convertNumber pattern="#0.00" />
-                        </h:outputLabel>
-                    </p:column>
-
-                    <p:column  
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', false)}"
-                        width="4em" style="margin: 0px; padding: 0px;text-align: right;">
-                        <f:facet name="header">
-                            <h:outputLabel value="Sale Value"/>
-                        </f:facet>
-                        <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
-                            <f:convertNumber pattern="#0.00" />
-                        </h:outputLabel>
-                        <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
-                                <f:convertNumber pattern="#0.00" />
-                            </h:outputLabel>
-                        </f:facet>
                     </p:column>
 
                     <p:column 
@@ -227,6 +165,102 @@
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
+
+                    <p:column  width="4em" class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="QTY"/>
+                        </f:facet>
+                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.qty}"/>
+                    </p:column>
+
+                    <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports', true)}"
+                        width="4em" 
+                        class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Rate"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.purcahseRate}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Purchase Value is required in Pharmacy Disbursement Reports', false)}"
+                        width="4em" class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Purchase Value"/>
+                        </f:facet>
+                        <h:outputLabel value="#{0 - (bip.pharmaceuticalBillItem.itemBatch.purcahseRate * bip.pharmaceuticalBillItem.qty)}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Rate is required in Pharmacy Disbursement Reports', false)}"
+                        width="4em" class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Sale Rate"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                    </p:column>
+
+                    <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', false)}"
+                        width="4em" class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Sale Value"/>
+                        </f:facet>
+                        <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+                    
+                     <p:column  
+                        width="4em" 
+                        class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Transfer Rate"/>
+                        </f:facet>
+                        <h:outputLabel styleClass="sale-value" value="#{bip.rate}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+                    <p:column  
+                        width="4em" 
+                        class="text-end">
+                        <f:facet name="header">
+                            <h:outputLabel value="Transfer Value"/>
+                        </f:facet>
+                        <h:outputLabel styleClass="sale-value" value="#{0 - bip.netValue}">
+                            <f:convertNumber pattern="#0.00" />
+                        </h:outputLabel>
+                        <f:facet name="footer">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalTransferValue}">
+                                <f:convertNumber pattern="#0.00" />
+                            </h:outputLabel>
+                        </f:facet>
+                    </p:column>
+
+
 
 
                 </p:dataTable>
