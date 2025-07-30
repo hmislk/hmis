@@ -6,14 +6,18 @@
 - **Database Push Workflow**: [Complete Instructions](developer_docs/persistence/persistence-workflow.md)
 - **CRITICAL**: Automatic JNDI replacement before/after GitHub pushes
 - **File**: `src/main/resources/META-INF/persistence.xml`
+- **Environment Variables**: Replace `jdbc/coop` with `${JDBC_DATASOURCE}` and `jdbc/ruhunuAudit` with `${JDBC_AUDIT_DATASOURCE}`
 
 ### Git & GitHub Integration
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
 - **GitHub CLI Usage**: [Complete GitHub CLI Guide](developer_docs/github/gh-cli-usage.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
-- **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
-- **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
+
+#### Troubleshooting `gh pr create`
+- **Quoting Issues**: When using `gh pr create` with `--title` or `--body` flags, ensure that the entire string for the title and body is properly quoted to avoid shell interpretation issues, especially on Windows. For multi-line bodies or complex strings, consider using `--body-file` to read content from a temporary file.
+- **Base Branch**: Always verify the correct base branch for the pull request. Use `git remote show origin` to identify the `HEAD branch` (e.g., `development` instead of `main`) and specify it with `--base <branch_name>`.
+- **Seamless PR Creation**: The most reliable method for `gh pr create` is often to use the `--fill` flag after ensuring the local branch is up-to-date with the remote base branch.
 
 ### Testing & Build
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
@@ -68,8 +72,4 @@ For comprehensive implementation details, see:
 1. **Always use environment variables** in pushed persistence.xml
 2. **Include issue closing keywords** in commit messages
 3. **Update project board status** automatically
-4. **Run tests before committing** using detect-maven script
-5. **Follow DTO patterns** to avoid breaking changes
-
----
-This behavior should persist across all Gemini Code sessions for this project.
+4. **Follow DTO patterns** to avoid breaking changes

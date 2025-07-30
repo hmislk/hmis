@@ -124,9 +124,9 @@
 
                     <p:column style="text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Rate"/>
+                            <h:outputLabel value="Transfer Rate"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.retailsaleRate}">
+                        <h:outputLabel value="#{bip.rate}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>
@@ -140,9 +140,9 @@
 
                     <p:column style="text-align: right;">
                         <f:facet name="header">
-                            <h:outputLabel value="Gross Price"/>
+                            <h:outputLabel value="Transfer Value"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{0-bip.netValue}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                     </p:column>

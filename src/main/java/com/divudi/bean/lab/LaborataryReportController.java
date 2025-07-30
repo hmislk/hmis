@@ -880,7 +880,6 @@ public class LaborataryReportController implements Serializable {
             double totalDeduction = Math.abs(
                     row.getTotalBillsRefund()
                     + row.getTotalBillsCancel()
-                    + row.getTotalBillsDiscount()
             );
             row.setNetTotal(row.getGrossTotal() - totalDeduction);
         });

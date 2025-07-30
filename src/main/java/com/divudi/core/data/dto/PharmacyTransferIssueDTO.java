@@ -195,6 +195,12 @@ public class PharmacyTransferIssueDTO implements Serializable {
         return transferValue != null ? transferValue.doubleValue() : 0.0;
     }
     
+    // IMPORTANT: This should return the actual purchase value for "Purchase Value" column
+    // The transferValue field contains totalPurchaseValue from BillFinanceDetails
+    public Double getPurchaseValue() {
+        return transferValue != null ? transferValue.doubleValue() : 0.0;
+    }
+    
     // The XHTML expects this method name specifically - returns Double for display
     public Double getSaleValue() {
         return saleValue != null ? saleValue.doubleValue() : 0.0;

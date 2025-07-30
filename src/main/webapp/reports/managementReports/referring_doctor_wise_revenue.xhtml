@@ -304,11 +304,13 @@
                                 </p:autoComplete>
                             </h:panelGroup>
                             
-                            <h:panelGroup id="toIns">
+                            <h:panelGroup id="toIns"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Service Institution and Department in Referring Doctor Wise Revenue Report', false)}">
                                 <h:outputText value="&#xf19c;" styleClass="fa mr-2"/>
                                 <h:outputLabel class="mx-1" value="Service Institution"/>
                             </h:panelGroup>
-                            <h:panelGroup id="toInst">
+                            <h:panelGroup id="toInst"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Service Institution and Department in Referring Doctor Wise Revenue Report', false)}">
                                 <p:selectOneMenu
                                 value="#{reportController.toInstitution}"
                                 filter="true"
@@ -326,12 +328,13 @@
 
                             <p:spacer width="2em"></p:spacer>
                             
-                            <h:panelGroup id="toDep">
+                            <h:panelGroup id="toDep"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Service Institution and Department in Referring Doctor Wise Revenue Report', false)}">
                                 <h:outputText value="&#xf0e8;" styleClass="fa mr-2"/>
                                 <p:outputLabel value="Service Department" class="mx-1"/>
                             </h:panelGroup>
-                            <h:panelGroup id="toDept">
-
+                            <h:panelGroup id="toDept"
+                                          rendered="#{configOptionApplicationController.getBooleanValueByKey('Show Service Institution and Department in Referring Doctor Wise Revenue Report', false)}">
                                 <p:selectOneMenu 
                                     value="#{reportController.toDepartment}" 
                                     class="w-100" 
