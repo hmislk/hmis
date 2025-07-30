@@ -9,6 +9,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
@@ -31,7 +32,7 @@ public class IncomeRow implements Serializable {
 
     private PaymentScheme paymentScheme;
     private AdmissionType admissionType;
-    
+
     private Category category;
     private Bill bill;
     private Bill batchBill;
@@ -56,7 +57,7 @@ public class IncomeRow implements Serializable {
     private boolean selected;
 
     private Item item;
-    
+
     private double retailValue;
     private double purchaseValue;
     private double grossProfit;
@@ -171,6 +172,10 @@ public class IncomeRow implements Serializable {
     private double hospitalTotal;
     private double staffTotal;
     private double ccTotal;
+
+    private double totalBillsRefund;
+    private double totalBillsCancel;
+    private double totalBillsDiscount;
 
     private double qty;
     private double retailRate;
@@ -371,9 +376,13 @@ public class IncomeRow implements Serializable {
 
         PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
         pharmaceuticalBillItem.setQty(dto.getQty() != null ? dto.getQty() : 0.0);
+
+        ItemBatch itemBatch = new ItemBatch();
+        itemBatch.setCostRate(dto.getCostRate() != null ? dto.getCostRate() : 0.0);
+        pharmaceuticalBillItem.setItemBatch(itemBatch);
+
         pharmaceuticalBillItem.setRetailRate(dto.getRetailRate() != null ? dto.getRetailRate() : 0.0);
         pharmaceuticalBillItem.setPurchaseRate(dto.getPurchaseRate() != null ? dto.getPurchaseRate() : 0.0);
-        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
 
         billItem.setNetRate(dto.getNetRate() != null ? dto.getNetRate() : 0.0);
         Item item = new Item();
@@ -1478,6 +1487,30 @@ public class IncomeRow implements Serializable {
 
     public void setAdmissionType(AdmissionType admissionType) {
         this.admissionType = admissionType;
+    }
+
+    public double getTotalBillsRefund() {
+        return totalBillsRefund;
+    }
+
+    public void setTotalBillsRefund(double totalBillsRefund) {
+        this.totalBillsRefund = totalBillsRefund;
+    }
+
+    public double getTotalBillsCancel() {
+        return totalBillsCancel;
+    }
+
+    public void setTotalBillsCancel(double totalBillsCancel) {
+        this.totalBillsCancel = totalBillsCancel;
+    }
+
+    public double getTotalBillsDiscount() {
+        return totalBillsDiscount;
+    }
+
+    public void setTotalBillsDiscount(double totalBillsDiscount) {
+        this.totalBillsDiscount = totalBillsDiscount;
     }
 
     public Long getBillId() {

@@ -436,7 +436,6 @@ public class DataAdministrationController implements Serializable {
             billController.setOutput(billController.getOutput() + "Successfully updated " + updatedCount + " PharmaceuticalItem(s) with Pharmacy department type.");
         } catch (Exception e) {
             billController.setOutput("Error updating PharmaceuticalItems: " + e.getMessage());
-            System.err.println("Error in assignPharmacyDepartmentTypeToPharmaceuticalItems: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -449,7 +448,7 @@ public class DataAdministrationController implements Serializable {
      * when "Pharmacy Transfer is by Retail Rate" option is enabled.
      */
     public void migrateTransferBillItemFinanceDetails() {
-        billController.setOutput(""); // Reset output
+        executionFeedback = ""; // Reset output
         
         try {
             StringBuilder result = new StringBuilder();
@@ -461,11 +460,30 @@ public class DataAdministrationController implements Serializable {
             List<BillType> billTypes = Arrays.asList(BillType.PharmacyTransferIssue, BillType.PharmacyTransferReceive);
             params.put("billTypes", billTypes);
             
-            String jpql = "SELECT bi FROM BillItem bi WHERE " +
-                         "bi.bill.billType IN :billTypes AND bi.retired = false AND " +
-                         "(bi.billItemFinanceDetails IS NULL OR " +
-                         "bi.billItemFinanceDetails.lineNetTotal IS NULL OR " +
-                         "bi.billItemFinanceDetails.lineNetTotal = 0)";
+            StringBuilder jpqlBuilder = new StringBuilder();
+            jpqlBuilder.append("SELECT bi FROM BillItem bi WHERE ");
+            jpqlBuilder.append("bi.bill.billType IN :billTypes AND bi.retired = false AND ");
+            jpqlBuilder.append("(bi.billItemFinanceDetails IS NULL OR ");
+            jpqlBuilder.append("bi.billItemFinanceDetails.lineNetTotal IS NULL OR ");
+            jpqlBuilder.append("bi.billItemFinanceDetails.lineNetTotal = 0)");
+            
+            // Add date filtering if fromDate and toDate are provided
+            if (fromDate != null && toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate AND bi.bill.createdAt <= :toDate");
+                params.put("fromDate", fromDate);
+                params.put("toDate", toDate);
+                result.append("Filtering by date range: ").append(fromDate).append(" to ").append(toDate).append("\n\n");
+            } else if (fromDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt >= :fromDate");
+                params.put("fromDate", fromDate);
+                result.append("Filtering from date: ").append(fromDate).append("\n\n");
+            } else if (toDate != null) {
+                jpqlBuilder.append(" AND bi.bill.createdAt <= :toDate");
+                params.put("toDate", toDate);
+                result.append("Filtering to date: ").append(toDate).append("\n\n");
+            }
+            
+            String jpql = jpqlBuilder.toString();
             
             List<BillItem> billItems = billItemFacade.findByJpql(jpql, params);
             
@@ -541,12 +559,11 @@ public class DataAdministrationController implements Serializable {
                 result.append("\nNo items needed migration. All transfer bill items already have proper financial details.\n");
             }
             
-            billController.setOutput(result.toString());
+            executionFeedback = result.toString();
             
         } catch (Exception e) {
             String errorMsg = "Error during transfer bill finance details migration: " + e.getMessage();
-            billController.setOutput(errorMsg);
-            System.err.println("Error in migrateTransferBillItemFinanceDetails: " + e.getMessage());
+            executionFeedback = errorMsg;
             e.printStackTrace();
         }
     }
