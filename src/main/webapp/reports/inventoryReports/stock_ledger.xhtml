@@ -344,7 +344,7 @@
                                 <h:outputText value="#{f.pbItem.transThisIsStockOut eq true ? f.pbItem.qty + f.pbItem.freeQty : 0.0}" />
                             </p:column>
                             <p:column headerText="Closing Stock" width="5em">
-                                <h:outputText value="#{f.itemStock}" />
+                                <h:outputText value="#{f.totalItemStock}" />
                             </p:column>
                             <p:column headerText="Rate" width="5em">
                                 <h:outputText value="#{f.pbItem.purchaseRate}"><f:convertNumber pattern="#,##0.00" /></h:outputText>
@@ -377,7 +377,7 @@
                                 </h:outputText>
                             </p:column>
                             <p:column headerText="Inserted Date" width="5em">
-                                <h:outputText value="#{f.pbItem.billItem.createdAt}">
+                                <h:outputText value="#{f.pbItem.billItem.bill.createdAt}">
                                      <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
                                 </h:outputText>
                             </p:column>
