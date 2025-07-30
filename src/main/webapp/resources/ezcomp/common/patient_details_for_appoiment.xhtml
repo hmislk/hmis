@@ -134,7 +134,6 @@
                                             <f:selectItem itemLabel="Select Title" />
                                             <f:selectItems value="#{opdBillController.title}" var="i"
                                                            itemLabel="#{i.label}" itemValue="#{i}"/>
-                                            <p:ajax process="cmbTitle" update="cmbSex" ></p:ajax>
                                             <p:ajax event="change" process="cmbTitle" update="cmbSex" ></p:ajax>
                                         </p:selectOneMenu>
                                     </div>
@@ -294,7 +293,7 @@
                                             class="form-control w-100"
                                             value="#{cc.attrs.controller.patient.person.religion}">
                                             <f:selectItem itemLabel="Select Religion" />
-                                            <f:selectItems value="#{clinicalEntityController.ehnicity}" var="i"
+                                            <f:selectItems value="#{clinicalEntityController.ethnicity}" var="i"
                                                            itemLabel="#{i.name}" itemValue="#{i}"/>
 
                                         </p:selectOneMenu>
