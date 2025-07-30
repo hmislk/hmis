@@ -1084,9 +1084,10 @@
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
                     </p:menuitem> 
+                    <!-- TODO: Remove "(New)" suffix when legacy search is retired -->
                     <p:menuitem  
                         ajax="false" 
-                        action="#{searchController.navigateToPharmcyBillSearch}"  
+                        action="#{searchController.navigateToPharmacyBillSearch}"  
                         value="Pharmacy Bill Search (New)" 
                         icon="fas fa-search" 
                         actionListener="#{billSearch.recreateModel}" 
