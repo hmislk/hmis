@@ -321,7 +321,7 @@ public class AppointmentController implements Serializable, ControllerWithPatien
         return false;
     }
 
-    public List<Reservation> checkAppoimentsForRoom(RoomFacilityCharge r) {
+    public List<Reservation> checkAppointmentsForRoom(RoomFacilityCharge r) {
         String jpql = "SELECT res FROM Reservation res "
                 + "WHERE res.Room = :room "
                 + "AND res.reservedFrom BETWEEN :today AND :endDate "
