@@ -238,7 +238,7 @@
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                            <h:outputLabel value="">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -250,11 +250,11 @@
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Value"/>
                         </f:facet>
-                        <h:outputLabel styleClass="sale-value" value="#{0-bip.netValue}">
+                        <h:outputLabel styleClass="sale-value" value="#{0 - bip.netValue}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalTransferValue}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>
                         </f:facet>
