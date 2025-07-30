@@ -296,7 +296,7 @@ public class AdmissionController implements Serializable, ControllerWithPatient 
     }
     
     public boolean onRoomFacilityChargeSelected(){
-        List<Reservation> foundReservations = appointmentController.checkAppoimentsForRoom(patientRoom.getRoomFacilityCharge());
+        List<Reservation> foundReservations = appointmentController.checkAppointmentsForRoom(patientRoom.getRoomFacilityCharge());
         System.out.println("foundReservations = " + foundReservations.size());
         if(foundReservations == null || foundReservations.isEmpty()){
             latestfoundReservation = new Reservation();
