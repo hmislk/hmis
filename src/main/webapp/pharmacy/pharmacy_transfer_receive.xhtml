@@ -76,6 +76,12 @@
                                         </h:outputText>
                                     </p:column>
 
+                                    <p:column headerText="Net Rate"  style="width:25px!important;">
+                                        <h:outputText id="netRate" value="#{ph.netRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
                                     <p:column headerText="Issued Qty" style="width:25px!important;">
                                         <h:outputText value="#{ph.referanceBillItem.absoluteQty}">
                                             <f:convertNumber pattern="#,##0.00"/>

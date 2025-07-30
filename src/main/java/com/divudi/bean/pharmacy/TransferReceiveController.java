@@ -128,6 +128,7 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addErrorMessage("Nothing to received");
             return null;
         }
+        printPreview=false;
         generateBillComponent();
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
@@ -408,12 +409,8 @@ public class TransferReceiveController implements Serializable {
             tmp = paidQty * costRate;
             costNonFree += tmp;
 
-            BigDecimal grossTotal = bifd.getGrossTotal();
-            if (grossTotal != null) {
-                bifd.setGrossRate(grossTotal.abs().negate());
-            } else {
-                bifd.setGrossRate(BigDecimal.ZERO);
-            }
+            // Fix: Set GROSSRATE to the actual gross rate from line gross rate
+            bifd.setGrossRate(bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO);
 
             BigDecimal biNetTotal = bifd.getNetTotal();
             netTotal += biNetTotal != null ? biNetTotal.doubleValue() : 0.0;
@@ -422,27 +419,27 @@ public class TransferReceiveController implements Serializable {
                 bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
             }
 
-            bifd.setTotalCost(BigDecimal.valueOf(costFree + costNonFree));
             double itemCostFree = freeQty * costRate;
             double itemCostNonFree = paidQty * costRate;
             bifd.setTotalCost(BigDecimal.valueOf(itemCostFree + itemCostNonFree));
 
+            // Fix: Set LINECOSTRATE to the actual cost rate from ItemBatch
+            bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+            // Fix: Set LINECOST using cost rate × quantity
+            bifd.setLineCost(BigDecimal.valueOf(costRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO));
+
             if (bifd.getQuantityByUnits() != null && bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) > 0) {
-                bifd.setTotalCostRate(BigDecimal.valueOf(costFree + costNonFree)
+                bifd.setTotalCostRate(BigDecimal.valueOf(itemCostFree + itemCostNonFree)
                         .divide(bifd.getQuantityByUnits(), 6, RoundingMode.HALF_UP));
             } else {
                 bifd.setTotalCostRate(BigDecimal.ZERO);
             }
 
-            // Set value calculations after all rates are properly set
-            bifd.setValueAtPurchaseRate(bifd.getLineGrossRate() != null ? 
-                bifd.getLineGrossRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
-            bifd.setValueAtRetailRate(bifd.getRetailSaleRate() != null ? 
-                bifd.getRetailSaleRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
-            bifd.setValueAtCostRate(bifd.getTotalCostRate() != null ? 
-                bifd.getTotalCostRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO).multiply(bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack() : BigDecimal.ONE) : BigDecimal.ZERO);
-            bifd.setValueAtWholesaleRate(bifd.getWholesaleRate() != null ? 
-                bifd.getWholesaleRate().multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO) : BigDecimal.ZERO);
+            // Fix: Set value calculations with correct rates
+            bifd.setValueAtPurchaseRate(BigDecimal.valueOf(purchaseRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATPURCHASERATE
+            bifd.setValueAtRetailRate(BigDecimal.valueOf(retailRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATRETAILRATE  
+            bifd.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATCOSTRATE
+            bifd.setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO));
 
             bifd.setProfitMargin(BigDecimal.ZERO);
 
@@ -760,6 +757,7 @@ public class TransferReceiveController implements Serializable {
 
         bi.setQty(qty.doubleValue());
         bi.setRate(grossRate.doubleValue());
+        bi.setNetRate(grossRate.doubleValue());
         bi.setNetValue(lineGrossTotal.doubleValue());
     }
 

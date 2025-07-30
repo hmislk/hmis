@@ -5470,8 +5470,9 @@ public class DataUploadController implements Serializable {
             }
 
             Cell activeCell = row.getCell(3);
-            if (activeCell != null && activeCell.getCellType() == CellType.BOOLEAN) {
-                active = activeCell.getBooleanCellValue();
+            if (activeCell != null && activeCell.getCellType() == CellType.STRING) {
+                String cellValue = activeCell.getStringCellValue();
+                active = cellValue.equalsIgnoreCase("Active");
             }
             if (active == null) {
                 active = false;
@@ -5564,7 +5565,7 @@ public class DataUploadController implements Serializable {
             supplier.setCode(code);
             supplier.setInstitutionCode(code);
             supplier.setName(supplierName);
-            supplier.setInactive(active);
+            supplier.setInactive(!active);
             supplier.setMobile(mobilenumber);
             supplier.setFax(fax);
             supplier.setPhone(phone);
