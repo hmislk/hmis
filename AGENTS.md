@@ -35,6 +35,7 @@ For comprehensive implementation details, see:
 2. **Security**: Validate privileges, sanitize inputs
 3. **Maintainability**: Use centralized configuration
 4. **Accessibility**: Ensure inclusive design
+5. **JSF-only changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
 
 ---
 These guidelines apply to the entire repository.
