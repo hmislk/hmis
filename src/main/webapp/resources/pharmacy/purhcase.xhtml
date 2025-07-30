@@ -181,7 +181,7 @@
 
                     <p:row rendered="#{cc.attrs.bill.expenseTotal ne null and cc.attrs.bill.expenseTotal != 0}">
                         <p:column style="padding: 4px; width: 6em;" colspan="6" footerText="Expense Total"/>
-                        <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.total}" class="text-end">
+                        <p:column style="padding: 4px; width: 6em;" footerText="#{0-cc.attrs.bill.expenseTotal}" class="text-end">
                             <f:facet name="footer">
                                 <h:outputLabel value="#{0-cc.attrs.bill.expenseTotal}">
                                     <f:convertNumber pattern="#,##0.00" />
