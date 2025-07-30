@@ -306,7 +306,9 @@
                                 </p:commandLink>
                             </p:column>
                             <p:column headerText="Doc Date" width="5em">
-                                <h:outputText value="#{f.createdAt}" />
+                                <h:outputText value="#{f.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                             </p:column>
                             <p:column headerText="Ref Doc No." width="15em">
                                 <p:commandLink 
@@ -322,7 +324,9 @@
 
                             <p:column headerText="Ref Doc Date" width="5em">
                                 <h:outputText rendered="#{f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_GRN' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_ISSUE' and f.pbItem.billItem.bill.billTypeAtomic ne 'PHARMACY_RETAIL_SALE_PRE_TO_SETTLE_AT_CASHIER'}"
-                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" />
+                                              value="#{f.pbItem.billItem.bill.referenceBill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
 
                             </p:column>
                             <p:column headerText="From Store" width="5em">
