@@ -229,6 +229,7 @@
                     </p:column>
                     
                      <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Rate is required in Pharmacy Disbursement Reports', false)}"
                         width="4em" 
                         class="text-end">
                         <f:facet name="header">
@@ -245,6 +246,7 @@
                     </p:column>
 
                     <p:column  
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Value is required in Pharmacy Disbursement Reports', false)}"
                         width="4em" 
                         class="text-end">
                         <f:facet name="header">
