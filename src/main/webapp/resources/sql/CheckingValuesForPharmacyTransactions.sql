@@ -16,5 +16,5 @@ select `ID`, `QTY`, `RETAILRATE`, `PURCHASERATE`, `PURCHASERATEPACK`, `RETAILRAT
 select `ID` , `CREATEDAT`, `BILLTYPEATOMIC`,  `NETTOTAL`, `TOTAL`, `SALEVALUE` from Bill order by id desc limit 1;
 
 -- Check the latest bill finance details summary
--- This query fetches bill-level financial totals for verification (note: TOTALCOSTVALUE appears twice, may be intentional for debugging)
-select `ID`, `NETTOTAL`, `GROSSTOTAL`, `TOTALCOSTVALUE`, `TOTALCOSTVALUE`, `TOTALPURCHASEVALUE`, `TOTALRETAILSALEVALUE` from billfinancedetails order by id desc limit 1;
+-- This query fetches bill-level financial totals for verification
+select `ID`, `NETTOTAL`, `GROSSTOTAL`, `TOTALCOSTVALUE`, `TOTALPURCHASEVALUE`, `TOTALRETAILSALEVALUE` from billfinancedetails order by id desc limit 1;
