@@ -206,9 +206,12 @@ public class PharmacyBillSearch implements Serializable {
         return "pharmacy_reprint_po?faces-redirect=true";
     }
 
+    private boolean isManageCostingEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+    }
+
     public String navigateToPharmacyGrnReprint() {
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        if (manageCosting) {
+        if (isManageCostingEnabled()) {
             return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
         }
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
@@ -946,8 +949,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToViewPharmacyGrn() {
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        if (manageCosting) {
+        if (isManageCostingEnabled()) {
             return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
         }
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
@@ -968,8 +970,7 @@ public class PharmacyBillSearch implements Serializable {
         }
         bill.setTransTotalSaleValue(tmp);
 
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
-        if (manageCosting) {
+        if (isManageCostingEnabled()) {
             return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
         }
 
@@ -3416,7 +3417,7 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String viewBill() {
-        boolean manageCosting = configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+        boolean manageCosting = isManageCostingEnabled();
 
         if (bill != null) {
             switch (bill.getBillType()) {
