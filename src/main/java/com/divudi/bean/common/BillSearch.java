@@ -4366,11 +4366,11 @@ public class BillSearch implements Serializable {
         if (manageCosting) {
             directPurchaseReturnController.setBill(bill);
             directPurchaseReturnController.prepareReturnBill();
-            directPurchaseReturnController.setPrintPreview(false);
+            directPurchaseReturnController.setPrintPreview(true);
             return "/pharmacy/direct_purchase_return?faces-redirect=true";
         } else {
             purchaseReturnController.setBill(bill);
-            purchaseReturnController.setPrintPreview(false);
+            purchaseReturnController.setPrintPreview(true);
             return "/pharmacy/pharmacy_return_purchase?faces-redirect=true";
         }
     }
