@@ -11,18 +11,7 @@
         <ui:composition template="/opd/analytics/index.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Itemized Sales Summary - Optimized Method">
-                        <!-- Navigation Toggle Buttons -->
-                        <p:panel styleClass="mb-3 text-center">
-                            <h:outputText value="Navigation: " styleClass="font-weight-bold mr-3"/>
-                            <p:commandButton value="Legacy Method"
-                                             styleClass="ui-button-secondary mr-2"
-                                             action="#{searchController.navigateToLegacyItemizedSaleSummary()}"
-                                             immediate="true"/>
-                            <p:commandButton value="Optimized Method"
-                                             styleClass="ui-button-success"
-                                             disabled="true"/>
-                        </p:panel>
+                    <p:panel header="Itemized Sales Summary - DTO">
                         <div class="row">
                             <div class="col-md-12">
                                 <h:panelGrid columns="2" styleClass="w-100 form-grid" columnClasses="label-icon-column, input-column">

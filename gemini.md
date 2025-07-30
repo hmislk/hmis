@@ -14,6 +14,11 @@
 - **GitHub CLI Usage**: [Complete GitHub CLI Guide](developer_docs/github/gh-cli-usage.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
 
+#### Troubleshooting `gh pr create`
+- **Quoting Issues**: When using `gh pr create` with `--title` or `--body` flags, ensure that the entire string for the title and body is properly quoted to avoid shell interpretation issues, especially on Windows. For multi-line bodies or complex strings, consider using `--body-file` to read content from a temporary file.
+- **Base Branch**: Always verify the correct base branch for the pull request. Use `git remote show origin` to identify the `HEAD branch` (e.g., `development` instead of `main`) and specify it with `--base <branch_name>`.
+- **Seamless PR Creation**: The most reliable method for `gh pr create` is often to use the `--fill` flag after ensuring the local branch is up-to-date with the remote base branch.
+
 ### Testing & Build
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
