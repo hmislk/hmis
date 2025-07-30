@@ -256,20 +256,21 @@ public class OpdReportController implements Serializable {
     //adjustments;
 // </editor-fold>
 // <editor-fold defaultstate="collapsed" desc="Navigators">
-    public String navigateToOpdIncomeReport() {
+    public String navigateToIncomeReport() {
         return "/opd/analytics/summary_reports/opd_income_report?faces-redirect=true";
     }
 
-    public String navigateToOpdIncomeReportDto() {
+    public String navigateToIncomeReportDto() {
         return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
     }
 
+    // If aliases are needed, delegate to the primary methods
     public String navigateToOptimizedOpdIncomeReport() {
-        return "/opd/analytics/summary_reports/opd_income_report_dto.xhtml?faces-redirect=true";
+        return navigateToIncomeReportDto();
     }
 
     public String navigateToLegacyOpdIncomeReport() {
-        return "/opd/analytics/summary_reports/opd_income_report.xhtml?faces-redirect=true";
+        return navigateToIncomeReport();
     }
 
     public String navigateToOpdIncomeDailySummary() {
@@ -490,7 +491,6 @@ public class OpdReportController implements Serializable {
 
     public void processOpdIncomeReport() {
         reportTimerController.trackReportExecution(() -> {
-            System.out.println("processOpdIncomeReport");
             List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
             billTypeAtomics.add(BillTypeAtomic.OPD_BILL_PAYMENT_COLLECTION_AT_CASHIER);
@@ -573,7 +573,6 @@ public class OpdReportController implements Serializable {
     }
 
     public void processOpdIncomeSummaryByDate() {
-        System.out.println("processOpdIncomeReport");
         List<BillTypeAtomic> billTypeAtomics = new ArrayList<>();
         //Add All OPD BillTypes
         billTypeAtomics.add(BillTypeAtomic.OPD_BILL_CANCELLATION);
