@@ -23,7 +23,7 @@ Common UI issues can often be resolved by:
 
 ### Code Changes Made
 - `lab_summeries_index.xhtml`: Consolidated 8+ individual forms into one wrapping form
-- `LaborataryReportController.java`: Removed unnecessary `onTabChange` and `updateActiveIndex` methods
+- `LaboratoryReportController.java`: Removed unnecessary `onTabChange` and `updateActiveIndex` methods
 
 ### Result
 - All tabs accessible ✓

@@ -19,6 +19,26 @@
 - **Base Branch**: Always verify the correct base branch for the pull request. Use `git remote show origin` to identify the `HEAD branch` (e.g., `development` instead of `main`) and specify it with `--base <branch_name>`.
 - **Seamless PR Creation**: The most reliable method for `gh pr create` is often to use the `--fill` flag after ensuring the local branch is up-to-date with the remote base branch.
 
+##### Concrete Command Examples
+```bash
+# Check default branch
+git remote show origin
+
+# Create PR with proper base branch
+gh pr create --base development --fill
+
+# Create PR with specific title and body file
+echo "Fix CodeRabbit AI issues" > /tmp/pr_title.txt
+echo "- Fixed JPQL query duplicates\n- Removed debug code" > /tmp/pr_body.txt
+gh pr create --title-file /tmp/pr_title.txt --body-file /tmp/pr_body.txt
+
+# Handle permission errors
+gh auth refresh --scopes repo
+
+# Check current authentication status
+gh auth status
+```
+
 ### Testing & Build
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script

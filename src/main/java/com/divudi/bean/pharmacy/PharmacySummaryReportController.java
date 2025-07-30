@@ -985,20 +985,10 @@ public class PharmacySummaryReportController implements Serializable {
         List<PharmacyIncomeBillDTO> dtos = billService.fetchBillsAsPharmacyIncomeBillDTOs(
                 fromDate, toDate, institution, site, department, webUser, billTypeAtomics, admissionType, paymentScheme);
 
-        if (dtos != null && !dtos.isEmpty()) {
-            for (int i = 0; i < Math.min(3, dtos.size()); i++) {
-                PharmacyIncomeBillDTO dto = dtos.get(i);
-            }
-        }
 
         bundle = new IncomeBundle(dtos);
         bundle.generateRetailAndCostDetailsForPharmaceuticalBill();
 
-        if (bundle.getRows() != null && !bundle.getRows().isEmpty()) {
-            for (int i = 0; i < Math.min(3, bundle.getRows().size()); i++) {
-                IncomeRow row = bundle.getRows().get(i);
-            }
-        }
     }
 
     /**
