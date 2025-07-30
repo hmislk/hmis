@@ -459,6 +459,7 @@ public enum Privileges {
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
+    PharmacyDisbursementFinalizeRequest("Pharmacy Disbursement Finalize Request"),
     PharmacyDisbursementIssurForRequest("Pharmacy Disbursement Issue for Request"),
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
