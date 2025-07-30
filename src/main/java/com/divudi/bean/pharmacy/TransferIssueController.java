@@ -916,13 +916,12 @@ public class TransferIssueController implements Serializable {
 
         billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
 
-        // IMPORTANT FIX: Use purchase rate for cost calculations instead of cost rate
-        // This ensures correct purchase value calculation in summary reports
-        BigDecimal purchaseRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getPurchaseRate());
-        billItem.getBillItemFinanceDetails().setLineCostRate(purchaseRate);
-        billItem.getBillItemFinanceDetails().setLineCost(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCost(purchaseRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCostRate(purchaseRate);
+        // Use cost rate for cost calculations
+        BigDecimal costRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+        billItem.getBillItemFinanceDetails().setLineCostRate(costRate);
+        billItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCostRate(costRate);
 
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
 
