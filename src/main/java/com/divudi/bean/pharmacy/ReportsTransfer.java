@@ -513,14 +513,13 @@ public class ReportsTransfer implements Serializable {
     }
 
     private void fillDepartmentTransfersIssueByBillItemDto() {
-        System.out.println("=== DEBUG: Starting fillDepartmentTransfersIssueByBillItemDto ===");
 
         Map<String, Object> params = new HashMap<>();
         StringBuilder jpql = new StringBuilder();
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
-                .append(" p.qty, p.purchaseRate, bfd.valueAtPurchaseRate,")
+                .append(" p.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
                 .append(" p.purchaseRate, bfd.valueAtPurchaseRate,")
                 .append(" bfd.lineGrossRate, bfd.lineGrossTotal)")
@@ -534,18 +533,9 @@ public class ReportsTransfer implements Serializable {
                 .append(" and b.retired=false and bi.retired=false")
                 .append(" and b.createdAt between :fd and :td ");
 
-        System.out.println("DEBUG: Initial JPQL query: " + jpql.toString());
-
         params.put("fd", fromDate);
         params.put("td", toDate);
         params.put("bt", BillType.PharmacyTransferIssue);
-
-        System.out.println("DEBUG: Parameters set:");
-        System.out.println("  - fromDate (fd): " + fromDate);
-        System.out.println("  - toDate (td): " + toDate);
-        System.out.println("  - billType (bt): " + BillType.PharmacyTransferIssue);
-        System.out.println("  - fromDepartment: " + (fromDepartment != null ? fromDepartment.getName() : "null"));
-        System.out.println("  - toDepartment: " + (toDepartment != null ? toDepartment.getName() : "null"));
 
         if (fromDepartment != null) {
             jpql.append(" and b.department=:fdept");
@@ -559,8 +549,6 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by bi.id");
 
-        System.out.println("DEBUG: Final JPQL query: " + jpql.toString());
-        System.out.println("DEBUG: Final parameters: " + params);
 
         try {
             transferIssueBillItemDtos = (List<PharmacyTransferIssueBillItemDTO>) getBillItemFacade()
@@ -583,7 +571,6 @@ public class ReportsTransfer implements Serializable {
         costValue = 0.0;
         transferValue = 0.0;
 
-        System.out.println("DEBUG: Starting total calculations...");
 
         if (transferIssueBillItemDtos != null) {
             for (PharmacyTransferIssueBillItemDTO d : transferIssueBillItemDtos) {
@@ -605,8 +592,6 @@ public class ReportsTransfer implements Serializable {
         } else {
         }
 
-        System.out.println("DEBUG: Final calculated totals:");
-        System.out.println("  - purchaseValue: " + purchaseValue);
     }
 
     /**
