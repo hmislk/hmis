@@ -1585,6 +1585,38 @@
                     </h:form>
                 </h:panelGroup>
 
+                <!-- Pharmacy Bill Search -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_bill_search' and webUserController.hasPrivilege('PharmacyItemSearch')}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_bill_search" value="Pharmacy Bill Search"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="pharmacy_bill_search"
+                            ajax="false"
+                            action="/pharmacy/pharmacy_search?faces-redirect=true"
+                            actionListener="#{billSearch.recreateModel}"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-bill-search.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Pharmacy Bill Search" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
+                <!-- Pharmacy Bill Search (New) -->
+                <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_bill_search_new' and webUserController.hasPrivilege('PharmacyItemSearch')}">
+                    <h:form>
+                        <p:tooltip for="pharmacy_bill_search_new" value="Pharmacy Bill Search (New)"  showDelay="0" hideDelay="0"></p:tooltip>
+                        <p:commandLink
+                            id="pharmacy_bill_search_new"
+                            ajax="false"
+                            action="#{searchController.navigateToPharmcyBillSearch}"
+                            actionListener="#{billSearch.recreateModel}"
+                            styleClass="svg-link" >
+                            <p:graphicImage class="img-thumbnail" cache="true" library="images" name="home/pharmacy-bill-search-new.svg" style="cursor: pointer;" width="80" height="80"/>
+                            <h:outputText style="display: none;" value="Pharmacy Bill Search (New)" />
+                        </p:commandLink>
+                    </h:form>
+                </h:panelGroup>
+
                 <!-- Generate Reports -->
                 <h:panelGroup layout="block" class="col-1 p-1"  rendered="#{ui.icon eq 'pharmacy_generate_report' and webUserController.hasPrivilege('PharmacyReports')}">
                     <h:form>
