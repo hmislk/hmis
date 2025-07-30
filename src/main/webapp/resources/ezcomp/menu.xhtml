@@ -1079,7 +1079,7 @@
                     <p:menuitem  
                         ajax="false" 
                         action="/pharmacy/pharmacy_search?faces-redirect=true"  
-                        value="Bill Search" 
+                        value="Pharmacy Bill Search" 
                         icon="fas fa-search" 
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
@@ -1087,7 +1087,7 @@
                     <p:menuitem  
                         ajax="false" 
                         action="#{searchController.navigateToPharmcyBillSearch}"  
-                        value="Bill Search (New)" 
+                        value="Pharmacy Bill Search (New)" 
                         icon="fas fa-search" 
                         actionListener="#{billSearch.recreateModel}" 
                         rendered="#{webUserController.hasPrivilege('PharmacyItemSearch')}" >
