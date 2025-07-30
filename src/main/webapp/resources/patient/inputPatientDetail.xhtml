@@ -56,7 +56,7 @@
                     <f:ajax event="keyup" execute="@this year month" render="calNewPtDob" listener="#{admissionController.dateChangeListen()}" />
                 </p:inputText>
                 <br/>
-                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge" placeholder="Age"  ></p:outputLabel>
+                <p:outputLabel  value="#{cc.attrs.patient.age}" id="lblAge"></p:outputLabel>
             </h:panelGroup>
             <!--<p:outputLabel value="Date of Birth"/>-->
             <p:calendar class="w-100" value="#{cc.attrs.patient.person.dob}" id="calNewPtDob" placeholder="Date of Birth"  navigator="true" pattern="#{sessionController.applicationPreference.shortDateFormat}" >
