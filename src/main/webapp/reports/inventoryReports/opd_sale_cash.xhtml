@@ -233,8 +233,14 @@
                             <p:column headerText="QTY">
                                 <h:outputText value="#{f.qty}" />
                             </p:column>
-                            <p:column headerText="Rate">
-                                <h:outputText value="#{f.pharmaceuticalBillItem.purchaseRate}" />
+                            <p:column headerText="cost Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate}" />
+                            </p:column>
+                            <p:column headerText="cost Value">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.itemBatch.costRate * f.qty}" />
+                            </p:column>  
+                            <p:column headerText="Sale Rate">
+                                <h:outputText value="#{f.pharmaceuticalBillItem.retailRate}" />
                             </p:column>
                             <p:column headerText="Sale Value">
                                 <h:outputText value="#{f.pharmaceuticalBillItem.retailRate * f.qty}" />
