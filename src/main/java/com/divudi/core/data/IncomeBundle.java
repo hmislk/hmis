@@ -53,6 +53,7 @@ public class IncomeBundle implements Serializable {
 
     private double saleValue;
     private double purchaseValue;
+    private double costValue;
     private double grossProfitValue;
 
     private double onCallValue;
@@ -345,6 +346,7 @@ public class IncomeBundle implements Serializable {
     public void generateRetailAndCostDetailsForPharmaceuticalBillItems() {
         saleValue = 0;
         purchaseValue = 0;
+        costValue = 0;
         grossProfitValue = 0;
 
         for (IncomeRow r : getRows()) {
@@ -370,17 +372,20 @@ public class IncomeBundle implements Serializable {
             }
 
             Double pRate = b.getPurchaseRate();
+            Double cRate = b.getItemBatch() != null ? b.getItemBatch().getCostRate() : null;
 
-            if (q == null || rRate == null || pRate == null) {
+            if (q == null || rRate == null || pRate == null || cRate == null) {
                 continue;
             }
 
             double qty = Math.abs(q);
             double retail = Math.abs(rRate);
             double purchase = Math.abs(pRate);
+            double cost = Math.abs(cRate);
 
             double retailTotal = 0;
             double purchaseTotal = 0;
+            double costTotal = 0;
             double grossProfit = 0;
 
             switch (bc) {
@@ -389,14 +394,16 @@ public class IncomeBundle implements Serializable {
                 case PREBILL:
                     retailTotal = retail * qty;
                     purchaseTotal = purchase * qty;
-                    grossProfit = (retail - purchase) * qty;
+                    costTotal = cost * qty;
+                    grossProfit = (retail - cost) * qty;
                     break;
 
                 case CANCELLATION:
                 case REFUND:
                     retailTotal = -retail * qty;
                     purchaseTotal = -purchase * qty;
-                    grossProfit = -(retail - purchase) * qty;
+                    costTotal = -cost * qty;
+                    grossProfit = -(retail - cost) * qty;
                     break;
 
                 default:
@@ -405,6 +412,7 @@ public class IncomeBundle implements Serializable {
 
             saleValue += retailTotal;
             purchaseValue += purchaseTotal;
+            costValue += costTotal;
             grossProfitValue += grossProfit;
         }
     }
@@ -2208,4 +2216,11 @@ public class IncomeBundle implements Serializable {
         this.grossProfitValue = grossProfitValue;
     }
 
+    public double getCostValue() {
+        return costValue;
+    }
+
+    public void setCostValue(double costValue) {
+        this.costValue = costValue;
+    }
 }

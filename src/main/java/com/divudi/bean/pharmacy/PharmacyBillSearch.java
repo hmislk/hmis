@@ -160,6 +160,8 @@ public class PharmacyBillSearch implements Serializable {
     private List<BillFee> billFees;
     private List<BillItem> tempbillItems;
     private List<Bill> searchRetaiBills;
+    // Bill id used when navigating directly from DTO tables
+    private Long billId;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -270,6 +272,23 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+
+    /**
+     * Used by DTO reports where only the bill id is available.
+     */
+    public String navigateToReprintPharmacyTransferIssueById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
         return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
     }
 
@@ -3771,6 +3790,17 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setEmailRecipient(String emailRecipient) {
         this.emailRecipient = emailRecipient;
+    }
+
+    /**
+     * Bill id used by DTO report tables to fetch a bill directly.
+     */
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
 }

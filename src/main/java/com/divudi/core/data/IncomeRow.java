@@ -9,6 +9,7 @@ import com.divudi.core.entity.*;
 import com.divudi.core.entity.channel.SessionInstance;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 
 import java.io.Serializable;
@@ -375,9 +376,13 @@ public class IncomeRow implements Serializable {
 
         PharmaceuticalBillItem pharmaceuticalBillItem = new PharmaceuticalBillItem();
         pharmaceuticalBillItem.setQty(dto.getQty() != null ? dto.getQty() : 0.0);
+
+        ItemBatch itemBatch = new ItemBatch();
+        itemBatch.setCostRate(dto.getCostRate() != null ? dto.getCostRate() : 0.0);
+        pharmaceuticalBillItem.setItemBatch(itemBatch);
+
         pharmaceuticalBillItem.setRetailRate(dto.getRetailRate() != null ? dto.getRetailRate() : 0.0);
         pharmaceuticalBillItem.setPurchaseRate(dto.getPurchaseRate() != null ? dto.getPurchaseRate() : 0.0);
-        billItem.setPharmaceuticalBillItem(pharmaceuticalBillItem);
 
         billItem.setNetRate(dto.getNetRate() != null ? dto.getNetRate() : 0.0);
         Item item = new Item();
