@@ -10,6 +10,7 @@
 ### Git & GitHub Integration
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
+- **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
 - **QA Testing Path**: Issue should be tested via GitHub Issues → Projects → HMIS Development Board
 - **PR Review Path**: Pull Requests → Files Changed → Review Required Files → Approve/Request Changes
@@ -18,6 +19,7 @@
 - **Maven Commands**: [Environment Setup](developer_docs/testing/maven-commands.md)
 - **Preferred**: Use `./detect-maven.sh test` auto-detection script
 - **Fallback**: Machine-specific Maven paths
+- **JSF-Only Changes**: When modifying only XHTML/JSF files (no Java changes), compilation/testing is not required
 
 ### DTO Implementation
 - **Guidelines**: [Complete Reference](developer_docs/dto/implementation-guidelines.md)
@@ -28,8 +30,9 @@
 1. **Always use environment variables** in pushed persistence.xml
 2. **Include issue closing keywords** in commit messages
 3. **Update project board status** automatically
-4. **Run tests before committing** using detect-maven script
+4. **Run tests before committing** using detect-maven script (only for Java changes)
 5. **Follow DTO patterns** to avoid breaking changes
+6. **JSF-only changes** do not require compilation or testing
 
 ---
 This behavior should persist across all Claude Code sessions for this project.
