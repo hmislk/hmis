@@ -571,6 +571,22 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
+                                        <p:outputLabel value="Expenses (Considered for Costing)" />
+                                        <h:outputLabel 
+                                            id="expensesConsidered"
+                                            class="w-100 text-end ui-inputfield bg-info text-white"
+                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalConsideredForCosting}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <p:outputLabel value="Expenses (Not Considered for Costing)" />
+                                        <h:outputLabel 
+                                            id="expensesNotConsidered"
+                                            class="w-100 text-end ui-inputfield bg-warning text-dark"
+                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
                                         <p:outputLabel value="Sale Value" />
                                         <h:outputLabel 
                                             id="saleValue"
@@ -656,6 +672,13 @@
                         </p:column>
                         <p:column headerText="Description" >
                             <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Considered for Costing" >
+                            <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                <p:ajax event="change" 
+                                       listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
+                                       update="@parent" />
+                            </p:selectBooleanCheckbox>
                         </p:column>
                     </p:dataTable>
                 </p:panel>

@@ -156,6 +156,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private Department peformedDepartment;
     @Lob
     private String instructions;
+    
+    private boolean consideredForCosting = true;
 
 //    @Transient
     int searialNo;
@@ -1187,6 +1189,14 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
             billItemFinanceDetails.setBillItem(this);
         }
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 
 }

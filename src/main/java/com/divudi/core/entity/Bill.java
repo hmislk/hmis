@@ -186,6 +186,8 @@ public class Bill implements Serializable, RetirableEntity {
     private double billerFee;
     private double grantTotal;
     private double expenseTotal;
+    private double expensesTotalConsideredForCosting;
+    private double expensesTotalNotConsideredForCosting;
     //with minus tax and discount
     private double grnNetTotal;
 
@@ -1142,6 +1144,22 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setExpenseTotal(double expenseTotal) {
         this.expenseTotal = expenseTotal;
+    }
+
+    public double getExpensesTotalConsideredForCosting() {
+        return expensesTotalConsideredForCosting;
+    }
+
+    public void setExpensesTotalConsideredForCosting(double expensesTotalConsideredForCosting) {
+        this.expensesTotalConsideredForCosting = expensesTotalConsideredForCosting;
+    }
+
+    public double getExpensesTotalNotConsideredForCosting() {
+        return expensesTotalNotConsideredForCosting;
+    }
+
+    public void setExpensesTotalNotConsideredForCosting(double expensesTotalNotConsideredForCosting) {
+        this.expensesTotalNotConsideredForCosting = expensesTotalNotConsideredForCosting;
     }
 
     public double getDiscountPercentPharmacy() {
