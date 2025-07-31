@@ -47,6 +47,8 @@ public class BillNumber implements Serializable {
     @Enumerated(EnumType.STRING)
     private PaymentMethod paymentMethod;
     private Integer billYear;
+    private boolean opdAndInpatientServiceBills = false;
+    private boolean opdAndInpatientServiceBatchBills = false;
     //Retairing properties
     boolean retired;
     @ManyToOne
@@ -54,9 +56,8 @@ public class BillNumber implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     private String retireComments;
-
-
-
+    
+    
 
     public boolean isRetired() {
         return retired;
@@ -138,8 +139,6 @@ public class BillNumber implements Serializable {
         this.id = id;
     }
 
-
-
     @Override
     public int hashCode() {
         int hash = 0;
@@ -195,6 +194,22 @@ public class BillNumber implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isOpdAndInpatientServiceBills() {
+        return opdAndInpatientServiceBills;
+    }
+
+    public void setOpdAndInpatientServiceBills(boolean opdAndInpatientServiceBills) {
+        this.opdAndInpatientServiceBills = opdAndInpatientServiceBills;
+    }
+
+    public boolean isOpdAndInpatientServiceBatchBills() {
+        return opdAndInpatientServiceBatchBills;
+    }
+
+    public void setOpdAndInpatientServiceBatchBills(boolean opdAndInpatientServiceBatchBills) {
+        this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
     }
 
 }

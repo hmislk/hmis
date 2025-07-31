@@ -346,12 +346,28 @@ public class BillBhtController implements Serializable {
 
     @Inject
     private BillSearch billSearch;
+    
+    @EJB
+    private BillNumberGenerator billNumberGenerator;
 
     private void saveBatchBill() {
         Bill tmp = new BilledBill();
         tmp.setCreatedAt(new Date());
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+        String batchBillId = "";
+        
+        if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
+            batchBillId = billNumberGenerator.departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
+        }else{
+            batchBillId = billNumberGenerator.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
+        }
+        
+        tmp.setDeptId(batchBillId);
+        tmp.setInsId(batchBillId);
 
         if (tmp.getId() == null) {
             getBillFacade().create(tmp);
@@ -618,7 +634,7 @@ public class BillBhtController implements Serializable {
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "InpatientServiceBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
+                        "OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
@@ -634,8 +650,8 @@ public class BillBhtController implements Serializable {
                     bt, sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            List<BillTypeAtomic> types = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
-            deptId = bnb.departmentBillNumberGeneratorYearly(bt, types);
+            List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
+            deptId = bnb.departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(sessionController.getDepartment(), opdAndInpatientBills);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
             deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
