@@ -1,2 +1,0 @@
-**Action Required:**
-Please add the `OpdPackageBillCancel` privilege to the appropriate user roles to allow OPD Package Bill Cancellation.
