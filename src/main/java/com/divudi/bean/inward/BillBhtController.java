@@ -633,8 +633,8 @@ public class BillBhtController implements Serializable {
                         "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
