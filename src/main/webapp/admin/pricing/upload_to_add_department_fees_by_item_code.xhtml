@@ -180,6 +180,8 @@
                                     <p:dataTable 
                                         value="#{itemController.importFailures}"
                                         var="m"
+                                        paginator="true"
+                                        rows="100"
                                         rendered="#{not empty itemController.importFailures}"
                                         class="table table-striped">
                                         <p:column headerText="Import Failures">
