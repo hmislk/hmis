@@ -299,34 +299,42 @@
                             action="#" >
                             <p:printer target="gpBillPreview" ></p:printer>
                         </p:commandButton>
+                        <p:commandButton
+                            value="#{transferIssueController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                            icon="fas fa-eye"
+                            class="ui-button-secondary m-1"
+                            ajax="false"
+                            action="#{transferIssueController.toggleShowAllBillFormats}"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            title="Toggle visibility of all bill formats for development" />
                     </div>
                 </div>
 
                 <h:panelGroup   id="gpBillPreview" class="d-flex justify-content-center">
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
+                    <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.pharmacyBillPaperType eq 'A4Paper'}">
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" class="noBorder">
                             <ph:transferIssue bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
 
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq true}" class="noBorder">
                             <ph:transferIssue_detailed bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
-                        <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}">
+                        <h:panelGroup rendered="#{transferIssueController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" >
                             <ph:Pharmacy_department_Issue_pos_bill bill="#{transferIssueController.issuedBill}"/>
                         </h:panelGroup>
                     </h:panelGroup>
 
-                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
+                    <h:panelGroup id="gpBillPreviewPosHeader" rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is PosHeaderPaper',true)}">
                         <ph:saleBill_Header_Transfer bill="#{transferIssueController.issuedBill}" ></ph:saleBill_Header_Transfer>
                     </h:panelGroup>
 
                     <h:panelGroup 
                         id="gpBillTemplate" 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
+                        rendered="#{transferIssueController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Issue Bill is Template',false)}"> 
                         <ph:pharmacy_transfer_issue_receipt bill="#{transferIssueController.issuedBill}" ></ph:pharmacy_transfer_issue_receipt>
                     </h:panelGroup>
 

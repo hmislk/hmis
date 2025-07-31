@@ -60,6 +60,7 @@ public class TransferReceiveController implements Serializable {
     private Bill issuedBill;
     private Bill receivedBill;
     private boolean printPreview;
+    private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
     ///////
@@ -959,6 +960,19 @@ public class TransferReceiveController implements Serializable {
 
     public void setSelectedBillItem(BillItem selectedBillItem) {
         this.selectedBillItem = selectedBillItem;
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
 }
