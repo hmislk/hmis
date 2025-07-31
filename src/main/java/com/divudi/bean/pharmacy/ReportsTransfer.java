@@ -1074,35 +1074,24 @@ public class ReportsTransfer implements Serializable {
         netTotalSaleValues = 0.0;
         netTotalPurchaseValues = 0.0;
 
-        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentItem(fd, td, dep, bt, true);
-        List<Object[]> objectsItems = getBillBeanController().fetchBilledDepartmentBillItem(fd, td, dep, bt, true);
-
-        // Create a map for efficient lookup
-        Map<Department, Double> departmentSaleValues = new HashMap<>();
-        Map<Department, Double> departmentPurchaseValues = new HashMap<>();
-        for (Object[] obItem : objectsItems) {
-            Department dItem = (Department) obItem[0];
-            double itemValue = (double) obItem[1];
-            double itemPurchaseValue = (double) obItem[2];
-            departmentSaleValues.merge(dItem, itemValue, Double::sum);
-            departmentPurchaseValues.merge(dItem, itemPurchaseValue, Double::sum);
-        }
+        // Use BillFinanceDetails for consistent calculations (matching DTO approach)
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetails(fd, td, dep, bt, true);
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
-            double dbl = (double) ob[1];
-            double db2 = departmentSaleValues.getOrDefault(d, 0.0);
-            double db3 = departmentPurchaseValues.getOrDefault(d, 0.0);
+            double dbl = (double) ob[1];        // netTotal
+            double db2 = (double) ob[2];        // totalRetailSaleValue from BillFinanceDetails
+            double db3 = (double) ob[3];        // totalCostValue from BillFinanceDetails
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
-            sv.setValue1(dbl);
-            sv.setValue2(db2);
-            sv.setValue3(db3);
+            sv.setValue1(db3);                  // Purchase value (totalCostValue)
+            sv.setValue2(db2);                  // Sale value (totalRetailSaleValue)
+            sv.setValue3(db3);                  // Keep for compatibility
             listz.add(sv);
 
-            netTotalValues += dbl;
-            netTotalSaleValues += db2;
+            netTotalValues += db3;              // Use totalCostValue for purchase totals
+            netTotalSaleValues += db2;          // Use totalRetailSaleValue for sale totals
             netTotalPurchaseValues += db3;
 
         }

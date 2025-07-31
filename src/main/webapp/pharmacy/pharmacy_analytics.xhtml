@@ -375,18 +375,19 @@
                                                 title="High-performance DTO-based report - Recommended"/>
 
                                             <p:commandButton 
-                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill')}"
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill', true)}"
                                                 value="Transfer Receive by Bill" 
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
                                                 ajax="false" 
                                                 icon="fa fa-file-import" 
                                                 class="w-100"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill(Summary)')}"
-                                                             class="w-100" 
-                                                             value="Transfer Issue by Bill(Summary)"
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
-                                                             ajax="false" >                                                   
+                                            <p:commandButton
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill Summary',true)}"
+                                                class="w-100" 
+                                                value="Transfer Issue by Bill Summary"
+                                                action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
+                                                ajax="false" >                                                   
                                             </p:commandButton>        
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill(Summary)')}" class="w-100 ui-button-warning" value="Transfer Receive by Bill(Summary)" action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true" ajax="false"/>
