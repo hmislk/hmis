@@ -624,6 +624,7 @@ public class BillNumberGenerator {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
             billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBills(boolean) defined in BillNumber.java:215
             billNumber.setOpdAndInpatientServiceBills(true);
             billNumber.setBillYear(currentYear);
             jpql = "SELECT count(b) FROM Bill b "
@@ -678,6 +679,7 @@ public class BillNumberGenerator {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
             billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBatchBills(boolean) defined in BillNumber.java:231
             billNumber.setOpdAndInpatientServiceBatchBills(true);
             billNumber.setBillYear(currentYear);
             jpql = "SELECT count(b) FROM Bill b "
@@ -724,6 +726,7 @@ public class BillNumberGenerator {
             billNumber = new BillNumber();
             billNumber.setBillTypeAtomic(null);
             billNumber.setDepartment(department);
+            // METHOD EXISTS: setOpdAndInpatientServiceBills(boolean) defined in BillNumber.java:215
             billNumber.setOpdAndInpatientServiceBills(true);
             billNumber.setBillYear(currentYear);
             jpql = "SELECT count(b) FROM Bill b "
