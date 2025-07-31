@@ -61,11 +61,35 @@
                                             value="View Non Staff Users" 
                                             icon="fa fa-user-circle"
                                             action="#{webUserController.navigateToManageUsersWithoutStaff()}" />
-                                        <p:commandButton 
-                                            ajax="false" 
-                                            value="View Retired Users" 
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="View Retired Users"
                                             icon="fa fa-user-slash"
                                             action="#{webUserController.navigateToListRetiredUsers()}" />
+
+                                        <hr/>
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Send Bulk SMS to Patients"
+                                            icon="fa fa-envelope"
+                                            class="ui-button-warning"
+                                            action="#{smsController.navigateToSendBulkSmsToPatients()}" />
+
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Send SMS for Phone Numbers"
+                                            icon="fa fa-envelope"
+                                            class="ui-button-warning"
+                                            action="#{smsController.navigateToSendBulkSmsToNumbers()}" />
+                                        
+                                        <p:commandButton  
+                                                ajax="false"  
+                                                action="#{smsController.navigateToBillContactNumbers()}" 
+                                                value="Bulk Messaging" 
+                                                icon="fa fa-comments"
+                                                rendered="#{webUserController.hasPrivilege('SendBulkSMS')}" >
+                                            </p:commandButton>    
 
                                         <hr/>
                                     </div>

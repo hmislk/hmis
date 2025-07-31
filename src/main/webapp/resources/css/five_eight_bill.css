@@ -8,6 +8,7 @@
     margin: auto;
     padding: 2px;
     box-sizing: border-box;
+    page-break-before: always;
     border: 1px solid #000;
 }
 
@@ -126,14 +127,15 @@
 @media print {
     .receipt-container {
         border: none;
-        width: 10cm!important;
-        height: 9.5cm!important;
+        width: 12cm!important;
+        height: 14cm!important;
         margin-left: 0cm!important;
         margin-right: 2.5cm!important;
         margin-bottom: 1.0cm!important;
-        margin-top: 2.5cm!important;
+        margin-top: 3.2cm!important;
         font-family: sans-serif !important;
-        padding-left: 0.25cm;
+        padding-left: 0.4cm;
+        page-break-before: always;
         /*        font-family: sans-serif !important;
                 border: none;
                 width: 11cm!important;

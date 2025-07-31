@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import javax.ejb.EJB;
 import javax.inject.Inject;
 
@@ -89,7 +90,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
     private PaymentMethod paymentMethod;
     private List<PaymentMethod> paymentMethods;
-    private boolean returningStarted = false;
+    private final AtomicBoolean returningStarted = new AtomicBoolean(false);
 
     private double refundingTotalAmount;
     private String refundComment;
@@ -104,7 +105,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
             return null;
         }
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         paymentMethods = paymentService.fetchAvailablePaymentMethodsForRefundsAndCancellations(originalBillToReturn);
         return "/opd/bill_return?faces-redirect=true";
@@ -118,7 +119,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //System.out.println("Original Bill= " + originalBillToReturn);
         originalBillItemsAvailableToReturn = billBeanController.fetchBillItems(originalBillToReturn);
         //System.out.println("Bill Items Available To Return = " + originalBillItemsAvailableToReturn.size());
-        returningStarted = false;
+        returningStarted.set(false);
         paymentMethod = originalBillToReturn.getPaymentMethod();
         System.out.println("Method = " + paymentMethod);
         return "/collecting_centre/bill_return?faces-redirect=true";
@@ -235,30 +236,30 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleOpdReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (!webUserController.hasPrivilege("OpdReturn")) {
             JsfUtil.addErrorMessage("You have no Privilege to Refund OPD Bills. Please Contact System Administrator.");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         
@@ -267,7 +268,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         if (backward != null && backward.getPaymentMethod() == PaymentMethod.Credit) {
             List<BillItem> items = billService.checkCreditBillPaymentReciveFromCreditCompany(backward);
             if (items != null && !items.isEmpty()) {
-                returningStarted = false;
+                returningStarted.set(false);
                 JsfUtil.addErrorMessage("This bill has been paid for by the credit company. Therefore, it cannot be Refund.");
                 return null;
             }
@@ -279,7 +280,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (!drawerService.hasSufficientDrawerBalance(loggedUserDraver, paymentMethod, refundingTotalAmount)) {
             JsfUtil.addErrorMessage("Your Draver does not have enough Money");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -287,7 +288,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -301,7 +302,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -410,7 +411,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
 //        }
         // drawer Update
 //        drawerController.updateDrawerForOuts(returningPayment);
-        returningStarted = false;
+        returningStarted.set(false);
         return "/opd/bill_return_print?faces-redirect=true";
 
     }
@@ -428,24 +429,24 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public String settleCCReturnBill() {
-        if (returningStarted) {
+        if (!returningStarted.compareAndSet(false, true)) {
             JsfUtil.addErrorMessage("Already Returning Started");
             return null;
         }
         if (originalBillToReturn == null) {
             JsfUtil.addErrorMessage("Already Returning Started");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         if (originalBillItemsToSelectedToReturn == null || originalBillItemsToSelectedToReturn.isEmpty()) {
             JsfUtil.addErrorMessage("Nothing selected to return");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
         if (refundComment == null || refundComment.trim().isEmpty()) {
             JsfUtil.addErrorMessage("Enter Refund Comment");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -454,13 +455,13 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
         originalBillToReturn = billFacade.findWithoutCache(originalBillToReturn.getId());
         if (originalBillToReturn.isCancelled()) {
             JsfUtil.addErrorMessage("Already Cancelled");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
         //TO DO: Check weather selected items is refunded
         if (!checkCanReturnBill(originalBillToReturn)) {
             JsfUtil.addErrorMessage("All Items are Already Refunded");
-            returningStarted = false;
+            returningStarted.set(false);
             return null;
         }
 
@@ -594,7 +595,7 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
                 HistoryType.CollectingCentreBillingRefund,
                 newlyReturnedBill);
 
-        returningStarted = false;
+        returningStarted.set(false);
         return "/collecting_centre/cc_bill_return_print?faces-redirect=true";
 
     }
@@ -665,11 +666,11 @@ public class BillReturnController implements Serializable, ControllerWithMultipl
     }
 
     public boolean isReturningStarted() {
-        return returningStarted;
+        return returningStarted.get();
     }
 
     public void setReturningStarted(boolean returningStarted) {
-        this.returningStarted = returningStarted;
+        this.returningStarted.set(returningStarted);
     }
 
     public PaymentMethod getPaymentMethod() {

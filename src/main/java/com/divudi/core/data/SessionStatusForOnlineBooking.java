@@ -11,7 +11,8 @@ public enum SessionStatusForOnlineBooking {
     Ended("Session is ended"),
     Hold("Hold for online bookings"),
     Full("Session is alredy full"),
-    Cancelled("Session is cancelled");
+    Cancelled("Session is cancelled"),
+    Holiday("Doctor is in Holiday");
     
     private final String label;
     

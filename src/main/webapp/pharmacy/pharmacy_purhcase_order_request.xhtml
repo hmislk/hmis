@@ -39,78 +39,113 @@
                                     </div>
                                 </f:facet>  
 
-                                <p:column style="width: 20px; padding: 0;"/>
+                                <p:column selectionBox="true" width="2em"  style="padding: 0;" />
 
-                                <p:column headerText="No" style="width: 40px; padding: 0;" >
+                                <p:column headerText="No" width="2em" style="padding: 0;" >
                                     <h:outputLabel value="#{bi.searialNo+1}" >
                                         <f:convertNumber pattern="00" ></f:convertNumber>
                                     </h:outputLabel>
-
                                 </p:column>
 
-                                <p:column headerText="Item"  style=" padding: 0;">  
-                                    #{bi.item.name}  - #{bi.item.code} 
+                                <p:column headerText="Item"  style=" padding: 0;">
+                                    <h:outputLabel value="#{bi.item.name}  - #{bi.item.code}" ></h:outputLabel>
+                                    <p:commandButton
+                                        icon="pi pi-search"
+                                        id="btnViewSelectedItemDetails"
+                                        title="View Item Details"
+                                        action="#{purchaseOrderRequestController.displayItemDetails(bi)}"
+                                        update=":#{p:resolveFirstComponentWithId('tab',view).clientId}"
+                                        process="@this"
+                                        class="ui-button-icon-only mx-3"/>
                                 </p:column>
 
-                                <p:column headerText="Qty" styleClass="averageNumericColumn" style="width:5em; padding: 0px;"> 
+                                <p:column 
+                                    headerText="Qty" 
+                                    width="6em"
+                                    class="text-end px-1"
+                                    style="padding: 0px;"> 
                                     <p:inputText 
                                         autocomplete="off"  
                                         id="qty" 
                                         value="#{bi.qty}" 
-                                        style="width:4em; text-align: right; padding: 0;" 
+                                        style="padding: 0;" 
                                         label="Qty"
+                                        class="text-end w-100"
                                         onfocus="this.select()">  
                                         <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
                                 </p:column> 
 
-                                <p:column headerText="Free Qty" styleClass="averageNumericColumn" style="width:4em; padding: 0px;"> 
+                                <p:column 
+                                    width="5em"
+                                    headerText="Free Qty"
+                                    class="text-end px-1"
+                                    style="padding: 0px;"> 
                                     <p:inputText 
                                         autocomplete="off" 
                                         id="freeQty" 
                                         onfocus="this.select()"
+                                        class="text-end w-100"
                                         value="#{bi.pharmaceuticalBillItem.freeQty}" 
-                                        style="width:4rem; text-align: right; padding: 0;" label="Qty">  
+                                        style="padding: 0;" 
+                                        label="Qty">  
                                         <f:convertNumber pattern="0.#" ></f:convertNumber>
                                         <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId} "  execute="@this price" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                        <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                     </p:inputText>
                                 </p:column>
 
-                                <p:column headerText="P Price" styleClass="averageNumericColumn" style="width:6em; text-align: right; padding: 0;">  
+                                <p:column 
+                                    headerText="P Price"
+                                    class="text-end px-1"
+                                    style="padding: 0px;"
+                                    width="6em">  
                                     <h:panelGroup id="price">
                                         <p:inputText
+                                            id="txtRetailRate"
                                             onfocus="this.select()"
                                             autocomplete="off" 
-                                            value="#{bi.pharmaceuticalBillItem.purchaseRate}" style="width:4em; text-align: right; padding: 0;">
-                                            <f:convertNumber pattern="#00.00"/>
+                                            style="padding: 0;" 
+                                            value="#{bi.pharmaceuticalBillItem.purchaseRate}" 
+                                            class="w-100 text-end">
+                                            <f:convertNumber pattern="#,##0.00"/>
                                             <f:ajax event="blur" render="total :#{p:resolveFirstComponentWithId('tot',view).clientId}"  execute="@this qty" listener="#{purchaseOrderRequestController.onEdit(bi)}" ></f:ajax>
-                                            <f:ajax event="focus" render=":#{p:resolveFirstComponentWithId('tab',view).clientId}" listener="#{purchaseOrderRequestController.onFocus(bi)}" />
                                         </p:inputText>
                                     </h:panelGroup>
                                 </p:column>  
 
-                                <p:column headerText="Total" styleClass="averageNumericColumn" style="width:4em; text-align: right; padding: 0;">  
+                                <p:column 
+                                    headerText="Total" 
+                                    class="text-end px-1"
+                                    style="padding: 0;" 
+                                    width="6em">  
                                     <h:panelGroup id="total">
                                         <h:outputText 
-                                            value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" style="width:4rem; text-align: right;">
+                                            id="lblTotal"
+                                            value="#{bi.pharmaceuticalBillItem.purchaseRate*bi.pharmaceuticalBillItem.qty}" >
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </h:panelGroup>
                                 </p:column>  
 
-                                <p:column headerText="Stock" style="width:4em; text-align: right; padding: 0;">
-                                    <p:commandLink value="#{stockController.findStock(bi.item)}"
-                                                   oncomplete="PF('stockDetailsDialog').show();"
-                                                   process="itemList"
-                                                   update="stockDetailsForm"
-                                                   actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
+                                <p:column 
+                                    headerText="Stock in Units" 
+                                    width="6em" 
+                                    style="padding: 0;" 
+                                    class="text-end px-1">
+                                    <p:commandLink 
+                                        value="#{stockController.findStock(bi.item)}"
+                                        oncomplete="PF('stockDetailsDialog').show();"
+                                        process="itemList"
+                                        update="stockDetailsForm"
+                                        actionListener="#{stockController.listStocksOfSelectedItem(bi.item)}">
                                     </p:commandLink>
                                 </p:column>
 
-                                <p:column headerText="Expiry" style="width:4em; text-align: right; padding: 0;">
+                                <p:column headerText="Expiring" 
+                                          width="6em" 
+                                          style="padding: 0;" 
+                                          class="text-end px-1">
                                     <p:commandLink value="#{stockController.findExpiaringStock(bi.item)}"
                                                    oncomplete="PF('expStockDetailsDialog').show();"
                                                    process="itemList"
@@ -120,14 +155,14 @@
                                     </p:commandLink>
                                 </p:column>
 
-
-
-
-                                <p:column headerText="Usage" style="width:4em; text-align: right; padding: 0;">
+                                <p:column 
+                                    headerText="Usage" width="6em" 
+                                    style="padding: 0;" 
+                                    class="text-end px-1">
                                     <p:outputLabel value="#{pharmacyController.findAllOutTransactions(bi.item)}" style="width:4em; text-align: right;"/>                            
                                 </p:column>
 
-                                <p:column styleClass="averageNumericColumn" style="width:5em; text-align: right; padding: 0;">
+                                <p:column  style="width:5em; text-align: right; padding: 0;">
                                     <p:commandButton 
                                         class="ui-button-danger" 
                                         icon="fas fa-trash"
@@ -160,7 +195,7 @@
                                     class="w-100"
                                     inputStyleClass="w-100"
                                     requiredMessage="Supplier is Required"
-                                    completeMethod="#{dealerController.completeDealor}"
+                                    completeMethod="#{dealerController.completeActiveDealor}"
                                     var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <f:ajax
                                         event="itemSelect" 
@@ -184,6 +219,7 @@
                                     <div class="d-flex" >
                                         <div class="ui-inputgroup mx-1 my-1">
                                             <p:inputText  
+                                                onfocus="this.select();"  
                                                 value="#{purchaseOrderRequestController.currentBill.creditDuration}"
                                                 style="width: 10em;">
                                             </p:inputText>
@@ -262,7 +298,9 @@
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock"  style="padding: 6px; text-align: right;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
+                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>                            
                                     </p:column>
                                     <f:selectItems value="#{purchaseOrderRequestController.dealorItems}" var="di" itemLabel="#{di.name}" itemValue="#{di}" ></f:selectItems>
                                 </p:selectOneMenu>
@@ -286,7 +324,7 @@
                                     scrollHeight="600"
                                     minQueryLength="#{configOptionApplicationController.getShortTextValueByKey('Minimum Number of Characters to Search for Item','4')}"
                                     inputStyleClass="w-100"
-                                    completeMethod="#{itemController.completeAmpItem}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
+                                    completeMethod="#{itemController.completeAmpAndAmppItemForLoggedDepartment}" var="vt" itemLabel="#{vt.name}" itemValue="#{vt}" >
                                     <p:column headerText="Item" style="width: 350px; padding: 6px;">
                                         <h:outputLabel value="#{vt.name}"></h:outputLabel>
                                     </p:column>
@@ -294,7 +332,9 @@
                                         <h:outputLabel value="#{vt.code}"></h:outputLabel>
                                     </p:column>
                                     <p:column headerText="Department Stock" style="padding: 6px; text-align: right;">
-                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}"/>                            
+                                        <p:outputLabel value="#{stockController.departmentItemStock(sessionController.department , vt)}">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </p:outputLabel>                            
                                     </p:column>
                                 </p:autoComplete>
                                 <p:commandButton 
@@ -322,18 +362,25 @@
                                 <h:outputLabel value="Purchase Order Request" class="mt-2"/>
                             </div>
                             <div class="d-flex gap-2">
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="Print" 
-                                    icon="fas fa-print" 
+                                <p:commandButton
+                                    ajax="false"
+                                    value="Print"
+                                    icon="fas fa-print"
                                     class="ui-button-info">
                                     <p:printer target="printPaper" />
                                 </p:commandButton>
-                                <p:commandButton 
-                                    ajax="false" 
-                                    value="New Order" 
-                                    action="#{purchaseOrderRequestController.resetBillValues}" 
-                                    icon="fas fa-plus" 
+                                <p:commandButton
+                                    value="Send Email"
+                                    icon="fas fa-envelope"
+                                    action="#{purchaseOrderRequestController.prepareEmailDialog}"
+                                    styleClass="ui-button-secondary"
+                                    oncomplete="PF('emailDialog').show();"
+                                    update="emailDialogForm"/>
+                                <p:commandButton
+                                    ajax="false"
+                                    value="New Order"
+                                    action="#{purchaseOrderRequestController.resetBillValues}"
+                                    icon="fas fa-plus"
                                     styleClass="ui-button-success"/>
                             </div>
                         </div>
@@ -388,8 +435,8 @@
                                         <h:outputLabel value="Supplier Address" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.address}" />
-                                        
-                                         <h:outputLabel value="Payment Method" />
+
+                                        <h:outputLabel value="Payment Method" />
                                         <h:outputLabel value=":" style="width: 15px; text-align: center"/>
                                         <h:outputLabel value="#{purchaseOrderRequestController.currentBill.paymentMethod}" />
                                     </h:panelGrid>
@@ -579,7 +626,42 @@
             </h:form>
         </p:dialog>
 
-
+        <p:dialog widgetVar="emailDialog" modal="true" header="Send Purchase Order Email" width="400px" height="auto" resizable="false">
+            <h:form id="emailDialogForm">
+                <div class="p-3">
+                    <div class="mb-3">
+                        <p:outputLabel value="Supplier: " style="font-weight: bold;"/>
+                        <p:outputLabel value="#{purchaseOrderRequestController.currentBill.toInstitution.name}"/>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <p:outputLabel for="emailRecipient" value="Email Address:" class="form-label"/>
+                        <p:inputText 
+                            id="emailRecipient" 
+                            value="#{purchaseOrderRequestController.emailRecipient}" 
+                            class="w-100"
+                            placeholder="Enter email address"
+                            required="true"
+                            requiredMessage="Email address is required"/>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end gap-2">
+                        <p:commandButton 
+                            value="Cancel" 
+                            onclick="PF('emailDialog').hide();"
+                            class="ui-button-secondary"
+                            type="button"/>
+                        <p:commandButton 
+                            value="Send Email" 
+                            action="#{purchaseOrderRequestController.sendPurchaseOrderEmail}"
+                            class="ui-button-success"
+                            icon="fas fa-envelope"
+                            ajax="false"
+                            oncomplete="PF('emailDialog').hide();"/>
+                    </div>
+                </div>
+            </h:form>
+        </p:dialog>
 
     </ui:define>  
 </ui:composition>

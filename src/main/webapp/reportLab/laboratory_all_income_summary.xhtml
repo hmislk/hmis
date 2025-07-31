@@ -1,0 +1,264 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/reportLab/lab_summeries_index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:p="http://primefaces.org/ui"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns:ca="http://xmlns.jcp.org/jsf/composite/cashSummery"
+                >
+
+    <ui:define name="subcontent">
+        <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+        <h:form >
+
+            <p:panel>
+                <f:facet name="header" >                
+                    <h:outputLabel value="Laboratory All Income Summary"/>
+                </f:facet>
+
+                <div class="d-flex">
+                    <div class="col-7 d-flex">
+                        <div class="col-2"></div>
+                        <div class="col-5 d-flex gap-4 ">
+                            <h:outputLabel value="From Date" class="mt-2"/>
+                            <p:calendar 
+                                id="frmDate" 
+                                value="#{laborataryReportController.fromDate}" 
+                                navigator="true"  
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="filter-calendar">
+                            </p:calendar>
+                        </div>
+
+                        <div class="col-5 d-flex gap-4 ">
+                            <h:outputLabel value="To Date" class="mt-2 font-bold"/>
+                            <p:calendar 
+                                id="toDate" 
+                                value="#{laborataryReportController.toDate}" 
+                                navigator="true" 
+                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"
+                                styleClass="filter-calendar">
+                            </p:calendar>
+                        </div>
+                    </div>
+                    <div class="col-3 d-flex justify-content-center gap-3 ">
+                        <p:commandButton 
+                            styleClass="ui-button-success" 
+                            icon="pi pi-cog"
+                            value="Process"
+                            action="#{laborataryReportController.processLaboratoryAllIncomeSummary()}"
+                            ajax="false">
+                        </p:commandButton>
+
+                        <p:commandButton 
+                            ajax="false" 
+                            value="Print" 
+                            icon="fa-solid fa-print"
+                            class="ui-button-info">
+                            <p:printer target="print" />
+                        </p:commandButton>
+                    </div>
+                </div>
+
+                <style>
+
+                    table {
+                        border-collapse: collapse;
+                        width: 100%;
+                    }
+                    th, td {
+                        border: 1px solid #333; /* Darker border color */
+                        text-align: left;
+                        padding: 6px;
+                    }
+                    th {
+                        background-color: #f2f2f2;
+                        border-bottom: 2px solid #333; /* Thicker bottom border for headers */
+                    }
+                    .column_header {
+                        width: 250px;
+                        margin-right: 20px;
+                    }
+
+                    .column {
+                        width: 200px;
+                        text-align: center;
+                    }
+                    .column_right {
+                        width: 200px;
+                        text-align: right; /* Changed from left to right */
+                        padding-right: 15px; /* Changed from 5px to 8px */
+                    }
+                    /* Special styling for the Total row */
+                    .total-row {
+                        border-top: 2px solid #000;
+                        border-bottom: 2px solid #000;
+                        font-weight: 700;
+                    }
+                    .total-row td {
+                        border-top: 2px solid #000;
+                        border-bottom: 2px solid #000;
+                    }
+
+                    @media screen{
+                        .paper{
+                            width: 95%;
+                            position: static !important;
+                            zoom: 1.3;
+                        }
+
+                    }
+
+                    @media print {
+
+                        body {
+                            counter-reset: page;
+                        }
+
+                        .paper{
+                            position: static !important;
+                            width: 297mm!important;
+                            size: A4 landscape!important;
+
+                        }
+                        table {
+                            font-size: 12px;
+                        }
+
+                        .column_header {
+                            margin-right: 20px;
+                        }
+
+                        .column {
+                            text-align: center;
+                        }
+                        .column_right {
+                            text-align: right; /* Changed from left to right */
+                            padding-right: 15px; /* Changed from 5px to 8px */
+                        }
+
+
+                    }
+
+                    .header{
+                        font-size: 28px;
+                        font-weight: 700;
+                    }
+
+
+                </style>
+
+                <h:panelGroup id="print" class="d-flex justify-content-center mt-4">
+
+                    <div class="paper">
+                        <div class="justify-content-center">
+                            <div class="d-flex justify-content-center header">Laboratory All Income Summary</div>
+                            <div class="d-flex justify-content-center mt-1 mb-3" style=" font-size: 14px;">
+                                <div class="d-flex gap-3">
+                                    <h:outputText value="From Date" style="width: 5em!important; font-weight: 600;"/>
+                                    <h:outputText value="#{laborataryReportController.fromDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </div>
+                                <h:outputText value="" style="width: 10mm!important;"/>
+                                <div class="d-flex gap-3">
+                                    <h:outputText value="To Date" style="width: 4em!important; font-weight: 600;"/>
+                                    <h:outputText value="#{laborataryReportController.toDate}">
+                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}" />
+                                    </h:outputText>
+                                </div>
+                                <div></div>
+                            </div>
+                        </div>
+
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="column_header"></th>
+                                    <th class="column">Cash</th>
+                                    <th class="column">Card</th>
+                                    <th class="column">Agent</th>
+                                    <th class="column">Online</th>
+                                    <th class="column">Credit</th>
+                                    <th class="column">Total</th>
+                                    <th class="column">Refund</th>
+                                    <th class="column">Cancel</th>
+                                    <th class="column">Discount</th>
+                                    <th class="column">Net Sale</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+
+                                <ui:repeat value="#{laborataryReportController.bundle.rows}" var="i">
+                                    <tr>
+                                        <td class="column_header">
+                                            <h:outputLabel value="#{i.categoryName}"></h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.cashValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.cardValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.agentValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.onlineSettlementValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.creditValue}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.grossTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{-i.totalBillsRefund}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{-i.totalBillsCancel}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.totalBillsDiscount}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                        <td class="column_right">
+                                            <h:outputLabel value="#{i.netTotal}">
+                                                <f:convertNumber pattern="#,##0.00"/>
+                                            </h:outputLabel>
+                                        </td>
+                                    </tr>
+                                </ui:repeat>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                </h:panelGroup>
+
+
+            </p:panel>
+        </h:form>
+    </ui:define>
+
+
+</ui:composition>

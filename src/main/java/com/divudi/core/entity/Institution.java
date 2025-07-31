@@ -55,6 +55,12 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     String mobile;
     String web;
     String chequePrintingName;
+    private String qbSupplierName;
+    private String contactPersonName;
+    private String paymentCompanyName;
+    private String bankName;
+    private String branchName;
+    private String legalCompany;
     private String ownerName;
 
     @ManyToOne
@@ -145,11 +151,16 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
     @ManyToOne
     Institution bankBranch;
 
+    @Deprecated // Use Application Configuration Options
     String emailSendingUsername;
+    @Deprecated // Use Application Configuration Options
     String emailSendingPassword;
 
+    @Deprecated // Use Application Configuration Options
     private String smsSendingUsername;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingPassword;
+    @Deprecated // Use Application Configuration Options
     private String smsSendingAlias;
 
     //Inactive Status
@@ -572,6 +583,54 @@ public class Institution implements Serializable, IdentifiableWithNameOrCode {
 
     public void setAccountNo(String accountNo) {
         this.accountNo = accountNo;
+    }
+
+    public String getQbSupplierName() {
+        return qbSupplierName;
+    }
+
+    public void setQbSupplierName(String qbSupplierName) {
+        this.qbSupplierName = qbSupplierName;
+    }
+
+    public String getContactPersonName() {
+        return contactPersonName;
+    }
+
+    public void setContactPersonName(String contactPersonName) {
+        this.contactPersonName = contactPersonName;
+    }
+
+    public String getPaymentCompanyName() {
+        return paymentCompanyName;
+    }
+
+    public void setPaymentCompanyName(String paymentCompanyName) {
+        this.paymentCompanyName = paymentCompanyName;
+    }
+
+    public String getBankName() {
+        return bankName;
+    }
+
+    public void setBankName(String bankName) {
+        this.bankName = bankName;
+    }
+
+    public String getBranchName() {
+        return branchName;
+    }
+
+    public void setBranchName(String branchName) {
+        this.branchName = branchName;
+    }
+
+    public String getLegalCompany() {
+        return legalCompany;
+    }
+
+    public void setLegalCompany(String legalCompany) {
+        this.legalCompany = legalCompany;
     }
 
     public Institution getBankBranch() {

@@ -5,6 +5,7 @@
 package com.divudi.bean.pharmacy;
 
 import com.divudi.bean.common.SessionController;
+import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
@@ -17,21 +18,31 @@ import com.divudi.ejb.PharmacyBean;
 import com.divudi.ejb.PharmacyCalculation;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.BillItem;
+import com.divudi.core.entity.BillItemFinanceDetails;
 import com.divudi.core.entity.BilledBill;
+import com.divudi.core.entity.CancelledBill;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
 import com.divudi.core.entity.pharmacy.Stock;
+import com.divudi.core.entity.pharmacy.ItemBatch;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
+import com.divudi.core.entity.pharmacy.Ampp;
+import com.divudi.core.entity.Item;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.facade.StockFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.service.BillService;
+import com.divudi.service.pharmacy.PharmacyCostingService;
 import java.io.Serializable;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import javax.ejb.EJB;
 import javax.enterprise.context.SessionScoped;
 import javax.inject.Inject;
@@ -68,23 +79,58 @@ public class TransferReceiveController implements Serializable {
     private PharmacyBean pharmacyBean;
     @EJB
     private BillNumberGenerator billNumberBean;
+    @EJB
+    private StockFacade stockFacade;
+    @EJB
+    BillService billService;
+
+    @EJB
+    private PharmacyCostingService pharmacyCostingService;
+
+    @Inject
+    private ConfigOptionApplicationController configOptionApplicationController;
 
     @Inject
     private PharmacyCalculation pharmacyCalculation;
-    private List<BillItem> billItems;
     private List<Bill> bills;
     private SearchKeyword searchKeyword;
+    private BillItem selectedBillItem;
+
+    public static class ConfigOptionInfo {
+
+        private final String key;
+        private final String defaultValue;
+
+        public ConfigOptionInfo(String key, String defaultValue) {
+            this.key = key;
+            this.defaultValue = defaultValue;
+        }
+
+        public String getKey() {
+            return key;
+        }
+
+        public String getDefaultValue() {
+            return defaultValue;
+        }
+    }
 
     public void onFocus(BillItem tmp) {
         getPharmacyController().setPharmacyItem(tmp.getItem());
     }
 
     public String navigateBackToRecieveList() {
-        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
     }
 
     public String navigateToRecieveRequest() {
-        return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
+        if (issuedBill == null) {
+            JsfUtil.addErrorMessage("Nothing to received");
+            return null;
+        }
+        printPreview=false;
+        generateBillComponent();
+        return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
     public String navigateToEditRecieveIssue() {
@@ -105,7 +151,7 @@ public class TransferReceiveController implements Serializable {
         printPreview = false;
         fromDate = null;
         toDate = null;
-        billItems = null;
+        selectedBillItem = null;
     }
 
     public TransferReceiveController() {
@@ -119,20 +165,17 @@ public class TransferReceiveController implements Serializable {
     }
 
     public void setIssuedBill(Bill issuedBill) {
-        makeNull();
         this.issuedBill = issuedBill;
-        receivedBill = null;
-        generateBillComponent();
     }
 
 //   public String navigateBackToRecieveList(){
-//        return "/pharmacy/pharmacy_transfer_issued_list_with_approval?faces-redirect=true";
+//        return "/pharmacy/pharmacy_transfer_issued_list?faces-redirect=true";
 //    }
     public String navigateToRecieveIssue() {
         return "/pharmacy/pharmacy_transfer_receive_with_approval?faces-redirect=true";
     }
 
-    public void generateBillComponent() {
+    public void generateBillComponentOld() {
 
         for (PharmaceuticalBillItem i : getPharmaceuticalBillItemFacade().getPharmaceuticalBillItems(getIssuedBill())) {
 
@@ -140,8 +183,6 @@ public class TransferReceiveController implements Serializable {
             bItem.setReferanceBillItem(i.getBillItem());
             bItem.copy(i.getBillItem());
             bItem.setTmpQty(Math.abs(i.getQty()));
-
-            bItem.setSearialNo(getBillItems().size());
 
             //       bItem.setTmpSuggession(getPharmacyCalculation().getSuggessionOnly(i.getBillItem().getItem()));
             PharmaceuticalBillItem phItem = new PharmaceuticalBillItem();
@@ -151,14 +192,69 @@ public class TransferReceiveController implements Serializable {
 
             bItem.setPharmaceuticalBillItem(phItem);
 
-            getBillItems().add(bItem);
+            getIssuedBill().getBillItems().add(bItem);
+            bItem.setSearialNo(getIssuedBill().getBillItems().size());
 
         }
 
     }
 
-    @EJB
-    private StockFacade stockFacade;
+    public void generateBillComponent() {
+        receivedBill = new BilledBill();
+        getReceivedBill();
+        getReceivedBill().setReferenceBill(issuedBill);
+
+        getReceivedBill().setFromInstitution(issuedBill.getFromInstitution());
+        getReceivedBill().setFromDepartment(issuedBill.getFromDepartment());
+
+        getReceivedBill().setToInstitution(issuedBill.getToInstitution());
+        getReceivedBill().setToDepartment(issuedBill.getToDepartment());
+
+        getReceivedBill().setStaff(issuedBill.getStaff());
+
+        List<BillItem> issuedBillItems = billService.fetchBillItems(issuedBill);
+        for (BillItem issuedBillItem : issuedBillItems) {
+            double remainingQty = calculateRemainingQty(issuedBillItem);
+            if (remainingQty <= 0) {
+                continue;
+            }
+
+            BillItem newlyCreatedReceivedBillItem = new BillItem();
+            newlyCreatedReceivedBillItem.copyWithPharmaceuticalAndFinancialData(issuedBillItem);
+
+            // Invert to turn negative values from the issued bill into positives
+            newlyCreatedReceivedBillItem.invertValue();
+            newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().invertValue();
+
+            // Adjust quantity to remaining amount
+            double unitsPerPack = 1.0;
+            Item item = newlyCreatedReceivedBillItem.getItem();
+            if (item instanceof Ampp || item instanceof Vmpp) {
+                unitsPerPack = item.getDblValue() > 0 ? item.getDblValue() : 1.0;
+            }
+
+            double packs = remainingQty / unitsPerPack;
+            newlyCreatedReceivedBillItem.setQty(packs);
+            newlyCreatedReceivedBillItem.getPharmaceuticalBillItem().setQty(remainingQty);
+
+            // Ensure finance details reflect positive quantities and rates
+            BillItemFinanceDetails fd = newlyCreatedReceivedBillItem.getBillItemFinanceDetails();
+            if (fd != null) {
+                fd.setQuantity(BigDecimal.valueOf(packs));
+                if (fd.getLineGrossRate() != null) {
+                    fd.setLineGrossRate(fd.getLineGrossRate().abs());
+                }
+                updateFinancialsForTransferReceive(fd);
+            }
+
+            newlyCreatedReceivedBillItem.setReferanceBillItem(issuedBillItem);
+            newlyCreatedReceivedBillItem.setBill(receivedBill);
+            getReceivedBill().getBillItems().add(newlyCreatedReceivedBillItem);
+            newlyCreatedReceivedBillItem.setSearialNo(getReceivedBill().getBillItems().size());
+        }
+
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getReceivedBill(), getReceivedBill().getBillItems());
+    }
 
     public String navigateToPharmacyReceiveForRequests() {
         if (issuedBill == null || issuedBill.getId() == null) {
@@ -171,77 +267,56 @@ public class TransferReceiveController implements Serializable {
             return "";
         }
 
+        generateBillComponent();
+        printPreview = false;
         return "/pharmacy/pharmacy_transfer_receive?faces-redirect=true";
     }
 
     public boolean isAlreadyReceived(Bill bill) {
-        if (bill.getForwardReferenceBills() == null || bill.getForwardReferenceBills().isEmpty()) {
+        if (bill == null) {
             return false;
+        }
+        List<BillItem> issueItems = billService.fetchBillItems(bill);
+        for (BillItem bi : issueItems) {
+            if (calculateRemainingQty(bi) > 0) {
+                return false;
+            }
         }
         return true;
     }
 
     public void settle() {
+        if (getReceivedBill().getBillItems() == null || getReceivedBill().getBillItems().isEmpty()) {
+            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
+            return;
+        }
 
         saveBill();
-
-        for (BillItem i : getBillItems()) {
-
-//            i.getPharmaceuticalBillItem().setQtyInUnit(i.getQty());
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQty() == 0.0) {
                 continue;
             }
-
             if (errorCheck(i)) {
                 continue;
             }
-
-            i.setBill(getReceivedBill());
-            i.setCreatedAt(Calendar.getInstance().getTime());
-            i.setCreater(getSessionController().getLoggedUser());
-            i.setPharmaceuticalBillItem(i.getPharmaceuticalBillItem());
-
-            PharmaceuticalBillItem tmpPh = i.getPharmaceuticalBillItem();
-            i.setPharmaceuticalBillItem(null);
-
             if (i.getId() == null) {
+                i.setCreatedAt(Calendar.getInstance().getTime());
+                i.setCreater(getSessionController().getLoggedUser());
                 getBillItemFacade().create(i);
-            }
-
-            if (tmpPh.getId() == null) {
-                getPharmaceuticalBillItemFacade().create(tmpPh);
-            }
-            i.setPharmaceuticalBillItem(tmpPh);
-            getBillItemFacade().edit(i);
-
-            tmpPh.setItemBatch(tmpPh.getStaffStock().getItemBatch());
-
-            double qty = Math.abs(i.getPharmaceuticalBillItem().getQtyInUnit());
-
-            //    Deduct Staff Stock
-            boolean returnFlag = getPharmacyBean().deductFromStock(tmpPh, Math.abs(qty), getIssuedBill().getToStaff());
-
-            if (returnFlag) {
-                //     Add Stock To Department
-                Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
-
-                tmpPh.setStock(addedStock);
             } else {
-                i.setTmpQty(0);
                 getBillItemFacade().edit(i);
             }
+            double qty = Math.abs(i.getPharmaceuticalBillItem().getQty());
 
-//            //Temprory Solution
-//            Stock addedStock = getPharmacyBean().addToStock(tmpPh, Math.abs(qty), getSessionController().getDepartment());
-//            tmpPh.setStock(addedStock);
-            getPharmaceuticalBillItemFacade().edit(tmpPh);
+            boolean returnFlag = getPharmacyBean().deductFromStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getIssuedBill().getToStaff());
 
-            getReceivedBill().getBillItems().add(i);
-        }
-
-        if (getReceivedBill().getBillItems().size() == 0 || getReceivedBill().getBillItems() == null) {
-            JsfUtil.addErrorMessage("Nothing to Recive, Please check Recieved Quantity");
-            return;
+            if (returnFlag) {
+                Stock addedStock = getPharmacyBean().addToStock(i.getPharmaceuticalBillItem(), Math.abs(qty), getSessionController().getDepartment());
+                i.getPharmaceuticalBillItem().setStock(addedStock);
+            } else {
+                i.getPharmaceuticalBillItem().setQty(0);
+                getBillItemFacade().edit(i);
+            }
         }
 
         getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
@@ -255,18 +330,153 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
-
         getBillFacade().edit(getReceivedBill());
 
-        //Update Issue Bills Reference Bill
         getIssuedBill().getForwardReferenceBills().add(getReceivedBill());
+        fillData(getReceivedBill());
         getBillFacade().edit(getIssuedBill());
-
-//        getIssuedBill().setReferenceBill(getReceivedBill());
-//        getBillFacade().edit(getIssuedBill());
+        getBillFacade().edit(getReceivedBill());
         printPreview = true;
+    }
+
+    private void fillData(Bill inputBill) {
+        double billTotalAtCostRate = 0.0;
+
+        double purchaseFree = 0.0;
+        double purchaseNonFree = 0.0;
+
+        double retailFree = 0.0;
+        double retailNonFree = 0.0;
+
+        double wholesaleFree = 0.0;
+        double wholesaleNonFree = 0.0;
+
+        double costFree = 0.0;
+        double costNonFree = 0.0;
+
+        double netTotal = 0.0;
+
+
+        for (BillItem bi : inputBill.getBillItems()) {
+
+            BillItemFinanceDetails bifd = bi.getBillItemFinanceDetails();
+            PharmaceuticalBillItem pbi = bi.getPharmaceuticalBillItem();
+
+            if (bifd == null) {
+                continue;
+            }
+
+            if (pbi.getStock() == null || pbi.getStock().getItemBatch() == null) {
+                continue;
+            }
+
+            double unitsPerPackValue = bifd.getUnitsPerPack() != null ? bifd.getUnitsPerPack().doubleValue() : 1.0;
+            double purchaseRate = pbi.getStock().getItemBatch().getPurcahseRate() * unitsPerPackValue;
+            double retailRate = pbi.getStock().getItemBatch().getRetailsaleRate() * unitsPerPackValue;
+            double wholesaleRate = pbi.getStock().getItemBatch().getWholesaleRate() * unitsPerPackValue;
+            double costRate = pbi.getStock().getItemBatch().getCostRate() * unitsPerPackValue;
+
+
+            billTotalAtCostRate += bifd.getTotalCost() != null ? bifd.getTotalCost().doubleValue() : 0.0;
+
+            double paidQty = pbi.getQty() / unitsPerPackValue;
+            double freeQty = pbi.getFreeQty() / unitsPerPackValue;
+
+
+            double tmp;
+
+            tmp = freeQty * purchaseRate;
+            purchaseFree += tmp;
+
+            tmp = paidQty * purchaseRate;
+            purchaseNonFree += tmp;
+
+            tmp = freeQty * retailRate;
+            retailFree += tmp;
+
+            tmp = paidQty * retailRate;
+            retailNonFree += tmp;
+
+            tmp = freeQty * wholesaleRate;
+            wholesaleFree += tmp;
+
+            tmp = paidQty * wholesaleRate;
+            wholesaleNonFree += tmp;
+
+            tmp = freeQty * costRate;
+            costFree += tmp;
+
+            tmp = paidQty * costRate;
+            costNonFree += tmp;
+
+            // Fix: Set GROSSRATE to the actual gross rate from line gross rate
+            bifd.setGrossRate(bifd.getLineGrossRate() != null ? bifd.getLineGrossRate() : BigDecimal.ZERO);
+
+            BigDecimal biNetTotal = bifd.getNetTotal();
+            netTotal += biNetTotal != null ? biNetTotal.doubleValue() : 0.0;
+
+            if (bifd.getQuantityByUnits() == null || bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) == 0) {
+                bifd.setQuantityByUnits(BigDecimal.valueOf(pbi.getQty()));
+            }
+
+            double itemCostFree = freeQty * costRate;
+            double itemCostNonFree = paidQty * costRate;
+            bifd.setTotalCost(BigDecimal.valueOf(itemCostFree + itemCostNonFree));
+
+            // Fix: Set LINECOSTRATE to the actual cost rate from ItemBatch
+            bifd.setLineCostRate(BigDecimal.valueOf(costRate));
+            // Fix: Set LINECOST using cost rate × quantity
+            bifd.setLineCost(BigDecimal.valueOf(costRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO));
+
+            if (bifd.getQuantityByUnits() != null && bifd.getQuantityByUnits().compareTo(BigDecimal.ZERO) > 0) {
+                bifd.setTotalCostRate(BigDecimal.valueOf(itemCostFree + itemCostNonFree)
+                        .divide(bifd.getQuantityByUnits(), 6, RoundingMode.HALF_UP));
+            } else {
+                bifd.setTotalCostRate(BigDecimal.ZERO);
+            }
+
+            // Fix: Set value calculations with correct rates
+            bifd.setValueAtPurchaseRate(BigDecimal.valueOf(purchaseRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATPURCHASERATE
+            bifd.setValueAtRetailRate(BigDecimal.valueOf(retailRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATRETAILRATE  
+            bifd.setValueAtCostRate(BigDecimal.valueOf(costRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO)); // VALUEATCOSTRATE
+            bifd.setValueAtWholesaleRate(BigDecimal.valueOf(wholesaleRate).multiply(bifd.getTotalQuantity() != null ? bifd.getTotalQuantity() : BigDecimal.ZERO));
+
+            bifd.setProfitMargin(BigDecimal.ZERO);
+
+            bifd.setTotalDiscount(BigDecimal.ZERO);
+            bifd.setTotalDiscountRate(BigDecimal.ZERO);
+
+            bifd.setTotalExpense(BigDecimal.ZERO);
+            bifd.setTotalExpenseRate(BigDecimal.ZERO);
+
+            bifd.setTotalTax(BigDecimal.ZERO);
+            bifd.setTotalTaxRate(BigDecimal.ZERO);
+
+        }
+
+
+        inputBill.getBillFinanceDetails().setTotalCostValue(BigDecimal.valueOf(costFree + costNonFree));
+        inputBill.getBillFinanceDetails().setTotalCostValueFree(BigDecimal.valueOf(costFree));
+        inputBill.getBillFinanceDetails().setTotalCostValueNonFree(BigDecimal.valueOf(costNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalPurchaseValue(BigDecimal.valueOf(purchaseFree + purchaseNonFree));
+        inputBill.getBillFinanceDetails().setTotalPurchaseValueFree(BigDecimal.valueOf(purchaseFree));
+        inputBill.getBillFinanceDetails().setTotalPurchaseValueNonFree(BigDecimal.valueOf(purchaseNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValue(BigDecimal.valueOf(retailFree + retailNonFree));
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValueFree(BigDecimal.valueOf(retailFree));
+        inputBill.getBillFinanceDetails().setTotalRetailSaleValueNonFree(BigDecimal.valueOf(retailNonFree));
+
+        inputBill.getBillFinanceDetails().setTotalWholesaleValue(BigDecimal.valueOf(wholesaleFree + wholesaleNonFree));
+        inputBill.getBillFinanceDetails().setTotalWholesaleValueFree(BigDecimal.valueOf(wholesaleFree));
+        inputBill.getBillFinanceDetails().setTotalWholesaleValueNonFree(BigDecimal.valueOf(wholesaleNonFree));
+
+        inputBill.setSaleValue(retailFree + retailNonFree);
+        inputBill.setFreeValue(retailFree);
+        inputBill.setNetTotal(netTotal);
+        inputBill.setGrantTotal(netTotal);
+        inputBill.setTotal(netTotal);
+
 
     }
 
@@ -294,8 +504,7 @@ public class TransferReceiveController implements Serializable {
 
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
         getBillFacade().edit(getReceivedBill());
 
@@ -321,13 +530,17 @@ public class TransferReceiveController implements Serializable {
             getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
             getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
             getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
+            getReceivedBill().setToInstitution(getSessionController().getInstitution());
+            getReceivedBill().setToDepartment(getSessionController().getDepartment());
 
             if (getReceivedBill().getId() == null) {
                 getBillFacade().create(getReceivedBill());
             }
 
-            getReceivedBill().setDeptId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getDepartment(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
-            getReceivedBill().setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), BillType.PharmacyTransferReceive, BillClassType.BilledBill, BillNumberSuffix.PHTI));
+            String receiveId = getBillNumberBean().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(getReceivedBill().getFromDepartment(), getReceivedBill().getToDepartment(), BillTypeAtomic.PHARMACY_RECEIVE);
+
+            getReceivedBill().setDeptId(receiveId);
+            getReceivedBill().setInsId(receiveId);
 
             getReceivedBill().setInstitution(getSessionController().getInstitution());
             getReceivedBill().setDepartment(getSessionController().getDepartment());
@@ -337,10 +550,8 @@ public class TransferReceiveController implements Serializable {
 
             getReceivedBill().setBackwardReferenceBill(getIssuedBill());
 
-            getReceivedBill().setNetTotal(calTotal());
-            getReceivedBill().setTotal(calTotal());
+            pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
-            getReceivedBill().setBillItems(billItems);
             getReceivedBill().setEditor(sessionController.getLoggedUser());
             getReceivedBill().setEditedAt(new Date());
             getReceivedBill().setCheckeAt(new Date());
@@ -356,7 +567,6 @@ public class TransferReceiveController implements Serializable {
             JsfUtil.addSuccessMessage("Request Finalized Successfully");
         } else {
             // Update the existing received bill with current details
-            getReceivedBill().setBillItems(billItems);
             getReceivedBill().setEditor(sessionController.getLoggedUser());
             getReceivedBill().setEditedAt(new Date());
             getReceivedBill().setCheckeAt(new Date());
@@ -384,8 +594,8 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         List<BillItem> itemsToAdd = new ArrayList<>();
 
-        for (BillItem i : getBillItems()) {
-            if (i.getPharmaceuticalBillItem().getQtyInUnit() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
+        for (BillItem i : getReceivedBill().getBillItems()) {
+            if (i.getPharmaceuticalBillItem().getQty() == 0.0 || i.getItem() instanceof Vmpp || i.getItem() instanceof Vmp) {
                 continue;
             }
 
@@ -436,8 +646,7 @@ public class TransferReceiveController implements Serializable {
             return;
         }
 
-        getReceivedBill().setNetTotal(calTotal());
-        getReceivedBill().setTotal(calTotal());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(receivedBill, receivedBill.getBillItems());
 
         getIssuedBill().setReferenceBill(getReceivedBill());
         getReceivedBill().setReferenceBill(getIssuedBill());
@@ -448,40 +657,8 @@ public class TransferReceiveController implements Serializable {
         printPreview = true;
     }
 
-    private double calTotal() {
-        double value = 0;
-        int serialNo = 0;
-
-        if (sessionController.getApplicationPreference().isTranferNetTotalbyRetailRate()) {
-            for (BillItem b : getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getRetailRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-        } else {
-            for (BillItem b : getBillItems()) {
-                value += (b.getPharmaceuticalBillItem().getPurchaseRate() * b.getPharmaceuticalBillItem().getQty());
-                b.setSearialNo(serialNo++);
-            }
-        }
-
-        return value;
-
-    }
-
-//    public void onEdit(BillItem tmp) {
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getItemBatch(), getReceivedBill().getFromStaff());
-//        double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
-//        if (availableStock < tmp.getQty()) {
-//            tmp.setQty(oldValue);
-//            JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
-//        }
-//
-//        //   getPharmacyController().setPharmacyItem(tmp.getItem());
-//    }
     public void onEdit(RowEditEvent event) {
         BillItem tmp = (BillItem) event.getObject();
-//        double availableStock = getPharmacyBean().getStockQty(tmp.getPharmaceuticalBillItem().getStaffStock(), getIssuedBill().getToStaff());
-        //   double oldValue = getPharmaceuticalBillItemFacade().find(tmp.getPharmaceuticalBillItem().getId()).getQtyInUnit();
         if (tmp.getPharmaceuticalBillItem().getStaffStock().getStock() < tmp.getQty()) {
             tmp.setTmpQty(0.0);
             JsfUtil.addErrorMessage("You cant recieved over than Issued Qty setted Old Value");
@@ -491,11 +668,9 @@ public class TransferReceiveController implements Serializable {
     }
 
     public boolean errorCheck(BillItem billItem) {
-
         if (billItem.getPharmaceuticalBillItem().getStaffStock().getStock() < billItem.getQty()) {
             return true;
         }
-
         return false;
     }
 
@@ -504,14 +679,109 @@ public class TransferReceiveController implements Serializable {
         getReceivedBill().setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE);
         getReceivedBill().setBackwardReferenceBill(getIssuedBill());
         getReceivedBill().setFromStaff(getIssuedBill().getToStaff());
-        getReceivedBill().setFromInstitution(getIssuedBill().getInstitution());
-        getReceivedBill().setFromDepartment(getIssuedBill().getDepartment());
-        getReceivedBill().setToInstitution(sessionController.getInstitution());
-        getReceivedBill().setToDepartment(sessionController.getDepartment());
-
         if (getReceivedBill().getId() == null) {
+            getReceivedBill().setCreatedAt(new Date());
+            getReceivedBill().setCreater(sessionController.getLoggedUser());
             getBillFacade().create(getReceivedBill());
+        } else {
+            getBillFacade().edit(getReceivedBill());
         }
+    }
+
+    private BigDecimal determineTransferRate(ItemBatch itemBatch) {
+        boolean pharmacyTransferIsByPurchaseRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Purchase Rate", false);
+        boolean pharmacyTransferIsByCostRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Cost Rate", false);
+        boolean pharmacyTransferIsByRetailRate = configOptionApplicationController.getBooleanValueByKey("Pharmacy Transfer is by Retail Rate", true);
+
+        if (pharmacyTransferIsByPurchaseRate) {
+            return BigDecimal.valueOf(itemBatch.getPurcahseRate());
+        } else if (pharmacyTransferIsByCostRate) {
+            return BigDecimal.valueOf(itemBatch.getCostRate());
+        } else {
+            return BigDecimal.valueOf(itemBatch.getRetailsaleRate());
+        }
+    }
+
+    private void updateFinancialsForTransferReceive(BillItemFinanceDetails fd) {
+        if (fd == null || fd.getBillItem() == null) {
+            return;
+        }
+
+        BillItem bi = fd.getBillItem();
+        PharmaceuticalBillItem ph = bi.getPharmaceuticalBillItem();
+        Item item = bi.getItem();
+
+        BigDecimal qty = Optional.ofNullable(fd.getQuantity()).orElse(BigDecimal.ZERO);
+
+        BigDecimal unitsPerPack = BigDecimal.ONE;
+        if (item instanceof Ampp || item instanceof Vmpp) {
+            unitsPerPack = item.getDblValue() > 0 ? BigDecimal.valueOf(item.getDblValue()) : BigDecimal.ONE;
+        }
+
+        fd.setUnitsPerPack(unitsPerPack);
+        fd.setTotalQuantity(qty);
+        fd.setQuantity(qty);
+
+        BigDecimal grossRate = Optional.ofNullable(fd.getLineGrossRate()).orElse(determineTransferRate(ph.getItemBatch()).multiply(unitsPerPack));
+        fd.setLineGrossRate(grossRate);
+
+        BigDecimal lineGrossTotal = grossRate.multiply(qty);
+        fd.setLineGrossTotal(lineGrossTotal);
+        fd.setGrossTotal(lineGrossTotal);
+
+        fd.setLineNetRate(grossRate);
+        fd.setLineNetTotal(lineGrossTotal);
+        fd.setNetTotal(lineGrossTotal);
+
+        BigDecimal qtyByUnits = qty.multiply(unitsPerPack);
+        fd.setQuantityByUnits(qtyByUnits);
+        fd.setTotalQuantityByUnits(qtyByUnits);
+
+        fd.setLineDiscount(BigDecimal.ZERO);
+        fd.setLineExpense(BigDecimal.ZERO);
+        fd.setLineTax(BigDecimal.ZERO);
+        fd.setLineCost(BigDecimal.ZERO);
+        fd.setTotalDiscount(BigDecimal.ZERO);
+        fd.setTotalExpense(BigDecimal.ZERO);
+        fd.setTotalTax(BigDecimal.ZERO);
+        fd.setTotalCost(BigDecimal.ZERO);
+        fd.setFreeQuantity(BigDecimal.ZERO);
+        fd.setFreeQuantityByUnits(BigDecimal.ZERO);
+
+        pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(fd);
+
+        if (ph != null) {
+            ph.setQty(qtyByUnits.doubleValue());
+            ph.setQtyPacks(qty.doubleValue());
+        }
+
+        bi.setQty(qty.doubleValue());
+        bi.setRate(grossRate.doubleValue());
+        bi.setNetRate(grossRate.doubleValue());
+        bi.setNetValue(lineGrossTotal.doubleValue());
+    }
+
+    private double calculateRemainingQty(BillItem issuedItem) {
+        double issuedQtyInUnits = 0.0;
+        double remainingQtyInUnits = 0.0;
+        if (issuedItem != null && issuedItem.getPharmaceuticalBillItem() != null) {
+            issuedQtyInUnits = Math.abs(issuedItem.getPharmaceuticalBillItem().getQty());
+        }
+
+        double receivedBilledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new BilledBill()));
+        double receivedCancelledQtyInUnits = Math.abs(pharmacyCalculation.getTotalQty(issuedItem, BillType.PharmacyTransferReceive, new CancelledBill()));
+
+        double receivedNet = receivedBilledQtyInUnits - receivedCancelledQtyInUnits;
+        remainingQtyInUnits = issuedQtyInUnits - receivedNet;
+        return remainingQtyInUnits;
+    }
+
+    public void onQuantityChangeForTransferReceive(BillItem bi) {
+        if (bi == null) {
+            return;
+        }
+        updateFinancialsForTransferReceive(bi.getBillItemFinanceDetails());
+        pharmacyCostingService.calculateBillTotalsFromItemsForTransferOuts(getReceivedBill(), getReceivedBill().getBillItems());
     }
 
     public Bill getReceivedBill() {
@@ -627,17 +897,6 @@ public class TransferReceiveController implements Serializable {
         this.pharmacyController = pharmacyController;
     }
 
-    public List<BillItem> getBillItems() {
-        if (billItems == null) {
-            billItems = new ArrayList<>();
-        }
-        return billItems;
-    }
-
-    public void setBillItems(List<BillItem> billItems) {
-        this.billItems = billItems;
-    }
-
     public List<Bill> getBills() {
         return bills;
     }
@@ -655,6 +914,51 @@ public class TransferReceiveController implements Serializable {
 
     public void setSearchKeyword(SearchKeyword searchKeyword) {
         this.searchKeyword = searchKeyword;
+    }
+
+    public double getDisplayReceivedNetTotal() {
+        if (receivedBill == null || receivedBill.getBillItems() == null) {
+            return 0.0;
+        }
+        double tot = 0.0;
+        for (BillItem b : receivedBill.getBillItems()) {
+            tot += Math.abs(b.getNetValue());
+        }
+        return tot;
+    }
+
+    public List<ConfigOptionInfo> getConfigOptionsForDevelopers() {
+        List<ConfigOptionInfo> list = new ArrayList<>();
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Purchase Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Cost Rate", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer is by Retail Rate", "true"));
+        list.add(new ConfigOptionInfo("Report Font Size of Item List in Pharmacy Disbursement Reports", "10pt"));
+        list.add(new ConfigOptionInfo("Report Columns - Serial Number is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Code is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Rate is required in Pharmacy Disbursement Reports", "true"));
+        list.add(new ConfigOptionInfo("Report Columns - Purchase Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Rate is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Report Columns - Retail Value is required in Pharmacy Disbursement Reports", "false"));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer CSS", ""));
+        list.add(new ConfigOptionInfo("Pharmacy Transfer Receive Bill Footer Text", ""));
+        return list;
+    }
+
+    public void displayItemDetails(BillItem bi) {
+        getPharmacyController().fillItemDetails(bi.getItem());
+    }
+
+    public void prepareBatchDetails(BillItem bi) {
+        selectedBillItem = bi;
+    }
+
+    public BillItem getSelectedBillItem() {
+        return selectedBillItem;
+    }
+
+    public void setSelectedBillItem(BillItem selectedBillItem) {
+        this.selectedBillItem = selectedBillItem;
     }
 
 }

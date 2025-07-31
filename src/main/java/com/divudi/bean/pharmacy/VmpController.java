@@ -80,6 +80,7 @@ public class VmpController implements Serializable {
 
     @EJB
     VmpFacade vmpFacade;
+    private boolean editable;
 
     public String navigateToListAllVmps() {
         String jpql = "Select vmp "
@@ -541,6 +542,20 @@ public class VmpController implements Serializable {
     public void prepareAdd() {
         current = new Vmp();
         addingVtmInVmp = new VirtualProductIngredient();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void bulkUpload() {
@@ -583,6 +598,7 @@ public class VmpController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void save() {
@@ -647,6 +663,7 @@ public class VmpController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VmpFacade getFacade() {
@@ -671,6 +688,14 @@ public class VmpController implements Serializable {
 
     public void setSpecialityFacade(SpecialityFacade specialityFacade) {
         this.specialityFacade = specialityFacade;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

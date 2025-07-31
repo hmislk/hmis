@@ -6,7 +6,9 @@
 package com.divudi.ejb;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.entity.AppEmail;
+import com.divudi.core.entity.Bill;
 import com.divudi.core.facade.EmailFacade;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -37,6 +39,7 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 import javax.net.ssl.HttpsURLConnection;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -51,13 +54,94 @@ public class EmailManagerEjb {
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
 
-    @SuppressWarnings("unused")
-    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
-    public void myTimer() {
-//        sendReportApprovalEmails();
+    @Schedule(second = "0", minute = "*/1", hour = "*", persistent = false)
+    public void processPendingLabReportApprovalEmailQueue() {
+        if (configOptionApplicationController == null || emailFacade == null) {
+            return;
+        }
 
+        if (configOptionApplicationController.getBooleanValueByKey("Sending Email After Lab Report Approval Strategy - Do Not Sent Automatically", false)) {
+            return;
+        }
+
+        // Static configuration of strategies
+        Map<String, Integer> strategyMinutes = new LinkedHashMap<>();
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after one minute", 1);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after two minutes", 2);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 5 minutes", 5);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 10 minutes", 10);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 15 minutes", 15);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after 20 minutes", 20);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after half an hour", 30);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after one hour", 60);
+        strategyMinutes.put("Sending Email After Lab Report Approval Strategy - Send after two hours", 120);
+
+        int delayMinutes = strategyMinutes.entrySet().stream()
+                .filter(e -> configOptionApplicationController.getBooleanValueByKey(e.getKey(), false))
+                .map(Map.Entry::getValue)
+                .findFirst()
+                .orElse(0);
+
+        if (delayMinutes == 0) {
+            return;
+        }
+
+        Calendar now = Calendar.getInstance();
+        Calendar delayThreshold = (Calendar) now.clone();
+        delayThreshold.add(Calendar.MINUTE, -delayMinutes);
+
+        Calendar minCreatedAt = (Calendar) now.clone();
+        minCreatedAt.add(Calendar.HOUR_OF_DAY, -24);
+
+        String jpql = "Select e from AppEmail e where e.sentSuccessfully <> true and e.retired=false "
+                + "and e.messageType = :messageType and e.createdAt between :from and :to";
+        Map<String, Object> params = new HashMap<>();
+        params.put("from", minCreatedAt.getTime());
+        params.put("to", delayThreshold.getTime());
+        params.put("messageType", MessageType.LabReport);
+
+        List<AppEmail> emails = emailFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+
+        for (AppEmail email : emails) {
+            try {
+                if (email.getPatientInvestigation() == null || email.getReceipientEmail() == null) {
+                    continue;
+                }
+
+                Bill bill = email.getPatientInvestigation().getBillItem() != null
+                        ? email.getPatientInvestigation().getBillItem().getBill()
+                        : null;
+
+                if (bill == null || bill.getBalance() > 0.99) {
+                    continue;
+                }
+
+                boolean success = sendEmail(
+                        Collections.singletonList(email.getReceipientEmail()),
+                        email.getMessageBody(),
+                        email.getMessageSubject(),
+                        true
+                );
+
+                email.setSentSuccessfully(success);
+                email.setPending(!success);
+                if (success) {
+                    email.setSentAt(new Date());
+                }
+                emailFacade.edit(email);
+            } catch (Exception e) {
+                Logger.getLogger(this.getClass().getName()).log(Level.SEVERE,
+                        "Failed to process Email ID: " + (email != null ? email.getId() : "unknown"), e);
+            }
+        }
     }
 
+//    @SuppressWarnings("unused")
+//    @Schedule(second = "59", minute = "*/2", hour = "*", persistent = false)
+//    public void myTimer() {
+////        sendReportApprovalEmails();
+//
+//    }
     private boolean sendEmailViaRestGateway(String subject, String body, List<String> recipients, boolean isHtml) {
         String messengerServiceURL = configOptionApplicationController.getShortTextValueByKey("Email Gateway - URL", "");
 
@@ -123,11 +207,13 @@ public class EmailManagerEjb {
         final String username = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Username", "");
         final String password = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Password", "");
         final String smtpHost = configOptionApplicationController.getShortTextValueByKey("Email Gateway - SMTP Host", "");
+        final String replyTo = configOptionApplicationController.getShortTextValueByKey("Email Gateway - Reply To Email", "");
 
         JSONObject payload = new JSONObject();
         payload.put("subject", subject);
         payload.put("body", body);
         payload.put("isHtml", isHtml);
+        payload.put("replyTo", replyTo);
 
         JSONArray recipientArray = new JSONArray();
         for (String recipient : recipients) {

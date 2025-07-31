@@ -19,6 +19,7 @@ import com.divudi.core.entity.Department;
 import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Item;
 import com.divudi.core.entity.pharmacy.Amp;
+import com.divudi.core.entity.pharmacy.Ampp;
 import com.divudi.core.entity.pharmacy.Stock;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.facade.BillItemFacade;
@@ -114,17 +115,29 @@ public class StockController implements Serializable {
         if (item == null) {
             return;
         }
-        String sql;
-        Map m = new HashMap();
+        Amp amp;
+        if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            amp = ampp.getAmp();
+            if (amp == null) {
+                return;
+            }
+        } else if (item instanceof Amp) {
+            amp = (Amp) item;
+        } else {
+            return;
+        }
+        String jpql;
+        Map params = new HashMap();
         double d = 0.0;
-        m.put("s", d);
-        m.put("item", item);
-        sql = "select s "
+        params.put("s", d);
+        params.put("item", amp);
+        jpql = "select s "
                 + "from Stock s "
                 + "where s.stock > :s "
                 + "and s.itemBatch.item = :item "
                 + "order by s.itemBatch.dateOfExpire desc";
-        selectedItemStocks = ejbFacade.findByJpql(sql, m, 20);
+        selectedItemStocks = ejbFacade.findByJpql(jpql, params, 20);
         totalStockQty = calculateStockQty(selectedItemStocks);
     }
 
@@ -135,11 +148,19 @@ public class StockController implements Serializable {
             List<Amp> amps = new ArrayList<>();
             amps.add(amp);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
+            List<Amp> amps = new ArrayList<>();
+            if (amp != null) {
+                amps.add(amp);
+            }
+            selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             selectedItemExpiaringStocks = fillExpiaringStock(null, amps, null);
         } else {
-            //TO Do for Ampp, Vmpp,
+            //TO Do for Vmpp
         }
         expiaringStockQty = calculateStockQty(selectedItemExpiaringStocks);
     }
@@ -188,7 +209,10 @@ public class StockController implements Serializable {
         }
 
         // No need to check if initialStocks is empty or null anymore, Set takes care of duplicates
-        if (stockSet.size() <= 10) {
+        
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+        
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
             List<Stock> additionalStocks = completeAvailableStocksContains(qry);
             if (additionalStocks != null) {
                 stockSet.addAll(additionalStocks);
@@ -216,6 +240,25 @@ public class StockController implements Serializable {
         }
 
         addItemStockToStocks(stockSet);
+
+        return new ArrayList<>(stockSet);
+    }
+
+    public List<Stock> completeAvailableStocksForAllowedDepartments(String qry) {
+        Set<Stock> stockSet = new LinkedHashSet<>(); // Preserve insertion order
+        List<Stock> initialStocks = completeAvailableStocksStartsWithForAllowedDepartments(qry);
+        if (initialStocks != null) {
+            stockSet.addAll(initialStocks);
+        }
+
+        Long itemCountToExtendStockSearch = configOptionApplicationController.getLongValueByKey("Minimum Item Count to extend search for Pharmacy Item Stocks", 5l);
+
+        if (stockSet.size() <= itemCountToExtendStockSearch.intValue()) {
+            List<Stock> additionalStocks = completeAvailableStocksContainsForAllowedDepartments(qry);
+            if (additionalStocks != null) {
+                stockSet.addAll(additionalStocks);
+            }
+        }
 
         return new ArrayList<>(stockSet);
     }
@@ -330,6 +373,42 @@ public class StockController implements Serializable {
         return stockList;
     }
 
+    public List<Stock> completeAvailableStocksStartsWithForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+        return stockList;
+    }
+
+    public List<Stock> completeAvailableStocksContainsForAllowedDepartments(String qry) {
+        List<Stock> stockList;
+        String sql;
+        Map m = new HashMap();
+        m.put("d", getSessionController().getLoggedUser().getDepartment());
+        m.put("dts", sessionController.getAvailableDepartmentTypesForPharmacyTransactions());
+        double d = 0.0;
+        m.put("s", d);
+        m.put("n", "%" + qry.toUpperCase() + "%");
+        if (qry.length() > 4) {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n or (i.itemBatch.item.barcode) like :n )  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        } else {
+            sql = "select i from Stock i where i.stock >:s and i.department=:d and i.itemBatch.item.departmentType in :dts and ((i.itemBatch.item.name) like :n or (i.itemBatch.item.code) like :n)  order by i.itemBatch.item.name, i.itemBatch.dateOfExpire";
+        }
+        stockList = getStockFacade().findByJpql(sql, m, 20);
+        return stockList;
+    }
+
     public void removeStoreItemsWithoutStocks() {
         Map m = new HashMap();
         m.put("dt", DepartmentType.Store);
@@ -346,17 +425,66 @@ public class StockController implements Serializable {
         }
     }
 
+    @Deprecated
     public double findStock(Item item) {
         return findStock(null, item);
     }
 
+    @Deprecated
     public double findStock(Institution institution, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findStock(institution, amp);
+        } else if (item instanceof Ampp) {
+            Ampp ampp = (Ampp) item;
+            Amp amp = ampp.getAmp();
+            return findStock(institution, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findInstitutionStock(Institution institution, Item item) {
         if (item instanceof Amp) {
             Amp amp = (Amp) item;
             return findStock(institution, amp);
         } else if (item instanceof Vmp) {
             List<Amp> amps = vmpController.ampsOfVmp(item);
             return findStock(institution, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+
+    @Deprecated
+    public double findDepartmentStock(Department department, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findDepartmentStock(department, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findStock(department, amps);
+        } else {
+            //TO Do for Ampp, Vmpp,
+            return 0.0;
+        }
+    }
+    
+
+    @Deprecated
+    public double findSiteStock(Institution site, Item item) {
+        if (item instanceof Amp) {
+            Amp amp = (Amp) item;
+            return findSiteStock(site, amp);
+        } else if (item instanceof Vmp) {
+            List<Amp> amps = vmpController.ampsOfVmp(item);
+            return findSiteStock(site, amps);
         } else {
             //TO Do for Ampp, Vmpp,
             return 0.0;
@@ -394,6 +522,59 @@ public class StockController implements Serializable {
             return stock;
         }
         return 0.0;
+    }
+    
+    public double findSiteStock(Institution site, List<Amp> amps) {
+        Double stock;
+        String jpql;
+        Map m = new HashMap();
+
+        m.put("amps", amps);
+        jpql = "select sum(i.stock) "
+                + " from Stock i ";
+        if (site == null) {
+            jpql += " where i.itemBatch.item in :amps ";
+        } else {
+            m.put("ins", site);
+            jpql += " where i.department.site=:ins "
+                    + " and i.itemBatch.item in :amps ";
+        }
+
+        stock = billItemFacade.findDoubleByJpql(jpql, m);
+        if (stock != null) {
+            return stock;
+        }
+        return 0.0;
+    }
+
+    @Deprecated
+    public double findStock(Institution institution, Institution site, Department department, Item item) {
+        if (item instanceof Amp) {
+            return findStock(institution, site, department, (Amp) item);
+        } else {
+            return 0.0;
+        }
+    }
+
+    public double findStock(Institution institution, Institution site, Department department, Amp amp) {
+        String jpql = "select sum(i.stock) from Stock i where i.retired=false and i.itemBatch.item=:amp";
+        Map<String, Object> m = new HashMap<>();
+        m.put("amp", amp);
+        if (department != null) {
+            jpql += " and i.department=:dep";
+            m.put("dep", department);
+        } else if (institution != null && site != null) {
+            jpql += " and i.department.site=:site and i.department.institution=:ins";
+            m.put("site", site);
+            m.put("ins", institution);
+        } else if (institution != null) {
+            jpql += " and i.department.institution=:ins";
+            m.put("ins", institution);
+        } else if (site != null) {
+            jpql += " and i.department.site=:site";
+            m.put("site", site);
+        }
+        return billItemFacade.findDoubleByJpql(jpql, m);
     }
 
     public double findStock(Department department, List<Amp> amps) {

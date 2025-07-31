@@ -1,6 +1,7 @@
 package com.divudi.service;
 
 import com.divudi.bean.common.ConfigOptionApplicationController;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.BillValidation;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.PaymentType;
@@ -8,12 +9,15 @@ import com.divudi.core.data.dataStructure.ComponentDetail;
 import com.divudi.core.data.dataStructure.PaymentMethodData;
 import com.divudi.core.entity.Bill;
 import com.divudi.core.entity.Department;
+import com.divudi.core.entity.Institution;
 import com.divudi.core.entity.Patient;
 import com.divudi.core.entity.PatientDeposit;
 import com.divudi.core.entity.Payment;
+import com.divudi.core.entity.PaymentScheme;
 import com.divudi.core.entity.Staff;
 import com.divudi.core.entity.WebUser;
 import com.divudi.core.entity.cashTransaction.CashBook;
+import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.PatientFacade;
 import com.divudi.core.facade.PaymentFacade;
@@ -22,12 +26,15 @@ import com.divudi.core.util.JsfUtil;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.ejb.EJB;
 import javax.ejb.Stateless;
 import javax.inject.Inject;
+import javax.persistence.TemporalType;
 
 /**
  *
@@ -231,10 +238,13 @@ public class PaymentService {
                 payment.setRealizedAt(paymentMethodData.getSlip().getDate());
                 break;
             case OnCall:
-            case OnlineSettlement:
             case Staff:
                 payment.setPaidValue(paymentMethodData.getStaffCredit().getTotalValue());
                 payment.setComments(paymentMethodData.getStaffCredit().getComment());
+                break;
+            case OnlineSettlement:
+                payment.setPaidValue(paymentMethodData.getOnlineSettlement().getTotalValue());
+                payment.setComments(paymentMethodData.getOnlineSettlement().getComment());
                 break;
             case IOU:
                 payment.setReferenceNo(paymentMethodData.getIou().getReferenceNo());
@@ -370,6 +380,78 @@ public class PaymentService {
         }
 
         return new ArrayList<>(uniqueMethods);
+    }
+    
+    public List<Payment> fetchPayments(Date fromDate,
+                                 Date toDate,
+                                 Institution institution,
+                                 Institution site,
+                                 Department department,
+                                 WebUser webUser,
+                                 List<BillTypeAtomic> billTypeAtomics,
+                                 AdmissionType admissionType,
+                                 PaymentScheme paymentScheme,
+                                 Institution toInstitution,
+                                 Department toDepartment,
+                                 String visitType
+    ) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select p "
+                + " from Payment p "
+                + " where p.retired=:ret "
+                + " and p.bill.billTypeAtomic in :billTypesAtomics "
+                + " and p.createdAt between :fromDate and :toDate ";
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and p.bill.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and p.bill.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and p.bill.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and p.bill.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and p.bill.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and p.bill.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and p.bill.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND p.bill.ipOpOrCc = :type";
+            params.put("type", visitType.trim());
+        }
+
+        jpql += " order by p.createdAt desc  ";
+        List<Payment> fetchedPaymentss = paymentFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedPaymentss;
     }
 
     public BillValidation checkForErrorsInPaymentDetailsForInBills(PaymentMethod paymentMethod, PaymentMethodData paymentMethodData, Double netTotal, Patient patient, Department department) {
@@ -665,6 +747,7 @@ public class PaymentService {
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getEwallet().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getPatient_deposit().getTotalValue();
                 multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getSlip().getTotalValue();
+                multiplePaymentMethodTotalValue += cd.getPaymentMethodData().getOnlineSettlement().getTotalValue();
             }
             double differenceOfBillTotalAndPaymentValue = netTotal - multiplePaymentMethodTotalValue;
             differenceOfBillTotalAndPaymentValue = Math.abs(differenceOfBillTotalAndPaymentValue);

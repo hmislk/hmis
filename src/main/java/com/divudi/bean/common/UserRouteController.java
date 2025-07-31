@@ -52,7 +52,7 @@ public class UserRouteController implements Serializable {
     List<WebUserRoute> selectedItems;
     private WebUserRoute current;
     private WebUser selectedUser;
-    private Institution currentInstituion;
+    private Institution currentInstitution;
     Route currentRoute;
     private List<Route> lstDep;
     private List<Route> currentInsRoutes;
@@ -262,23 +262,23 @@ public class UserRouteController implements Serializable {
         this.institutionFacade = institutionFacade;
     }
 
-    public Institution getCurrentInstituion() {
-        return currentInstituion;
+    public Institution getCurrentInstitution() {
+        return currentInstitution;
     }
 
-    public void setCurrentInstituion(Institution currentInstituion) {
-        this.currentInstituion = currentInstituion;
+    public void setCurrentInstitution(Institution currentInstitution) {
+        this.currentInstitution = currentInstitution;
 //        getCurrentInsRoutes();
     }
 
 //    public List<Route> getCurrentInsRoutes() {
-//        if (currentInstituion == null) {
+//        if (currentInstitution == null) {
 //            //////// // System.out.println("1");
 //            return new ArrayList<>();
 //        }
 //        //////// // System.out.println("2");
 //        Map m = new HashMap();
-//        m.put("ins", currentInstituion);
+//        m.put("ins", currentInstitution);
 //        String sql = "SELECT i FROM Route i where i.retired=false and i.institution=:ins order by i.name";
 //        currentInsRoutes = getRouteFacade().findByJpql(sql,m);
 //        //////// // System.out.println("3");

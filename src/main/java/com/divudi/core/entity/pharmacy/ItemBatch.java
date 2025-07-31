@@ -42,6 +42,7 @@ public class ItemBatch implements Serializable, RetirableEntity {
     double purcahseRate;
     double retailsaleRate;
     double wholesaleRate;
+    private Double costRate;
     @ManyToOne
     Category make;
     String modal;
@@ -334,5 +335,17 @@ public class ItemBatch implements Serializable, RetirableEntity {
         this.retireComments = retireComments;
     }
 
+    public Double getCostRate() {
+        if (costRate == null) {
+            if (purcahseRate != 0.0) {
+                costRate = purcahseRate;
+            }
+        }
+        return costRate;
+    }
+
+    public void setCostRate(Double costRate) {
+        this.costRate = costRate;
+    }
 
 }

@@ -56,14 +56,14 @@
                                 value="Fill" 
                                 icon="fas fa-fill"
                                 class="ui-button-warning"
-                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBill}" >
+                                action="#{reportsTransfer.fillDepartmentTransfersIssueByBillEntity}" >
                             </p:commandButton>
                             <p:commandButton 
                                 ajax="false" 
                                 value="Excel" 
                                 icon="fas fa-file-excel"
                                 class="ui-button-success mx-2">
-                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing"   />
+                                <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Listing_Entity"   />
                             </p:commandButton>
                             <p:commandButton 
                                 value="Print" 
@@ -312,12 +312,22 @@
                                     </f:facet>
                                     <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
-                                    </h:outputLabel>   
+                                    </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
+                                </p:column>
+
+                                <p:column>
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Comment" style="padding: 5px!important; margin: 0px!important;" />
+                                    </f:facet>
+
+                                    <h:outputLabel
+                                        style="display: block; max-height: 60px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; padding: 0px!important; margin: 0px!important;"
+                                        value="#{i.comments}" />
                                 </p:column>
 
 
