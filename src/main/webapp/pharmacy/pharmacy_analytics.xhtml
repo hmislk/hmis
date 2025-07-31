@@ -355,7 +355,7 @@
                                                 action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
                                                 ajax="false" 
                                                 icon="fa fa-file-invoice" 
-                                                class="w-100"/>
+                                                class="w-100 ui-button-success"/>
 
                                             <p:commandButton 
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
@@ -363,29 +363,24 @@
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
                                                 ajax="false" 
                                                 icon="fa fa-receipt" 
+                                                class="w-100 ui-button-success"/>
+
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
+                                                value="Transfer Issue by Bill" 
+                                                action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
+                                                ajax="false" 
+                                                icon="fa fa-rocket" 
+                                                class="w-100 ui-button-success"
+                                                title="High-performance DTO-based report - Recommended"/>
+
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill')}"
+                                                value="Transfer Receive by Bill" 
+                                                action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
+                                                ajax="false" 
+                                                icon="fa fa-file-import" 
                                                 class="w-100"/>
-
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill')}" 
-                                                             value="Transfer Issue by Bill" 
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBill}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-export" 
-                                                             class="w-100 ui-button-secondary"/>
-
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
-                                                             value="Transfer Issue by Bill" 
-                                                             action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
-                                                             ajax="false" 
-                                                             icon="fa fa-rocket" 
-                                                             class="w-100 ui-button-success"
-                                                             title="High-performance DTO-based report - Recommended"/>
-
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive by Bill')}"
-                                                             value="Transfer Receive by Bill" 
-                                                             action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-import" 
-                                                             class="w-100"/>
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill(Summary)')}"
                                                              class="w-100" 
