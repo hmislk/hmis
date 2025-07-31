@@ -349,19 +349,21 @@
                                         <div class="d-grid gap-2">
 
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue By Bill Item')}"
-                                                             value="Transfer Issue By Bill Item" 
-                                                             action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-file-invoice" 
-                                                             class="w-100"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue By Bill Item')}"
+                                                value="Transfer Issue By Bill Item" 
+                                                action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
+                                                ajax="false" 
+                                                icon="fa fa-file-invoice" 
+                                                class="w-100"/>
 
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
-                                                             value="Transfer Receive By Bill Item" 
-                                                             action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
-                                                             ajax="false" 
-                                                             icon="fa fa-receipt" 
-                                                             class="w-100"/>
+                                            <p:commandButton 
+                                                rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
+                                                value="Transfer Receive By Bill Item" 
+                                                action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
+                                                ajax="false" 
+                                                icon="fa fa-receipt" 
+                                                class="w-100"/>
 
                                             <!-- Transfer Issue by Bill - Entity Version -->
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill')}" 

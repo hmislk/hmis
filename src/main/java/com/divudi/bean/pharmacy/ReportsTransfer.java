@@ -519,18 +519,19 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append("select new com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO(")
                 .append("b.deptId, b.createdAt, it.name, it.code,")
-                .append(" p.qty, ib.costRate, bfd.valueAtCostRate,")
+                .append(" bi.qty, ib.costRate, bfd.valueAtCostRate,")
                 .append(" p.retailRate, bfd.valueAtRetailRate,")
                 .append(" p.purchaseRate, bfd.valueAtPurchaseRate,")
                 .append(" bfd.lineGrossRate, bfd.lineGrossTotal)")
                 .append(" from BillItem bi")
                 .append(" join bi.bill b")
-                .append(" join bi.pharmaceuticalBillItem p")
-                .append(" join p.itemBatch ib")
+                .append(" left join bi.pharmaceuticalBillItem p")
+                .append(" left join p.itemBatch ib")
                 .append(" left join bi.billItemFinanceDetails bfd")
-                .append(" join bi.item it")
+                .append(" left join bi.item it")
                 .append(" where b.billType=:bt")
-                .append(" and b.retired=false and bi.retired=false")
+                .append(" and (b.retired=false or b.retired is null)")
+                .append(" and (bi.retired=false or bi.retired is null)")
                 .append(" and b.createdAt between :fd and :td ");
 
         params.put("fd", fromDate);
@@ -549,20 +550,12 @@ public class ReportsTransfer implements Serializable {
 
         jpql.append(" order by bi.id");
 
-
         try {
             transferIssueBillItemDtos = (List<PharmacyTransferIssueBillItemDTO>) getBillItemFacade()
                     .findLightsByJpql(jpql.toString(), params, TemporalType.TIMESTAMP);
-
-            if (transferIssueBillItemDtos != null && !transferIssueBillItemDtos.isEmpty()) {
-                for (int i = 0; i < Math.min(3, transferIssueBillItemDtos.size()); i++) {
-                    PharmacyTransferIssueBillItemDTO dto = transferIssueBillItemDtos.get(i);
-                }
-            } else {
-            }
-
         } catch (Exception e) {
             e.printStackTrace();
+            transferIssueBillItemDtos = new ArrayList<>();
         }
 
         purchaseValue = 0.0;
@@ -571,10 +564,8 @@ public class ReportsTransfer implements Serializable {
         costValue = 0.0;
         transferValue = 0.0;
 
-
         if (transferIssueBillItemDtos != null) {
             for (PharmacyTransferIssueBillItemDTO d : transferIssueBillItemDtos) {
-
                 if (d.getPurchaseValue() != null) {
                     purchaseValue += d.getPurchaseValue();
                 }
@@ -589,7 +580,6 @@ public class ReportsTransfer implements Serializable {
                     transferValue += d.getTransferValue();
                 }
             }
-        } else {
         }
 
     }
@@ -750,33 +740,14 @@ public class ReportsTransfer implements Serializable {
         }
 
         // Reset totals before accumulating stored values
-        totalsValue = 0.0;
-        netTotalValues = 0.0;
+        purchaseValue = 0.0;
+        retailValue = 0.0;
+        costValue = 0.0;
 
         for (Bill b : billList) {
-            double saleValue = 0.0;
-            double purchaseValue = 0.0;
-
-            for (BillItem bi : b.getBillItems()) {
-                // Use stored financial data - no calculations during report viewing
-                if (bi.getBillItemFinanceDetails() != null) {
-                    // Sale value from stored retail value
-                    if (bi.getBillItemFinanceDetails().getValueAtRetailRate() != null) {
-                        saleValue += bi.getBillItemFinanceDetails().getValueAtRetailRate().doubleValue();
-                    }
-
-                    // Purchase value from stored transfer value (lineNetTotal contains the transfer rate value)
-                    if (bi.getBillItemFinanceDetails().getLineNetTotal() != null) {
-                        purchaseValue += bi.getBillItemFinanceDetails().getLineNetTotal().doubleValue();
-                    }
-                }
-            }
-
-            b.setSaleValue(saleValue);
-            b.setPaidAmount(purchaseValue);
-            b.setNetTotal(purchaseValue); // Show transfer value in "Purchase Value" column
-            totalsValue += saleValue;
-            netTotalValues += purchaseValue; // Accumulate transfer values for "Purchase Value" total
+            retailValue += b.getBillFinanceDetails().getTotalRetailSaleValue().doubleValue();
+            purchaseValue += b.getBillFinanceDetails().getTotalPurchaseValue().doubleValue();
+            costValue += b.getBillFinanceDetails().getTotalCostValue().doubleValue();
         }
 
     }

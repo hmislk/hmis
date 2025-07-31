@@ -44,22 +44,22 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
         this.transferValue = transferValue;
     }
 
-    // Constructor matching JPQL query types: (String, Date, String, String, double, double, BigDecimal, double, BigDecimal, double, BigDecimal, BigDecimal, BigDecimal)
+    // Constructor matching JPQL query types: (String, Date, String, String, Double, Double, BigDecimal, Double, BigDecimal, Double, BigDecimal, BigDecimal, BigDecimal)
     public PharmacyTransferIssueBillItemDTO(String deptId, Date createdAt, String itemName, String itemCode,
-                                            double qty, double costRate, java.math.BigDecimal costValue,
-                                            double retailRate, java.math.BigDecimal retailValue,
-                                            double purchaseRate, java.math.BigDecimal purchaseValue,
+                                            Double qty, Double costRate, java.math.BigDecimal costValue,
+                                            Double retailRate, java.math.BigDecimal retailValue,
+                                            Double purchaseRate, java.math.BigDecimal purchaseValue,
                                             java.math.BigDecimal transferRate, java.math.BigDecimal transferValue) {
         this.deptId = deptId;
         this.createdAt = createdAt;
         this.itemName = itemName;
         this.itemCode = itemCode;
-        this.qty = Double.valueOf(qty);
-        this.costRate = Double.valueOf(costRate);
+        this.qty = qty;
+        this.costRate = costRate;
         this.costValue = costValue != null ? costValue.doubleValue() : null;
-        this.retailRate = Double.valueOf(retailRate);
+        this.retailRate = retailRate;
         this.retailValue = retailValue != null ? retailValue.doubleValue() : null;
-        this.purchaseRate = Double.valueOf(purchaseRate);
+        this.purchaseRate = purchaseRate;
         this.purchaseValue = purchaseValue != null ? purchaseValue.doubleValue() : null;
         this.transferRate = transferRate != null ? transferRate.doubleValue() : null;
         this.transferValue = transferValue != null ? transferValue.doubleValue() : null;

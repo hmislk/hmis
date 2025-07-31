@@ -156,28 +156,28 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;" >
+                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;"  class="text-end" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.netTotal}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.billFinanceDetails.totalPurchaseValue}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.netTotalValues}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{reportsTransfer.purchaseValue}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;"  >
+                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" class="text-end" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
-                                    <h:outputLabel value="#{-i.saleValue}"   style="padding: 0px!important; margin: 0px!important;" >
+                                    <h:outputLabel value="#{i.billFinanceDetails.totalRetailSaleValue}"   style="padding: 0px!important; margin: 0px!important;" >
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>   
                                     <f:facet name="footer">
-                                        <h:outputLabel value="#{-reportsTransfer.totalsValue}"  style="padding: 0px!important; margin: 0px!important;" >
+                                        <h:outputLabel value="#{reportsTransfer.retailValue}"  style="padding: 0px!important; margin: 0px!important;" >
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
                                     </f:facet>
