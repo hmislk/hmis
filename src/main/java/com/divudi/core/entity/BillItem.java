@@ -156,6 +156,8 @@ public class BillItem implements Serializable, RetirableEntity {
     private Department peformedDepartment;
     @Lob
     private String instructions;
+    
+    private boolean consideredForCosting = true;
 
 //    @Transient
     int searialNo;
@@ -279,6 +281,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present
         if (billItem.getBillItemFinanceDetails() != null) {
@@ -320,6 +323,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
 
         BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
         clonedFinanceDetails.setBillItem(this);
@@ -348,6 +352,7 @@ public class BillItem implements Serializable, RetirableEntity {
 //        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
+        consideredForCosting = billItem.isConsideredForCosting();
     }
 
     public void resetValue() {
@@ -1187,6 +1192,14 @@ public class BillItem implements Serializable, RetirableEntity {
         if (billItemFinanceDetails != null && billItemFinanceDetails.getBillItem() != this) {
             billItemFinanceDetails.setBillItem(this);
         }
+    }
+
+    public boolean isConsideredForCosting() {
+        return consideredForCosting;
+    }
+
+    public void setConsideredForCosting(boolean consideredForCosting) {
+        this.consideredForCosting = consideredForCosting;
     }
 
 }
