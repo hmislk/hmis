@@ -212,7 +212,9 @@
 
 
                             <p:column headerText="Date">
-                                <h:outputText value="#{f.bill.createdAt}" />
+                                <h:outputText value="#{f.bill.createdAt}" >
+                                    <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"/>
+                                </h:outputText>
                                 <f:facet name="footer">
                                     <h:outputText value="Net Amount" />
                                 </f:facet>
