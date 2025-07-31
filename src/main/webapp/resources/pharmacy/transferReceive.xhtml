@@ -109,8 +109,8 @@
                 <p:dataTable
                     rowIndexVar="rowIndex"
                     styleClass="no-border-table"
-                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important;"
-                    class="my-4"
+                    style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.2;"
+                    class="my-2"
                     value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip">
 
                     <p:column
@@ -133,15 +133,6 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column style="margin: 0px; padding: 0px;" width="5em"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
-                        <f:facet name="header">
-                            <h:outputLabel value="D O E"/>
-                        </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
-                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
-                        </h:outputLabel>
-                    </p:column>
 
                     <p:column
                         rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Code is required in Pharmacy Disbursement Reports', true)}"
@@ -220,6 +211,7 @@
                     </p:column>
 
                     <p:column
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Rate is required in Pharmacy Disbursement Reports', false)}"
                         width="4em" class="text-end">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Rate"/>
@@ -228,10 +220,9 @@
                             <f:convertNumber pattern="#,##0.00"/>
                         </h:outputLabel>
                     </p:column>
-                    
 
                     <p:column
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Retail Value is required in Pharmacy Disbursement Reports', false)}"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Transfer Value is required in Pharmacy Disbursement Reports', false)}"
                         width="4em" class="text-end">
                         <f:facet name="header">
                             <h:outputLabel value="Transfer Value"/>
@@ -246,6 +237,17 @@
                             </h:outputLabel>
                         </f:facet>
                     </p:column>
+
+                    <p:column style="margin: 0px; padding: 0px;" width="5em"
+                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
+                        <f:facet name="header">
+                            <h:outputLabel value="D O E"/>
+                        </f:facet>
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                            <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                        </h:outputLabel>
+                    </p:column>
+
 
 
 

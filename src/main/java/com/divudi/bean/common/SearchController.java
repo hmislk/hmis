@@ -7631,7 +7631,7 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
-    public String navigateToPharmcyBillSearch() {
+    public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
@@ -9718,8 +9718,9 @@ public class SearchController implements Serializable {
         }
         
         if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
-            sql += " and  b.patient.code like :code";
+            sql += " and  (b.patient.code like :code OR b.patient.phn like :phn ) ";
             temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+            temMap.put("phn", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
