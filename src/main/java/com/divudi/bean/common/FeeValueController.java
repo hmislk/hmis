@@ -202,6 +202,37 @@ public class FeeValueController implements Serializable {
         return fv;
     }
 
+    public FeeValue getDepartmentFeeValue(Long itemId, Department dept) {
+        String jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.department = :dept";
+        Map<String, Object> params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        params.put("dept", dept);
+        FeeValue fv = getFacade().findFirstByJpql(jpql, params);
+        if (fv != null) {
+            return fv;
+        }
+        jpql = "SELECT f "
+                + " FROM FeeValue f "
+                + " WHERE f.item.id = :iid "
+                + " AND f.totalValueForLocals > 0 "
+                + " AND f.retired=:ret "
+                + " AND f.category is null"
+                + " AND f.institution is null"
+                + " AND f.department is null";
+        params = new HashMap<>();
+        params.put("iid", itemId);
+        params.put("ret", false);
+        
+        fv = getFacade().findFirstByJpql(jpql, params);
+        return fv;
+    }
+
     public FeeValue getFeeValue(Item item, Department dept, Institution ins, Category category) {
         String jpql = "SELECT f FROM FeeValue f WHERE f.item = :item AND f.department = :dept AND f.institution = :ins AND f.category = :category";
         Map<String, Object> params = new HashMap<>();
