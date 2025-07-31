@@ -365,17 +365,15 @@
                                                 icon="fa fa-receipt" 
                                                 class="w-100"/>
 
-                                            <!-- Transfer Issue by Bill - Entity Version -->
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill')}" 
-                                                             value="Transfer Issue by Bill (Entity)" 
+                                                             value="Transfer Issue by Bill" 
                                                              action="#{reportsTransfer.navigateToTransferIssueByBill}" 
                                                              ajax="false" 
                                                              icon="fa fa-file-export" 
-                                                             class="w-100"/>
+                                                             class="w-100 ui-button-secondary"/>
 
-                                            <!-- Transfer Issue by Bill - DTO Version (Recommended) -->
-                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill (DTO)', true)}" 
-                                                             value="Transfer Issue by Bill (DTO - Fast)" 
+                                            <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
+                                                             value="Transfer Issue by Bill" 
                                                              action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
                                                              ajax="false" 
                                                              icon="fa fa-rocket" 
