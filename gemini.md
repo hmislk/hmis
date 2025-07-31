@@ -12,6 +12,7 @@
 - **Commit Conventions**: [Details](developer_docs/git/commit-conventions.md)
 - **Project Board**: [Workflow](developer_docs/github/project-board-integration.md)
 - **GitHub CLI Usage**: [Complete GitHub CLI Guide](developer_docs/github/gh-cli-usage.md)
+- **QA Deployment**: [Bot-Friendly QA Deployment Guide](developer_docs/deployment/qa-deployment-guide.md)
 - **Auto-close keywords**: `Closes #issueNumber`, `Fixes #issueNumber`
 
 #### Troubleshooting `gh pr create`
