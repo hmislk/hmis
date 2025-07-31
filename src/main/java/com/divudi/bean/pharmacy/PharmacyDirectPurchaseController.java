@@ -428,6 +428,105 @@ public class PharmacyDirectPurchaseController implements Serializable {
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
     }
 
+    public void onExpenseItemSelect(SelectEvent event) {
+        BillItem current = getCurrentExpense();
+        if (current == null || current.getItem() == null) {
+            return;
+        }
+        
+        // Set the consideredForCosting based on the selected expense item's default setting
+        current.setConsideredForCosting(current.getItem().isConsideredForCosting());
+    }
+
+    public void updateExpenseCosting(BillItem expense) {
+        if (expense == null) {
+            return;
+        }
+        
+        // Update the expense item in the database
+        getBillItemFacade().edit(expense);
+        
+        // Recalculate expense totals
+        recalculateExpenseTotals();
+        
+        // Recalculate entire bill totals with updated expense categorization
+        calculateBillTotalsFromItems();
+        
+        // Distribute proportional bill values (including expenses considered for costing) to line items
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        
+        // Persist the updated bill
+        if (getBill().getId() != null) {
+            getBillFacade().edit(getBill());
+        }
+    }
+
+    private void recalculateExpenseTotals() {
+        System.out.println("=== DEBUG: recalculateExpenseTotals() START ===");
+        if (getBill() == null) {
+            System.out.println("DEBUG: Bill is null, returning");
+            return;
+        }
+
+        double billExpensesConsideredTotal = 0.0;
+        double billExpensesNotConsideredTotal = 0.0;
+        double billExpensesTotal = 0.0;
+
+        System.out.println("DEBUG: Controller billExpenses count: " + (getBillExpenses() != null ? getBillExpenses().size() : 0));
+        System.out.println("DEBUG: Bill entity billExpenses count: " + (getBill().getBillExpenses() != null ? getBill().getBillExpenses().size() : 0));
+        
+        // Calculate totals from bill-level expense BillItems (use Bill entity's list)
+        if (getBill().getBillExpenses() != null && !getBill().getBillExpenses().isEmpty()) {
+            for (BillItem expense : getBill().getBillExpenses()) {
+                System.out.println("DEBUG: Processing expense: " + expense.getItem().getName() + 
+                                 ", NetValue: " + expense.getNetValue() + 
+                                 ", ConsideredForCosting: " + expense.isConsideredForCosting());
+                billExpensesTotal += expense.getNetValue();
+                if (expense.isConsideredForCosting()) {
+                    billExpensesConsideredTotal += expense.getNetValue();
+                } else {
+                    billExpensesNotConsideredTotal += expense.getNetValue();
+                }
+            }
+        }
+
+        System.out.println("DEBUG: Calculated totals - Total: " + billExpensesTotal + 
+                         ", Considered: " + billExpensesConsideredTotal + 
+                         ", NotConsidered: " + billExpensesNotConsideredTotal);
+
+        // Update the bill's expense totals
+        getBill().setExpenseTotal(billExpensesTotal);
+        getBill().setExpensesTotalConsideredForCosting(billExpensesConsideredTotal);
+        getBill().setExpensesTotalNotConsideredForCosting(billExpensesNotConsideredTotal);
+        
+        System.out.println("DEBUG: Bill.expenseTotal set to: " + getBill().getExpenseTotal());
+        System.out.println("DEBUG: Bill.netTotal before service call: " + getBill().getNetTotal());
+        
+        // Also update BillFinanceDetails if it exists
+        if (getBill().getBillFinanceDetails() != null) {
+            getBill().getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(billExpensesTotal));
+            getBill().getBillFinanceDetails().setBillExpensesConsideredForCosting(BigDecimal.valueOf(billExpensesConsideredTotal));
+            getBill().getBillFinanceDetails().setBillExpensesNotConsideredForCosting(BigDecimal.valueOf(billExpensesNotConsideredTotal));
+            System.out.println("DEBUG: BillFinanceDetails updated");
+        } else {
+            System.out.println("DEBUG: BillFinanceDetails is null");
+        }
+        
+        System.out.println("=== DEBUG: recalculateExpenseTotals() END ===");
+    }
+
+    public double getBillExpensesTotal() {
+        if (getBill().getBillExpenses() == null || getBill().getBillExpenses().isEmpty()) {
+            return 0.0;
+        }
+        
+        double total = 0.0;
+        for (BillItem expense : getBill().getBillExpenses()) {
+            total += expense.getNetValue();
+        }
+        return total;
+    }
+
 // ChatGPT contributed - Calculates true profit margin (%) based on unit sale and cost rates
     // ChatGPT contributed - Calculates profit margin (%) correctly based on item type (Amp or Ampp)
     public double calculateProfitMargin(BillItem bi) {
@@ -578,6 +677,24 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         getCurrentExpense().setSearialNo(getBillExpenses().size());
         getBillExpenses().add(currentExpense);
+        
+        // IMPORTANT: Also add to the Bill entity's expense list
+        getBill().getBillExpenses().add(currentExpense);
+        
+        // Recalculate expense totals after adding new expense
+        recalculateExpenseTotals();
+        
+        // Recalculate entire bill totals with updated expense categorization
+        calculateBillTotalsFromItems();
+        
+        // Distribute proportional bill values (including expenses considered for costing) to line items
+        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
+        
+        // Persist the updated bill
+        if (getBill().getId() != null) {
+            getBillFacade().edit(getBill());
+        }
+        
         currentExpense = null;
 
     }
@@ -820,7 +937,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
+        System.out.println("=== DEBUG: calculateBillTotalsFromItems() START ===");
+        System.out.println("DEBUG: Bill.netTotal before service: " + getBill().getNetTotal());
+        System.out.println("DEBUG: Bill.expenseTotal before service: " + getBill().getExpenseTotal());
+        System.out.println("DEBUG: BillItems count: " + (getBillItems() != null ? getBillItems().size() : 0));
+        
         pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getBill(), getBillItems());
+        
+        System.out.println("DEBUG: Bill.netTotal after service: " + getBill().getNetTotal());
+        System.out.println("DEBUG: Bill.expenseTotal after service: " + getBill().getExpenseTotal());
+        System.out.println("=== DEBUG: calculateBillTotalsFromItems() END ===");
     }
 
     public BilledBill getBill() {
