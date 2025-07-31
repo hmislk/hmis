@@ -634,7 +634,7 @@ public class BillBhtController implements Serializable {
                     bt, sessionController.getDepartment(), BillTypeAtomic.INWARD_SERVICE_BILL);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            List<BillTypeAtomic> types = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBillTypes();
+            List<BillTypeAtomic> types = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
             deptId = bnb.departmentBillNumberGeneratorYearly(bt, types);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
