@@ -2095,7 +2095,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             // Use batch bill types for batch bills to maintain separate numbering series
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
             System.out.println("DEBUG: OPD and Inpatient batch bill types = " + opdAndInpatientBills);
-            batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(getSessionController().getDepartment(), opdAndInpatientBills);
+            batchBillId = getBillNumberGenerator().departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
         } else {
             System.out.println("DEBUG: Using default batch bill number generation");
             if (billNumberByYear) {
@@ -2254,7 +2254,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             System.out.println("DEBUG: Using departmentBillNumberGeneratorYearly with OPD and Inpatient bill types");
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
             System.out.println("DEBUG: OPD and Inpatient individual bill types = " + opdAndInpatientBills);
-            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
+            deptId = getBillNumberGenerator().departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(sessionController.getDepartment(), opdAndInpatientBills);
         } else {
             System.out.println("DEBUG: Using default bill number generation for individual bill");
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
