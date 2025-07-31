@@ -1,5 +1,1 @@
-feat: Add privilege warning for OPD package bill cancel
-
-Adds a warning message to the OPD package bill cancellation page for users who do not have the required privileges. This prevents a blank page from being displayed.
-
-Closes #13604
+Refactor: Remove System.out.println statements from PharmacyCostingService.java
