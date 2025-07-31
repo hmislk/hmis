@@ -170,7 +170,6 @@ public class PharmacyCostingService {
      * @param bill
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
-        System.out.println("=== DEBUG: distributeProportionalBillValuesToItems() START ===");
         if (bill == null) {
             System.out.println("DEBUG: Bill is null, returning");
             return;
@@ -179,8 +178,6 @@ public class PharmacyCostingService {
         if (bill.getBillFinanceDetails() == null) {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
-
-        System.out.println("DEBUG: Bill.expensesTotalConsideredForCosting: " + bill.getExpensesTotalConsideredForCosting());
         
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
@@ -611,7 +608,7 @@ public class PharmacyCostingService {
         bfd.setLineNetTotal(lineNetTotal);
         
         System.out.println("DEBUG: SERVICE - BillFinanceDetails.netTotal set to: " + bfd.getNetTotal());
-        System.out.println("=== DEBUG: SERVICE calculateBillTotalsFromItemsForPurchases() END ===");
+        
     }
 
     public void calculateBillTotalsFromItemsForTransferOuts(Bill bill, List<BillItem> billItems) {

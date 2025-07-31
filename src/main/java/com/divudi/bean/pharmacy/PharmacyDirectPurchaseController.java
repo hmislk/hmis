@@ -102,10 +102,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void addItem() {
-        System.out.println("addItem");
-
         Item item = getCurrentBillItem().getItem();
-        System.out.println("item = " + item);
         BillItemFinanceDetails f = getCurrentBillItem().getBillItemFinanceDetails();
         PharmaceuticalBillItem pbi = getCurrentBillItem().getPharmaceuticalBillItem();
 
@@ -114,18 +111,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
 
-        System.out.println("1");
         if (f == null || pbi == null) {
             JsfUtil.addErrorMessage("Invalid internal structure. Cannot proceed.");
             return;
         }
-        System.out.println("2");
 
         if (BigDecimalUtil.isNullOrZero(f.getQuantity()) || BigDecimalUtil.isNegative(f.getQuantity())) {
             JsfUtil.addErrorMessage("Please enter quantity");
             return;
         }
-        System.out.println("3");
 
         if (BigDecimalUtil.isNullOrZero(f.getLineGrossRate()) || BigDecimalUtil.isNegative(f.getLineGrossRate())) {
             JsfUtil.addErrorMessage("Please enter the purchase rate");
@@ -148,18 +142,15 @@ public class PharmacyDirectPurchaseController implements Serializable {
                 return;
             }
         }
-        System.out.println("4");
         if (getBill().getId() == null) {
             getBillFacade().create(getBill());
         }
 
         pharmacyCostingService.recalculateFinancialsBeforeAddingBillItem(f);
-        System.out.println("5");
         BigDecimal qty = BigDecimalUtil.valueOrZero(f.getQuantity());
         BigDecimal freeQty = BigDecimalUtil.valueOrZero(f.getFreeQuantity());
 
         if (item instanceof Ampp) {
-            System.out.println("ampp");
             BigDecimal unitsPerPack = Optional.ofNullable(f.getUnitsPerPack())
                     .orElse(BigDecimal.ONE);
             BigDecimal qtyUnits = BigDecimalUtil.multiply(f.getQuantity(), unitsPerPack);
@@ -179,7 +170,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
         } else {
-            System.out.println("not ampp");
             // AMP: no packs; assign both units and packs as same
             pbi.setQty(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
             pbi.setQtyPacks(BigDecimalUtil.valueOrZero(f.getQuantityByUnits()).doubleValue());
@@ -198,10 +188,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
             pbi.setRetailRateInUnit(BigDecimalUtil.valueOrZero(f.getRetailSaleRatePerUnit()).doubleValue());
 
         }
-        System.out.println("8");
         getCurrentBillItem().setSearialNo(getBillItems().size());
         getBillItems().add(currentBillItem);
-        System.out.println("9 = " + 9);
 
         currentBillItem = null;
         pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
@@ -462,9 +450,7 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     private void recalculateExpenseTotals() {
-        System.out.println("=== DEBUG: recalculateExpenseTotals() START ===");
         if (getBill() == null) {
-            System.out.println("DEBUG: Bill is null, returning");
             return;
         }
 
@@ -472,15 +458,10 @@ public class PharmacyDirectPurchaseController implements Serializable {
         double billExpensesNotConsideredTotal = 0.0;
         double billExpensesTotal = 0.0;
 
-        System.out.println("DEBUG: Controller billExpenses count: " + (getBillExpenses() != null ? getBillExpenses().size() : 0));
-        System.out.println("DEBUG: Bill entity billExpenses count: " + (getBill().getBillExpenses() != null ? getBill().getBillExpenses().size() : 0));
         
         // Calculate totals from bill-level expense BillItems (use Bill entity's list)
         if (getBill().getBillExpenses() != null && !getBill().getBillExpenses().isEmpty()) {
             for (BillItem expense : getBill().getBillExpenses()) {
-                System.out.println("DEBUG: Processing expense: " + expense.getItem().getName() + 
-                                 ", NetValue: " + expense.getNetValue() + 
-                                 ", ConsideredForCosting: " + expense.isConsideredForCosting());
                 billExpensesTotal += expense.getNetValue();
                 if (expense.isConsideredForCosting()) {
                     billExpensesConsideredTotal += expense.getNetValue();
@@ -490,29 +471,21 @@ public class PharmacyDirectPurchaseController implements Serializable {
             }
         }
 
-        System.out.println("DEBUG: Calculated totals - Total: " + billExpensesTotal + 
-                         ", Considered: " + billExpensesConsideredTotal + 
-                         ", NotConsidered: " + billExpensesNotConsideredTotal);
 
         // Update the bill's expense totals
         getBill().setExpenseTotal(billExpensesTotal);
         getBill().setExpensesTotalConsideredForCosting(billExpensesConsideredTotal);
         getBill().setExpensesTotalNotConsideredForCosting(billExpensesNotConsideredTotal);
         
-        System.out.println("DEBUG: Bill.expenseTotal set to: " + getBill().getExpenseTotal());
-        System.out.println("DEBUG: Bill.netTotal before service call: " + getBill().getNetTotal());
         
         // Also update BillFinanceDetails if it exists
         if (getBill().getBillFinanceDetails() != null) {
             getBill().getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(billExpensesTotal));
             getBill().getBillFinanceDetails().setBillExpensesConsideredForCosting(BigDecimal.valueOf(billExpensesConsideredTotal));
             getBill().getBillFinanceDetails().setBillExpensesNotConsideredForCosting(BigDecimal.valueOf(billExpensesNotConsideredTotal));
-            System.out.println("DEBUG: BillFinanceDetails updated");
         } else {
-            System.out.println("DEBUG: BillFinanceDetails is null");
         }
         
-        System.out.println("=== DEBUG: recalculateExpenseTotals() END ===");
     }
 
     public double getBillExpensesTotal() {
@@ -763,15 +736,6 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
             PharmaceuticalBillItem pbi = i.getPharmaceuticalBillItem();
 
-            System.out.println("Purchase Rate: " + pbi.getPurchaseRate());
-            System.out.println("Purchase Rate (Pack): " + pbi.getPurchaseRatePack());
-
-            System.out.println("Retail Rate: " + pbi.getRetailRate());
-            System.out.println("Retail Rate (Pack): " + pbi.getRetailRatePack());
-            System.out.println("Retail Rate in Unit: " + pbi.getRetailRateInUnit());
-
-            System.out.println("Purchase Value: " + pbi.getPurchaseValue());
-            System.out.println("Retail Pack Value: " + pbi.getRetailPackValue());
 
             i.setPharmaceuticalBillItem(null);
             i.setCreatedAt(Calendar.getInstance().getTime());
@@ -937,16 +901,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
     }
 
     public void calculateBillTotalsFromItems() {
-        System.out.println("=== DEBUG: calculateBillTotalsFromItems() START ===");
-        System.out.println("DEBUG: Bill.netTotal before service: " + getBill().getNetTotal());
-        System.out.println("DEBUG: Bill.expenseTotal before service: " + getBill().getExpenseTotal());
-        System.out.println("DEBUG: BillItems count: " + (getBillItems() != null ? getBillItems().size() : 0));
-        
         pharmacyCostingService.calculateBillTotalsFromItemsForPurchases(getBill(), getBillItems());
         
-        System.out.println("DEBUG: Bill.netTotal after service: " + getBill().getNetTotal());
-        System.out.println("DEBUG: Bill.expenseTotal after service: " + getBill().getExpenseTotal());
-        System.out.println("=== DEBUG: calculateBillTotalsFromItems() END ===");
     }
 
     public BilledBill getBill() {
