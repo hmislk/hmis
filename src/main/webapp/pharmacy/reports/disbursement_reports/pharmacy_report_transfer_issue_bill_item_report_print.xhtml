@@ -30,7 +30,7 @@
                                         style="width: 200px"
                                         icon="fa fa-arrow-left"
                                         class="ui-button-warning"
-                                        action="pharmacy_report_transfer_issue_bill_item?faces-redirect=true;" >
+                                        action="pharmacy_report_transfer_issue_bill_item?faces-redirect=true" >
                                     </p:commandButton>
                                 </div>
 
@@ -178,34 +178,34 @@
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <ui:repeat value="#{reportsTransfer.transferItems}" var="i">
+                                            <ui:repeat value="#{reportsTransfer.transferIssueBillItemDtos}" var="i">
                                                 <tr>
                                                     <td style="width: 8mm;" >
-                                                        <h:outputText value="#{i.bill.deptId}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.deptId}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 25mm; text-align: left;">
-                                                        <h:outputText value="#{i.bill.createdAt}" style="margin-left: 1mm;">
+                                                        <h:outputText value="#{i.createdAt}" style="margin-left: 1mm;">
                                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 67mm; text-align: left;">
-                                                        <h:outputText value="#{i.item.name}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.itemName}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: left;">
-                                                        <h:outputText value="#{i.item.code}" style="margin-left: 1mm;"/>
+                                                        <h:outputText value="#{i.itemCode}" style="margin-left: 1mm;"/>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.pharmaceuticalBillItem.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.qty}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.purchaseRate}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00"/>
                                                         </h:outputText>
                                                     </td>
                                                     <td style="width: 17mm; text-align: right;">
-                                                        <h:outputText value="#{i.pharmaceuticalBillItem.itemBatch.purcahseRate * i.pharmaceuticalBillItem.qty}" style="margin-right: 1mm;">
+                                                        <h:outputText value="#{i.purchaseValue}" style="margin-right: 1mm;">
                                                             <f:convertNumber pattern="#,##0.00" />
                                                         </h:outputText>
                                                     </td>

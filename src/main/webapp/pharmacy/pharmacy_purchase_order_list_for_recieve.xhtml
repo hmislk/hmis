@@ -121,13 +121,23 @@
                                 width="6em">
                                 <div class="row">
                                     <div class="d-flex gap-2 mb-1">
-                                        <p:commandButton 
+                                        <p:commandButton
                                             ajax="false"
                                             value="Receive"
                                             class="w-100 ui-button-warning"
-                                            action="#{grnController.navigateToResive()}" 
+                                            rendered="#{!configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                            action="#{grnController.navigateToResive()}"
                                             disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.approveBill}" value="#{p}"/>
+                                        </p:commandButton>
+                                        <p:commandButton
+                                            ajax="false"
+                                            value="Receive"
+                                            class="w-100 ui-button-warning"
+                                            rendered="#{configOptionApplicationController.getBooleanValueByKey('Manage Costing', true)}"
+                                            action="#{grnCostingController.navigateToResiveCosting()}"
+                                            disabled="#{p.cancelled or p.billClosed}">
+                                            <f:setPropertyActionListener target="#{grnCostingController.approveBill}" value="#{p}"/>
                                         </p:commandButton>
                                     </div>
                                     <div class="col-md-12">
@@ -147,7 +157,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Close" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.closeSelectedPurchesOrder()}" 
+                                            action="#{grnController.closeSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled or p.billClosed}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>
@@ -158,7 +168,7 @@
                                             class="w-100 ui-button-success my-1"
                                             value="PO Re-Open" 
                                             rendered="#{configOptionApplicationController.getBooleanValueByKey('Allow Pharmacy Purchase Order Closing', true)}"
-                                            action="#{grnController.openSelectedPurchesOrder()}" 
+                                            action="#{grnController.openSelectedPurchaseOrder()}"
                                             disabled="#{p.cancelled}">
                                             <f:setPropertyActionListener target="#{grnController.closeBill}" value="#{p}"/>
                                         </p:commandButton>

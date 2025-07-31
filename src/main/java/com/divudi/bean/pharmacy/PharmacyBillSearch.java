@@ -43,6 +43,10 @@ import com.divudi.core.facade.BillFeePaymentFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.ItemBatchFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
+import com.divudi.core.facade.EmailFacade;
+import com.divudi.ejb.EmailManagerEjb;
+import com.divudi.core.entity.AppEmail;
+import com.divudi.core.data.MessageType;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.entity.PreBill;
@@ -108,6 +112,10 @@ public class PharmacyBillSearch implements Serializable {
     private EjbApplication ejbApplication;
     @EJB
     private BillFeePaymentFacade billFeePaymentFacade;
+    @EJB
+    private EmailFacade emailFacade;
+    @EJB
+    private EmailManagerEjb emailManagerEjb;
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Controllers">
     @Inject
@@ -133,6 +141,7 @@ public class PharmacyBillSearch implements Serializable {
     private double refundAmount;
     private String txtSearch;
     private String comment;
+    private String emailRecipient;
     private Bill bill;
     private PaymentMethod paymentMethod;
     private PaymentScheme paymentScheme;
@@ -151,6 +160,8 @@ public class PharmacyBillSearch implements Serializable {
     private List<BillFee> billFees;
     private List<BillItem> tempbillItems;
     private List<Bill> searchRetaiBills;
+    // Bill id used when navigating directly from DTO tables
+    private Long billId;
 
     // </editor-fold>
     // <editor-fold defaultstate="collapsed" desc="Constructors">
@@ -162,6 +173,14 @@ public class PharmacyBillSearch implements Serializable {
             return null;
         }
         return "/inward/pharmacy_cancel_bill_retail_bht?faces-redirect=true";
+    }
+
+    public String navigateToReprintPharmacyPurchaseOrder() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No purchase order is selected to view");
+            return null;
+        }
+        return "/pharmacy/pharmacy_reprint_po?faces-redirect=true";
     }
 
     public String navigateToImportBillsFromJson() {
@@ -187,6 +206,17 @@ public class PharmacyBillSearch implements Serializable {
 
     public String navigatePharmacyReprintPo() {
         return "pharmacy_reprint_po?faces-redirect=true";
+    }
+
+    private boolean isManageCostingEnabled() {
+        return configOptionApplicationController.getBooleanValueByKey("Manage Costing", true);
+    }
+
+    public String navigateToPharmacyGrnReprint() {
+        if (isManageCostingEnabled()) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
     public String navigateToViewPharmacyTransferReqest() {
@@ -242,6 +272,23 @@ public class PharmacyBillSearch implements Serializable {
             JsfUtil.addErrorMessage("No Bill Selected");
             return null;
         }
+        return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
+    }
+
+    /**
+     * Used by DTO reports where only the bill id is available.
+     */
+    public String navigateToReprintPharmacyTransferIssueById() {
+        if (billId == null) {
+            JsfUtil.addErrorMessage("No Bill Selected");
+            return null;
+        }
+        Bill tb = billBean.fetchBillWithItemsAndFees(billId);
+        if (tb == null) {
+            JsfUtil.addErrorMessage("Bill not found");
+            return null;
+        }
+        bill = tb;
         return "/pharmacy/pharmacy_reprint_transfer_isssue?faces-redirect=true";
     }
 
@@ -359,7 +406,7 @@ public class PharmacyBillSearch implements Serializable {
             return "";
         }
 
-        return "/inward/bht_bill_cancel?faces-redirect=true;";
+        return "/inward/bht_bill_cancel?faces-redirect=true";
     }
 
     public void markAsChecked() {
@@ -921,7 +968,10 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String navigateToViewPharmacyGrn() {
-        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true;";
+        if (isManageCostingEnabled()) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+        return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
     public String navigateToViewPurchaseOrder() {
@@ -938,6 +988,11 @@ public class PharmacyBillSearch implements Serializable {
             tmp += tmp2;
         }
         bill.setTransTotalSaleValue(tmp);
+
+        if (isManageCostingEnabled()) {
+            return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+        }
+
         return "/pharmacy/pharmacy_reprint_grn?faces-redirect=true";
     }
 
@@ -2095,14 +2150,24 @@ public class PharmacyBillSearch implements Serializable {
 
     @Inject
     ConfigOptionApplicationController configOptionApplicationController;
+    
+    private boolean cancellationStarted;
 
     public void pharmacyRetailCancelBillWithStock() throws ParseException {
+        if(cancellationStarted){
+            JsfUtil.addErrorMessage("Cancellation already started");
+            return;
+        }
+        cancellationStarted = true;
+        
         if (getBill() != null && getBill().getId() != null && getBill().getId() != 0) {
             if (pharmacyErrorCheck()) {
+                cancellationStarted = false;
                 return;
             }
 
             if (getBill().getReferenceBill() == null) {
+                cancellationStarted = false;
                 return;
             }
             if (!webUserController.hasPrivilege("Admin")) {
@@ -2112,6 +2177,7 @@ public class PharmacyBillSearch implements Serializable {
                     Date today = formatter.parse(formatter.format(new Date()));
                     if (!createdDate.equals(today)) {
                         JsfUtil.addErrorMessage("Settled bills cancelled can be done only within settled day.");
+                        cancellationStarted = false;
                         return;
                     }
 
@@ -2119,10 +2185,12 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             if (getBill().getReferenceBill().getBillType() != BillType.PharmacyPre && getBill().getReferenceBill().getBillType() != BillType.PharmacyWholesalePre) {
+                cancellationStarted = false;
                 return;
             }
 
             if (checkDepartment(getBill())) {
+                cancellationStarted = false;
                 return;
             }
 
@@ -2170,8 +2238,10 @@ public class PharmacyBillSearch implements Serializable {
             }
 
             printPreview = true;
+            cancellationStarted = false;
 
         } else {
+            cancellationStarted = false;
             JsfUtil.addErrorMessage("No Bill to cancel");
         }
     }
@@ -2735,6 +2805,7 @@ public class PharmacyBillSearch implements Serializable {
             cb.setInsId(getBillNumberBean().institutionBillNumberGenerator(getSessionController().getInstitution(), cb.getBillType(), BillClassType.CancelledBill, BillNumberSuffix.PHTRCAN));
             cb.setBackwardReferenceBill(getBill().getBackwardReferenceBill());
             cb.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RECEIVE_CANCELLED);
+            cb.setPaymentMethod(PaymentMethod.None);
             cb.setReferenceBill(getBill());
             if (cb.getId() == null) {
                 getBillFacade().create(cb);
@@ -3365,31 +3436,35 @@ public class PharmacyBillSearch implements Serializable {
     }
 
     public String viewBill() {
+        boolean manageCosting = isManageCostingEnabled();
 
         if (bill != null) {
             switch (bill.getBillType()) {
                 case PharmacyPre:
                 case PharmacyBhtPre:
                 case PharmacyWholesalePre:
-                    return "pharmacy_reprint_bill_sale";
+                    return "pharmacy_reprint_bill_sale?faces-redirect=true";
                 case PharmacyIssue:
-                    return "pharmacy_reprint_bill_unit_issue";
+                    return "pharmacy_reprint_bill_unit_issue?faces-redirect=true";
                 case PharmacyTransferIssue:
-                    return "pharmacy_reprint_transfer_isssue";
+                    return "pharmacy_reprint_transfer_isssue?faces-redirect=true";
                 case PharmacyTransferReceive:
-                    return "pharmacy_reprint_transfer_receive";
+                    return "pharmacy_reprint_transfer_receive?faces-redirect=true";
                 case PharmacyPurchaseBill:
-                    return "pharmacy_reprint_purchase";
+                    return "pharmacy_reprint_purchase?faces-redirect=true";
                 case PharmacyGrnBill:
-                    return "pharmacy_reprint_grn";
+                    if (manageCosting) {
+                        return "/pharmacy/pharmacy_reprint_grn_with_costing?faces-redirect=true";
+                    }
+                    return "pharmacy_reprint_grn?faces-redirect=true";
                 case PharmacyGrnReturn:
-                    return "pharmacy_reprint_grn_return";
+                    return "pharmacy_reprint_grn_return?faces-redirect=true";
                 case PurchaseReturn:
-                    return "pharmacy_reprint_purchase_return";
+                    return "pharmacy_reprint_purchase_return?faces-redirect=true";
                 case PharmacyAdjustment:
-                    return "pharmacy_reprint_adjustment";
+                    return "pharmacy_reprint_adjustment?faces-redirect=true";
                 default:
-                    return "pharmacy_reprint_bill_sale";
+                    return "pharmacy_reprint_bill_sale?faces-redirect=true";
             }
         } else {
 
@@ -3600,6 +3675,132 @@ public class PharmacyBillSearch implements Serializable {
 
     public void setFile(UploadedFile file) {
         this.file = file;
+    }
+
+    public void prepareEmailDialog() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        
+        // Set default email if available
+        if (bill.getToInstitution() != null && bill.getToInstitution().getEmail() != null) {
+            emailRecipient = bill.getToInstitution().getEmail();
+        } else {
+            emailRecipient = "";
+        }
+    }
+
+    public void sendPurchaseOrderEmail() {
+        if (bill == null) {
+            JsfUtil.addErrorMessage("No Bill");
+            return;
+        }
+        
+        if (emailRecipient == null || emailRecipient.trim().isEmpty()) {
+            JsfUtil.addErrorMessage("Please enter recipient email");
+            return;
+        }
+
+        String recipient = emailRecipient.trim();
+        if (!CommonFunctions.isValidEmail(recipient)) {
+            JsfUtil.addErrorMessage("Please enter a valid email address");
+            return;
+        }
+
+        String body = generatePurchaseOrderHtml();
+        if (body == null) {
+            JsfUtil.addErrorMessage("Could not generate email body");
+            return;
+        }
+
+        AppEmail email = new AppEmail();
+        email.setCreatedAt(new Date());
+        email.setCreater(sessionController.getLoggedUser());
+        email.setReceipientEmail(recipient);
+        email.setMessageSubject("Purchase Order");
+        email.setMessageBody(body);
+        email.setDepartment(sessionController.getLoggedUser().getDepartment());
+        email.setInstitution(sessionController.getLoggedUser().getInstitution());
+        email.setBill(bill);
+        email.setMessageType(MessageType.Marketing);
+        email.setSentSuccessfully(false);
+        email.setPending(true);
+        emailFacade.create(email);
+
+        try {
+            boolean success = emailManagerEjb.sendEmail(
+                    java.util.Collections.singletonList(recipient),
+                    body,
+                    "Purchase Order",
+                    true
+            );
+            email.setSentSuccessfully(success);
+            email.setPending(!success);
+            if (success) {
+                email.setSentAt(new Date());
+                JsfUtil.addSuccessMessage("Email Sent Successfully");
+            } else {
+                JsfUtil.addErrorMessage("Sending Email Failed");
+            }
+            emailFacade.edit(email);
+        } catch (Exception ex) {
+            JsfUtil.addErrorMessage("Sending Email Failed");
+        }
+    }
+
+    private String generatePurchaseOrderHtml() {
+        try {
+            javax.faces.context.FacesContext fc = javax.faces.context.FacesContext.getCurrentInstance();
+            javax.faces.component.UIComponent comp = fc.getViewRoot().findComponent("gpBillPreview");
+            if (comp == null) {
+                return null;
+            }
+            java.io.StringWriter sw = new java.io.StringWriter();
+            javax.faces.context.ResponseWriter original = fc.getResponseWriter();
+            javax.faces.context.ResponseWriter rw = fc.getRenderKit().createResponseWriter(sw, null, "UTF-8");
+            fc.setResponseWriter(rw);
+            comp.encodeAll(fc);
+            fc.setResponseWriter(original);
+            return sw.toString();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public EmailFacade getEmailFacade() {
+        return emailFacade;
+    }
+
+    public void setEmailFacade(EmailFacade emailFacade) {
+        this.emailFacade = emailFacade;
+    }
+
+    public EmailManagerEjb getEmailManagerEjb() {
+        return emailManagerEjb;
+    }
+
+    public void setEmailManagerEjb(EmailManagerEjb emailManagerEjb) {
+        this.emailManagerEjb = emailManagerEjb;
+    }
+
+    public String getEmailRecipient() {
+        return emailRecipient;
+    }
+
+    public void setEmailRecipient(String emailRecipient) {
+        this.emailRecipient = emailRecipient;
+    }
+
+    /**
+     * Bill id used by DTO report tables to fetch a bill directly.
+     */
+    public Long getBillId() {
+        return billId;
+    }
+
+    public void setBillId(Long billId) {
+        this.billId = billId;
     }
 
 }

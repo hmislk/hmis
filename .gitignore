@@ -10,3 +10,10 @@
 .idea
 .vscode
 nb-configuration.xml
+*.stackdump
+
+# Temporary files
+/tmp/
+
+# Claude Code local settings
+.claude/settings.local.json

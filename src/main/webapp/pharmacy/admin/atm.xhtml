@@ -1,122 +1,82 @@
 <?xml version='1.0' encoding='UTF-8' ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:h="http://xmlns.jcp.org/jsf/html"
-      xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:se="http://xmlns.jcp.org/jsf/composite/pharmacy/search">
-    <h:body>
-        <ui:composition template="/pharmacy/admin/index.xhtml">
-            <ui:define name="subcontent">
-                <h:form>
-                    <p:growl id="msg"/>
-                    <p:focus id="selectFocus" for="lstSelect" />
-                    <p:focus id="detailFocus" for="gpDetail" />
-                    <p:panel >
-                        <f:facet name="header" >
-                            <h:outputText value="Manage ATMs" ></h:outputText>
-                        </f:facet>
-
-
-                        <div class="row" >
-                            <div class="col-6" >
-                                <p:commandButton 
-                                    id="btnAdd" 
-                                    value="Add" 
-                                    action="#{atmController.prepareAdd()}" 
-                                    class="ui-button-success m-1 w-25" 
-                                    update="lstSelect gpDetail" 
-                                    icon="fa fa-plus"
-                                    process="btnAdd">
-                                </p:commandButton>
-                                <p:commandButton 
-                                    id="btnDelete" 
-                                    icon="fa fa-trash"
-                                    update="lstSelect gpDetail msg" process="btnDelete"
-
-                                    onclick="if (!confirm('Are you sure you want to delete this record?'))
-                                                return false;" 
-                                    action="#{atmController.delete()}"  
-                                    value="Delete" 
-                                    class="ui-button-danger m-1 w-25" >
-                                </p:commandButton>
-                                <p:selectOneListbox id="lstSelect" 
-                                                    filter="true"
-                                                    filterMatchMode="contains"
-                                                    value="#{atmController.current}">
-                                    <f:selectItems value="#{atmController.items}" 
-                                                   var="myItem" 
-                                                   itemValue="#{myItem}" 
-                                                   itemLabel="#{myItem.name}"></f:selectItems>
-                                    <p:ajax update="gpDetail" process="lstSelect" >
-                                    </p:ajax>
-                                </p:selectOneListbox>
-
-                            </div>
-                            <div class="col-6" >
-                                <p:panel header="Manage ATM">
-                                    <h:panelGrid columns="2" id="gpDetail" class="w-100" >
-                                        <p:outputLabel for="txtName" class="form-label w-100">Name</p:outputLabel>
-                                        <h:inputText 
-                                            autocomplete="off" 
-                                            id="txtName" 
-                                            value="#{atmController.current.name}" 
-                                            required="true" 
-                                            class="form-control" 
-                                            requiredMessage="Name is required"
-                                            ></h:inputText>
-
-                                        <p:outputLabel
-                                            for="acVtm" 
-                                            class="form-label w-100">VTM</p:outputLabel>
-
-
-                                        <p:autoComplete
-                                            id="acVtm"
-                                            class="w-100"
-                                            inputStyleClass="w-100"
-                                            completeMethod="#{vtmController.completeVtm}" 
-                                            value="#{atmController.current.vtm}" 
-                                            var="v" 
-                                            itemLabel="#{v.name}" 
-                                            itemValue="#{v}"
-                                            required="true"
-                                            requiredMessage="VTM is needed"></p:autoComplete>
-
-
-                                        <p:outputLabel for="txtDes" class="form-label w-100">Description</p:outputLabel>
-                                        <h:inputTextarea 
-                                            id="txtDes" 
-                                            value="#{atmController.current.descreption}" 
-                                            required="false" 
-                                            class="form-control" 
-                                            ></h:inputTextarea>
-                                    </h:panelGrid>
-
-
-                                    <p:commandButton
-                                        id="btnSave" 
-                                        value="Save"  
-                                        action="#{atmController.saveSelected()}" 
-                                        class=" m-1 ui-button-warning w-25"
-                                        icon="fas fa-save"
-                                        process="gpDetail btnSave" 
-                                        update="lstSelect msg"
-                                        >
-                                    </p:commandButton>
-                                </p:panel>
-                            </div>
+<!DOCTYPE composition PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+                template="/pharmacy/admin/index.xhtml"
+                xmlns:h="http://xmlns.jcp.org/jsf/html"
+                xmlns:f="http://xmlns.jcp.org/jsf/core"
+                xmlns="http://www.w3.org/1999/xhtml"
+                xmlns:p="http://primefaces.org/ui">
+    <ui:define name="subcontent">
+        <h:panelGroup>
+            <h:form>
+                <p:growl id="msg" />
+                <p:focus id="selectFocus" context="lstSelect" />
+                <p:focus id="detailFocus" context="gpDetail" />
+                <p:panel header="Manage ATMs">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <p:commandButton id="btnAdd" value="Add" icon="fa fa-plus" action="#{atmController.prepareAdd()}"
+                                             class=" m-1 ui-button-success w-25" update="lstSelect gpDetail btnEdit btnDelete"
+                                             process="btnAdd" disabled="#{atmController.editable}" />
+                            <p:commandButton id="btnEdit" value="Edit" icon="fas fa-edit" action="#{atmController.edit()}"
+                                             class=" m-1 ui-button-info w-25" update="lstSelect gpDetail btnAdd btnDelete"
+                                             process="btnEdit" disabled="#{atmController.editable or atmController.current.id eq null}" />
+                            <p:commandButton id="btnDelete" value="Delete" icon="fas fa-trash"
+                                             onclick="if (!confirm('Are you sure you want to delete this record?'))
+                                                         return false;"
+                                             action="#{atmController.delete()}" class=" m-1 ui-button-danger w-25"
+                                             update="lstSelect gpDetail msg" process="btnDelete" disabled="#{atmController.editable}" />
+                            <p:selectOneListbox id="lstSelect" value="#{atmController.current}" filter="true" filterMatchMode="contains"
+                                                class="w-100" disabled="#{atmController.editable}">
+                                <f:selectItems value="#{atmController.items}" var="myItem" itemValue="#{myItem}" itemLabel="#{myItem.name}" />
+                                <p:ajax update="gpDetail btnEdit" process="lstSelect" />
+                            </p:selectOneListbox>
                         </div>
-
-                    </p:panel>
-
-                </h:form>
-
-
-
-
-            </ui:define>
-        </ui:composition>
-    </h:body>
-</html>
+                        <div class="col-md-7">
+                            <p:panel>
+                                <p:panelGrid id="gpDetail" columns="1" class="w-100">
+                                    <p:panelGrid id="gpDetailText" columns="2" columnClasses="w-25 , w-75" class="w-100">
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                        <p:outputLabel for="txtName" class="form-label">Name</p:outputLabel>
+                                        <h:inputText id="txtName" autocomplete="off" value="#{atmController.current.name}" required="true"
+                                                     class="form-control" requiredMessage="Name is required"
+                                                     disabled="#{!atmController.editable}" />
+                                        <!-- PrimeFaces automatically adds asterisk (*) for required fields -->
+                                        <p:outputLabel for="acVtm" class="form-label">VTM</p:outputLabel>
+                                        <p:autoComplete id="acVtm" class="w-100" inputStyleClass="w-100"
+                                                        completeMethod="#{vtmController.completeVtm}" value="#{atmController.current.vtm}"
+                                                        var="v" itemLabel="#{v.name}" itemValue="#{v}" required="true"
+                                                        requiredMessage="VTM is needed" disabled="#{!atmController.editable}" />
+                                        <h:outputText value="Type" />
+                                        <p:selectOneMenu  
+                                            value="#{atmController.current.departmentType}" 
+                                            class="w-100"
+                                            filter="true"
+                                            disabled="#{!atmController.editable}" 
+                                            filterMatchMode="contains">
+                                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                                            <f:selectItems value="#{enumController.departmentType}" ></f:selectItems>
+                                        </p:selectOneMenu>
+                                        <p:outputLabel for="txtDes" class="form-label">Description</p:outputLabel>
+                                        <h:inputTextarea id="txtDes" value="#{atmController.current.descreption}" required="false"
+                                                         class="form-control" disabled="#{!atmController.editable}" />
+                                    </p:panelGrid>
+                                    <h:panelGroup layout="block" class="text-end">
+                                        <div>
+                                            <p:commandButton id="btnSave" value="Save" icon="fas fa-save" action="#{atmController.saveSelected()}"
+                                                             class=" m-1 ui-button-warning w-25" process="gpDetail btnSave"
+                                                             update="lstSelect gpDetail msg btnEdit btnDelete btnAdd" disabled="#{!atmController.editable}" />
+                                            <p:commandButton id="btnCancel" value="Cancel" icon="fas fa-times" action="#{atmController.cancel()}"
+                                                             class=" m-1 ui-button-secondary w-25" process="btnCancel"
+                                                             update="lstSelect gpDetail btnEdit btnDelete btnAdd" disabled="#{!atmController.editable}" />
+                                        </div>
+                                    </h:panelGroup>
+                                </p:panelGrid>
+                            </p:panel>
+                        </div>
+                    </div>
+                </p:panel>
+            </h:form>
+        </h:panelGroup>
+    </ui:define>
+</ui:composition>

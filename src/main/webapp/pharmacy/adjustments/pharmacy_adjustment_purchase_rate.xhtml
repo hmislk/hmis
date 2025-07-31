@@ -1,0 +1,194 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+
+    <h:body>
+
+        <ui:composition template="/pharmacy/adjustments/pharmacy_adjustment_index.xhtml">
+
+            <ui:define name="subcontent">
+                <h:form>
+
+                    <p:panel header="" rendered="#{!pharmacyAdjustmentController.printPreview}">
+                        <f:facet name="header">
+                            <h:outputLabel value="Department Stock Adjustment : Purchase Rate"></h:outputLabel>
+                        </f:facet>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p:panel class="w-100">
+                                    <f:facet name="header">
+                                        <h:outputText styleClass="fa-solid fa-syringe"></h:outputText>
+                                        <h:outputLabel value="Select Item" class="mx-4"></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="Item" ></h:outputLabel>
+                                    <p:autoComplete
+                                        id="acAmp"
+                                        class="w-100"
+                                        inputStyleClass="w-100"
+                                        completeMethod="#{ampController.completeAmp}"
+                                        var="amp"
+                                        itemLabel="#{amp.name}"
+                                        itemValue="#{amp}"
+                                        maxResults="10"
+                                        minQueryLength="3"
+                                        value="#{pharmacyAdjustmentController.amp}">
+                                        <p:column headerText="Item"  style="padding: 3px;" >
+                                            <h:outputText value="#{amp.name}" ></h:outputText>
+                                        </p:column>
+                                        <p:column headerText="Code"  style="padding: 3px;" >
+                                            <h:outputText value="#{amp.code}" ></h:outputText>
+                                        </p:column>
+                                    </p:autoComplete>
+                                    <h:panelGroup >
+                                        <p:commandButton 
+                                            value="List All Batches"
+                                            icon="fas fa-boxes"
+                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocks}"
+                                            ajax="false"
+                                            styleClass="m-1 ui-button-warning" />
+                                        <p:commandButton 
+                                            value="List Current Stock"
+                                            icon="fas fa-box"
+                                            actionListener="#{pharmacyAdjustmentController.fillAmpStocksWithPositiveQty}"
+                                            ajax="false"
+                                            styleClass="m-1 ui-button-success" />
+                                    </h:panelGroup>
+                                </p:panel>
+                            </div>
+                            <div class="col-md-6">
+                                <p:panel>
+                                    <f:facet name="header" >
+                                        <h:outputLabel value="Adjust" ></h:outputLabel>
+                                    </f:facet>
+                                    <h:outputLabel value="Comment" ></h:outputLabel>
+                                    <p:inputTextarea value="#{pharmacyAdjustmentController.comment}"  class="w-100"></p:inputTextarea>
+                                    <p:commandButton
+                                        id="btnAdjust"
+                                        value="Adjust the Purchase Rates"
+                                        ajax="false"
+                                        class="mt-2 ui-button-danger"
+                                        icon="fa-solid fa-sliders"
+                                        action="#{pharmacyAdjustmentController.adjustPurchaseRates()}" >
+                                    </p:commandButton>
+                                    <p:defaultCommand target="btnAdjust"/>
+                                </p:panel>
+                            </div>
+                        </div>
+
+                        <p:dataTable
+                            id="tblStocks"
+                            value="#{pharmacyAdjustmentController.ampStock}"
+                            var="i"
+                            rows="10"
+                            paginator="true"
+                            paginatorAlwaysVisible="false"
+                            emptyMessage="No Stocks">
+
+                            <f:facet name="header">
+                                Batches
+                            </f:facet>
+
+                            <p:column
+                                headerText="Expiry"
+                                sortBy="#{i.dateOfExpire}"
+                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.dateOfExpire}">
+                                    <f:convertDateTime pattern="MMM yyyy" ></f:convertDateTime>
+                                </h:outputText>
+                            </p:column>
+                            <p:column
+                                headerText="Batch No."
+                                sortBy="#{i.batchNo}"
+                                styleClass="#{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.batchNo}">
+                                </h:outputText>
+                            </p:column>
+                            <p:column
+                                sortBy="#{i.stockQty}"
+                                headerText="Stock"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.stockQty}" >
+                                    <f:convertNumber pattern="#,###" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Current Purchase Rate"
+                                sortBy="#{i.purchaseRate}"
+                                styleClass="text-end fw-bold #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.purchaseRate}" styleClass="fw-bold">
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column headerText="New Purchase Rate" styleClass="text-end">
+                                <p:inputText value="#{i.newPurchaseRate}" styleClass="w-100"/>
+                            </p:column>
+                            <p:column
+                                headerText="Cost Rate"
+                                sortBy="#{i.retailRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Retail Rate"
+                                sortBy="#{i.retailRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.retailRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+                            <p:column
+                                headerText="Wholesale Rate"
+                                sortBy="#{i.wholesaleRate}"
+                                styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.dateOfExpire ?'ui-messages-warn':''}">
+                                <h:outputText value="#{i.wholesaleRate}" >
+                                    <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                </h:outputText>
+                            </p:column>
+
+
+                        </p:dataTable>
+
+                    </p:panel>
+
+                    <p:panel rendered="#{pharmacyAdjustmentController.printPreview}">
+                        <div class="d-flex gap-2 m-2">
+                            <p:commandButton
+                                ajax="false"
+                                icon="fa fa-plus"
+                                class="ui-button-success"
+                                action="#{pharmacyAdjustmentController.makeNull()}"
+                                value="New Adjustment"/>
+                            <p:commandButton
+                                class="ui-button-info"
+                                icon="fa fa-print"
+                                ajax="false"
+                                value="Print">
+                                <p:printer target="print"/>
+                            </p:commandButton>
+                        </div>
+
+                        <h:panelGroup id="print">
+                            <ph:adjustmentBill_purchase_price  bill="#{pharmacyAdjustmentController.deptAdjustmentPreBill}" />
+                        </h:panelGroup>
+
+                    </p:panel>
+
+                </h:form>
+
+            </ui:define>
+
+        </ui:composition>
+
+    </h:body>
+</html>

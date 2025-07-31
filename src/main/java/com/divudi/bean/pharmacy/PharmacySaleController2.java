@@ -212,11 +212,11 @@ public class PharmacySaleController2 implements Serializable, ControllerWithPati
     }
 
     public String navigateToPharmacyBillForCashier() {
-        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     public String navigateToPharmacyBillForCashierWholeSale() {
-        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true;";
+        return "/pharmacy_wholesale/pharmacy_bill_retail_sale_for_cashier?faces-redirect=true";
     }
 
     private void prepareForPharmacySaleWithoutStock() {

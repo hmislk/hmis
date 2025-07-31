@@ -174,6 +174,7 @@
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Agencies" icon="fas fa-upload" action="#{dataUploadController.navigateToAgencyUpload()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Departments" icon="fas fa-upload" action="#{dataUploadController.navigateToDepartmentUpload()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Supplier" icon="fas fa-upload" action="#{dataUploadController.navigateToSupplierUpload()}" />
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Supplier Extended" icon="fas fa-upload" action="#{dataUploadController.navigateToSupplierUploadExtended()}" />
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Upload Routes" icon="fas fa-upload" action="#{dataUploadController.navigateToRouteUpload}" />
 
                                     </div>
@@ -181,12 +182,11 @@
 
                                 <p:tab title="Developer" >
                                     <div class="d-grid gap-2">
-
-
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Institutions" action="#{navigationController.navigateToInstitutionBulkDelete()}" icon="fa-solid fa-trash"/>
                                         <p:commandButton  styleClass="linkButton" ajax="false" value="Bulk Delete Departments" action="#{navigationController.navigateToDepartmentBulkDelete()}"  icon="fa-solid fa-trash-can"/>
-
-
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Config Options" icon="pi pi-database" action="#{configOptionController.navigateToDuplicateOptions()}"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Departments" icon="pi pi-database" action="#{departmentController.navigateToDuplicateDepartments()}"/>
+                                        <p:commandButton  styleClass="linkButton" ajax="false" value="Duplicate Institutions" icon="pi pi-database" action="#{institutionController.navigateToDuplicateInstitutions()}"/>
                                     </div>
                                 </p:tab>
                             </p:accordionPanel>

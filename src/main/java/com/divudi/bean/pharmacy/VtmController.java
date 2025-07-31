@@ -60,6 +60,7 @@ public class VtmController implements Serializable {
     boolean billedAs;
     boolean reportedAs;
     List<Vtm> vtmList;
+    private boolean editable;
 
     public String navigateToListAllVtms() {
         String jpql = "Select vtm "
@@ -246,6 +247,20 @@ public class VtmController implements Serializable {
 
     public void prepareAdd() {
         current = new Vtm();
+        editable = true;
+    }
+
+    public void edit() {
+        if (current == null) {
+            JsfUtil.addErrorMessage("Select one to edit");
+            return;
+        }
+        editable = true;
+    }
+
+    public void cancel() {
+        current = null;
+        editable = false;
     }
 
     public void bulkUpload() {
@@ -308,6 +323,7 @@ public class VtmController implements Serializable {
         }
         recreateModel();
         getItems();
+        editable = false;
     }
 
     public void save() {
@@ -388,6 +404,7 @@ public class VtmController implements Serializable {
         getItems();
         current = null;
         getCurrent();
+        editable = false;
     }
 
     private VtmFacade getFacade() {
@@ -409,6 +426,14 @@ public class VtmController implements Serializable {
 
     public void setSpecialityFacade(SpecialityFacade specialityFacade) {
         this.specialityFacade = specialityFacade;
+    }
+
+    public boolean isEditable() {
+        return editable;
+    }
+
+    public void setEditable(boolean editable) {
+        this.editable = editable;
     }
 
     /**

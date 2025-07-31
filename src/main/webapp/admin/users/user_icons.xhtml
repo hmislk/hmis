@@ -15,132 +15,133 @@
                     <na:not_authorize />
                 </h:panelGroup>
 
-                <h:form >
-                    <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
-                        <f:facet name="header">
-                            <i class="fa fa-icons" />
-                            <h:outputLabel class="mx-2" value="Manage User Icons"/>
-                        </f:facet>
-                        <h:panelGrid 
-                            class="w-100 m-1 p-1"
-                            columns="3"
-                            columnClasses="custom-col-20, custom-col-40, custom-col-20"
-                            rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
-                            <p:outputLabel value="Department" ></p:outputLabel>
-                            <p:selectOneMenu 
-                                id="cmbDepartment"
-                                placeholder="Department"
-                                value="#{userIconController.department}" 
-                                class="w-100"
-                                required="true"
-                                requiredMessage="Select a department"
-                                filter="true">
-                                <f:selectItem itemLabel="Select" ></f:selectItem>
-                                <f:selectItems 
-                                    value="#{userIconController.departments}"
-                                    var="d"
-                                    itemLabel="#{d.name}"
-                                    itemValue="#{d}" ></f:selectItems>
-                            </p:selectOneMenu>
-                            <p:commandButton 
-                                id="btnList"
-                                title="List Icon for the Department"
-                                value="List Icon"
-                                class="ui-button-warning w-100 mx-2"
-                                ajax="false"
-                                icon="fa fa-list"
-                                action="#{userIconController.fillDepartmentIcon}"
-                                >
-                            </p:commandButton>
+                <!-- Use outer form from user_list.xhtml -->
+                <p:panel class="w-100" rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}" >
+                    <f:facet name="header">
+                        <i class="fa fa-icons" />
+                        <h:outputLabel class="mx-2" value="Manage User Icons"/>
+                    </f:facet>
+                    <h:panelGrid 
+                        class="w-100 m-1 p-1"
+                        columns="3"
+                        columnClasses="custom-col-20, custom-col-40, custom-col-20"
+                        rendered="#{webUserController.hasPrivilege('AdminManagingUsers') or sessionController.firstLogin}">
+                        <p:outputLabel value="Department" ></p:outputLabel>
+                        <p:selectOneMenu 
+                            id="cmbDepartment"
+                            placeholder="Department"
+                            value="#{userIconController.department}" 
+                            class="w-100"
+                            filter="true">
+                            <f:selectItem itemLabel="Select" ></f:selectItem>
+                            <f:selectItems 
+                                value="#{userIconController.departments}"
+                                var="d"
+                                itemLabel="#{d.name}"
+                                itemValue="#{d}" ></f:selectItems>
+                        </p:selectOneMenu>
+                        <p:commandButton 
+                            id="btnList"
+                            title="List Icon for the Department"
+                            value="List Icon"
+                            class="ui-button-warning w-100 mx-2"
+                            ajax="false"
+                            icon="fa fa-list"
+                            action="#{userIconController.fillDepartmentIcon}"
+                            >
+                        </p:commandButton>
 
-                            <p:outputLabel value="Icon to add" ></p:outputLabel>
-                            <p:autoComplete id="iconAutoComplete"
-                                            inputStyleClass="w-100"
-                                            value="#{userIconController.icon}" 
-                                            completeMethod="#{userIconController.getFilteredIcons}"
-                                            var="i"
-                                            itemLabel="#{i.label}"
-                                            itemValue="#{i}"
-                                            forceSelection="true"
-                                            minQueryLength="2"
-                                            class="w-100"/>
-
-
-                            <p:commandButton 
-                                value="Add Icon" 
-                                id="btnAdd"
-                                ajax="false"
-                                class="w-100 mx-2"
-                                icon="fa fa-plus" 
-                                action="#{userIconController.addUserIcon}" 
-                                update="userIcon" 
-                                />
-                        </h:panelGrid>
+                        <p:outputLabel value="Icon to add" ></p:outputLabel>
+                        <p:autoComplete
+                            id="iconAutoComplete"
+                            inputStyleClass="w-100"
+                            value="#{userIconController.icon}"
+                            completeMethod="#{userIconController.getFilteredIcons}"
+                            var="i"
+                            itemLabel="#{i.label}"
+                            itemValue="#{i}"
+                            forceSelection="true"
+                            minQueryLength="2"
+                            placeholder="Search Icon"
+                            class="w-100"/>
 
 
-                        <p:dataTable 
-                            var="userIcon" 
-                            value="#{userIconController.userIcons}" 
-                            rowKey="#{userIcon.id}" 
-                            id="tbl">
-                            <p:column headerText="Icon">
-                                <h:outputText value="#{userIcon.icon.label}" />
-                            </p:column>
-                            <p:column 
-                                headerText="Department" 
-                                rendered="#{userIconController.department eq null}">
-                                <h:outputText value="#{userIcon.department.name}" />
-                            </p:column>
-                            <p:column headerText="Order">
-                                <h:outputText value="#{userIcon.orderNumber + 1}">
-                                    <f:convertNumber pattern="##0"/>
-                                </h:outputText>
-                            </p:column>
-                            <p:column headerText="Actions" style="text-align: center; width: 200px;" >
-                                <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
-                                    <p:commandButton 
-                                        id="up" 
-                                        icon="fa fa-arrow-up"
-                                        class="ui-button-warning"
-                                        action="#{userIconController.moveSelectedUserIconUp}" 
-                                        update="tbl" >
-                                        <f:setPropertyActionListener 
-                                            value="#{userIcon}" 
-                                            target="#{userIconController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
+                        <p:commandButton 
+                            value="Add Icon" 
+                            id="btnAdd"
+                            ajax="false"
+                            class="w-100 mx-2"
+                            icon="fa fa-plus" 
+                            action="#{userIconController.addUserIcon}"
+                            update="iconAutoComplete tbl"
+                            />
+                    </h:panelGrid>
 
-                                    <p:commandButton 
-                                        id="down" 
-                                        icon="fa fa-arrow-down"
-                                        class="mx-2 ui-button-warning"
-                                        action="#{userIconController.moveSelectedUserIconDown}" 
-                                        update="tbl" >
-                                        <f:setPropertyActionListener 
-                                            value="#{userIcon}" 
-                                            target="#{userIconController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
-                                    <p:commandButton 
-                                        id="remove" 
-                                        icon="fa fa-trash"
-                                        action="#{userIconController.removeUserIcon()}" 
-                                        class="ui-button-danger"
-                                        update="tbl" >
-                                        <f:setPropertyActionListener 
-                                            value="#{userIcon}" 
-                                            target="#{userIconController.current}" >
-                                        </f:setPropertyActionListener>
-                                    </p:commandButton>
 
-                                    <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
-                                    <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
-                                    <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
-                                </h:panelGroup>
-                            </p:column>
-                        </p:dataTable>
-                    </p:panel>
-                </h:form>
+                    <p:dataTable 
+                        var="userIcon" 
+                        value="#{userIconController.userIcons}" 
+                        rowKey="#{userIcon.id}" 
+                        id="tbl">
+                        <p:column headerText="Icon">
+                            <h:outputText value="#{userIcon.icon.label}" />
+                        </p:column>
+                        <p:column 
+                            headerText="Department" 
+                            rendered="#{userIconController.department eq null}">
+                            <h:outputText value="#{userIcon.department.name}" />
+                        </p:column>
+                        <p:column headerText="Order">
+                            <h:outputText value="#{userIcon.orderNumber + 1}">
+                                <f:convertNumber pattern="##0"/>
+                            </h:outputText>
+                        </p:column>
+                        <p:column headerText="Actions" style="text-align: center; width: 200px;" >
+                            <h:panelGroup id="combinedActions" class="d-flex justify-content-end">
+                                <p:commandButton 
+                                    id="up" 
+                                    process="up"
+                                    icon="fa fa-arrow-up"
+                                    class="ui-button-warning"
+                                    action="#{userIconController.moveSelectedUserIconUp}" 
+                                    update="tbl" >
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:commandButton 
+                                    id="down" 
+                                    icon="fa fa-arrow-down"
+                                    class="mx-2 ui-button-warning"
+                                    action="#{userIconController.moveSelectedUserIconDown}" 
+                                    process="down"
+                                    update="tbl" >
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+                                <p:commandButton 
+                                    id="remove" 
+                                    icon="fa fa-trash"
+                                    ajax="false"
+                                    action="#{userIconController.removeUserIcon()}" 
+                                    class="ui-button-danger">
+                                    <f:setPropertyActionListener 
+                                        value="#{userIcon}" 
+                                        target="#{userIconController.current}" >
+                                    </f:setPropertyActionListener>
+                                </p:commandButton>
+
+                                <p:tooltip for="up" value="Move Up"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="down" value="Move Down"  showDelay="0" hideDelay="0"></p:tooltip>
+                                <p:tooltip for="remove" value="Remove"  showDelay="0" hideDelay="0"></p:tooltip>
+                            </h:panelGroup>
+                        </p:column>
+                    </p:dataTable>
+                </p:panel>
             </ui:define>
         </ui:composition>
     </h:body>

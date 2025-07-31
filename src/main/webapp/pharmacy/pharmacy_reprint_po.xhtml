@@ -26,6 +26,13 @@
                                     <p:commandButton class="ui-button-info" icon="fas fa-print" value="Reprint" ajax="false" >
                                         <p:printer target="gpBillPreview" ></p:printer>
                                     </p:commandButton>
+                                    <p:commandButton
+                                        value="Send Email"
+                                        icon="fas fa-envelope"
+                                        action="#{pharmacyBillSearch.prepareEmailDialog}"
+                                        styleClass="ui-button-secondary mx-2"
+                                        oncomplete="PF('emailDialog').show();"
+                                        update="emailDialogForm"/>
                                     <p:commandButton class="ui-button-danger mx-2" icon="fas fa-ban" ajax="false" value="Cancel" action="pharmacy_cancel_po"
                                                      disabled="#{pharmacyBillSearch.bill.cancelled or
                                                                  !webUserController.hasPrivilege('PharmacyOrderCancellation')}">                           
@@ -37,14 +44,51 @@
 
                         <div class="d-flex justify-content-center border border-light boder-1">
                             <h:panelGroup id="gpBillPreview" style="width: 212mm;">
-                                    <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
-
-                                </h:panelGroup> 
+                                <ph:po bill="#{pharmacyBillSearch.bill}" reprint="true"/>
+                            </h:panelGroup> 
                         </div>
-                                
+
 
                     </p:panel>
                 </h:form>
+
+                <p:dialog widgetVar="emailDialog" modal="true" header="Send Purchase Order Email" width="400px" height="auto" resizable="false">
+                    <h:form id="emailDialogForm">
+                        <div class="p-3">
+                            <div class="mb-3">
+                                <p:outputLabel value="Supplier: " style="font-weight: bold;"/>
+                                <p:outputLabel value="#{pharmacyBillSearch.bill.toInstitution.name}"/>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <p:outputLabel for="emailRecipient" value="Email Address:" class="form-label"/>
+                                <p:inputText 
+                                    id="emailRecipient" 
+                                    value="#{pharmacyBillSearch.emailRecipient}" 
+                                    class="w-100"
+                                    placeholder="Enter email address"
+                                    required="true"
+                                    requiredMessage="Email address is required"/>
+                            </div>
+                            
+                            <div class="d-flex justify-content-end gap-2">
+                                <p:commandButton 
+                                    value="Cancel" 
+                                    onclick="PF('emailDialog').hide();"
+                                    class="ui-button-secondary"
+                                    type="button"/>
+                                <p:commandButton 
+                                    value="Send Email" 
+                                    action="#{pharmacyBillSearch.sendPurchaseOrderEmail}"
+                                    class="ui-button-success"
+                                    icon="fas fa-envelope"
+                                    ajax="false"
+                                    oncomplete="PF('emailDialog').hide();"/>
+                            </div>
+                        </div>
+                    </h:form>
+                </p:dialog>
+
             </ui:define>
 
 

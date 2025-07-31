@@ -55,6 +55,7 @@ public enum Privileges {
     OpdAddNewRefferalDoctor("OPD Add New Referral Doctor"),
     OpdAddNewCollectingCentre("OPD Add New Collecting Centre"),
     ChangeProfessionalFee("Change Professional Fee"),
+    OpdPackageBillCancel("OPD Package Bill Cancel"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Inpatient">
@@ -135,6 +136,7 @@ public enum Privileges {
     LabBillReactivating("Lab Bill Reactivating"),
     LabSampleCollecting("Lab Sample Collecting"),
     LabSampleSending("Lab Sample Sending"),
+    OutLabSampleSending("Out Lab Sample Sending"),
     LabSampleReceiving("Lab Sample Receiving"),
     LabSampleRejecting("Lab Sample Rejecting"),
     LabReportFormatEditing("Lab Report Format Editing"),
@@ -187,6 +189,7 @@ public enum Privileges {
     DashBoardInvestigationSearch("DashBoard Investigation Search"),
     DashBoardReportSearch("DashBoard Report Search"),
     DashBoardPatientReportSearch("DashBoard Patient Report Search"),
+    AccessLabTestHistory("Access Lab Test History"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Pharmacy">
@@ -369,6 +372,14 @@ public enum Privileges {
     ChannelCashierTransactionExpencess("Channel Cashier Transaction Expenses"),
     ChannelCashierTransactionExpencessSearch("Channel Cashier Transaction Expenses Search"),
     ChannelActiveVat("Channel Active VAT"),
+    
+    ChannelSessionMultipleDeletion("Delete Multiple Channel Sessions"),
+    ChannelSessionHolidayMark("Channel Sessions Holidays Mark"),
+    ChannelSessionManagement("Channel Session Management"),
+    ChannelSheduleManagement("Channel Shedule Management"),
+    ChannelBookingByMonth("Channel Booking by Month"),
+    ChannelDoctorCard("Doctor Card"),
+    ChannelPatientPortal("Patient Portal"),
     //</editor-fold>
 
     //<editor-fold defaultstate="collapsed" desc="Clinis">
@@ -448,6 +459,7 @@ public enum Privileges {
     // Pharmacy Disbursement
     PharmacyDisburesementMenu("Pharmacy Disbursement Menu"),
     PharmacyDisbursementRequest("Pharmacy Disbursement Request"),
+    PharmacyDisbursementFinalizeRequest("Pharmacy Disbursement Finalize Request"),
     PharmacyDisbursementIssurForRequest("Pharmacy Disbursement Issue for Request"),
     PharmacyDisbursementDirectIssue("Pharmacy Disbursement Direct Issue"),
     PharmacyDisbursementRecieve("Pharmacy Disbursement Receive"),
@@ -466,6 +478,7 @@ public enum Privileges {
     PharmacyRetailTransactionMenue("Pharmacy Retail Transaction Menu"),
     PharmacyRetailTransaction("Pharmacy Retail Transaction"),
     PharmacySale("Pharmacy Sale"),
+    PharmacySaleQuick("Pharmacy Sale Quick"),
     PharmacySaleForCashier("Pharmacy Sale for Cashier"),
     PharmacySaleWithOutStock("Pharmacy Sale without Stock"),
     PharmacySearchSaleBill("Pharmacy Search Sale Bill"),
@@ -500,6 +513,7 @@ public enum Privileges {
     PharmacyAdjustmentDepartmentStockBySingleItemQTY("Pharmacy Adjustment Department Stock by Single Item Quantity"),
     PharmacyAdjustmentStaffStockAdjustment("Pharmacy Adjustment Staff Stock Adjustment"),
     PharmacyAdjustmentPurchaseRate("Pharmacy Adjustment Purchase Rate"),
+    PharmacyAdjustmentCostRate("Pharmacy Adjustment Cost Rate"),
     PharmacyAdjustmentSaleRate("Pharmacy Adjustment Sale Rate"),
     PharmacyAdjustmentWholeSaleRate("Pharmacy Adjustment Wholesale Rate"),
     PharmacyAdjustmentExpiryDate("Pharmacy Adjustment Expiry Date"),
@@ -669,6 +683,7 @@ public enum Privileges {
         switch (this) {
             case Opd:
             case OpdCancel:
+            case OpdPackageBillCancel:
             case OpdReturn:
             case OpdBilling:
             case OpdOrdering:
@@ -724,6 +739,7 @@ public enum Privileges {
             case LabBillReactivating:
             case LabInvestigationFee:
             case LabSampleCollecting:
+            case OutLabSampleSending:
             case LabAddInwardServices:
             case LabBillCancelSpecial:
             case LabBillRefundSpecial:
@@ -735,6 +751,7 @@ public enum Privileges {
             case LabReportSearchByDepartment:
             case LabSearchBillLoggedInstitution:
             case LabReportSearchByLoggedInstitution:
+            case AccessLabTestHistory:
                 return "Lab";
             case Pharmacy:
             case PharmacySaleWh:
@@ -804,6 +821,7 @@ public enum Privileges {
             // Retail Transactions
             case PharmacyRetailTransaction:
             case PharmacySale:
+            case PharmacySaleQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
@@ -837,6 +855,7 @@ public enum Privileges {
             case PharmacyAdjustmentDepartmentStockBySingleItemQTY:
             case PharmacyAdjustmentStaffStockAdjustment:
             case PharmacyAdjustmentPurchaseRate:
+            case PharmacyAdjustmentCostRate:
             case PharmacyAdjustmentSaleRate:
             case PharmacyAdjustmentWholeSaleRate:
             case PharmacyAdjustmentExpiryDate:

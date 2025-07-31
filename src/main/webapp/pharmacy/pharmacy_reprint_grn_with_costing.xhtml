@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:ph="http://xmlns.jcp.org/jsf/composite/pharmacy">
+    <h:body style="width: 100%; " >
+        <ui:composition template="/resources/template/template.xhtml">
+            <ui:define name="content">
+                <h:form>
+                    <p:panel style="width: 100%;" >
+                        <f:facet name="header" >
+                            <div class="d-flex justify-content-between">
+                                <h:outputLabel value="GRN Reprint" class="mt-2"></h:outputLabel>
+                                <div class="d-flex gap-2">
+                                    <p:commandButton 
+                                        class="ui-button-warning"
+                                        icon="fa fa-exchange"
+                                        action="#{transferIssueController.navigateToPharmacyIssueFromGrn}"
+                                        value="Transfer All Stocks" 
+                                        ajax="false">
+                                        <f:setPropertyActionListener 
+                                            value="#{pharmacyBillSearch.bill}" 
+                                            target="#{transferIssueController.requestedBill}" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="ui-button-primary"
+                                        icon="fa fa-list-alt"
+                                        action="/pharmacy/pharmacy_purhcase_order_list_to_approve?faces-redirect=true"
+                                        value="PO List" 
+                                        ajax="false">
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon="fa fa-print"
+                                        value="Reprint" 
+                                        ajax="false">
+                                        <p:printer target="gpBillPreview" />
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        class="ui-button-success"
+                                        icon="fa fa-download"
+                                        value="Export JSON"
+                                        ajax="false">
+                                        <p:fileDownload value="#{pharmacyBillSearch.exportAsJson()}"/>
+                                    </p:commandButton>
+                                    <p:commandButton 
+                                        ajax="false" 
+                                        value="To Cancel" 
+                                        class="ui-button-danger"
+                                        icon="fa fa-times-circle"
+                                        action="pharmacy_cancel_grn" 
+                                        disabled="#{pharmacyBillSearch.bill.cancelled}">
+                                    </p:commandButton>
+                                </div>
+                            </div>              
+                        </f:facet>
+
+                        <div style="width: 100%;">
+                            <h:panelGroup id="gpBillPreview" >
+                                <ph:grn_with_costing bill="#{pharmacyBillSearch.bill}"/>
+                            </h:panelGroup>
+                        </div>
+                    </p:panel>
+                </h:form>
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
