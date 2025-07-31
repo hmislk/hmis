@@ -281,6 +281,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
         //  referanceBillItem=billItem.getReferanceBillItem();
         // Copy BillItemFinanceDetails if present
         if (billItem.getBillItemFinanceDetails() != null) {
@@ -322,6 +323,7 @@ public class BillItem implements Serializable, RetirableEntity {
         vat = billItem.getVat();
         vatPlusNetValue = billItem.getVatPlusNetValue();
         collectingCentreFee = billItem.getCollectingCentreFee();
+        consideredForCosting = billItem.isConsideredForCosting();
 
         BillItemFinanceDetails clonedFinanceDetails = billItem.getBillItemFinanceDetails().clone();
         clonedFinanceDetails.setBillItem(this);
@@ -350,6 +352,7 @@ public class BillItem implements Serializable, RetirableEntity {
 //        marginValue = billItem.getMarginValue();
         priceMatrix = billItem.getPriceMatrix();
         agentRefNo = billItem.getAgentRefNo();
+        consideredForCosting = billItem.isConsideredForCosting();
     }
 
     public void resetValue() {

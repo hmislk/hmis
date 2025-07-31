@@ -431,26 +431,13 @@ public class PharmacyDirectPurchaseController implements Serializable {
             return;
         }
         
-        // Update the expense item in the database
-        getBillItemFacade().edit(expense);
-        
-        // Recalculate expense totals
-        recalculateExpenseTotals();
-        
-        // Recalculate entire bill totals with updated expense categorization
-        calculateBillTotalsFromItems();
-        
-        // Distribute proportional bill values (including expenses considered for costing) to line items
-        pharmacyCostingService.distributeProportionalBillValuesToItems(getBillItems(), getBill());
-        
-        // Persist the updated bill
-        if (getBill().getId() != null) {
-            getBillFacade().edit(getBill());
-        }
+        // Use transactional EJB method to ensure atomicity
+        billEjb.updateExpenseCosting(expense, getBill(), getBillItems(), pharmacyCostingService);
     }
 
     private void recalculateExpenseTotals() {
-        if (getBill() == null) {
+        Bill bill = getBill(); // Cache the bill reference
+        if (bill == null) {
             return;
         }
 
@@ -460,8 +447,8 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
         
         // Calculate totals from bill-level expense BillItems (use Bill entity's list)
-        if (getBill().getBillExpenses() != null && !getBill().getBillExpenses().isEmpty()) {
-            for (BillItem expense : getBill().getBillExpenses()) {
+        if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
+            for (BillItem expense : bill.getBillExpenses()) {
                 billExpensesTotal += expense.getNetValue();
                 if (expense.isConsideredForCosting()) {
                     billExpensesConsideredTotal += expense.getNetValue();
@@ -473,17 +460,16 @@ public class PharmacyDirectPurchaseController implements Serializable {
 
 
         // Update the bill's expense totals
-        getBill().setExpenseTotal(billExpensesTotal);
-        getBill().setExpensesTotalConsideredForCosting(billExpensesConsideredTotal);
-        getBill().setExpensesTotalNotConsideredForCosting(billExpensesNotConsideredTotal);
+        bill.setExpenseTotal(billExpensesTotal);
+        bill.setExpensesTotalConsideredForCosting(billExpensesConsideredTotal);
+        bill.setExpensesTotalNotConsideredForCosting(billExpensesNotConsideredTotal);
         
         
         // Also update BillFinanceDetails if it exists
-        if (getBill().getBillFinanceDetails() != null) {
-            getBill().getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(billExpensesTotal));
-            getBill().getBillFinanceDetails().setBillExpensesConsideredForCosting(BigDecimal.valueOf(billExpensesConsideredTotal));
-            getBill().getBillFinanceDetails().setBillExpensesNotConsideredForCosting(BigDecimal.valueOf(billExpensesNotConsideredTotal));
-        } else {
+        if (bill.getBillFinanceDetails() != null) {
+            bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(billExpensesTotal));
+            bill.getBillFinanceDetails().setBillExpensesConsideredForCosting(BigDecimal.valueOf(billExpensesConsideredTotal));
+            bill.getBillFinanceDetails().setBillExpensesNotConsideredForCosting(BigDecimal.valueOf(billExpensesNotConsideredTotal));
         }
         
     }
