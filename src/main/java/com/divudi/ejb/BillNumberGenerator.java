@@ -84,13 +84,11 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
         String institutionId = institution != null ? institution.getId().toString() : "null";
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
-        String billTypeLabel = "null";
+        String billTypeHash = "null";
         if (billTypes != null && !billTypes.isEmpty()) {
-            billTypeLabel = billTypes.stream()
-                    .map(bt -> bt != null ? bt.getLabel() : "null")
-                    .reduce((a, b) -> a + "," + b).orElse("null");
+            billTypeHash = String.valueOf(billTypes.hashCode());
         }
-        return institutionId + "-" + departmentId + "-" + billTypeLabel;
+        return institutionId + "-" + departmentId + "-" + billTypeHash;
     }
     
     private String getLockKey(Institution institution, Department fromDepartment,  Department toDepartment, BillTypeAtomic billType) {
@@ -496,18 +494,28 @@ public class BillNumberGenerator {
             billNumber.setToDepartment(toDepartment);
             billNumber.setBillYear(currentYear);
 
-            sql = "SELECT count(b) FROM Bill b "
+            sql = "SELECT b FROM Bill b "
                     + " where b.billTypeAtomic in :bTp "
                     + " and b.retired=false"
                     + " and b.institution=:ins "
                     + " and b.toDepartment=:tDep"
-                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear";
+                    + " AND b.billDate BETWEEN :startOfYear AND :endOfYear"
+                    + " ORDER BY b.id DESC";
 
             Calendar startOfYear = Calendar.getInstance();
             startOfYear.set(Calendar.DAY_OF_YEAR, 1);
+            startOfYear.set(Calendar.HOUR_OF_DAY, 0);
+            startOfYear.set(Calendar.MINUTE, 0);
+            startOfYear.set(Calendar.SECOND, 0);
+            startOfYear.set(Calendar.MILLISECOND, 0);
+            
             Calendar endOfYear = Calendar.getInstance();
             endOfYear.set(Calendar.MONTH, 11);
             endOfYear.set(Calendar.DAY_OF_MONTH, 31);
+            endOfYear.set(Calendar.HOUR_OF_DAY, 23);
+            endOfYear.set(Calendar.MINUTE, 59);
+            endOfYear.set(Calendar.SECOND, 59);
+            endOfYear.set(Calendar.MILLISECOND, 999);
 
             hm = new HashMap<>();
             hm.put("bTp", billTypes);
@@ -516,9 +524,21 @@ public class BillNumberGenerator {
             hm.put("startOfYear", startOfYear.getTime());
             hm.put("endOfYear", endOfYear.getTime());
 
-            Long dd = getBillFacade().findAggregateLong(sql, hm, TemporalType.DATE);
-            if (dd == null) {
-                dd = 0L;
+            List<Bill> lastBills = getBillFacade().findByJpql(sql, hm, 1);
+            Long dd = 0L;
+            if (lastBills != null && !lastBills.isEmpty()) {
+                Bill lastBill = lastBills.get(0);
+                String lastDeptId = lastBill.getDeptId();
+                if (lastDeptId != null && !lastDeptId.trim().isEmpty()) {
+                    try {
+                        String[] parts = lastDeptId.split("/");
+                        if (parts.length >= 4) {
+                            dd = Long.parseLong(parts[parts.length - 1]);
+                        }
+                    } catch (NumberFormatException e) {
+                        dd = 0L;
+                    }
+                }
             }
             billNumber.setLastBillNumber(dd);
             billNumberFacade.createAndFlush(billNumber);

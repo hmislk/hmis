@@ -335,11 +335,17 @@ public enum BillTypeAtomic {
 
     public static List<BillTypeAtomic> findOpdAndInpatientServiceAndInvestigationBillTypes() {
         List<BillTypeAtomic> btas = new ArrayList<>();
+        // OPD Bill Types
         btas.add(OPD_BILL_WITH_PAYMENT);
         btas.add(OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        btas.add(OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(PACKAGE_OPD_BATCH_BILL_WITH_PAYMENT);
         btas.add(PACKAGE_OPD_BATCH_BILL_PAYMENT_COLLECTION_AT_CASHIER);
+        
+        // Inpatient Service Bill Types
         btas.add(INWARD_SERVICE_BILL);
+        btas.add(INWARD_SERVICE_BATCH_BILL);
+        
         return btas;
     }
 
