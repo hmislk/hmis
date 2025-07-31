@@ -2056,7 +2056,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private void saveBatchBill() {
-        System.out.println("=== DEBUG: saveBatchBill() method started ===");
         Bill newBatchBill = new BilledBill();
         newBatchBill.setBillType(BillType.OpdBathcBill);
         newBatchBill.setBillTypeAtomic(BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -2074,49 +2073,34 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         boolean billNumberByYear;
         String batchBillId;
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
-        System.out.println("DEBUG: billNumberByYear = " + billNumberByYear);
 
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
-        System.out.println("DEBUG: opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination = " + opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination);
-
+        
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
-        System.out.println("DEBUG: opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = " + opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices);
-
-        System.out.println("DEBUG: Current Department = " + (getSessionController().getDepartment() != null ? getSessionController().getDepartment().getName() + " (ID: " + getSessionController().getDepartment().getId() + ")" : "null"));
-        System.out.println("DEBUG: Current Institution = " + (getSessionController().getInstitution() != null ? getSessionController().getInstitution().getName() + " (ID: " + getSessionController().getInstitution().getId() + ")" : "null"));
-
+        
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
-            System.out.println("DEBUG: Using departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment for batch bill");
             batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(null, department, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            System.out.println("DEBUG: Using departmentBillNumberGeneratorYearly with OPD and Inpatient bill types for batch bill");
-            // Use batch bill types for batch bills to maintain separate numbering series
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationBatchBillTypes();
-            System.out.println("DEBUG: OPD and Inpatient batch bill types = " + opdAndInpatientBills);
             batchBillId = getBillNumberGenerator().departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(getSessionController().getDepartment(), opdAndInpatientBills);
         } else {
-            System.out.println("DEBUG: Using default batch bill number generation");
             if (billNumberByYear) {
-                System.out.println("DEBUG: Using departmentBillNumberGeneratorYearly with year-based numbering");
                 batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                         getSessionController().getInstitution(),
                         getSessionController().getDepartment(),
                         BillType.OpdBathcBill,
                         BillClassType.BilledBill);
             } else {
-                System.out.println("DEBUG: Using departmentBillNumberGeneratorYearly with atomic bill type");
                 batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(
                         getSessionController().getDepartment(),
                         BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
             }
         }
-        System.out.println("DEBUG: Generated batchBillId = " + batchBillId);
         newBatchBill.setInsId(batchBillId);
         newBatchBill.setDeptId(batchBillId);
-        System.out.println("DEBUG: Set InsId and DeptId to = " + batchBillId);
-
+        
         newBatchBill.setGrantTotal(total);
         newBatchBill.setTotal(total);
         newBatchBill.setDiscount(discount);
@@ -2235,31 +2219,21 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         }
         String deptId;
 
-        System.out.println("=== DEBUG: saveBill() - Generating deptId ===");
-        System.out.println("DEBUG: fromDepartment = " + (sessionController.getDepartment() != null ? sessionController.getDepartment().getName() + " (ID: " + sessionController.getDepartment().getId() + ")" : "null"));
-        System.out.println("DEBUG: toDepartment (bt) = " + (bt != null ? bt.getName() + " (ID: " + bt.getId() + ")" : "null"));
-
+        
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
-        System.out.println("DEBUG: opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination = " + opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination);
-
+        
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
-        System.out.println("DEBUG: opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = " + opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices);
-
+        
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
-            System.out.println("DEBUG: Using departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment");
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
-            System.out.println("DEBUG: Using departmentBillNumberGeneratorYearly with OPD and Inpatient bill types");
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
-            System.out.println("DEBUG: OPD and Inpatient individual bill types = " + opdAndInpatientBills);
             deptId = getBillNumberGenerator().departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(sessionController.getDepartment(), opdAndInpatientBills);
         } else {
-            System.out.println("DEBUG: Using default bill number generation for individual bill");
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         }
-        System.out.println("DEBUG: Generated deptId = " + deptId);
 
 //        newBill.setMembershipScheme(membershipSchemeController.fetchPatientMembershipScheme(patient, getSessionController().getApplicationPreference().isMembershipExpires()));
         newBill.setPaymentScheme(getPaymentScheme());
@@ -2356,17 +2330,9 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             getFacade().edit(newBill);
         }
 
-        //Department ID (DEPT ID)
-        System.out.println("=== DEBUG: saveBill(Department, Category) - Generating deptId ===");
-        System.out.println("DEBUG: fromDepartment = " + (newBill.getDepartment() != null ? newBill.getDepartment().getName() + " (ID: " + newBill.getDepartment().getId() + ")" : "null"));
-        System.out.println("DEBUG: toDepartment = " + (newBill.getToDepartment() != null ? newBill.getToDepartment().getName() + " (ID: " + newBill.getToDepartment().getId() + ")" : "null"));
-        System.out.println("DEBUG: billType = " + newBill.getBillType());
-        System.out.println("DEBUG: billClassType = " + BillClassType.BilledBill);
         String deptId = getBillNumberGenerator().departmentBillNumberGenerator(newBill.getDepartment(), newBill.getToDepartment(), newBill.getBillType(), BillClassType.BilledBill);
-        System.out.println("DEBUG: Generated deptId = " + deptId);
         newBill.setDeptId(deptId);
-        System.out.println("DEBUG: Set deptId to bill = " + deptId);
-
+        
         newBill.setSessionId(getBillNumberGenerator().generateDailyBillNumberForOpd(newBill.getDepartment()));
 
         if (newBill.getId() == null) {
@@ -2446,7 +2412,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         pm.getPaymentMethodData().getPatient_deposit().setPatient(patient);
                         PatientDeposit pd = patientDepositController.checkDepositOfThePatient(patient, sessionController.getDepartment());
                         pm.getPaymentMethodData().getPatient_deposit().setPatientDepost(pd);
-                        System.out.println("remainAmount = " + remainAmount);
                         if (remainAmount >= pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance()) {
                             pm.getPaymentMethodData().getPatient_deposit().setTotalValue(pm.getPaymentMethodData().getPatient_deposit().getPatientDepost().getBalance());
                         } else {
@@ -3045,10 +3010,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             BillItem bi = be.getBillItem();
 
             for (BillFee bf : be.getLstBillFees()) {
-//                System.out.println("bf = " + bf);
 
                 boolean needToAdd = billFeeIsThereAsSelectedInBillFeeBundle(bf);
-//                System.out.println("needToAdd = " + needToAdd);
                 if (needToAdd) {
 
                     Department department = null;
@@ -3072,10 +3035,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                         }
                     }
                     bf.setFeeVatPlusValue(bf.getFeeValue() + bf.getFeeVat());
-//                    System.out.println("bf.getFeeValue(): " + bf.getFeeValue());
-//                    System.out.println("bf.getFeeDiscount(): " + bf.getFeeDiscount());
-//                    System.out.println("bf.getFeeVat(): " + bf.getFeeVat());
-//                    System.out.println("bf.getFeeVatPlusValue(): " + bf.getFeeVatPlusValue());
 
                     entryGross += bf.getFeeGrossValue();
                     entryNet += bf.getFeeValue();
@@ -3083,11 +3042,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                     entryVat += bf.getFeeVat();
                     entryVatPlusNet += bf.getFeeVatPlusValue();
 
-//                    System.out.println("entryGross: " + entryGross);
-//                    System.out.println("entryNet: " + entryNet);
-//                    System.out.println("entryDis: " + entryDis);
-//                    System.out.println("entryVat: " + entryVat);
-//                    System.out.println("entryVatPlusNet: " + entryVatPlusNet);
                 }
             }
 
@@ -3118,7 +3072,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
     }
 
     private boolean billFeeIsThereAsSelectedInBillFeeBundle(BillFee bf) {
-        //System.out.println("billFeeIsThereAsSelectedInBillFeeBundle");
         if (bf == null) {
             return false;
         }
