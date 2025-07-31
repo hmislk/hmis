@@ -113,6 +113,7 @@ public class TransferRequestController implements Serializable {
     private BillItem currentBillItem;
     private List<BillItem> billItems;
     private boolean printPreview;
+    private boolean showAllBillFormats = false;
     private Department toDepartment;
     private List<Department> recentToDepartments;
     // </editor-fold>
@@ -1025,6 +1026,19 @@ public class TransferRequestController implements Serializable {
         }
         setToDepartment(d);
         return processTransferRequest();
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
 }

@@ -192,35 +192,48 @@
                 </p:panel>
             </p:panel>
             <p:panel rendered="#{transferReceiveController.printPreview}">
-                <p:commandButton 
-                    ajax="false" 
-                    icon="fas fa-list"
-                    class="ui-button-warning"
-                    action="pharmacy_transfer_issued_list" 
-                    actionListener="#{transferReceiveController.makeNull()}" 
-                    value="Issued List"/>                    
-                <p:commandButton 
-                    value="Print" 
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2 mb-2"
-                    ajax="false" 
-                    action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
+                <div class="d-flex justify-content-between mb-2">
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-list"
+                        class="ui-button-warning"
+                        action="pharmacy_transfer_issued_list" 
+                        actionListener="#{transferReceiveController.makeNull()}" 
+                        value="Issued List"/>
+
+                    <div class="d-flex">
+                        <p:commandButton 
+                            value="Print" 
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2"
+                            ajax="false" 
+                            action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="#{transferReceiveController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                            icon="fas fa-eye"
+                            class="ui-button-secondary mx-1"
+                            ajax="false"
+                            action="#{transferReceiveController.toggleShowAllBillFormats}"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            title="Toggle visibility of all bill formats for development" />
+                    </div>
+                </div>
 
                 <h:panelGroup   id="gpBillPreview">
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{transferReceiveController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                    <h:panelGroup rendered="#{transferReceiveController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq true}" >
                         <ph:transfeRecieve_detailed bill="#{transferReceiveController.receivedBill}"/>
                     </h:panelGroup>
 
                     <h:panelGroup 
                         id="gpBillTemplate" 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"> 
+                        rendered="#{transferReceiveController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"> 
                         <ph:pharmacy_transfer_receive_receipt bill="#{transferReceiveController.receivedBill}" ></ph:pharmacy_transfer_receive_receipt>
                     </h:panelGroup>
 

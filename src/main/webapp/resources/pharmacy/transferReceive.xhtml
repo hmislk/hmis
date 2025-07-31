@@ -110,7 +110,6 @@
                     rowIndexVar="rowIndex"
                     styleClass="no-border-table compact-table"
                     style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;"
-                    class="my-2"
                     value="#{cc.attrs.bill.billItems}" sortBy="#{bip.searialNo}" var="bip">
 
                     <p:column
@@ -238,12 +237,15 @@
                         </f:facet>
                     </p:column>
 
-                    <p:column style="margin: 0px; padding: 1px 2px; line-height: 1.1;" width="5em"
-                              rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
+                    <p:column 
+                        style="margin: 0px; padding: 1px 2px; line-height: 1.1;" 
+                        width="5em"
+                        class="text-end"
+                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Report Columns - Date of Expiary is required in Pharmacy Disbursement Reports', true)}">
                         <f:facet name="header">
                             <h:outputLabel value="D O E"/>
                         </f:facet>
-                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.doe}">
+                        <h:outputLabel value="#{bip.pharmaceuticalBillItem.itemBatch.dateOfExpire}">
                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                         </h:outputLabel>
                     </p:column>
