@@ -54,6 +54,8 @@ public class BillNumber implements Serializable {
     @Temporal(javax.persistence.TemporalType.TIMESTAMP)
     Date retiredAt;
     private String retireComments;
+    private boolean opdAndInpatientServiceBills;
+    private boolean opdAndInpatientServiceBatchBills;
 
 
 
@@ -195,6 +197,22 @@ public class BillNumber implements Serializable {
 
     public void setPaymentMethod(PaymentMethod paymentMethod) {
         this.paymentMethod = paymentMethod;
+    }
+
+    public boolean isOpdAndInpatientServiceBills() {
+        return opdAndInpatientServiceBills;
+    }
+
+    public void setOpdAndInpatientServiceBills(boolean opdAndInpatientServiceBills) {
+        this.opdAndInpatientServiceBills = opdAndInpatientServiceBills;
+    }
+
+    public boolean isOpdAndInpatientServiceBatchBills() {
+        return opdAndInpatientServiceBatchBills;
+    }
+
+    public void setOpdAndInpatientServiceBatchBills(boolean opdAndInpatientServiceBatchBills) {
+        this.opdAndInpatientServiceBatchBills = opdAndInpatientServiceBatchBills;
     }
 
 }

@@ -2075,10 +2075,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+                = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SeparateFromDepartmentToDepartmentAndBillTypes", false);
         
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+                = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(null, department, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -2221,10 +2221,10 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
+                = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SeparateFromDepartmentToDepartmentAndBillTypes", false);
         
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+                = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
@@ -2815,7 +2815,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
-            allBillFees = getBillBean().forInstitutionBillFeefromBillItem(bi, sessionController.getDepartment().getSite());
+            allBillFees = getBillBean().forInstitutionBillFeesFromBillItem(bi, sessionController.getDepartment().getSite());
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }

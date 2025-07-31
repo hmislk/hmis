@@ -85,20 +85,28 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
         String institutionId = institution != null ? institution.getId().toString() : "null";
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
-        String billTypeHash = "null";
+        String billTypeKey = "null";
         if (billTypes != null && !billTypes.isEmpty()) {
-            billTypeHash = String.valueOf(billTypes.hashCode());
+            billTypeKey = billTypes.stream()
+                    .map(bt -> bt.name())
+                    .sorted()
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("null");
         }
-        return institutionId + "-" + departmentId + "-" + billTypeHash;
+        return institutionId + "-" + departmentId + "-" + billTypeKey;
     }
 
     private String getLockKey(Department toDepartment, List<BillTypeAtomic> billTypes) {
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
-        String billTypeHash = "null";
+        String billTypeKey = "null";
         if (billTypes != null && !billTypes.isEmpty()) {
-            billTypeHash = String.valueOf(billTypes.hashCode());
+            billTypeKey = billTypes.stream()
+                    .map(bt -> bt.name())
+                    .sorted()
+                    .reduce((a, b) -> a + "," + b)
+                    .orElse("null");
         }
-        return departmentId + "-" + billTypeHash;
+        return departmentId + "-" + billTypeKey;
     }
 
     private String getLockKey(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
@@ -627,7 +635,7 @@ public class BillNumberGenerator {
             }
             jpql += " ORDER BY b.id DESC";
             Calendar startOfYear = Calendar.getInstance();
-            startOfYear.set(Calendar.DAY_OF_YEAR, Calendar.JANUARY);
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
             startOfYear.set(Calendar.HOUR_OF_DAY, 0);
             startOfYear.set(Calendar.MINUTE, 0);
             startOfYear.set(Calendar.SECOND, 0);
@@ -681,7 +689,7 @@ public class BillNumberGenerator {
             }
             jpql += " ORDER BY b.id DESC";
             Calendar startOfYear = Calendar.getInstance();
-            startOfYear.set(Calendar.DAY_OF_YEAR, Calendar.JANUARY);
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
             startOfYear.set(Calendar.HOUR_OF_DAY, 0);
             startOfYear.set(Calendar.MINUTE, 0);
             startOfYear.set(Calendar.SECOND, 0);
@@ -727,7 +735,7 @@ public class BillNumberGenerator {
             }
             jpql += " ORDER BY b.id DESC";
             Calendar startOfYear = Calendar.getInstance();
-            startOfYear.set(Calendar.DAY_OF_YEAR, Calendar.JANUARY);
+            startOfYear.set(Calendar.DAY_OF_YEAR, 1);
             startOfYear.set(Calendar.HOUR_OF_DAY, 0);
             startOfYear.set(Calendar.MINUTE, 0);
             startOfYear.set(Calendar.SECOND, 0);
@@ -739,7 +747,16 @@ public class BillNumberGenerator {
             Long countOfBills = billFacade.findLongByJpql(jpql, hm);
             billNumber.setLastBillNumber(countOfBills );
             billNumberFacade.createAndFlush(billNumber);
-        } 
+        } else {
+            // Handle existing bill numbers by incrementing lastBillNumber
+            Long currentLastBillNumber = billNumber.getLastBillNumber();
+            if (currentLastBillNumber == null) {
+                currentLastBillNumber = 0L;
+            }
+            currentLastBillNumber++;
+            billNumber.setLastBillNumber(currentLastBillNumber);
+            billNumberFacade.editAndFlush(billNumber);
+        }
         return billNumber;
     }
 

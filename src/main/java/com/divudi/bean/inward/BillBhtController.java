@@ -356,7 +356,7 @@ public class BillBhtController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
 
-        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         String batchBillId = "";
         
         if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
@@ -634,7 +634,7 @@ public class BillBhtController implements Serializable {
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+                        "OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
