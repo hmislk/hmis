@@ -2117,9 +2117,22 @@ public class BillNumberGenerator {
         String finalResult = result.toString();
         return finalResult;
     }
+    
+    public BillNumber fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear( Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
+    
 
     public String departmentBatchBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
-        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBills(dep, billTypes);
+        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientBatchBillForYear(dep, billTypes);
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
         billNumber.setLastBillNumber(dd);
@@ -2155,9 +2168,21 @@ public class BillNumberGenerator {
         String finalResult = result.toString();
         return finalResult;
     }
+    
+    public BillNumber fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices( Department department, List<BillTypeAtomic> billTypes) {
+        String lockKey = getLockKey(department, billTypes);
+        ReentrantLock lock = lockMap.computeIfAbsent(lockKey, k -> new ReentrantLock());
+
+        lock.lock();
+        try {
+            return fetchLastBillNumberSynchronizedForOpdAndInpatientIndividualBills(department, billTypes);
+        } finally {
+            lock.unlock();
+        }
+    }
 
     public String departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(Department dep, List<BillTypeAtomic> billTypes) {
-        BillNumber billNumber = fetchLastBillNumberSynchronizedForOpdAndInpatientIndividualBills(dep, billTypes);
+        BillNumber billNumber = fetchLastdepartmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(dep, billTypes);
         Long dd = billNumber.getLastBillNumber();
         dd = dd + 1;
         billNumber.setLastBillNumber(dd);
