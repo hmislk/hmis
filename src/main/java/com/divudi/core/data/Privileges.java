@@ -823,6 +823,7 @@ public enum Privileges {
             case PharmacyRetailTransaction:
             case PharmacySale:
             case PharmacySaleQuick:
+            case PharmacySaleForCashierQuick:
             case PharmacySaleForCashier:
             case PharmacySaleWithOutStock:
             case PharmacySearchSaleBill:
