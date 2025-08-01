@@ -352,6 +352,7 @@ public class BillSearch implements Serializable {
     private boolean duplicate;
 
     private Payment payment;
+    private int billItemSize;
 
     public String navigateToBillPaymentOpdBill() {
         return "bill_payment_opd?faces-redirect=true";
@@ -373,6 +374,38 @@ public class BillSearch implements Serializable {
 
     public List<Payment> fetchBillPayments(Bill bill) {
         return billService.fetchBillPayments(bill);
+    }
+    
+    public List<BillItem> groupBillItemByName(List<BillItem> billItems) {
+        Map<String, BillItem> groupedMap = new HashMap<>();
+
+        for (BillItem item : billItems) {
+            if (item.getItem() == null || item.getItem().getName() == null) {
+                continue;
+            }
+
+            String name = item.getItem().getName();
+
+            if (!groupedMap.containsKey(name)) {
+
+                BillItem grouped = new BillItem();
+                grouped.setItem(item.getItem());
+                grouped.setQty(item.getQty());
+                grouped.setGrossValue(item.getGrossValue());
+                grouped.setNetValue(item.getNetValue());
+                groupedMap.put(name, grouped);
+            } else {
+
+                BillItem grouped = groupedMap.get(name);
+                grouped.setQty(grouped.getQty() + item.getQty());
+                grouped.setGrossValue(grouped.getGrossValue() + item.getGrossValue());
+                grouped.setNetValue(grouped.getNetValue() + item.getNetValue());
+            }
+        }
+        
+        billItemSize = new ArrayList<>(groupedMap.values()).size();
+
+        return new ArrayList<>(groupedMap.values());
     }
 
     public void fillBillFees() {
@@ -6001,6 +6034,14 @@ public class BillSearch implements Serializable {
 
     public void setDuplicate(boolean duplicate) {
         this.duplicate = duplicate;
+    }
+
+    public int getBillItemSize() {
+        return billItemSize;
+    }
+
+    public void setBillItemSize(int billItemSize) {
+        this.billItemSize = billItemSize;
     }
 
     public class PaymentSummary {
