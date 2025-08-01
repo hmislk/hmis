@@ -23,6 +23,7 @@ import com.divudi.bean.common.SessionController;
 import com.divudi.core.data.BillClassType;
 import com.divudi.core.data.BillNumberSuffix;
 import com.divudi.core.data.BillType;
+import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.data.inward.SurgeryBillType;
@@ -651,7 +652,7 @@ public class BillBhtController implements Serializable {
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
-            deptId = bnb.departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(sessionController.getDepartment(), opdAndInpatientBills);
+            deptId = bnb.departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
             insId = deptId;
         } else if (inpatientServiceBillNumberGenerateStrategyDefault) {
             deptId = bnb.departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.INWARD_SERVICE_BILL);
