@@ -28,7 +28,10 @@
       "Bash(git stash:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(./detect-maven.sh test:*)"
+      "Bash(./detect-maven.sh test:*)",
+      "Bash(git push:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh pr edit:*)"
     ],
     "deny": []
   }
