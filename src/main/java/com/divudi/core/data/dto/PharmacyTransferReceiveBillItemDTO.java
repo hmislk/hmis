@@ -4,9 +4,9 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
- * DTO for Pharmacy Transfer Issue Bill Items
+ * DTO for Pharmacy Transfer Receive Bill Items
  */
-public class PharmacyTransferIssueBillItemDTO implements Serializable {
+public class PharmacyTransferReceiveBillItemDTO implements Serializable {
     private String deptId;
     private Date createdAt;
     private String itemName;
@@ -21,10 +21,10 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
     private Double transferRate;
     private Double transferValue;
 
-    public PharmacyTransferIssueBillItemDTO() {
+    public PharmacyTransferReceiveBillItemDTO() {
     }
 
-    public PharmacyTransferIssueBillItemDTO(String deptId, Date createdAt, String itemName, String itemCode,
+    public PharmacyTransferReceiveBillItemDTO(String deptId, Date createdAt, String itemName, String itemCode,
                                             Double qty, Double costRate, Double costValue,
                                             Double retailRate, Double retailValue,
                                             Double purchaseRate, Double purchaseValue,
@@ -45,7 +45,7 @@ public class PharmacyTransferIssueBillItemDTO implements Serializable {
     }
 
     // Constructor matching JPQL query types: (String, Date, String, String, Double, Double, BigDecimal, Double, BigDecimal, Double, BigDecimal, BigDecimal, BigDecimal)
-    public PharmacyTransferIssueBillItemDTO(String deptId, Date createdAt, String itemName, String itemCode,
+    public PharmacyTransferReceiveBillItemDTO(String deptId, Date createdAt, String itemName, String itemCode,
                                             Double qty, Double costRate, java.math.BigDecimal costValue,
                                             Double retailRate, java.math.BigDecimal retailValue,
                                             Double purchaseRate, java.math.BigDecimal purchaseValue,

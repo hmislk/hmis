@@ -5,16 +5,16 @@ import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * DTO for Pharmacy Transfer Issue Bill Reports
+ * DTO for Pharmacy Transfer Receive Bill Reports
  * Aggregates financial data directly from database to avoid iterative calculations
  */
-public class PharmacyTransferIssueDTO implements Serializable {
+public class PharmacyTransferReceiveDTO implements Serializable {
     
     private Long billId;
     private String deptId;
     private Date createdAt;
-    private String fromDepartmentName;
-    private String toDepartmentName;
+    private String departmentName; // Receiving department
+    private String fromDepartmentName; // Department that sent the transfer
     private String transporterName;
     private Boolean cancelled;
     private Boolean refunded;
@@ -25,19 +25,19 @@ public class PharmacyTransferIssueDTO implements Serializable {
     private BigDecimal saleValue;    // Sum of valueAtRetailRate from BillItemFinanceDetails
     
     // Default constructor
-    public PharmacyTransferIssueDTO() {
+    public PharmacyTransferReceiveDTO() {
     }
     
     // Constructor for direct JPQL query with aggregated values
-    public PharmacyTransferIssueDTO(Long billId, String deptId, Date createdAt, 
-                                    String fromDepartmentName, String toDepartmentName, 
+    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt, 
+                                    String departmentName, String fromDepartmentName, 
                                     String transporterName, Boolean cancelled, Boolean refunded,
                                     String comments, BigDecimal costValue, BigDecimal saleValue) {
         this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
+        this.departmentName = departmentName;
         this.fromDepartmentName = fromDepartmentName;
-        this.toDepartmentName = toDepartmentName;
         this.transporterName = transporterName;
         this.cancelled = cancelled;
         this.refunded = refunded;
@@ -47,15 +47,15 @@ public class PharmacyTransferIssueDTO implements Serializable {
     }
     
     // Constructor for JPQL queries with all three financial values
-    public PharmacyTransferIssueDTO(Long billId, String deptId, Date createdAt, 
-                                    String fromDepartmentName, String toDepartmentName, 
+    public PharmacyTransferReceiveDTO(Long billId, String deptId, Date createdAt, 
+                                    String departmentName, String fromDepartmentName, 
                                     String transporterName, Boolean cancelled, Boolean refunded,
                                     String comments, BigDecimal costValue, BigDecimal transferValue, BigDecimal saleValue) {
         this.billId = billId;
         this.deptId = deptId;
         this.createdAt = createdAt;
+        this.departmentName = departmentName;
         this.fromDepartmentName = fromDepartmentName;
-        this.toDepartmentName = toDepartmentName;
         this.transporterName = transporterName;
         this.cancelled = cancelled;
         this.refunded = refunded;
@@ -66,15 +66,15 @@ public class PharmacyTransferIssueDTO implements Serializable {
     }
     
     // Constructor for JPQL queries with COALESCE (handles Object types from COALESCE)
-    public PharmacyTransferIssueDTO(Long billId, Object deptId, Date createdAt, 
-                                    Object fromDepartmentName, Object toDepartmentName, 
+    public PharmacyTransferReceiveDTO(Long billId, Object deptId, Date createdAt, 
+                                    Object departmentName, Object fromDepartmentName, 
                                     Object transporterName, Object cancelled, Object refunded,
                                     Object comments, Object costValue, Object transferValue, Object saleValue) {
         this.billId = billId;
         this.deptId = deptId != null ? deptId.toString() : "";
         this.createdAt = createdAt;
+        this.departmentName = departmentName != null ? departmentName.toString() : "";
         this.fromDepartmentName = fromDepartmentName != null ? fromDepartmentName.toString() : "";
-        this.toDepartmentName = toDepartmentName != null ? toDepartmentName.toString() : "";
         this.transporterName = transporterName != null ? transporterName.toString() : "";
         // Handle both Boolean and numeric (0/1) boolean values from database
         if (cancelled instanceof Boolean) {
@@ -146,20 +146,20 @@ public class PharmacyTransferIssueDTO implements Serializable {
         this.createdAt = createdAt;
     }
 
+    public String getDepartmentName() {
+        return departmentName;
+    }
+
+    public void setDepartmentName(String departmentName) {
+        this.departmentName = departmentName;
+    }
+
     public String getFromDepartmentName() {
         return fromDepartmentName;
     }
 
     public void setFromDepartmentName(String fromDepartmentName) {
         this.fromDepartmentName = fromDepartmentName;
-    }
-
-    public String getToDepartmentName() {
-        return toDepartmentName;
-    }
-
-    public void setToDepartmentName(String toDepartmentName) {
-        this.toDepartmentName = toDepartmentName;
     }
 
     public String getTransporterName() {
@@ -252,20 +252,17 @@ public class PharmacyTransferIssueDTO implements Serializable {
         return saleValue != null ? saleValue.doubleValue() : 0.0;
     }
     
-    // Note: getFromDepartmentName(), getToDepartmentName(), getTransporterName() 
-    // are already defined above in the regular getters section
-    
     // For nested object access compatibility
+    public Department getDepartment() {
+        return new Department(departmentName);
+    }
+    
     public FromDepartment getFromDepartment() {
         return new FromDepartment(fromDepartmentName);
     }
     
-    public ToDepartment getToDepartment() {
-        return new ToDepartment(toDepartmentName);
-    }
-    
-    public ToStaff getToStaff() {
-        return new ToStaff(transporterName);
+    public FromStaff getFromStaff() {
+        return new FromStaff(transporterName);
     }
     
     public CancelledBill getCancelledBill() {
@@ -273,21 +270,21 @@ public class PharmacyTransferIssueDTO implements Serializable {
     }
     
     // Nested classes for XHTML compatibility
+    public static class Department {
+        private String name;
+        public Department(String name) { this.name = name; }
+        public String getName() { return name; }
+    }
+    
     public static class FromDepartment {
         private String name;
         public FromDepartment(String name) { this.name = name; }
         public String getName() { return name; }
     }
     
-    public static class ToDepartment {
-        private String name;
-        public ToDepartment(String name) { this.name = name; }
-        public String getName() { return name; }
-    }
-    
-    public static class ToStaff {
+    public static class FromStaff {
         private String personName;
-        public ToStaff(String personName) { this.personName = personName; }
+        public FromStaff(String personName) { this.personName = personName; }
         public Person getPerson() { return new Person(personName); }
         
         public static class Person {

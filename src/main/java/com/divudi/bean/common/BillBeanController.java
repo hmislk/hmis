@@ -77,6 +77,7 @@ import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
@@ -1956,6 +1957,44 @@ public class BillBeanController implements Serializable {
 
         return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
 
+    }
+
+    /**
+     * Fetch department-wise financial data using BillFinanceDetails (matching DTO approach)
+     * Returns [toDepartment/fromDepartment, netTotal, totalRetailSaleValue, totalCostValue]
+     */
+    public List<Object[]> fetchBilledDepartmentFinanceDetails(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " b.toDepartment";
+        } else {
+            sql += " b.fromDepartment";
+        }
+        sql += ",sum(COALESCE(bfd.lineNetTotal, 0.0)), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
+                + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
+                + " FROM Bill b "
+                + " LEFT JOIN b.billFinanceDetails bfd "
+                + " where b.department=:dept "
+                + " and  b.billType= :bTp  "
+                + " and  b.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by b.toDepartment "
+                    + " order by b.toDepartment.name ";
+        } else {
+            sql += " group by b.fromDepartment"
+                    + " order by b.fromDepartment.name";
+        }
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
     }
 
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {

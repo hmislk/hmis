@@ -33,6 +33,7 @@ import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillItemFacade;
 import com.divudi.core.facade.PharmaceuticalBillItemFacade;
 import com.divudi.core.util.CommonFunctions;
+import com.divudi.core.util.CommonFunctionsProxy;
 import com.divudi.bean.common.ConfigOptionApplicationController;
 import com.divudi.service.BillService;
 import com.divudi.core.entity.BillItemFinanceDetails;
@@ -88,6 +89,8 @@ public class TransferIssueController implements Serializable {
     private NotificationController notificationController;
     @Inject
     private ConfigOptionApplicationController configOptionApplicationController;
+    @Inject
+    private CommonFunctionsProxy commonFunctionsProxy;
 
     private Bill requestedBill;
     private Bill issuedBill;
@@ -1204,6 +1207,29 @@ public class TransferIssueController implements Serializable {
 
     public String toggleShowAllBillFormats() {
         this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
+    }
+
+    public String getStockColourClass(Stock stock) {
+        if (!configOptionApplicationController.getBooleanValueByKey("Display Colours for Stock Autocomplete Items", true)) {
+            return "";
+        }
+
+        if (stock == null || stock.getItemBatch() == null || stock.getItemBatch().getDateOfExpire() == null) {
+            return "";
+        }
+
+        Date expiry = stock.getItemBatch().getDateOfExpire();
+        Date now = commonFunctionsProxy.getCurrentDateTime();
+
+        if (now.after(expiry)) {
+            return "ui-messages-fatal";
+        }
+
+        if (commonFunctionsProxy.getDateAfterThreeMonthsCurrentDateTime().after(expiry)) {
+            return "ui-messages-warn";
+        }
+
         return "";
     }
 
