@@ -666,17 +666,6 @@ public class ReportsTransfer implements Serializable {
 
     }
 
-    /**
-     * Main method that delegates to either DTO or Entity approach based on
-     * configuration
-     */
-    public void fillDepartmentTransfersIssueByBill() {
-        if (useDtoApproach) {
-            fillDepartmentTransfersIssueByBillDto();
-        } else {
-            fillDepartmentTransfersIssueByBillEntity();
-        }
-    }
 
     /**
      * DTO-based approach for efficient data retrieval - no calculations needed
@@ -692,6 +681,7 @@ public class ReportsTransfer implements Serializable {
      * Entity-based approach for backward compatibility Uses the traditional
      * method with iterative calculations
      */
+    @Deprecated // Use fillDepartmentTransfersIssueByBillDto
     public void fillDepartmentTransfersIssueByBillEntity() {
         reportTimerController.trackReportExecution(() -> {
             fillTransferIssueBillsLegacy();
@@ -759,16 +749,21 @@ public class ReportsTransfer implements Serializable {
         totalsValue = 0.0;
         netTotalValues = 0.0;
         costValue = 0.0;
+        purchaseValue = 0.0;
+        transferValue = 0.0;
         if (transferIssueDtos != null) {
             for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
                 if (dto.getSaleValue() != null) {
-                    totalsValue += dto.getSaleValue().doubleValue();
+                    totalsValue += dto.getSaleValue();
                 }
-                if (dto.getTransferValue() != null) {
-                    netTotalValues += dto.getTransferValue().doubleValue();
+                if (dto.getPurchaseValue() != null) {
+                    purchaseValue += dto.getPurchaseValue();
                 }
                 if (dto.getCostValue() != null) {
                     costValue += dto.getCostValue().doubleValue();
+                }
+                if (dto.getTransferValueDouble() != null) {
+                    transferValue += dto.getTransferValueDouble();
                 }
             }
         }
@@ -1078,6 +1073,7 @@ public class ReportsTransfer implements Serializable {
         netTotalValues = 0.0;
         netTotalSaleValues = 0.0;
         netTotalPurchaseValues = 0.0;
+        netTotalCostValues = 0.0;
 
         // Use BillFinanceDetails for consistent calculations (matching DTO approach)
         List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetails(fd, td, dep, bt, true);
@@ -2690,7 +2686,7 @@ public class ReportsTransfer implements Serializable {
     }
 
     public double getTotalTransferValue() {
-        return netTotalValues;
+        return transferValue;
     }
 
     public BillType[] getBillTypes() {
