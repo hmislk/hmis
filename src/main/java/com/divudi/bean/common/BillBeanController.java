@@ -5258,8 +5258,9 @@ public class BillBeanController implements Serializable {
                 for (Fee i : packFee) {
                     f = new BillFee();
                     f.setFee(i);
-                    f.setFeeValue(i.getFee());
-                    f.setFeeGrossValue(i.getFee());
+                    double qty = (billItem.getQty() == null || billItem.getQty() <= 0) ? 1.0 : billItem.getQty();
+                    f.setFeeValue(i.getFee() * qty);
+                    f.setFeeGrossValue(i.getFee() * qty);
                     f.setBillItem(billItem);
                     f.setCreatedAt(new Date());
                     if (pi.getDepartment() != null) {
