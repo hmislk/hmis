@@ -719,6 +719,7 @@ public class ReportsTransfer implements Serializable {
                 .append("COALESCE(b.refunded, false), ")
                 .append("COALESCE(b.comments, ''), ")
                 .append("COALESCE(bfd.totalCostValue, 0.0), ")
+                .append("COALESCE(bfd.lineNetTotal, 0.0), ")
                 .append("COALESCE(bfd.totalRetailSaleValue, 0.0)")
                 .append(") ")
                 .append("FROM Bill b ")
@@ -757,6 +758,7 @@ public class ReportsTransfer implements Serializable {
         // Calculate totals from DTOs 
         totalsValue = 0.0;
         netTotalValues = 0.0;
+        costValue = 0.0;
         if (transferIssueDtos != null) {
             for (PharmacyTransferIssueDTO dto : transferIssueDtos) {
                 if (dto.getSaleValue() != null) {
@@ -764,6 +766,9 @@ public class ReportsTransfer implements Serializable {
                 }
                 if (dto.getTransferValue() != null) {
                     netTotalValues += dto.getTransferValue().doubleValue();
+                }
+                if (dto.getCostValue() != null) {
+                    costValue += dto.getCostValue().doubleValue();
                 }
             }
         }
@@ -2678,6 +2683,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setNetTotalValues(double netTotalValues) {
         this.netTotalValues = netTotalValues;
+    }
+
+    public double getTotalCostValue() {
+        return costValue;
+    }
+
+    public double getTotalTransferValue() {
+        return netTotalValues;
     }
 
     public BillType[] getBillTypes() {
