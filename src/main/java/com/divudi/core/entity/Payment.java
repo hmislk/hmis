@@ -10,9 +10,11 @@ import com.divudi.core.data.PaymentMethod;
 import com.divudi.core.entity.cashTransaction.CashBook;
 import com.divudi.core.entity.cashTransaction.CashBookEntry;
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -135,8 +137,6 @@ public class Payment implements Serializable, RetirableEntity {
     private boolean handingOverStarted;
     private boolean handingOverCompleted;
 
-
-
     //Payment Record Creation
     @ManyToOne
     private Bill paymentRecordCreateBill;
@@ -190,6 +190,10 @@ public class Payment implements Serializable, RetirableEntity {
     private Institution toInstitution;
 
     private Staff toStaff;
+
+    // newly added fields
+    @Column(precision = 18, scale = 4)
+    private BigDecimal discountValue = null;
 
     public Payment() {
         cashbookEntryStated = false;
@@ -493,6 +497,7 @@ public class Payment implements Serializable, RetirableEntity {
         newPayment.setChequeDate(this.chequeDate);
         newPayment.setCreditCardRefNo(this.creditCardRefNo);
         newPayment.setPaidValue(this.paidValue);
+        newPayment.setDiscountValue(this.discountValue);
         newPayment.setInstitution(this.institution);
         newPayment.setDepartment(this.department);
         newPayment.setReferancePayment(this);
@@ -900,6 +905,23 @@ public class Payment implements Serializable, RetirableEntity {
 
     public void setToStaff(Staff toStaff) {
         this.toStaff = toStaff;
+    }
+
+    public BigDecimal getDiscountValue() {
+        if (discountValue == null) {
+            if (bill != null && bill.getDiscount() != 0.0 && bill.getNetTotal() != 0.0 && paidValue != 0.0) {
+                // Calculate proportionally based on this payment's contribution to the bill
+                double proportion = paidValue / bill.getNetTotal();
+                return BigDecimal.valueOf(bill.getDiscount() * proportion);
+            } else {
+                return BigDecimal.ZERO;
+            }
+        }
+        return discountValue;
+    }
+
+    public void setDiscountValue(BigDecimal discountValue) {
+        this.discountValue = discountValue;
     }
 
     @Transient

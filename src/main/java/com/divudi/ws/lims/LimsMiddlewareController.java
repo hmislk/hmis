@@ -1909,19 +1909,19 @@ public class LimsMiddlewareController {
     }
 
     public List<String> generateTestCodesForAnalyzer(String sampleId, String sendingAnalyzerName) {
-        // // System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
-        // // System.out.println("generateTestCodesForAnalyzer");
+        System.out.println("sendingAnalyzerName = " + sendingAnalyzerName);
+        System.out.println("generateTestCodesForAnalyzer");
         PatientSample ps = patientSampleFromId(sampleId);
-        // // System.out.println("ps = " + ps);
+        System.out.println("ps = " + ps);
         if (ps == null) {
-            // // System.out.println("No PS");
+            System.out.println("No PS");
             return null;
         }
 
         List<PatientSampleComponant> pscs = getPatientSampleComponents(ps);
-        // // System.out.println("pscs = " + pscs);
+        System.out.println("pscs = " + pscs);
         if (pscs == null || pscs.isEmpty()) {
-            // // System.out.println("PSCS NULL OR EMPTY");
+            System.out.println("PSCS NULL OR EMPTY");
             return null;
         }
 
@@ -1942,14 +1942,14 @@ public class LimsMiddlewareController {
             }
 
             for (InvestigationItem tii : myIx.getReportItems()) {
-//                // // System.out.println("tii = " + tii.getName());
+                System.out.println("tii = " + tii.getName());
                 if (tii.getIxItemType() == InvestigationItemType.Value) {
-//                    // // System.out.println("value");
+                    System.out.println("value");
                     String sampleTypeName;
                     String samplePriority;
 
                     if (tii.getItem() == null) {
-                        // // System.out.println("tii is NULL " + tii);
+                        System.out.println("tii is NULL " + tii);
                         continue;
                     }
 
@@ -1966,35 +1966,35 @@ public class LimsMiddlewareController {
                     MySpeciman ms = new MySpeciman();
                     ms.setSpecimanName(sampleTypeName);
                     if (tii.getItem().isHasMoreThanOneComponant()) {
-                        // // System.out.println("more than one componant");
-                        // // System.out.println("tii = " + tii.getName());
-                        // // System.out.println("tii.getTest() = " + tii.getTest());
+                        System.out.println("more than one componant");
+                        System.out.println("tii = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            // // System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
-                            // // System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
+                            System.out.println("tii.getSampleComponent() = " + tii.getSampleComponent());
+                            System.out.println("c.getInvestigationComponant() = " + c.getInvestigationComponant());
                             if (tii.getSampleComponent().equals(c.getInvestigationComponant())) {
-                                // // System.out.println("going to check analyzer equal");
+                                System.out.println("going to check analyzer equal");
                                 if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
-                                    // // System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
-                                    // // System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
+                                    System.out.println("tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    System.out.println("c.getInvestigationComponant().getName() = " + c.getInvestigationComponant().getName());
                                     tests.add(tii.getTest().getCode());
                                     updateStatusToPeformed(c);
-                                    // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                    System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                                 }
 //                                tests.add(tii.getTest().getName());
 
                             }
                         }
                     } else {
-                        // // System.out.println("one componant");
-                        // // System.out.println("tti = " + tii.getName());
-                        // // System.out.println("tii.getTest() = " + tii.getTest());
+                        System.out.println("one componant");
+                        System.out.println("tti = " + tii.getName());
+                        System.out.println("tii.getTest() = " + tii.getTest());
                         if (tii.getTest() != null && !tii.getTest().getName().trim().equals("")) {
-                            // // System.out.println("going to check analyzer equal");
+                            System.out.println("going to check analyzer equal");
                             if (tii.getMachine().getName().equalsIgnoreCase(sendingAnalyzerName)) {
                                 tests.add(tii.getTest().getCode());
                                 updateStatusToPeformed(c);
-                                // // System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
+                                System.out.println("1. tii.getTest().getCode() = " + tii.getTest().getCode());
                             }
 
                         }
@@ -2002,7 +2002,7 @@ public class LimsMiddlewareController {
                 }
             }
         }
-        // // System.out.println("tests = " + tests);
+        System.out.println("tests = " + tests);
         Set<String> uniqueTests = new HashSet<>(tests);
         List<String> uniqueTestList = new ArrayList<>(uniqueTests);
         return uniqueTestList;

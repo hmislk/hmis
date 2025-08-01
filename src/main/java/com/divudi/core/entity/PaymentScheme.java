@@ -5,6 +5,7 @@
 package com.divudi.core.entity;
 
 import com.divudi.core.data.CliantType;
+import com.divudi.core.entity.Department;
 import java.io.Serializable;
 import java.util.Date;
 import javax.persistence.Column;
@@ -38,6 +39,8 @@ public class PaymentScheme implements Serializable {
     Institution institution;
     @ManyToOne
     Person person;
+    @ManyToOne
+    Department department;
     //Created Properties
     @ManyToOne
     WebUser creater;
@@ -145,6 +148,14 @@ public class PaymentScheme implements Serializable {
 
     public void setPerson(Person person) {
         this.person = person;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Department department) {
+        this.department = department;
     }
 
     public WebUser getCreater() {

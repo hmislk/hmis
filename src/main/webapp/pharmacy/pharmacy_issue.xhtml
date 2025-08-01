@@ -5,9 +5,7 @@
       xmlns:h="http://xmlns.jcp.org/jsf/html"
       xmlns:p="http://primefaces.org/ui"
       xmlns:f="http://xmlns.jcp.org/jsf/core"
-      xmlns:bil="http://xmlns.jcp.org/jsf/composite/bill"
-      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy"
-      xmlns:pa="http://xmlns.jcp.org/jsf/composite/paymentMethod">
+      xmlns:phi="http://xmlns.jcp.org/jsf/composite/pharmacy">
 
     <h:body>
 
@@ -50,7 +48,7 @@
                                                 maxResults="10"
                                                 minQueryLength="3"
                                                 value="#{pharmacyIssueController.stock}"
-                                                completeMethod="#{stockController.completeAvailableStocks}"
+                                                completeMethod="#{stockController.completeAvailableStocksForAllowedDepartments}"
                                                 var="i"
                                                 itemLabel="#{i.itemBatch.item.name}"
                                                 itemValue="#{i}" >
@@ -267,12 +265,12 @@
 
 
                                     <p:commandButton
-                                            accesskey="s"
-                                            value="Issue"
-                                            ajax="false"
-                                            icon="fas fa-check"
-                                            action="#{pharmacyIssueController.checkTheDepartment()}"
-                                            class="w-25 ui-button-warning">
+                                        accesskey="s"
+                                        value="Issue"
+                                        ajax="false"
+                                        icon="fas fa-check"
+                                        action="#{pharmacyIssueController.checkTheDepartment()}"
+                                        class="w-25 ui-button-warning">
                                     </p:commandButton>
 
                                 </p:panel>
@@ -338,15 +336,7 @@
                         </div>
 
                         <h:panelGroup   id="gpBillPreview" >
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'FiveFivePaper'}" >
-                                <phi:pharmacy_disposal_bill_five_five bill="#{pharmacyIssueController.printBill}"/>
-                            </h:panelGroup>
-
-                            <h:panelGroup rendered="#{sessionController.loggedPreference.pharmacyBillPaperType eq 'PosPaper'}" >
-                                <phi:pharmacy_disposal_bill_pos bill="#{pharmacyIssueController.printBill}"/>
-                            </h:panelGroup>
-
+                            <phi:pharmacy_issue_receipt bill="#{pharmacyIssueController.printBill}"/>
                         </h:panelGroup>
                     </p:panel>
                 </h:form>

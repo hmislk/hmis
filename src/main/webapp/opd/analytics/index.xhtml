@@ -18,11 +18,17 @@
                                     <p:tab title="Summary Reports">
                                         <div class="d-grid gap-2">
                                             <p:commandButton 
-                                                class="w-100" 
+                                                class="w-100 ui-button-secondary" 
                                                 ajax="false" 
                                                 style="text-align: left" 
                                                 value="OPD Income Report"
                                                 action="#{opdReportController.navigateToOpdIncomeReport()}"/>
+                                            <p:commandButton 
+                                                class="w-100 ui-button-success" 
+                                                ajax="false" 
+                                                style="text-align: left" 
+                                                value="OPD Income Report DTO"
+                                                action="#{opdReportController.navigateToOpdIncomeReportDto()}"/>
                                              <p:commandButton 
                                                 class="w-100" 
                                                 ajax="false" 
@@ -124,6 +130,7 @@
                                         <div class="d-grid gap-2">
                                             <p:commandButton class="w-100" ajax="false" value="OPD Services Count" action="/reports/opd/service_count.xhtml" />
                                             <p:commandButton class="w-100" ajax="false" value="OPD Services Count Doctor Wise" action="/reports/opd/service_count_doctor_wise.xhtml" />
+                                            <p:commandButton class="w-100" ajax="false" value="Patient Indications Report" action="#{opdReportController.navigateToPatientIndicationsReport()}" />
                                         </div>
                                     </p:tab>
                                     <!-- OPD Income Tab -->

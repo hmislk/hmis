@@ -7,6 +7,7 @@ package com.divudi.bean.common;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.bean.collectingCentre.CollectingCentreBillController;
 import com.divudi.bean.inward.InwardBeanController;
+import com.divudi.bean.lab.LabTestHistoryController;
 import com.divudi.core.data.BillFeeBundleEntry;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.BillTypeAtomic;
@@ -71,6 +72,7 @@ import com.divudi.core.facade.PackageItemFacade;
 import com.divudi.core.facade.PackegeFacade;
 import com.divudi.core.facade.PatientInvestigationFacade;
 import com.divudi.core.facade.PaymentFacade;
+import com.divudi.core.facade.lab.LabTestHistoryFacade;
 import com.divudi.service.BillService;
 import com.divudi.service.DepartmentResolver;
 import java.io.Serializable;
@@ -134,6 +136,15 @@ public class BillBeanController implements Serializable {
     PaymentFacade paymentFacade;
     @EJB
     AllowedPaymentMethodFacade allowedPaymentMethodFacade;
+    @EJB
+    LabTestHistoryFacade labTestHistoryFacade;
+    @EJB
+    StaffService staffBean;
+    @EJB
+    BillService billService;
+    @EJB
+    DepartmentResolver departmentResolver;
+    
     @Inject
     DepartmentController departmentController;
     @Inject
@@ -142,13 +153,11 @@ public class BillBeanController implements Serializable {
     ItemFeeManager itemFeeManager;
     @Inject
     SessionController sessionController;
-    @EJB
-    StaffService staffBean;
-    @EJB
-    BillService billService;
-    @EJB
-    DepartmentResolver departmentResolver;
-
+    @Inject
+    LabTestHistoryController labTestHistoryController;
+    @Inject
+    ConfigOptionApplicationController configOptionApplicationController;
+    
     public boolean checkAllowedPaymentMethod(PaymentScheme paymentScheme, PaymentMethod paymentMethod) {
         String sql = "Select s From AllowedPaymentMethod s"
                 + " where s.retired=false "
@@ -1917,6 +1926,38 @@ public class BillBeanController implements Serializable {
 
     }
 
+    public List<Object[]> fetchBilledDepartmentBillItem(Date fromDate, Date toDate, Department department, BillType bt, boolean toDep) {
+        String sql;
+        Map temMap = new HashMap();
+
+        sql = "select ";
+        if (toDep) {
+            sql += " bi.bill.toDepartment";
+        } else {
+            sql += " bi.bill.fromDepartment";
+        }
+        sql += ",sum(bi.pharmaceuticalBillItem.itemBatch.retailsaleRate*bi.pharmaceuticalBillItem.qty) "
+                + ",sum(bi.pharmaceuticalBillItem.itemBatch.purcahseRate*bi.pharmaceuticalBillItem.qty) "
+                + " FROM BillItem bi "
+                + " where bi.bill.department=:dept "
+                + " and  bi.bill.billType= :bTp  "
+                + " and  bi.bill.createdAt between :fromDate and :toDate ";
+        if (toDep) {
+            sql += " group by bi.bill.toDepartment "
+                    + " order by bi.bill.toDepartment.name ";
+        } else {
+            sql += " group by bi.bill.fromDepartment"
+                    + " order by bi.bill.fromDepartment.name";
+        }
+        temMap.put("toDate", toDate);
+        temMap.put("fromDate", fromDate);
+        temMap.put("dept", department);
+        temMap.put("bTp", bt);
+
+        return getBillFeeFacade().findAggregates(sql, temMap, TemporalType.TIMESTAMP);
+
+    }
+
     public List<Object[]> fetchBilledDepartmentItemStore(Date fromDate, Date toDate, Department department) {
         String sql;
         Map temMap = new HashMap();
@@ -2610,7 +2651,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Bill> fetchRefundBillsOfBilledBill(Bill billedBill) {
-        System.out.println("billedBill = " + billedBill);
         String j = "Select b "
                 + " from Bill b "
                 + " where b.billedBill=:bb ";
@@ -3451,7 +3491,6 @@ public class BillBeanController implements Serializable {
         Set<Long> deptIdSet = new HashSet<>(); // Use Set to store department IDs
         for (BillEntry be : billEntrys) {
             Department dept = be.getBillItem().getItem().getTransDepartment();
-            System.out.println("be.getBillItem() = " + be.getBillItem());
             if (dept != null) {
                 deptIdSet.add(dept.getId()); // Add department ID to the set
             }
@@ -3739,7 +3778,6 @@ public class BillBeanController implements Serializable {
             billItem.setMarginValue(billItemMargin);
             billItem.setNetValue(billItemNet);
             billItem.setVat(billItemVat);
-            
 
 // Fix rates based on quantity
             double qty = billItem.getQty() != null && billItem.getQty() > 0.0 ? billItem.getQty() : 1.0;
@@ -3748,14 +3786,6 @@ public class BillBeanController implements Serializable {
             billItem.setDiscountRate(billItemDiscount / qty);
             billItem.setNetRate(billItemNet / qty);
             billItem.setMarginRate((billItemMargin) / qty);
-            
-            
-            System.out.println("BillItem ID: " + billItem.getId());
-            System.out.println("  Rate         : " + billItemGross);
-            System.out.println("  Qty          : " + billItem.getQty());
-            System.out.println("  DiscountRate : " + billItemDiscount);
-            System.out.println("  NetValue     : " + billItemNet);
-            System.out.println("  Vat          : " + billItemVat);
 
             tot += billItemGross;
             dis += billItemDiscount;
@@ -3765,11 +3795,6 @@ public class BillBeanController implements Serializable {
 
         bill.setStaffFee(staff);
         bill.setPerformInstitutionFee(ins);
-
-        System.out.println("Total Gross     : " + tot);
-        System.out.println("Total Discount  : " + dis);
-        System.out.println("Total Net       : " + net);
-        System.out.println("Total VAT       : " + vat);
 
         if (sessionController.getApplicationPreference().isPartialPaymentOfOpdBillsAllowed()) {
             if (billController.getCashRemain() != 0) {
@@ -3805,14 +3830,6 @@ public class BillBeanController implements Serializable {
 
         bill.setVat(vat);
         bill.setVatPlusNetTotal(vat + bill.getNetTotal());
-
-        System.out.println("Final Bill Values:");
-        System.out.println("  Grant Total       : " + bill.getGrantTotal());
-        System.out.println("  Total             : " + bill.getTotal());
-        System.out.println("  Net Total         : " + bill.getNetTotal());
-        System.out.println("  Discount          : " + bill.getDiscount());
-        System.out.println("  VAT               : " + bill.getVat());
-        System.out.println("  VAT + Net Total   : " + bill.getVatPlusNetTotal());
 
         getBillFacade().edit(bill);
     }
@@ -4218,6 +4235,10 @@ public class BillBeanController implements Serializable {
         if (ptIx.getId() == null) {
             getPatientInvestigationFacade().create(ptIx);
         }
+        
+        if (configOptionApplicationController.getBooleanValueByKey("Lab Test History Enabled", false)) {
+            labTestHistoryController.addBillingHistory(ptIx,prformingDept);
+        }
 
     }
 
@@ -4442,7 +4463,7 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> BillFeefromBillItemByForInstitution(BillItem billItem) {
-        return forInstitutionBillFeefromBillItem(billItem, sessionController.getInstitution());
+        return forInstitutionBillFeesFromBillItem(billItem, sessionController.getInstitution());
     }
 
     public List<BillFee> billFeefromBillItem(BillItem billItem, Institution forInstitution, Category forCategory) {
@@ -4733,8 +4754,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillFee> billFeefromBillItemForCollectingCenter(BillItem billItem, Institution collectingCenter) {
-        System.out.println("billFeefromBillItemForCollectingCenter");
-        System.out.println("collectingCenter = " + collectingCenter);
         List<BillFee> t = new ArrayList<>();
         BillFee feeForCollectingCenter;
         BillFee feeForInstitution;
@@ -4794,7 +4813,6 @@ public class BillBeanController implements Serializable {
                 }
             }
         } else {
-            System.out.println("else ");
             jpql = "Select f "
                     + " from ItemFee f "
                     + " where f.retired=:ret "
@@ -4805,10 +4823,7 @@ public class BillBeanController implements Serializable {
             jpql += " and f.forCategory is null ";
             params.put("ret", false);
             params.put("item", billItem.getItem());
-            System.out.println("jpql = " + jpql);
-            System.out.println("params = " + params);
             List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
-            System.out.println("1. CC itemFee from jpql= " + itemFees);
 
             itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter);
 
@@ -4823,24 +4838,17 @@ public class BillBeanController implements Serializable {
                 params.put("ret", false);
                 params.put("cat", collectingCenter.getFeeListType());
                 params.put("item", billItem.getItem());
-                System.out.println("jpql = " + jpql);
-                System.out.println("params = " + params);
                 itemFees = getItemFeeFacade().findByJpql(jpql, params);
-                System.out.println("3. CC itemFee Fees= " + itemFees);
                 itemFees = itemFeeManager.fillFees(billItem.getItem(), collectingCenter.getFeeListType());
             }
 
             for (Fee i : itemFees) {
-                System.out.println("i = " + i);
                 double originalFeeValue;
                 double institutionFeeValue;
                 double collectingCenterFeeValue;
                 originalFeeValue = i.getFee();
                 collectingCenterFeeValue = originalFeeValue * collectingCenter.getPercentage() / 100;
                 institutionFeeValue = originalFeeValue - collectingCenterFeeValue;
-
-                System.out.println("originalFeeValue = " + originalFeeValue);
-                System.out.println("institutionFeeValue = " + institutionFeeValue);
 
                 feeForCollectingCenter = new BillFee();
                 feeForCollectingCenter.setFee(i);
@@ -5024,7 +5032,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<BillComponent> fetchBillComponents(Bill bill) {
-        System.out.println("bill = " + bill);
         List<BillComponent> fetchingBillComponents;
         String jpql;
         Map params = new HashMap();
@@ -5038,7 +5045,6 @@ public class BillBeanController implements Serializable {
     }
 
     public List<Payment> fetchBillPayments(Bill bill) {
-        System.out.println("bill = " + bill);
         List<Payment> fetchingBillComponents;
         String jpql;
         Map params = new HashMap();
@@ -5051,7 +5057,45 @@ public class BillBeanController implements Serializable {
         return fetchingBillComponents;
     }
 
-    public List<BillFee> forInstitutionBillFeefromBillItem(BillItem billItem, Institution forIns) {
+    /**
+     * Generate bill fees for the given bill item limited to the specified institution.
+     *
+     * @param billItem the bill item to process
+     * @param forIns   the institution for which fees should be calculated
+     * @return calculated bill fees
+     * @throws IllegalArgumentException if {@code forIns} is {@code null}
+     */
+    public List<BillFee> forInstitutionBillFeesFromBillItem(BillItem billItem, Institution forIns) {
+        if (forIns == null) {
+            throw new IllegalArgumentException("forIns must be specified");
+        }
+        return calculateBillFees(billItem, forIns, null);
+    }
+
+    /**
+     * Generate bill fees for the given bill item limited to the specified department.
+     *
+     * @param billItem the bill item to process
+     * @param forDep   the department for which fees should be calculated
+     * @return calculated bill fees
+     * @throws IllegalArgumentException if {@code forDep} is {@code null}
+     */
+    public List<BillFee> forDepartmentBillFeesFromBillItem(BillItem billItem, Department forDep) {
+        if (forDep == null) {
+            throw new IllegalArgumentException("forDep must be specified");
+        }
+        return calculateBillFees(billItem, null, forDep);
+    }
+
+    /**
+     * Core fee calculation logic used by the institution/department specific helpers.
+     *
+     * @param billItem the bill item to process
+     * @param forIns   institution to limit fees, or {@code null}
+     * @param forDep   department to limit fees, or {@code null}
+     * @return list of calculated bill fees
+     */
+    private List<BillFee> calculateBillFees(BillItem billItem, Institution forIns, Department forDep) {
         List<BillFee> t = new ArrayList<>();
         BillFee f;
         String jpql;
@@ -5076,7 +5120,6 @@ public class BillBeanController implements Serializable {
                     f.setFee(i);
                     f.setFeeValue(i.getFee());
                     f.setFeeGrossValue(i.getFee());
-                    //  f.setBill(billItem.getBill());
                     f.setBillItem(billItem);
                     f.setCreatedAt(new Date());
                     if (pi.getDepartment() != null) {
@@ -5124,14 +5167,21 @@ public class BillBeanController implements Serializable {
                     + " from ItemFee f "
                     + " where f.retired=:ret "
                     + " and f.item=:item "
-                    + " and f.forCategory is null "
-                    + " and f.forInstitution=:forIns ";
+                    + " and f.forCategory is null ";
+            if (forIns != null) {
+                jpql += " and f.forDepartment is null "
+                        + " and f.forInstitution=:forIns ";
+            } else {
+                jpql += " and f.forInstitution is null "
+                        + " and f.forDepartment=:forDep ";
+            }
             params.put("ret", false);
             params.put("item", billItem.getItem());
-            params.put("forIns", forIns);
-
-            System.out.println("params = " + params);
-            System.out.println("jpql = " + jpql);
+            if (forIns != null) {
+                params.put("forIns", forIns);
+            } else {
+                params.put("forDep", forDep);
+            }
 
             List<ItemFee> itemFee = getItemFeeFacade().findByJpql(jpql, params);
 
@@ -5140,8 +5190,6 @@ public class BillBeanController implements Serializable {
                 f.setFee(i);
                 f.setFeeValue(i.getFee() * billItem.getQty());
                 f.setFeeGrossValue(i.getFee() * billItem.getQty());
-                //////System.out.println("Fee Value is " + f.getFeeValue());
-                // f.setBill(billItem.getBill());
                 f.setBillItem(billItem);
                 f.setCreatedAt(new Date());
                 if (billItem.getItem().getDepartment() != null) {

@@ -8,7 +8,7 @@
 
     <!-- INTERFACE -->
     <cc:interface>
-        <cc:attribute name="bill" />
+        <cc:attribute name="bill" type="com.divudi.core.entity.Bill"/>
         <cc:attribute name="duplicate" />
     </cc:interface>
 
@@ -169,11 +169,11 @@
                         <f:facet name="header">
                             <h:outputLabel value="Purchase Value"/>
                         </f:facet>
-                        <h:outputLabel value="#{0-bip.pharmaceuticalBillItem.itemBatch.purcahseRate*bip.pharmaceuticalBillItem.qty}">
+                        <h:outputLabel value="#{0 - (bip.pharmaceuticalBillItem.itemBatch.purcahseRate * bip.pharmaceuticalBillItem.qty)}">
                             <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel value="#{-cc.attrs.bill.netTotal}">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalPurchaseValue}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -197,10 +197,10 @@
                             <h:outputLabel value="Sale Value"/>
                         </f:facet>
                         <h:outputLabel styleClass="sale-value" value="#{0-bip.pharmaceuticalBillItem.itemBatch.retailsaleRate*bip.pharmaceuticalBillItem.qty}">
-                        <f:convertNumber pattern="#0.00" />
+                            <f:convertNumber pattern="#0.00" />
                         </h:outputLabel>
                         <f:facet name="footer">
-                            <h:outputLabel styleClass="totalSaleValue" value="0.00">
+                            <h:outputLabel value="#{cc.attrs.bill.billFinanceDetails.totalRetailSaleValue}">
                                 <f:convertNumber pattern="#0.00" />
                             </h:outputLabel>
                         </f:facet>
@@ -228,37 +228,9 @@
                         </h:outputLabel>
                     </p:column>
 
-                    <p:ajax event="page" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="sort" oncomplete="calculateSaleTotalInBill()" />
-                    <p:ajax event="filter" oncomplete="calculateSaleTotalInBill()" />
-
 
                 </p:dataTable>
             </div>
-            <h:outputScript>
-                function calculateSaleTotalInBill(){
-                    let total = 0;
-                    document.querySelectorAll('.sale-value').forEach(cell=>{
-
-                        let value = cell.innerText.replace(/,/g, ''); 
-                        total += parseFloat(value) || 0
-                    });
-
-                    let footerElement = document.querySelector('.totalSaleValue');
-                    if (footerElement) {
-                        footerElement.innerText = total.toFixed(2); 
-                    }
-
-                }
-
-                PrimeFaces.widget.DataTable.prototype.refresh = function() {
-                    setTimeout(calculateSaleTotalInBill, 100); 
-                };
-
-                document.addEventListener("DOMContentLoaded", function() {
-                    setTimeout(calculateSaleTotalInBill, 500);
-                });
-            </h:outputScript>
 
             <div  style="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer CSS')}" >
                 <h:outputText value="#{configOptionApplicationController.getLongTextValueByKey('Pharmacy Transfer Issue Bill Footer Text')}" escape="false" ></h:outputText>

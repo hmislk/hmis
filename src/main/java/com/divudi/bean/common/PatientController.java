@@ -518,7 +518,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient");
             return "";
         }
-        return "/emr/patient_photo_capture?faces-redirect=true;";
+        return "/emr/patient_photo_capture?faces-redirect=true";
     }
 
     public StreamedContent getImage() throws IOException {
@@ -710,7 +710,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getPatientEncounterController().fillCurrentEncounterLists(opdVisit);
         getPatientEncounterController().generateDocumentsFromDocumentTemplates(opdVisit);
         getPatientEncounterController().saveSelected();
-        return "/emr/select_data_entry_form?faces-redirect=true;";
+        return "/emr/select_data_entry_form?faces-redirect=true";
     }
 
     public void generateNewPhn() {
@@ -760,7 +760,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
 //    public String toEmrPatientProfile() {
@@ -774,7 +774,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        patientEncounterController.setPatient(current);
 //        patientEncounterController.fillCurrentPatientLists(current);
 //        patientEncounterController.fillPatientInvestigations(current);
-//        return "/emr/patient_profile?faces-redirect=true;";
+//        return "/emr/patient_profile?faces-redirect=true";
 //    }
     public String navigateToOpdBilling() {
         if (current == null) {
@@ -785,7 +785,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String navigateToPharamecyBilling() {
@@ -798,7 +798,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true;";
+        return "/pharmacy/pharmacy_bill_retail_sale?faces-redirect=true";
     }
 
     public String navigateToOpticianBilling() {
@@ -810,7 +810,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         patientEncounterController.setPatient(current);
         patientEncounterController.fillCurrentPatientLists(current);
         patientEncounterController.fillPatientInvestigations(current);
-        return "/optician/sale?faces-redirect=true;";
+        return "/optician/sale?faces-redirect=true";
     }
 
     public String navigateToOpdPatientProfile() {
@@ -836,7 +836,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
-        return "/inward/inward_admission?faces-redirect=true;";
+        return "/inward/inward_admission?faces-redirect=true";
     }
 
     public String navigateToAddToQueueFromPatientProfile() {
@@ -846,7 +846,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         admissionController.prepereToAdmitNewPatient();
         admissionController.getCurrent().setPatient(current);
-        return "/inward/inward_admission?faces-redirect=true;";
+        return "/inward/inward_admission?faces-redirect=true";
     }
 
     public String navigatePatientAdmit() {
@@ -858,7 +858,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setPrintPreview(false);
         admissionController.setAdmittingProcessStarted(false);
         admissionController.setPatientRoom(new PatientRoom());
-        return "/inward/inward_admission?faces-redirect=true;";
+        return "/inward/inward_admission?faces-redirect=true";
 
     }
 
@@ -871,7 +871,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         admissionController.setCurrentNonBht(nonBhtAd);
         admissionController.setCurrent(ad);
         admissionController.setPrintPreview(false);
-        return "/inward/convert_inward_admission?faces-redirect=true;";
+        return "/inward/convert_inward_admission?faces-redirect=true";
 
     }
 
@@ -884,7 +884,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         appointmentController.setSearchedPatient(getCurrent());
         appointmentController.getCurrentAppointment().setPatient(getCurrent());
         appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/inward/inward_appointment?faces-redirect=true;";
+        return "/inward/inward_appointment?faces-redirect=true";
     }
 
     public String navigateToMedicalPakageBillingFromPatientProfile() {
@@ -898,7 +898,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        appointmentController.setSearchedPatient(getCurrent());
 //        appointmentController.getCurrentAppointment().setPatient(getCurrent());
 //        appointmentController.getCurrentBill().setPatient(getCurrent());
-        return "/opd_bill_package_medical?faces-redirect=true;";
+        return "/opd_bill_package_medical?faces-redirect=true";
     }
 
     public String navigateToBillingForCashierFromPatientProfile() {
@@ -908,7 +908,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
-        return "/opd/opd_pre_bill?faces-redirect=true;";
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public String navigateToBillingForCashierFromFamilyMembership() {
@@ -935,7 +935,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         opdPreBillController.prepareNewBill();
         opdPreBillController.setPatient(getCurrent());
         opdPreBillController.setPaymentScheme(current.getPerson().getMembershipScheme().getPaymentScheme());
-        return "/opd/opd_pre_bill?faces-redirect=true;";
+        return "/opd/opd_pre_bill?faces-redirect=true";
     }
 
     public String navigateToReceiveDepositsFromPatientProfile() {
@@ -958,7 +958,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         billItem = new BillItem();
         billItems = new ArrayList<>();
         printPreview = false;
-        return "/payments/patient/receive?faces-redirect=true;";
+        return "/payments/patient/receive?faces-redirect=true";
     }
 
     public void clearDataForPatientDeposite() {
@@ -993,7 +993,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         collectingCentreBillController.prepareNewBill();
         collectingCentreBillController.setPatient(getCurrent());
         collectingCentreBillController.setCcBillSettlingStarted(false);
-        return "/collecting_centre/bill?faces-redirect=true;";
+        return "/collecting_centre/bill?faces-redirect=true";
     }
 
     public String navigateToOpdPatientEdit() {
@@ -1003,7 +1003,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         }
         reGenerateePhn = webUserController.hasPrivilege("EditData");
 
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToOpdPatientEditFromId() {
@@ -1017,7 +1017,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
 
-        return "/opd/patient?faces-redirect=true;";
+        return "/opd/patient?faces-redirect=true";
     }
 
     public String navigateToOpdBillFromOpdPatient() {
@@ -1070,7 +1070,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             JsfUtil.addErrorMessage("No patient selected");
             return "";
         }
-        return "/opd/opd_bill?faces-redirect=true;";
+        return "/opd/opd_bill?faces-redirect=true";
     }
 
     public String navigateToConvertOldPatientPhoneNumbers() {
@@ -1079,17 +1079,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToSearchPatients() {
         setSearchedPatients(null);
-        return "/opd/patient_search?faces-redirect=true;";
+        return "/opd/patient_search?faces-redirect=true";
     }
 
     public String navigateToPatientAcceptPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_accept_payment?faces-redirect=true;";
+        return "/opd/patient_accept_payment?faces-redirect=true";
     }
 
     public String navigateToPatientRefundPayment() {
         setSearchedPatients(null);
-        return "/opd/patient_refund_payment?faces-redirect=true;";
+        return "/opd/patient_refund_payment?faces-redirect=true";
     }
 
     public void createPatientInvestigationsTableAllByLoggedInstitution() {
@@ -1320,7 +1320,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String navigateToPatientDepositRefund() {
         createNewPatientDepositRefund();
-        return "/payments/patient/send?faces-redirect=true;";
+        return "/payments/patient/send?faces-redirect=true";
     }
 
     public String navigateToPatientDepositRefundFromOPDBill(Patient patient) {
@@ -1328,7 +1328,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         bill = new Bill();
         paymentMethodData = null;
         printPreview = false;
-        return "/payments/patient/send?faces-redirect=true;";
+        return "/payments/patient/send?faces-redirect=true";
     }
 
     public void makeNull() {
@@ -1586,7 +1586,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public String toSearchPatient() {
-        return "/emr/patient_search?faces-redirect=true;";
+        return "/emr/patient_search?faces-redirect=true";
     }
 
     public void generateNewCode() {
@@ -1599,7 +1599,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
 
     public String toChangeMembershipOfSelectedPersons() {
         items = new ArrayList<>();
-        return "/membership/change_membership?faces-redirect=true;";
+        return "/membership/change_membership?faces-redirect=true";
     }
 
     public String toAddToQueueFromSearchPatients() {
@@ -1608,7 +1608,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_add_to_queue?faces-redirect=true;";
+        return "/emr/patient_add_to_queue?faces-redirect=true";
     }
 
     public void patientSelected() {
@@ -2509,11 +2509,11 @@ public class PatientController implements Serializable, ControllerWithPatient {
 //        return toFamily();
 //    }
 //    public String toFamily() {
-//        return "/membership/add_family?faces-redirect=true;";
+//        return "/membership/add_family?faces-redirect=true";
 //    }
     public String toNewPatient() {
         prepareAdd();
-        return "/membership/patient?faces-redirect=true;";
+        return "/membership/patient?faces-redirect=true";
     }
 
     public void clearPatientToAddNewMemberToFamily() {
@@ -2646,7 +2646,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_basic_info?faces-redirect=true;";
+        return "/emr/patient_basic_info?faces-redirect=true";
     }
 
     public String toPatientFromSearchPatientsProfile() {
@@ -2655,7 +2655,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return "";
         }
         patientSelected();
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
     public void createPatientBarcode() {
@@ -2817,7 +2817,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         yearMonthDay = null;
         getCurrent();
         getYearMonthDay();
-        return "/emr/patient?faces-redirect=true;";
+        return "/emr/patient?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd() {
@@ -2825,13 +2825,13 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
 
         reGenerateePhn = true;
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOptician() {
         current = null;
         getCurrent();
-        return "/optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd(String name, String nic, String phone) {
@@ -2841,7 +2841,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOptician(String name, String nic, String phone) {
@@ -2851,7 +2851,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent().getPerson().setNic(nic);
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/optician/patient_edit?faces-redirect=true;";
+        return "/optician/patient_edit?faces-redirect=true";
     }
 
     public String navigateToAddNewPatientForOpd(String phone) {
@@ -2859,17 +2859,17 @@ public class PatientController implements Serializable, ControllerWithPatient {
         getCurrent();
         getCurrent().getPerson().setPhone(phone);
         getCurrent().getPerson().setMobile(phone);
-        return "/opd/patient_edit?faces-redirect=true;";
+        return "/opd/patient_edit?faces-redirect=true";
     }
 
     public String navigateToEmrEditPatient() {
         getCurrent();
-        return "/emr/patient?faces-redirect=true;";
+        return "/emr/patient?faces-redirect=true";
     }
 
     public String toViewPatient() {
         current = null;
-        return "/emr/patient_profile?faces-redirect=true;";
+        return "/emr/patient_profile?faces-redirect=true";
     }
 
     public String savePatientAndThenNavigateToPatientProfile() {
@@ -2984,6 +2984,29 @@ public class PatientController implements Serializable, ControllerWithPatient {
         return str;
     }
 
+    /**
+     * Applies patient name capitalization based on configuration settings
+     * @param patient Patient whose name should be capitalized
+     */
+    private void applyPatientNameCapitalization(Patient patient) {
+        if (patient == null || patient.getPerson() == null) {
+            return;
+        }
+        
+        boolean capitalizeAll = configOptionApplicationController.getBooleanValueByKey("Capitalize Entire Patient Name", false);
+        boolean capitalizeEach = configOptionApplicationController.getBooleanValueByKey("Capitalize Each Word in Patient Name", false);
+        String personName = patient.getPerson().getName();
+        
+        if (personName != null) {
+            if (capitalizeAll) {
+                personName = personName.toUpperCase();
+            } else if (capitalizeEach) {
+                personName = CommonFunctions.capitalizeFirstLetter(personName);
+            }
+            patient.getPerson().setName(personName);
+        }
+    }
+
     public boolean saveSelected() {
         return saveSelected(current);
     }
@@ -2994,7 +3017,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (!savedSuccessfully) {
             return null;
         }
-        return "/membership/add_family?faces-redirect=true;";
+        return "/membership/add_family?faces-redirect=true";
     }
 
     public String saveAndNavigateToOpdPatientProfile() {
@@ -3006,7 +3029,7 @@ public class PatientController implements Serializable, ControllerWithPatient {
         if (!savedSuccessfully) {
             return null;
         }
-        return "/opd/patient?faces-redirect=true;";
+        return "/opd/patient?faces-redirect=true";
     }
 
     public boolean saveSelected(Patient p) {
@@ -3058,6 +3081,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
                 return false;
             }
         }
+
+        applyPatientNameCapitalization(p);
 //        if (p.getPerson().getId() == null) {
 //            p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
 //            p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3150,6 +3175,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
             return;
         }
 
+        applyPatientNameCapitalization(p);
+
         if (p.getPerson().getId() == null) {
             p.getPerson().setCreatedAt(Calendar.getInstance().getTime());
             p.getPerson().setCreater(getSessionController().getLoggedUser());
@@ -3217,6 +3244,8 @@ public class PatientController implements Serializable, ControllerWithPatient {
     }
 
     public void saveSelectedPatient() {
+        applyPatientNameCapitalization(getCurrent());
+        
         if (getCurrent().getPerson().getId() == null) {
             getCurrent().getPerson().setCreatedAt(Calendar.getInstance().getTime());
             getCurrent().getPerson().setCreater(getSessionController().getLoggedUser());

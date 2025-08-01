@@ -12,6 +12,14 @@ import java.util.Set;
 public class JsfUtil {
 
     public static SelectItem[] getSelectItems(List<?> entities, boolean selectOne) {
+        if (entities == null || entities.isEmpty()) {
+            if (selectOne) {
+                return new SelectItem[]{new SelectItem("", "---")};
+            } else {
+                return new SelectItem[0];
+            }
+        }
+
         int size = selectOne ? entities.size() + 1 : entities.size();
         SelectItem[] items = new SelectItem[size];
         int i = 0;

@@ -19,6 +19,10 @@ public class CommonFunctionsProxy {
         return CommonFunctions.convertToWord(number);
     }
 
+    public Double reverseSign(Double value) {
+        return CommonFunctions.reverseSign(value);
+    }
+
     public static double roundToTwoDecimals(double value) {
         return CommonFunctions.roundToTwoDecimals(value);
     }
@@ -72,5 +76,16 @@ public class CommonFunctionsProxy {
 
     public double dateDifferenceInMinutes(Date fromDate, Date toDate) {
         return CommonFunctions.dateDifferenceInMinutes(fromDate, toDate);
+    }
+
+    /**
+     * Delegates to {@link CommonFunctions#escapeHtml(String)} to sanitise text
+     * before rendering with <code>escape="false"</code> in JSF pages.
+     *
+     * @param input raw string value
+     * @return escaped string safe for HTML output
+     */
+    public String escapeHtml(String input) {
+        return CommonFunctions.escapeHtml(input);
     }
 }

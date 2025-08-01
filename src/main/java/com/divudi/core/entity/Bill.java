@@ -41,6 +41,7 @@ import javax.persistence.Temporal;
 import javax.persistence.Transient;
 
 import static com.divudi.core.util.CommonFunctions.formatDate;
+import javax.persistence.JoinColumn;
 
 /**
  * @author buddhika
@@ -111,6 +112,8 @@ public class Bill implements Serializable, RetirableEntity {
     ////////////////////////////////////////////////
     @Lob
     private String comments;
+    @Lob
+    private String paymentMemo;
     @Lob
     private String indication;
     // Bank Detail
@@ -444,6 +447,7 @@ public class Bill implements Serializable, RetirableEntity {
     private StockBill stockBill;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER, optional = true, orphanRemoval = true)
+    @JoinColumn(name = "BILLFINANCEDETAILS_ID", unique = true)
     private BillFinanceDetails billFinanceDetails;
 
     @Transient
@@ -943,6 +947,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -1018,6 +1023,7 @@ public class Bill implements Serializable, RetirableEntity {
         referringDepartment = bill.getReferringDepartment();
         surgeryBillType = bill.getSurgeryBillType();
         comments = bill.getComments();
+        paymentMemo = bill.getPaymentMemo();
         indication = bill.getIndication();
         paymentMethod = bill.getPaymentMethod();
         paymentScheme = bill.getPaymentScheme();
@@ -1060,6 +1066,11 @@ public class Bill implements Serializable, RetirableEntity {
             BillFinanceDetails clonedFinanceDetails = bill.getBillFinanceDetails().clone();
             clonedFinanceDetails.setBill(this);
             this.setBillFinanceDetails(clonedFinanceDetails);
+        }
+
+        if (bill.paidBill != null) {
+            this.paidBill = new Bill();
+            this.paidBill.clone(bill.paidBill);
         }
     }
 
@@ -1158,6 +1169,10 @@ public class Bill implements Serializable, RetirableEntity {
         return netTotal;
     }
 
+    public double getGrossAmount() {
+        return total;
+    }
+
     @Transient
     public Double getAbsoluteNetTotalTransient() {
         return Math.abs(netTotal);
@@ -1181,9 +1196,10 @@ public class Bill implements Serializable, RetirableEntity {
         return balance;
     }
 
-//    public void setBalance(double balance) {
-//        this.balance = balance;
-//    }
+    public void setBalance(double balance) {
+        this.balance = balance;
+    }
+
     public List<Bill> getListOfBill() {
         if (listOfBill == null) {
             listOfBill = new ArrayList<>();
@@ -1749,6 +1765,14 @@ public class Bill implements Serializable, RetirableEntity {
 
     public void setComments(String comments) {
         this.comments = comments;
+    }
+
+    public String getPaymentMemo() {
+        return paymentMemo;
+    }
+
+    public void setPaymentMemo(String paymentMemo) {
+        this.paymentMemo = paymentMemo;
     }
 
     public Bill getReferenceBill() {

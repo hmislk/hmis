@@ -4,6 +4,7 @@
  */
 package com.divudi.core.entity;
 
+import com.divudi.core.converter.DepartmentTypeConverter;
 import com.divudi.core.data.BillType;
 import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.ItemBarcodeGenerationStrategy;
@@ -24,6 +25,7 @@ import com.divudi.core.entity.pharmacy.MeasurementUnit;
 import com.divudi.core.entity.pharmacy.Vmp;
 import com.divudi.core.entity.pharmacy.Vmpp;
 import com.divudi.core.entity.pharmacy.Vtm;
+import com.divudi.core.entity.pharmacy.PharmaceuticalItem;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.Date;
 import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -56,16 +59,9 @@ import javax.persistence.Transient;
  * @author buddhika
  */
 @Entity
-@Table(
-    indexes = {
-        @Index(name = "idx_item_name", columnList = "name"),
-        @Index(name = "idx_item_code", columnList = "code"),
-        @Index(name = "idx_item_barcode", columnList = "barcode")
-    }
-)
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "DTYPE")
-public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
+public class Item implements Serializable, Comparable<Item>, RetirableEntity {
 
     @OneToMany(mappedBy = "item", fetch = FetchType.EAGER)
     List<InvestigationItem> reportItems;
@@ -191,8 +187,8 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
 
     @Enumerated(EnumType.STRING)
     SymanticType symanticType;
-    @Enumerated(EnumType.STRING)
     private DepartmentType departmentType;
+
     @Transient
     private double transBillItemCount;
     @Transient
@@ -908,6 +904,9 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     }
 
     public DepartmentType getDepartmentType() {
+        if (departmentType == null && this instanceof PharmaceuticalItem) {
+            return DepartmentType.Pharmacy;
+        }
         return departmentType;
     }
 
@@ -1516,8 +1515,6 @@ public class Item implements Serializable, Comparable<Item>, RetirableEntity  {
     public void setInstructions(String instructions) {
         this.instructions = instructions;
     }
-
-
 
     static class ReportItemComparator implements Comparator<ReportItem> {
 

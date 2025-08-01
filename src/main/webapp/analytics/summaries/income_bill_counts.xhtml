@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:common="http://xmlns.jcp.org/jsf/composite/ezcomp/common"
+      xmlns:f="http://xmlns.jcp.org/jsf/core">
+
+    <h:body>
+
+        <ui:composition template="/analytics/index.xhtml">
+
+            <ui:define name="report">
+
+                <h:form>
+
+                    <common:common_filters controller="#{reportController}"/>
+                    <p:messages id="messages" showDetail="true"/>
+
+
+
+
+<!--                    <ui:repeat value="#{reportController.bundle.bundles}" var="mybundle">
+                    #{mybundle.name}
+                </ui:repeat>-->
+
+                    <p:commandButton
+                        value="Process"
+                        icon="pi pi-check"
+                        styleClass="ui-button-success"
+                        ajax="true"
+                        update="panelTbl messages"
+                        onstart="PF('loadingDialog').show()"
+                        oncomplete="PF('loadingDialog').hide()"
+                        action="#{reportController.processIncomeBillCounts()}"/>
+
+                    <p:dialog modal="true" widgetVar="loadingDialog" header="Processing" closable="false" draggable="false" resizable="false">
+                        <i class="pi pi-spin pi-spinner" style="font-size:2rem"></i>
+                    </p:dialog>
+
+                    <h:panelGroup 
+                        id="panelTbl"
+                        rendered="#{not empty reportController.bundle.bundles}">
+
+
+                        <table class="w-100 table table-bordered m-2" >
+
+                            <tr>
+                                <td>
+                                    <h:outputText value="Service Type" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td>
+                                    <h:outputText value="Department" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td  class="text-end">
+                                    <h:outputText value="Billed Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td  class="text-end">
+                                    <h:outputText value="Cancelled Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="Refund Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                                <td class="text-end">
+                                    <h:outputText value="Net Count" styleClass="h5 fw-bold mb-3" />
+                                </td>
+                            </tr>
+
+
+
+                            <ui:repeat value="#{reportController.bundle.bundles}" var="ibundle">
+                                <tr>
+                                    <td >
+                                        <h:outputText value="#{ibundle.name}" styleClass="h5 fw-bold mb-3" />
+                                    </td>
+                                    <td></td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.billedCount}" styleClass="h5 fw-bold text-end w-100" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.cancelledCount}" styleClass="h5 fw-bold text-end w-100" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.returnCount}" styleClass="h5 fw-bold text-end w-100" />
+                                        <h:outputText value="" />
+                                    </td>
+                                    <td class="text-end">
+                                        <h:outputText  value="#{ibundle.netCount}" styleClass="h5 fw-bold text-end w-100" />
+                                        <h:outputText value="" />
+                                    </td>
+                                </tr>
+
+
+
+                                <ui:repeat value="#{ibundle.reportTemplateRows}" var="row">
+
+                                    <tr>
+                                        <td>
+
+                                        </td>
+                                        <td>
+                                            <h:outputText  value="#{row.department.name}" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.billedCount}" styleClass="text-end w-100" />        
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.cancelledCount}" styleClass="text-end w-100" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.returnCount}" styleClass="text-end w-100" />
+                                        </td>
+                                        <td class="text-end pe-2">
+                                            <h:outputText  value="#{row.netCount}" styleClass="text-end w-100" />
+                                        </td>
+                                    </tr>
+
+
+
+
+
+
+                                </ui:repeat>
+
+                            </ui:repeat>
+
+                        </table>
+
+                    </h:panelGroup>
+                    <h:panelGroup rendered="#{empty reportController.bundle.bundles}">
+                        No data found.
+                    </h:panelGroup>
+
+                </h:form>
+
+            </ui:define>
+        </ui:composition>
+
+    </h:body>
+</html>
