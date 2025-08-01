@@ -167,7 +167,7 @@
                                     width="6em"
                                     headerText="Transfer Rate"  
                                     class="text-end">
-                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" style="text-align: right;">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossRate}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -176,7 +176,7 @@
                                     width="6em"
                                     headerText="Transfer Value"  
                                     class="text-end">
-                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" style="text-align: right;">
+                                    <h:outputLabel value="#{bItm.billItemFinanceDetails.lineGrossTotal}" styleClass="text-end">
                                         <f:convertNumber pattern="#,##0.00" />
                                     </h:outputLabel>
                                 </p:column>
@@ -187,7 +187,7 @@
                                     headerText="DOE" 
                                     class="text-end"
                                     width="6em">
-                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" style="text-align: right;">
+                                    <h:outputLabel value="#{bItm.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" styleClass="text-end">
                                         <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                     </h:outputLabel>
                                 </p:column>
