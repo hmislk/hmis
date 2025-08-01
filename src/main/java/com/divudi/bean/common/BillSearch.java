@@ -362,7 +362,6 @@ public class BillSearch implements Serializable {
         }
         
         billItemSize = new ArrayList<>(groupedMap.values()).size();
-
         return new ArrayList<>(groupedMap.values());
     }
 
