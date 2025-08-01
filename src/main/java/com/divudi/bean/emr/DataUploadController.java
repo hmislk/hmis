@@ -1,6 +1,7 @@
 package com.divudi.bean.emr;
 
 import com.divudi.bean.clinical.ClinicalEntityController;
+import com.divudi.bean.clinical.PhotoCamBean;
 import com.divudi.core.entity.*;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddressList;
@@ -2981,29 +2982,29 @@ public class DataUploadController implements Serializable {
         }
 
         try {
-            if (DateUtil.isCellDateFormatted(cell)) {
-                return cell.getDateCellValue();
-            }
-
             if (cell.getCellType() == CellType.STRING) {
                 String dateString = cell.getStringCellValue().trim();
                 return parseDateString(dateString);
             }
 
             if (cell.getCellType() == CellType.NUMERIC) {
-                return DateUtil.getJavaDate(cell.getNumericCellValue());
-            }
+                DataFormatter formatter = new DataFormatter();
+                String formattedValue = formatter.formatCellValue(cell);
 
+                if (formattedValue.matches("\\d{1,2}/\\d{1,2}/\\d{2,4}")) {
+                    return parseDateString(formattedValue);
+                }
+
+                return null;
+            }
         } catch (Exception e) {
-            System.err.println("Error parsing date from cell: " + e.getMessage());
+            Logger.getLogger(DataUploadController.class.getName()).log(
+                    Level.SEVERE, null, "Error parsing date from cell: " + e.getMessage());
         }
 
         return null;
     }
 
-    /**
-     * Helper method to parse date strings in various formats
-     */
     private Date parseDateString(String dateString) {
         if (dateString == null || dateString.isEmpty()) {
             return null;
@@ -3012,46 +3013,22 @@ public class DataUploadController implements Serializable {
         dateString = dateString.trim();
 
         String[] dateFormats = {
-                // 4-digit year formats
-                "dd/MM/yyyy",
-                "d/MM/yyyy",
-                "dd/M/yyyy",
-                "d/M/yyyy",
-                "MM/dd/yyyy",
-                "M/dd/yyyy",
-                "MM/d/yyyy",
-                "M/d/yyyy",
-
-                // 2-digit year formats
-                "dd/MM/yy",
-                "d/MM/yy",
-                "dd/M/yy",
-                "d/M/yy",
-                "MM/dd/yy",
-                "M/dd/yy",
-                "MM/d/yy",
-                "M/d/yy",
-
-                // Alternative separators
-                "dd-MM-yyyy",
-                "d-MM-yyyy",
-                "dd-M-yyyy",
-                "d-M-yyyy",
-                "dd-MM-yy",
-                "d-MM-yy",
-                "dd-M-yy",
-                "d-M-yy"
+                "dd/MM/yyyy",  // Handles 02/05/2000 as May 2nd, 2000
+                "d/M/yyyy",    // Handles 2/5/2000 as May 2nd, 2000
+                "dd/MM/yy",    // Handles 02/05/00 as May 2nd, 2000
+                "d/M/yy"       // Handles 2/5/00 as May 2nd, 2000
         };
 
         SimpleDateFormat sdf = new SimpleDateFormat();
-        sdf.setLenient(true);
+        sdf.setLenient(false); //  stricter parsing to avoid ambiguity
 
         for (String format : dateFormats) {
             try {
                 sdf.applyPattern(format);
                 Date date = sdf.parse(dateString);
 
-                if (format.contains("yy") && !format.contains("yyyy")) {
+                // Handle 2-digit year conversion for yy formats
+                if (format.endsWith("/yy")) {
                     Calendar cal = Calendar.getInstance();
                     cal.setTime(date);
                     int year = cal.get(Calendar.YEAR);
@@ -3059,29 +3036,12 @@ public class DataUploadController implements Serializable {
                     // Adjust 2-digit year logic:
                     // Years 00-30 -> 2000-2030
                     // Years 31-99 -> 1931-1999
-                    if (year >= 2000 && year <= 2030) {
-                        // Already correct (00-30 case)
-                    } else if (year >= 1931 && year <= 1999) {
-                        // Already correct (31-99 case)
-                    } else if (year < 100) {
-                        // Handle edge cases
-                        if (year <= 30) {
-                            cal.set(Calendar.YEAR, 2000 + year);
-                        } else {
-                            cal.set(Calendar.YEAR, 1900 + year);
-                        }
-                        date = cal.getTime();
+                    if (year <= 30) {
+                        cal.set(Calendar.YEAR, 2000 + year);
+                    } else if (year >= 31 && year <= 99) {
+                        cal.set(Calendar.YEAR, 1900 + year);
                     }
-                }
-
-                Calendar now = Calendar.getInstance();
-                Calendar parsed = Calendar.getInstance();
-                parsed.setTime(date);
-
-                // Reject dates more than 150 years ago or in the future
-                if (parsed.get(Calendar.YEAR) < (now.get(Calendar.YEAR) - 150) ||
-                        parsed.after(now)) {
-                    continue;
+                    date = cal.getTime();
                 }
 
                 return date;
@@ -3090,76 +3050,7 @@ public class DataUploadController implements Serializable {
             }
         }
 
-        return parseFlexibleDate(dateString);
-    }
-
-    /**
-     * Fallback method for more flexible date parsing
-     */
-    private Date parseFlexibleDate(String dateString) {
-        try {
-            dateString = dateString.replaceAll("\\s+", "").trim();
-
-            String[] parts = null;
-            if (dateString.contains("/")) {
-                parts = dateString.split("/");
-            } else if (dateString.contains("-")) {
-                parts = dateString.split("-");
-            } else if (dateString.contains(".")) {
-                parts = dateString.split("\\.");
-            }
-
-            if (parts == null || parts.length != 3) {
-                throw new IllegalArgumentException("Invalid date format: " + dateString);
-            }
-
-            int part1 = Integer.parseInt(parts[0]);
-            int part2 = Integer.parseInt(parts[1]);
-            int part3 = Integer.parseInt(parts[2]);
-
-            int day, month, year;
-
-            // Determine which part is the year
-            if (part3 > 31) {
-                // Third part is year
-                year = part3;
-                // Assume DD/MM/YYYY format (most common in your data)
-                day = part1;
-                month = part2;
-            } else {
-                // Third part is 2-digit year
-                year = part3;
-                if (year <= 30) {
-                    year += 2000;
-                } else {
-                    year += 1900;
-                }
-                day = part1;
-                month = part2;
-            }
-
-            // Validate month and day ranges
-            if (month < 1 || month > 12) {
-                throw new IllegalArgumentException("Invalid month: " + month);
-            }
-            if (day < 1 || day > 31) {
-                throw new IllegalArgumentException("Invalid day: " + day);
-            }
-
-            Calendar cal = Calendar.getInstance();
-            cal.set(Calendar.YEAR, year);
-            cal.set(Calendar.MONTH, month - 1); // Calendar months are 0-based
-            cal.set(Calendar.DAY_OF_MONTH, day);
-            cal.set(Calendar.HOUR_OF_DAY, 0);
-            cal.set(Calendar.MINUTE, 0);
-            cal.set(Calendar.SECOND, 0);
-            cal.set(Calendar.MILLISECOND, 0);
-
-            return cal.getTime();
-
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Unable to parse date: " + dateString, e);
-        }
+        return null;
     }
 
     private static Long getNumericCellAsLong(Cell cell) {
