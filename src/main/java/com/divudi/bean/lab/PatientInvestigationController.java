@@ -46,6 +46,7 @@ import com.divudi.core.facade.SmsFacade;
 import com.divudi.core.util.JsfUtil;
 import com.divudi.core.data.BillTypeAtomic;
 import com.divudi.core.data.InvestigationItemValueType;
+import com.divudi.core.data.dto.SampleDTO;
 import com.divudi.core.data.lab.BillBarcode;
 import com.divudi.core.data.lab.ListingEntity;
 import com.divudi.core.data.lab.PatientInvestigationStatus;
@@ -962,6 +963,13 @@ public class PatientInvestigationController implements Serializable {
         String j = "select psc from PatientSampleComponant psc where psc.patientSample = :ps";
         Map m = new HashMap();
         m.put("ps", ps);
+        return patientSampleComponantFacade.findByJpql(j, m);
+    }
+    
+    public List<PatientSampleComponant> getPatientSampleComponentsUsingSampleId(Long sampleId) {
+        String j = "select psc from PatientSampleComponant psc where psc.patientSample.id = :id";
+        Map m = new HashMap();
+        m.put("id", sampleId);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
 
@@ -1969,12 +1977,12 @@ public class PatientInvestigationController implements Serializable {
             JsfUtil.addErrorMessage("No samples selected");
             return;
         }
-        
+
         if (sampleRejectionComment == null || sampleRejectionComment.equalsIgnoreCase("")) {
             JsfUtil.addErrorMessage("Samples reject reason is Missing..");
             return;
         }
-        
+
         listingEntity = ListingEntity.PATIENT_SAMPLES;
 
         Map<Long, PatientInvestigation> rejectedPtixs = new HashMap<>();
@@ -4067,6 +4075,24 @@ public class PatientInvestigationController implements Serializable {
         patientSamples = getPatientSampleFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
     }
 
+    private List<SampleDTO> sampleDTOList;
+
+    public void listPatientSamplesDTO() {
+        reportTimerController.trackReportExecution(() -> {
+            String jpql = "select new com.divudi.core.data.dto.SampleDTO( "
+                    + " s.id, s.sampleId, s.createdAt, s.bill.deptId, s.bill.patient.person.name, s.machine.name )"
+                    + " from PatientSample s"
+                    + " where s.createdAt between :fd and :td "
+                    + " order by s.id";
+            Map m = new HashMap();
+            m.put("fd", fromDate);
+            m.put("td", toDate);
+            sampleDTOList = getPatientSampleFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
+            
+        }, LaboratoryReport.PATIENT_SAMPLE_REPORT, sessionController.getLoggedUser());
+        
+    }
+
     public String navigateToEditPatientSample() {
         if (currentPatientSample == null) {
             return null;
@@ -5406,6 +5432,14 @@ public class PatientInvestigationController implements Serializable {
 
     public void setSampleSearchStrategy(String sampleSearchStrategy) {
         this.sampleSearchStrategy = sampleSearchStrategy;
+    }
+
+    public List<SampleDTO> getSampleDTOList() {
+        return sampleDTOList;
+    }
+
+    public void setSampleDTOList(List<SampleDTO> sampleDTOList) {
+        this.sampleDTOList = sampleDTOList;
     }
 
     /**
