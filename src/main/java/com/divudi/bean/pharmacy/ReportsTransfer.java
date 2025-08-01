@@ -1065,7 +1065,9 @@ public class ReportsTransfer implements Serializable {
     }
 
     public void createTransferReciveBillSummery() {
-        fetchBillTotalByFromDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+        reportTimerController.trackReportExecution(() -> {
+            fetchBillTotalByFromDepartmentFinance(fromDate, toDate, fromDepartment, BillType.PharmacyTransferReceive);
+        }, DisbursementReports.TRANSFER_RECEIVE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
 
     public void fetchBillTotalByToDepartment(Date fd, Date td, Department dep, BillType bt) {
@@ -1146,6 +1148,63 @@ public class ReportsTransfer implements Serializable {
 
         }
 
+    }
+
+    public void fetchBillTotalByFromDepartmentFinance(Date fd, Date td, Department dep, BillType bt) {
+        listz = new ArrayList<>();
+        netTotalValues = 0.0;
+        netTotalSaleValues = 0.0;
+        netTotalPurchaseValues = 0.0;
+        netTotalCostValues = 0.0;
+
+        // Use BillFinanceDetails for consistent calculations (matching DTO approach)
+        List<Object[]> objects = getBillBeanController().fetchBilledDepartmentFinanceDetails(fd, td, dep, bt, false);
+
+        for (Object[] ob : objects) {
+            Department d = (Department) ob[0];
+
+            // Handle both BigDecimal and Double types from aggregation functions
+            double dbl1 = 0.0;
+            if (ob[1] instanceof BigDecimal) {
+                dbl1 = ((BigDecimal) ob[1]).doubleValue();
+            } else if (ob[1] instanceof Double) {
+                dbl1 = (Double) ob[1];
+            }
+
+            double dbl2 = 0.0;
+            if (ob[2] instanceof BigDecimal) {
+                dbl2 = ((BigDecimal) ob[2]).doubleValue();
+            } else if (ob[2] instanceof Double) {
+                dbl2 = (Double) ob[2];
+            }
+
+            double dbl3 = 0.0;
+            if (ob[3] instanceof BigDecimal) {
+                dbl3 = ((BigDecimal) ob[3]).doubleValue();
+            } else if (ob[3] instanceof Double) {
+                dbl3 = (Double) ob[3];
+            }
+
+            double dbl4 = 0.0;
+            if (ob[4] instanceof BigDecimal) {
+                dbl4 = ((BigDecimal) ob[4]).doubleValue();
+            } else if (ob[4] instanceof Double) {
+                dbl4 = (Double) ob[4];
+            }
+
+            String1Value3 sv = new String1Value3();
+            sv.setString(d.getName());
+            sv.setValue1(dbl1);                  // Transfer Value (lineNetTotal)
+            sv.setValue2(dbl2);                  // Purchase Value (totalCostValue)
+            sv.setValue3(dbl3);                  // Sale Value (totalRetailSaleValue)
+            sv.setValue4(dbl4);                  // Cost Value (totalCostValue)
+            listz.add(sv);
+
+            netTotalValues += dbl1;
+            netTotalPurchaseValues += dbl2;
+            netTotalSaleValues += dbl3;
+            netTotalCostValues += dbl4;
+        }
     }
 
     public void createDepartmentIssueStore() {
