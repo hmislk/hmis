@@ -5231,6 +5231,98 @@ public class BillBeanController implements Serializable {
         return t;
     }
 
+    public List<BillFee> forDepartmentBillFeefromBillItem(BillItem billItem, Department forDep) {
+        if (forDep == null) {
+            throw new IllegalArgumentException("forDep must be specified");
+        }
+        List<BillFee> t = new ArrayList<>();
+        BillFee f;
+        String jpql;
+        Map params = new HashMap();
+        if (billItem.getItem() instanceof Packege) {
+            jpql = "Select i from PackageItem p join p.item i where p.retired=false and p.packege.id = " + billItem.getItem().getId();
+            List<Item> packageItems = getItemFacade().findByJpql(jpql);
+            for (Item pi : packageItems) {
+                jpql = "Select f "
+                        + " from PackageFee f "
+                        + " where f.retired=:ret"
+                        + " and f.packege=:packege"
+                        + " and f.item=:item "
+                        + " and f.forCategory is null "
+                        + " and f.forDepartment=:dept ";
+                params.put("ret", false);
+                params.put("packege", billItem.getItem());
+                params.put("item", pi);
+                params.put("dept", forDep);
+                List<PackageFee> packFee = getPackageFeeFacade().findByJpql(jpql, params);
+                for (Fee i : packFee) {
+                    f = new BillFee();
+                    f.setFee(i);
+                    double qty = (billItem.getQty() == null || billItem.getQty() <= 0) ? 1.0 : billItem.getQty();
+                    f.setFeeValue(i.getFee() * qty);
+                    f.setFeeGrossValue(i.getFee() * qty);
+                    f.setBillItem(billItem);
+                    f.setCreatedAt(new Date());
+                    if (pi.getDepartment() != null) {
+                        f.setDepartment(pi.getDepartment());
+                    }
+                    if (pi.getInstitution() != null) {
+                        f.setInstitution(pi.getInstitution());
+                    }
+                    if (i.getStaff() != null) {
+                        f.setStaff(i.getStaff());
+                    } else {
+                        f.setStaff(null);
+                    }
+                    f.setSpeciality(i.getSpeciality());
+                    f.setStaff(i.getStaff());
+                    if (f.getBillItem().getItem().isVatable()) {
+                        f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                    }
+                    f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+                    t.add(f);
+                }
+            }
+        } else {
+            jpql = "Select f "
+                    + " from ItemFee f "
+                    + " where f.retired=:ret "
+                    + " and f.item=:item "
+                    + " and f.forCategory is null "
+                    + " and f.forDepartment=:dept";
+            params.put("ret", false);
+            params.put("item", billItem.getItem());
+            params.put("dept", forDep);
+            List<ItemFee> itemFees = getItemFeeFacade().findByJpql(jpql, params);
+            for (Fee i : itemFees) {
+                f = new BillFee();
+                f.setFee(i);
+                f.setFeeValue(i.getFee());
+                f.setFeeGrossValue(i.getFee());
+                f.setBillItem(billItem);
+                f.setCreatedAt(new Date());
+                if (billItem.getItem().getDepartment() != null) {
+                    f.setDepartment(billItem.getItem().getDepartment());
+                }
+                if (billItem.getItem().getInstitution() != null) {
+                    f.setInstitution(billItem.getItem().getInstitution());
+                }
+                if (i.getStaff() != null) {
+                    f.setStaff(i.getStaff());
+                } else {
+                    f.setStaff(null);
+                }
+                f.setSpeciality(i.getSpeciality());
+                if (f.getBillItem().getItem().isVatable()) {
+                    f.setFeeVat(f.getFeeValue() * f.getBillItem().getItem().getVatPercentage() / 100);
+                }
+                f.setFeeVatPlusValue(f.getFeeValue() + f.getFeeVat());
+                t.add(f);
+            }
+        }
+        return t;
+    }
+
     public double totalFeeforItem(Item item) {
         List<BillFee> t = new ArrayList<>();
         Double bf = 0.0;

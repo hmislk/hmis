@@ -35,6 +35,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import javax.ejb.EJB;
 import javax.ejb.Singleton;
 import javax.persistence.TemporalType;
@@ -85,23 +86,29 @@ public class BillNumberGenerator {
     private String getLockKey(Institution institution, Department toDepartment, List<BillTypeAtomic> billTypes) {
         String institutionId = institution != null ? institution.getId().toString() : "null";
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
-        String billTypeHash = "null";
+        String billTypeKey = "null";
         if (billTypes != null && !billTypes.isEmpty()) {
-            billTypeHash = String.valueOf(billTypes.hashCode());
+            // Sort to ensure consistent ordering
+            billTypeKey = billTypes.stream()
+                    .sorted()
+                    .map(bt -> bt != null ? bt.name() : "null")
+                    .collect(Collectors.joining(","));
         }
-        return institutionId + "-" + departmentId + "-" + billTypeHash;
-
+        return institutionId + "-" + departmentId + "-" + billTypeKey;
     }
 
     private String getLockKey(Department toDepartment, List<BillTypeAtomic> billTypes) {
         String departmentId = toDepartment != null ? toDepartment.getId().toString() : "null";
-        String billTypeHash = "null";
+        String billTypeKey = "null";
         if (billTypes != null && !billTypes.isEmpty()) {
-            billTypeHash = String.valueOf(billTypes.hashCode());
+            // Sort to ensure consistent ordering
+            billTypeKey = billTypes.stream()
+                    .sorted()
+                    .map(bt -> bt != null ? bt.name() : "null")
+                    .collect(Collectors.joining(","));
         }
-        return departmentId + "-" + billTypeHash;
+        return departmentId + "-" + billTypeKey;
     }
-
     private String getLockKey(Institution institution, Department fromDepartment, Department toDepartment, BillTypeAtomic billType) {
         String institutionId = institution != null ? institution.getId().toString() : "null";
         String fromDepartmentId = fromDepartment != null ? fromDepartment.getId().toString() : "null";
@@ -741,7 +748,7 @@ public class BillNumberGenerator {
             hm.put("tDep", department);
             hm.put("startOfYear", startOfYear.getTime());
             Long countOfBills = billFacade.findLongByJpql(jpql, hm);
-            billNumber.setLastBillNumber(countOfBills );
+            billNumber.setLastBillNumber(countOfBills + 1);
             billNumberFacade.createAndFlush(billNumber);
         }
         return billNumber;

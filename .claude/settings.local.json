@@ -17,7 +17,12 @@
       "Bash(git pull:*)",
       "Bash(git fetch:*)",
       "Bash(gh issue view:*)",
-      "Bash(mvn:*)"
+      "Bash(mvn:*)",
+      "Bash(grep:*)",
+      "Bash(git stash:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(gh api:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

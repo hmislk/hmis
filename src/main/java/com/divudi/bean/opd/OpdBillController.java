@@ -2233,7 +2233,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         } else if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
             List<BillTypeAtomic> opdAndInpatientBills = BillTypeAtomic.findOpdAndInpatientServiceAndInvestigationIndividualBillTypes();
-            deptId = getBillNumberGenerator().departmentIndividualBillNumberGeneratorYearlyForInpatientAndOpdServices(sessionController.getDepartment(), opdAndInpatientBills);
+            deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(sessionController.getDepartment(), opdAndInpatientBills);
         } else {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearly(bt, BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
         }
@@ -2815,11 +2815,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the department", false);
 
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
             allBillFees = getBillBean().forInstitutionBillFeesFromBillItem(bi, sessionController.getDepartment().getSite());
+        } else if (departmentBasedBillFees) {
+            allBillFees = getBillBean().forDepartmentBillFeefromBillItem(bi, sessionController.getDepartment());
         } else {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         }
@@ -3304,6 +3307,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
+        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the department", false);
 
         // Split the query into individual tokens (space-separated)
         String[] tokens = query.toLowerCase().split("\\s+");
@@ -3323,6 +3327,12 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
             if (matchFound) {
                 if (siteBasedBillFees) {
                     FeeValue f = feeValueController.getSiteFeeValue(opdItem.getId(), sessionController.getLoggedSite());
+                    if (f != null) {
+                        opdItem.setTotal(f.getTotalValueForLocals());
+                        opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
+                    }
+                } else if (departmentBasedBillFees) {
+                    FeeValue f = feeValueController.getDepartmentFeeValue(opdItem.getId(), sessionController.getDepartment());
                     if (f != null) {
                         opdItem.setTotal(f.getTotalValueForLocals());
                         opdItem.setTotalForForeigner(f.getTotalValueForForeigners());
