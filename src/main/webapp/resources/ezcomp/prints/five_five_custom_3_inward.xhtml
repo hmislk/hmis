@@ -111,7 +111,7 @@
                             </h:outputLabel>
                         </td>
                     </tr>
-                    
+
                     <tr>
                         <td style="padding: 2px;">Bill No:</td>
                         <td style="padding: 2px;">#{cc.attrs.bill.deptId}</td>
@@ -153,18 +153,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
-                            <tr>
-                                <!-- Display the item number across all items -->
-                                <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
-                                <td>#{item.item.name}</td>
-                                <td style="text-align: right">
-                                    <h:outputLabel value="#{item.netValue}">
-                                        <f:convertNumber pattern="#,##0.00" />
-                                    </h:outputLabel>
-                                </td>
-                            </tr>
-                        </ui:repeat>
+                        <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
+                            <ui:repeat value="#{cc.attrs.bill.billItems}" var="item" varStatus="s">
+                                <tr>
+                                    <!-- Display the item number across all items -->
+                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
+                                    <td>#{item.item.name}</td>
+                                    <td style="text-align: right">
+                                        <h:outputLabel value="#{item.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </h:panelGroup>
+                        <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
+                            <ui:repeat value="#{billSearch.groupBillItemByName(cc.attrs.bill.billItems)}" var="item" varStatus="s">
+                                <tr>
+                                    <!-- Display the item number across all items -->
+                                    <td>#{s.index +1}</td> <!-- status.index starts from 0, so add 1 for a human-readable count -->
+                                    <td>#{item.item.name}</td>
+                                    <td style="text-align: right">
+                                        <h:outputLabel value="#{item.netValue}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </td>
+                                </tr>
+                            </ui:repeat>
+                        </h:panelGroup>
                     </tbody>
                 </table>
 
@@ -202,14 +218,28 @@
                         </td>
                     </tr>
 
-                    <tr>
-                        <td >No of Items:</td>
-                        <td style="text-align: right;">
-                            <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
-                                <f:convertNumber integerOnly="true" />
-                            </h:outputLabel>
-                        </td>
-                    </tr>
+                    <h:panelGroup rendered="#{!configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
+                        <tr>
+                            <td >No of Items:</td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{cc.attrs.bill.billItems.size()}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+                    
+                    <h:panelGroup rendered="#{configOptionApplicationController.getBooleanValueByKey('Inward Service Bill - Group Bill Item By Name',false)}">
+                        <tr>
+                            <td >No of Items:</td>
+                            <td style="text-align: right;">
+                                <h:outputLabel value="#{billSearch.billItemSize}">
+                                    <f:convertNumber integerOnly="true" />
+                                </h:outputLabel>
+                            </td>
+                        </tr>
+                    </h:panelGroup>
+
                 </table>
 
                 <table  style="font-size: 8pt;">
