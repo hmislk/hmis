@@ -1974,6 +1974,7 @@ public class BillBeanController implements Serializable {
             sql += " b.fromDepartment";
         }
         sql += ",sum(b.netTotal), "
+                + "sum(COALESCE(bfd.totalPurchaseValue, 0.0)), "
                 + "sum(COALESCE(bfd.totalRetailSaleValue, 0.0)), "
                 + "sum(COALESCE(bfd.totalCostValue, 0.0)) "
                 + " FROM Bill b "

@@ -117,6 +117,7 @@ public class ReportsTransfer implements Serializable {
     private double netTotalValues;
     private double netTotalSaleValues;
     private double netTotalPurchaseValues;
+    private double netTotalCostValues;
     private double retailValue;
     private double costValue;
     private double transferValue;
@@ -1059,8 +1060,6 @@ public class ReportsTransfer implements Serializable {
 
     public void createTransferIssueBillSummery() {
         reportTimerController.trackReportExecution(() -> {
-            Date startTime = new Date();
-
             fetchBillTotalByToDepartment(fromDate, toDate, fromDepartment, BillType.PharmacyTransferIssue);
         }, DisbursementReports.TRANSFER_ISSUE_BY_BILL_SUMMARY, sessionController.getLoggedUser());
     }
@@ -1080,39 +1079,48 @@ public class ReportsTransfer implements Serializable {
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
-            
+
             // Handle both BigDecimal and Double types from aggregation functions
-            double dbl = 0.0;
+            double dbl1 = 0.0;
             if (ob[1] instanceof BigDecimal) {
-                dbl = ((BigDecimal) ob[1]).doubleValue();
+                dbl1 = ((BigDecimal) ob[1]).doubleValue();
             } else if (ob[1] instanceof Double) {
-                dbl = (Double) ob[1];
+                dbl1 = (Double) ob[1];
             }
-            
-            double db2 = 0.0;
+
+            double dbl2 = 0.0;
             if (ob[2] instanceof BigDecimal) {
-                db2 = ((BigDecimal) ob[2]).doubleValue();
+                dbl2 = ((BigDecimal) ob[2]).doubleValue();
             } else if (ob[2] instanceof Double) {
-                db2 = (Double) ob[2];
+                dbl2 = (Double) ob[2];
             }
-            
-            double db3 = 0.0;
+
+            double dbl3 = 0.0;
             if (ob[3] instanceof BigDecimal) {
-                db3 = ((BigDecimal) ob[3]).doubleValue();
+                dbl3 = ((BigDecimal) ob[3]).doubleValue();
             } else if (ob[3] instanceof Double) {
-                db3 = (Double) ob[3];
+                dbl3 = (Double) ob[3];
+            }
+
+            double dbl4 = 0.0;
+            if (ob[4] instanceof BigDecimal) {
+                dbl4 = ((BigDecimal) ob[4]).doubleValue();
+            } else if (ob[4] instanceof Double) {
+                dbl4 = (Double) ob[4];
             }
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
-            sv.setValue1(db3);                  // Purchase value (totalCostValue - matching DTO)
-            sv.setValue2(db2);                  // Sale value (totalRetailSaleValue)
-            sv.setValue3(db3);                  // Keep for compatibility
+            sv.setValue1(dbl1);                  // Transfer Value
+            sv.setValue2(dbl2);                  // Purchase Value
+            sv.setValue3(dbl3);                  // Sale Value
+            sv.setValue4(dbl4);                  // Cost Value
             listz.add(sv);
 
-            netTotalValues += db3;              // Use totalCostValue for purchase totals (matching DTO)
-            netTotalSaleValues += db2;          // Use totalRetailSaleValue for sale totals
-            netTotalPurchaseValues += db3;
+            netTotalValues += dbl1;
+            netTotalPurchaseValues += dbl2;
+            netTotalSaleValues += dbl3;
+            netTotalCostValues += dbl4;
 
         }
 
@@ -2154,6 +2162,7 @@ public class ReportsTransfer implements Serializable {
 
     /**
      * Legacy entity-based approach for transfer receive bills
+     *
      * @deprecated Use fillTransferReceiveBillsDtoDirectly() instead
      */
     @Deprecated
@@ -2378,6 +2387,14 @@ public class ReportsTransfer implements Serializable {
 
     public void setTransferValue(double transferValue) {
         this.transferValue = transferValue;
+    }
+
+    public double getNetTotalCostValues() {
+        return netTotalCostValues;
+    }
+
+    public void setNetTotalCostValues(double netTotalCostValues) {
+        this.netTotalCostValues = netTotalCostValues;
     }
 
     public class ItemBHTIssueCountTrancerReciveCount {
