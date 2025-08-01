@@ -41,7 +41,7 @@
                                             itemValue="#{i}"
                                             maxResults="5"
                                             >
-                                            <p:column headerText="Item" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Item" styleClass="#{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputText value="#{i.itemBatch.item.name}"  style="width: 300px!important;">
                                                     &nbsp;<p:tag rendered="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'true': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'true':'false'}" value="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'Expired ':
                                                                              commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'Expired Soon':''}"
@@ -52,30 +52,28 @@
                                                 <h:outputLabel value=") - " ></h:outputLabel>
                                                 <h:outputText value="#{i.itemBatch.item.vmp.name}" style="width: 150px!important;"></h:outputText>
                                             </p:column>
-                                            <p:column headerText="Expiry" class="w-100" styleClass="#{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-                      commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Expiry" class="w-100" styleClass="#{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.dateOfExpire}"
                                                                style="width: 100px!important;" >
                                                     <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}" ></f:convertDateTime>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Stocks" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal':
-        commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Stocks" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.stock}" >
                                                     <f:convertNumber pattern="#,###" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Cost Rate" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Cost Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.costRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Purchase Rate" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Purchase Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.purcahseRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
                                             </p:column>
-                                            <p:column headerText="Retail Rate" styleClass="text-end #{commonFunctionsProxy.currentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-fatal': commonFunctionsProxy.dateAfterThreeMonthsCurrentDateTime > i.itemBatch.dateOfExpire ?'ui-messages-warn':''}">
+                                            <p:column headerText="Retail Rate" styleClass="text-end #{transferIssueController.getStockColourClass(i)}">
                                                 <h:outputLabel value="#{i.itemBatch.retailsaleRate}" >
                                                     <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                                 </h:outputLabel>
