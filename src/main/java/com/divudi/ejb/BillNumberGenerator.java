@@ -748,7 +748,7 @@ public class BillNumberGenerator {
             hm.put("tDep", department);
             hm.put("startOfYear", startOfYear.getTime());
             Long countOfBills = billFacade.findLongByJpql(jpql, hm);
-            billNumber.setLastBillNumber(countOfBills );
+            billNumber.setLastBillNumber(countOfBills + 1);
             billNumberFacade.createAndFlush(billNumber);
         }
         return billNumber;
