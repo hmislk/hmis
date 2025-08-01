@@ -354,35 +354,34 @@
                                                 value="Transfer Issue By Bill Item" 
                                                 action="#{reportsTransfer.navigateToTransferIssueByBillItem}" 
                                                 ajax="false" 
-                                                icon="fa fa-file-invoice" 
+                                                icon="pi pi-file"
                                                 class="w-100 ui-button-success"/>
+
                                             <p:commandButton 
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill', true)}" 
                                                 value="Transfer Issue by Bill" 
                                                 action="/pharmacy/reports/disbursement_reports/pharmacy_report_transfer_issue_bill_dto?faces-redirect=true" 
                                                 ajax="false" 
-                                                icon="fa fa-rocket" 
+                                                icon="pi pi-chart-line"
                                                 class="w-100 ui-button-success"
                                                 title="High-performance DTO-based report - Recommended"/>
-
-
 
                                             <p:commandButton
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Issue by Bill Summary',true)}"
                                                 class="w-100 ui-button-success"
                                                 value="Transfer Issue Summary"
                                                 action="#{reportsTransfer.navigateToTransferIssueByBillSummary}" 
-                                                ajax="false" >                                                   
-                                            </p:commandButton>   
+                                                ajax="false"
+                                                icon="pi pi-list"/>
 
-                                            <p:separator></p:separator>
+                                            <p:separator/>
 
                                             <p:commandButton 
                                                 rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Transfer Receive By Bill Item')}"
                                                 value="Transfer Receive By Bill Item" 
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBillItem}" 
                                                 ajax="false" 
-                                                icon="fa fa-receipt" 
+                                                icon="pi pi-download"
                                                 class="w-100 ui-button-success"/>
 
                                             <p:commandButton 
@@ -390,7 +389,7 @@
                                                 value="Transfer Receive by Bill" 
                                                 action="#{reportsTransfer.navigateToTransferReceiveByBill}" 
                                                 ajax="false" 
-                                                icon="fa fa-file-import" 
+                                                icon="pi pi-inbox"
                                                 class="w-100 ui-button-success"/>
 
                                             <p:commandButton 
@@ -398,9 +397,11 @@
                                                 class="w-100 ui-button-success" 
                                                 value="Transfer Receive Summary" 
                                                 action="pharmacy_report_transfer_receive_bill_summery?faces-redirect=true"
-                                                ajax="false"/>
+                                                ajax="false"
+                                                icon="pi pi-list"/>
 
-                                            <p:separator></p:separator>
+                                            <p:separator/>
+
 
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Report Transfer Issued not Recieved')}" class="w-100" value="Report Transfer Issued not Recieved" action="pharmacy_transfer_issued_list_report?faces-redirect=true" ajax="false" />
                                             <p:commandButton rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Analytics - Show Staff Stock Report')}" class="w-100" value="Staff Stock Report" action="pharmacy_report_staff_stock_by_batch?faces-redirect=true" ajax="false" />
