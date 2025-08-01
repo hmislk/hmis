@@ -44,6 +44,7 @@ import com.divudi.core.data.dto.PharmacyTransferIssueBillItemDTO;
 import com.divudi.core.data.dto.PharmacyTransferReceiveBillItemDTO;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -1079,18 +1080,18 @@ public class ReportsTransfer implements Serializable {
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
-            double dbl = (double) ob[1];        // netTotal
-            double db2 = (double) ob[2];        // totalRetailSaleValue from BillFinanceDetails
-            double db3 = (double) ob[3];        // totalCostValue from BillFinanceDetails
+            double dbl = ((BigDecimal) ob[1]).doubleValue();        // netTotal
+            double db2 = ((BigDecimal) ob[2]).doubleValue();        // totalRetailSaleValue from BillFinanceDetails
+            double db3 = ((BigDecimal) ob[3]).doubleValue();        // totalCostValue from BillFinanceDetails
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
-            sv.setValue1(db3);                  // Purchase value (totalCostValue)
+            sv.setValue1(db3);                  // Purchase value (totalCostValue - matching DTO)
             sv.setValue2(db2);                  // Sale value (totalRetailSaleValue)
             sv.setValue3(db3);                  // Keep for compatibility
             listz.add(sv);
 
-            netTotalValues += db3;              // Use totalCostValue for purchase totals
+            netTotalValues += db3;              // Use totalCostValue for purchase totals (matching DTO)
             netTotalSaleValues += db2;          // Use totalRetailSaleValue for sale totals
             netTotalPurchaseValues += db3;
 
