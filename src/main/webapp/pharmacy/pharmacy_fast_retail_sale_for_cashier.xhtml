@@ -45,7 +45,7 @@
                                 style="font-size: 60px; right:5%; color: purple; padding: 20px; background-color: #A9CCE3; position: absolute;">
                             </i>
                             <p:panel>
-                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale?faces-redirect=true" />
+                                <p:commandButton icon="fas fa-file-invoice" disabled="true" value="Sale 1" action="/pharmacy/pharmacy_fast_retail_sale_for_cashier?faces-redirect=true" />
                                 <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 2" action="/pharmacy/pharmacy_fast_retail_sale_1?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
                                 <p:commandButton icon="fas fa-file-invoice" value="Sale 3" action="/pharmacy/pharmacy_fast_retail_sale_2?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
                                 <p:commandButton icon="fas fa-file-invoice" class="mx-2" value="Sale 4" action="/pharmacy/pharmacy_fast_retail_sale_3?faces-redirect=true" rendered="#{webUserController.hasPrivilege('PharmacySaleQuick')}" />
