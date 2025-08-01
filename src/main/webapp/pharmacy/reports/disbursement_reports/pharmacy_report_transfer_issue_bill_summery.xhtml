@@ -13,11 +13,12 @@
 
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Pharmacy Transfer Issue Summary Report" >
+                    <p:panel header="Pharmacy Transfer Issue Summary Report"
+                             styleClass="card shadow-sm" >
                         
                         
                         
-                        <div class="row">
+                        <div id="filters" class="row g-2">
                             <div class="col-4 ">
                                 <h:outputLabel value="Issue From" />
                                 <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
@@ -36,47 +37,74 @@
                             </div>
                         </div>
 
-                        <h:panelGrid columns="3" class="my-2">
+                        <div class="d-flex flex-wrap gap-2 my-3">
                             <p:commandButton 
                                 ajax="false" 
-                                value="Fill" 
-                                icon="fas fa-fill"
+                                value="Process"
+                                icon="pi pi-play"
                                 class="ui-button-warning"
+                                title="Generate transfer summary with current filters"
                                 action="#{reportsTransfer.createTransferIssueBillSummery}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
-                                icon="fas fa-file-excel"
-                                class="ui-button-success mx-2">
+                            <p:commandButton
+                                ajax="false"
+                                value="Export to Excel"
+                                icon="pi pi-file-excel"
+                                class="ui-button-success"
+                                title="Export current data to Excel file">
                                 <p:dataExporter type="xlsx" target="tbl" fileName="Pharmacy_Transfer_Issue_Summery_Report"  />
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
+                            <p:commandButton
+                                value="Print Report"
                                 ajax="false"
-                                icon="fas fa-print"
+                                icon="pi pi-print"
                                 class="ui-button-info"
+                                title="Open print-friendly version"
                                 action="pharmacy_report_transfer_issue_bill_summery_print?faces-redirect=true" >
                             </p:commandButton>
-                            
-                           
-                        </h:panelGrid>
+
+
+                        </div>
 
                         <h:panelGroup id="gpBillPreview" styleClass="noBorder summeryBorder">
                             
-                            <p:dataTable id="tbl" value="#{reportsTransfer.listz}" var="i">
+                            <p:dataTable id="tbl" value="#{reportsTransfer.listz}" var="i"
+                                         styleClass="noBorder normalFont table-responsive">
                                 <f:facet name="header">
-                                    <h:outputLabel value="Pharmacy Transfer Issue Summary Report - "/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDepartment.name}"/>
-                                    <br/>
-                                    <h:outputLabel value="From "/>
-                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
-                                    <h:outputLabel value=" To "/>
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateFormat}"/>
-                                    </h:outputLabel>
+                                    <div class="table-header-info p-2 bg-light border-bottom">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="mb-1 text-primary">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Transfer Summary
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <strong>From:</strong>
+                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment.name}</span>
+                                                </small>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <strong>Period:</strong>
+                                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                    </h:outputLabel>
+                                                    <span class="mx-1">to</span>
+                                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
+                                                    </h:outputLabel>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <div class="table-record-count">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        <strong>Total Records:</strong>
+                                                        <span class="badge badge-info">#{reportsTransfer.listz.size()}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </f:facet>
 
                                 <p:column headerText="Department">

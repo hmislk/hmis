@@ -11,90 +11,124 @@
         <ui:composition template="/pharmacy/pharmacy_analytics.xhtml">
             <ui:define name="subcontent">
                 <h:form>
-                    <p:panel header="Pharmacy Transfer Received Bills" >
-                        <p:panelGrid columns="5" class="w-100" layout="tabular">
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar
-                                inputStyleClass="w-100"
-                                class="w-100"
-                                value="#{reportsTransfer.fromDate}" 
-                                pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <p:spacer ></p:spacer>
-                            <h:outputLabel value="To" ></h:outputLabel>
+                    <p:panel header="Pharmacy Transfer Received Bills"
+                             styleClass="card shadow-sm" >
+                        <div id="filters" class="row g-2">
+                            <div class="col-2">
+                                <h:outputLabel for="fromDate" value="From" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="fromDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDate" value="To" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="toDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
+                            </div>
+                            <div class="col-2">
+                                <h:outputLabel for="fromDept" value="Transfer From" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="fromDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.fromDepartment}"  >
+                                </p:autoComplete>
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDept" value="Transfer To" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="toDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.toDepartment}"  >
+                                </p:autoComplete>
+                            </div>
 
-                            <p:calendar 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="Transfer From" ></h:outputLabel>
-                            <p:autoComplete 
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                completeMethod="#{departmentController.completeDept}" var="dept" 
-                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                value="#{reportsTransfer.fromDepartment}"  >
-                            </p:autoComplete>
-                            <p:spacer ></p:spacer>
-                            <h:outputLabel value="Transfer To" ></h:outputLabel>
-                            <p:autoComplete
-                                class="w-100"
-                                inputStyleClass="w-100"
-                                completeMethod="#{departmentController.completeDept}" var="dept" 
-                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                value="#{reportsTransfer.toDepartment}"  >
-                            </p:autoComplete>
+                        </div>
 
-                        </p:panelGrid>
-
-                        <h:panelGrid columns="3" class="my-2">
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Fill" 
-                                icon="fas fa-rocket"
-                                class="ui-button-success"
+                        <div class="d-flex flex-wrap gap-2 my-3">
+                            <p:commandButton
+                                ajax="false"
+                                value="Process"
+                                icon="pi pi-play"
+                                class="ui-button-warning"
+                                title="Generate transfer report with current filters"
                                 action="#{reportsTransfer.fillDepartmentTransfersReceiveByBillDto}" >
                             </p:commandButton>
-                            <p:commandButton 
-                                ajax="false" 
-                                value="Excel" 
-                                icon="fas fa-file-excel"
-                                class="ui-button-warning mx-2">
+                            <p:commandButton
+                                ajax="false"
+                                value="Export to Excel"
+                                icon="pi pi-file-excel"
+                                class="ui-button-success"
+                                title="Export current data to Excel file">
                                 <p:dataExporter type="xlsx" target="tblScreen" fileName="Detailed_Transfer_Receive_Listing_DTO"   />
                             </p:commandButton>
-                            <p:commandButton 
-                                value="Print" 
+                            <p:commandButton
+                                value="Print Report"
                                 ajax="false"
-                                icon="fas fa-print"
+                                icon="pi pi-print"
                                 class="ui-button-info"
+                                title="Open print-friendly version"
                                 action="pharmacy_report_transfer_receive_bill_print?faces-redirect=true" >
                             </p:commandButton>
 
 
-                        </h:panelGrid>
+                        </div>
 
 
                         <h:panelGroup id="gpBillPreviewScreen" styleClass="noBorder summeryBorder screenOnly">
                             <p:dataTable 
                                 id="tblScreen" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                                styleClass="noBorder normalFont table-responsive"
                                 scrollable="true"
                                 scrollWidth="100%"
                                 value="#{reportsTransfer.transferReceiveDtos}"
                                 var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer Receive List (DTO Mode) - From "/>&nbsp;
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}"/>
-                                    <h:outputLabel value="To "/>&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}"/> 
-                                    <br></br>
-                                    <h:outputLabel value="From  "/>&nbsp;
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  />
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To  "/>&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
-                                    </h:outputLabel>
+                                    <div class="table-header-info p-2 bg-light border-bottom">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="mb-1 text-primary">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Transfer Receive Details
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <strong>From:</strong>
+                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}</span>
+                                                    <strong>To:</strong>
+                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}</span>
+                                                </small>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <strong>Period:</strong>
+                                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                    </h:outputLabel>
+                                                    <span class="mx-1">to</span>
+                                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  />
+                                                    </h:outputLabel>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <div class="table-record-count">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        <strong>Total Records:</strong>
+                                                        <span class="badge badge-info">#{reportsTransfer.transferReceiveDtos.size()}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </f:facet>
 
                                 <p:column headerText="Bill No" sortBy="#{i.deptId}">
@@ -204,25 +238,48 @@
                         </h:panelGroup>
                         
                         <h:panelGroup id="gpBillPreviewPrinting" styleClass="noBorder summeryBorder" class="printingOnly">
-                            <p:dataTable 
-                                id="tblPrinting" 
-                                styleClass="ui-datatable-borderless ui-datatable-sm compact-datatable"
+                            <p:dataTable
+                                id="tblPrinting"
+                                styleClass="noBorder normalFont table-responsive"
                                 value="#{reportsTransfer.transferReceiveDtos}"
                                 var="i" >
                                 <f:facet name="header">
-                                    <h:outputLabel value="Transfer Receive List (DTO Mode) - From "/>&nbsp;
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}"/>
-                                    <h:outputLabel value="To "/>&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}"/> 
-                                    <br></br>
-                                    <h:outputLabel value="From  "/>&nbsp;
-                                    <h:outputLabel style="margin-right: 20px" value="#{reportsTransfer.fromDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                    </h:outputLabel>
-                                    <h:outputLabel value="To  "/>&nbsp;
-                                    <h:outputLabel value="#{reportsTransfer.toDate}">
-                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></f:convertDateTime>
-                                    </h:outputLabel>
+                                    <div class="table-header-info p-2 bg-light border-bottom">
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <h6 class="mb-1 text-primary">
+                                                    <i class="fas fa-exchange-alt mr-2"></i>Transfer Receive Details
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <strong>From:</strong>
+                                                    <span class="badge badge-secondary mr-2">#{reportsTransfer.fromDepartment != null ? reportsTransfer.fromDepartment.name : 'All Departments'}</span>
+                                                    <strong>To:</strong>
+                                                    <span class="badge badge-secondary">#{reportsTransfer.toDepartment != null ? reportsTransfer.toDepartment.name : 'All Departments'}</span>
+                                                </small>
+                                                <br/>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar mr-1"></i>
+                                                    <strong>Period:</strong>
+                                                    <h:outputLabel value="#{reportsTransfer.fromDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                    <span class="mx-1">to</span>
+                                                    <h:outputLabel value="#{reportsTransfer.toDate}">
+                                                        <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"  ></f:convertDateTime>
+                                                    </h:outputLabel>
+                                                </small>
+                                            </div>
+                                            <div class="col-md-4 text-right">
+                                                <div class="table-record-count">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-list-ul mr-1"></i>
+                                                        <strong>Total Records:</strong>
+                                                        <span class="badge badge-info">#{reportsTransfer.transferReceiveDtos.size()}</span>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </f:facet>
 
                                 <p:column headerText="Bill No" sortBy="#{i.deptId}">
