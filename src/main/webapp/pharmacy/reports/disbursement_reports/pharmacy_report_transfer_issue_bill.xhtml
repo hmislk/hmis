@@ -156,7 +156,7 @@
                                     </h:panelGroup>
                                 </p:column>
 
-                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;"  class="text-end" >
+                                <p:column headerText="Purchase Value"  style="padding: 0px!important; margin: 0px!important;"  class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Purchase', true)}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Purchase Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
@@ -169,7 +169,7 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
-                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" class="text-end" >
+                                <p:column headerText="Sale Value" style="padding: 0px!important; margin: 0px!important;" class="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Retail Sale', true)}" >
                                     <f:facet name="header">
                                         <h:outputLabel value="Sale Value" style="padding: 0px!important; margin: 0px!important;" />
                                     </f:facet>
