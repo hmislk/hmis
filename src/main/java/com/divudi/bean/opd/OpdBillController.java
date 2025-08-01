@@ -1808,6 +1808,14 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                 error = true;
             }
+            if ((getPaymentMethodData().getCreditCard().getNo() == null || getPaymentMethodData().getCreditCard().getNo().trim().equals("")) && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard No is Mandatory",true)) {
+                JsfUtil.addErrorMessage("Please Enter a Credit Card No.");
+                error = true;
+            }
+            if (getPaymentMethodData().getCreditCard().getNo() != null && getPaymentMethodData().getCreditCard().getNo().length() < 4  && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Last 4 number of Credit Card is Mandatory.", true)) {
+                JsfUtil.addErrorMessage("Please Enter Last 4 number of Credit Card.");
+                error = true;
+            }
         } else if (getPaymentMethod() == PaymentMethod.Cheque) {
             if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
@@ -2800,6 +2808,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         List<BillFee> allBillFees;
 
+        // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
@@ -3305,6 +3314,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         Long maxResultsLong = configOptionApplicationController.getLongValueByKey("Number of Maximum Results for Item Search in Autocompletes", defaultValue);
         int maxResults = maxResultsLong.intValue();
 
+        // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
         boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
         boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);

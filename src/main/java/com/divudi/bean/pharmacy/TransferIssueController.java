@@ -92,6 +92,7 @@ public class TransferIssueController implements Serializable {
     private Bill requestedBill;
     private Bill issuedBill;
     private boolean printPreview;
+    private boolean showAllBillFormats = false;
     private Date fromDate;
     private Date toDate;
 
@@ -778,8 +779,9 @@ public class TransferIssueController implements Serializable {
         double rate = b.getBillItemFinanceDetails().getLineGrossRate().doubleValue();
 
         b.setRate(rate);
-        b.setQty(b.getPharmaceuticalBillItem().getQty());
-        b.setNetValue(rate * b.getPharmaceuticalBillItem().getQty());
+        b.setNetRate(rate); // Fix: Set NETRATE
+        b.setNetValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
+        b.setGrossValue(rate * b.getQty()); // Use BillItem.qty for rate calculations
 
         BigDecimal qty = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getQty());
         BigDecimal rateBig = BigDecimal.valueOf(rate);
@@ -791,8 +793,41 @@ public class TransferIssueController implements Serializable {
         f.setLineNetRate(rateBig);
         f.setLineGrossTotal(total);
         f.setLineNetTotal(total);
-        f.setLineCost(total);
-        f.setLineCostRate(rateBig);
+        
+        // Fix: Set LINECOSTRATE to actual cost rate from ItemBatch
+        if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
+            BigDecimal costRate = BigDecimal.valueOf(b.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+            f.setLineCostRate(costRate);
+            f.setLineCost(costRate.multiply(qty));
+        } else {
+            f.setLineCost(total);
+            f.setLineCostRate(rateBig);
+        }
+
+        // Fix: Add missing BillItemFinanceDetails fields
+        f.setGrossRate(rateBig); // GROSSRATE
+        
+        // Calculate quantity by units (quantity * units per pack)
+        BigDecimal unitsPerPack = f.getUnitsPerPack() != null ? f.getUnitsPerPack() : BigDecimal.ONE;
+        f.setQuantityByUnits(qty.multiply(unitsPerPack)); // QUANTITYBYUNITS
+        
+        // Calculate value at different rates
+        if (b.getPharmaceuticalBillItem() != null && b.getPharmaceuticalBillItem().getItemBatch() != null) {
+            ItemBatch batch = b.getPharmaceuticalBillItem().getItemBatch();
+            PharmaceuticalBillItem phItem = b.getPharmaceuticalBillItem();
+            
+            f.setValueAtCostRate(BigDecimal.valueOf(batch.getCostRate()).multiply(qty)); // VALUEATCOSTRATE
+            f.setValueAtPurchaseRate(BigDecimal.valueOf(batch.getPurcahseRate()).multiply(qty)); // VALUEATPURCHASERATE
+            f.setValueAtRetailRate(BigDecimal.valueOf(batch.getRetailsaleRate()).multiply(qty)); // VALUEATRETAILRATE
+            
+            // Fix: Add missing PharmaceuticalBillItem fields
+            BigDecimal packQty = BigDecimal.valueOf(b.getQty()); // Quantity in packs
+            
+            phItem.setPurchaseRatePack(batch.getPurcahseRate() * unitsPerPack.doubleValue()); // PURCHASERATEPACK
+            phItem.setRetailRatePack(batch.getRetailsaleRate() * unitsPerPack.doubleValue()); // RETAILRATEPACK
+            phItem.setPurchaseValue(batch.getPurcahseRate() * phItem.getQty()); // PURCHASEVALUE (rate * qty in units)
+            phItem.setRetailValue(batch.getRetailsaleRate() * phItem.getQty()); // RETAILVALUE (rate * qty in units)
+        }
 
         getBillItemFacade().edit(b);
     }
@@ -863,6 +898,9 @@ public class TransferIssueController implements Serializable {
         billItem.getPharmaceuticalBillItem().setQty(qty);
         billItem.getPharmaceuticalBillItem().setStock(getTmpStock());
         billItem.getPharmaceuticalBillItem().setItemBatch(getTmpStock().getItemBatch());
+        
+        // IMPORTANT: Set the purchase rate from item batch for proper costing
+        billItem.getPharmaceuticalBillItem().setPurchaseRate(getTmpStock().getItemBatch().getPurcahseRate());
 
         billItem.setItem(getTmpStock().getItemBatch().getItem());
         billItem.setQty(qty);
@@ -879,10 +917,12 @@ public class TransferIssueController implements Serializable {
 
         billItem.getBillItemFinanceDetails().setTotalQuantity(BigDecimal.valueOf(billItem.getQty()));
 
-        billItem.getBillItemFinanceDetails().setLineCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
-        billItem.getBillItemFinanceDetails().setLineCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCost(billItem.getBillItemFinanceDetails().getLineCostRate().multiply(billItem.getBillItemFinanceDetails().getQuantity()));
-        billItem.getBillItemFinanceDetails().setTotalCostRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate()));
+        // Use cost rate for cost calculations
+        BigDecimal costRate = BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getCostRate());
+        billItem.getBillItemFinanceDetails().setLineCostRate(costRate);
+        billItem.getBillItemFinanceDetails().setLineCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCost(costRate.multiply(billItem.getBillItemFinanceDetails().getQuantity()));
+        billItem.getBillItemFinanceDetails().setTotalCostRate(costRate);
 
         billItem.getBillItemFinanceDetails().setRetailSaleRate(BigDecimal.valueOf(billItem.getPharmaceuticalBillItem().getItemBatch().getRetailsaleRate()));
 
@@ -1152,6 +1192,19 @@ public class TransferIssueController implements Serializable {
 
     public void setSelectedBillItem(BillItem selectedBillItem) {
         this.selectedBillItem = selectedBillItem;
+    }
+
+    public boolean isShowAllBillFormats() {
+        return showAllBillFormats;
+    }
+
+    public void setShowAllBillFormats(boolean showAllBillFormats) {
+        this.showAllBillFormats = showAllBillFormats;
+    }
+
+    public String toggleShowAllBillFormats() {
+        this.showAllBillFormats = !this.showAllBillFormats;
+        return "";
     }
 
 }

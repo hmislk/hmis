@@ -481,7 +481,7 @@
                                     converter="deal"
                                     value="#{pharmacyDirectPurchaseController.bill.fromInstitution}"
                                     forceSelection="true"
-                                    completeMethod="#{dealerController.completeDealor}"
+                                    completeMethod="#{dealerController.completeActiveDealor}"
                                     var="vt"
                                     maxResults="10"
                                     itemLabel="#{vt.name}"
@@ -571,6 +571,30 @@
                                             <f:convertNumber pattern="#,##0.00" />
                                         </h:outputLabel>
 
+                                        <p:outputLabel value="Bill Expenses" />
+                                        <h:outputLabel 
+                                            id="billExpensesTotal"
+                                            class="w-100 text-end ui-inputfield bg-secondary text-white"
+                                            value="#{pharmacyDirectPurchaseController.billExpensesTotal}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <p:outputLabel value="Bill Expenses (Considered for Costing)" />
+                                        <h:outputLabel 
+                                            id="expensesConsidered"
+                                            class="w-100 text-end ui-inputfield bg-info text-white"
+                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalConsideredForCosting}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
+                                        <p:outputLabel value="Bill Expenses (Not Considered for Costing)" />
+                                        <h:outputLabel 
+                                            id="expensesNotConsidered"
+                                            class="w-100 text-end ui-inputfield bg-warning text-dark"
+                                            value="#{pharmacyDirectPurchaseController.bill.expensesTotalNotConsideredForCosting}">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+
                                         <p:outputLabel value="Sale Value" />
                                         <h:outputLabel 
                                             id="saleValue"
@@ -610,10 +634,11 @@
 
 
                 <p:panel header="Bill Expenses" class="my-3" >
-                    <h:panelGrid id="billExpenseGrid" columns="4" style="min-width: 100%;">
+                    <h:panelGrid id="billExpenseGrid" columns="5" style="min-width: 100%;">
                         <h:outputLabel value="Select Expense"/>
                         <h:outputLabel value="Value"/>
                         <h:outputLabel value="Description"/>
+                        <h:outputLabel value="Considered for Costing"/>
                         <h:outputLabel ></h:outputLabel>
                         <p:autoComplete
                             id="acExpense"
@@ -625,6 +650,11 @@
                             itemValue="#{ex}"
                             inputStyleClass="w-100"
                             class="w-75">
+                            <p:ajax
+                                event="itemSelect"
+                                process="acExpense"
+                                listener="#{pharmacyDirectPurchaseController.onExpenseItemSelect}"
+                                update="billExpenseGrid" />
                         </p:autoComplete>
                         <p:inputText
                             autocomplete="off"
@@ -634,6 +664,7 @@
                             value="#{pharmacyDirectPurchaseController.currentExpense.rate}"
                             style="width:50%" />
                         <p:inputText maxlength="250" value="#{pharmacyDirectPurchaseController.currentExpense.descreption}" style="width:75%" ></p:inputText>
+                        <p:selectBooleanCheckbox value="#{pharmacyDirectPurchaseController.currentExpense.consideredForCosting}" />
                         <p:commandButton
                             id="btnAddExpense"
                             value="Add Expense"
@@ -656,6 +687,13 @@
                         </p:column>
                         <p:column headerText="Description" >
                             <h:outputLabel value="#{be.descreption}" ></h:outputLabel>
+                        </p:column>
+                        <p:column headerText="Considered for Costing" >
+                            <p:selectBooleanCheckbox value="#{be.consideredForCosting}" >
+                                <p:ajax event="change" 
+                                       listener="#{pharmacyDirectPurchaseController.updateExpenseCosting(be)}"
+                                       update="@parent" />
+                            </p:selectBooleanCheckbox>
                         </p:column>
                     </p:dataTable>
                 </p:panel>

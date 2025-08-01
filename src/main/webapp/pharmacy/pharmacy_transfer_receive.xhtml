@@ -34,11 +34,12 @@
                                     <h:outputLabel styleClass="fas fa-list" />
                                     <h:outputLabel value="Requested Item " class="mx-4" />
                                 </f:facet>
-                                <p:dataTable styleClass="noBorder" var="ph" value="#{transferReceiveController.receivedBill.billItems}" 
+                                <p:dataTable styleClass="noBorder compact-table" var="ph" value="#{transferReceiveController.receivedBill.billItems}"
                                              id="itemList" scrollable="true" scrollHeight="250" sortBy="#{ph.searialNo}"
-                                             editable="true">  
+                                             editable="true"
+                                             style="border: none !important; font-size: #{configOptionApplicationController.getShortTextValueByKey('Report Font Size of Item List in Pharmacy Disbursement Reports', '10pt')}!Important; line-height: 1.1 !important;">
 
-                                    <p:column headerText="Item Name"  style="width:25px!important;">
+                                    <p:column headerText="Item Name"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="item" value="#{ph.item.name}" />
                                         <p:commandButton
                                             icon="pi pi-search"
@@ -59,30 +60,36 @@
                                             class="ui-button-info ui-button-icon-only mx-1"/>
                                     </p:column>
 
-                                    <p:column headerText="Batch No"  style="width:25px!important;">  
+                                    <p:column headerText="Batch No"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="batchNo" value="#{ph.pharmaceuticalBillItem.itemBatch.batchNo}" >                                   
                                         </h:outputText>
                                     </p:column>  
 
-                                    <p:column headerText="Expiry Date"  style="width:25px!important;">  
+                                    <p:column headerText="Expiry Date"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="doe" value="#{ph.pharmaceuticalBillItem.stock.itemBatch.dateOfExpire}" >  
                                             <f:convertDateTime pattern="#{sessionController.applicationPreference.shortDateFormat}"/>
                                         </h:outputText>
                                     </p:column>  
 
-                                    <p:column headerText="Rate"  style="width:25px!important;">
+                                    <p:column headerText="Rate"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="rate" value="#{ph.rate}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Issued Qty" style="width:25px!important;">
+                                    <p:column headerText="Net Rate"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
+                                        <h:outputText id="netRate" value="#{ph.netRate}">
+                                            <f:convertNumber pattern="#,##0.00"/>
+                                        </h:outputText>
+                                    </p:column>
+
+                                    <p:column headerText="Issued Qty" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText value="#{ph.referanceBillItem.absoluteQty}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
                                     </p:column>
 
-                                    <p:column headerText="Receiving Qty" style="width:25px!important;">
+                                    <p:column headerText="Receiving Qty" style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <p:inputText autocomplete="off" id="qty" value="#{ph.billItemFinanceDetails.quantity}"
                                                      onfocus="this.select()">
                                             <f:convertNumber pattern="#,##0.00" />
@@ -94,7 +101,7 @@
                                         </p:inputText>
                                     </p:column>
 
-                                    <p:column headerText="Value"  style="width:25px!important;">
+                                    <p:column headerText="Value"  style="width:25px!important; margin: 0px; padding: 1px 2px; line-height: 1.1;">
                                         <h:outputText id="value" value="#{ph.absoluteNetValue}">
                                             <f:convertNumber pattern="#,##0.00"/>
                                         </h:outputText>
@@ -185,35 +192,48 @@
                 </p:panel>
             </p:panel>
             <p:panel rendered="#{transferReceiveController.printPreview}">
-                <p:commandButton 
-                    ajax="false" 
-                    icon="fas fa-list"
-                    class="ui-button-warning"
-                    action="pharmacy_transfer_issued_list" 
-                    actionListener="#{transferReceiveController.makeNull()}" 
-                    value="Issued List"/>                    
-                <p:commandButton 
-                    value="Print" 
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2 mb-2"
-                    ajax="false" 
-                    action="#" >
-                    <p:printer target="gpBillPreview" ></p:printer>
-                </p:commandButton>
+                <div class="d-flex justify-content-between mb-2">
+                    <p:commandButton 
+                        ajax="false" 
+                        icon="fas fa-list"
+                        class="ui-button-warning"
+                        action="pharmacy_transfer_issued_list" 
+                        actionListener="#{transferReceiveController.makeNull()}" 
+                        value="Issued List"/>
+
+                    <div class="d-flex">
+                        <p:commandButton 
+                            value="Print" 
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2"
+                            ajax="false" 
+                            action="#" >
+                            <p:printer target="gpBillPreview" ></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="#{transferReceiveController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                            icon="fas fa-eye"
+                            class="ui-button-secondary mx-1"
+                            ajax="false"
+                            action="#{transferReceiveController.toggleShowAllBillFormats}"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            title="Toggle visibility of all bill formats for development" />
+                    </div>
+                </div>
 
                 <h:panelGroup   id="gpBillPreview">
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq false}" >
+                    <h:panelGroup rendered="#{transferReceiveController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq false}" >
                         <ph:transferReceive bill="#{transferReceiveController.receivedBill}" />
                     </h:panelGroup>
 
-                    <h:panelGroup rendered="#{sessionController.loggedPreference.grnBillDetailed eq true}" >
+                    <h:panelGroup rendered="#{transferReceiveController.showAllBillFormats or sessionController.loggedPreference.grnBillDetailed eq true}" >
                         <ph:transfeRecieve_detailed bill="#{transferReceiveController.receivedBill}"/>
                     </h:panelGroup>
 
                     <h:panelGroup 
                         id="gpBillTemplate" 
-                        rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"> 
+                        rendered="#{transferReceiveController.showAllBillFormats or configOptionApplicationController.getBooleanValueByKey('Pharmacy Transfer Receive Bill is Template',false)}"> 
                         <ph:pharmacy_transfer_receive_receipt bill="#{transferReceiveController.receivedBill}" ></ph:pharmacy_transfer_receive_receipt>
                     </h:panelGroup>
 

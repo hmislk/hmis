@@ -73,6 +73,25 @@ public abstract class AbstractFacade<T> {
     public List<?> executeQuery(Class<?> entityType, String jpqlQuery) {
         return getEntityManager().createQuery(jpqlQuery, entityType).getResultList();
     }
+    
+    /**
+     * Execute JPQL query that returns Object[] results (for aggregations, projections)
+     */
+    public List<Object[]> findObjectArrayByJpql(String jpql, Map<String, Object> parameters, TemporalType temporalType) {
+        Query query = getEntityManager().createQuery(jpql);
+        if (parameters != null) {
+            Set<String> keys = parameters.keySet();
+            for (String key : keys) {
+                Object value = parameters.get(key);
+                if (value instanceof Date && temporalType != null) {
+                    query.setParameter(key, (Date) value, temporalType);
+                } else {
+                    query.setParameter(key, value);
+                }
+            }
+        }
+        return query.getResultList();
+    }
 
     public <T> T executeQueryFirstResult(Class<T> entityType, String jpqlQuery) {
         try {

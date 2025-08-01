@@ -171,16 +171,17 @@ public class PharmacyCostingService {
      */
     public void distributeProportionalBillValuesToItems(List<BillItem> billItems, Bill bill) {
         if (bill == null) {
+            System.out.println("DEBUG: Bill is null, returning");
             return;
         }
 
         if (bill.getBillFinanceDetails() == null) {
             bill.setBillFinanceDetails(new BillFinanceDetails(bill));
         }
-
+        
         bill.getBillFinanceDetails().setBillDiscount(BigDecimal.valueOf(bill.getDiscount()));
         bill.getBillFinanceDetails().setBillTaxValue(BigDecimal.valueOf(bill.getTax()));
-        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpenseTotal()));
+        bill.getBillFinanceDetails().setBillExpense(BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting()));
 
         if (billItems == null || billItems.isEmpty()) {
             return;
@@ -228,6 +229,10 @@ public class PharmacyCostingService {
             BigDecimal billExpense = billExpenseTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
             BigDecimal billTax = billTaxTotal.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
 
+            System.out.println("DEBUG: Item: " + bi.getItem().getName() + 
+                             ", Ratio: " + ratio + 
+                             ", BillExpense distributed: " + billExpense);
+
             f.setBillDiscount(billDiscount);
             f.setBillExpense(billExpense);
             f.setBillTax(billTax);
@@ -239,6 +244,9 @@ public class PharmacyCostingService {
             f.setTotalDiscount(totalDiscount);
             f.setTotalExpense(totalExpense);
             f.setTotalTax(totalTax);
+            
+            System.out.println("DEBUG: Item: " + bi.getItem().getName() + 
+                             ", TotalExpense: " + totalExpense);
 
             BigDecimal quantity = Optional.ofNullable(f.getQuantity()).orElse(BigDecimal.ZERO);
             BigDecimal freeQty = Optional.ofNullable(f.getFreeQuantity()).orElse(BigDecimal.ZERO);
@@ -304,7 +312,8 @@ public class PharmacyCostingService {
                     : BigDecimal.ZERO;
             f.setNetRate(netRate);
         }
-
+        
+        System.out.println("=== DEBUG: distributeProportionalBillValuesToItems() END ===");
     }
 
     public void addPharmaceuticalBillItemQuantitiesFromBillItemFinanceDetailQuantities(PharmaceuticalBillItem pbi, BillItemFinanceDetails bifd) {
@@ -425,13 +434,24 @@ public class PharmacyCostingService {
     }
 
     public void calculateBillTotalsFromItemsForPurchases(Bill bill, List<BillItem> billItems) {
+        System.out.println("=== DEBUG: SERVICE calculateBillTotalsFromItemsForPurchases() START ===");
+        System.out.println("DEBUG: SERVICE - Bill.netTotal at start: " + bill.getNetTotal());
+        System.out.println("DEBUG: SERVICE - Bill.expenseTotal at start: " + bill.getExpenseTotal());
+        System.out.println("DEBUG: SERVICE - Bill.expensesTotalConsideredForCosting: " + bill.getExpensesTotalConsideredForCosting());
+        System.out.println("DEBUG: SERVICE - BillItems count: " + (billItems != null ? billItems.size() : 0));
+        
         int serialNo = 0;
 
         // Only bill-level values provided by user
         BigDecimal billDiscount = BigDecimal.valueOf(bill.getDiscount());
-        BigDecimal billExpense = BigDecimal.valueOf(bill.getExpenseTotal());
+        BigDecimal billExpense = BigDecimal.valueOf(bill.getExpensesTotalConsideredForCosting());
         BigDecimal billTax = BigDecimal.valueOf(bill.getTax());
         BigDecimal billCost = billDiscount.subtract(billExpense.add(billTax));
+        
+        System.out.println("DEBUG: SERVICE - billDiscount: " + billDiscount);
+        System.out.println("DEBUG: SERVICE - billExpense (considered for costing): " + billExpense);
+        System.out.println("DEBUG: SERVICE - billTax: " + billTax);
+        System.out.println("DEBUG: SERVICE - billCost: " + billCost);
 
         // Initialize totals
         BigDecimal totalLineDiscounts = BigDecimal.ZERO;
@@ -516,9 +536,30 @@ public class PharmacyCostingService {
         }
 
         // Set legacy totals on Bill
+        System.out.println("DEBUG: SERVICE - netTotal from line items: " + netTotal);
+        
+        // Calculate current bill expenses total from bill expense items
+        double currentBillExpensesTotal = 0.0;
+        System.out.println("DEBUG: SERVICE - Bill expenses count: " + (bill.getBillExpenses() != null ? bill.getBillExpenses().size() : 0));
+        if (bill.getBillExpenses() != null && !bill.getBillExpenses().isEmpty()) {
+            for (com.divudi.core.entity.BillItem expense : bill.getBillExpenses()) {
+                System.out.println("DEBUG: SERVICE - Adding expense: " + expense.getItem().getName() + ", value: " + expense.getNetValue());
+                currentBillExpensesTotal += expense.getNetValue();
+            }
+        }
+        System.out.println("DEBUG: SERVICE - currentBillExpensesTotal: " + currentBillExpensesTotal);
+        
+        // Add bill-level expenses to the net total
+        BigDecimal finalNetTotal = netTotal.add(BigDecimal.valueOf(currentBillExpensesTotal));
+        System.out.println("DEBUG: SERVICE - finalNetTotal (netTotal + expenses): " + finalNetTotal);
+        
         bill.setTotal(grossTotal.doubleValue());
-        bill.setNetTotal(netTotal.doubleValue());
+        bill.setNetTotal(finalNetTotal.doubleValue());
         bill.setSaleValue(totalRetail.doubleValue());
+        
+        System.out.println("DEBUG: SERVICE - Bill.netTotal set to: " + bill.getNetTotal());
+        System.out.println("DEBUG: SERVICE - Bill.total set to: " + bill.getTotal());
+        System.out.println("DEBUG: SERVICE - Bill.saleValue set to: " + bill.getSaleValue());
 
         // Ensure BillFinanceDetails is present
         BillFinanceDetails bfd = bill.getBillFinanceDetails();
@@ -563,8 +604,11 @@ public class PharmacyCostingService {
 
         bfd.setGrossTotal(grossTotal);
         bfd.setLineGrossTotal(lineGrossTotal);
-        bfd.setNetTotal(netTotal);
+        bfd.setNetTotal(finalNetTotal);
         bfd.setLineNetTotal(lineNetTotal);
+        
+        System.out.println("DEBUG: SERVICE - BillFinanceDetails.netTotal set to: " + bfd.getNetTotal());
+        
     }
 
     public void calculateBillTotalsFromItemsForTransferOuts(Bill bill, List<BillItem> billItems) {

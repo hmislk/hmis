@@ -13,14 +13,14 @@
     <ui:define name="subContent">
         <h:panelGroup rendered="true" >
             <h:form>
-                <h:outputStylesheet library="css" name="printing.css"></h:outputStylesheet>
+                <h:outputStylesheet library="css" name="printing.css"/>
                 <p:panel  header="Patient Absent Report">
                     <p:panelGrid columns="2" styleClass="noPrintButton"> 
                         <h:outputLabel value="From Date"/>
-                        <p:calendar id="frmDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" ></p:calendar>
+                        <p:calendar id="frmDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.fromDate}" navigator="true"  pattern="dd MMMM yyyy HH:mm:ss" />
 
                         <h:outputLabel value="To Date"/>
-                        <p:calendar id="toDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  ></p:calendar>
+                        <p:calendar id="toDate" class="w-100" inputStyleClass="w-100" value="#{channelReportController.toDate}" navigator="true" pattern="dd MMMM yyyy HH:mm:ss"  />
 
                         <h:outputLabel value="Consultant"/>
                         <au:completeConsultant  value="#{channelReportController.staff}"/>
@@ -37,11 +37,10 @@
                     <h:panelGrid columns="4" class="my-2"> 
                         <p:commandButton ajax="false" id="btnRefresh" value="View List" action="#{channelReportController.createAbsentPatientTable}" class="m-1 ui-button-danger" icon="fas fa-list">
                         </p:commandButton>
-                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-primary" icon="fas fa-print" >
-                            <p:printer target="billFeeReport"  />
+                        <p:commandButton ajax="false" value="Print Table" style="float: right; margin-left: 10px; margin-right: 10px " class="m-1 ui-button-primary" icon="fas fa-print" action="channel_report_absent_patients_print?faces-redirect=true" >
                         </p:commandButton>
                         <p:commandButton ajax="false" value="Export to Excel" class="m-1 ui-button-success" icon="fas fa-file-excel" style="float: right;" >
-                            <p:dataExporter type="xlsx" target="tbl1" fileName="channel_all_List"  />
+                            <p:dataExporter type="xlsx" target="tbl1" fileName="Patient Absent Report"  />
                         </p:commandButton>
                     </h:panelGrid>
 
@@ -81,10 +80,10 @@
                             </p:commandLink>
 
 
-                            <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" ></p:tag>
-                            <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" ></p:tag>
-                            <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" ></p:tag>
-                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" ></p:tag>
+                            <p:tag rendered="#{b.cancelled}" value="Cancelled - #{b.cancelledBill.deptId}" severity="danger" />
+                            <p:tag rendered="#{b.refunded}" value="Refunded - #{b.refundedBill.deptId}"  severity="warning" />
+                            <p:tag rendered="#{bookingControllerViewScope.checkBillClass(b) eq 'RefundBill'}" value="Refund Bill"  severity="warning" />
+                            <p:tag rendered="#{b.billTypeAtomic eq 'CHANNEL_CANCELLATION_WITH_PAYMENT'}" value="Cancel Bill" severity="danger" />
                         </p:column>
 
                         <p:column style="text-align: center;" >

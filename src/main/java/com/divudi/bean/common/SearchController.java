@@ -7631,7 +7631,7 @@ public class SearchController implements Serializable {
         return "/pharmacy/pharmacy_search_pre_bill_not_paid?faces-redirect=true";
     }
 
-    public String navigateToPharmcyBillSearch() {
+    public String navigateToPharmacyBillSearch() {
         printPreview = true;
         duplicateBillView = true;
         return "/pharmacy/pharmacy_search_by_bill_type_atomic?faces-redirect=true";
@@ -7752,6 +7752,8 @@ public class SearchController implements Serializable {
 
             Bill prebill = getPharmacyBean().reAddToStock(b, getSessionController().getLoggedUser(),
                     getSessionController().getDepartment(), BillNumberSuffix.PRECAN);
+            prebill.setBillTypeAtomic(BillTypeAtomic.PHARMACY_RETAIL_SALE_PRE_ADD_TO_STOCK);
+            getBillFacade().edit(prebill);
 
             if (prebill != null) {
                 b.setCancelled(true);
@@ -9715,6 +9717,12 @@ public class SearchController implements Serializable {
         if (getSearchKeyword().getBillNo() != null && !getSearchKeyword().getBillNo().trim().equals("")) {
             sql += " and  b.deptId like :billNo";
             temMap.put("billNo", "%" + getSearchKeyword().getBillNo().trim().toUpperCase() + "%");
+        }
+        
+        if (getSearchKeyword().getCode()!= null && !getSearchKeyword().getCode().trim().equals("")) {
+            sql += " and  (b.patient.code like :code OR b.patient.phn like :phn ) ";
+            temMap.put("code", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
+            temMap.put("phn", "%" + getSearchKeyword().getCode().trim().toUpperCase() + "%");
         }
 
         if (getSearchKeyword().getNetTotal() != null && !getSearchKeyword().getNetTotal().trim().equals("")) {
@@ -12882,12 +12890,12 @@ public class SearchController implements Serializable {
         createAgentPaymentTable(BillType.AgentPaymentReceiveBill);
 
     }
-    
+
     @EJB
     private ChannelService channelService;
-    
+
     public void creatAgentDirectFundPaymentTable() {
-        
+
         bills = channelService.fetchAgentDirectFundBills(searchKeyword, fromDate, toDate, null);
 
     }
@@ -13957,10 +13965,9 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         Map temMap = new HashMap();
-        
-        
+
         sql = "select b from Bill b where b.billType IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false";
-        
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
@@ -13975,10 +13982,9 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         Map temMap = new HashMap();
-        
-        
+
         sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc";
-        
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
@@ -13993,10 +13999,9 @@ public class SearchController implements Serializable {
         bills = null;
         String sql;
         Map temMap = new HashMap();
-        
-        
+
         sql = "select b from Bill b where b.billTypeAtomic IN :billTypes and b.createdAt between :fromDate and :toDate and b.retired=false order by b.id desc";
-        
+
         temMap.put("toDate", getToDate());
         temMap.put("fromDate", getFromDate());
         temMap.put("billTypes", billTypes);
@@ -14321,7 +14326,6 @@ public class SearchController implements Serializable {
             total += bf.getFeeValue();
         }
     }
-
 
     public void listnerBillTypeChange() {
         reportKeyWord.setArea(null);
@@ -15006,9 +15010,8 @@ public class SearchController implements Serializable {
             patientDepositBundle.setBundleType("PatientDeposit");
             patientDepositBundle.setName("Patient Deposits");
             bundle.getBundles().add(patientDepositBundle);
-            
+
             collectionForTheDay += getSafeTotal(patientDepositBundle);
-            
 
 // Generate Patient Deposit Cancellation and add to the main bundle
             List<BillTypeAtomic> patientDepositCancel = new ArrayList<>();
@@ -15895,11 +15898,9 @@ public class SearchController implements Serializable {
                 continue;
             }
 
-
             String categoryName = bi.getItem() != null && bi.getItem().getCategory() != null ? bi.getItem().getCategory().getName() : "No Category";
             String itemName = bi.getItem() != null ? bi.getItem().getName() : "No Item";
             String itemKey = categoryName + "->" + itemName;
-
 
             categoryMap.putIfAbsent(categoryName, new ReportTemplateRow());
             itemMap.putIfAbsent(itemKey, new ReportTemplateRow());
@@ -15955,7 +15956,6 @@ public class SearchController implements Serializable {
                         rowsToAdd.add(iRow);
                     });
         });
-
 
         rtrb.getReportTemplateRows().addAll(rowsToAdd);
         rtrb.setTotal(totalOpdServiceCollection);
@@ -16044,7 +16044,6 @@ public class SearchController implements Serializable {
                 mOP.put("cat", category);
             }
 
-
             bisOP = billItemFacade.findByJpql(jpqlOP, mOP, TemporalType.TIMESTAMP);
         }
 
@@ -16088,7 +16087,6 @@ public class SearchController implements Serializable {
                 mIP.put("cat", category);
             }
 
-
             bisIP = billItemFacade.findByJpql(jpqlIP, mIP, TemporalType.TIMESTAMP);
         }
 
@@ -16096,7 +16094,6 @@ public class SearchController implements Serializable {
         List<BillItem> bis = new ArrayList<>();
         bis.addAll(bisOP);
         bis.addAll(bisIP);
-
 
         for (BillItem bi : bis) {
 
@@ -16124,7 +16121,6 @@ public class SearchController implements Serializable {
 
         return oiBundle;
     }
-
 
     public ReportTemplateRowBundle generateOpdProfessionalFees(String paymentStatusStr) {
         PaymentStatus paymentStatus = PaymentStatus.ALL;
@@ -16205,8 +16201,6 @@ public class SearchController implements Serializable {
             m.put("phn", "%" + mrnNo.toUpperCase() + "%");
         }
 
-        
-        
         List<BillFee> bifs = billFeeFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         // System.out.println("bifs = " + bifs);
 
@@ -16451,8 +16445,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.item=:item ";
             m.put("item", item);
         }
-        
-        
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToItamizedSaleReport(oiBundle, bis);
 
@@ -16508,7 +16501,7 @@ public class SearchController implements Serializable {
             jpql += " and bi.bill.creater=:wu ";
             m.put("wu", webUser);
         }
- 
+
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToBundleForOpdUnderCategory(opdServiceCollection, bis, PaymentType.NON_CREDIT);
 
@@ -16559,7 +16552,6 @@ public class SearchController implements Serializable {
             m.put("site", site);
         }
 
-        
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToBundleForOpdUnderCategory(opdServiceCollection, bis, paymentType);
 
@@ -16615,7 +16607,6 @@ public class SearchController implements Serializable {
             m.put("site", site);
         }
 
-        
         List<BillItem> bis = billItemFacade.findByJpql(jpql, m, TemporalType.TIMESTAMP);
         billItemsToBundleForOpdCreditUnderCategory(opdServiceCollection, bis, PaymentType.CREDIT);
 
@@ -17962,7 +17953,7 @@ public class SearchController implements Serializable {
         bundle.setReportTemplateRows(rs);
         bundle.createRowValuesFromBill();
         bundle.calculateTotals();
-        
+
     }
 
     public void billItemsToItamizedSaleReport(ReportTemplateRowBundle rtrb, List<BillItem> billItems) {
@@ -18276,7 +18267,7 @@ public class SearchController implements Serializable {
         parameters.put("td", toDate);
 
         jpql += "GROUP BY bill.toDepartment, bill.billTypeAtomic";
-        
+
         // System.out.println("parameters = " + parameters);
         List<ReportTemplateRow> rs = (List<ReportTemplateRow>) paymentFacade.findLightsByJpql(jpql, parameters, TemporalType.TIMESTAMP);
 
@@ -19166,7 +19157,6 @@ public class SearchController implements Serializable {
 
 //        jpql = "SELECT b FROM Bill b JOIN FETCH b.billItems WHERE  b.retired=:ret and b.createdAt BETWEEN :fromDate AND :toDate";
         // System.out.println("params = " + params);
-        
         // Execute the query to get filtered bills
         List<Bill> bills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP); // Assuming you have a facade to execute JPQL queries
         // System.out.println("bills = " + bills);

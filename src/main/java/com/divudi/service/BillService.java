@@ -16,7 +16,7 @@ import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_MADE_CANCELLATION_BILL;
 import static com.divudi.core.data.BillTypeAtomic.CC_PAYMENT_RECEIVED_BILL;
-
+import com.divudi.core.data.DepartmentType;
 import com.divudi.core.data.FeeType;
 import com.divudi.core.data.InstitutionType;
 import com.divudi.core.data.PaymentMethod;
@@ -56,7 +56,9 @@ import com.divudi.core.entity.cashTransaction.DenominationTransaction;
 import com.divudi.core.entity.inward.AdmissionType;
 import com.divudi.core.entity.lab.PatientInvestigation;
 import com.divudi.core.entity.pharmacy.PharmaceuticalBillItem;
+
 import com.divudi.core.data.dto.PharmacyIncomeCostBillDTO;
+
 import com.divudi.core.entity.Category;
 import com.divudi.core.facade.BillFacade;
 import com.divudi.core.facade.BillFeeFacade;
@@ -1580,6 +1582,87 @@ public class BillService {
         return (List<PharmacyIncomeBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
     }
 
+    public List<PharmacyIncomeBillItemDTO> fetchPharmacyIncomeBillItemWithCostRateDTOs(Date fromDate,
+                                                                           Date toDate,
+                                                                           Institution institution,
+                                                                           Institution site,
+                                                                           Department department,
+                                                                           WebUser webUser,
+                                                                           List<BillTypeAtomic> billTypeAtomics,
+                                                                           AdmissionType admissionType,
+                                                                           PaymentScheme paymentScheme) {
+
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select new com.divudi.core.data.dto.PharmacyIncomeBillItemDTO( "
+                + " b.id, "
+                + " bi.id, "
+                + " b.deptId, "
+                + " coalesce(pers.name, 'N/A'), "
+                + " b.billTypeAtomic, "
+                + " b.createdAt, "
+                + " coalesce(b.netTotal, 0.0), "
+                + " b.paymentMethod, "
+                + " coalesce(b.total, 0.0), "
+                + " pe, "
+                + " coalesce(pbi.qty, 0.0), "
+                + " coalesce(pbi.retailRate, 0.0), "
+                + " coalesce(pbi.purchaseRate, 0.0), "
+                + " coalesce(pbi.itemBatch.costRate, 0.0), "
+                + " coalesce(bi.netRate, 0.0), "
+                + " coalesce(it.name, 'N/A') ) "
+                + " from PharmaceuticalBillItem pbi "
+                + " join pbi.billItem bi "
+                + " join bi.bill b "
+                + " left join bi.item it "
+                + " left join b.patientEncounter pe "
+                + " left join b.patient pat "
+                + " left join pat.person pers "
+                + " where (b.retired = false or b.retired is null) "
+                + " and (bi.retired = false or bi.retired is null) "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+
+        if (site != null) {
+            jpql += " and b.department.site=:site ";
+            params.put("site", site);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        jpql += " order by b.createdAt desc";
+
+        return (List<PharmacyIncomeBillItemDTO>) billItemFacade.findLightsByJpql(jpql, params, TemporalType.TIMESTAMP);
+    }
+
     public List<OpdSaleSummaryDTO> fetchOpdSaleSummaryDTOs(Date fromDate,
             Date toDate,
             Institution institution,
@@ -1790,6 +1873,83 @@ public class BillService {
         if (toDepartment != null) {
             jpql += " and b.toDepartment=:toDep ";
             params.put("toDep", toDepartment);
+        }
+
+        if (visitType != null && !visitType.trim().isEmpty()) {
+            jpql += " AND b.ipOpOrCc = :type";
+            params.put("type", visitType.trim());
+        }
+
+        jpql += " order by b.createdAt desc  ";
+        List<Bill> fetchedBills = billFacade.findByJpql(jpql, params, TemporalType.TIMESTAMP);
+        return fetchedBills;
+    }
+    
+    public List<Bill> fetchBills(Date fromDate,
+            Date toDate,
+            Institution institution,
+            Institution site,
+            Department department,
+            WebUser webUser,
+            List<BillTypeAtomic> billTypeAtomics,
+            AdmissionType admissionType,
+            PaymentScheme paymentScheme,
+            Institution toInstitution,
+            Department toDepartment,
+            DepartmentType departmentType,
+            String visitType
+    ) {
+        String jpql;
+        Map<String, Object> params = new HashMap<>();
+
+        jpql = "select b "
+                + " from Bill b "
+                + " where b.retired=:ret "
+                + " and b.billTypeAtomic in :billTypesAtomics "
+                + " and b.createdAt between :fromDate and :toDate ";
+        
+        jpql += " and b.toDepartment.departmentType=:deptType ";
+        params.put("deptType", DepartmentType.Lab);
+
+        params.put("ret", false);
+        params.put("billTypesAtomics", billTypeAtomics);
+        params.put("fromDate", fromDate);
+        params.put("toDate", toDate);
+
+        if (institution != null) {
+            jpql += " and b.institution=:ins ";
+            params.put("ins", institution);
+        }
+
+        if (webUser != null) {
+            jpql += " and b.creater=:user ";
+            params.put("user", webUser);
+        }
+
+        if (department != null) {
+            jpql += " and b.department=:dep ";
+            params.put("dep", department);
+        }
+
+        if (admissionType != null) {
+            jpql += " and b.patientEncounter.admissionType=:admissionType ";
+            params.put("admissionType", admissionType);
+        }
+
+        if (paymentScheme != null) {
+            jpql += " and b.paymentScheme=:paymentScheme ";
+            params.put("paymentScheme", paymentScheme);
+        }
+
+        if (toInstitution != null) {
+            jpql += " and b.toInstitution=:toIns ";
+            params.put("toIns", toInstitution);
+        }
+
+        if (toDepartment != null) {
+            jpql += " and b.toDepartment=:toDep ";
+            params.put("toDep", toDepartment);
+
         }
 
         if (visitType != null && !visitType.trim().isEmpty()) {

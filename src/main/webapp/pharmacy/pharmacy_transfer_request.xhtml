@@ -305,22 +305,41 @@
                 </p:panel>
             </p:panel>
             <p:panel rendered="#{transferRequestController.printPreview}" >
-                <p:commandButton
-                    value="New Bill"
-                    icon="fas fa-plus"
-                    class="ui-button-warning"
-                    ajax="false"
-                    action="#{transferRequestController.recreate}" >
-                </p:commandButton>
-                <p:commandButton
-                    value="Print"
-                    icon="fas fa-print"
-                    class="ui-button-info mx-2"
-                    ajax="false" >
-                    <p:printer target="gpBillPreview"></p:printer>
-                </p:commandButton>
+                <div class="d-flex justify-content-between mb-2">
+                    <p:commandButton
+                        value="New Bill"
+                        icon="fas fa-plus"
+                        class="ui-button-warning"
+                        ajax="false"
+                        action="#{transferRequestController.recreate}" >
+                    </p:commandButton>
+
+                    <div class="d-flex">
+                        <p:commandButton
+                            value="Print"
+                            icon="fas fa-print"
+                            class="ui-button-info mx-2"
+                            ajax="false" >
+                            <p:printer target="gpBillPreview"></p:printer>
+                        </p:commandButton>
+                        <p:commandButton
+                            value="#{transferRequestController.showAllBillFormats ? 'Hide' : 'Show'} All Formats"
+                            icon="fas fa-eye"
+                            class="ui-button-secondary mx-1"
+                            ajax="false"
+                            action="#{transferRequestController.toggleShowAllBillFormats}"
+                            rendered="#{webUserController.hasPrivilege('Developers')}"
+                            title="Toggle visibility of all bill formats for development" />
+                    </div>
+                </div>
                 <h:panelGroup id="gpBillPreview">
-                      <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
+                    <!-- Main receipt format - always shown -->
+                    <h:panelGroup rendered="true">
+                        <ph:pharmacy_transfer_request_receipt id="pharmacy_transfer_request_receipt" bill="#{transferRequestController.transferRequestBillPre}" />
+                    </h:panelGroup>
+                    
+                    <!-- Additional formats for development - shown only when toggle is enabled -->
+                    <!-- Future format variations can be added here with: rendered="#{transferRequestController.showAllBillFormats}" -->
                 </h:panelGroup>
             </p:panel>
 
