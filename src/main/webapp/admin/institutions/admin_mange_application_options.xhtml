@@ -16,6 +16,10 @@
                             <!-- Button to List Application Options, with an icon and aligned to the right -->
                             <p:commandButton value="List Application Options" icon="pi pi-list" action="#{configOptionController.listApplicationOptions}"
                                              update="optionsTable" style="float: right;" />
+                            <!-- Excel export button -->
+                            <p:commandButton ajax="false" icon="pi pi-file-excel" title="Export to Excel" style="float: right; margin-right: 0.5em;">
+                                <p:dataExporter type="xlsx" target="optionsTable" fileName="application_options" />
+                            </p:commandButton>
                         </f:facet>
                         <!-- Data Table for Options -->
                         <p:dataTable 
