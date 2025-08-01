@@ -1112,10 +1112,10 @@ public class ReportsTransfer implements Serializable {
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
-            sv.setValue1(dbl1);                  // Transfer Value
-            sv.setValue2(dbl2);                  // Purchase Value
-            sv.setValue3(dbl3);                  // Sale Value
-            sv.setValue4(dbl4);                  // Cost Value
+            sv.setValue1(dbl1);                  // Transfer Value (lineNetTotal)
+            sv.setValue2(dbl2);                  // Purchase Value (totalCostValue)
+            sv.setValue3(dbl3);                  // Sale Value (totalRetailSaleValue)
+            sv.setValue4(dbl4);                  // Cost Value (totalCostValue)
             listz.add(sv);
 
             netTotalValues += dbl1;
