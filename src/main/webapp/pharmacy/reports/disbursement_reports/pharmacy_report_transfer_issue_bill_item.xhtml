@@ -18,23 +18,48 @@
                              styleClass="card shadow-sm"
                              >
 
-                        <h:panelGrid id="filters" columns="4" class="w-100" >
-                            <h:outputLabel value="From" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="To" ></h:outputLabel>
-                            <p:calendar value="#{reportsTransfer.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
-                            <h:outputLabel value="Transfer From" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.fromDepartment}"  >
-                            </p:autoComplete>
-                            <h:outputLabel value="Transfer To" ></h:outputLabel>
-                            <p:autoComplete completeMethod="#{departmentController.completeDept}" var="dept" 
-                                            itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true" 
-                                            value="#{reportsTransfer.toDepartment}"  >
-                            </p:autoComplete>
+                        <div id="filters" class="row g-2">
+                            <div class="col-2">
+                                <h:outputLabel for="fromDate" value="From" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="fromDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.fromDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDate" value="To" />
+                            </div>
+                            <div class="col-3">
+                                <p:calendar id="toDate" class="w-100" inputStyleClass="w-100"
+                                            value="#{reportsTransfer.toDate}"
+                                            pattern="#{sessionController.applicationPreference.longDateTimeFormat}" />
+                            </div>
 
-                        </h:panelGrid>
+                            <div class="w-100"></div>
+
+                            <div class="col-2">
+                                <h:outputLabel for="fromDept" value="Transfer From" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="fromDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.fromDepartment}" />
+                            </div>
+                            <div class="col-2"></div>
+                            <div class="col-2">
+                                <h:outputLabel for="toDept" value="Transfer To" />
+                            </div>
+                            <div class="col-3">
+                                <p:autoComplete id="toDept" class="w-100" inputStyleClass="w-100"
+                                                completeMethod="#{departmentController.completeDept}" var="dept"
+                                                itemLabel="#{dept.name}" itemValue="#{dept}" forceSelection="true"
+                                                value="#{reportsTransfer.toDepartment}" />
+                            </div>
+
+                        </div>
 
                         <div class="d-flex flex-wrap gap-2 my-3">
                             <p:commandButton 
