@@ -68,6 +68,7 @@ import com.divudi.ws.lims.LimsMiddlewareController;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -965,8 +966,12 @@ public class PatientInvestigationController implements Serializable {
         m.put("ps", ps);
         return patientSampleComponantFacade.findByJpql(j, m);
     }
-    
+
     public List<PatientSampleComponant> getPatientSampleComponentsUsingSampleId(Long sampleId) {
+        if (sampleId == null || sampleId <= 0) {
+            return Collections.emptyList();
+        }
+        
         String j = "select psc from PatientSampleComponant psc where psc.patientSample.id = :id";
         Map m = new HashMap();
         m.put("id", sampleId);
@@ -4085,12 +4090,12 @@ public class PatientInvestigationController implements Serializable {
                     + " where s.createdAt between :fd and :td "
                     + " order by s.id";
             Map m = new HashMap();
-            m.put("fd", fromDate);
-            m.put("td", toDate);
+            m.put("fd", getFromDate());
+            m.put("td", getToDate());
             sampleDTOList = getPatientSampleFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
-            
+
         }, LaboratoryReport.PATIENT_SAMPLE_REPORT, sessionController.getLoggedUser());
-        
+
     }
 
     public String navigateToEditPatientSample() {
