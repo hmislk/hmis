@@ -357,7 +357,7 @@ public class BillBhtController implements Serializable {
         tmp.setCreater(getSessionController().getLoggedUser());
         tmp.setBillTypeAtomic(BillTypeAtomic.INWARD_SERVICE_BATCH_BILL);
 
-        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+        boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices = configOptionApplicationController.getBooleanValueByKey("OpdBillNumberGenerateStrategy:SingleNumberForOpdAndInpatientInvestigationsAndServices", false);
         String batchBillId = "";
         
         if (opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices) {
@@ -631,15 +631,14 @@ public class BillBhtController implements Serializable {
 
         boolean inpatientServiceBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "Inpatient Service Bill Number Generate Strategy - FromDepartment ToDepartment BillTypes", false);
+                        "InpatientServiceBillNumberGenerateStrategy:FromDepartmentToDepartmentBillTypes", false);
 
         boolean inpatientServiceBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
-                = configOptionApplicationController.getBooleanValueByKey(
-                        "OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+                = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
 
         boolean inpatientServiceBillNumberGenerateStrategyDefault
                 = configOptionApplicationController.getBooleanValueByKey(
-                        "Inpatient Service Bill Number Generate Strategy - Default", false);
+                        "InpatientServiceBillNumberGenerateStrategy:Default", false);
 
         String deptId;
         String insId;
@@ -1337,20 +1336,42 @@ public class BillBhtController implements Serializable {
         return billNumberBean;
     }
 
+    public void setBillNumberBean(BillNumberGenerator billNumberBean) {
+        this.billNumberBean = billNumberBean;
+
+    }
+
     public BillComponentFacade getBillComponentFacade() {
         return billComponentFacade;
+    }
+
+    public void setBillComponentFacade(BillComponentFacade billComponentFacade) {
+        this.billComponentFacade = billComponentFacade;
     }
 
     public BillFeeFacade getBillFeeFacade() {
         return billFeeFacade;
     }
 
+    public void setBillFeeFacade(BillFeeFacade billFeeFacade) {
+        this.billFeeFacade = billFeeFacade;
+    }
+
     public PatientInvestigationFacade getPatientInvestigationFacade() {
         return patientInvestigationFacade;
     }
 
+    public void setPatientInvestigationFacade(PatientInvestigationFacade patientInvestigationFacade) {
+        this.patientInvestigationFacade = patientInvestigationFacade;
+    }
+
     public BillItemFacade getBillItemFacade() {
         return billItemFacade;
+    }
+
+    public void setBillItemFacade(BillItemFacade billItemFacade) {
+        this.billItemFacade = billItemFacade;
+
     }
 
     public PatientEncounter getPatientEncounter() {
@@ -1359,14 +1380,23 @@ public class BillBhtController implements Serializable {
 
     public void setPatientEncounter(PatientEncounter patientEncounter) {
         this.patientEncounter = patientEncounter;
+
     }
 
     public PriceMatrixFacade getPriceAdjustmentFacade() {
         return priceAdjustmentFacade;
     }
 
+    public void setPriceAdjustmentFacade(PriceMatrixFacade priceAdjustmentFacade) {
+        this.priceAdjustmentFacade = priceAdjustmentFacade;
+    }
+
     public FeeFacade getFeeFacade() {
         return feeFacade;
+    }
+
+    public void setFeeFacade(FeeFacade feeFacade) {
+        this.feeFacade = feeFacade;
     }
 
     public ItemFeeFacade getItemFeeFacade() {

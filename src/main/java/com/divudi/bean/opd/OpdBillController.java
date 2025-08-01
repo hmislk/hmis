@@ -1808,14 +1808,6 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
                 JsfUtil.addErrorMessage("Please Enter a Credit Card Comment..");
                 error = true;
             }
-            if ((getPaymentMethodData().getCreditCard().getNo() == null || getPaymentMethodData().getCreditCard().getNo().trim().equals("")) && configOptionApplicationController.getBooleanValueByKey("OPD Billing - CreditCard No is Mandatory",true)) {
-                JsfUtil.addErrorMessage("Please Enter a Credit Card No.");
-                error = true;
-            }
-            if (getPaymentMethodData().getCreditCard().getNo() != null && getPaymentMethodData().getCreditCard().getNo().length() < 4  && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Last 4 number of Credit Card is Mandatory.", true)) {
-                JsfUtil.addErrorMessage("Please Enter Last 4 number of Credit Card.");
-                error = true;
-            }
         } else if (getPaymentMethod() == PaymentMethod.Cheque) {
             if (getPaymentMethodData().getCheque().getComment().trim().equals("") && configOptionApplicationController.getBooleanValueByKey("OPD Billing - Cheque Comment is Mandatory", false)) {
                 JsfUtil.addErrorMessage("Please Enter a Cheque Comment..");
@@ -2079,14 +2071,16 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         newBatchBill.setIndication(indication);
         newBatchBill.setIpOpOrCc("OP");
         boolean billNumberByYear;
-        String batchBillId;
+        String batchBillId; 
         billNumberByYear = configOptionApplicationController.getBooleanValueByKey("Bill Numbers are based on Year.", false);
 
         boolean opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination
+                
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Separate Bill Number for fromDepartment, toDepartment and BillTypes", false);
         
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+
         
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             batchBillId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(null, department, BillTypeAtomic.OPD_BATCH_BILL_WITH_PAYMENT);
@@ -2233,6 +2227,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
         
         boolean opdBillNumberGenerateStrategySingleNumberForOpdAndInpatientInvestigationsAndServices
                 = configOptionApplicationController.getBooleanValueByKey("OPD Bill Number Generation Strategy - Single Number for OPD and Inpatient Investigations and Services", false);
+
         
         if (opdBillNumberGenerateStrategyForFromDepartmentAndToDepartmentCombination) {
             deptId = getBillNumberGenerator().departmentBillNumberGeneratorYearlyByFromDepartmentAndToDepartment(bt, sessionController.getDepartment(), BillTypeAtomic.OPD_BILL_WITH_PAYMENT);
@@ -2819,11 +2814,8 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
-        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
 
-        
-        
         if (addAllBillFees) {
             allBillFees = getBillBean().billFeefromBillItem(bi);
         } else if (siteBasedBillFees) {
@@ -3313,8 +3305,7 @@ public class OpdBillController implements Serializable, ControllerWithPatient, C
 
         // Department-based billing functionality is now active and operational
         boolean addAllBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are the same for all departments, institutions and sites.", true);
-        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site for " + sessionController.getDepartment().getName(), false);
-        boolean departmentBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the Logged Department for " + sessionController.getDepartment().getName(), false);
+        boolean siteBasedBillFees = configOptionApplicationController.getBooleanValueByKey("OPD Bill Fees are based on the site", false);
 
         // Split the query into individual tokens (space-separated)
         String[] tokens = query.toLowerCase().split("\\s+");
