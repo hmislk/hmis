@@ -2998,7 +2998,7 @@ public class DataUploadController implements Serializable {
                 return null;
             }
         } catch (Exception e) {
-            Logger.getLogger(PhotoCamBean.class.getName()).log(
+            Logger.getLogger(DataUploadController.class.getName()).log(
                     Level.SEVERE, null, "Error parsing date from cell: " + e.getMessage());
         }
 
