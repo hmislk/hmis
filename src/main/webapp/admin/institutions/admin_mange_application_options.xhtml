@@ -33,24 +33,30 @@
                             rowsPerPageTemplate="15,50,100"
                             selection="#{configOptionController.option}"
                             filteredValue="#{configOptionController.filteredOptions}">
-                            <p:column 
+                            <p:column
                                 style="padding: 7px;"
-                                headerText="Key" 
-                                sortBy="#{option.optionKey}" 
+                                headerText="Key"
+                                sortBy="#{option.optionKey}"
                                 filterBy="#{option.optionKey}"
                                 filterFunction="#{configOptionController.filterByCustom}">
                                 <h:outputText value="#{option.optionKey}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionKey}"/>
+                                </f:facet>
                             </p:column>
 
-                            <p:column 
+                            <p:column
                                 rendered="#{webUserController.hasPrivilege('Developers')}"
-                                headerText="Type" 
-                                width="10em" 
-                                sortBy="#{option.valueType}" 
+                                headerText="Type"
+                                width="10em"
+                                sortBy="#{option.valueType}"
                                 filterBy="#{option.valueType}"
                                 filterFunction="#{configOptionController.filterByCustom}"
                                 style="padding: 7px;">
                                 <h:outputText value="#{option.valueType}"/>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.valueType}"/>
+                                </f:facet>
                             </p:column>
 
                             <p:column
@@ -74,30 +80,36 @@
                                         <h:outputText value="#{option.optionValue}" />
                                     </h:panelGroup>
                                 </h:panelGroup>
+                                <f:facet name="exportable">
+                                    <h:outputText value="#{option.optionValue eq 'true' ? 'Yes' : (option.optionValue eq 'false' ? 'No' : option.optionValue)}" />
+                                </f:facet>
 
-                            </p:column >
+                            </p:column>
 
                             <p:column width="14em" style="padding: 7px;" >
                                 <div class="text-center w-100">
-                                    <p:commandButton 
-                                        icon="pi pi-pencil" 
-                                        styleClass="ui-button-success mx-1" 
-                                        oncomplete="PF('optionEditDialog').show()" 
+                                    <p:commandButton
+                                        icon="pi pi-pencil"
+                                        styleClass="ui-button-success mx-1"
+                                        oncomplete="PF('optionEditDialog').show()"
                                         update=":editForm"
                                         title="Edit Option">
                                         <f:setPropertyActionListener value="#{option}" target="#{configOptionController.option}" ></f:setPropertyActionListener>
                                     </p:commandButton>
-                                    <p:commandButton 
-                                        icon="pi pi-trash" 
-                                        styleClass="ui-button-danger mx-1" 
+                                    <p:commandButton
+                                        icon="pi pi-trash"
+                                        styleClass="ui-button-danger mx-1"
                                         ajax="false"
                                         onclick="if (!confirm('Are you Sure you want to Delete this Option?'))
                                                     return false;"
-                                        action="#{configOptionController.deleteOption(option)}" 
+                                        action="#{configOptionController.deleteOption(option)}"
                                         update=":optionTable"
                                         title="Delete Option">
                                     </p:commandButton>
                                 </div>
+                                <f:facet name="exportable">
+                                    <h:outputText value="" />
+                                </f:facet>
 
                             </p:column>
 
