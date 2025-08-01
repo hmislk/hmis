@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 public class SampleDTO implements Serializable {
+    private Long id;
     private Long sampleId;
     private Date sampleDate;
     private String billNumber;
@@ -13,7 +14,8 @@ public class SampleDTO implements Serializable {
     public SampleDTO() {
     }
 
-    public SampleDTO(Long sampleId, Date sampleDate, String billNumber, String patientName, String analyzerName) {
+    public SampleDTO(Long id, Long sampleId, Date sampleDate, String billNumber, String patientName, String analyzerName) {
+        this.id = id;
         this.sampleId = sampleId;
         this.sampleDate = sampleDate;
         this.billNumber = billNumber;
@@ -59,6 +61,14 @@ public class SampleDTO implements Serializable {
 
     public void setAnalyzerName(String analyzerName) {
         this.analyzerName = analyzerName;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
   
 }

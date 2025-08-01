@@ -15,11 +15,13 @@
                     <p:panel header="Sample List" >
                         <div class="row">
                             <div class="col-12">
-                                <h:panelGrid columns="2" class="my-2">
-                                    <p:outputLabel value="From" ></p:outputLabel>
+                                <h:panelGrid columns="3" class="my-2">
+                                    <p:outputLabel value="From Date" ></p:outputLabel>
+                                    <p:spacer width="50"/>
                                     <p:calendar value="#{patientInvestigationController.fromDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
 
-                                    <p:outputLabel value="To" ></p:outputLabel>
+                                    <p:outputLabel value="To Date" ></p:outputLabel>
+                                     <p:spacer width="50"/>
                                     <p:calendar value="#{patientInvestigationController.toDate}" pattern="#{sessionController.applicationPreference.longDateTimeFormat}"  ></p:calendar>
                                 </h:panelGrid>
 
@@ -55,13 +57,16 @@
                                     paginatorTemplate="{CurrentPageReport} {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
                                     currentPageReportTemplate="{startRecord}-{endRecord} of {totalRecords} records"
                                     rowsPerPageTemplate="20,50,100,500" 
-                                    class="my-2 w-100">
+                                    class="my-2 mt-3 w-100">
                                     
                                     <p:column headerText="No." width="20">
                                         <p:outputLabel value="#{n+1}" ></p:outputLabel>
                                     </p:column>
                                     <p:column width="90" headerText="ID" >
-                                        <p:outputLabel value="#{s.sampleId}" ></p:outputLabel>
+                                        <p:outputLabel value="#{s.id}" ></p:outputLabel>
+                                    </p:column>
+                                    <p:column width="90" headerText="Sample ID" >
+                                        <p:outputLabel value="#{s.sampleId eq null ? s.id : s.sampleId}" ></p:outputLabel>
                                     </p:column>
                                     <p:column width="180" headerText="Collected At">
                                         <p:outputLabel value="#{s.sampleDate}" >
@@ -69,7 +74,7 @@
                                         </p:outputLabel>
                                     </p:column>
 
-                                    <p:column width="120" headerText="Bill No">
+                                    <p:column width="130" headerText="Bill No">
                                         <p:outputLabel value="#{s.billNumber}" ></p:outputLabel>
                                     </p:column>
 
@@ -77,30 +82,24 @@
                                         <p:outputLabel value="#{s.patientName}"></p:outputLabel>
                                     </p:column>
 
-                                    <p:column headerText="Analyzer" >
+                                    <p:column headerText="Analyzer" width="130">
                                         <p:outputLabel value="#{s.analyzerName}" ></p:outputLabel>
                                     </p:column>
 
                                     <p:column headerText="Tests" >
                                         <p:outputLabel value=" | " style="color: blue;"></p:outputLabel>
-                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsUsingSampleId(s.sampleId)}" var="c" >
+                                        <ui:repeat value="#{patientInvestigationController.getPatientSampleComponentsUsingSampleId(s.id)}" var="c" >
                                             <p:outputLabel value=" #{c.investigationComponant.name} |" style="color: blue;"></p:outputLabel>
                                         </ui:repeat>
                                     </p:column>
 
-<!--                                    <p:column headerText="Analyzer Actions" >
-                                        <h:panelGrid columns="3" style="border: none;" >
-                                            <p:commandLink ajax="false" value="Stop" action="#{patientInvestigationController.stopSendingRequestToAnalyzer()}">
-                                                <f:setPropertyActionListener value="#{s}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                            </p:commandLink>
-                                            <p:commandLink ajax="false" value="Send" action="#{patientInvestigationController.sentRequestToAnalyzer()}">
-                                                <f:setPropertyActionListener value="#{s}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                            </p:commandLink>
-                                            <p:commandLink ajax="false" value="Delete" action="#{patientInvestigationController.sentRequestToDeleteToAnalyzer()}">
-                                                <f:setPropertyActionListener value="#{s}" target="#{patientInvestigationController.currentPatientSample}" ></f:setPropertyActionListener>
-                                            </p:commandLink>
-                                        </h:panelGrid>
-                                    </p:column>-->
+                                    <p:column headerText="Actions" width="130">
+                                        <p:commandButton
+                                            value="To Edit"
+                                            ajax="false"
+                                            action="#{patientSampleController.navigateToEditPatientSample(s.id)}" >
+                                        </p:commandButton>
+                                    </p:column>
                                 </p:dataTable>
                             </div>
                         </div>

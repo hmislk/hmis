@@ -4064,7 +4064,6 @@ public class PatientInvestigationController implements Serializable {
     }
 
     public void listPatientSamples() {
-        reportTimerController.trackReportExecution(() -> {
         String jpql = "select ps "
                 + " from PatientSample ps"
                 + " where ps.createdAt between :fd and :td "
@@ -4074,7 +4073,6 @@ public class PatientInvestigationController implements Serializable {
         m.put("td", toDate);
 //        m.put("ins", sessionController.getLoggedUser().getInstitution());
         patientSamples = getPatientSampleFacade().findByJpql(jpql, m, TemporalType.TIMESTAMP);
-        }, LaboratoryReport.PATIENT_SAMPLE_REPORT, sessionController.getLoggedUser());
     }
 
     private List<SampleDTO> sampleDTOList;
@@ -4082,7 +4080,7 @@ public class PatientInvestigationController implements Serializable {
     public void listPatientSamplesDTO() {
         reportTimerController.trackReportExecution(() -> {
             String jpql = "select new com.divudi.core.data.dto.SampleDTO( "
-                    + "s.id, s.createdAt, s.bill.deptId, s.bill.patient.person.name, s.machine.name )"
+                    + " s.id, s.sampleId, s.createdAt, s.bill.deptId, s.bill.patient.person.name, s.machine.name )"
                     + " from PatientSample s"
                     + " where s.createdAt between :fd and :td "
                     + " order by s.id";
@@ -4091,7 +4089,7 @@ public class PatientInvestigationController implements Serializable {
             m.put("td", toDate);
             sampleDTOList = getPatientSampleFacade().findLightsByJpql(jpql, m, TemporalType.TIMESTAMP);
             
-        }, LaboratoryReport.PATIENT_SAMPLE_REPORT_DTO, sessionController.getLoggedUser());
+        }, LaboratoryReport.PATIENT_SAMPLE_REPORT, sessionController.getLoggedUser());
         
     }
 
