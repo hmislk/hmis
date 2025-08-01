@@ -210,6 +210,34 @@
                                         </h:outputLabel>
                                     </f:facet>
                                 </p:column>
+
+                                <p:column headerText="Cost Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.costValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Transfer Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.transferValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" />
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.transferValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" />
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
                                 
                                 <p:column>
                                     <f:facet name="header">
@@ -356,6 +384,34 @@
                                     </h:outputLabel>
                                     <f:facet name="footer">
                                         <h:outputLabel value="#{reportsTransfer.totalsValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Cost Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Cost', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Cost Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.costValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.costValue}" styleClass="text-end fw-bold">
+                                            <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                        </h:outputLabel>
+                                    </f:facet>
+                                </p:column>
+
+                                <p:column headerText="Transfer Value" styleClass="text-end" rendered="#{configOptionApplicationController.getBooleanValueByKey('Pharmacy Disbursement Reports - Display Transfer', true)}">
+                                    <f:facet name="header">
+                                        <h:outputLabel value="Transfer Value" styleClass="text-end" />
+                                    </f:facet>
+                                    <h:outputLabel value="#{i.transferValueDouble}" styleClass="text-end">
+                                        <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
+                                    </h:outputLabel>   
+                                    <f:facet name="footer">
+                                        <h:outputLabel value="#{reportsTransfer.transferValue}" styleClass="text-end fw-bold">
                                             <f:convertNumber pattern="#,##0.00" ></f:convertNumber>
                                         </h:outputLabel>
                                     </f:facet>
