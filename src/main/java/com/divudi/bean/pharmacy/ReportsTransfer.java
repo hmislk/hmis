@@ -1080,9 +1080,28 @@ public class ReportsTransfer implements Serializable {
 
         for (Object[] ob : objects) {
             Department d = (Department) ob[0];
-            double dbl = ((BigDecimal) ob[1]).doubleValue();        // netTotal
-            double db2 = ((BigDecimal) ob[2]).doubleValue();        // totalRetailSaleValue from BillFinanceDetails
-            double db3 = ((BigDecimal) ob[3]).doubleValue();        // totalCostValue from BillFinanceDetails
+            
+            // Handle both BigDecimal and Double types from aggregation functions
+            double dbl = 0.0;
+            if (ob[1] instanceof BigDecimal) {
+                dbl = ((BigDecimal) ob[1]).doubleValue();
+            } else if (ob[1] instanceof Double) {
+                dbl = (Double) ob[1];
+            }
+            
+            double db2 = 0.0;
+            if (ob[2] instanceof BigDecimal) {
+                db2 = ((BigDecimal) ob[2]).doubleValue();
+            } else if (ob[2] instanceof Double) {
+                db2 = (Double) ob[2];
+            }
+            
+            double db3 = 0.0;
+            if (ob[3] instanceof BigDecimal) {
+                db3 = ((BigDecimal) ob[3]).doubleValue();
+            } else if (ob[3] instanceof Double) {
+                db3 = (Double) ob[3];
+            }
 
             String1Value3 sv = new String1Value3();
             sv.setString(d.getName());
