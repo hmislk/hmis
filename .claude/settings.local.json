@@ -18,7 +18,8 @@
       "Bash(git fetch:*)",
       "Bash(gh issue view:*)",
       "Bash(mvn:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "Bash(git stash:*)"
     ],
     "deny": []
   }
